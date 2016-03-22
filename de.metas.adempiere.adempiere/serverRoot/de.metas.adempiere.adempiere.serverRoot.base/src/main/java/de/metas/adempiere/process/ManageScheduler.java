@@ -68,7 +68,7 @@ public class ManageScheduler extends SvrProcess
 			}
 			else if (name.equals(PARAM_RETRY_IF_STOP_FAILS))
 			{
-				retryIfStopFails = "Y".equals((String)para[i].getParameter());
+				retryIfStopFails = "Y".equals(para[i].getParameter());
 			}
 			else if (name.equals(PARAM_ACTION))
 			{
@@ -109,7 +109,7 @@ public class ManageScheduler extends SvrProcess
 
 	private boolean start(final MScheduler schedulerModel)
 	{
-		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get(true); // adempiereAlreadyStarted == true
+		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 		
 		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());
 		if (scheduler == null)
@@ -125,7 +125,7 @@ public class ManageScheduler extends SvrProcess
 
 	private boolean stop(final MScheduler schedulerModel) throws InterruptedException
 	{
-		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get(true); // adempiereAlreadyStarted == true
+		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get(); // adempiereAlreadyStarted == true
 		
 		// making sure that the scheduler exists on the server
 		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());

@@ -26,7 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 
@@ -48,7 +49,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -89,14 +91,14 @@ public class InfoPAttribute extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "InfoPAttribute", e);
+			log.error("InfoPAttribute", e);
 		}
 		AEnv.showCenterWindow(parent, this);
 	}	//	InfoPAttribute
 
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private static final transient CLogger log = CLogger.getCLogger(InfoPAttribute.class);
+	private static final transient Logger log = LogManager.getLogger(InfoPAttribute.class);
 
 	private String productTableName; // metas
 	/**	Resulting Query			*/
@@ -253,7 +255,7 @@ public class InfoPAttribute extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -290,7 +292,7 @@ public class InfoPAttribute extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -324,7 +326,7 @@ public class InfoPAttribute extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -599,7 +601,7 @@ public class InfoPAttribute extends CDialog
 		m_query = null;
 		if (sb.length() > 0)
 			m_query = sb.toString();
-		log.config(m_query);		
+		log.info(m_query);		
 		return m_query;
 	}	//	createQuery
 

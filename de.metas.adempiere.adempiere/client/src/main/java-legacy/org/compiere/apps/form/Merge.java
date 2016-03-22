@@ -15,13 +15,15 @@ package org.compiere.apps.form;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_M_Cost;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -39,7 +41,7 @@ public class Merge
 	//private Connection		m_con = null;
 	private Trx 			m_trx = null;         
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(Merge.class);
+	public static Logger log = LogManager.getLogger(Merge.class);
 
 	public static String	AD_ORG_ID = "AD_Org_ID";
 	public static String	C_BPARTNER_ID = "C_BPartner_ID";
@@ -90,7 +92,7 @@ public class Merge
 	public boolean merge (String ColumnName, int from_ID, int to_ID)
 	{
 		String TableName = ColumnName.substring(0, ColumnName.length()-3);
-		log.config(ColumnName
+		log.info(ColumnName
 			+ " - From=" + from_ID + ",To=" + to_ID);
 
 		boolean success = true;
@@ -138,7 +140,7 @@ public class Merge
 			pstmt.close();
 			pstmt = null;
 			//
-			log.config("Success=" + success
+			log.info("Success=" + success
 				+ " - " + ColumnName + " - From=" + from_ID + ",To=" + to_ID);
 			if (success)
 			{
@@ -152,7 +154,7 @@ public class Merge
 					m_errorLog.append(Env.NL).append("DELETE FROM ").append(TableName)
 					.append(" - ");
 				    success = false;
-					log.config(m_errorLog.toString());
+					log.info(m_errorLog.toString());
 					m_trx.rollback();
 					return false;
 				}
@@ -169,7 +171,7 @@ public class Merge
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, ColumnName, ex);
+			log.error(ColumnName, ex);
 		}
 		//	Cleanup
 		try
@@ -196,7 +198,7 @@ public class Merge
 	 */
 	public int mergeTable (String TableName, String ColumnName, int from_ID, int to_ID)
 	{
-		log.fine(TableName + "." + ColumnName + " - From=" + from_ID + ",To=" + to_ID);
+		log.debug(TableName + "." + ColumnName + " - From=" + from_ID + ",To=" + to_ID);
 		String sql = "UPDATE " + TableName
 			+ " SET " + ColumnName + "=" + to_ID
 			+ " WHERE " + ColumnName + "=" + from_ID;
@@ -229,11 +231,11 @@ public class Merge
 				.append(delete ? "DELETE FROM " : "UPDATE ")
 				.append(TableName).append(" - ")
 				.append(" - ").append(sql);
-			log.config(m_errorLog.toString());
+			log.info(m_errorLog.toString());
 			m_trx.rollback();
 		
 		}
-		log.fine(count
+		log.debug(count
 				+ (delete ? " -Delete- " : " -Update- ") + TableName);
 		
 		

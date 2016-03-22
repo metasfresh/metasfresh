@@ -16,7 +16,8 @@
 package org.eevolution.process;
 
 import java.util.Hashtable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
@@ -71,7 +72,7 @@ public class ExportFormatGenerator extends SvrProcess
 				p_IsInsertRecord = "Y".equals(para[i].getParameter());
 			}	
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

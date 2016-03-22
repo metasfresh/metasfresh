@@ -31,7 +31,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.adempiere.util.StringUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -55,7 +56,7 @@ public abstract class AbstractAutoCompleter extends AutoComplete implements Even
 	public static final int DEFAULT_MaxItems = 7;
 	protected int m_maxItems = AbstractAutoCompleter.DEFAULT_MaxItems;
 
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	private final Timer timer = new Timer(AbstractAutoCompleter.PopupDelayMillis);
 	protected String defaultStyle;

@@ -26,13 +26,13 @@ package de.metas.async.processor.impl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.MultiValueMap;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorEventDispatcher;
@@ -50,7 +50,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
  */
 public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEventDispatcher
 {
-	private static final transient CLogger logger = CLogger.getCLogger(DefaultQueueProcessorEventDispatcher.class);
+	private static final transient Logger logger = LogManager.getLogger(DefaultQueueProcessorEventDispatcher.class);
 
 	private static class ListenerEntry
 	{
@@ -181,7 +181,7 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Error while executing " + listener + " for " + workpackage + " [SKIP]", e);
+				logger.error("Error while executing " + listener + " for " + workpackage + " [SKIP]", e);
 				// NOTE: we are not throwing the error because there is not much to handle it, everything was consumed before
 			}
 		}

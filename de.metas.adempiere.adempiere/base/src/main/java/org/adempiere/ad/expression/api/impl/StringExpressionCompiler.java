@@ -33,7 +33,7 @@ import org.compiere.util.CtxName;
 
 public class StringExpressionCompiler implements IExpressionCompiler<String, IStringExpression>
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(ExpressionFactory.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(ExpressionFactory.class);
 
 	private static final String PARAMETER_TAG = CtxName.NAME_Marker;
 	private static final int PARAMETER_TAG_LENGTH = CtxName.NAME_Marker.length();

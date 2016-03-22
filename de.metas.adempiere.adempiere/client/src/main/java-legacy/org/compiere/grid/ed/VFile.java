@@ -40,8 +40,11 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
+
 import org.compiere.util.Env;
 
 /**
@@ -165,7 +168,7 @@ public class VFile extends JComponent
 	private boolean mandatory = false;
 	private boolean readWrite = true;
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(VFile.class);
+	private static final Logger log = LogManager.getLogger(VFile.class);
 
 	/**
 	 * Enable/disable
@@ -347,7 +350,7 @@ public class VFile extends JComponent
 	{
 		final String m_value = m_text.getText();
 		//
-		log.config(m_value);
+		log.info(m_value);
 		//
 		String fieldName = null;
 		if (m_field != null)
@@ -463,9 +466,9 @@ public class VFile extends JComponent
 	@Override
 	public void keyReleased(final KeyEvent e)
 	{
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 		{
-			log.finest("Key=" + e.getKeyCode() + " - " + e.getKeyChar() + " -> " + m_text.getText());
+			log.trace("Key=" + e.getKeyCode() + " - " + e.getKeyChar() + " -> " + m_text.getText());
 		}
 		// ESC
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)

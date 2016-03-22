@@ -22,7 +22,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -30,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Package_Imp_Detail;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xml.sax.Attributes;
@@ -39,7 +39,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public abstract class AbstractElementHandler implements ElementHandler {
 
-	protected CLogger log = CLogger.getCLogger("PackIn");
+	protected Logger log = LogManager.getLogger("PackIn");
 	
 	/**
 	 * Get ID from Name for a table.
@@ -307,7 +307,7 @@ public abstract class AbstractElementHandler implements ElementHandler {
 	        }
 	        catch (Exception e) {
 	           System.out.println("Error occurred while copying.  "+ byteCount + " bytes copied.");
-	           log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+	           log.error(e.getLocalizedMessage(), e);
 	           
 	           success = -1;
 	        }

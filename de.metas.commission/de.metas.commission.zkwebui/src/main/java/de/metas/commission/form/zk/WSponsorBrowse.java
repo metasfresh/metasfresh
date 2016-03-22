@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridPanel;
@@ -48,7 +49,8 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -85,7 +87,7 @@ import de.metas.commission.modelvalidator.CommissionValidator;
 public class WSponsorBrowse implements IFormController
 {
     /** Logger.          */
-    private static CLogger log = CLogger.getCLogger(WSponsorBrowse.class);
+    private static Logger log = LogManager.getLogger(WSponsorBrowse.class);
     
 	private final CustomForm form = new CustomForm();
 	private final GeneralInfoPanel generalInfoPanel = new GeneralInfoPanel();
@@ -113,7 +115,7 @@ public class WSponsorBrowse implements IFormController
         }
         catch(Exception e)
         {
-            log.log(Level.SEVERE, "", e);
+            log.error("", e);
         }
 //        CLogMgt.setLevel(Level.FINE);
 
@@ -327,7 +329,7 @@ public class WSponsorBrowse implements IFormController
     	I_C_Period period = MPeriod.findByCalendar(ctx, date, C_Calendar_ID, null);
     	if (period == null)
     	{
-    		log.warning("Period not found for - Date="+date+", C_Calendar_ID="+C_Calendar_ID);
+    		log.warn("Period not found for - Date="+date+", C_Calendar_ID="+C_Calendar_ID);
     		return;
     	}
     	if (periodField != null)
@@ -393,7 +395,7 @@ public class WSponsorBrowse implements IFormController
 		final int comSystemId = Env.getContextAsInt(Env.getCtx(), CommissionValidator.CTX_Commission_System_ID);
 		final MCAdvComSystem comSystem = new MCAdvComSystem(Env.getCtx(), comSystemId, null);
 
-		log.fine("Date=" + getDate() + ", AD_User_ID=" + getAD_User_ID() + ", C_AdvComSystem_ID=" + comSystemId);
+		log.debug("Date=" + getDate() + ", AD_User_ID=" + getAD_User_ID() + ", C_AdvComSystem_ID=" + comSystemId);
 		treeModel = new SponsorTreeModel(getAD_User_ID(), getC_Period_ID(), getDate(), comSystem);
 		tree.setModel(null);
 		tree.setModel(treeModel);

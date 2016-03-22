@@ -30,7 +30,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.util.CacheCtx;
@@ -39,7 +40,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
 
 public class PrepayOrderBL implements IPrepayOrderBL
 {
-	private static final CLogger logger = CLogger.getCLogger(PrepayOrderBL.class);
+	private static final Logger logger = LogManager.getLogger(PrepayOrderBL.class);
 
 	@Override
 	@Cached
@@ -50,7 +51,7 @@ public class PrepayOrderBL implements IPrepayOrderBL
 	{
 		if (orderId <= 0)
 		{
-			logger.fine("orderId=" + orderId + "; returning false");
+			logger.debug("orderId=" + orderId + "; returning false");
 			return false;
 		}
 
@@ -62,7 +63,7 @@ public class PrepayOrderBL implements IPrepayOrderBL
 	{
 		if (!order.isSOTrx())
 		{
-			logger.fine(order + " is not a sales order; returning false");
+			logger.debug(order + " is not a sales order; returning false");
 			return false;
 		}
 
@@ -73,15 +74,15 @@ public class PrepayOrderBL implements IPrepayOrderBL
 		}
 		else
 		{
-			logger.fine(order + " has no doc type yet");
+			logger.debug(order + " has no doc type yet");
 			if (order.getC_DocTypeTarget_ID() > 0)
 			{
-				logger.fine("using C_DocTypeTarget_ID= " + order.getC_DocTypeTarget_ID() + " for " + order);
+				logger.debug("using C_DocTypeTarget_ID= " + order.getC_DocTypeTarget_ID() + " for " + order);
 				soDocSubType = order.getC_DocTypeTarget().getDocSubType();
 			}
 			else
 			{
-				logger.fine(order + " has no doc type and no docsubtype; returning false");
+				logger.debug(order + " has no doc type and no docsubtype; returning false");
 				return false;
 			}
 		}

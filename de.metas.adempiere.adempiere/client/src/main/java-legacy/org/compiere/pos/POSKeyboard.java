@@ -20,7 +20,8 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
@@ -35,7 +36,8 @@ import org.compiere.model.I_C_POSKeyLayout;
 import org.compiere.model.X_C_POSKeyLayout;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -51,7 +53,7 @@ public class POSKeyboard extends CDialog implements ActionListener, PosKeyListen
 	private static final long serialVersionUID = 3296839634889851637L;
 
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(POSKeyboard.class);
+	private static final transient Logger log = LogManager.getLogger(POSKeyboard.class);
 
 	private final I_C_POSKeyLayout keylayout;
 
@@ -169,7 +171,7 @@ public class POSKeyboard extends CDialog implements ActionListener, PosKeyListen
 			}
 			catch (final ParseException e1)
 			{
-				log.log(Level.FINE, "JFormattedTextField commit failed");
+				log.debug("JFormattedTextField commit failed");
 			}
 		}
 		else if (action.equals(ConfirmPanel.A_CANCEL))
@@ -185,7 +187,7 @@ public class POSKeyboard extends CDialog implements ActionListener, PosKeyListen
 			}
 			catch (final ParseException e1)
 			{
-				log.log(Level.FINE, "JFormattedTextField commit failed");
+				log.debug("JFormattedTextField commit failed");
 			}
 			dispose();
 		}
@@ -283,7 +285,7 @@ public class POSKeyboard extends CDialog implements ActionListener, PosKeyListen
 				}
 				catch (final ParseException e)
 				{
-					log.log(Level.FINE, "JFormattedTextField commit failed");
+					log.debug("JFormattedTextField commit failed");
 				}
 			}
 		}

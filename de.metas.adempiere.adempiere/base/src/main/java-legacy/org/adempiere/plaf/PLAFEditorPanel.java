@@ -28,7 +28,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -74,7 +75,7 @@ import org.compiere.util.ValueNamePair;
 public class PLAFEditorPanel extends CPanel
 {
 	/**	Logger			*/
-	private static final transient Logger log = Logger.getLogger(PLAFEditorPanel.class.getName());
+	private static final transient Logger log = LogManager.getLogger(PLAFEditorPanel.class.getName());
 	
 	private static final ResourceBundle s_res = PlafRes.getBundle();
 	

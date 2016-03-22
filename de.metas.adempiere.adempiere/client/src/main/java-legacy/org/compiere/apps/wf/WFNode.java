@@ -31,7 +31,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.border.Border;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFNode;
 
@@ -73,7 +74,7 @@ public class WFNode extends JComponent
 		
 		//	Location
 		setBounds(node.getXPosition(), node.getYPosition(), s_size.width, s_size.height);
-		log.config(node.getAD_WF_Node_ID() 
+		log.info(node.getAD_WF_Node_ID() 
 			+ "," + node.getName() + " - " + getLocation());
 		setSelected(false);
 		setVisited(false);
@@ -88,7 +89,7 @@ public class WFNode extends JComponent
 	/**	Size of the Node				*/
 	private static Dimension	s_size = new Dimension (150, 70);
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WFNode.class);
+	private static Logger log = LogManager.getLogger(WFNode.class);
 	
 	/**	ID						*/
 	private MWFNode 		m_node = null;

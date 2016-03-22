@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAging;
@@ -84,7 +82,7 @@ public class Aging extends SvrProcess
 			else if (name.equals("IsListInvoices"))
 				p_IsListInvoices = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		if (p_StatementDate == null)
 			p_StatementDate = new Timestamp (System.currentTimeMillis());
@@ -170,10 +168,10 @@ public class Aging extends SvrProcess
 		
 		sql.append(" ORDER BY oi.C_BPartner_ID, oi.C_Currency_ID, oi.C_Invoice_ID");
 		
-		log.finest(sql.toString());
+		log.trace(sql.toString());
 		String finalSql = Env.getUserRolePermissions(getCtx()).addAccessSQL(
 			sql.toString(), "oi", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);	
-		log.finer(finalSql);
+		log.trace(finalSql);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -224,7 +222,7 @@ public class Aging extends SvrProcess
 					if (aging != null)
 					{
 						aging.saveEx();
-						log.fine("#" + ++counter + " - " + aging);
+						log.debug("#" + ++counter + " - " + aging);
 					}
 					aging = new MAging (getCtx(), AD_PInstance_ID, p_StatementDate, 
 						C_BPartner_ID, C_Currency_ID, 
@@ -242,7 +240,7 @@ public class Aging extends SvrProcess
 			{
 				aging.saveEx();
 				counter++;
-				log.fine("#" + counter + " - " + aging);
+				log.debug("#" + counter + " - " + aging);
 			}
 		}
 		catch (SQLException e)

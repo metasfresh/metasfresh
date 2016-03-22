@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Time Model.
@@ -54,7 +56,7 @@ public final class MDocTime extends PlainDocument
 	private boolean		m_isHour;
 	private boolean		m_is12Hour;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(MDocTime.class);
+	private static Logger log = LogManager.getLogger(MDocTime.class);
 
 	/**
 	 *	Insert String
@@ -66,7 +68,7 @@ public final class MDocTime extends PlainDocument
 	public void insertString (int offset, String string, AttributeSet attr)
 		throws BadLocationException
 	{
-	//	log.fine( "MDocTime.insertString - Offset=" + offset
+	//	log.debug( "MDocTime.insertString - Offset=" + offset
 	//		+ ", String=" + string + ", Attr=" + attr	+ ", Text=" + getText() + ", Length=" + getText().length());
 
 		//	manual entry
@@ -80,7 +82,7 @@ public final class MDocTime extends PlainDocument
 			//	is it a digit ?
 			if (!Character.isDigit(string.charAt(0)))
 			{
-				log.config("No Digit=" + string);
+				log.info("No Digit=" + string);
 				return;
 			}
 
@@ -96,28 +98,28 @@ public final class MDocTime extends PlainDocument
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.toString());
+				log.error(e.toString());
 			}
 			if (i < 0)
 			{
-				log.config("Invalid value: " + i);
+				log.info("Invalid value: " + i);
 				return;
 			}
 			//	Minutes
 			if (!m_isHour && i > 59)
 			{
-				log.config("Invalid minute value: " + i);
+				log.info("Invalid minute value: " + i);
 				return;
 			}
 			//	Hour
 			if (m_isHour && m_is12Hour && i > 12)
 			{
-				log.config("Invalid 12 hour value: " + i);
+				log.info("Invalid 12 hour value: " + i);
 				return;
 			}
 			if (m_isHour && !m_is12Hour && i > 24)
 			{
-				log.config("Invalid 24 hour value: " + i);
+				log.info("Invalid 24 hour value: " + i);
 				return;
 			}
 			//
@@ -136,7 +138,7 @@ public final class MDocTime extends PlainDocument
 	public void remove (int offset, int length)
 		throws BadLocationException
 	{
-	//	log.fine( "MDocTime.remove - Offset=" + offset + ", Length=" + length);
+	//	log.debug( "MDocTime.remove - Offset=" + offset + ", Length=" + length);
 
 		super.remove(offset, length);
 	}	//	deleteString

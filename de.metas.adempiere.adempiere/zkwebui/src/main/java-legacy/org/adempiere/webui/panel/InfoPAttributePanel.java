@@ -17,7 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.apps.AEnv;
@@ -36,12 +35,15 @@ import org.adempiere.webui.editor.WStringEditor;
 import org.compiere.apps.search.InfoPAttribute;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeSet;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -89,7 +91,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "InfoPAttribute", e);
+			log.error("InfoPAttribute", e);
 		}
 		AEnv.showCenterWindow(parent, this);
 	}	//	InfoPAttribute
@@ -103,7 +105,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 	private ArrayList<Component>	m_instanceEditors = new ArrayList<Component>();
 	private ArrayList<Component>	m_instanceEditorsTo = new ArrayList<Component>();
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InfoPAttribute.class);
+	private static Logger log = LogManager.getLogger(InfoPAttribute.class);
 
 	private Rows rows = null;
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
@@ -332,7 +334,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -401,7 +403,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -440,7 +442,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -688,7 +690,7 @@ public class InfoPAttributePanel extends Window implements EventListener
 		m_query = null;
 		if (sb.length() > 0)
 			m_query = sb.toString();
-		log.config(m_query);		
+		log.info(m_query);		
 		return m_query;
 	}	//	createQuery
 

@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -108,7 +106,7 @@ public class MInvoiceBatch extends X_C_InvoiceBatch
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -141,7 +139,7 @@ public class MInvoiceBatch extends X_C_InvoiceBatch
 			+ "' WHERE C_InvoiceBatch_ID=" + getC_InvoiceBatch_ID();
 		int noLine = DB.executeUpdate("UPDATE C_InvoiceBatchLine " + set, get_TrxName());
 		m_lines = null;
-		log.fine(processed + " - Lines=" + noLine);
+		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
 	
 }	//	MInvoiceBatch

@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.compiere.model.MBPartner;
@@ -84,7 +85,7 @@ public class DunningRunCreate extends SvrProcess
 			else if (name.equals("AD_Org_ID"))
 				p_AD_Org_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_DunningRun_ID = getRecord_ID();
 		
@@ -236,9 +237,9 @@ public class DunningRunCreate extends SvrProcess
 				boolean IsInDispute = "Y".equals(rs.getString(6));
 				int C_BPartner_ID = rs.getInt(7);
 				int C_InvoicePaySchedule_ID = rs.getInt(8);
-				log.fine("DaysAfterDue: " + DaysAfterDue.intValue() + " isShowAllDue: " + level.isShowAllDue());
-				log.fine("C_Invoice_ID - DaysDue - GrandTotal: " + C_Invoice_ID + " - " + DaysDue + " - " + GrandTotal);
-				log.fine("C_InvoicePaySchedule_ID: " + C_InvoicePaySchedule_ID);
+				log.debug("DaysAfterDue: " + DaysAfterDue.intValue() + " isShowAllDue: " + level.isShowAllDue());
+				log.debug("C_Invoice_ID - DaysDue - GrandTotal: " + C_Invoice_ID + " - " + DaysDue + " - " + GrandTotal);
+				log.debug("C_InvoicePaySchedule_ID: " + C_InvoicePaySchedule_ID);
 				//
 				if (!p_IncludeInDispute && IsInDispute)
 					continue;
@@ -261,7 +262,7 @@ public class DunningRunCreate extends SvrProcess
 				}
 				rs2.close();
 				if (previousLevels != null) {
-					log.fine(TimesDunned + " - " + previousLevels.length);
+					log.debug(TimesDunned + " - " + previousLevels.length);
 				}
 				//	SubQuery
 				if (level.getParent().isCreateLevelsSequentially() && previousLevels!=null && TimesDunned>previousLevels.length
@@ -269,7 +270,7 @@ public class DunningRunCreate extends SvrProcess
 				{
 					continue;
 				}
-				log.fine(DaysBetweenDunning + " - " + DaysAfterLast);
+				log.debug(DaysBetweenDunning + " - " + DaysAfterLast);
 				if (DaysBetweenDunning != 0 && DaysAfterLast < DaysBetweenDunning && !level.isShowAllDue() && !level.isShowNotDue())
 					continue;
 				//
@@ -284,7 +285,7 @@ public class DunningRunCreate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "addInvoices", e);
+			log.error("addInvoices", e);
 			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
 		}
 		finally
@@ -412,7 +413,7 @@ public class DunningRunCreate extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
 		}
 		finally

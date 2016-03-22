@@ -24,7 +24,8 @@ package de.metas.acct.model.validator;
 
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -42,7 +43,8 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 
@@ -58,7 +60,7 @@ import de.metas.currency.ICurrencyDAO;
  */
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(AcctModuleInterceptor.class);
+	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
@@ -129,7 +131,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed finding the default conversion type. Skip", e);
+				logger.warn("Failed finding the default conversion type. Skip", e);
 			}
 		}
 	}

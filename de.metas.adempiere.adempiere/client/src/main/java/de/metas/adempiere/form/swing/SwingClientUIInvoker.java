@@ -25,7 +25,8 @@ package de.metas.adempiere.form.swing;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -72,7 +73,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 						+ "Ignore, but please check because this could be a development error."
 						+ "\n Invoker: " + this
 						+ "\n Runnable: " + runnable);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 
 			return runnable;

@@ -36,17 +36,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 public class ApplyMigrationScripts extends SvrProcess {
 
 	/** Logger */
-	private static CLogger log = CLogger
-			.getCLogger(ApplyMigrationScripts.class);
+	private static Logger log = LogManager.getLogger(ApplyMigrationScripts.class);
 
 	@Override
 	protected String doIt() throws Exception {
@@ -70,7 +69,7 @@ public class ApplyMigrationScripts extends SvrProcess {
 				}
 			} catch (SQLException e) {
 				execOk = false;
-				log.log(Level.SEVERE, "Script: " + rs.getString(3) + " - " + e.getMessage(), e);
+				log.error("Script: " + rs.getString(3) + " - " + e.getMessage(), e);
 			} finally {
 				sql = "UPDATE ad_migrationscript SET status = ? , isApply = 'N' WHERE ad_migrationscript_id = ? ";
 				pstmt = DB.prepareStatement(sql, this.get_TrxName());
@@ -88,7 +87,7 @@ public class ApplyMigrationScripts extends SvrProcess {
 						return null;
 					}
 				} catch (SQLException e) {
-					log.log(Level.SEVERE, "Script: " + rs.getString(3) + " - " + e.getMessage(), e);
+					log.error("Script: " + rs.getString(3) + " - " + e.getMessage(), e);
 				}
 			}
 		}
@@ -146,7 +145,7 @@ public class ApplyMigrationScripts extends SvrProcess {
 					} catch (SQLException e) {
 						e.printStackTrace();
 						execOk = false;
-						log.log(Level.SEVERE, "Script: " + fileName + " - " + e.getMessage() + ". The line that caused the error is the following ==> " + sqlBuf, e);
+						log.error("Script: " + fileName + " - " + e.getMessage() + ". The line that caused the error is the following ==> " + sqlBuf, e);
 					} finally {
 						stmt.close();
 						if(execOk)

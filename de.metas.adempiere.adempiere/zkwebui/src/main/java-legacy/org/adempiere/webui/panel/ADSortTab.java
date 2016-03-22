@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.webui.component.Button;
@@ -37,11 +36,14 @@ import org.adempiere.webui.component.SimpleListModel;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRows;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zhtml.Span;
 import org.zkoss.zk.au.out.AuFocus;
 import org.zkoss.zk.ui.event.DropEvent;
@@ -81,7 +83,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 	 */
 	public ADSortTab(int WindowNo, GridTab gridTab)
 	{
-		log.config("SortOrder=" + gridTab.getAD_ColumnSortOrder_ID() + ", SortYesNo=" + gridTab.getAD_ColumnSortYesNo_ID());
+		log.info("SortOrder=" + gridTab.getAD_ColumnSortOrder_ID() + ", SortYesNo=" + gridTab.getAD_ColumnSortYesNo_ID());
 		m_WindowNo = WindowNo;
 		this.gridTab = gridTab;
 
@@ -90,7 +92,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 	}	//	VSortTab
 
 	/**	Logger			*/
-	static CLogger log = CLogger.getCLogger(ADSortTab.class);
+	static Logger log = LogManager.getLogger(ADSortTab.class);
 	private int			m_WindowNo;
 	private int			m_AD_Table_ID;
 	private String		m_TableName = null;
@@ -186,32 +188,32 @@ public class ADSortTab extends Panel implements IADTabpanel
 				//	Sort Column
 				if (AD_ColumnSortOrder_ID == rs.getInt(2))
 				{
-					log.fine("Sort=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Sort=" + rs.getString(1) + "." + rs.getString(3));
 					m_ColumnSortName = rs.getString(3);
 					yesLabel.setValue(rs.getString(4));
 				}
 				//	Optional YesNo
 				else if (AD_ColumnSortYesNo_ID == rs.getInt(2))
 				{
-					log.fine("YesNo=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("YesNo=" + rs.getString(1) + "." + rs.getString(3));
 					m_ColumnYesNoName = rs.getString(3);
 				}
 				//	Parent2
 				else if (rs.getString(5).equals("Y"))
 				{
-					log.fine("Parent=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Parent=" + rs.getString(1) + "." + rs.getString(3));
 					m_ParentColumnName = rs.getString(3);
 				}
 				//	KeyColumn
 				else if (rs.getString(6).equals("Y"))
 				{
-					log.fine("Key=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Key=" + rs.getString(1) + "." + rs.getString(3));
 					m_KeyColumnName = rs.getString(3);
 				}
 				//	Identifier
 				else if (rs.getString(7).equals("Y"))
 				{
-					log.fine("Identifier=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Identifier=" + rs.getString(1) + "." + rs.getString(3));
 					boolean isTranslated = trl && "Y".equals(rs.getString(8));
 					if (identifierSql.length() > 0)
 						identifierSql.append(",");
@@ -222,12 +224,12 @@ public class ADSortTab extends Panel implements IADTabpanel
 						m_IdentifierTranslated = true;
 				}
 				else
-					log.fine("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -243,7 +245,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 			m_IdentifierSql = identifierSql.insert(0, "COALESCE(").append(")").toString();
 		//
 		noLabel.setValue(Msg.getMsg(Env.getCtx(), "Available"));
-		log.fine(m_ColumnSortName);
+		log.debug(m_ColumnSortName);
 	}	//	dynInit
 
 	/**
@@ -424,7 +426,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 		if(m_ParentColumnName != null)
 		{	
 			ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, m_ParentColumnName);
-			log.fine(sql.toString() + " - ID=" + ID);
+			log.debug(sql.toString() + " - ID=" + ID);
 		}	
 		else
 		{
@@ -466,7 +468,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -626,7 +628,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 	{
 		if (!adWindowPanel.getToolbar().isSaveEnable())
 			return;
-		log.fine("");
+		log.debug("");
 		boolean ok = true;
 		StringBuffer info = new StringBuffer();
 		StringBuffer sql = null;
@@ -654,7 +656,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
-				log.log(Level.SEVERE, "NoModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
+				log.error("NoModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
 		}
 		//	yesList - Set SortColumn to value and optional YesNo Column to 'Y'
@@ -683,7 +685,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
-				log.log(Level.SEVERE, "YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
+				log.error("YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
 		}
 		//
@@ -847,7 +849,7 @@ public class ADSortTab extends Panel implements IADTabpanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		uiCreated = true;
 	}

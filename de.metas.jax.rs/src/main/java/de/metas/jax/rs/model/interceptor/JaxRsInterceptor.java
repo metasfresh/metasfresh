@@ -47,7 +47,7 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 		if (Ini.getRunMode() == RunMode.BACKEND || CConnection.isServerEmbedded())
 		{
 			// in embedded mode, we assume that a local JMS broker was already started by this module's AddOnn implementation.
-			jaxRsBL.createServerEndPoints(ctx);
+			jaxRsBL.createServerEndPoints();
 		}
 
 		if (Ini.getRunMode() != RunMode.BACKEND)

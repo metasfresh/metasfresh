@@ -18,7 +18,6 @@ package org.adempiere.webui.apps;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import javax.sql.RowSet;
 
@@ -30,9 +29,12 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -71,7 +73,7 @@ public class WReport implements EventListener {
 	public WReport (int AD_Table_ID, MQuery	query, Component parent, 
 			int WindowNo)
 	{
-		log.config("AD_Table_ID=" + AD_Table_ID + " " + query);
+		log.info("AD_Table_ID=" + AD_Table_ID + " " + query);
 		if (!Env.getUserRolePermissions().isCanReport(AD_Table_ID))
 		{
 			FDialog.error(0, "AccessCannotReport", query.getTableName());
@@ -92,7 +94,7 @@ public class WReport implements EventListener {
 	/**	The Option List					*/
 	private ArrayList<KeyNamePair>	m_list = new ArrayList<KeyNamePair>();
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WReport.class);
+	private static Logger log = LogManager.getLogger(WReport.class);
 	/** The parent window for locking/unlocking during process execution */
 	Component parent;
 	/** The parent window number */
@@ -122,7 +124,7 @@ public class WReport implements EventListener {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 
 		//	No Format exists - create it

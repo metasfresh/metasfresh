@@ -8,13 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-
+import org.slf4j.Logger;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
 
@@ -60,7 +58,7 @@ import de.metas.process.RunOutOfTrx;
  */
 public final class ProcessClassInfo
 {
-	private static final transient CLogger logger = SvrProcess.s_log;
+	private static final transient Logger logger = SvrProcess.s_log;
 
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
@@ -78,7 +76,7 @@ public final class ProcessClassInfo
 		catch (ExecutionException e)
 		{
 			// shall never happen
-			logger.log(Level.SEVERE, "Failed fetching ProcessClassInfo from cache for " + processClass, e);
+			logger.error("Failed fetching ProcessClassInfo from cache for " + processClass, e);
 		}
 		return ProcessClassInfo.NULL;
 	}
@@ -140,7 +138,7 @@ public final class ProcessClassInfo
 		}
 		catch (Throwable e)
 		{
-			logger.log(Level.SEVERE, "Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
+			logger.error("Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
 			return NULL;
 		}
 	}
@@ -208,7 +206,7 @@ public final class ProcessClassInfo
 		// This could be OK in case our process is NOT extending SvrProcess but the ProcessCall interface.
 		if (methods.isEmpty())
 		{
-			logger.log(Level.INFO, "Method {0} with return type {1} was not found in {2} or in its inerited types. Ignored.", new Object[] { methodName, returnType, processClass });
+			logger.info("Method {} with return type {} was not found in {} or in its inerited types. Ignored.", new Object[] { methodName, returnType, processClass });
 			// throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
 			return false;
 		}

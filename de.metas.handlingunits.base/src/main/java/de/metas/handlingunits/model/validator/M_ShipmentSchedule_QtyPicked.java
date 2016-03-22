@@ -36,7 +36,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
 public class M_ShipmentSchedule_QtyPicked
 {
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	/**
 	 * Asserts {@link I_M_ShipmentSchedule_QtyPicked#COLUMNNAME_M_LU_HU_ID} has a valid LU or null.
@@ -62,7 +62,7 @@ public class M_ShipmentSchedule_QtyPicked
 					+ "\n@M_LU_HU_ID@: " + handlingUnitsBL.getDisplayName(luHU)
 					+ "\n@M_ShipmentSchedule_QtyPicked_ID@: " + alloc
 					+ "\n@M_ShipmentSchedule_ID@: " + alloc.getM_ShipmentSchedule());
-			// logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			// logger.warn(ex.getLocalizedMessage(), ex);
 			throw ex;
 		}
 	}
@@ -91,7 +91,7 @@ public class M_ShipmentSchedule_QtyPicked
 					+ "\n@M_TU_HU_ID@: " + handlingUnitsBL.getDisplayName(tuHU)
 					+ "\n@M_ShipmentSchedule_QtyPicked_ID@: " + alloc
 					+ "\n@M_ShipmentSchedule_ID@: " + alloc.getM_ShipmentSchedule());
-			// logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			// logger.warn(ex.getLocalizedMessage(), ex);
 			throw ex;
 		}
 	}

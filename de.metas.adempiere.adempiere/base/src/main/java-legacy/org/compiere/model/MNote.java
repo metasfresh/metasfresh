@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -143,7 +141,7 @@ public class MNote extends X_AD_Note
 		else
 		{
 			super.setAD_Message_ID(240); //	Error
-			log.log(Level.SEVERE, "setAD_Message_ID - ID not found for '" + AD_Message + "'");
+			log.error("setAD_Message_ID - ID not found for '" + AD_Message + "'");
 		}
 	}	//	setRecord_ID
 

@@ -22,9 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -40,7 +40,7 @@ public class MWindow extends X_AD_Window
 	 */
 	private static final long serialVersionUID = 6783399136841920556L;
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MWindow.class);
+	private static Logger	s_log	= LogManager.getLogger(MWindow.class);
 	
 	/**
 	 * 	Standard Constructor
@@ -111,7 +111,7 @@ public class MWindow extends X_AD_Window
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -200,7 +200,7 @@ public class MWindow extends X_AD_Window
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -232,7 +232,7 @@ public class MWindow extends X_AD_Window
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, SQL, e);
+			s_log.error(SQL, e);
 			retValue = -1;
 		}
 		finally

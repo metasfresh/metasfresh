@@ -25,19 +25,19 @@ package de.metas.adempiere.gui.search;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 public class InfoProductRelated implements IInfoProductDetail
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private IMiniTable relatedTbl = null;
 	private String m_sqlRelated;
@@ -81,7 +81,7 @@ public class InfoProductRelated implements IInfoProductDetail
 	private void refresh(int M_Product_ID, int M_PriceList_Version_ID)
 	{
 		String sql = m_sqlRelated;
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -95,7 +95,7 @@ public class InfoProductRelated implements IInfoProductDetail
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{

@@ -28,15 +28,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Image;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
@@ -55,7 +54,7 @@ class OrgLogoClassLoaderHook
 	}
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(OrgLogoClassLoaderHook.class);
+	private static final transient Logger logger = LogManager.getLogger(OrgLogoClassLoaderHook.class);
 
 	// Parameters
 	private final int adOrgId;
@@ -117,7 +116,7 @@ class OrgLogoClassLoaderHook
 		}
 		catch (MalformedURLException e)
 		{
-			logger.log(Level.WARNING, "Failed converting the local logo file to URL: " + logoFile, e);
+			logger.warn("Failed converting the local logo file to URL: " + logoFile, e);
 		}
 		return null;
 	}

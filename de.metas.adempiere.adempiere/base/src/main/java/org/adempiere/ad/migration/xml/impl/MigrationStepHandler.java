@@ -36,7 +36,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -45,7 +46,7 @@ import org.w3c.dom.NodeList;
 
 class MigrationStepHandler implements IXMLHandler<I_AD_MigrationStep>
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	public static final String NODENAME = "Step";
 
@@ -124,7 +125,7 @@ class MigrationStepHandler implements IXMLHandler<I_AD_MigrationStep>
 		}
 		else
 		{
-			logger.warning("Unknown step type: " + step.getStepType());
+			logger.warn("Unknown step type: " + step.getStepType());
 			return null;
 		}
 

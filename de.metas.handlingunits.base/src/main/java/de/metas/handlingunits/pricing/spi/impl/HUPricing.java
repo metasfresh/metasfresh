@@ -24,7 +24,8 @@ package de.metas.handlingunits.pricing.spi.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,8 +33,6 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.CLogger;
-
 import com.google.common.base.Optional;
 
 import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
@@ -44,7 +43,7 @@ import de.metas.pricing.attributebased.impl.AttributePricing;
 
 public class HUPricing extends AttributePricing
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final EqualsQueryFilter<de.metas.pricing.attributebased.I_M_ProductPrice_Attribute> FILTER_NoPIItemProduct = new EqualsQueryFilter<>(
 			I_M_ProductPrice_Attribute.COLUMNNAME_M_HU_PI_Item_Product_ID, null);
@@ -97,7 +96,7 @@ public class HUPricing extends AttributePricing
 // @formatter:off
 //		if (attributeSetInstanceId <= 0)
 //		{
-//			logger.log(Level.INFO, "No ASI found: {0}", pricingCtx);
+//			logger.info("No ASI found: {}", pricingCtx);
 //			return Optional.absent();
 //		}
 // @formatter:on
@@ -106,7 +105,7 @@ public class HUPricing extends AttributePricing
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv == null)
 		{
-			logger.log(Level.INFO, "No price list version found: {0}", pricingCtx);
+			logger.info("No price list version found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
@@ -125,7 +124,7 @@ public class HUPricing extends AttributePricing
 				trxName);
 		if (null == productPriceAttribute || productPriceAttribute.getM_ProductPrice_Attribute_ID() <= 0)
 		{
-			logger.log(Level.INFO, "No product attribute pricing found: {0}", pricingCtx);
+			logger.info("No product attribute pricing found: {}", pricingCtx);
 			return Optional.absent(); // no matching
 		}
 

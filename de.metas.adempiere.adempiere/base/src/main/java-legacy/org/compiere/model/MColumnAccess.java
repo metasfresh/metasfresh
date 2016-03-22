@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -136,7 +134,7 @@ public class MColumnAccess extends X_AD_Column_Access
 					m_tableName = rs.getString(1);
 					m_columnName = rs.getString(2);
 					if (rs.getInt(3) != getAD_Table_ID())
-						log.log(Level.SEVERE, "AD_Table_ID inconsistent - Access=" + getAD_Table_ID() + " - Table=" + rs.getInt(3));
+						log.error("AD_Table_ID inconsistent - Access=" + getAD_Table_ID() + " - Table=" + rs.getInt(3));
 				}
 				rs.close();
 				pstmt.close();
@@ -144,7 +142,7 @@ public class MColumnAccess extends X_AD_Column_Access
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			try
 			{

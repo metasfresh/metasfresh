@@ -21,7 +21,8 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -39,7 +40,8 @@ import org.compiere.grid.GridController;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTabLayoutMode;
 import org.compiere.model.Lookup;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -59,7 +61,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	private static final long serialVersionUID = 3135422746697244864L;
 	
 	/** Logger */
-	private static CLogger logger = CLogger.getCLogger(VCellRenderer.class);
+	private static Logger logger = LogManager.getLogger(VCellRenderer.class);
 
 	/**
 	 * Constructor for Grid
@@ -91,7 +93,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Invalid decimal format '" + formatPattern + "' for field " + mField, e);
+				logger.warn("Invalid decimal format '" + formatPattern + "' for field " + mField, e);
 			}
 		}
 
@@ -139,7 +141,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	private VButton m_button = null; // metas-2009_0021_AP1_CR053
 
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(VCellRenderer.class);
+	private static final transient Logger log = LogManager.getLogger(VCellRenderer.class);
 
 	/**
 	 * Get TableCell RendererComponent.
@@ -371,7 +373,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(" + value + ") " + value.getClass().getName(), e);
+			log.error("(" + value + ") " + value.getClass().getName(), e);
 			retValue = value.toString();
 		}
 		super.setValue(retValue);

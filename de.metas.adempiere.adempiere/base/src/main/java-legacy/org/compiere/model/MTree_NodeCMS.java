@@ -20,9 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 
@@ -66,7 +66,7 @@ public class MTree_NodeCMS extends X_AD_TreeNodeCMS
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -108,7 +108,7 @@ public class MTree_NodeCMS extends X_AD_TreeNodeCMS
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "get", e);
+			s_log.error("get", e);
 		}
 		try
 		{
@@ -124,7 +124,7 @@ public class MTree_NodeCMS extends X_AD_TreeNodeCMS
 	}	//	get
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MTree_NodeCMS.class);
+	private static Logger	s_log	= LogManager.getLogger(MTree_NodeCMS.class);
 
 	/**
 	 * 	Load Constructor

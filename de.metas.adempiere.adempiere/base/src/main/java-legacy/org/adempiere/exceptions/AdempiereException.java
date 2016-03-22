@@ -17,15 +17,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.util.CLogger;
+import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -252,13 +254,13 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * @return error message from logger
-	 * @see org.compiere.util.CLogger#retrieveError()
+	 * @see MetasfreshLastError#retrieveError()
 	 */
 	private static String getMessageFromLogger()
 	{
 		//
 		// Check last error
-		final org.compiere.util.ValueNamePair err = CLogger.retrieveError();
+		final org.compiere.util.ValueNamePair err = MetasfreshLastError.retrieveError();
 		String msg = null;
 		if (err != null)
 		{
@@ -269,7 +271,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		// Check last exception
 		if (msg == null)
 		{
-			final Throwable ex = CLogger.retrieveException();
+			final Throwable ex = MetasfreshLastError.retrieveException();
 			if (ex != null)
 			{
 				msg = ex.getLocalizedMessage();
@@ -287,7 +289,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	}
 
 	/**
-	 * Convenient method to throw this exception or just log it as {@link Level#SEVERE}.
+	 * Convenient method to throw this exception or just log it as {@link Level#ERROR}.
 	 * 
 	 * @param throwIt <code>true</code> if the exception shall be thrown
 	 * @param logger
@@ -295,11 +297,11 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 */
 	public final boolean throwOrLogSevere(final boolean throwIt, final Logger logger)
 	{
-		return throwOrLog(throwIt, Level.SEVERE, logger);
+		return throwOrLog(throwIt, Level.ERROR, logger);
 	}
 
 	/**
-	 * Convenient method to throw this exception or just log it as {@link Level#WARNING}.
+	 * Convenient method to throw this exception or just log it as {@link Level#WARN}.
 	 * 
 	 * @param throwIt <code>true</code> if the exception shall be thrown
 	 * @param logger
@@ -307,9 +309,9 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 */
 	public final boolean throwOrLogWarning(final boolean throwIt, final Logger logger)
 	{
-		return throwOrLog(throwIt, Level.WARNING, logger);
+		return throwOrLog(throwIt, Level.WARN, logger);
 	}
-
+	
 	/**
 	 * Convenient method to throw this exception if developer mode is enabled or just log it as {@link Level#WARNING}.
 	 * 
@@ -319,16 +321,9 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	public final boolean throwOrLogWarningIfDeveloperMode(final Logger logger)
 	{
 		final boolean throwIt = Services.get(IDeveloperModeBL.class).isEnabled();
-		return throwOrLogWarning(throwIt, logger);
+		return throwOrLog(throwIt, Level.WARN, logger);
 	}
 
-	/**
-	 * Convenient method to throw this exception or just log it.
-	 * 
-	 * @param throwIt <code>true</code> if the exception shall be thrown
-	 * @param logger
-	 * @return always returns <code>false</code>.
-	 */
 	private final boolean throwOrLog(final boolean throwIt, final Level logLevel, final Logger logger)
 	{
 		if (throwIt)
@@ -337,7 +332,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 		else if (logger != null)
 		{
-			logger.log(logLevel, getLocalizedMessage(), this);
+			LoggingHelper.log(logger, logLevel, getLocalizedMessage(), this);
 			return false;
 		}
 		else

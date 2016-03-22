@@ -29,7 +29,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -47,7 +48,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
@@ -57,7 +57,7 @@ import de.metas.adempiere.report.jasper.OutputType;
 
 public class LocalJasperServer implements IJasperServer
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public byte[] report(int processId, int pinstanceId, final String language, OutputType outputType) throws Exception
@@ -72,7 +72,7 @@ public class LocalJasperServer implements IJasperServer
 		{
 			final MPInstance pinstance = new MPInstance(ctx, processId, 0, 0);
 			pinstance.saveEx();
-			logger.log(Level.INFO, "Given AD_PInstance_ID was 0; Created new {0}", pinstance);
+			logger.info("Given AD_PInstance_ID was 0; Created new {}", pinstance);
 			pinstanceId = pinstance.getAD_PInstance_ID();
 		}
 		else
@@ -162,7 +162,7 @@ public class LocalJasperServer implements IJasperServer
 		}
 		catch(Exception e)
 		{
-			logger.log(Level.WARNING, "Failed while populating the context from record. Ignored", e);
+			logger.warn("Failed while populating the context from record. Ignored", e);
 		}
 	}
 

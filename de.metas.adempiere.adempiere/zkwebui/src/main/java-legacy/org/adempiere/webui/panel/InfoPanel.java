@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADInfoWindowDAO;
@@ -55,11 +54,14 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuEcho;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -408,7 +410,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		{
 			p_whereClause = Env.parseContext(Env.getCtx(), p_WindowNo, whereClause, false, false);
 			if (p_whereClause.length() == 0)
-				log.log(Level.SEVERE, "Cannot parse context= " + whereClause);
+				log.error("Cannot parse context= " + whereClause);
 		}
 		init();
 
@@ -523,7 +525,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 	private int m_PO_Window_ID = -1;
 
 	/** Logger */
-	protected CLogger log = CLogger.getCLogger(getClass());
+	protected Logger log = LogManager.getLogger(getClass());
 
 	protected WListbox contentPanel = new WListbox();
 	protected Paging paging;
@@ -745,15 +747,15 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		{
 			dataSql = DB.getDatabase().addPagingSQL(dataSql, cacheStart, cacheEnd);
 		}
-		log.finer(dataSql);
+		log.trace(dataSql);
 		try
 		{
 			m_pstmt = DB.prepareStatement(dataSql, null);
 			setParameters(m_pstmt, false); // no count
-			log.fine("Start query - " + (System.currentTimeMillis() - startTime) + "ms");
+			log.debug("Start query - " + (System.currentTimeMillis() - startTime) + "ms");
 			m_pstmt.setFetchSize(100);
 			m_rs = m_pstmt.executeQuery();
-			log.fine("End query - " + (System.currentTimeMillis() - startTime) + "ms");
+			log.debug("End query - " + (System.currentTimeMillis() - startTime) + "ms");
 			// skips the row that we dont need if we can't use native db paging
 			if (end > start && m_useDatabasePaging && !DB.getDatabase().isPagingSupported())
 			{
@@ -779,7 +781,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, dataSql, e);
+			log.error(dataSql, e);
 		}
 
 		finally
@@ -834,7 +836,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		String countSql = Msg.parseTranslation(Env.getCtx(), sql.toString()); // Variables
 		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(),
 				IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-		log.finer(countSql);
+		log.trace(countSql);
 		m_count = -1;
 
 		try
@@ -851,11 +853,11 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, countSql, e);
+			log.error(countSql, e);
 			m_count = -2;
 		}
 
-		log.fine("#" + m_count + " - " + (System.currentTimeMillis() - start) + "ms");
+		log.debug("#" + m_count + " - " + (System.currentTimeMillis() - start) + "ms");
 
 		// Armen: add role checking (Patch #1694788 )
 		// MRole role = MRole.getDefault();
@@ -874,7 +876,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		if (contentPanel == null)
 			return;
 
-		log.config("OK=" + m_ok);
+		log.info("OK=" + m_ok);
 
 		if (!m_ok) // did not press OK
 		{
@@ -897,7 +899,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 				m_results.add(data);
 		}
 
-		log.config(getSelectedSQL());
+		log.info(getSelectedSQL());
 
 		// Save Settings of detail info screens
 		saveSelectionDetail();
@@ -945,7 +947,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 				}
 				else
 				{
-					log.severe("For multiple selection, IDColumn should be key column for selection");
+					log.error("For multiple selection, IDColumn should be key column for selection");
 				}
 			}
 		}
@@ -1011,7 +1013,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		Object[] keys = getSelectedKeys();
 		if (keys == null || keys.length == 0)
 		{
-			log.config("No Results - OK="
+			log.info("No Results - OK="
 					+ m_ok + ", Cancel=" + m_cancel);
 			return "";
 		}
@@ -1185,7 +1187,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -1392,7 +1394,7 @@ public abstract class InfoPanel extends Window implements EventListener, WTableM
 		disposing = true;
 		try
 		{
-			log.config("OK=" + ok);
+			log.info("OK=" + ok);
 			m_ok = ok;
 
 			// End Worker

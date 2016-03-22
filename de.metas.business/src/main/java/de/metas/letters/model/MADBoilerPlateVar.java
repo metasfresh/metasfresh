@@ -33,7 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
@@ -162,7 +163,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 			int j = inStr.indexOf('@');						// next @
 			if (j < 0)
 			{
-				log.log(Level.SEVERE, "No second tag: " + inStr);
+				log.error("No second tag: " + inStr);
 				return "";						//	no second tag
 			}
 
@@ -211,7 +212,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 			}
 			if (tokenValue == null || tokenValue.toString().length() == 0)
 			{
-				log.warning("No context value for: " + token);
+				log.warn("No context value for: " + token);
 				return ""; //	token not found
 			}
 			

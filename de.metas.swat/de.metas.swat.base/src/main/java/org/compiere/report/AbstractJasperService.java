@@ -36,11 +36,12 @@ import org.adempiere.util.Check;
 import org.compiere.model.PrintInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractJasperService implements IJasperService
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	
 	@Override
 	public byte[] exportToPdf(final JasperPrint jasperPrint)
@@ -103,7 +104,7 @@ public abstract class AbstractJasperService implements IJasperService
 
 					if (numberOfPrintouts <= 0)
 					{
-						logger.fine("Setting numberOfPrintouts from 0 (specified by printInfo) to 1");
+						logger.debug("Setting numberOfPrintouts from 0 (specified by printInfo) to 1");
 						numberOfPrintouts = 1;
 					}
 					break;
@@ -113,7 +114,7 @@ public abstract class AbstractJasperService implements IJasperService
 					numberOfPrintouts = param.getParameterAsInt();
 					if (numberOfPrintouts <= 0)
 					{
-						logger.fine("Setting numberOfPrintouts from 0 (specified by " + PARAM_PrintCopies + ") to 1");
+						logger.debug("Setting numberOfPrintouts from 0 (specified by " + PARAM_PrintCopies + ") to 1");
 						numberOfPrintouts = 1;
 					}
 				}

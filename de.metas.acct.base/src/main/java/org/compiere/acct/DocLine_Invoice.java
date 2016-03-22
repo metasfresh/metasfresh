@@ -25,7 +25,8 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
@@ -72,7 +73,7 @@ public class DocLine_Invoice extends DocLine
 			{
 				final int taxPrecision = doc.getStdPrecision();
 				final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, lineNetAmt, true, taxPrecision);
-				log.log(Level.FINE, "LineNetAmt={0} - LineTaxAmt={1}", new Object[] { lineNetAmt, lineTaxAmt });
+				log.debug("LineNetAmt={} - LineTaxAmt={}", new Object[] { lineNetAmt, lineTaxAmt });
 				lineNetAmt = lineNetAmt.subtract(lineTaxAmt);
 
 				final BigDecimal priceListTax = taxBL.calculateTax(tax, priceList, true, taxPrecision);

@@ -37,7 +37,8 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
@@ -49,7 +50,7 @@ public class MCIncidentLineFact extends X_C_IncidentLineFact
 	 */
 	private static final long serialVersionUID = -572829886178045275L;
 
-	private static final CLogger logger = CLogger.getCLogger(MCIncidentLineFact.class);
+	private static final Logger logger = LogManager.getLogger(MCIncidentLineFact.class);
 
 	public MCIncidentLineFact(final Properties ctx, final int C_AdvComProgressFact_ID, final String trxName)
 	{
@@ -157,7 +158,7 @@ public class MCIncidentLineFact extends X_C_IncidentLineFact
 		final PO result = MTable.get(getCtx(), getAD_Table_ID()).getPO(getRecord_ID(), get_TrxName());
 		if (result == null)
 		{
-			MCIncidentLineFact.logger.warning("Referenced PO is gone. Returning null, and deleting this record (" + this + ")");
+			MCIncidentLineFact.logger.warn("Referenced PO is gone. Returning null, and deleting this record (" + this + ")");
 			this.deleteEx(false);
 		}
 		return result;

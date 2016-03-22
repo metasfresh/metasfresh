@@ -20,13 +20,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAlertProcessor;
@@ -35,10 +33,11 @@ import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MSession;
 import org.compiere.model.X_AD_Scheduler;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflowProcessor;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Adempiere Server Manager
@@ -54,7 +53,7 @@ public final class AdempiereServerMgr
 	 * @param adempiereAlreadyStarted if <code>false</code>, and the servermanager has not yet been initialized, the it will be initialized while also calling <code>Adempiere.startup()</code>
 	 * @return mgr
 	 */
-	public static AdempiereServerMgr get(final boolean adempiereAlreadyStarted)
+	public static AdempiereServerMgr get()
 	{
 		if (m_serverMgr == null)
 		{
@@ -62,7 +61,7 @@ public final class AdempiereServerMgr
 			{
 				if (m_serverMgr == null)
 				{
-					m_serverMgr = new AdempiereServerMgr(adempiereAlreadyStarted);
+					m_serverMgr = new AdempiereServerMgr();
 					m_serverMgr.startServers();
 					m_serverMgr.log.info(m_serverMgr.toString());
 				}
@@ -74,15 +73,15 @@ public final class AdempiereServerMgr
 	/** Singleton */
 	private static volatile AdempiereServerMgr m_serverMgr = null;
 	/** Logger */
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	/**************************************************************************
 	 * Adempiere Server Manager
 	 */
-	private AdempiereServerMgr(final boolean adempiereAlreadyStarted)
+	private AdempiereServerMgr()
 	{
 		super();
-		startEnvironment(adempiereAlreadyStarted);
+		startEnvironment();
 		// m_serverMgr.startServers();
 	}	// AdempiereServerMgr
 
@@ -98,12 +97,8 @@ public final class AdempiereServerMgr
 	 *
 	 * @return true if started
 	 */
-	private boolean startEnvironment(final boolean adempiereAlreadyStarted)
+	private boolean startEnvironment()
 	{
-		if (!adempiereAlreadyStarted)
-		{
-			Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
-		}
 		log.info("");
 
 		// Set Session
@@ -208,7 +203,7 @@ public final class AdempiereServerMgr
 			m_servers.add(server);
 		}
 
-		log.fine("#" + noServers);
+		log.debug("#" + noServers);
 		return startAll();
 	}	// startEnvironment
 
@@ -265,7 +260,7 @@ public final class AdempiereServerMgr
 					{
 						if (maxWait-- == 0)
 						{
-							log.severe("Wait timeout for interruped " + server);
+							log.error("Wait timeout for interruped " + server);
 							break;
 						}
 						try
@@ -274,7 +269,7 @@ public final class AdempiereServerMgr
 						}
 						catch (InterruptedException e)
 						{
-							log.log(Level.SEVERE, "While sleeping", e);
+							log.error("While sleeping", e);
 						}
 					}
 				}
@@ -293,7 +288,7 @@ public final class AdempiereServerMgr
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Server: " + server, e);
+				log.error("Server: " + server, e);
 			}
 		}	// for all servers
 
@@ -312,17 +307,17 @@ public final class AdempiereServerMgr
 				}
 				else
 				{
-					log.warning("Dead: " + server);
+					log.warn("Dead: " + server);
 					noStopped++;
 				}
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "(checking) - " + server, e);
+				log.error("(checking) - " + server, e);
 				noStopped++;
 			}
 		}
-		log.fine("Running=" + noRunning + ", Stopped=" + noStopped);
+		log.debug("Running=" + noRunning + ", Stopped=" + noStopped);
 		AdempiereServerGroup.get().dump();
 		return noStopped == 0;
 	}	// startAll
@@ -356,7 +351,7 @@ public final class AdempiereServerMgr
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Server=" + serverID, e);
+			log.error("Server=" + serverID, e);
 			return false;
 		}
 		log.info(server.toString());
@@ -387,7 +382,7 @@ public final class AdempiereServerMgr
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "(interrupting) - " + server, e);
+				log.error("(interrupting) - " + server, e);
 			}
 		}	// for all servers
 		Thread.yield();
@@ -403,7 +398,7 @@ public final class AdempiereServerMgr
 				{
 					if (maxWait-- == 0)
 					{
-						log.severe("Wait timeout for interruped " + server);
+						log.error("Wait timeout for interruped " + server);
 						break;
 					}
 					Thread.sleep(100);		// 1/10
@@ -411,7 +406,7 @@ public final class AdempiereServerMgr
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "(waiting) - " + server, e);
+				log.error("(waiting) - " + server, e);
 			}
 		}	// for all servers
 
@@ -425,7 +420,7 @@ public final class AdempiereServerMgr
 			{
 				if (server.isAlive())
 				{
-					log.warning("Alive: " + server);
+					log.warn("Alive: " + server);
 					noRunning++;
 				}
 				else
@@ -436,11 +431,11 @@ public final class AdempiereServerMgr
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "(checking) - " + server, e);
+				log.error("(checking) - " + server, e);
 				noRunning++;
 			}
 		}
-		log.fine("Running=" + noRunning + ", Stopped=" + noStopped);
+		log.debug("Running=" + noRunning + ", Stopped=" + noStopped);
 		AdempiereServerGroup.get().dump();
 		return noRunning == 0;
 	}	// stopAll
@@ -466,7 +461,7 @@ public final class AdempiereServerMgr
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "stop", e);
+			log.error("stop", e);
 			return false;
 		}
 		log.info(server.toString());

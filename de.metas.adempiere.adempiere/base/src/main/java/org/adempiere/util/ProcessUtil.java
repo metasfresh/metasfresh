@@ -27,7 +27,8 @@ import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.script.ScriptEngine;
 
@@ -39,7 +40,6 @@ import org.compiere.model.MRule;
 import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -67,7 +67,7 @@ public final class ProcessUtil {
 	private volatile static ThreadLocal<Integer> s_currentOrg_ID = new ThreadLocal<Integer>(); //metas: c.ghita@metas.ro
 
 	/**	Logger				*/
-	private static CLogger log = CLogger.getCLogger(ProcessUtil.class);
+	private static Logger log = LogManager.getLogger(ProcessUtil.class);
 	
 	private ProcessUtil() {}
 	
@@ -88,7 +88,7 @@ public final class ProcessUtil {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			if (trx != null && trx.isActive())
 			{
 				trx.rollback();
@@ -140,7 +140,7 @@ public final class ProcessUtil {
 		}
 		catch (ClassNotFoundException ex)
 		{
-			log.log(Level.WARNING, className, ex);
+			log.warn(className, ex);
 			pi.setThrowable(ex);  // 03152
 			pi.setSummary ("ClassNotFound", true);
 			return false;
@@ -154,7 +154,7 @@ public final class ProcessUtil {
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.WARNING, "Instance for " + className, ex);
+			log.warn("Instance for " + className, ex);
 			pi.setThrowable(ex);  // 03152
 			pi.setSummary ("InstanceError", true);
 			return false;
@@ -182,7 +182,7 @@ public final class ProcessUtil {
 		{
 			pi.setThrowable(e);  // 03152
 			pi.setSummary (Msg.getMsg(Env.getCtx(), "ProcessError") + " " + e.getLocalizedMessage(), true);
-			log.log(Level.SEVERE, pi.getClassName(), e);
+			log.error(pi.getClassName(), e);
 			return false;
 		}
 		finally
@@ -208,13 +208,13 @@ public final class ProcessUtil {
 			String cmd = pi.getClassName();
 			MRule rule = MRule.get(ctx, cmd.substring(MRule.SCRIPT_PREFIX.length()));
 			if (rule == null) {
-				log.log(Level.WARNING, cmd + " not found");
+				log.warn(cmd + " not found");
 				pi.setSummary ("ScriptNotFound", true);
 				return false;
 			}
 			if ( !  (rule.getEventType().equals(MRule.EVENTTYPE_Process) 
 				  && rule.getRuleType().equals(MRule.RULETYPE_JSR223ScriptingAPIs))) {
-				log.log(Level.WARNING, cmd + " must be of type JSR 223 and event Process");
+				log.warn(cmd + " must be of type JSR 223 and event Process");
 				pi.setSummary ("ScriptNotFound", true);
 				return false;
 			}
@@ -281,7 +281,7 @@ public final class ProcessUtil {
 		{
 			pi.setThrowable(e);  // 03152
 			pi.setSummary("ScriptError", true);
-			log.log(Level.SEVERE, pi.getClassName(), e);
+			log.error(pi.getClassName(), e);
 			success = false;
 		}
 		if (success) {
@@ -292,7 +292,7 @@ public final class ProcessUtil {
 					trx.commit(true);
 				} catch (Exception e)
 				{
-					log.log(Level.SEVERE, "Commit failed.", e);
+					log.error("Commit failed.", e);
 					pi.addSummary("Commit Failed.");
 					pi.setError(true);
 					success = false;
@@ -319,7 +319,7 @@ public final class ProcessUtil {
 		else {
 			wfProcess = wf.startWait(pi);	//	may return null
 		}
-		log.fine(pi.toString());
+		log.debug(pi.toString());
 		return wfProcess;
 	}
 
@@ -364,7 +364,7 @@ public final class ProcessUtil {
 		}
 		catch (ClassNotFoundException ex)
 		{
-			log.log(Level.WARNING, className, ex);
+			log.warn(className, ex);
 			pi.setThrowable(ex);  // 03152
 			pi.setSummary ("ClassNotFound", true);
 			return false;
@@ -378,7 +378,7 @@ public final class ProcessUtil {
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.WARNING, "Instance for " + className, ex);
+			log.warn("Instance for " + className, ex);
 			pi.setThrowable(ex);  // 03152
 			pi.setSummary ("InstanceError", true);
 			return false;
@@ -412,7 +412,7 @@ public final class ProcessUtil {
 			}
 			pi.setThrowable(e);  // 03152
 			pi.setSummary("ProcessError", true);
-			log.log(Level.SEVERE, pi.getClassName(), e);
+			log.error(pi.getClassName(), e);
 			return false;
 		}
 		return true;

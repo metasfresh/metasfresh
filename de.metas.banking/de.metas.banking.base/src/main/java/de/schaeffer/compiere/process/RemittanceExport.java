@@ -29,7 +29,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -85,7 +84,7 @@ public class RemittanceExport extends SvrProcess {
 			
 		success = directDebit.save(trxName);
 
-		log.fine("MDirectDebit created (ID: " + directDebit.get_ID() + ")");
+		log.debug("MDirectDebit created (ID: " + directDebit.get_ID() + ")");
 
 		MInvoice invoice = new MInvoice(ctx, c_invoice_id, null);
 		I_C_BP_BankAccount bankAccountOwn = InterfaceWrapperHelper.create(getCtx(), c_bp_bankaccount_own_id, I_C_BP_BankAccount.class, null);
@@ -125,12 +124,12 @@ public class RemittanceExport extends SvrProcess {
 	@Override
 	protected String doIt() throws Exception {
 
-		log.fine("Start DirectDebitExportProcess");
+		log.debug("Start DirectDebitExportProcess");
 
 		trx = Trx.get(Trx.createTrxName("DTACreateProcess_"), true);
 		trx.start();
 		trxName = trx.getTrxName();
-		log.fine("New Transaction started: " + trxName);
+		log.debug("New Transaction started: " + trxName);
 
 		List<Transaction> transactionList = getTransactions();
 
@@ -166,7 +165,7 @@ public class RemittanceExport extends SvrProcess {
 				else if (para[i].getParameter() instanceof BigDecimal)
 					c_invoice_id = ((BigDecimal) para[i].getParameter()).intValue(); 
 				else {
-					log.log(Level.SEVERE, "Unknown type: " + name);
+					log.error("Unknown type: " + name);
 				}
 			} else if (name.equals("C_BP_BankAccount_Own_ID")) {
 				if (para[i].getParameter() instanceof Integer)
@@ -174,7 +173,7 @@ public class RemittanceExport extends SvrProcess {
 				else if (para[i].getParameter() instanceof BigDecimal)
 					c_bp_bankaccount_own_id = ((BigDecimal) para[i].getParameter()).intValue(); 
 				else {
-					log.log(Level.SEVERE, "Unknown type: " + name);
+					log.error("Unknown type: " + name);
 				}
 			} else if (name.equals("C_BP_BankAccount_ID")) {
 				if (para[i].getParameter() instanceof Integer)
@@ -182,10 +181,10 @@ public class RemittanceExport extends SvrProcess {
 				else if (para[i].getParameter() instanceof BigDecimal)
 					c_bp_bankaccount_to_id = ((BigDecimal) para[i].getParameter()).intValue(); 
 				else {
-					log.log(Level.SEVERE, "Unknown type: " + name);
+					log.error("Unknown type: " + name);
 				}
 			}else {
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 		ctx = Env.getCtx();

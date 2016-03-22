@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -148,7 +149,7 @@ public class CalloutPayment extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage ();
 		}
 		finally
@@ -218,7 +219,7 @@ public class CalloutPayment extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage ();
 		}
 		finally
@@ -286,7 +287,7 @@ public class CalloutPayment extends CalloutEngine
 //		int C_Order_ID = Env.getContextAsInt (ctx, WindowNo, "C_Order_ID");
 //		int C_DocType_ID = Env.getContextAsInt (ctx, WindowNo, "C_DocType_ID");
 		
-		log.fine ("Payment_DocType - C_Invoice_ID=" + payment.getC_Invoice_ID() + ", C_DocType_ID=" + payment.getC_DocType_ID());
+		log.debug("Payment_DocType - C_Invoice_ID=" + payment.getC_Invoice_ID() + ", C_DocType_ID=" + payment.getC_DocType_ID());
 		MDocType dt = null;
 		if (payment.getC_DocType_ID() > 0)
 		{

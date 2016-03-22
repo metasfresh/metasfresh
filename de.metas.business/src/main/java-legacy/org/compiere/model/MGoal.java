@@ -24,13 +24,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -91,7 +93,7 @@ public class MGoal extends X_PA_Goal
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -129,7 +131,7 @@ public class MGoal extends X_PA_Goal
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -184,7 +186,7 @@ public class MGoal extends X_PA_Goal
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -273,7 +275,7 @@ public class MGoal extends X_PA_Goal
 	}	//	getMultiplier
 	
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MGoal.class);
+	private static Logger s_log = LogManager.getLogger(MGoal.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -359,7 +361,7 @@ public class MGoal extends X_PA_Goal
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -391,7 +393,7 @@ public class MGoal extends X_PA_Goal
 	 */
 	public boolean updateGoal(boolean force)
 	{
-		log.config("Force=" + force);
+		log.info("Force=" + force);
 		MMeasure measure = MMeasure.get(getCtx(), getPA_Measure_ID());
 		if (force 
 			|| getDateLastRun() == null

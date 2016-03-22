@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -103,7 +101,7 @@ public class TableElementHandler extends AbstractElementHandler {
 				}
 				else
 				{
-					log.warning("@NotFound@ @AD_Window_ID@:"+windowName);
+					log.warn("@NotFound@ @AD_Window_ID@:"+windowName);
 				}
 			}
 			//
@@ -123,7 +121,7 @@ public class TableElementHandler extends AbstractElementHandler {
 				}
 				else
 				{
-					log.warning("@NotFound@ @PO_Window_ID@:"+poWindowName);
+					log.warn("@NotFound@ @PO_Window_ID@:"+poWindowName);
 				}
 			}
 			//
@@ -239,7 +237,7 @@ public class TableElementHandler extends AbstractElementHandler {
 						pstmt1 = null;
 					}
 					catch (Exception e)	{
-						log.log(Level.SEVERE,"getProcess", e);
+						log.error("getProcess", e);
 					}
 					finally	{
 						try	{
@@ -257,7 +255,7 @@ public class TableElementHandler extends AbstractElementHandler {
 			}
 			
 			catch (Exception e){
-				log.log(Level.SEVERE,"getProcess", e);
+				log.error("getProcess", e);
 			}
 			finally{
 				try	{

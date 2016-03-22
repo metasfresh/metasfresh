@@ -18,7 +18,8 @@
 package org.compiere.process;
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -64,7 +65,7 @@ public class FactAcctSummary extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + parameterName);
+				log.error("Unknown Parameter: " + parameterName);
 			}
 		}
 	}

@@ -30,17 +30,18 @@ import java.util.Properties;
 import org.adempiere.model.I_AD_PrinterRouting;
 import org.adempiere.util.Check;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 
 public class PrinterRoutingDAO implements IPrinterRoutingDAO
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public <T> List<T> fetchPrinterRoutings(
@@ -51,9 +52,9 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 			final String printerType,
 			final Class<T> clazz)
 	{
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			log.fine("AD_Client_ID=" + AD_Client_ID + ", AD_Org_ID=" + AD_Org_ID
+			log.debug("AD_Client_ID=" + AD_Client_ID + ", AD_Org_ID=" + AD_Org_ID
 					+ ", AD_Role_ID=" + AD_Role_ID + ", AD_User_ID=" + AD_User_ID
 					+ ", C_DocType_ID=" + C_DocType_ID + ", AD_Process_ID=" + AD_Process_ID
 					+ ", printerType=" + printerType);

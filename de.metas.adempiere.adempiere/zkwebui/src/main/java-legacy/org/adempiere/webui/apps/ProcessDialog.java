@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,10 +25,13 @@ import org.compiere.apps.ProcessCtl;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuEcho;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -120,7 +122,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 			// metas: 03577: Just logging the error is not sufficient.
 			// Dispose the window, because is not usable/available anyway and throw the exception up 
 			dispose();
-			log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			log.error(ex.getLocalizedMessage(), ex);
 			throw new AdempiereException(ex.getLocalizedMessage(), ex);
 		}
 	}	//	ProcessDialog
@@ -192,7 +194,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 	private boolean valid = true;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ProcessDialog.class);
+	private static Logger log = LogManager.getLogger(ProcessDialog.class);
 	//
 	private ProcessParameterPanel parameterPanel = null;
 	
@@ -229,7 +231,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 	 */
 	public boolean init()
 	{
-		log.config("");
+		log.info("");
 		//
 		boolean trl = !Env.isBaseLanguage(m_ctx, "AD_Process");
 		String sql = "SELECT Name, Description, Help, IsReport, ShowHelp "
@@ -272,7 +274,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 		catch (SQLException e)
 		{
 			// metas: 03577: Just logging the error is not sufficient.
-			//log.log(Level.SEVERE, sql, e);
+			//log.error(sql, e);
 			//return false;
 			throw new DBException(e, sql);
 		}
@@ -424,7 +426,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 		//  something to do?
 		if (m_ids != null && m_ids.length > 0)
 		{
-			log.config("");
+			log.info("");
 			//	Print invoices
 			if (m_AD_Process_ID == 119)
 				printInvoices();
@@ -491,7 +493,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 				Window win = new SimplePDFViewer(this.getTitle(), new FileInputStream(outFile));
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		} else if (pdfList.size() > 0) {
 			hideBusyDialog();
@@ -500,7 +502,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -559,7 +561,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 				Window win = new SimplePDFViewer(this.getTitle(), new FileInputStream(outFile));
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		} else if (pdfList.size() > 0) {
 			try {
@@ -567,7 +569,7 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}

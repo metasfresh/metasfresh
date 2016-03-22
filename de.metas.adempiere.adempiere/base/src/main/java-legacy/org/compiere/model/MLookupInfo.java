@@ -23,12 +23,12 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -39,6 +39,8 @@ import org.compiere.util.DB;
  */
 public class MLookupInfo implements Serializable, Cloneable
 {
+	private static final transient Logger logger = LogManager.getLogger(MLookupInfo.class);
+
 	/**
 	 * Get first AD_Reference_ID of a matching Reference Name.
 	 * Can have SQL LIKE placeholders.
@@ -71,14 +73,14 @@ public class MLookupInfo implements Serializable, Cloneable
 				refName = rs.getString(2);
 				validationType = rs.getString(3);
 				isActive = rs.getString(4).equals("Y");
-				CLogger.get().config("AD_Reference Name=" + refName + ", ID=" + id + ", Type=" + validationType + ", Active=" + isActive);
+				logger.info("AD_Reference Name=" + refName + ", ID=" + id + ", Type=" + validationType + ", Active=" + isActive);
 			}
 			rs.close();
 			pstmt.close();
 		}
 		catch (SQLException e)
 		{
-			CLogger.get().log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 		}
 		return retValue;
 	}   // getAD_Reference_ID
@@ -197,7 +199,7 @@ public class MLookupInfo implements Serializable, Cloneable
 		}
 		catch (Exception e)
 		{
-			CLogger.get().log(Level.SEVERE, "", e);
+			logger.error("", e);
 		}
 		return null;
 	}	// clone

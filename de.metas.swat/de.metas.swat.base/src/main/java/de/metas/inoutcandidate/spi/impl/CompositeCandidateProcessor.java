@@ -25,18 +25,17 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 
 public final class CompositeCandidateProcessor implements ICandidateProcessor
 {
-	private final static CLogger logger = CLogger.getCLogger(CompositeCandidateProcessor.class);
+	private final static Logger logger = LogManager.getLogger(CompositeCandidateProcessor.class);
 
 	private final CopyOnWriteArrayList<ICandidateProcessor> processors = new CopyOnWriteArrayList<ICandidateProcessor>();
 
@@ -57,10 +56,10 @@ public final class CompositeCandidateProcessor implements ICandidateProcessor
 
 		for (final ICandidateProcessor processor : processors)
 		{
-			logger.log(Level.INFO, "Invoking {0}", processor);
+			logger.info("Invoking {}", processor);
 			final int currentCount = processor.processCandidates(ctx, candidates, cachedObjects, trxName);
 
-			logger.log(Level.INFO, "{0} records were discarded by {1}", new Object[] { currentCount, processor });
+			logger.info("{} records were discarded by {}", new Object[] { currentCount, processor });
 			removeCount += currentCount;
 		}
 		return removeCount;

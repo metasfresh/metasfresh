@@ -67,7 +67,8 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -109,7 +110,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 public class FlatrateBL implements IFlatrateBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(FlatrateBL.class);
+	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
 	private static final String MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = "FlatrateBL_InvoicingEntry_Not_CO";
 

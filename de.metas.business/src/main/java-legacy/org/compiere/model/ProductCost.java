@@ -24,7 +24,8 @@ import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -38,7 +39,7 @@ import de.metas.product.acct.api.IProductAcctDAO;
 public class ProductCost
 {
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(ProductCost.class);
+	private static final transient Logger log = LogManager.getLogger(ProductCost.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
@@ -122,7 +123,7 @@ public class ProductCost
 		m_qty = MUOMConversion.convert(C_UOM_ID, m_C_UOM_ID, qty, true);    // StdPrecision
 		if (qty != null && m_qty == null)   // conversion error
 		{
-			log.severe("Conversion error - set to " + qty);
+			log.error("Conversion error - set to " + qty);
 			m_qty = qty;
 		}
 		else
@@ -234,18 +235,18 @@ public class ProductCost
 	{
 		if (m_qty == null)
 		{
-			log.fine("No Qty");
+			log.debug("No Qty");
 			return null;
 		}
 		/**
 		 * Old Costing MClient client = MClient.get(as.getCtx(), as.getAD_Client_ID()); if (!client.isUseBetaFunctions()) { BigDecimal itemCost = getProductItemCostOld(as, costingMethod); BigDecimal
-		 * cost = m_qty.multiply(itemCost); cost = cost.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP); log.fine("Qty(" + m_qty + ") * Cost(" + itemCost + ") = " + cost); return cost; }
+		 * cost = m_qty.multiply(itemCost); cost = cost.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP); log.debug("Qty(" + m_qty + ") * Cost(" + itemCost + ") = " + cost); return cost; }
 		 **/
 
 		// No Product
 		if (m_product == null)
 		{
-			log.fine("No Product");
+			log.debug("No Product");
 			return null;
 		}
 		//
@@ -253,7 +254,7 @@ public class ProductCost
 				as, AD_Org_ID, costingMethod, m_qty, C_OrderLine_ID, zeroCostsOK, m_trxName);
 		if (cost == null)
 		{
-			log.fine("No Costs");
+			log.debug("No Costs");
 			return null;
 		}
 		return cost;

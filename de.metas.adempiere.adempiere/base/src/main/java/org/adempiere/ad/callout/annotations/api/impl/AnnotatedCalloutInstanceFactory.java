@@ -31,7 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -41,7 +42,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 
 /**
  * Inspects a given annotated callout object and creates {@link AnnotatedCalloutInstance}s.
@@ -52,7 +52,7 @@ import org.compiere.util.CLogger;
 public class AnnotatedCalloutInstanceFactory
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private Object annotatedCalloutObject;
 	private String tableName;
@@ -174,7 +174,7 @@ public class AnnotatedCalloutInstanceFactory
 			}
 			else
 			{
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 
@@ -281,7 +281,7 @@ public class AnnotatedCalloutInstanceFactory
 			columnNames.add(columnName);
 		}
 
-		logger.log(Level.CONFIG, "Loaded {0}", pointcut);
+		logger.info("Loaded {}", pointcut);
 	}
 
 	private final CalloutMethodPointcutKey mkKey(final CalloutMethodPointcut pointcut, final String columnName)

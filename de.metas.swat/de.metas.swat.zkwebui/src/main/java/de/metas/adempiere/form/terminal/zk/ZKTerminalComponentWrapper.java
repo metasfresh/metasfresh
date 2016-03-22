@@ -26,7 +26,8 @@ package de.metas.adempiere.form.terminal.zk;
  */
 
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -39,7 +40,7 @@ public class ZKTerminalComponentWrapper implements IComponent, IComponentZK
 {
 	private final ITerminalContext tc;
 	private final org.zkoss.zk.ui.Component component;
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	public ZKTerminalComponentWrapper(final ITerminalContext tc, final org.zkoss.zk.ui.Component component)
 	{

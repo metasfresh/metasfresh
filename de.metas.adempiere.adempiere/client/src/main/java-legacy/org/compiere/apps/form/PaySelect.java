@@ -21,7 +21,8 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.minigrid.ColumnInfo;
@@ -32,7 +33,8 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MPaySelection;
 import org.compiere.model.MPaySelectionLine;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -69,7 +71,7 @@ public class PaySelect
 	/** Payment Selection		*/
 	public MPaySelection	m_ps = null;
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(PaySelect.class);
+	public static Logger log = LogManager.getLogger(PaySelect.class);
 	
 	public PaySelect()
 	{
@@ -111,7 +113,7 @@ public class PaySelect
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return data;
@@ -148,7 +150,7 @@ public class PaySelect
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return data;
@@ -181,7 +183,7 @@ public class PaySelect
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return data;
@@ -272,7 +274,7 @@ public class PaySelect
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		return data;
 	}
@@ -283,7 +285,7 @@ public class PaySelect
 	public void loadTableInfo(BankInfo bi, Timestamp payDate, ValueNamePair paymentRule, boolean onlyDue, 
 			KeyNamePair bpartner, KeyNamePair docType, IMiniTable miniTable)
 	{
-		log.config("");
+		log.info("");
 		//  not yet initialized
 		if (m_sql == null)
 			return;
@@ -311,7 +313,7 @@ public class PaySelect
 			sql += " AND i.c_doctype_id =?";
 		sql += " ORDER BY 2,3";
 
-		log.finest(sql + " - C_Currency_ID=" + bi.C_Currency_ID + ", C_BPartner_ID=" + C_BPartner_ID + ", C_doctype_id=" + c_doctype_id  );
+		log.trace(sql + " - C_Currency_ID=" + bi.C_Currency_ID + ", C_BPartner_ID=" + C_BPartner_ID + ", C_doctype_id=" + c_doctype_id  );
 		//  Get Open Invoices
 		try
 		{
@@ -339,7 +341,7 @@ public class PaySelect
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}   //  loadTableInfo
 
@@ -402,7 +404,7 @@ public class PaySelect
 			m_ps = null;
 			return Msg.translate(Env.getCtx(), "C_PaySelection_ID");
 		}
-		log.config(m_ps.toString());
+		log.info(m_ps.toString());
 
 		//  Create Lines
 		int rows = miniTable.getRowCount();
@@ -425,7 +427,7 @@ public class PaySelect
 				{
 					return Msg.translate(Env.getCtx(), "C_PaySelectionLine_ID");
 				}
-				log.fine("C_Invoice_ID=" + C_Invoice_ID + ", PayAmt=" + PayAmt);
+				log.debug("C_Invoice_ID=" + C_Invoice_ID + ", PayAmt=" + PayAmt);
 			}
 		}   //  for all rows in table
 		

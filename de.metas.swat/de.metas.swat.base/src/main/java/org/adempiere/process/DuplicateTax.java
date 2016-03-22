@@ -70,7 +70,7 @@ public class DuplicateTax extends SvrProcess {
 	@Override
 	protected void prepare() {
 		taxId = getRecord_ID();
-		log.fine("taxId: " + taxId);
+		log.debug("taxId: " + taxId);
 		selectCountries();
 	}
 
@@ -133,14 +133,14 @@ public class DuplicateTax extends SvrProcess {
 		selectDialog.setVisible(true);
 		Integer okCancel = (Integer) pane.getValue();
 		if (okCancel != null && okCancel == JOptionPane.OK_OPTION) {
-			log.fine("ok");
+			log.debug("ok");
 			Object[] obj = list.getSelectedValues();
 			countries = new MCountry[obj.length];
 			for (int i = 0; i < obj.length; i++) {
 				countries[i] = (MCountry) obj[i];
 			}
 		} else {
-			log.fine("cancel");
+			log.debug("cancel");
 		}
 	}
 
@@ -200,9 +200,9 @@ public class DuplicateTax extends SvrProcess {
 				duplicateTax.setC_Country_ID(origTax.getC_Country_ID());
 				duplicateTax.setTo_Country_ID(countries[i].get_ID());
 				if (!duplicateTax.save(get_TrxName())) {
-					log.severe("unable to save tax: " + duplicateTax);
+					log.error("unable to save tax: " + duplicateTax);
 				} else {
-					log.fine("tax created: " + duplicateTax);
+					log.debug("tax created: " + duplicateTax);
 				}
 				// duplicate accounting infos
 				final int duplicateTaxId = duplicateTax.get_ID();
@@ -211,7 +211,7 @@ public class DuplicateTax extends SvrProcess {
 				pstmt_delete.setInt(1, duplicateTaxId);
 				pstmt_delete.setInt(2, Env.getAD_Client_ID(ctx));
 				int deleted = pstmt_delete.executeUpdate();
-				log.fine("deleted: " + deleted);
+				log.debug("deleted: " + deleted);
 				//duplicate tax accounting
 				pstmt.setInt(1, duplicateTaxId);
 				pstmt.setInt(2, Env.getAD_User_ID(ctx));
@@ -219,7 +219,7 @@ public class DuplicateTax extends SvrProcess {
 				pstmt.setInt(4, taxId);
 				int result = pstmt.executeUpdate();
 				if (result <=0) {
-					log.severe("unable to create tax accounting for tax: " + duplicateTax);
+					log.error("unable to create tax accounting for tax: " + duplicateTax);
 				}
 			}
 			
@@ -227,7 +227,7 @@ public class DuplicateTax extends SvrProcess {
 			DB.close(pstmt);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			log.severe("SQLException: " + e.getLocalizedMessage());
+			log.error("SQLException: " + e.getLocalizedMessage());
 			return "SQLException: " + e.getLocalizedMessage();
 		}
 		return "tax duplicated";

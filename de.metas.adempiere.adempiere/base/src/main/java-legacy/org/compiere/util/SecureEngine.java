@@ -17,7 +17,8 @@
 package org.compiere.util;
 
 import java.util.Properties;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 	Security Engine
@@ -53,7 +54,7 @@ public class SecureEngine
 			String msg = "Requested Security class = " + className
 				+ " is not the same as the active class = " + getClassName()
 				+ "\nMake sure to set the security class in the start script";
-			log.severe(msg);
+			log.error(msg);
 			System.err.println(msg);
 			System.exit(10);
 		}
@@ -181,7 +182,7 @@ public class SecureEngine
 		{
 			String msg = "Could not initialize: " + realClass + " - " + cause.toString()
 				+ "\nCheck start script parameter ADEMPIERE_SECURE"; 
-			log.severe(msg);
+			log.error(msg);
 			System.err.println(msg);
 			System.exit(10);
 		}
@@ -192,7 +193,7 @@ public class SecureEngine
 			throw new IllegalStateException(realClass 
 				+ ": " + TEST
 				+ "->" + testE + "->" + testC);
-		log.config (realClass + " initialized - " + implementation);
+		log.info(realClass + " initialized - " + implementation);
 	}	//	SecureEngine
 
 	
@@ -204,7 +205,7 @@ public class SecureEngine
 	/** The real Engine				*/
 	private	SecureInterface		implementation = null;
 	/**	Logger						*/
-	private static Logger		log	= Logger.getLogger (SecureEngine.class.getName());
+	private static Logger		log	= LogManager.getLogger(SecureEngine.class.getName());
 	
 	
 	/**
@@ -270,16 +271,16 @@ public class SecureEngine
 		{
 			String digestString = getDigest (testString[i]);
 			if (digestResult[i].equals (digestString))
-				log.info ("OK - digest");
+				log.info("OK - digest");
 			else
 				log
-					.severe ("Digest=" + digestString + " <> "
+					.error("Digest=" + digestString + " <> "
 						+ digestResult[i]);
 		}
-		log.info ("IsDigest true=" + isDigest (digestResult[0]));
-		log.info ("IsDigest false="
+		log.info("IsDigest true=" + isDigest (digestResult[0]));
+		log.info("IsDigest false="
 			+ isDigest ("702edca0b2181c15d457eacac39DE39J"));
-		log.info ("IsDigest false=" + isDigest ("702e"));
+		log.info("IsDigest false=" + isDigest ("702e"));
 		//	-----------------------------------------------------------------------
 		//	log.info(convertToHexString(new byte[]{Byte.MIN_VALUE, -1, 1, Byte.MAX_VALUE} ));
 		//
@@ -287,29 +288,29 @@ public class SecureEngine
 		byte[] bb = convertHexString (in);
 		String out = convertToHexString (bb);
 		if (in.equalsIgnoreCase (out))
-			log.info ("OK - conversion");
+			log.info("OK - conversion");
 		else
-			log.severe ("Conversion Error " + in + " <> " + out);
+			log.error("Conversion Error " + in + " <> " + out);
 		//	-----------------------------------------------------------------------
 		String test = "This is a test!!";
 		String result = "28bd14203bcefba1c5eaef976e44f1746dc2facaa9e0623c";
 		//
 		String test_1 = decrypt (result);
 		if (test.equals (test_1))
-			log.info ("OK - dec_1");
+			log.info("OK - dec_1");
 		else
-			log.info ("TestDec=" + test_1 + " <> " + test);
+			log.info("TestDec=" + test_1 + " <> " + test);
 		//	-----------------------------------------------------------------------
 		String testEnc = encrypt (test);
 		if (result.equals (testEnc))
-			log.info ("OK - enc");
+			log.info("OK - enc");
 		else
-			log.severe ("TestEnc=" + testEnc + " <> " + result);
+			log.error("TestEnc=" + testEnc + " <> " + result);
 		String testDec = decrypt (testEnc);
 		if (test.equals (testDec))
-			log.info ("OK - dec");
+			log.info("OK - dec");
 		else
-			log.info ("TestDec=" + testDec + " <> " + test);
+			log.info("TestDec=" + testDec + " <> " + test);
 		**/
 	} //	main
 	

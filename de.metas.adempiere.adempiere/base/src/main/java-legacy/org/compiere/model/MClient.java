@@ -26,8 +26,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -369,7 +367,7 @@ public class MClient extends X_AD_Client
 				}
 				if (!success)
 				{
-					log.log(Level.SEVERE, "Tree NOT created: " + name);
+					log.error("Tree NOT created: " + name);
 					break;
 				}
 			}
@@ -378,7 +376,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "Trees", e1);
+			log.error("Trees", e1);
 			success = false;
 		}
 
@@ -455,7 +453,7 @@ public class MClient extends X_AD_Client
 			}
 			else
 			{
-				log.warning("Could NOT send Test EMail from "
+				log.warn("Could NOT send Test EMail from "
 					+ getSMTPHost() + ": " + getRequestEMail()
 					+ " (" + getRequestUser()
 					+ ") to " + getRequestEMail() + ": " + msg);
@@ -464,7 +462,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - " + ex.getLocalizedMessage());
+			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return ex.getLocalizedMessage();
 		}
 	}	//	testEMail
@@ -516,7 +514,7 @@ public class MClient extends X_AD_Client
 		String toEMail = to.getEMail(); 
 		if (toEMail == null || toEMail.length() == 0)
 		{
-			log.warning("No EMail for recipient: " + to);
+			log.warn("No EMail for recipient: " + to);
 			return false;
 		}
 		EMail email = createEMail(null, to, subject, message, html);
@@ -529,7 +527,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - " + ex.getLocalizedMessage());
+			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return false;
 		}
 	}	//	sendEMail
@@ -575,7 +573,7 @@ public class MClient extends X_AD_Client
 			}
 			else
 			{
-				log.warning("Could NOT Send Email: " + subject 
+				log.warn("Could NOT Send Email: " + subject 
 					+ " to " + to + ": " + msg
 					+ " (" + getName() + ")");
 				return false;
@@ -583,7 +581,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - " + ex.getLocalizedMessage());
+			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return false;
 		}
 	}	//	sendEMail
@@ -629,7 +627,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - from " + emailFrom
+			log.error(getName() + " - from " + emailFrom
 				+ " to " + to + ": " + ex.getLocalizedMessage());
 			return false;
 		}
@@ -678,12 +676,12 @@ public class MClient extends X_AD_Client
 		else
 		{
 			if (from != null)
-				log.warning("Could NOT Send Email: " + email.getSubject()
+				log.warn("Could NOT Send Email: " + email.getSubject()
 					+ " from " + from.getEMail()
 					+ " to " + to.getEMail() + ": " + msg
 					+ " (" + getName() + ")");
 			else
-				log.warning("Could NOT Send Email: " + email.getSubject()
+				log.warn("Could NOT Send Email: " + email.getSubject()
 					+ " to " + to.getEMail() + ": " + msg
 					+ " (" + getName() + ")");
 			return false;
@@ -726,7 +724,7 @@ public class MClient extends X_AD_Client
 		/*
 		if (to == null || to.length() == 0)
 		{
-			log.warning("No To");
+			log.warn("No To");
 			return null;
 		}
 		//
@@ -744,11 +742,11 @@ public class MClient extends X_AD_Client
 						to, subject, message);
 				}
 				else
-					log.log(Level.WARNING, "No AppsServer"); 
+					log.warn("No AppsServer"); 
 			}
 			catch (Exception ex)
 			{
-				log.log(Level.SEVERE, getName() + " - AppsServer error", ex);
+				log.error(getName() + " - AppsServer error", ex);
 			}
 		}
 		
@@ -791,12 +789,12 @@ public class MClient extends X_AD_Client
 	{
 		if (to == null)
 		{
-			log.warning("No To user");
+			log.warn("No To user");
 			return null;
 		}
 		if (to.getEMail() == null || to.getEMail().length() == 0)
 		{
-			log.warning("No To address: " + to);
+			log.warn("No To address: " + to);
 			return null;
 		}
 		return createEMail (from, to.getEMail(), subject, message, html);
@@ -842,7 +840,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (AdempiereException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return null;
 		}
 	}	//	createEMail

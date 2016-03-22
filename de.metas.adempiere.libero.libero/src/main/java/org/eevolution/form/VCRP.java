@@ -52,7 +52,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
@@ -75,7 +74,6 @@ import org.compiere.model.MResourceType;
 import org.compiere.model.MUOM;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -88,6 +86,10 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 
@@ -96,7 +98,7 @@ public class VCRP extends CPanel
 implements FormPanel, ActionListener
 {	
 	// begin vpj
-	private static CLogger log = CLogger.getCLogger(VCRP.class);
+	private static Logger log = LogManager.getLogger(VCRP.class);
 	/**	Window No			*/
 	private int         	m_WindowNo = 0;
 	/**	FormFrame			*/
@@ -127,7 +129,7 @@ implements FormPanel, ActionListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VCRP.init", e);
+			log.error("VCRP.init", e);
 		}
 	}	//	init
 	

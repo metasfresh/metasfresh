@@ -51,7 +51,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -81,12 +80,15 @@ import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.eevolution.model.MPPOrder;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -130,7 +132,7 @@ public class VOrderPlanning extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Info", e);
+			log.error("Info", e);
 
 		}
 	}	// init
@@ -173,7 +175,7 @@ public class VOrderPlanning extends CPanel
 	private Worker m_worker = null;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VOrderPlanning.class);
+	private static Logger log = LogManager.getLogger(VOrderPlanning.class);
 
 	/** Static Layout */
 	private CPanel southPanel = new CPanel();
@@ -471,7 +473,7 @@ public class VOrderPlanning extends CPanel
 	 * }
 	 * catch (SQLException e)
 	 * {
-	 * log.log(Level.SEVERE, "InfoGeneral.initInfoTable 1", e);
+	 * log.error("InfoGeneral.initInfoTable 1", e);
 	 * }
 	 * 
 	 * }
@@ -629,7 +631,7 @@ public class VOrderPlanning extends CPanel
 			m_sqlAdd = " ORDER BY " + orderBy;
 
 		if (m_keyColumnIndex == -1)
-			log.log(Level.SEVERE, "Info.prepareTable - No KeyColumn - " + sql);
+			log.error("Info.prepareTable - No KeyColumn - " + sql);
 
 		// Table Selection
 		p_table.setRowSelectionAllowed(true);
@@ -696,7 +698,7 @@ public class VOrderPlanning extends CPanel
 		@Override
 		public void run()
 		{
-			log.fine("Info.Worker.run");
+			log.debug("Info.Worker.run");
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			StringBuffer sql = new StringBuffer(m_sqlMain);
 			String dynWhere = find();
@@ -710,7 +712,7 @@ public class VOrderPlanning extends CPanel
 			try
 			{
 				PreparedStatement pstmt = DB.prepareStatement(xSql, null);
-				log.fine("SQL=" + xSql);
+				log.debug("SQL=" + xSql);
 				ResultSet rs = pstmt.executeQuery();
 				while (!isInterrupted() & rs.next())
 				{
@@ -752,13 +754,13 @@ public class VOrderPlanning extends CPanel
 						p_table.setValueAt(data, row, col);
 					}
 				}
-				log.config("Interrupted=" + isInterrupted());
+				log.info("Interrupted=" + isInterrupted());
 				rs.close();
 				pstmt.close();
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, xSql, e);
+				log.error(xSql, e);
 			}
 			p_table.autoSize();
 			//

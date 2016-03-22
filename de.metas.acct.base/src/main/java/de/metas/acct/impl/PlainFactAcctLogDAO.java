@@ -1,6 +1,7 @@
 package de.metas.acct.impl;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -26,11 +27,11 @@ import org.compiere.util.CLogger;
 
 public class PlainFactAcctLogDAO extends FactAcctLogDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(PlainFactAcctLogDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(PlainFactAcctLogDAO.class);
 
 	@Override
 	public void updateFactAcctEndingBalanceForTag(String processingTag)
 	{
-		logger.warning("Updating Fact_Acct_EndingBalance not supported. Skipped.");
+		logger.warn("Updating Fact_Acct_EndingBalance not supported. Skipped.");
 	}
 }

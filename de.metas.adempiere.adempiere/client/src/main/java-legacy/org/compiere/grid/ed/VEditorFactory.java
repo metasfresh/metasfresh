@@ -17,7 +17,8 @@
 package org.compiere.grid.ed;
 
 import java.text.DecimalFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Check;
@@ -30,7 +31,8 @@ import org.compiere.model.MLocationLookup;
 import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 
 /**
@@ -46,7 +48,7 @@ import org.compiere.util.DisplayType;
 public final class VEditorFactory
 {
 	/** Logger */
-	private static CLogger logger = CLogger.getCLogger(VEditorFactory.class);
+	private static Logger logger = LogManager.getLogger(VEditorFactory.class);
 
 	private VEditorFactory()
 	{
@@ -187,7 +189,7 @@ public final class VEditorFactory
 				}
 				catch (Exception e)
 				{
-					logger.log(Level.WARNING, "Invalid decimal format '" + formatPattern + "' for field " + mField, e);
+					logger.warn("Invalid decimal format '" + formatPattern + "' for field " + mField, e);
 				}
 			}
 			
@@ -338,7 +340,7 @@ public final class VEditorFactory
 		}
 		else
 		{
-			logger.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
+			logger.warn(columnName + " - Unknown Type: " + displayType);
 		}
 
 		return editor;

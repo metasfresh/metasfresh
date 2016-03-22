@@ -23,8 +23,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -413,7 +411,7 @@ public class ColumnElementHandler extends AbstractElementHandler
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			if (rsc != null)
 			{
 				try

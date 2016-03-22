@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.EditorBox;
 import org.adempiere.webui.event.ValueChangeEvent;
@@ -35,16 +34,19 @@ import org.adempiere.webui.window.InfoSchedule;
 import org.adempiere.webui.window.WAssignmentDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.MResourceAssignment;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
 public class WAssignmentEditor extends WEditor {
 	
-	private final static CLogger log = CLogger.getCLogger(WAssignmentEditor.class);
+	private final static Logger log = LogManager.getLogger(WAssignmentEditor.class);
 	
 	private static final String[] LISTENER_EVENTS = {Events.ON_CLICK};
 		
@@ -142,7 +144,7 @@ public class WAssignmentEditor extends WEditor {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 
 	}

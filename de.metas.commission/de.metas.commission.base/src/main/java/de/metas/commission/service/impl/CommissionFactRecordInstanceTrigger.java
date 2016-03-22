@@ -46,7 +46,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
@@ -82,7 +83,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
  */
 class CommissionFactRecordInstanceTrigger
 {
-	private static final CLogger logger = CLogger.getCLogger(CommissionFactBL.class);
+	private static final Logger logger = LogManager.getLogger(CommissionFactBL.class);
 
 	private final CommissionFactBL factBL;
 
@@ -427,7 +428,7 @@ class CommissionFactRecordInstanceTrigger
 				{
 					oldFact = factFinder.retrievePrecedingFirst(ctx, instance, lastNoncounterFact, null, trxName);
 				}
-				CommissionFactRecordInstanceTrigger.logger.fine("oldFact=" + oldFact);
+				CommissionFactRecordInstanceTrigger.logger.debug("oldFact=" + oldFact);
 				if (oldFact == null)
 				{
 					// Nothing to do. This can happen due to the fact that we don't record further invoice changes

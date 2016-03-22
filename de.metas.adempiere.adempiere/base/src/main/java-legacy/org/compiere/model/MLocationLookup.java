@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.compiere.util.DisplayType;
@@ -158,7 +156,7 @@ public final class MLocationLookup extends Lookup
 	@Override
 	public List<Object> getData (boolean mandatory, boolean onlyValidated, boolean onlyActive, boolean temporary)
 	{
-		log.log(Level.SEVERE, "not implemented");
+		log.error("not implemented");
 		return null;
 	}   //  getArray
 

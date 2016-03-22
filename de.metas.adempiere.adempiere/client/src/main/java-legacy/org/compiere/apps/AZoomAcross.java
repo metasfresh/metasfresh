@@ -30,7 +30,8 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -69,7 +70,7 @@ public class AZoomAcross
 
 	public AZoomAcross(JComponent invoker, PO po, final int windowID)
 	{
-		logger.config("PO=" + po + ", WindowID=" + windowID);
+		logger.info("PO=" + po + ", WindowID=" + windowID);
 
 		mkZoomTargets(po, windowID);
 
@@ -98,7 +99,7 @@ public class AZoomAcross
 
 	private final JPopupMenu m_popup = new JPopupMenu("ZoomMenu");
 
-	private static final CLogger logger = CLogger.getCLogger(AZoomAcross.class);
+	private static final Logger logger = LogManager.getLogger(AZoomAcross.class);
 
 	private final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<ZoomInfoFactory.ZoomInfo>();
 
@@ -113,7 +114,7 @@ public class AZoomAcross
 		{
 			if (zoomInfo.query.getRecordCount() == 0)
 			{
-				logger.fine("No target records for destination " + zoomInfo.destinationDisplay);
+				logger.debug("No target records for destination " + zoomInfo.destinationDisplay);
 				continue;
 			}
 			zoomInfos.add(zoomInfo);

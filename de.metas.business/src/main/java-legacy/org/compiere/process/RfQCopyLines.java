@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MRfQ;
 import org.compiere.model.MRfQLine;
@@ -51,7 +52,7 @@ public class RfQCopyLines extends SvrProcess
 			else if (name.equals("C_RfQ_ID"))
 				p_From_RfQ_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_To_RfQ_ID = getRecord_ID();
 	}	//	prepare

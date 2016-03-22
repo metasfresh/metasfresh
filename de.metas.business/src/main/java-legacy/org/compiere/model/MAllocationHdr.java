@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
@@ -38,7 +39,8 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -91,7 +93,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		}
 		catch (final Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -133,7 +135,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		}
 		catch (final Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -171,7 +173,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	}	// getOfCash
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger(MAllocationHdr.class);
+	private static Logger s_log = LogManager.getLogger(MAllocationHdr.class);
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -289,7 +291,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	// }
 	// catch (Exception e)
 	// {
-	// log.log(Level.SEVERE, sql, e);
+	// log.error(sql, e);
 	// }
 	// finally
 	// {
@@ -320,7 +322,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 				+ "' WHERE C_AllocationHdr_ID=" + getC_AllocationHdr_ID();
 		final int no = DB.executeUpdate(sql, get_TrxName());
 
-		log.fine(processed + " - #" + no);
+		log.debug(processed + " - #" + no);
 	}	// setProcessed
 
 	/**************************************************************************
@@ -335,7 +337,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		// Changed from Not to Active
 		if (!newRecord && is_ValueChanged("IsActive") && isActive())
 		{
-			log.severe("Cannot Re-Activate deactivated Allocations");
+			log.error("Cannot Re-Activate deactivated Allocations");
 			return false;
 		}
 		return true;
@@ -352,7 +354,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		final String trxName = get_TrxName();
 		if (trxName == null || trxName.length() == 0)
 		{
-			log.warning("No transaction");
+			log.warn("No transaction");
 		}
 		if (isPosted())
 		{
@@ -426,7 +428,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	@Override
 	public String prepareIt()
 	{
-		log.log(Level.INFO, "{0}", this);
+		log.info("{}", this);
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
@@ -790,7 +792,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		}
 		catch (final Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF

@@ -27,7 +27,8 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -65,7 +66,8 @@ import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -164,7 +166,7 @@ public final class VTreePanel extends CPanel
 	{
 		super();
 		tree.setModel(new AdempiereTreeModel()); // set an empty tree model just to avoid displaying the sample tree nodes
-		log.config("Bar=" + hasBar + ", Editable=" + editable);
+		log.info("Bar=" + hasBar + ", Editable=" + editable);
 
 		m_hasBar = hasBar;
 		m_editable = editable;
@@ -199,7 +201,7 @@ public final class VTreePanel extends CPanel
 	 */
 	public boolean initTree(final int AD_Tree_ID)
 	{
-		log.config("AD_Tree_ID=" + AD_Tree_ID);
+		log.info("AD_Tree_ID=" + AD_Tree_ID);
 		//
 		m_AD_Tree_ID = AD_Tree_ID;
 
@@ -207,7 +209,7 @@ public final class VTreePanel extends CPanel
 		final MTree vTree = new MTree(Env.getCtx(), AD_Tree_ID, m_editable, true, null);
 		m_root = vTree.getRoot();
 		m_root.setName(Services.get(IMsgBL.class).getMsg(Env.getCtx(), vTree.getName())); // translate name of menu.
-		log.log(Level.CONFIG, "root={0}", m_root);
+		log.info("root={}", m_root);
 
 		treeModel = new AdempiereTreeModel(m_root);
 		treeModel.setMTree(vTree);
@@ -225,7 +227,7 @@ public final class VTreePanel extends CPanel
 	}   // initTree
 
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(VTreePanel.class);
+	private static final transient Logger log = LogManager.getLogger(VTreePanel.class);
 
 	private final JTree tree = new JTree();
 	private AdempiereTreeModel treeModel;
@@ -642,7 +644,7 @@ public final class VTreePanel extends CPanel
 	 */
 	public void nodeChanged(final boolean save, final MTreeNode info)
 	{
-		log.config("Save=" + save + ", Info=" + info);
+		log.info("Save=" + save + ", Info=" + info);
 		// if ID==0=root - don't update it
 		if (info.getNode_ID() == 0)
 		{
@@ -688,7 +690,7 @@ public final class VTreePanel extends CPanel
 		// Error
 		else
 		{
-			log.log(Level.SEVERE, "Save=" + save + ", Info=" + info + ", Node=" + node);
+			log.error("Save=" + save + ", Info=" + info + ", Node=" + node);
 			node = null;
 		}
 

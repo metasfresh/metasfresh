@@ -27,7 +27,8 @@ import javax.swing.ScrollPaneConstants;
 
 import org.compiere.model.MGoal;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -73,7 +74,7 @@ public class PAPanel extends CPanel implements ActionListener
 	private MGoal[] 	m_goals = null;
 	
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (PAPanel.class);
+	private static Logger log = LogManager.getLogger(PAPanel.class);
 	
 	/**
 	 * 	Static/Dynamic Init

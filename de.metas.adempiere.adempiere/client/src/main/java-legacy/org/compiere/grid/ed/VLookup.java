@@ -37,7 +37,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -85,7 +86,8 @@ import org.compiere.model.MProductPrice;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.PopupMenuListenerAdapter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -168,7 +170,7 @@ public class VLookup extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return null;
 	}   //  createBPartner
@@ -189,7 +191,7 @@ public class VLookup extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return null;
 	}   //  createProduct
@@ -210,7 +212,7 @@ public class VLookup extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return null;
 	}   //  createProduct
@@ -417,7 +419,7 @@ public class VLookup extends JComponent
 	//	Field for Value Preference
 	private GridField              m_mField = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VLookup.class);
+	private static Logger log = LogManager.getLogger(VLookup.class);
 
 	private final VLookupCopyPasteSupportEditor copyPasteSupport;
 
@@ -687,7 +689,7 @@ public class VLookup extends JComponent
 	@Override
 	public void setValue (Object value)
 	{
-		log.fine(m_columnName + "=" + value);
+		log.debug(m_columnName + "=" + value);
 		m_settingValue = true;		//	disable actions
 		m_value = value;
 
@@ -740,7 +742,7 @@ public class VLookup extends JComponent
 			//  lookup found nothing too
 			if (notFound)
 			{
-				log.finest(m_columnName + "=" + value + ": Not found - " + m_lastDisplay);
+				log.trace(m_columnName + "=" + value + ": Not found - " + m_lastDisplay);
 				//  we may have a new value
 				lookup.refresh();
 				final boolean valueSet = m_combo.setValueAndReturnIfSet(value);
@@ -779,7 +781,7 @@ public class VLookup extends JComponent
 			{
 				m_value = null;
 				actionCombo (null);             //  data binding
-				log.fine(m_columnName + "=" + value + ": Not found");
+				log.debug(m_columnName + "=" + value + ": Not found");
 			}
 			//  we have lookup
 			else if (m_combo.getSelectedItem() == null)
@@ -787,7 +789,7 @@ public class VLookup extends JComponent
 				NamePair pp = lookup.get(getValidationContext(), value);
 				if (pp != null)
 				{
-					log.fine(m_columnName + " added to combo - " + pp);
+					log.debug(m_columnName + " added to combo - " + pp);
 					//  Add to Combo
 					m_combo.addItem (pp);
 					m_combo.setValue (value);
@@ -816,7 +818,7 @@ public class VLookup extends JComponent
 		if (m_stopediting)
 			return;
 
-	//	log.fine( "VLookup.propertyChange", evt);
+	//	log.debug( "VLookup.propertyChange", evt);
 		if (evt.getPropertyName().equals(GridField.PROPERTY))
 		{
 			m_inserting = GridField.INSERTING.equals(evt.getOldValue());	//	MField.setValue
@@ -924,7 +926,7 @@ public class VLookup extends JComponent
 			return;
 		}
 		
-		log.config(m_columnName + " - " + e.getActionCommand() + ", ComboValue=" + m_combo.getSelectedItem());
+		log.info(m_columnName + " - " + e.getActionCommand() + ", ComboValue=" + m_combo.getSelectedItem());
 
 		//  Combo Selection
 		if (e.getSource() == m_combo)
@@ -1002,7 +1004,7 @@ public class VLookup extends JComponent
 	// metas: changed access from private to protected
 	protected void actionCombo(Object value)
 	{
-		log.fine("Value=" + value);
+		log.debug("Value=" + value);
 		try
 		{
 			// -> GridController.vetoableChange
@@ -1010,7 +1012,7 @@ public class VLookup extends JComponent
 		}
 		catch (PropertyVetoException pve)
 		{
-			log.log(Level.SEVERE, m_columnName, pve);
+			log.error(m_columnName, pve);
 		}
 		//  is the value updated ?
 		boolean updated = false;
@@ -1029,7 +1031,7 @@ public class VLookup extends JComponent
 		if (!updated)
 		{
 			//  happens if VLookup is used outside of APanel/GridController (no property listener)
-			log.fine(m_columnName + " - Value explicitly set - new=" + updatedValue + ", old=" + m_value);
+			log.debug(m_columnName + " - Value explicitly set - new=" + updatedValue + ", old=" + m_value);
 			
 			// phib: the following check causes the update to fail on jre > 1.6.0_13
 			// commenting out as it does not appear to be necessary
@@ -1092,7 +1094,7 @@ public class VLookup extends JComponent
 		//  Zoom / Validation
 		String whereClause = getWhereClause(lookup);
 		//
-		log.fine(keyColumnName + ", Zoom=" + lookup.getZoom() + " (" + whereClause + ")");
+		log.debug(keyColumnName + ", Zoom=" + lookup.getZoom() + " (" + whereClause + ")");
 
 		//
 		// Ask the Info Window
@@ -1122,7 +1124,7 @@ public class VLookup extends JComponent
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Failed to load custom InfoFactory - " + e.getLocalizedMessage(), e);
+				log.error("Failed to load custom InfoFactory - " + e.getLocalizedMessage(), e);
 			}
 		}
 		else if (keyColumnName.equals("M_Product_ID"))
@@ -1199,7 +1201,7 @@ public class VLookup extends JComponent
 		//  Result
 		if (result != null && result.length > 0)
 		{
-			log.config(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
+			log.info(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
 			//  make sure that value is in cache
 			lookup.getDirect(IValidationContext.NULL, result[0], false, true); // saveInCache=false, cacheLocal=true
 			if (resetValue)
@@ -1213,12 +1215,12 @@ public class VLookup extends JComponent
 		}
 		else if (cancelled)
 		{
-			log.config(m_columnName + " - Result = null (cancelled)");
+			log.info(m_columnName + " - Result = null (cancelled)");
 			actionCombo(null);
 		}
 		else
 		{
-			log.config(m_columnName + " - Result = null (not cancelled)");
+			log.info(m_columnName + " - Result = null (not cancelled)");
 			setValue(m_value);      //  to re-display value
 		}
 	}	//	actionButton
@@ -1244,16 +1246,16 @@ public class VLookup extends JComponent
 			whereClause = validation;
 		else if (validation.length() > 0)
 			whereClause += " AND (" + validation + ")";
-	//	log.finest("ZoomQuery=" + (m_lookup.getZoomQuery()==null ? "" : m_lookup.getZoomQuery().getWhereClause())
+	//	log.trace("ZoomQuery=" + (m_lookup.getZoomQuery()==null ? "" : m_lookup.getZoomQuery().getWhereClause())
 	//		+ ", Validation=" + m_lookup.getValidation());
 		if (whereClause.indexOf('@') != -1)
 		{
 			String validated = Env.parseContext(Env.getCtx(), lookup.getWindowNo(), whereClause, false);
 			if (validated.length() == 0)
-				log.severe(lookup + " - Cannot Parse=" + whereClause);
+				log.error(lookup + " - Cannot Parse=" + whereClause);
 			else
 			{
-				log.fine(lookup + " - Parsed: " + validated);
+				log.debug(lookup + " - Parsed: " + validated);
 				return validated;
 			}
 		}
@@ -1273,7 +1275,7 @@ public class VLookup extends JComponent
 		// Nothing entered, just pressing enter again => ignore - teo_sarca BF [ 1834399 ]
 		if (text != null && text.length() > 0 && text.equals(m_lastDisplay))
 		{
-			log.finest("Nothing entered [SKIP]");
+			log.trace("Nothing entered [SKIP]");
 			return;
 		}
 		
@@ -1305,7 +1307,7 @@ public class VLookup extends JComponent
 
 		// metas: cg:  task: 02491 : use the function UPPER of the database
 //		text = text.toUpperCase(); 
-//		log.config(m_columnName + " - " + text);
+//		log.info(m_columnName + " - " + text);
 		//	Exact first
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1340,7 +1342,7 @@ public class VLookup extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, finalSQL, e);
+			log.error(finalSQL, e);
 			id = -2;
 		}
 		finally
@@ -1353,14 +1355,14 @@ public class VLookup extends JComponent
 		if (id <= 0)
 		{
 			if (id == -3)
-				log.fine(m_columnName + " - Not Found - " + finalSQL);
+				log.debug(m_columnName + " - Not Found - " + finalSQL);
 			else
-				log.fine(m_columnName + " - Not Unique - " + finalSQL);
+				log.debug(m_columnName + " - Not Unique - " + finalSQL);
 			m_value = null;	// force re-display
 			actionButton(m_text.getText());
 			return;
 		}
-		log.fine(m_columnName + " - Unique ID=" + id);
+		log.debug(m_columnName + " - Unique ID=" + id);
 		m_value = null;     //  forces re-display if value is unchanged but text updated and still unique
 		resetTabInfo();
 		actionCombo (new Integer(id));          //  data binding
@@ -1495,7 +1497,7 @@ public class VLookup extends JComponent
 			}
 			sql.append(" AND IsActive='Y'");
 			//	***
-			log.finest(m_columnName + " (predefined) " + sql.toString());
+			log.trace(m_columnName + " (predefined) " + sql.toString());
 			// metas: cg: start: task: 02491
 			String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(),
 					m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
@@ -1636,7 +1638,7 @@ public class VLookup extends JComponent
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, query, ex);
+			log.error(query, ex);
 		}
 		finally
 		{
@@ -1647,7 +1649,7 @@ public class VLookup extends JComponent
 		//
 		if (sqlWhereClause.length() == 0)
 		{
-			log.log(Level.SEVERE, columnName + " (TableDir) - no standard/identifier columns");
+			log.error(columnName + " (TableDir) - no standard/identifier columns");
 			return "";
 		}
 
@@ -1668,7 +1670,7 @@ public class VLookup extends JComponent
 			sqlDirect.append(" AND ").append(sqlWhereClauseLookup);
 		}
 		// ***
-		log.finest(columnName + " (TableDir) " + sqlWhereClause.toString());
+		log.trace(columnName + " (TableDir) " + sqlWhereClause.toString());
 
 		String sqlDirectFinal = Env.getUserRolePermissions().addAccessSQL(sqlDirect.toString(), tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
 		sqlDirectFinal = sqlDirectFinal + " ORDER BY " + sqlFullMatch + " DESC";
@@ -1764,13 +1766,13 @@ public class VLookup extends JComponent
 		}
 		
 		final Object selectedObj = lookup.getSelectedItem();
-		log.config(m_columnName + " - Start    Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
+		log.info(m_columnName + " - Start    Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 
 		lookup.fillComboBox(isMandatory(), true, true, false);     //  only validated & active
 
-		log.config(m_columnName + " - Update   Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
+		log.info(m_columnName + " - Update   Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 		lookup.setSelectedItem(selectedObj);
-		log.config(m_columnName + " - Selected Count=" + m_combo.getItemCount() + ", Selected=" + lookup.getSelectedItem());
+		log.info(m_columnName + " - Selected Count=" + m_combo.getItemCount() + ", Selected=" + lookup.getSelectedItem());
 		
 		return true;
 	}
@@ -1866,7 +1868,7 @@ public class VLookup extends JComponent
 		if (e.getSource() == m_text)
 		{
 			String text = m_text.getText();
-			log.config(m_columnName + " (Text) " + m_columnName + " = " + m_value + " - " + text);
+			log.info(m_columnName + " (Text) " + m_columnName + " = " + m_value + " - " + text);
 			m_haveFocus = false;
 			//	Skip if empty
 			if ((m_value == null
@@ -1894,7 +1896,7 @@ public class VLookup extends JComponent
 		//
 		m_settingFocus = true;  //  prevents actionPerformed
 		//
-		log.config(m_columnName + " = " + m_combo.getSelectedItem());
+		log.info(m_columnName + " = " + m_combo.getSelectedItem());
 		Object obj = m_combo.getSelectedItem();
 		/*
 		//	set original model
@@ -1908,7 +1910,7 @@ public class VLookup extends JComponent
 			//	original model may not have item
 			if (!m_combo.getSelectedItem().equals(obj))
 			{
-				log.fine(m_columnName + " - added to combo - " + obj);
+				log.debug(m_columnName + " - added to combo - " + obj);
 				m_combo.addItem(obj);
 				m_combo.setSelectedItem(obj);
 			}

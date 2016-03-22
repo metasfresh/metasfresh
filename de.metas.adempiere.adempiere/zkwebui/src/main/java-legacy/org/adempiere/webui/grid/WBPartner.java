@@ -17,8 +17,6 @@
 
 package org.adempiere.webui.grid;
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -38,11 +36,14 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
@@ -68,7 +69,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 	 */
 	private static final long serialVersionUID = 5842369060073088746L;
 
-	private static CLogger log = CLogger.getCLogger(WBPartner.class);
+	private static Logger log = LogManager.getLogger(WBPartner.class);
 	
 	private int m_WindowNo;
 	
@@ -127,7 +128,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, ex.getMessage());
+			log.error(ex.getMessage());
 		}
 		
 		initBPartner();
@@ -291,7 +292,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 	
 	public boolean loadBPartner (int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		
 		//  New bpartner
 		if (C_BPartner_ID == 0)
@@ -382,7 +383,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 	
 	private boolean actionSave()
 	{
-		log.config("");
+		log.info("");
 
 		//	Check Mandatory fields
 		if (fName.getText().equals(""))
@@ -434,7 +435,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 			m_partner.setC_Greeting_ID(0);
 		
 		if (m_partner.save())
-			log.fine("C_BPartner_ID=" + m_partner.getC_BPartner_ID());
+			log.debug("C_BPartner_ID=" + m_partner.getC_BPartner_ID());
 		else
 			FDialog.error(m_WindowNo, this, "BPartnerNotSaved");
 		
@@ -450,7 +451,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 		m_pLocation.setFax(fFax.getText());
 		
 		if (m_pLocation.save())
-			log.fine("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
+			log.debug("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
 		else
 			FDialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "C_BPartner_Location_ID"));
 			
@@ -484,7 +485,7 @@ public class WBPartner extends Window implements EventListener, ValueChangeListe
 			m_user.setFax(fFax.getText());
 			
 			if (m_user.save())
-				log.fine("AD_User_ID=" + m_user.getAD_User_ID());
+				log.debug("AD_User_ID=" + m_user.getAD_User_ID());
 			else
 				FDialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "AD_User_ID"));
 		}

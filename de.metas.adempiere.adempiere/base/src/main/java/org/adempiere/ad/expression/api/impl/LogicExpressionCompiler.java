@@ -41,7 +41,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 {
 	public static final LogicExpressionCompiler instance = new LogicExpressionCompiler();
 
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	private LogicExpressionCompiler()
 	{

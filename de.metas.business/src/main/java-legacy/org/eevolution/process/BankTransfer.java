@@ -18,7 +18,8 @@ package org.eevolution.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MPayment;
@@ -83,7 +84,7 @@ public class BankTransfer extends SvrProcess
 			else if (name.equals("DateAcct"))
 				p_DateAcct = (Timestamp)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

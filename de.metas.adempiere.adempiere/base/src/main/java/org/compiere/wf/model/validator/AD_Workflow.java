@@ -23,21 +23,21 @@ package org.compiere.wf.model.validator;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
 import org.compiere.wf.IADWorkflowBL;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 @Validator(I_AD_Workflow.class)
 public class AD_Workflow
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_AD_Workflow workflow)
@@ -51,7 +51,7 @@ public class AD_Workflow
 			workflow.setIsValid(false);
 
 			// NOTE: don't prevent workflow from saving, just let the IsValid flag to be reset
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 		}
 	}
 }

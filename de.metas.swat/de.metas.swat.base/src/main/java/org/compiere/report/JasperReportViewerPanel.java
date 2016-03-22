@@ -35,18 +35,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JRViewer;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.ITaskExecutorService;
@@ -70,14 +64,20 @@ import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.report.email.service.IEmailParamsFactory;
 import org.compiere.report.email.service.impl.EMailParamsFactory;
 import org.compiere.swing.CComboBox;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
+import de.metas.logging.MetasfreshLastError;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JRViewer;
 
 /**
  * Jasper Report Viewer Panel
@@ -117,7 +117,7 @@ public class JasperReportViewerPanel extends JRViewer
 					+ "ORDER BY Name";
 
 	// Services
-	private static final CLogger log = CLogger.getCLogger(JasperReportViewerPanel.class);
+	private static final Logger log = LogManager.getLogger(JasperReportViewerPanel.class);
 	private static final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	//
@@ -157,7 +157,7 @@ public class JasperReportViewerPanel extends JRViewer
 			}
 			catch (final Exception e1)
 			{
-				log.saveError("Unable to create jasper report with AD_Process_ID " + newPi.getAD_Process_ID(), e1);
+				MetasfreshLastError.saveError(log, "Unable to create jasper report with AD_Process_ID " + newPi.getAD_Process_ID(), e1);
 			}
 			finally
 			{
@@ -328,7 +328,7 @@ public class JasperReportViewerPanel extends JRViewer
 		catch (final SQLException e)
 		{
 			final DBException dbEx = new DBException(e, sql, sqlParams);
-			log.log(Level.SEVERE, dbEx.getLocalizedMessage(), dbEx);
+			log.error(dbEx.getLocalizedMessage(), dbEx);
 		}
 		finally
 		{

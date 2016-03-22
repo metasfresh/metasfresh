@@ -28,7 +28,8 @@ package de.metas.notification.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.mail.internet.InternetAddress;
 
@@ -43,7 +44,6 @@ import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -57,7 +57,7 @@ import de.metas.session.jaxrs.IServerService;
  */
 public class MailBL implements IMailBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 
@@ -178,7 +178,7 @@ public class MailBL implements IMailBL
 
 	public IMailbox findMailBox(final I_AD_Client client, final int AD_Org_ID, final int AD_Process_ID, final String customType)
 	{
-		log.fine("Looking for AD_Client_ID=" + client.getAD_Client_ID() + ", AD_Org_ID=" + AD_Org_ID + ", AD_Process_ID=" + AD_Process_ID + ", customType=" + customType);
+		log.debug("Looking for AD_Client_ID=" + client.getAD_Client_ID() + ", AD_Org_ID=" + AD_Org_ID + ", AD_Process_ID=" + AD_Process_ID + ", customType=" + customType);
 
 		final ArrayList<Object> params = new ArrayList<Object>();
 		final StringBuffer whereClause = new StringBuffer();
@@ -219,7 +219,7 @@ public class MailBL implements IMailBL
 						client.getAD_Client_ID(),
 						-1 // AD_User_ID
 				);
-				log.fine("Found: " + getSummary(config) + "=>" + mailbox);
+				log.debug("Found: " + getSummary(config) + "=>" + mailbox);
 				return mailbox;
 			}
 		}
@@ -233,7 +233,7 @@ public class MailBL implements IMailBL
 				client.getAD_Client_ID(),
 				-1 // AD_User_ID
 		);
-		log.fine("Fallback to AD_Client settings: " + mailbox);
+		log.debug("Fallback to AD_Client settings: " + mailbox);
 		return mailbox;
 	}
 
@@ -285,7 +285,7 @@ public class MailBL implements IMailBL
 		EMail email = null;
 		if (mailbox.isSendFromServer() && Ini.isClient())
 		{
-			log.fine("Creating on server");
+			log.debug("Creating on server");
 			final IServerService server = Services.get(IServerService.class);
 			try
 			{
@@ -308,13 +308,13 @@ public class MailBL implements IMailBL
 			}
 			catch (final Exception ex)
 			{
-				log.log(Level.SEVERE, "" + mailbox + " - AppsServer error: " + ex.getLocalizedMessage(), ex);
+				log.error("" + mailbox + " - AppsServer error: " + ex.getLocalizedMessage(), ex);
 			}
 		}
 
 		if (email == null)
 		{
-			log.fine("Creating on client");
+			log.debug("Creating on client");
 			email = new EMail(ctx, mailbox.getSmtpHost(), mailbox.getEmail(), to, subject, message, html);
 			if (mailbox.isSmtpAuthorization())
 			{
@@ -373,7 +373,7 @@ public class MailBL implements IMailBL
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.WARNING, "Invalid email address: " + emailStr, e.getLocalizedMessage());
+			log.warn("Invalid email address: " + emailStr, e.getLocalizedMessage());
 			return null;
 		}
 

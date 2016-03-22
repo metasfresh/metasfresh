@@ -49,7 +49,8 @@ import org.compiere.model.MProductPricing;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -93,7 +94,7 @@ public class SubscriptionBL implements ISubscriptionBL
 {
 
 	private static final String ERR_NEW_CONDITIONS_PRICE_MISSING_1P = "de.metas.flatrate.NewConditions.Price_Missing";
-	public static final CLogger logger = CLogger.getCLogger(SubscriptionBL.class);
+	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
 	final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
@@ -449,7 +450,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		I_C_SubscriptionProgress sp = subscriptionPA.retrieveNextSP(term, currentDate, 0);
 
-		logger.fine("next SP: " + sp);
+		logger.debug("next SP: " + sp);
 
 		if (sp == null)
 		{
@@ -671,7 +672,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newOrder.setDocAction(DocAction.ACTION_Complete);
 		newOrder.saveEx(trxName);
 
-		logger.fine("Created new order " + newOrder);
+		logger.debug("Created new order " + newOrder);
 
 		final MOrderLine newOl = new MOrderLine(newOrder);
 
@@ -679,7 +680,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newOl.setQtyEntered(oldOl.getQtyEntered());
 		newOl.saveEx(trxName);
 
-		logger.fine("Created new order line" + newOl);
+		logger.debug("Created new order line" + newOl);
 		return InterfaceWrapperHelper.create(newOl, I_C_OrderLine.class);
 	}
 
@@ -733,7 +734,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final List<I_C_SubscriptionProgress> deliveries =
 				subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
 
-		logger.fine("Going to add shipment schedule entries for " + deliveries.size() + " subscription deliveries");
+		logger.debug("Going to add shipment schedule entries for " + deliveries.size() + " subscription deliveries");
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
@@ -781,7 +782,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			}
 			else
 			{
-				logger.fine(sd + " is deplayed because there is at least on open delivery");
+				logger.debug(sd + " is deplayed because there is at least on open delivery");
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
 				InterfaceWrapperHelper.save(sd);
 
@@ -793,7 +794,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			//
 			// createSchedule(ctx, sd, sc, ol, trxName);
 			//
-			// logger.fine("invalidating related schedule entries");
+			// logger.debug("invalidating related schedule entries");
 			// Services.get(IInOutCandHandlerBL.class).invalidateCandidatesFor(ol, I_C_OrderLine.Table_Name);
 			//
 			// try
@@ -805,7 +806,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			// throw new AdempiereException(e);
 			// }
 			//
-			// logger.fine("Setting subscription delivery " + sd + " to status " + STATUS_LieferungOffen);
+			// logger.debug("Setting subscription delivery " + sd + " to status " + STATUS_LieferungOffen);
 			// sd.setStatus(STATUS_LieferungOffen);
 			// poService.save(sd, trxName);
 		}
@@ -965,7 +966,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// line's NetLineAmount in MOrderLine.beforeSave()
 		ol.setQtyOrdered(priceQty.multiply(ol.getQtyEntered()));
 
-		logger.fine("Computing new prices for " + ol);
+		logger.debug("Computing new prices for " + ol);
 
 		// TODO why not use OrderLineBL to compute prices?
 		setPrices(ol, subscriptionPL.getM_PriceList_ID(), priceQty, ol.getQtyEntered());

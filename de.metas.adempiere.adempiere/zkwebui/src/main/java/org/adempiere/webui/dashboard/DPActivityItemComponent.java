@@ -24,7 +24,6 @@ package org.adempiere.webui.dashboard;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,10 +34,13 @@ import org.adempiere.webui.window.ADWindow;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -58,7 +60,7 @@ public class DPActivityItemComponent implements IServerPushCallback
 	private final Button button;
 	private final String label;
 	
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// private Integer counter = null;
 	/**
@@ -123,7 +125,7 @@ public class DPActivityItemComponent implements IServerPushCallback
 		catch (Exception e)
 		{
 			// 04112 : In case we have an error on a button label, only log, so the others are still displayed
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 			labelInfo = null;
 		}
 	}

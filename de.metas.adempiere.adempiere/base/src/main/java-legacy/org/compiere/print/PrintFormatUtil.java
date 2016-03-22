@@ -19,9 +19,9 @@ package org.compiere.print;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -48,7 +48,7 @@ public class PrintFormatUtil
 	}	//	PrintFormatUtil
 
 	/**	Logger					*/
-	private CLogger			log = CLogger.getCLogger (getClass());
+	private Logger			log = LogManager.getLogger(getClass());
 	/** Context					*/
 	private Properties		m_ctx;
 	
@@ -79,14 +79,14 @@ public class PrintFormatUtil
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.info ("Total = " + total);
+		log.info("Total = " + total);
 	}	//	addMissingColumns
 
 
@@ -97,7 +97,7 @@ public class PrintFormatUtil
 	 */
 	public int addMissingColumns (MPrintFormat pf)
 	{
-		log.config(pf.toString());
+		log.info(pf.toString());
 		String sql = "SELECT c.AD_Column_ID, c.ColumnName "
 			+ "FROM AD_Column c "
 			+ "WHERE NOT EXISTS "
@@ -124,14 +124,14 @@ public class PrintFormatUtil
 				String ColumnName = rs.getString(2);
 				MPrintFormatItem pfi = MPrintFormatItem.createFromColumn (pf, AD_Column_ID, 0);
 				if (pfi.get_ID() != 0)
-					log.fine("#" + ++counter + " - added " + ColumnName);
+					log.debug("#" + ++counter + " - added " + ColumnName);
 				else
-					log.warning("Not added: " + ColumnName);
+					log.warn("Not added: " + ColumnName);
 			}
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -139,7 +139,7 @@ public class PrintFormatUtil
 			rs = null; pstmt = null;
 		}
 		if (counter == 0)
-			log.fine("None"
+			log.debug("None"
 				/**
 				+ " - " + sql 
 				+ " - AD_PrintFormat_ID=" + pf.getAD_PrintFormat_ID()
@@ -147,7 +147,7 @@ public class PrintFormatUtil
 				*/
 				);
 		else
-			log.fine("Added=" + counter);
+			log.debug("Added=" + counter);
 		return counter;
 	}	//	addMissingColumns
 

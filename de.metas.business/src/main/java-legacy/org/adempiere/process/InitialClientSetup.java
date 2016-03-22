@@ -30,7 +30,8 @@
 package org.adempiere.process;
 
 import java.io.File;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -118,7 +119,7 @@ public class InitialClientSetup extends SvrProcess
 			else if (name.equals("CoAFile"))
 				p_CoAFile = (String) para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

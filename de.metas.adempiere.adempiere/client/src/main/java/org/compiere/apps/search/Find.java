@@ -34,7 +34,8 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CDialog;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -55,7 +56,7 @@ public final class Find extends CDialog
 	}
 
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(Find.class);
+	private static final transient Logger log = LogManager.getLogger(Find.class);
 
 	private final FindPanel findPanel;
 	private final FindPanelActionListener findPanelActionListener = new FindPanelActionListener()
@@ -133,7 +134,7 @@ public final class Find extends CDialog
 	@Override
 	public void dispose()
 	{
-		log.config("");
+		log.info("");
 		findPanel.dispose();
 		removeAll();
 		super.dispose();

@@ -22,9 +22,11 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -67,7 +69,7 @@ public class MAsset extends X_A_Asset
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -78,7 +80,7 @@ public class MAsset extends X_A_Asset
 	}	//	getFromShipment
 	
 	/**	Logger							*/
-	private static CLogger	s_log = CLogger.getCLogger (MAsset.class);
+	private static Logger	s_log = LogManager.getLogger(MAsset.class);
 
 	
 	/**************************************************************************
@@ -279,7 +281,7 @@ public class MAsset extends X_A_Asset
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -385,7 +387,7 @@ public class MAsset extends X_A_Asset
 			String[] retValue = new String[dls.length];
 			for (int i = 0; i < retValue.length; i++)
 				retValue[i] = dls[i].getName();
-			log.fine("#" + dls.length);
+			log.debug("#" + dls.length);
 			return retValue;
 		}
 		return new String[]{};
@@ -439,7 +441,7 @@ public class MAsset extends X_A_Asset
 	@Override
 	protected boolean afterSave (boolean newRecord,boolean success)
 	{
-		log.info ("afterSave");
+		log.info("afterSave");
 
 		int		p_A_Asset_ID = 0;
 		p_A_Asset_ID = getA_Asset_ID();

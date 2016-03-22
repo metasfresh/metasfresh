@@ -19,7 +19,8 @@ package org.adempiere.apps.graph;
 import java.awt.Color;
 import java.util.ArrayList;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 	Graphic Utilities
@@ -30,7 +31,7 @@ import org.compiere.util.CLogger;
 public class GraphUtil
 {
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (GraphUtil.class);
+	private static Logger log = LogManager.getLogger(GraphUtil.class);
 	
 	/**
 	 * 	Get Foreground for back
@@ -104,7 +105,7 @@ public class GraphUtil
 		double whiteDistance = colorDistance (r, g, b, 1.0, 1.0, 1.0);
 		double blackDistance = colorDistance (r, g, b, 0.0, 0.0, 0.0);
 		boolean dark = blackDistance < whiteDistance;
-	//	log.finest("r=" + r + ",g=" + g + ",b=" + b + " - white=" + whiteDistance + ",black=" + blackDistance);
+	//	log.trace("r=" + r + ",g=" + g + ",b=" + b + " - white=" + whiteDistance + ",black=" + blackDistance);
 		return dark;
 	}	//	isDark
 

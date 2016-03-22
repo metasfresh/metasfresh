@@ -20,10 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -127,7 +127,7 @@ public class MBPartnerInfo extends X_RV_BPartner
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "find - " + finalSQL, e);
+			s_log.error("find - " + finalSQL, e);
 		}
 		try
 		{
@@ -147,7 +147,7 @@ public class MBPartnerInfo extends X_RV_BPartner
 	
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MBPartnerInfo.class);
+	private static Logger	s_log	= LogManager.getLogger(MBPartnerInfo.class);
 	
 	/**************************************************************************
 	 * 	Load Constructor

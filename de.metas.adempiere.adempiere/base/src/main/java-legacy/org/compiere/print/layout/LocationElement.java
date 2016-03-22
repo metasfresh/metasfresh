@@ -57,7 +57,7 @@ public class LocationElement extends GridElement
 		super(isHeightOneLine ? 1 : 10, 1);		//	max
 		setGap(0,0);
 		MLocation ml = MLocation.get (ctx, C_Location_ID, null);
-	//	log.fine("C_Location_ID=" + C_Location_ID);
+	//	log.debug("C_Location_ID=" + C_Location_ID);
 		if (ml != null)
 		{
 			int index = 0;

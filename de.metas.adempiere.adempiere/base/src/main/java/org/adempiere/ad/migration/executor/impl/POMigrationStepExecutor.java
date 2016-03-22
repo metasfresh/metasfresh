@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -46,11 +47,10 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 
 public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IDataConverter converter = new DefaultDataConverter();
 
@@ -82,7 +82,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 		{
 			// No PO record found
 			final AdempiereException ex = new AdempiereException("PO record not found for AD_MigrationStep: " + step + ", SeqNo=" + step.getSeqNo());
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return ExecutionResult.Skipped;
 		}
 
@@ -103,7 +103,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 					{
 						throw e;
 					}
-					logger.log(Level.INFO, e.getLocalizedMessage(), e);
+					logger.info(e.getLocalizedMessage(), e);
 				}
 			}
 		}
@@ -224,7 +224,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 			final String[] keyColumns = tablePO.getKeyColumns();
 			if (keyColumns == null || keyColumns.length != 1)
 			{
-				logger.warning("Table " + tablePO + " has none or more then one key columns: " + keyColumns);
+				logger.warn("Table " + tablePO + " has none or more then one key columns: " + keyColumns);
 			}
 			else
 			{
@@ -276,7 +276,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 				final Object value = params.get(columnName);
 				if (value == null)
 				{
-					logger.warning("No value found for key " + columnName);
+					logger.warn("No value found for key " + columnName);
 				}
 				po.set_ValueNoCheck(columnName, value);
 			}
@@ -294,7 +294,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 
 		if (table != null && !step.getTableName().equalsIgnoreCase(table.getTableName()))
 		{
-			logger.log(Level.WARNING, "Table ID collision '" + step.getTableName() + "' with existing '" + table.getTableName()
+			logger.warn("Table ID collision '" + step.getTableName() + "' with existing '" + table.getTableName()
 					+ "' (ID=" + step.getAD_Table_ID() + "). Attempting to retrieve table by name.");
 			table = null;
 		}
@@ -336,7 +336,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 
 			if (column == null)
 			{
-				logger.log(Level.WARNING, "Column is null for data: {0}", new Object[] { data });
+				logger.warn("Column is null for data: {}", new Object[] { data });
 				continue;
 			}
 

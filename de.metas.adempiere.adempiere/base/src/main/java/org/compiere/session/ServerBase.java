@@ -34,7 +34,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.MTask;
 import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -52,7 +53,7 @@ import de.metas.session.jaxrs.IServerService;
 public class ServerBase implements IServerService
 {
 	/** Logger */
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 	//
 	private static int s_no = 0;
 	private final int m_no;
@@ -224,7 +225,7 @@ public class ServerBase implements IServerService
 	@Override
 	public int cacheReset(final String tableName, final int Record_ID)
 	{
-		log.config(tableName + " - " + Record_ID);
+		log.info(tableName + " - " + Record_ID);
 		m_cacheResetCount++;
 		return CacheMgt.get().reset(tableName, Record_ID);
 	}	// cacheReset

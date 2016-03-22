@@ -17,7 +17,6 @@ package org.adempiere.webui;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.window.ADWindow;
@@ -37,10 +36,13 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -69,7 +71,7 @@ public class WRequest implements EventListener
 	 */
 	public WRequest (Component invoker, int AD_Table_ID, int Record_ID, int C_BPartner_ID)
 	{
-		log.config("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
+		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
 		m_C_BPartner_ID = C_BPartner_ID;
@@ -93,7 +95,7 @@ public class WRequest implements EventListener
 	StringBuffer 		m_where = null;
 	
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (WRequest.class);
+	private static Logger	log	= LogManager.getLogger(WRequest.class);
 
 	/**
 	 * 	Display Request Options - New/Existing.
@@ -153,7 +155,7 @@ public class WRequest implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

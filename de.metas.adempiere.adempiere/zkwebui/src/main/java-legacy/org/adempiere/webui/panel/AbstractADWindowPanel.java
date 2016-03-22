@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,14 +75,16 @@ import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.compiere.util.WebDoc;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlBasedComponent;
@@ -99,6 +100,9 @@ import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menupopup;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *
@@ -126,11 +130,11 @@ import org.zkoss.zul.Menupopup;
 public abstract class AbstractADWindowPanel extends AbstractUIPart implements ToolbarListener,
         EventListener, DataStatusListener, ActionListener, ASyncProcess
 {
-    private static final CLogger logger;
+    private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(AbstractADWindowPanel.class);
+        logger = LogManager.getLogger(AbstractADWindowPanel.class);
     }
     
     private Properties           ctx;
@@ -284,7 +288,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 					+ Env.getAD_User_ID(ctx)
 					+ ".  Please report conditions to your system administrator or in sf tracker 2832968";
 			ApplicationException ex = new ApplicationException(msg);
-			logger.log(Level.SEVERE, msg, ex);
+			logger.error(msg, ex);
 			throw ex;
 		}
 		// End of temporary code for [ adempiere-ZK Web Client-2832968 ] User context lost?
@@ -868,7 +872,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 
 		curTab.setQuery(null);	//	reset previous queries
 
-		logger.config("OnlyCurrent=" + m_onlyCurrentRows
+		logger.info("OnlyCurrent=" + m_onlyCurrentRows
 			+ ", Days=" + m_onlyCurrentDays);
 
 		curTab.query(m_onlyCurrentRows, onlyCurrentDays, GridTabMaxRows.DEFAULT);
@@ -1326,7 +1330,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
     {
         if (!curTab.isInsertRecord())
         {
-			logger.warning("Insert Record disabled for Tab: " + curTab);
+			logger.warn("Insert Record disabled for Tab: " + curTab);
             return;
         }
 
@@ -1349,7 +1353,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
         }
         else
         {
-            logger.severe("Could not create new record");
+            logger.error("Could not create new record");
         }
         focusToActivePanel();
     }
@@ -1379,7 +1383,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
     {
         if (!curTab.isInsertRecord())
         {
-            logger.warning("Insert Record disabled for Tab");
+            logger.warn("Insert Record disabled for Tab");
             return;
         }
 
@@ -1398,7 +1402,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
         }
         else
         {
-            logger.severe("Could not create new record");
+            logger.error("Could not create new record");
         }
         focusToActivePanel();
     }
@@ -1513,7 +1517,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
     }
 
 	private void showLastError() {
-		String msg = CLogger.retrieveErrorString(null);
+		String msg = MetasfreshLastError.retrieveErrorString(null);
 		if (msg != null)
 		{
 			statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), msg), true, true);
@@ -1601,7 +1605,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 					value = value.replace(" - ", " | ");
 				displayValue.append(value);
 				// Append ID
-				if (displayValue.length() == 0 || CLogMgt.isLevelFine())
+				if (displayValue.length() == 0 || LogManager.isLevelFine())
 				{
 					if (displayValue.length() > 0)
 						displayValue.append(" | ");
@@ -1640,7 +1644,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 			{
 				if (FDialog.ask(curWindowNo, messagePanel, "DeleteSelection"))
 		        {
-					logger.fine("ok");
+					logger.debug("ok");
 					Set<Listitem> selectedValues = listbox.getSelectedItems();
 					if(selectedValues != null)
 					{
@@ -1648,7 +1652,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 						{
 							Listitem li = iter.next();
 							if(li != null)
-								logger.fine((String) li.getValue());
+								logger.debug((String) li.getValue());
 						}
 					}
 
@@ -1667,7 +1671,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 
 		            messagePanel.dispose();
 		        } else {
-					logger.fine("cancel");
+					logger.debug("cancel");
 				}
 			}
 		});
@@ -1878,7 +1882,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 	private void actionButton (WButtonEditor wButton)
 	{
 		if (curTab.hasChangedCurrentTabAndParents()) {
-			String msg = CLogger.retrieveErrorString("Please ReQuery Window");
+			String msg = MetasfreshLastError.retrieveErrorString("Please ReQuery Window");
 			FDialog.error(curWindowNo, parent, null, msg);
 			return;
 		}
@@ -2063,7 +2067,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 		 *  Start Process ----
 		 */
 
-		logger.config("Process_ID=" + wButton.getProcess_ID() + ", Record_ID=" + record_ID);
+		logger.info("Process_ID=" + wButton.getProcess_ID() + ", Record_ID=" + record_ID);
 
 		if (wButton.getProcess_ID() == 0)
 		{
@@ -2207,7 +2211,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
                 	Executions.deactivate(getComponent().getDesktop());
                 }
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Failed to lock UI.", e);
+				logger.warn("Failed to lock UI.", e);
 			}
 		}
 	}
@@ -2252,7 +2256,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
                 	Executions.deactivate(getComponent().getDesktop());
                 }
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Failed to update UI upon unloc.", e);
+				logger.warn("Failed to update UI upon unloc.", e);
 			}
 		}
 	}
@@ -2316,7 +2320,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 		final Component c = getComponent();
 		if (c == null)
 		{
-			logger.log(Level.WARNING, "Cannot register listener {0} on event {1}", new Object[] { listener, evtnm });
+			logger.warn("Cannot register listener {} on event {}", new Object[] { listener, evtnm });
 			return;
 		}
 		c.addEventListener(evtnm, listener);

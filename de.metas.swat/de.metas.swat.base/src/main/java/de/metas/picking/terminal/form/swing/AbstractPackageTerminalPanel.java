@@ -33,7 +33,8 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -45,7 +46,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.apps.form.FormFrame;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IPackingDetailsModel;
@@ -73,7 +73,7 @@ import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
  */
 public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel, PropertyChangeListener
 {
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 	
 	private final ITerminalContext tc;
 	private final AbstractPackageTerminal parentPackageTerminal;
@@ -261,7 +261,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "init", e);
+			log.warn("init", e);
 			dispose();
 			return;
 		}

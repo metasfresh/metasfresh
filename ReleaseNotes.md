@@ -27,7 +27,10 @@ The actual release notes
 ## Features
  - 09628 procurement management (106716240958)
     * all changes in products, partners, contracts etc are now directly pushed to the mobile webUI
- 
+ - 09931 Bootify metasfresh (100627676679)
+    * metasfresh now runs with spring-boot (server and client)
+	* also replacing the JUL-based CLogger with slf4j
+
 ## Fixes
  - 09502 quality inspection (100925494419)
     * the final settlement invoice didn't have the correct witholding amount

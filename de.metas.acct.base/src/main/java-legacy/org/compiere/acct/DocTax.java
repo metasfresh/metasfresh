@@ -36,7 +36,7 @@ public final class DocTax
 	// services
 	private final transient ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
 
-	// private static final transient CLogger log = CLogger.getCLogger(DocTax.class);
+	// private static final transient Logger log = CLogMgt.getLogger(DocTax.class);
 
 	/**
 	 * Create Tax

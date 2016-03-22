@@ -62,7 +62,7 @@ public class CalloutProject extends CalloutEngine
 		if (PlannedAmt.scale() > StdPrecision)
 			PlannedAmt = PlannedAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
 		//
-		log.fine("PlannedQty=" + PlannedQty + " * PlannedPrice=" + PlannedPrice + " -> PlannedAmt=" + PlannedAmt + " (Precision=" + StdPrecision+ ")");
+		log.debug("PlannedQty=" + PlannedQty + " * PlannedPrice=" + PlannedPrice + " -> PlannedAmt=" + PlannedAmt + " (Precision=" + StdPrecision+ ")");
 		mTab.setValue("PlannedAmt", PlannedAmt);
 		return "";
 	}	//	planned

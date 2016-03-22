@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -57,13 +56,15 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.letters.model.I_AD_Column;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlateVar;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * @author teo_sarca
@@ -72,7 +73,7 @@ import de.metas.letters.model.MADBoilerPlateVar;
 public class BoilerPlateMenu
 {
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(BoilerPlateMenu.class);
+	private static final Logger log = LogManager.getLogger(BoilerPlateMenu.class);
 	
 	public static boolean createFieldMenu(Object textComponent, JPopupMenu popupMenu, GridField gridField)
 	{
@@ -87,7 +88,7 @@ public class BoilerPlateMenu
 			final JTextComponent text = getTextComponent(textComponent);
 			if (text == null)
 			{
-				log.warning("No TextComponent found for " + textComponent);
+				log.warn("No TextComponent found for " + textComponent);
 				return false;
 			}
 			final JPopupMenu popupMenu2 = new JPopupMenu();
@@ -113,21 +114,21 @@ public class BoilerPlateMenu
 	{
 		if (!isAdvancedText(gridField))
 		{
-			log.fine("GridField " + gridField + " is not an advanced text field");
+			log.debug("GridField " + gridField + " is not an advanced text field");
 			return Collections.emptyList();
 		}
 		//
 		final JTextComponent text = getTextComponent(textComponent);
 		if (text == null)
 		{
-			log.warning("No TextComponent found for " + textComponent);
+			log.warn("No TextComponent found for " + textComponent);
 			return Collections.emptyList();
 		}
 		//
 		final GridTab gridTab = gridField.getGridTab();
 		if (gridTab == null)
 		{
-			log.warning("No GridTab found for "+gridField);
+			log.warn("No GridTab found for "+gridField);
 			return Collections.emptyList();
 		}
 		
@@ -333,7 +334,7 @@ public class BoilerPlateMenu
 		}
 		catch (BadLocationException e1)
 		{
-			log.saveError("BadlocationException: " + e1.getMessage() + "; Illegal offset: " + e1.offsetRequested(), e1);
+			MetasfreshLastError.saveError(log, "BadlocationException: " + e1.getMessage() + "; Illegal offset: " + e1.offsetRequested(), e1);
 		}
 	}
 
@@ -386,7 +387,7 @@ public class BoilerPlateMenu
 	{
 		if (gridField == null)
 		{
-			log.log(Level.WARNING, "gridField is null");
+			log.warn("gridField is null");
 			return false;
 		}
 		final GridTab gridTab = gridField.getGridTab();

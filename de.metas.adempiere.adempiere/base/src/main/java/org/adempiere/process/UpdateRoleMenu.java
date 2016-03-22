@@ -25,8 +25,6 @@ package org.adempiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.model.MRoleMenu;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -52,7 +50,7 @@ public class UpdateRoleMenu extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 

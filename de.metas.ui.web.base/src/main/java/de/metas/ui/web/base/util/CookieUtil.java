@@ -1,6 +1,7 @@
 package de.metas.ui.web.base.util;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -9,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import org.compiere.util.CLogger;
  */
 public final class CookieUtil
 {
-	private static final CLogger logger = CLogger.getCLogger(CookieUtil.class);
+	private static final Logger logger = LogManager.getLogger(CookieUtil.class);
 
 	public static int DEFAULT_CookieMaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
 
@@ -98,7 +98,7 @@ public final class CookieUtil
 		if (response.isCommitted())
 		{
 			final AdempiereException ex = new AdempiereException("Response '" + response + "' was already committed. Cannot set the cookie anymore (name=" + name + ", value=" + value + ")");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return false;
 		}
 

@@ -46,13 +46,13 @@ public abstract class AbstractVendorBreakRule extends AbstractPriceListBasedRule
 		
 		if (pricingCtx.isSOTrx())
 		{
-			log.fine("Not applying because IsSOTrx=Yes");
+			log.debug("Not applying because IsSOTrx=Yes");
 			return false;
 		}
 
 		if (!hasVendorBreaks(pricingCtx.getM_Product_ID(), pricingCtx.getC_BPartner_ID()))
 		{
-			log.fine("Not applying there are no vendor breaks defined");
+			log.debug("Not applying there are no vendor breaks defined");
 			return false;
 		}
 

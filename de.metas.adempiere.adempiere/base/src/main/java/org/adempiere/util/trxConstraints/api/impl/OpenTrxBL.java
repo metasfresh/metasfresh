@@ -42,11 +42,12 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.adempiere.util.trxConstraints.api.TrxConstraintException;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class OpenTrxBL implements IOpenTrxBL
 {
-	private static final CLogger logger = CLogger.getCLogger(OpenTrxBL.class);
+	private static final Logger logger = LogManager.getLogger(OpenTrxBL.class);
 
 	/**
 	 * Thread ID used to group and store trxNames which does not belong to any thread.
@@ -96,7 +97,7 @@ public class OpenTrxBL implements IOpenTrxBL
 
 						final String msg = "Rollback and closing transaction '" + trx + "' after thread " + threadToWaitFor + " has finished\n"
 								+ mkStacktraceInfo(threadToWaitFor, stacktraceOnStart);
-						logger.severe(msg);
+						logger.error(msg);
 						trx.rollback();
 						trx.close();
 					}
@@ -262,10 +263,10 @@ public class OpenTrxBL implements IOpenTrxBL
 					final String msg =
 							"Transaction '" + trx + "' created by " + callingThread + " exceeded timeout of " + trxTimeoutSecs + " seconds\n"
 									+ mkStacktraceInfo(callingThread, stacktraceOnTimerStart);
-					logger.severe(msg);
+					logger.error(msg);
 					if (!constraints.isTrxTimeoutLogOnly())
 					{
-						logger.severe("Rollback and closing " + trx);
+						logger.error("Rollback and closing " + trx);
 						trx.rollback();
 						trx.close();
 					}

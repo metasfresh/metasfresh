@@ -41,7 +41,7 @@ public class MCSponsorSalesRep extends X_C_Sponsor_SalesRep
 
 	private static final long serialVersionUID = -1690506830514027338L;
 
-	// private static final CLogger logger = CLogger.getCLogger(MCSponsorSalesRep.class);
+	// private static final Logger logger = CLogMgt.getLogger(MCSponsorSalesRep.class);
 
 	public MCSponsorSalesRep(final Properties ctx, final int C_Sponsor_SalesRep_ID, final String trxName)
 	{

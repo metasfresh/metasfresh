@@ -24,8 +24,6 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.process.SvrProcess;
@@ -124,11 +122,11 @@ public class MYear extends X_C_Year
 				}
 				catch (Exception e2)
 				{
-					log.log(Level.WARNING, year + "->" + year2 + " - " + e2.toString());
+					log.warn(year + "->" + year2 + " - " + e2.toString());
 				}
 			}
 			else
-				log.log(Level.WARNING, year + " - " + e.toString());
+				log.warn(year + " - " + e.toString());
 		}
 		return 0;
 	}	//	getYearAsInt

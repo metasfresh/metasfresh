@@ -21,8 +21,6 @@
 
 package org.adempiere.webui.apps.form;
 
-import java.util.logging.Level;
-
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Checkbox;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -41,10 +39,13 @@ import org.adempiere.webui.panel.IFormController;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.apps.form.Charge;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -78,7 +79,7 @@ public class WCharge extends Charge implements IFormController, EventListener
 	/** AD_Message for "Create". */
     private static final String AD_MESSAGE_CREATE = "Create";
     /** Logger.          */
-    private static CLogger log = CLogger.getCLogger(WCharge.class);
+    private static Logger log = LogManager.getLogger(WCharge.class);
 
     // new panel
     /** Grid for components for creating a new charge account. */
@@ -197,7 +198,7 @@ public class WCharge extends Charge implements IFormController, EventListener
         }
         catch(Exception e)
         {
-            log.log(Level.SEVERE, "", e);
+            log.error("", e);
         }
 
         return;
@@ -383,7 +384,7 @@ public class WCharge extends Charge implements IFormController, EventListener
         String value;
         String name;
 
-        log.config("");
+        log.info("");
         //  Get Input
         value = m_txbValueField.getValue();
         if (value.length() == 0)

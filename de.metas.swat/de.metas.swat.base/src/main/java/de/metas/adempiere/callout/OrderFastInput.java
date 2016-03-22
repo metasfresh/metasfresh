@@ -29,7 +29,6 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
 import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -48,9 +47,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
@@ -77,7 +76,8 @@ public class OrderFastInput extends CalloutEngine
 
 	private static final CompositeOrderFastInputHandler handlers = new CompositeOrderFastInputHandler(new ProductQtyOrderFastInputHandler());
 
-	protected static final transient CLogger logger = CLogger.getCLogger(OrderFastInput.class);
+	static final Logger logger = LogManager.getLogger(OrderFastInput.class);
+
 
 	public static void addOrderFastInputHandler(final IOrderFastInputHandler handler)
 	{
@@ -184,7 +184,7 @@ public class OrderFastInput extends CalloutEngine
 		final IInfoWindowGridRowBuilders builders = InfoWindowGridRowBuilders.getFromContextOrNull(ctx, windowNo);
 		if (builders != null)
 		{
-			logger.log(Level.INFO, "Got IInfoWindowGridRowBuilders from ctx for windowNo={0}: {1}", new Object[] { windowNo, builders });
+			logger.info("Got IInfoWindowGridRowBuilders from ctx for windowNo={}: {}", new Object[] { windowNo, builders });
 			return builders;
 		}
 
@@ -193,7 +193,7 @@ public class OrderFastInput extends CalloutEngine
 		final int productId = order.getM_Product_ID();
 		if (productId <= 0)
 		{
-			logger.log(Level.INFO, "Constructed NullInfoWindowGridRowBuilders, because order.getM_Product_ID()={0}", productId);
+			logger.info("Constructed NullInfoWindowGridRowBuilders, because order.getM_Product_ID()={}", productId);
 			return NullInfoWindowGridRowBuilders.instance;
 		}
 
@@ -202,7 +202,7 @@ public class OrderFastInput extends CalloutEngine
 		builder.setSource(order);
 		singletonBuilder.addGridTabRowBuilder(productId, builder);
 
-		logger.log(Level.INFO, "Constructed singleton IInfoWindowGridRowBuilders: {0}", singletonBuilder);
+		logger.info("Constructed singleton IInfoWindowGridRowBuilders: {}", singletonBuilder);
 
 		return singletonBuilder;
 	}

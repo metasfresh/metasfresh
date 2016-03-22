@@ -29,7 +29,8 @@ package de.metas.picking.terminal;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -47,7 +48,7 @@ import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 public abstract class PickingTerminalPanel implements ITerminalBasePanel
 {
 
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	private ITerminalContext terminalContext;
 	protected IContainer panel;

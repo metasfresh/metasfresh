@@ -28,8 +28,9 @@ import java.util.Properties;
 import org.adempiere.util.Check;
 import org.adempiere.util.IMBeanAwareService;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.ConfigurationException;
@@ -40,7 +41,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 
 class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBeanAwareService
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final WorkpackageProcessorBlackList blacklist = new WorkpackageProcessorBlackList();
 

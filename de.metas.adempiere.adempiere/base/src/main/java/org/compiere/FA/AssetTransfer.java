@@ -125,7 +125,7 @@ public class AssetTransfer extends SvrProcess
 				  + " AND A_Entry_Type = 'TRN'" + clientCheck;
 			
 			no = DB.executeUpdate (sql,null);
-			log.info ("doIt - Delete old processed entries =" + no);
+			log.info("doIt - Delete old processed entries =" + no);
 		}
 		try {
 			

@@ -33,7 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
@@ -45,7 +46,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.util.CLogger;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 
@@ -76,7 +76,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
 	// Services
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	private final IHUAttributePropagatorFactory huAttributePropagatorFactory = Services.get(IHUAttributePropagatorFactory.class);
 	private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -256,7 +256,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			{
 				final HUException ex = new HUException("Accessing attribute storage while generating it's values is not allowed. Returning empty values."
 						+ "\n Attribute Storage: " + this);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				return _indexedAttributeValues;
 			}
 
@@ -655,7 +655,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// Avoid recursion in case value was already updated somewhere before this invocation
 		if (propagationContext.isValueUpdatedBefore())
 		{
-			logger.log(Level.FINE, "ALREADY UPDATED: Skipping attribute value propagation for Value={0}, {1}, {2}, {3}",
+			logger.debug("ALREADY UPDATED: Skipping attribute value propagation for Value={}, {}, {}, {}",
 					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
 			return;
 		}
@@ -668,7 +668,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 				&& propagationContext.isUpdateStorageValue())
 		{
 			// Nothing changed, it's pointless to set it again and call the propagator
-			logger.log(Level.FINE, "SAME VALUE: Skipping attribute value propagation for Value={0}, {1}, {2}, {3}",
+			logger.debug("SAME VALUE: Skipping attribute value propagation for Value={}, {}, {}, {}",
 					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
 			return;
 		}
@@ -685,7 +685,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 			final IHUAttributePropagator propagator = propagationContext.getPropagator();
 
-			logger.log(Level.FINE, "PROPAGATING: Setting Value={0}, {1}, {2}, {3}",
+			logger.debug("PROPAGATING: Setting Value={}, {}, {}, {}",
 					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
 			propagator.propagateValue(propagationContext, this, value);
 		}

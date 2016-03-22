@@ -46,7 +46,7 @@ import org.compiere.util.Trx;
 /* package */abstract class AbstractCStatementProxy<ST extends Statement> implements CStatement
 {
 	// /** Logger */
-	// private static final transient CLogger log = CLogger.getCLogger(AbstractCStatementProxy.class);
+	// private static final transient Logger log = CLogMgt.getLogger(AbstractCStatementProxy.class);
 
 	private Connection m_conn = null;
 	private boolean closed = false;
@@ -88,7 +88,7 @@ import org.compiere.util.Trx;
 		}
 		catch (SQLException e)
 		{
-			// log.log(Level.SEVERE, "CStatement", e);
+			// log.error("CStatement", e);
 			final String sql = vo == null ? null : vo.getSql();
 			throw new DBException(e, sql);
 		}

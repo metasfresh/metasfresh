@@ -36,7 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -75,7 +76,6 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -109,7 +109,7 @@ public class ExportHelper
 	public static final String MSG_EXPFormatLineError = "EXPFormatLineError";
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ExportHelper.class);
+	private static Logger log = LogManager.getLogger(ExportHelper.class);
 
 	/** XML Document */
 	private Document outDocument = null;
@@ -152,7 +152,7 @@ public class ExportHelper
 		outDocument = createExportDOM(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
 
 		final MEXPProcessor mExportProcessor = MEXPProcessor.get(po.getCtx(), m_rplStrategy.getEXP_Processor_ID(), po.get_TrxName());
-		log.fine("ExportProcessor = " + mExportProcessor);
+		log.debug("ExportProcessor = " + mExportProcessor);
 
 		final IExportProcessor exportProcessor = mExportProcessor.getIExportProcessor();
 		final IExportProcessor2 exportProcessor2;
@@ -242,7 +242,7 @@ public class ExportHelper
 			else
 			{
 				ReplicationType = X_AD_ReplicationTable.REPLICATIONTYPE_Merge;
-				log.warning("No replication table settings found for " + po + ". Using default: " + ReplicationType);
+				log.warn("No replication table settings found for " + po + ". Using default: " + ReplicationType);
 			}
 		}
 		// metas: tsa: end
@@ -299,8 +299,8 @@ public class ExportHelper
 		for (final PO po : records)
 		{
 			log.info("Client = " + client.toString());
-			log.finest("po.getAD_Org_ID() = " + po.getAD_Org_ID());
-			log.finest("po.get_TrxName() = " + po.get_TrxName());
+			log.trace("po.getAD_Org_ID() = " + po.getAD_Org_ID());
+			log.trace("po.get_TrxName() = " + po.get_TrxName());
 			if (po.get_TrxName() == null || po.get_TrxName().equals(""))
 			{
 				po.set_TrxName("exportRecord");
@@ -360,7 +360,7 @@ public class ExportHelper
 
 		for (final I_EXP_FormatLine formatLine : formatLines)
 		{
-			log.log(Level.INFO, "Format Line Seach key: {0}", formatLine.getValue());
+			log.info("Format Line Seach key: {}", formatLine.getValue());
 
 			try
 			{
@@ -572,7 +572,7 @@ public class ExportHelper
 				throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 			}
 
-			log.log(Level.INFO, "Embedded: Table={0}, KeyColumName={1}", new Object[] { embeddedTableName, embeddedKeyColumnName });
+			log.info("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
 			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
@@ -690,14 +690,14 @@ public class ExportHelper
 		if (replTable != null && replTable.getEXP_Format_ID() > 0)
 		{
 			exportFormat = MEXPFormat.get(po.getCtx(), replTable.getEXP_Format_ID(), po.get_TrxName());
-			log.log(Level.FINE, "ExportFormat(replication table): ", exportFormat);
+			log.debug("ExportFormat(replication table): ", exportFormat);
 			return exportFormat;
 		}
 
 		if (exportFormat == null)
 		{
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), m_AD_Client_ID, po.get_Table_ID(), version, po.get_TrxName());
-			log.log(Level.FINE, "ExportFormat(client): ", exportFormat);
+			log.debug("ExportFormat(client): ", exportFormat);
 		}
 
 		// Fall back to System Client
@@ -705,7 +705,7 @@ public class ExportHelper
 		{
 			final int adClientId = 0; // System
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), adClientId, po.get_Table_ID(), version, po.get_TrxName());
-			log.log(Level.FINE, "ExportFormat(system): ", exportFormat);
+			log.debug("ExportFormat(system): ", exportFormat);
 		}
 
 		if (exportFormat == null || exportFormat.getEXP_Format_ID() <= 0)
@@ -773,7 +773,7 @@ public class ExportHelper
 				df = DisplayType.getDateFormat(displayType);
 				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
 			}
-			log.log(Level.FINE, "DatePattern: {0}", df.toPattern());
+			log.debug("DatePattern: {}", df.toPattern());
 
 			valueString = df.format(date);
 		}
@@ -783,7 +783,7 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.log(Level.INFO, "Encoded column '{0}' from '{1}' to '{2}' (attributes: {3})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
+		log.info("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
 		return valueString;
 	}
 

@@ -22,10 +22,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -85,7 +87,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "getInvoicePaySchedule", e); 
+			s_log.error("getInvoicePaySchedule", e); 
 		}
 		try
 		{
@@ -104,7 +106,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	}	//	getSchedule
 
 	/** Static Logger					*/
-	private static CLogger		s_log = CLogger.getCLogger (MInvoicePaySchedule.class);
+	private static Logger		s_log = LogManager.getLogger(MInvoicePaySchedule.class);
 
 	/** 100								*/
 	private final static BigDecimal		HUNDRED = new BigDecimal(100);
@@ -229,7 +231,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	{
 		if (is_ValueChanged("DueAmt"))
 		{
-			log.fine("beforeSave");
+			log.debug("beforeSave");
 			setIsValid(false);
 		}
 		return true;
@@ -246,7 +248,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	{
 		if (is_ValueChanged("DueAmt"))
 		{
-			log.fine("afterSave");
+			log.debug("afterSave");
 			getParent();
 			m_parent.validatePaySchedule();
 			m_parent.save();

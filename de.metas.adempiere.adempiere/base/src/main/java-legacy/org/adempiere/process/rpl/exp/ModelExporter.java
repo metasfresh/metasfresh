@@ -18,8 +18,6 @@ package org.adempiere.process.rpl.exp;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.logging.Level;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -94,7 +92,7 @@ public class ModelExporter extends SvrProcess {
 			else if (name.equals("WhereClause"))
 				p_WhereClause = (String)para.getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		
 		if(p_EXP_Format_ID == 0)

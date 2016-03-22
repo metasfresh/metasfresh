@@ -28,19 +28,20 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.addon.IAddonStarter;
+import de.metas.logging.MetasfreshLastError;
 
 public final class AddonStarter implements IAddonStarter
 {
 	public static final String PROPS_RESOURCE = "/addons.properties";
 
-	private static final CLogger logger = CLogger.getCLogger(AddonStarter.class);
+	private static final Logger logger = LogManager.getLogger(AddonStarter.class);
 
 	/**
 	 * Shall we log a WARNING if the {@link #PROPS_RESOURCE} is missing.
@@ -61,7 +62,14 @@ public final class AddonStarter implements IAddonStarter
 			final URL url = Adempiere.class.getResource(PROPS_RESOURCE);
 			if (url == null)
 			{
-				logger.log(warnIfPropertiesFileMissing ? Level.SEVERE : Level.INFO, "No properties file was found for " + PROPS_RESOURCE);
+				if (warnIfPropertiesFileMissing)
+				{
+					logger.error("No properties file was found for " + PROPS_RESOURCE);
+				}
+				else
+				{
+					logger.info("No properties file was found for " + PROPS_RESOURCE);
+				}
 				return;
 			}
 			logger.info("Loading addons from " + url);
@@ -77,7 +85,7 @@ public final class AddonStarter implements IAddonStarter
 		}
 		catch (IOException e)
 		{
-			logger.saveError("Tried to load addon props from resource " + PROPS_RESOURCE, e);
+			MetasfreshLastError.saveError(logger, "Tried to load addon props from resource " + PROPS_RESOURCE, e);
 		}
 		logger.info("Resource file '" + PROPS_RESOURCE + "' couldn't not be loaded. Addons won't be started.");
 	};
@@ -128,12 +136,11 @@ public final class AddonStarter implements IAddonStarter
 		}
 		catch (ClassNotFoundException e)
 		{
-			logger.saveError("Addon not available: " + className, e);
+			MetasfreshLastError.saveError(logger, "Addon not available: " + className, e);
 		}
 		catch (ClassCastException e)
 		{
-			logger.saveError("Addon class " + className + " doesn't implement "
-					+ IAddOn.class.getName(), e);
+			MetasfreshLastError.saveError(logger, "Addon class " + className + " doesn't implement " + IAddOn.class.getName(), e);
 		}
 		catch (InstantiationException e)
 		{

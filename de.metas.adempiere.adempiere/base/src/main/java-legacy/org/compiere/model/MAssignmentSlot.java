@@ -82,7 +82,7 @@ public class MAssignmentSlot implements Comparator
 		setDescription(description);
 		setStatus(status);
 		//
-	//	log.fine( toString());
+	//	log.debug( toString());
 	}	//	MAssignmentSlot
 
 	/**
@@ -93,7 +93,7 @@ public class MAssignmentSlot implements Comparator
 	{
 		setStatus(assignment.isConfirmed() ? STATUS_Confirmed : STATUS_NotConfirmed);
 		setMAssignment(assignment);
-	//	log.fine( toString());
+	//	log.debug( toString());
 	}	//	MAssignmentSlot
 
 

@@ -18,11 +18,11 @@ package org.adempiere.webui;
 
 import java.util.Properties;
 
-import net.sf.cglib.proxy.Enhancer;
-
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.util.lang.IAutoCloseable;
+
+import net.sf.cglib.proxy.Enhancer;
 
 /**
  * This context provider effectively provides a threadlocal context.

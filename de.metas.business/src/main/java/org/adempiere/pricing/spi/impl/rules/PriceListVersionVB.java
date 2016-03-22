@@ -52,7 +52,7 @@ public class PriceListVersionVB extends AbstractPriceListBasedRule
 
 		if (pricingCtx.getM_PriceList_Version_ID() <= 0)
 		{
-			log.fine("Not applying because there is no M_PriceList_Version_ID");
+			log.debug("Not applying because there is no M_PriceList_Version_ID");
 			return false;
 		}
 
@@ -137,13 +137,13 @@ public class PriceListVersionVB extends AbstractPriceListBasedRule
 				m_isTaxIncluded = "Y".equals(rs.getString(9));
 				ppUOMId = rs.getInt(10); 
 				//
-				log.fine("M_PriceList_Version_ID=" + m_M_PriceList_Version_ID + " - " + m_PriceStd);
+				log.debug("M_PriceList_Version_ID=" + m_M_PriceList_Version_ID + " - " + m_PriceStd);
 				m_calculated = true;
 			}
 		}
 		catch (SQLException e)
 		{
-			// log.log(Level.SEVERE, sql, e);
+			// log.error(sql, e);
 			m_calculated = false;
 			throw new DBException(e, sql);
 		}
@@ -158,7 +158,7 @@ public class PriceListVersionVB extends AbstractPriceListBasedRule
 		//
 		if (!m_calculated)
 		{
-			log.finer("Not found (PLV_VB)");
+			log.trace("Not found (PLV_VB)");
 			return;
 		}
 

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.webui.component.Button;
@@ -40,7 +39,6 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MDocType;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -49,6 +47,8 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zkex.zul.Borderlayout;
 import org.zkoss.zkex.zul.North;
 import org.zkoss.zkex.zul.South;
+
+import de.metas.logging.LogManager;
 
 /**
  * Search Product and return selection
@@ -251,7 +251,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		String sql = m_sqlWarehouse;
 		//Add description to the query
 		sql = sql.replace(" FROM", ", DocumentNote FROM");
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -268,7 +268,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -284,7 +284,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 			if(rs.next())
 				m_M_Product_ID = rs.getInt(1);
 		} catch (Exception e) {
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -293,7 +293,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 
 		sql = m_sqlSubstitute;
-		log.finest(sql);
+		log.trace(sql);
 		try {
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_M_Product_ID);
@@ -302,7 +302,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 			substituteTbl.loadTable(rs);
 			rs.close();
 		} catch (Exception e) {
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -311,7 +311,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 
 		sql = m_sqlRelated;
-		log.finest(sql);
+		log.trace(sql);
 		try {
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_M_Product_ID);
@@ -320,7 +320,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 			relatedTbl.loadTable(rs);
 			rs.close();
 		} catch (Exception e) {
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -388,7 +388,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		columnNames.add(Msg.translate(Env.getCtx(), "M_Warehouse_ID"));
 
 		//	Fill Storage Data
-		boolean showDetail = CLogMgt.isLevelFine();
+		boolean showDetail = LogManager.isLevelFine();
 		String sql = "SELECT s.QtyOnHand, s.QtyReserved, s.QtyOrdered,"
 			+ " productAttribute(s.M_AttributeSetInstance_ID), s.M_AttributeSetInstance_ID,";
 		if (!showDetail)
@@ -443,7 +443,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -510,7 +510,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -570,7 +570,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		if (priceDate == null)
 			priceDate = new Timestamp(System.currentTimeMillis());
 		//
-		log.config("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
+		log.info("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
 		int retValue = 0;
 		String sql = "SELECT plv.M_PriceList_Version_ID, plv.ValidFrom "
 				+ "FROM M_PriceList pl, M_PriceList_Version plv "
@@ -594,7 +594,7 @@ public class InfoProductPanel extends InfoSimplePanel implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

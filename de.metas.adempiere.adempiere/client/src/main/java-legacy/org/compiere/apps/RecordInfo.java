@@ -29,7 +29,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -53,7 +54,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -79,7 +81,7 @@ public class RecordInfo extends CDialog
 	private static final long serialVersionUID = 8984246906639442417L;
 	
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(RecordInfo.class);
+	private static final transient Logger log = LogManager.getLogger(RecordInfo.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
 
@@ -100,7 +102,7 @@ public class RecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		AEnv.positionCenterWindow (owner, this);
 	}	//	RecordInfo
@@ -252,7 +254,7 @@ public class RecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -401,7 +403,7 @@ public class RecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, OldValue + "->" + NewValue, e);
+			log.warn(OldValue + "->" + NewValue, e);
 		}
 		//
 		line.add(showNewValue);

@@ -37,14 +37,15 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.MetasfreshLastError;
 
 public class MProductScalePriceValidator implements ModelValidator
 {
-
-	private static final CLogger log = CLogger
-			.getCLogger(MProductScalePriceValidator.class);
+	private static final Logger logger = LogManager.getLogger(MProductScalePriceValidator.class);
 
 	private final static String SQL_UPDATE_PRODUCTPRICE = //
 	" UPDATE "
@@ -163,7 +164,7 @@ public class MProductScalePriceValidator implements ModelValidator
 		catch (SQLException e)
 		{
 			final String msg = "Unable to update M_Product_Price for M_ProductSalePrice with id " + productScalePrice.get_ID();
-			log.saveError(msg, e);
+			MetasfreshLastError.saveError(logger, msg, e);
 			throw new DBException(msg, e);
 		}
 		finally
@@ -212,7 +213,7 @@ public class MProductScalePriceValidator implements ModelValidator
 		{
 			final String msg = "Unable to check if a M_ProductScalePrice for M_ProductPrice with id "
 					+ productPriceId + " and quantity " + qty + " already exists";
-			log.saveError(msg, e);
+			MetasfreshLastError.saveError(logger, msg, e);
 			throw new DBException(msg, e);
 		}
 		finally

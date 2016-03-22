@@ -128,7 +128,7 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 			}
 			else
 			{
-				log.severe("Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

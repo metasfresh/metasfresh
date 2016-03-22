@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -38,14 +37,15 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 
+import ch.qos.logback.classic.Level;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -75,7 +75,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	};
 
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
@@ -212,7 +212,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
 		if (handlerRecords == null || handlerRecords.isEmpty())
 		{
-			logger.log(Level.WARNING, "No C_ILCandHandler were provided for '{0}'. Nothing to do.", model);
+			logger.warn("No C_ILCandHandler were provided for '{}'. Nothing to do.", model);
 		}
 
 		// services
@@ -258,7 +258,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 						+ ExceptionUtils.getRootCauseMessage(e);
 				loggable.addLog(errmsg);
 
-				logger.log(Level.WARNING, errmsg, e);
+				logger.warn(errmsg, e);
 				throw e; // rethrow. that ways, at least the trx is rolled back
 			}
 
@@ -508,7 +508,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 					break;
 				default:
 					// nothing
-					logger.log(Level.WARNING, "Got no OnInvalidateForModelAction for " + model + ". Doing nothing.");
+					logger.warn("Got no OnInvalidateForModelAction for " + model + ". Doing nothing.");
 					break;
 			}
 		}

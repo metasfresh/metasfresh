@@ -23,8 +23,6 @@ package de.metas.document.archive.api;
  */
 
 
-import java.util.Properties;
-
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 
 /**

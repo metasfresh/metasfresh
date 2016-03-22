@@ -43,7 +43,8 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -51,7 +52,7 @@ import de.metas.commission.service.ICommissionFactCandBL;
 
 public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 {
-	private static final CLogger logger = CLogger.getCLogger(MCAdvComDoc.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvComDoc.class);
 
 	/**
 	 * 

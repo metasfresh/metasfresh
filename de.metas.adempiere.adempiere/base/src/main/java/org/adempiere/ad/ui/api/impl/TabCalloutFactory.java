@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.ui.api.ITabCalloutDAO;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -42,13 +43,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.StateChangeEvent;
 import org.compiere.model.StateChangeListener;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 public class TabCalloutFactory implements ITabCalloutFactory
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final Map<String, LinkedHashSet<Class<? extends ITabCallout>>> tableName2tabCalloutClasses = new HashMap<>();
 
@@ -77,7 +77,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			// No classname was set? wtf, but continue
 			if (Check.isEmpty(classname, true))
 			{
-				logger.log(Level.WARNING, "No classname set on {0}", def);
+				logger.warn("No classname set on {}", def);
 				continue;
 			}
 
@@ -86,14 +86,14 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			classname = classname.trim();
 			if (!classnamesConsidered.add(classname))
 			{
-				logger.log(Level.FINE, "Skip {0} because it was already considered", classname);
+				logger.debug("Skip {} because it was already considered", classname);
 				continue;
 			}
 
 			// Skip those which are not active
 			if (!def.isActive())
 			{
-				logger.log(Level.FINE, "Skip {0} because is not active", classname);
+				logger.debug("Skip {} because is not active", classname);
 				continue;
 			}
 
@@ -106,7 +106,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.WARNING, "Cannot load " + classname + " for AD_Tab_ID=" + adTabId, e);
+				logger.warn("Cannot load " + classname + " for AD_Tab_ID=" + adTabId, e);
 			}
 		}
 
@@ -121,7 +121,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 				final String classname = tabCalloutClass.getName();
 				if (!classnamesConsidered.add(classname))
 				{
-					logger.log(Level.FINE, "Skip {0} because it was already considered", classname);
+					logger.debug("Skip {} because it was already considered", classname);
 				}
 
 				//
@@ -133,7 +133,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 				}
 				catch (final Exception e)
 				{
-					logger.log(Level.WARNING, "Cannot load " + classname + " for AD_Tab_ID=" + adTabId, e);
+					logger.warn("Cannot load " + classname + " for AD_Tab_ID=" + adTabId, e);
 				}
 			}
 		}
@@ -160,7 +160,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Error loading callouts for " + gridTab, e);
+			logger.warn("Error loading callouts for " + gridTab, e);
 			return ITabCallout.NULL;
 		}
 	}

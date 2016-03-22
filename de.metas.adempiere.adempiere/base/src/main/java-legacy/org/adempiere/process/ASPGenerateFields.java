@@ -28,8 +28,6 @@
 ***********************************************************************/
 package org.adempiere.process;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MColumn;
 import org.compiere.model.MField;
 import org.compiere.model.MProcess;
@@ -76,7 +74,7 @@ public class ASPGenerateFields extends SvrProcess
 			else if (name.equals("ASP_Status"))
 				p_ASP_Status = (String) para.getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_ASP_Tab_ID = getRecord_ID();
 	}	//	prepare

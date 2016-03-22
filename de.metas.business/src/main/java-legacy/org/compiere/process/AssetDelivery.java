@@ -20,7 +20,8 @@ import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
@@ -80,7 +81,7 @@ public class AssetDelivery extends SvrProcess
 			else if (name.equals("AttachAsset"))
 				m_AttachAsset = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		if (m_GuaranteeDate == null)
 			m_GuaranteeDate = new Timestamp (System.currentTimeMillis());
@@ -171,7 +172,7 @@ public class AssetDelivery extends SvrProcess
   		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, s, e);
+			log.error(s, e);
 		}
 		finally
 		{
@@ -232,7 +233,7 @@ public class AssetDelivery extends SvrProcess
 	 */
 	private String deliverIt (int A_Asset_ID)
 	{
-		log.fine("A_Asset_ID=" + A_Asset_ID);
+		log.debug("A_Asset_ID=" + A_Asset_ID);
 		long start = System.currentTimeMillis();
 		//
 		MAsset asset = new MAsset (getCtx(), A_Asset_ID, get_TrxName());
@@ -281,7 +282,7 @@ public class AssetDelivery extends SvrProcess
 				}
 			}
 			else
-				log.warning("No DowloadURL for A_Asset_ID=" + A_Asset_ID);
+				log.warn("No DowloadURL for A_Asset_ID=" + A_Asset_ID);
 		}
 		String msg = email.send();
 		new MUserMail(m_MailText, asset.getAD_User_ID(), email).save();
@@ -292,7 +293,7 @@ public class AssetDelivery extends SvrProcess
 		ad.save();
 		asset.save();
 		//
-		log.fine((System.currentTimeMillis()-start) + " ms");
+		log.debug((System.currentTimeMillis()-start) + " ms");
 		//	success
 		return user.getEMail() + " - " + asset.getProductVersionNo();
 	}	//	deliverIt

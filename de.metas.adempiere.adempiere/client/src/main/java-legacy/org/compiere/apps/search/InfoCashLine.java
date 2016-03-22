@@ -303,7 +303,7 @@ public class InfoCashLine extends Info
 			sql.append(" AND cl.").append(MCashLine.COLUMNNAME_C_Charge_ID).append("=?");
 		}
 
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		return sql.toString();
 	}	//	getSQLWhere
 
@@ -325,21 +325,21 @@ public class InfoCashLine extends Info
 		{
 			Integer cb = (Integer)fCashBook_ID.getValue();
 			pstmt.setInt(index++, cb.intValue());
-			log.fine("CashBook=" + cb);
+			log.debug("CashBook=" + cb);
 		}
 		//
 		if (fInvoice_ID.getValue() != null)
 		{
 			Integer i = (Integer)fInvoice_ID.getValue();
 			pstmt.setInt(index++, i.intValue());
-			log.fine("Invoice=" + i);
+			log.debug("Invoice=" + i);
 		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
 			else if (from != null && to == null)
@@ -362,7 +362,7 @@ public class InfoCashLine extends Info
 				if (to != null)
 					to = to.abs();
 			}
-			log.fine("Amt From=" + from + ", To=" + to + ", Absolute=" + cbAbsolute.isSelected());
+			log.debug("Amt From=" + from + ", To=" + to + ", Absolute=" + cbAbsolute.isSelected());
 			if (from == null && to != null)
 				pstmt.setBigDecimal(index++, to);
 			else if (from != null && to == null)
@@ -381,7 +381,7 @@ public class InfoCashLine extends Info
 		if (fCharge_ID.getValue() != null) {
 			Integer i = (Integer)fCharge_ID.getValue();
 			pstmt.setInt(index++, i.intValue());
-			log.fine("Charge=" + i);
+			log.debug("Charge=" + i);
 		}
 	}   //  setParameters
 
@@ -395,7 +395,7 @@ public class InfoCashLine extends Info
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 }   //  InfoCashLine

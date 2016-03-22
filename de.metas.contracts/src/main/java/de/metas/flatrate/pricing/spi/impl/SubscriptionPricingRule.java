@@ -34,7 +34,8 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -52,35 +53,35 @@ import de.metas.product.IProductPA;
  */
 public class SubscriptionPricingRule extends PricingRuleAdapter
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (result.isCalculated())
 		{
-			logger.fine("Not applying because already calculated");
+			logger.debug("Not applying because already calculated");
 			return false;
 		}
 
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		if (referencedObject == null)
 		{
-			logger.fine("Not applying because pricingCtx has no referencedObject");
+			logger.debug("Not applying because pricingCtx has no referencedObject");
 			return false;
 		}
 
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(referencedObject.getClass());
 		if (!I_C_OrderLine.Table_Name.equals(tableName))
 		{
-			logger.fine("Not applying because referencedObject='" + referencedObject + "' has tableName='" + tableName + "'");
+			logger.debug("Not applying because referencedObject='" + referencedObject + "' has tableName='" + tableName + "'");
 			return false;
 		}
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(referencedObject, I_C_OrderLine.class);
 		if (ol.getC_Flatrate_Conditions_ID() <= 0)
 		{
-			logger.fine("Not applying because ol='" + ol + "' has C_Subscription_ID<=0");
+			logger.debug("Not applying because ol='" + ol + "' has C_Subscription_ID<=0");
 			return false;
 		}
 

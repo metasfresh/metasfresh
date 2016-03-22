@@ -28,13 +28,15 @@ package org.adempiere.pricing.spi;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
 
@@ -46,7 +48,7 @@ import de.metas.adempiere.model.I_M_ProductPrice;
  */
 public final class AggregatedPricingRule implements IPricingRule
 {
-	private static final transient CLogger logger = CLogger.getCLogger(AggregatedPricingRule.class);
+	private static final transient Logger logger = LogManager.getLogger(AggregatedPricingRule.class);
 
 	private final List<IPricingRule> rules = new ArrayList<IPricingRule>();
 
@@ -76,17 +78,17 @@ public final class AggregatedPricingRule implements IPricingRule
 		{
 			if (rule.equals(r))
 			{
-				logger.config("PricingRule already registered: " + rule + " [SKIP]");
+				logger.info("PricingRule already registered: " + rule + " [SKIP]");
 				return;
 			}
 			if (rule.getClass().equals(r.getClass()))
 			{
-				logger.config("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
+				logger.info("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
 				return;
 			}
 		}
 
-		logger.log(Level.CONFIG, "PricingRule registered: {0}", rule);
+		logger.info("PricingRule registered: {}", rule);
 		rules.add(rule);
 	}
 
@@ -112,7 +114,7 @@ public final class AggregatedPricingRule implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		logger.log(Level.FINE, "Evaluating prcing rules with pricingContext: {0}", pricingCtx);
+		logger.debug("Evaluating prcing rules with pricingContext: {}", pricingCtx);
 
 		for (final IPricingRule rule : rules)
 		{
@@ -124,7 +126,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// Preliminary check if there is a chance this pricing rule to be applied
 			if (!rule.applies(pricingCtx, result))
 			{
-				logger.log(Level.FINE, "Skipped rule {0}, result: {1}", rule, result);
+				logger.debug("Skipped rule {}, result: {}", rule, result);
 				continue;
 			}
 
@@ -141,7 +143,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 			// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
 			result.getRulesApplied().add(rule);
-			logger.log(Level.FINE, "Applied rule {0}, result: {1}", rule, result);
+			logger.debug("Applied rule {}, result: {}", rule, result);
 		}
 	}
 
@@ -154,9 +156,9 @@ public final class AggregatedPricingRule implements IPricingRule
 	@Override
 	public void updateFromDiscounLine(final I_M_PriceList_Version plv, final Iterator<I_M_ProductPrice> productPrices, final I_M_DiscountSchemaLine dsl)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("PriceListVersion: " + plv + " ; DiscountSchemaLine:" + dsl);
+			logger.debug("PriceListVersion: " + plv + " ; DiscountSchemaLine:" + dsl);
 		}
 
 		for (final IPricingRule rule : rules)

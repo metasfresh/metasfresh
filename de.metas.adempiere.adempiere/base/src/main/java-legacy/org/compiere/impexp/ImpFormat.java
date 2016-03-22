@@ -22,7 +22,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -37,7 +38,6 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.X_AD_ImpFormat;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -67,7 +67,7 @@ public final class ImpFormat
 	}	// ImpFormat
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ImpFormat.class);
+	private static Logger log = LogManager.getLogger(ImpFormat.class);
 
 	private String m_name;
 	private String m_formatType;
@@ -140,10 +140,10 @@ public final class ImpFormat
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "ImpFormat.setTable", e);
+			log.error("ImpFormat.setTable", e);
 		}
 		if (m_tableName == null || m_tablePK == null)
-			log.log(Level.SEVERE, "Data not found for AD_Table_ID=" + AD_Table_ID);
+			log.error("Data not found for AD_Table_ID=" + AD_Table_ID);
 
 		// Set Additional Table Info
 		m_tableUnique1 = "";
@@ -495,7 +495,7 @@ public final class ImpFormat
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Error while importing: " + lineStr, e);
+			log.error("Error while importing: " + lineStr, e);
 			return false;
 		}
 	}
@@ -653,11 +653,11 @@ public final class ImpFormat
 			{
 				throw new DBException("Failed inserting the record");
 			}
-			log.finer("New ID=" + importRecordId);
+			log.trace("New ID=" + importRecordId);
 		}
 		else
 		{
-			log.finer("Old ID=" + importRecordId);
+			log.trace("Old ID=" + importRecordId);
 		}
 
 		//

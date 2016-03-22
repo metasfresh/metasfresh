@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -88,7 +86,7 @@ public class MNewsChannel extends X_CM_NewsChannel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

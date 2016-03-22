@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
@@ -55,7 +56,7 @@ public class StorageCleanup extends SvrProcess
 			else if (name.equals("C_DocType_ID"))
 				p_C_DocType_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -110,7 +111,7 @@ public class StorageCleanup extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -225,10 +226,10 @@ public class StorageCleanup extends SvrProcess
 							Env.ZERO, reserved, ordered, get_TrxName()))
 							log.info("Reserved=" + reserved + ",Ordered=" + ordered);
 						else
-							log.warning("Failed Storage0 Update");
+							log.warn("Failed Storage0 Update");
 					}
 					else
-						log.warning("Failed Target Update");
+						log.warn("Failed Target Update");
 				}
 			}
 		}
@@ -273,7 +274,7 @@ public class StorageCleanup extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

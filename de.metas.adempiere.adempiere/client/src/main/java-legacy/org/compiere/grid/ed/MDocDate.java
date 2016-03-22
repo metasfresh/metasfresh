@@ -18,7 +18,8 @@ package org.compiere.grid.ed;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
@@ -28,7 +29,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Date Model.
@@ -90,7 +92,7 @@ final class MDocDate extends PlainDocument implements CaretListener
 	private static final char DELIMITER = '^';
 	private int	m_lastDot = 0;		//	last dot position
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(MDocDate.class);
+	private static final Logger log = LogManager.getLogger(MDocDate.class);
 	
 	/**
 	 *	Insert String
@@ -102,8 +104,8 @@ final class MDocDate extends PlainDocument implements CaretListener
 	@Override
 	public void insertString (int offset, final String string, final AttributeSet attr) throws BadLocationException
 	{
-		if (log.isLoggable(Level.FINEST))
-			log.finest("Offset=" + offset + ",String=" + string + ",Attr=" + attr + ",OldText=" + getText() + ",OldLength=" + getText().length());
+		if (log.isTraceEnabled())
+			log.trace("Offset=" + offset + ",String=" + string + ",Attr=" + attr + ",OldText=" + getText() + ",OldLength=" + getText().length());
 		
 		//
 		// Empty string => do nothing
@@ -175,7 +177,7 @@ final class MDocDate extends PlainDocument implements CaretListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.FINE, "Cannot insert " + string + " because the resulting text won't be valid anymore", e);
+				log.debug("Cannot insert " + string + " because the resulting text won't be valid anymore", e);
 				provideErrorFeedback();
 				return;
 			}
@@ -200,8 +202,8 @@ final class MDocDate extends PlainDocument implements CaretListener
 	@Override
 	public void remove (final int offset, final int length) throws BadLocationException
 	{
-		if (log.isLoggable(Level.FINEST))
-			log.finest("Offset=" + offset + ",Length=" + length);
+		if (log.isTraceEnabled())
+			log.trace("Offset=" + offset + ",Length=" + length);
 
 		// Case: clear the field (i.e removing the whole content)
 		if (offset == 0 && length == getLength())
@@ -246,8 +248,8 @@ final class MDocDate extends PlainDocument implements CaretListener
 	@Override
 	public void caretUpdate(CaretEvent e)
 	{
-		if(log.isLoggable(Level.FINEST))
-			log.finest("Dot=" + e.getDot() + ",Last=" + m_lastDot + ", Mark=" + e.getMark());
+		if(log.isTraceEnabled())
+			log.trace("Dot=" + e.getDot() + ",Last=" + m_lastDot + ", Mark=" + e.getMark());
 		
 		//	Selection
 		if (e.getDot() != e.getMark())
@@ -276,8 +278,8 @@ final class MDocDate extends PlainDocument implements CaretListener
 		else if (e.getDot() == m_mask.length()-1)	//	last
 			newDot = e.getDot() - 1;
 		//
-		if (log.isLoggable(Level.FINE))
-				log.fine("OnFixedChar=" + m_mask.charAt(e.getDot()) + ", newDot=" + newDot + ", last=" + m_lastDot);
+		if (log.isDebugEnabled())
+				log.debug("OnFixedChar=" + m_mask.charAt(e.getDot()) + ", newDot=" + newDot + ", last=" + m_lastDot);
 		//
 		m_lastDot = e.getDot();
 		if (newDot >= 0 && newDot < getText().length())

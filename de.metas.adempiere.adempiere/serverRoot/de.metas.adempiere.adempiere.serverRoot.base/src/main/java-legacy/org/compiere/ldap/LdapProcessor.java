@@ -18,7 +18,6 @@ package org.compiere.ldap;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MLdapProcessorLog;
@@ -79,11 +78,11 @@ public class LdapProcessor extends AdempiereServer
 		try
 		{
 			m_serverSocket = new ServerSocket(m_model.getLdapPort());
-			log.log(Level.INFO, "Opened Port=" + m_model.getLdapPort());
+			log.info("Opened Port=" + m_model.getLdapPort());
 			while (!isInterrupted())
 			{
 				Socket socket = m_serverSocket.accept();	//	waits for connection
-				log.log(Level.FINE, "Connection on Port=" + m_model.getLdapPort());
+				log.debug("Connection on Port=" + m_model.getLdapPort());
 				LdapConnectionHandler handler = 
 					new LdapConnectionHandler (socket, m_model);
 				handler.start();
@@ -92,7 +91,7 @@ public class LdapProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Port=" + m_model.getLdapPort(), e);
+			log.warn("Port=" + m_model.getLdapPort(), e);
 			m_summary.append(e.toString());
 		}
 		

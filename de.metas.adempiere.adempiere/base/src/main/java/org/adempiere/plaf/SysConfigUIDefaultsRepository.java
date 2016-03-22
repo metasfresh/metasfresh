@@ -24,7 +24,8 @@ package org.adempiere.plaf;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -35,7 +36,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -64,7 +64,7 @@ public class SysConfigUIDefaultsRepository
 
 	// services
 
-	private static final transient CLogger logger = CLogger.getCLogger(SysConfigUIDefaultsRepository.class);
+	private static final transient Logger logger = LogManager.getLogger(SysConfigUIDefaultsRepository.class);
 	private final UIDefaultsSerializer serializer = new UIDefaultsSerializer();
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
@@ -90,7 +90,7 @@ public class SysConfigUIDefaultsRepository
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Failed saving " + sysconfigName + ": " + value, e);
+			logger.error("Failed saving " + sysconfigName + ": " + value, e);
 		}
 	}
 
@@ -98,7 +98,7 @@ public class SysConfigUIDefaultsRepository
 	{
 		if (!DB.isConnected())
 		{
-			logger.warning("DB not connected. Cannot write: " + sysconfigName + "=" + sysconfigValue);
+			logger.warn("DB not connected. Cannot write: " + sysconfigName + "=" + sysconfigValue);
 			return;
 		}
 
@@ -151,7 +151,7 @@ public class SysConfigUIDefaultsRepository
 			}
 			catch (Exception ex)
 			{
-				logger.log(Level.WARNING, "Failed loading " + key + ": " + valueStr + ". Skipped.", ex);
+				logger.warn("Failed loading " + key + ": " + valueStr + ". Skipped.", ex);
 			}
 		}
 	}

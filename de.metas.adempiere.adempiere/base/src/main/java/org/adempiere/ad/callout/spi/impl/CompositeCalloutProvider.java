@@ -27,17 +27,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 public class CompositeCalloutProvider implements ICalloutProvider
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CompositeCalloutProvider.class);
+	private static final transient Logger logger = LogManager.getLogger(CompositeCalloutProvider.class);
 
 	private final List<ICalloutProvider> providers = new ArrayList<ICalloutProvider>();
 
@@ -83,7 +83,7 @@ public class CompositeCalloutProvider implements ICalloutProvider
 				final String calloutId = callout.getId();
 				if (calloutIds.contains(calloutId))
 				{
-					logger.log(Level.WARNING, "Callout with ID '" + calloutId + "' was already added. Skipping");
+					logger.warn("Callout with ID '" + calloutId + "' was already added. Skipping");
 					continue;
 				}
 

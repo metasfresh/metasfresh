@@ -24,7 +24,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -206,7 +207,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -258,7 +259,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 			}
 		}
 		if (fromJournals.length != count)
-			log.log(Level.SEVERE, "Line difference - Journals=" + fromJournals.length + " <> Saved=" + count);
+			log.error("Line difference - Journals=" + fromJournals.length + " <> Saved=" + count);
 
 		return count + lineCount;
 	}	//	copyLinesFrom
@@ -836,7 +837,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF

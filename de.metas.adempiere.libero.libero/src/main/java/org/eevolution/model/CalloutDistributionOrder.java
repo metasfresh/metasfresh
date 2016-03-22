@@ -83,7 +83,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 		if (isCalloutActive() || value == null)
 			return "";
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		if (steps) log.warning("init - M_Product_ID=" + M_Product_ID + " - " );
+		if (steps) log.warn("init - M_Product_ID=" + M_Product_ID + " - " );
 		BigDecimal QtyOrdered = Env.ZERO;
 		BigDecimal QtyEntered;
 		
@@ -102,7 +102,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID 
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID 
 					+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);  
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -123,7 +123,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID 
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID 
 					+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);  
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -133,7 +133,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
-			log.fine("UOM=" + C_UOM_To_ID 
+			log.debug("UOM=" + C_UOM_To_ID 
 				+ ", QtyEntered=" + QtyEntered
 				+ " -> " + conversion 
 				+ " QtyOrdered=" + QtyOrdered);
@@ -149,7 +149,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 			BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
-				log.fine("Corrected QtyOrdered Scale " 
+				log.debug("Corrected QtyOrdered Scale " 
 					+ QtyOrdered + "->" + QtyOrdered1);  
 				QtyOrdered = QtyOrdered1;
 				mTab.setValue("QtyOrdered", QtyOrdered);
@@ -159,7 +159,7 @@ public class CalloutDistributionOrder extends CalloutEngine
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
-			log.fine("UOM=" + C_UOM_To_ID 
+			log.debug("UOM=" + C_UOM_To_ID 
 				+ ", QtyOrdered=" + QtyOrdered
 				+ " -> " + conversion 
 				+ " QtyEntered=" + QtyEntered);

@@ -29,7 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -44,14 +45,13 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.Lookup;
 import org.compiere.model.X_AD_Val_Rule;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util;
 
 public class ValidationRuleFactory implements IValidationRuleFactory
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 	
 	private static final int ROWINDEX_None = -1;
 
@@ -143,7 +143,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final String classname = valRule.getClassname();
 		if (Check.isEmpty(classname, true))
 		{
-			logger.log(Level.WARNING, "No Classname found for " + valRule.getName());
+			logger.warn("No Classname found for " + valRule.getName());
 			return NullValidationRule.instance;
 		}
 
@@ -196,7 +196,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Cannot instantiate rule class " + ruleClass + " [SKIP]", e);
+				logger.warn("Cannot instantiate rule class " + ruleClass + " [SKIP]", e);
 			}
 		}
 		return rules;

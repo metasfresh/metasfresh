@@ -39,7 +39,7 @@ import org.compiere.util.DB;
 
 public final class DocActionBL extends AbstractDocActionBL
 {
-	// private static final CLogger logger = CLogger.getCLogger(DocActionBL.class);
+	// private static final Logger logger = CLogMgt.getLogger(DocActionBL.class);
 
 	@Override
 	protected DocAction getDocAction(final Object document, boolean throwEx)

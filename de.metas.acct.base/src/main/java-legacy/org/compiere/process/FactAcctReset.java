@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -92,7 +93,7 @@ public class FactAcctReset extends SvrProcess
 				p_DateAcct_To = (Timestamp)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -134,7 +135,7 @@ public class FactAcctReset extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -167,7 +168,7 @@ public class FactAcctReset extends SvrProcess
 		int invalid = DB.executeUpdate(sql, get_TrxName());
 		//
 		if (unlocked + invalid != 0)
-			log.fine(TableName + " - Unlocked=" + unlocked + " - Invalid=" + invalid);
+			log.debug(TableName + " - Unlocked=" + unlocked + " - Invalid=" + invalid);
 		m_countReset += unlocked + invalid; 
 	}	//	reset
 
@@ -254,7 +255,7 @@ public class FactAcctReset extends SvrProcess
 		if (docBaseType == null)
 		{
 			String s = TableName + ": Unknown DocBaseType";
-			log.severe(s);
+			log.error(s);
 			addLog(s);
 			docBaseType = "";
 			return;
@@ -279,7 +280,7 @@ public class FactAcctReset extends SvrProcess
 			sql1 += " AND TRUNC(fact.DateAcct) <= " + DB.TO_DATE(p_DateAcct_To);
 		sql1 += ")";
 
-		log.log(Level.FINE, sql1);
+		log.debug(sql1);
 
 		int reset = DB.executeUpdate(sql1, get_TrxName()); 
 		//	Fact
@@ -298,7 +299,7 @@ public class FactAcctReset extends SvrProcess
 		if (p_DateAcct_To != null)
 			sql2 += " AND TRUNC(Fact_Acct.DateAcct) <= " + DB.TO_DATE(p_DateAcct_To);
 
-		log.log(Level.FINE, sql2);
+		log.debug(sql2);
 		
 		int deleted = DB.executeUpdate(sql2, get_TrxName());
 		//

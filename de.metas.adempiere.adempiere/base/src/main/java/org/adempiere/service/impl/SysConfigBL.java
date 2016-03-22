@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +37,6 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
@@ -48,7 +48,7 @@ import org.compiere.util.TrxRunnable;
  */
 public class SysConfigBL implements ISysConfigBL
 {
-	private final CLogger s_log = CLogger.getCLogger(getClass());
+	private final Logger s_log = LogManager.getLogger(getClass());
 
 	/*
 	 * (non-Javadoc)
@@ -97,7 +97,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -122,7 +122,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -202,7 +202,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -227,7 +227,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -307,7 +307,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -332,7 +332,7 @@ public class SysConfigBL implements ISysConfigBL
 		}
 		catch (final NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}

@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +40,6 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
@@ -53,12 +51,16 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 
 public class DDOrderBL implements IDDOrderBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public BigDecimal getQtyToReceive(final I_DD_OrderLine ddOrderLine)
@@ -221,7 +223,7 @@ public class DDOrderBL implements IDDOrderBL
 		{
 			// just ignore it
 			// NOTE: we are logging as FINE because it's a common case if u are not doing manufacturing to get this error
-			logger.log(Level.FINE, "No plant was found. Returning null.", e);
+			logger.debug("No plant was found. Returning null.", e);
 		}
 
 		//
@@ -299,8 +301,8 @@ public class DDOrderBL implements IDDOrderBL
 			final int currentPlantId,
 			final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
-		logger.log(Level.FINE, "PP_Plant_ID: {0}", currentPlantId);
-		logger.log(Level.FINE, "Processor: {0}", ddOrderProcessor);
+		logger.debug("PP_Plant_ID: {}", currentPlantId);
+		logger.debug("Processor: {}", ddOrderProcessor);
 
 		//
 		// Retrieve DD Orders which are
@@ -323,10 +325,10 @@ public class DDOrderBL implements IDDOrderBL
 				//
 				// Create query
 				.create();
-		logger.log(Level.FINE, "DD Orders Query: {0}", ddOrdersToProcessQuery);
+		logger.debug("DD Orders Query: {}", ddOrdersToProcessQuery);
 
 		final List<I_DD_Order> ddOrdersToProcess = ddOrdersToProcessQuery.list();
-		logger.log(Level.FINE, "Selected DD Orders to process: {0}", ddOrdersToProcess);
+		logger.debug("Selected DD Orders to process: {}", ddOrdersToProcess);
 
 		//
 		// Process DD Orders

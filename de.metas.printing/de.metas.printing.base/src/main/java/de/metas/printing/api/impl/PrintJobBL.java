@@ -31,9 +31,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -46,7 +45,6 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.PeekIterator;
 import org.adempiere.util.collections.SingletonIterator;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
@@ -77,7 +75,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	public final static String SYSCONFIG_MAX_LINES_PER_JOB = Printing_Constants.SYSCONFIG_Printing_PREFIX + "MaxLinesPerJob";
 
-	private final static transient Logger logger = CLogger.getCLogger(PrintJobBL.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 
 	private int maxLinesPerJob = -1;
 
@@ -198,7 +196,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		if (count > 0)
 		{
-			logger.log(Level.INFO, "Skipped {0} already processed records", count);
+			logger.info("Skipped {} already processed records", count);
 		}
 		return count;
 	}
@@ -260,12 +258,12 @@ public class PrintJobBL implements IPrintJobBL
 			if (source.isPrinted(item))
 			{
 				// Item was already printed, skip it
-				logger.log(Level.FINE, "Skipping {0} because is already printed", item);
+				logger.debug("Skipping {} because is already printed", item);
 				continue;
 			}
 			if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
 			{
-				logger.log(Level.INFO, "The lat item had copies = {0}, the current one has copies = {1}; not adding further items to printJob = {2}",
+				logger.info("The lat item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
 						new Object[] { lastItemCopies, item.getCopies(), printJob });
 				break;
 			}
@@ -285,7 +283,7 @@ public class PrintJobBL implements IPrintJobBL
 			{
 				// we just created the 500th line of 'printJob' (or whatever the value of 'MAX_JOBPRINTLINES' is)
 				// that means that we stop here, we leave the iterator as is and next call of this method will process next lines
-				logger.log(Level.INFO, "Max lines per print job = {0} reached; not adding further items", maxLinesPerJobToUse);
+				logger.info("Max lines per print job = {} reached; not adding further items", maxLinesPerJobToUse);
 				break;
 			}
 
@@ -301,7 +299,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		if (printJob == null)
 		{
-			logger.log(Level.INFO, "No print job created");
+			logger.info("No print job created");
 			return null;
 		}
 
@@ -403,7 +401,7 @@ public class PrintJobBL implements IPrintJobBL
 			if (Check.isEmpty(hostKey, true))
 			{
 				// note that without a hostkey, we also can't retrieve the I_AD_Printer_Config
-				logger.log(Level.INFO, "Ignoring createWithSpecificHostKey=true, because there is no hostkey");
+				logger.info("Ignoring createWithSpecificHostKey=true, because there is no hostkey");
 			}
 			else
 			{
@@ -455,7 +453,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		//
 		// Try to create them now
-		logger.log(Level.INFO, "Print Job Line has no details: {0}. Creating them now...", printJobLine);
+		logger.info("Print Job Line has no details: {}. Creating them now...", printJobLine);
 		I_C_Printing_Queue item = printJobLine.getC_Printing_Queue();
 		printJobDetails = createPrintJobDetails(printJobLine, item);
 

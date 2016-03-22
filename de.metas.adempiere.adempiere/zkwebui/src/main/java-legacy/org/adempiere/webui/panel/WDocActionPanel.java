@@ -17,7 +17,6 @@
 
 package org.adempiere.webui.panel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,11 +33,12 @@ import org.adempiere.webui.component.Window;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Ref_List;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.wf.MWFActivity;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -72,11 +72,11 @@ public class WDocActionPanel extends Window implements EventListener
 	private boolean m_OKpressed;
 	private ConfirmPanel confirmPanel;
 
-	private static final CLogger logger;
+	private static final Logger logger;
 
 	static
 	{
-		logger = CLogger.getCLogger(WDocActionPanel.class);
+		logger = LogManager.getLogger(WDocActionPanel.class);
 	}
 
 	public WDocActionPanel(GridTab mgridTab)
@@ -113,7 +113,7 @@ public class WDocActionPanel extends Window implements EventListener
 			return;
 		}
 
-		logger.fine("DocStatus=" + DocStatus
+		logger.debug("DocStatus=" + DocStatus
 				+ ", DocAction=" + DocAction + ", OrderType=" + OrderType
 				+ ", IsSOTrx=" + IsSOTrx + ", Processing=" + Processing
 				+ ", AD_Table_ID=" + gridTab.getAD_Table_ID() + ", Record_ID=" + gridTab.getRecord_ID());
@@ -160,7 +160,7 @@ public class WDocActionPanel extends Window implements EventListener
 			{
 				docTypeId = (Integer)gridTab.getValue("C_DocTypeTarget_ID");
 			}
-			logger.fine("get doctype: " + docTypeId);
+			logger.debug("get doctype: " + docTypeId);
 
 			final Properties ctx = Env.getCtx();
 			final IDocActionOptionsContext optionsCtx = DefaultDocActionOptionsContext.builder(ctx)
@@ -336,7 +336,7 @@ public class WDocActionPanel extends Window implements EventListener
 	{
 		int index = getSelectedIndex();
 		// Save Selection
-		logger.config("DocAction=" + s_value[index]);
+		logger.info("DocAction=" + s_value[index]);
 		gridTab.setValue("DocAction", s_value[index]);
 	}	// save
 

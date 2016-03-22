@@ -23,13 +23,12 @@ package de.metas.handlingunits.attribute.propagation.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IAttributeValueListener;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
@@ -38,7 +37,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 
 public abstract class AbstractHUAttributePropagator implements IHUAttributePropagator
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private IHUAttributePropagatorFactory factory;
 
@@ -84,7 +83,7 @@ public abstract class AbstractHUAttributePropagator implements IHUAttributePropa
 	{
 		final IAttributeValue attributeValue = attributeSet.getAttributeValue(attribute);
 
-		logger.log(Level.FINE, "Setting INTERNAL attribute Value={0} for {1} on {2}", new Object[] { newValue, attribute, attributeSet });
+		logger.debug("Setting INTERNAL attribute Value={} for {} on {}", new Object[] { newValue, attribute, attributeSet });
 		attributeValue.setValue(attributeValueContext, newValue);
 	}
 }

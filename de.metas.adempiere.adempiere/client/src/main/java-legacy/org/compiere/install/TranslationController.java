@@ -40,10 +40,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.IStatusBar;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
@@ -56,7 +58,7 @@ public class TranslationController
 	}
 	
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(TranslationController.class);
+	public static Logger log = LogManager.getLogger(TranslationController.class);
 	/**	Window No			*/
 	public int         	m_WindowNo = 0;
 
@@ -83,7 +85,7 @@ public class TranslationController
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return list;
@@ -112,7 +114,7 @@ public class TranslationController
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return list;
@@ -142,7 +144,7 @@ public class TranslationController
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return list;

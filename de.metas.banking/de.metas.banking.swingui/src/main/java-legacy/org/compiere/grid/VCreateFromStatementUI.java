@@ -24,7 +24,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
@@ -49,7 +50,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -79,7 +81,7 @@ public class VCreateFromStatementUI extends CreateFromStatement implements Actio
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.positionCenterWindow(Env.getWindow(p_WindowNo), dialog);
@@ -89,7 +91,7 @@ public class VCreateFromStatementUI extends CreateFromStatement implements Actio
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 	
 	private JLabel bankAccountLabel = new JLabel();
 	protected VLookup bankAccountField;
@@ -128,7 +130,7 @@ public class VCreateFromStatementUI extends CreateFromStatement implements Actio
 	@Override
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -281,7 +283,7 @@ public class VCreateFromStatementUI extends CreateFromStatement implements Actio
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		log.config("Action=" + e.getActionCommand());
+		log.info("Action=" + e.getActionCommand());
 //		Object source = e.getSource();
 		if ( e.getActionCommand().equals(ConfirmPanel.A_REFRESH) )
 		{

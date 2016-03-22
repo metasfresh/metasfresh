@@ -33,9 +33,9 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 
 public interface IMutableMRPContext extends IMRPContext
 {
@@ -43,7 +43,7 @@ public interface IMutableMRPContext extends IMRPContext
 
 	void setTrxName(String trxName);
 
-	void setLogger(CLogger mrpLogger);
+	void setLogger(Logger mrpLogger);
 
 	@Override
 	Date getDate();

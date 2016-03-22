@@ -26,7 +26,8 @@ package de.metas.fresh.ordercheckup.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +37,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -57,7 +57,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
  */
 public class OrderCheckupBL implements IOrderCheckupBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(OrderCheckupBL.class);
+	private static final transient Logger logger = LogManager.getLogger(OrderCheckupBL.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
@@ -95,7 +95,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			final I_PP_Product_Planning mfgProductPlanning = orderCheckupDAO.retrieveProductPlanningOrNull(orderLine);
 			if (mfgProductPlanning == null)
 			{
-				logger.log(Level.INFO, "Skip order line because no manufacturing product planning was found for it: {0}", orderLine);
+				logger.info("Skip order line because no manufacturing product planning was found for it: {}", orderLine);
 				continue;
 			}
 
@@ -104,7 +104,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			final I_M_Warehouse mfgWarehouse = InterfaceWrapperHelper.create(mfgProductPlanning.getM_Warehouse(), I_M_Warehouse.class);
 			if (mfgWarehouse == null || mfgWarehouse.getM_Warehouse_ID() <= 0)
 			{
-				logger.log(Level.INFO, "Skip order line because no manufacturing warehouse was found for it: {0}", orderLine);
+				logger.info("Skip order line because no manufacturing warehouse was found for it: {}", orderLine);
 				continue;
 			}
 
@@ -187,7 +187,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	{
 		if (!order.isSOTrx())
 		{
-			logger.log(Level.FINE, "C_Order_ID {0} is not a sales order; nothing to do", order.getC_Order_ID());
+			logger.debug("C_Order_ID {} is not a sales order; nothing to do", order.getC_Order_ID());
 			return false; // nothing to do
 		}
 
@@ -214,7 +214,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		if (!sysConfigValueIsTrue)
 		{
-			logger.log(Level.FINE, "AD_SysConfig {0} is *not* set to 'Y' for AD_Client_ID={1} and AD_Org_ID={2}; nothing to do for C_Order_ID {3}.",
+			logger.debug("AD_SysConfig {} is *not* set to 'Y' for AD_Client_ID={} and AD_Org_ID={}; nothing to do for C_Order_ID {}.",
 					new Object[] {
 							SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,
 							order.getAD_Client_ID(),
@@ -225,7 +225,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{
-			logger.log(Level.FINE, "C_BPartner {0} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {1}.",
+			logger.debug("C_BPartner {} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {}.",
 					new Object[] {
 							bpartner.getValue(),
 							order.getC_Order_ID()

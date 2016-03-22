@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,6 +35,8 @@ import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
@@ -95,7 +96,7 @@ public final class CacheMgt
 	private final Map<String, AtomicInteger> tableNames = new HashMap<>();
 
 	/** Logger */
-	static final transient CLogger log = CLogger.getCLogger(CacheMgt.class);
+	static final transient Logger log = LogManager.getLogger(CacheMgt.class);
 
 	/**
 	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
@@ -293,7 +294,7 @@ public final class CacheMgt
 			cacheResetRunning.set(false);
 		}
 
-		if (log.isLoggable(Level.INFO))
+		if (log.isInfoEnabled())
 		{
 			log.info("" + counter + " cache instances invalidated (" + total + " cached items invalidated)");
 		}
@@ -387,7 +388,7 @@ public final class CacheMgt
 						final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 						if (itemsRemoved > 0)
 						{
-							log.log(Level.FINE, "Rest cache instance: {0}", cacheInstance);
+							log.debug("Rest cache instance: {0}", cacheInstance);
 							total += itemsRemoved;
 							counter++;
 						}
@@ -395,9 +396,9 @@ public final class CacheMgt
 				}
 			}
 			//
-			if (log.isLoggable(Level.INFO))
+			if (log.isDebugEnabled())
 			{
-				log.info(tableName + ": " + counter + " cache interfaces checked (" + total + " records invalidated)");
+				log.debug(tableName + ": " + counter + " cache interfaces checked (" + total + " records invalidated)");
 			}
 
 
@@ -516,7 +517,7 @@ public final class CacheMgt
 		catch (Exception e)
 		{
 			// log but don't fail
-			log.log(Level.WARNING, "Error while reseting " + cacheInstance, e);
+			log.warn("Error while reseting " + cacheInstance, e);
 			return 0;
 		}
 	}
@@ -609,9 +610,9 @@ public final class CacheMgt
 			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
 					.postEvent(event);
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.fine("Broadcasting cache invalidation of " + tableName + "/" + recordId + ", event=" + event);
+				log.debug("Broadcasting cache invalidation of " + tableName + "/" + recordId + ", event=" + event);
 			}
 		}
 
@@ -633,7 +634,7 @@ public final class CacheMgt
 			final String tableName = event.getProperty(EVENT_PROPERTY_TableName);
 			if (Check.isEmpty(tableName, true))
 			{
-				log.log(Level.INFO, "Ignored event event without tableName set: {0}", event);
+				log.info("Ignored event without tableName set: {}", event);
 				return;
 			}
 			// NOTE: we try to invalidate the local cache even if the tableName is not in our tableNames to broadcast list.
@@ -648,9 +649,9 @@ public final class CacheMgt
 
 			//
 			// Reset cache for TableName/Record_ID
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.log(Level.FINE, "Reseting cache for " + tableName + "/" + recordId + " because we got remote event: " + event);
+				log.debug("Reseting cache for " + tableName + "/" + recordId + " because we got remote event: " + event);
 			}
 			final boolean broadcast = false; // don't broadcast it anymore because else we would introduce recursion
 			CacheMgt.get().reset(tableName, recordId, broadcast);
@@ -711,7 +712,7 @@ public final class CacheMgt
 			final TableRecordReference record = new TableRecordReference(tableName, recordId);
 			records.add(record);
 			
-			log.log(Level.FINE, "Scheduled cache invalidation on transaction commit: {0}", record);
+			log.debug("Scheduled cache invalidation on transaction commit: {0}", record);
 		}
 
 		/** Reset the cache for all enqueued records */

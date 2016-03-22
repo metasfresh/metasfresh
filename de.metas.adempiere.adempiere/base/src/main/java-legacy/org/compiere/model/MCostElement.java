@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -59,7 +59,7 @@ public class MCostElement extends X_M_CostElement
 	{
 		if (CostingMethod == null || CostingMethod.length() == 0)
 		{
-			s_log.severe("No CostingMethod");
+			s_log.error("No CostingMethod");
 			return null;
 		}
 		//
@@ -113,7 +113,7 @@ public class MCostElement extends X_M_CostElement
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -169,7 +169,7 @@ public class MCostElement extends X_M_CostElement
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -213,7 +213,7 @@ public class MCostElement extends X_M_CostElement
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -291,7 +291,7 @@ public class MCostElement extends X_M_CostElement
 	private static CCache<Integer,MCostElement>	s_cache	= new CCache<Integer,MCostElement>("M_CostElement", 20);
 	
 	/**	Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MCostElement.class);
+	private static Logger	s_log	= LogManager.getLogger(MCostElement.class);
 	
 	
 	/**************************************************************************
@@ -415,7 +415,7 @@ public class MCostElement extends X_M_CostElement
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

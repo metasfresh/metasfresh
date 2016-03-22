@@ -16,14 +16,10 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import it.sauronsoftware.cron4j.Predictor;
-import it.sauronsoftware.cron4j.SchedulingPattern;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -68,6 +64,8 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.notification.INotificationBL;
+import it.sauronsoftware.cron4j.Predictor;
+import it.sauronsoftware.cron4j.SchedulingPattern;
 
 /**
  * Scheduler
@@ -240,7 +238,7 @@ public class Scheduler extends AdempiereServer
 					@Override
 					public boolean doCatch(final Throwable e) throws Throwable
 					{
-						log.log(Level.WARNING, "Failed running process/report: " + process, e);
+						log.warn("Failed running process/report: " + process, e);
 						m_summary.append(e.toString());
 						return ROLLBACK;
 					}
@@ -344,7 +342,7 @@ public class Scheduler extends AdempiereServer
 	 */
 	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.log(Level.INFO, "{0}", process);
+		log.info("{}", process);
 
 		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
 		{
@@ -398,7 +396,7 @@ public class Scheduler extends AdempiereServer
 	 */
 	private final String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.log(Level.INFO, "{0}", process);
+		log.info("{}", process);
 
 		final ITrx trx = getThreadInheritedTrx();
 		final boolean ok = process.processIt(pi, trx);
@@ -517,7 +515,7 @@ public class Scheduler extends AdempiereServer
 				if (iPara.getParameterName().equals(sPara.getColumnName()))
 				{
 					final String variable = sPara.getParameterDefault();
-					log.fine(sPara.getColumnName() + " = " + variable);
+					log.debug(sPara.getColumnName() + " = " + variable);
 					// Value - Constant/Variable
 					Object value = variable;
 					if (variable == null
@@ -533,7 +531,7 @@ public class Scheduler extends AdempiereServer
 						index = columnName.indexOf('@');
 						if (index == -1)
 						{
-							log.warning(sPara.getColumnName() + " - cannot evaluate=" + variable);
+							log.warn(sPara.getColumnName() + " - cannot evaluate=" + variable);
 							break;
 						}
 						columnName = columnName.substring(0, index);
@@ -542,7 +540,7 @@ public class Scheduler extends AdempiereServer
 						final String env = Env.getContext(ctx, columnName);
 						if (env.length() == 0)
 						{
-							log.warning(sPara.getColumnName() + " - not in environment =" + columnName + "(" + variable + ")");
+							log.warn(sPara.getColumnName() + " - not in environment =" + columnName + "(" + variable + ")");
 							break;
 						}
 						else
@@ -554,7 +552,7 @@ public class Scheduler extends AdempiereServer
 					// No Value
 					if (value == null)
 					{
-						log.fine(sPara.getColumnName() + " - empty");
+						log.debug(sPara.getColumnName() + " - empty");
 						break;
 					}
 
@@ -578,7 +576,7 @@ public class Scheduler extends AdempiereServer
 								bd = new BigDecimal(value.toString());
 							}
 							iPara.setP_Number(bd);
-							log.fine(sPara.getColumnName() + " = " + variable + " (=" + bd + "=)");
+							log.debug(sPara.getColumnName() + " = " + variable + " (=" + bd + "=)");
 						}
 						else if (DisplayType.isDate(sPara.getDisplayType()))
 						{
@@ -592,18 +590,18 @@ public class Scheduler extends AdempiereServer
 								ts = Timestamp.valueOf(value.toString());
 							}
 							iPara.setP_Date(ts);
-							log.fine(sPara.getColumnName() + " = " + variable + " (=" + ts + "=)");
+							log.debug(sPara.getColumnName() + " = " + variable + " (=" + ts + "=)");
 						}
 						else
 						{
 							iPara.setP_String(value.toString());
-							log.fine(sPara.getColumnName() + " = " + variable + " (=" + value + "=) " + value.getClass().getName());
+							log.debug(sPara.getColumnName() + " = " + variable + " (=" + value + "=) " + value.getClass().getName());
 						}
 						InterfaceWrapperHelper.save(iPara);
 					}
 					catch (final Exception e)
 					{
-						log.warning(sPara.getColumnName() + " = " + variable + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
+						log.warn(sPara.getColumnName() + " = " + variable + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
 					}
 					break;
 				}	// parameter match

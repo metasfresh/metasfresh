@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
@@ -52,7 +50,7 @@ public class TransactionXRef extends SvrProcess
 			else if (name.equals("Search_Invoice_ID"))
 				p_Search_Invoice_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -131,8 +129,8 @@ public class TransactionXRef extends SvrProcess
 			+ ") ORDER BY M_Transaction_ID";
 		//
 		int no = DB.executeUpdate(sql, get_TrxName());
-		log.fine(sql);
-		log.config("#" + no);
+		log.debug(sql);
+		log.info("#" + no);
 		
 		//	Multi-Level
 		

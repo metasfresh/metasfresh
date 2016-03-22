@@ -55,7 +55,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * @author Trifon N. Trifonov
@@ -66,7 +67,7 @@ public class MEXPProcessorParameter extends X_EXP_ProcessorParameter {
 	 */
 	private static final long serialVersionUID = 2633307385854436092L;
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MEXPProcessorParameter.class);
+	private static Logger	s_log	= LogManager.getLogger(MEXPProcessorParameter.class);
 	
 	
 	public MEXPProcessorParameter(Properties ctx, int EXP_ProcessorParameter_ID, String trxName) {

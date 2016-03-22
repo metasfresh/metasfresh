@@ -979,7 +979,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	} // getPDF
@@ -1074,7 +1074,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			}
 
 			final BigDecimal qtyIssue = toIssue.min(qtyOnHand);
-			// log.fine("ToIssue: " + issue);
+			// log.debug("ToIssue: " + issue);
 			// create record for negative and positive transaction
 			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 			{

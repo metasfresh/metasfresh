@@ -23,7 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
@@ -32,7 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -119,13 +119,13 @@ public class MBPartner extends X_C_BPartner {
 			if (rs.next())
 				retValue = new MBPartner(ctx, rs, null);
 			else
-				s_log.log(Level.SEVERE, "Not found for AD_Client_ID="
+				s_log.error("Not found for AD_Client_ID="
 						+ AD_Client_ID);
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		} finally {
 			try {
 				if (pstmt != null)
@@ -199,7 +199,7 @@ public class MBPartner extends X_C_BPartner {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try {
 			if (pstmt != null)
@@ -212,7 +212,7 @@ public class MBPartner extends X_C_BPartner {
 	} // getNotInvoicedAmt
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MBPartner.class);
+	private static Logger s_log = LogManager.getLogger(MBPartner.class);
 
 	/**************************************************************************
 	 * Constructor for new BPartner from Template
@@ -288,7 +288,7 @@ public class MBPartner extends X_C_BPartner {
 		}
 		// ts: doesn't work with table level caching, when this instance is created by PO.copy(). 
 		// Reason: at this stage we don't yet have a POInfo, but the toString() method calls getValue which requires a POInfo
-		// log.fine(toString());  
+		// log.debug(toString());  
 	} // MBPartner
 
 	/**
@@ -365,13 +365,13 @@ public class MBPartner extends X_C_BPartner {
 			else {
 				load(0, null);
 				success = false;
-				log.severe("None found");
+				log.error("None found");
 			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		} finally {
 			try {
 				if (pstmt != null)
@@ -416,7 +416,7 @@ public class MBPartner extends X_C_BPartner {
 			while (rs.next())
 				list.add(new MUser(getCtx(), rs, get_TrxName()));
 		} catch (Exception e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		} finally {
 			DB.close(rs, pstmt);
 			rs = null;
@@ -517,7 +517,7 @@ public class MBPartner extends X_C_BPartner {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		} finally {
 			try {
 				if (pstmt != null)
@@ -610,7 +610,7 @@ public class MBPartner extends X_C_BPartner {
 //		try {
 //			AD_OrgBP_ID = Integer.parseInt(org);
 //		} catch (Exception ex) {
-//			log.log(Level.SEVERE, org, ex);
+//			log.error(org, ex);
 //		}
 //		return AD_OrgBP_ID;
 	} // getAD_OrgBP_ID_Int
@@ -731,7 +731,7 @@ public class MBPartner extends X_C_BPartner {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -772,7 +772,7 @@ public class MBPartner extends X_C_BPartner {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try {
 			if (pstmt != null)
@@ -987,11 +987,7 @@ public class MBPartner extends X_C_BPartner {
 				return user.get_ID();
 			}
 		}
-		CLogger
-				.getCLogger(MBPartner.class)
-				.warning(
-						"Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID "
-								+ cBPartnerId + " doesn't have one.");
+		LogManager.getLogger(MBPartner.class).warn("Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID " + cBPartnerId + " doesn't have one.");
 		return -1;
 	}
 

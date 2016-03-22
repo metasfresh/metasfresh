@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -231,7 +229,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Role_OrgAccess", e);
+			log.error("AD_Role_OrgAccess", e);
 			throw new DatabaseAccessException("Failed to export organization role access.");
 		}
 		// Process user assignment access
@@ -250,7 +248,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_User_Roles", e);
+			log.error("AD_User_Roles", e);
 			throw new DatabaseAccessException("Failed to export user role assignment.");
 		}
 		
@@ -270,7 +268,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Window_Access", e);
+			log.error("AD_Window_Access", e);
 			throw new DatabaseAccessException("Failed to export window access.");
 		}
 
@@ -290,7 +288,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Process_Access", e);
+			log.error("AD_Process_Access", e);
 			throw new DatabaseAccessException("Failed to export process access.");
 		}
 
@@ -310,7 +308,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Form_Access", e);
+			log.error("AD_Form_Access", e);
 			throw new DatabaseAccessException("Failed to export form access.");
 		}
 
@@ -330,7 +328,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Workflow_Access", e);
+			log.error("AD_Workflow_Access", e);
 			throw new DatabaseAccessException("Failed to export workflow access.");
 		}
 
@@ -350,7 +348,7 @@ public class RoleElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "AD_Task_Access", e);
+			log.error("AD_Task_Access", e);
 			throw new DatabaseAccessException("Failed to export task access.");
 		} finally {
 			try {

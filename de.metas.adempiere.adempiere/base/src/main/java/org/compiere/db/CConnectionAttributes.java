@@ -22,10 +22,10 @@ package org.compiere.db;
  * #L%
  */
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 /**
  * {@link CConnection}'s attributes.
@@ -84,7 +84,7 @@ public final class CConnectionAttributes
 		return null;
 	}
 	
-	private static final transient CLogger logger = CLogger.getCLogger(CConnectionAttributes.class);
+	private static final transient Logger logger = LogManager.getLogger(CConnectionAttributes.class);
 
 	/** Marker used to indicate that we go without an application server */
 	private static final String APPS_HOST_None = "MyAppsServer";
@@ -189,7 +189,7 @@ public final class CConnectionAttributes
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Failed parsing Apps port: " + appsPort, e);
+			logger.warn("Failed parsing Apps port: " + appsPort, e);
 		}
 	} 	// setAppsPort
 
@@ -239,7 +239,7 @@ public final class CConnectionAttributes
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "Error parsing db port: " + dbPortString, e);
+			logger.error("Error parsing db port: " + dbPortString, e);
 		}
 	} 	// setDbPort
 

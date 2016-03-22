@@ -18,7 +18,6 @@ package org.compiere.server;
 
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
@@ -37,11 +36,12 @@ import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
 import org.compiere.model.X_R_RequestProcessor;
 import org.compiere.server.exception.ServerThreadException;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.wf.MWorkflowProcessor;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Adempiere Server Base
@@ -122,7 +122,7 @@ public abstract class AdempiereServer extends Thread
 	private long 				m_nextWork = 0;
 
 	/**	Logger						*/
-	protected CLogger	log = CLogger.getCLogger(getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	/**	Context						*/
 	private final Properties m_ctx;
 	/** Client						*/
@@ -154,10 +154,10 @@ public abstract class AdempiereServer extends Thread
 	{
 		if (isInterrupted())
 		{
-			log.info (getName() + ": interrupted");
+			log.info(getName() + ": interrupted");
 			return false;
 		}
-		log.fine(getName() + ": sleeping " + TimeUtil.formatElapsed(m_sleepMS));
+		log.debug(getName() + ": sleeping " + TimeUtil.formatElapsed(m_sleepMS));
 		m_sleeping = true;
 		try
 		{
@@ -165,7 +165,7 @@ public abstract class AdempiereServer extends Thread
 		}
 		catch (InterruptedException e)
 		{
-			log.info (getName() + ": interrupted");
+			log.info(getName() + ": interrupted");
 			m_sleeping = false;
 			return false;
 		}
@@ -205,7 +205,7 @@ public abstract class AdempiereServer extends Thread
 		p_model.setDateLastRun(new Timestamp(now));
 		p_model.save();
 		//
-		log.fine(getName() + ": " + getStatistics());
+		log.debug(getName() + ": " + getStatistics());
 	}	//	runNow
 
 	/**************************************************************************
@@ -216,12 +216,12 @@ public abstract class AdempiereServer extends Thread
 	{
 		try
 		{
-			log.fine(getName() + ": pre-nap - " + m_initialNapSecs);
+			log.debug(getName() + ": pre-nap - " + m_initialNapSecs);
 			sleep (m_initialNapSecs * 1000);
 		}
 		catch (InterruptedException e)
 		{
-			log.log(Level.SEVERE, getName() + ": pre-nap interrupted", e);
+			log.error(getName() + ": pre-nap interrupted", e);
 			return;
 		}
 
@@ -244,7 +244,7 @@ public abstract class AdempiereServer extends Thread
 			catch (Exception e)
 			{
 				final ServerThreadException serverThreadEx = new ServerThreadException(p_model.getName(), e);
-				log.log(Level.SEVERE, serverThreadEx.getLocalizedMessage(), serverThreadEx);
+				log.error(serverThreadEx.getLocalizedMessage(), serverThreadEx);
 			}
 			finally
 			{
@@ -285,7 +285,7 @@ public abstract class AdempiereServer extends Thread
 		}
 		if (isInterrupted())
 		{
-			log.info (getName() + ": interrupted");
+			log.info(getName() + ": interrupted");
 			return true;
 		}
 
@@ -329,7 +329,7 @@ public abstract class AdempiereServer extends Thread
 		p_model.setDateNextRun(new Timestamp(m_nextWork));
 		p_model.save();
 		
-		log.fine(getName() + ": " + getStatistics());
+		log.debug(getName() + ": " + getStatistics());
 		
 		return false;
 	}
@@ -438,7 +438,7 @@ public abstract class AdempiereServer extends Thread
 		else // Unknown Frequency
 		{
 			typeSec = 600; // 10 min
-			log.log(Level.WARNING, "Unknown FrequencyType=" + frequencyType + ". Using Frequency=" + typeSec + "seconds.");
+			log.warn("Unknown FrequencyType=" + frequencyType + ". Using Frequency=" + typeSec + "seconds.");
 		}
 		//
 		return typeSec * 1000 * frequency;		//	ms

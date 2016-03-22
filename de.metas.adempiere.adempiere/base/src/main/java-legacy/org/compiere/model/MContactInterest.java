@@ -20,9 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
  
@@ -73,7 +73,7 @@ public class MContactInterest extends X_R_ContactInterest
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -89,10 +89,10 @@ public class MContactInterest extends X_R_ContactInterest
 		{
 			retValue = new MContactInterest (ctx, R_InterestArea_ID, AD_User_ID, 
 				isActive, trxName);
-			s_log.fine("NOT found - " + retValue);
+			s_log.debug("NOT found - " + retValue);
 		}
 		else
-			s_log.fine("Found - " + retValue);
+			s_log.debug("Found - " + retValue);
 		return retValue;
 	}	//	get
 
@@ -139,7 +139,7 @@ public class MContactInterest extends X_R_ContactInterest
 	}	//	MContactInterest
 
 	/**	Static Logger				*/
-	private static CLogger		s_log = CLogger.getCLogger (MContactInterest.class);
+	private static Logger		s_log = LogManager.getLogger(MContactInterest.class);
 
 	/**
 	 * 	Set OptOut Date
@@ -150,7 +150,7 @@ public class MContactInterest extends X_R_ContactInterest
 	{
 		if (OptOutDate == null)
 			OptOutDate = new Timestamp(System.currentTimeMillis());
-		log.fine("" + OptOutDate);
+		log.debug("" + OptOutDate);
 		super.setOptOutDate(OptOutDate);
 		setIsActive(false);
 	}	//	setOptOutDate
@@ -182,7 +182,7 @@ public class MContactInterest extends X_R_ContactInterest
 	{
 		if (SubscribeDate == null)
 			SubscribeDate = new Timestamp(System.currentTimeMillis());
-		log.fine("" + SubscribeDate);
+		log.debug("" + SubscribeDate);
 		super.setSubscribeDate(SubscribeDate);
 		super.setOptOutDate(null);
 		setIsActive(true);

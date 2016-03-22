@@ -22,7 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -32,7 +33,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.MImage;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -98,7 +100,7 @@ public class VImage extends JButton
 	private Dimension previewMaxSize = null;
 	
 	/**	Logger			*/
-	private static final transient CLogger log = CLogger.getCLogger(VImage.class);
+	private static final transient Logger log = LogManager.getLogger(VImage.class);
 
 	/**
 	 * Sets if the loaded image shall be displayed on button, as an icon.
@@ -141,7 +143,7 @@ public class VImage extends JButton
 	@Override
 	public void setValue(final Object value)
 	{
-		log.log(Level.FINE, "={0}", value);
+		log.debug("={}", value);
 		
 		int newValue = 0;
 		if (value instanceof Integer)
@@ -162,7 +164,7 @@ public class VImage extends JButton
 		}
 		
 		//
-		log.fine(m_mImage.toString());
+		log.debug(m_mImage.toString());
 		updateButtonUI();
 	}   //  setValue
 	

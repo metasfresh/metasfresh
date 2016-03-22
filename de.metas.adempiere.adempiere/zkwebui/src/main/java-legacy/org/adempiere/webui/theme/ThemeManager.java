@@ -16,10 +16,12 @@ package org.adempiere.webui.theme;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.compiere.model.MSysConfig;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -39,7 +41,7 @@ public final class ThemeManager
 	// default theme
 	public static final String ZK_THEME_IMPL_DEFAULT = DefaultThemeImpl.class.getCanonicalName();
 
-	private static final CLogger log = CLogger.getCLogger(ThemeManager.class);
+	private static final Logger log = LogManager.getLogger(ThemeManager.class);
 
 	private static final Map<String, ITheme> themes = new HashMap<String, ITheme>();
 
@@ -66,7 +68,7 @@ public final class ThemeManager
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			themeImpl = new DefaultThemeImpl();
 		}
 		registerThemeImpl(themeName, themeImpl);

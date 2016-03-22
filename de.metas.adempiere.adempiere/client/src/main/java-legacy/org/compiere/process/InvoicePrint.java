@@ -20,7 +20,8 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
@@ -90,7 +91,7 @@ public class InvoicePrint extends SvrProcess
 				m_DocumentNo_To = (String)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		if (m_DocumentNo_From != null && m_DocumentNo_From.length() == 0)
 			m_DocumentNo_From = null;
@@ -108,7 +109,7 @@ public class InvoicePrint extends SvrProcess
 		//	Need to have Template
 		if (p_EMailPDF && p_R_MailText_ID == 0)
 			throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@");
-		log.info ("C_BPartner_ID=" + m_C_BPartner_ID
+		log.info("C_BPartner_ID=" + m_C_BPartner_ID
 			+ ", C_Invoice_ID=" + m_C_Invoice_ID
 			+ ", EmailPDF=" + p_EMailPDF + ",R_MailText_ID=" + p_R_MailText_ID
 			+ ", DateInvoiced=" + m_dateInvoiced_From + "-" + m_dateInvoiced_To
@@ -217,7 +218,7 @@ public class InvoicePrint extends SvrProcess
 			}
 		}
 		sql.append(" ORDER BY i.C_Invoice_ID, pf.AD_Org_ID DESC");	//	more than 1 PF record
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 
 		MPrintFormat format = null;
 		int old_AD_PrintFormat_ID = -1;
@@ -320,7 +321,7 @@ public class InvoicePrint extends SvrProcess
 					if (!Ini.isClient())
 						invoice = new File(MInvoice.getPDFFileName(documentDir, C_Invoice_ID));
 					File attachment = re.getPDF(invoice);
-					log.fine(to + " - " + attachment);
+					log.debug(to + " - " + attachment);
 					email.addAttachment(attachment);
 					//
 					String msg = email.send();
@@ -366,7 +367,7 @@ public class InvoicePrint extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "doIt - " + sql, e);
+			log.error("doIt - " + sql, e);
 			throw new Exception (e);
 		}
 		finally {

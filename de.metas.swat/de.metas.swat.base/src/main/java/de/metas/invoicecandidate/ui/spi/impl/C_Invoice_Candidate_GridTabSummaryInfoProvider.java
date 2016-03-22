@@ -26,7 +26,6 @@ package de.metas.invoicecandidate.ui.spi.impl;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
@@ -34,9 +33,8 @@ import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_C_Currency;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
-
+import org.slf4j.Logger;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -50,7 +48,7 @@ import de.metas.invoicecandidate.ui.spi.impl.InvoiceCandidatesSelectionSummaryIn
  */
 public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabSummaryInfoProvider
 {
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate_GridTabSummaryInfoProvider.class);
 
 	@Override
 	public final IGridTabSummaryInfo getSummaryInfo(final GridTab gridTab)
@@ -149,7 +147,7 @@ public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabS
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, sql.toString(), e);
+			logger.error(sql.toString(), e);
 
 			return null;
 		}

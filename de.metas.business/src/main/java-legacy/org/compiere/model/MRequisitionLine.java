@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
@@ -222,7 +223,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 		if (getM_Product_ID() == 0)
 			return;
 		//
-		log.fine("M_PriceList_ID=" + M_PriceList_ID);
+		log.debug("M_PriceList_ID=" + M_PriceList_ID);
 		boolean isSOTrx = false;
 		MProductPricing pp = new MProductPricing (getM_Product_ID(), getC_BPartner_ID(),
 			getQty(), isSOTrx);
@@ -318,7 +319,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 	 */
 	private boolean updateHeader()
 	{
-		log.fine("");
+		log.debug("");
 		String sql = "UPDATE M_Requisition r"
 			+ " SET TotalLines="
 				+ "(SELECT COALESCE(SUM(LineNetAmt),0) FROM M_RequisitionLine rl "
@@ -326,7 +327,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 			+ "WHERE M_Requisition_ID=?";
 		int no = DB.executeUpdateEx(sql, new Object[]{getM_Requisition_ID()}, get_TrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "Header update #" + no);
+			log.error("Header update #" + no);
 		m_parent = null;
 		return no == 1;
 	}	//	updateHeader

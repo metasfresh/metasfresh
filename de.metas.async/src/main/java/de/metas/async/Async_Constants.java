@@ -1,5 +1,7 @@
 package de.metas.async;
 
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.async

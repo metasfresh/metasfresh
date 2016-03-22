@@ -29,7 +29,8 @@ import java.util.Properties;
 
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IParameterBL;
 import de.metas.commission.custom.type.ICommissionType;
@@ -42,7 +43,7 @@ public class MCAdvComSystemType extends X_C_AdvComSystem_Type
 	 */
 	private static final long serialVersionUID = -2598289489689750534L;
 
-	private static final CLogger logger = CLogger.getCLogger(MCAdvComSystemType.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvComSystemType.class);
 
 	public static final String PARAM_TABLE = I_C_AdvComInstanceParam.Table_Name;
 

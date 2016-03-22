@@ -126,7 +126,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// m_C_TaxCategory_ID = rs.getInt("C_TaxCategory_ID"); // metas
 		// ppUOMId = rs.getInt(11);
 		// //
-		// log.fine("M_PriceList_Version_ID=" + m_M_PriceList_Version_ID + " - " + m_PriceStd);
+		// log.debug("M_PriceList_Version_ID=" + m_M_PriceList_Version_ID + " - " + m_PriceStd);
 		// m_calculated = true;
 		// }
 		// }
@@ -146,7 +146,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		//
 		if (productPrice == null)
 		{
-			log.finer("Not found (PLV)");
+			log.trace("Not found (PLV)");
 			return;
 		}
 

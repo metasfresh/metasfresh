@@ -41,8 +41,6 @@ package de.metas.shipping.callout;
  */
 
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.grid.ICreateFrom;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -88,7 +86,7 @@ public class CalloutShipperTransportation extends CalloutEngine
 			else
 				cl = Thread.currentThread().getContextClassLoader().loadClass(classname);
 		} catch (ClassNotFoundException e) {
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return e.getLocalizedMessage();
 		}
 		if (cl != null)
@@ -100,7 +98,7 @@ public class CalloutShipperTransportation extends CalloutEngine
 			}
 			catch (Throwable e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 				return e.getLocalizedMessage();
 			}
 		}

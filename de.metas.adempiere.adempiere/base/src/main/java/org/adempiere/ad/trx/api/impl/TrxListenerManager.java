@@ -23,14 +23,14 @@ package org.adempiere.ad.trx.api.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.spi.ITrxListener;
 import org.adempiere.util.WeakList;
-import org.compiere.util.CLogger;
 
 /**
  * Default {@link ITrxListenerManager} implementation
@@ -40,7 +40,7 @@ import org.compiere.util.CLogger;
  */
 public class TrxListenerManager implements ITrxListenerManager
 {
-	private static final CLogger logger = CLogger.getCLogger(TrxListenerManager.class);
+	private static final Logger logger = LogManager.getLogger(TrxListenerManager.class);
 
 	private volatile WeakList<ITrxListener> listeners = null; // NOSONAR ts: i think volatile is required here
 
@@ -131,7 +131,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Error while invoking afterCommit on transaction " + trx + " using " + listener + ". Error was discarded.", e);
+				logger.error("Error while invoking afterCommit on transaction " + trx + " using " + listener + ". Error was discarded.", e);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Error while invoking afterRollback on transaction " + trx + " using " + listener + ". Error was discarded.", e);
+				logger.error("Error while invoking afterRollback on transaction " + trx + " using " + listener + ". Error was discarded.", e);
 			}
 		}
 	}
@@ -190,7 +190,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Error while invoking afterClose on transaction " + trx + " using " + listener + ". Error was discarded.", e);
+				logger.error("Error while invoking afterClose on transaction " + trx + " using " + listener + ". Error was discarded.", e);
 			}
 		}
 	}

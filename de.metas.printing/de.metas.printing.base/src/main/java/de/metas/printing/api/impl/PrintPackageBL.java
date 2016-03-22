@@ -25,7 +25,8 @@ package de.metas.printing.api.impl;
 
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,7 +36,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.MSession;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
@@ -52,7 +52,7 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 
 public class PrintPackageBL implements IPrintPackageBL
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean createPrintPackage(final I_C_Print_Package printPackage,
@@ -93,7 +93,7 @@ public class PrintPackageBL implements IPrintPackageBL
 					jobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Error);
 					jobInstructions.setErrorMsg(ex.getLocalizedMessage());
 					InterfaceWrapperHelper.save(jobInstructions);
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 					packageCreated[0] = false;
 				}
 				// ... package created/updated
@@ -105,7 +105,7 @@ public class PrintPackageBL implements IPrintPackageBL
 						// Case: a user confirmation popup is displayed, user is not waiting for the document to come out of printer (which implies a print package created and sent to
 						// printing client), and just confirms OK. At that moment the Status is set to Done. When actually the print package is generated the status is already done
 						// Conclusion: do nothing, just log a warning
-						logger.log(Level.WARNING, "Skip setting status to Send because the instuctions have already status Done: " + jobInstructions);
+						logger.warn("Skip setting status to Send because the instuctions have already status Done: " + jobInstructions);
 					}
 					else
 					{
@@ -170,14 +170,14 @@ public class PrintPackageBL implements IPrintPackageBL
 		{
 			throw new AdempiereException("@NotFound@ @AD_Session_ID@");
 		}
-		logger.log(Level.FINE, "Session: {0}", session);
+		logger.debug("Session: {}", session);
 
 		final String hostKey = session.getHostKey();
 		Check.assumeNotEmpty(hostKey, "{0} has a hostKey", session);
 
 		printCtx.setHostKey(hostKey);
 
-		logger.log(Level.INFO, "Print package context: {0}", printCtx);
+		logger.info("Print package context: {}", printCtx);
 		return printCtx;
 	}
 

@@ -13,6 +13,19 @@
  */
 package it.cnr.imaa.essi.lablib.gui.checkboxtree;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.ButtonModel;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.ActionMapUIResource;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -36,19 +49,6 @@ package it.cnr.imaa.essi.lablib.gui.checkboxtree;
  */
 
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.QuadristateButtonModel.State;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.ButtonModel;
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.SwingUtilities;
-import javax.swing.plaf.ActionMapUIResource;
 
 /**
  * Checkbox with four states. Available states are UNCHECKED, CHECKED,

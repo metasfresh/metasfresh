@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -44,12 +43,15 @@ import org.compiere.model.MAttribute;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.MStorage;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -205,7 +207,7 @@ public class WAttributeGrid extends ADForm implements EventListener
 	/** Setting Grid		*/
 	private boolean			m_setting = false;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (WAttributeGrid.class);
+	private static Logger log = LogManager.getLogger(WAttributeGrid.class);
 	
 	/**	Modes				*/
 	private static String[]	MODES = new String[]{
@@ -304,7 +306,7 @@ public class WAttributeGrid extends ADForm implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}	//	fillPicks
 
@@ -372,7 +374,7 @@ public class WAttributeGrid extends ADForm implements EventListener
 		if (attr1.equals(attr2))
 		{
 			FDialog.warn(m_WindowNo, "Same Attribute Selected", getTitle());
-			log.warning("Same Attribute Selected");
+			log.warn("Same Attribute Selected");
 			tabbox.setSelectedIndex(0);
 			return;
 		}
@@ -540,7 +542,7 @@ public class WAttributeGrid extends ADForm implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

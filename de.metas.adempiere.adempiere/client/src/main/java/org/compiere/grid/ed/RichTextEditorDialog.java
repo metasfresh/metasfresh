@@ -38,7 +38,8 @@ import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -90,7 +91,7 @@ public class RichTextEditorDialog extends CDialog
 	} // init
 
 	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 	/** The HTML Text */
 	private String m_text;
 
@@ -101,7 +102,7 @@ public class RichTextEditorDialog extends CDialog
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		log.fine("actionPerformed - Text:" + getHtmlText());
+		log.debug("actionPerformed - Text:" + getHtmlText());
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			m_text = editor.getHtmlText();

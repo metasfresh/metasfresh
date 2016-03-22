@@ -32,7 +32,6 @@ import org.zkoss.zkex.zul.Center;
 import org.zkoss.zkex.zul.West;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Image;
-import org.zkoss.zul.Vbox;
 
 /**
  *

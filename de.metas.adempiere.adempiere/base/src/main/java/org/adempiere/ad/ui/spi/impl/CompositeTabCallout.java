@@ -25,18 +25,18 @@ package org.adempiere.ad.ui.spi.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
 
 public class CompositeTabCallout implements ITabCallout
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
 	/** Initialized tab callouts */
@@ -86,7 +86,7 @@ public class CompositeTabCallout implements ITabCallout
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Failed to initialize: " + tabCallout, e);
+				logger.error("Failed to initialize: " + tabCallout, e);
 			}
 		}
 	}

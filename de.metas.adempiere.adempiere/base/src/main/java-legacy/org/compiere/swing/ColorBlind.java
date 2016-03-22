@@ -17,7 +17,8 @@
 package org.compiere.swing;
 
 import java.awt.Color;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.plaf.ColorUIResource;
 
@@ -75,7 +76,7 @@ public class ColorBlind
 	private static int          s_colorType = NORMAL;
 	
 	/**	Logger			*/
-	private static Logger log = Logger.getLogger(ColorBlind.class.getName());
+	private static Logger log = LogManager.getLogger(ColorBlind.class.getName());
 
 
 	/**
@@ -89,7 +90,7 @@ public class ColorBlind
 		else
 			s_colorType = 0;
 		if (s_colorType != 0)
-			log.config(COLORBLIND_TYPE[colorType]);
+			log.info(COLORBLIND_TYPE[colorType]);
 	}   //  setColorType
 
 	/**
@@ -280,7 +281,7 @@ public class ColorBlind
 	//  System.out.println("Red: " + red * 255.0 + " Green: " + green * 255.0 + " Blue: " + blue * 255.0);
 
 		Color retValue = new Color((float)red, (float)green, (float)blue);
-		log.fine("Color " + color.getRed() + "-" + color.getGreen() + "-" + color.getBlue()
+		log.debug("Color " + color.getRed() + "-" + color.getGreen() + "-" + color.getBlue()
 			+ " -> " + retValue.getRed() + "-" + retValue.getGreen() + "-" + retValue.getBlue() + " <- " + COLORBLIND_TYPE[colorType]);
 
 		return retValue;

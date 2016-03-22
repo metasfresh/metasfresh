@@ -31,7 +31,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -48,7 +49,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * {@link VEditor}'s context menu
@@ -91,7 +93,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		return null;
 	}
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final String ATTR_EditorContextPopupMenu = EditorContextPopupMenu.class.getName();
 	private static final String ATTR_Action = IContextMenuAction.class.getCanonicalName();
@@ -136,7 +138,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		}
 		else
 		{
-			logger.warning("Cannot bind on " + editor + " because Component can't be identified.");
+			logger.warn("Cannot bind on " + editor + " because Component can't be identified.");
 		}
 
 	}
@@ -148,7 +150,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		final VEditor editor = menuCtx.getEditor();
 		if (editor.getField() == null)
 		{
-			logger.log(Level.WARNING, "Skip popup context menu setup because GridField is not available: {0}", editor);
+			logger.warn("Skip popup context menu setup because GridField is not available: {}", editor);
 			return;
 		}
 
@@ -196,7 +198,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		{
 			if (!(parent instanceof Container))
 			{
-				logger.warning("No Container found for " + parent);
+				logger.warn("No Container found for " + parent);
 				return false;
 			}
 			final Container parentContainer = (Container)parent;

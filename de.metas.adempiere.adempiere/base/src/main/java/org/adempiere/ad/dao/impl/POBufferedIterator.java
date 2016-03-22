@@ -25,13 +25,13 @@ package org.adempiere.ad.dao.impl;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -43,7 +43,7 @@ import org.compiere.util.DB;
  */
 /* package */final class POBufferedIterator<T, ET extends T> implements Iterator<ET>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(POBufferedIterator.class);
+	private static final transient Logger logger = LogManager.getLogger(POBufferedIterator.class);
 
 	private final TypedSqlQuery<T> query;
 	private final Class<ET> clazz;
@@ -79,7 +79,7 @@ import org.compiere.util.DB;
 				throw new DBException("Query does not have ORDER BY and we could not build one for given table because there are no key columns: " + query);
 			}
 
-			if (logger.isLoggable(Level.FINEST))
+			if (logger.isTraceEnabled())
 			{
 				logger.info("Using default build-in ORDER BY: " + orderBy);
 			}
@@ -162,7 +162,7 @@ import org.compiere.util.DB;
 		final int bufferSizeActual = buffer.size();
 		bufferFullyLoaded = bufferSizeActual >= bufferSize;
 
-		if (logger.isLoggable(Level.INFO))
+		if (logger.isInfoEnabled())
 		{
 			logger.info("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " => " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
 		}

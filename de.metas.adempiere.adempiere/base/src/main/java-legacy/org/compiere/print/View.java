@@ -24,7 +24,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PrintViewerUI;
@@ -33,8 +34,6 @@ import org.compiere.model.MQuery;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.print.layout.Page;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -93,7 +92,7 @@ public class View extends CPanel
 	private static Color			COLOR_BACKGROUND = Color.lightGray;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(View.class);
+	private static Logger log = LogManager.getLogger(View.class);
 
 	/*************************************************************************/
 
@@ -150,7 +149,7 @@ public class View extends CPanel
 	@Override
 	public void paintComponent (Graphics g)
 	{
-	//	log.fine( "View.paintComponent", g.getClip());
+	//	log.debug( "View.paintComponent", g.getClip());
 		Graphics2D g2D = (Graphics2D)g;
 		g2D.scale(getScale(), getScale());
 		Rectangle bounds = g2D.getClipBounds();
@@ -194,7 +193,7 @@ public class View extends CPanel
 		}
 		else
 		{
-			log.log(Level.WARNING, "No zoom index found for {0}", levelString);
+			log.warn("No zoom index found for {}", levelString);
 		}
 	}	//	setZoomLevel
 
@@ -346,8 +345,8 @@ public class View extends CPanel
 		);
 		Page page = m_layout.getPages().get(pageNo-1);
 		//
-		log.config("Relative=" + relativePoint + ", " + page);
-	//	log.config("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
+		log.info("Relative=" + relativePoint + ", " + page);
+	//	log.info("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
 		MQuery retValue = page.getDrillDown (relativePoint);
 		if (retValue == null)
 			retValue = m_layout.getHeaderFooter().getDrillDown (relativePoint);
@@ -369,8 +368,8 @@ public class View extends CPanel
 		);
 		Page page = m_layout.getPages().get(pageNo-1);
 		//
-		log.config("Relative=" + relativePoint + ", " + page);
-	//	log.config("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
+		log.info("Relative=" + relativePoint + ", " + page);
+	//	log.info("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
 		return page.getDrillAcross (relativePoint);
 	}	//	getDrillAcross
 

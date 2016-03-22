@@ -30,7 +30,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,7 +45,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MLandedCost;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -54,7 +54,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 
-	public static final CLogger logger = CLogger.getCLogger(InvoiceDAO.class);
+	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
 
 	public I_C_Invoice createInvoice(String trxName)
 	{
@@ -102,7 +102,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "getLandedCost", e);
+			logger.error("getLandedCost", e);
 		}
 		finally
 		{

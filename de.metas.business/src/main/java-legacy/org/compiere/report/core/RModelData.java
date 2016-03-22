@@ -27,12 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -80,7 +82,7 @@ class RModelData implements IRModelMetadata
 	private List<Boolean> m_groupRowsIndicator = null;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(RModelData.class);
+	private static Logger log = LogManager.getLogger(RModelData.class);
 
 	/**
 	 * Dispose
@@ -142,7 +144,7 @@ class RModelData implements IRModelMetadata
 			finalSQL += " ORDER BY " + sqlOrderByFinal;
 		}
 
-		log.fine(finalSQL);
+		log.debug(finalSQL);
 
 		// FillData
 		final ArrayList<ArrayList<Object>> sourceRows = new ArrayList<>();
@@ -195,9 +197,9 @@ class RModelData implements IRModelMetadata
 		catch (SQLException e)
 		{
 			if (columnIndex == 0)
-				log.log(Level.SEVERE, finalSQL, e);
+				log.error(finalSQL, e);
 			else
-				log.log(Level.SEVERE, "Index=" + columnIndex + "," + rc, e);
+				log.error("Index=" + columnIndex + "," + rc, e);
 		}
 		finally
 		{
@@ -218,7 +220,7 @@ class RModelData implements IRModelMetadata
 	 */
 	private void process(ArrayList<ArrayList<Object>> sourceRows)
 	{
-		log.fine("Start Rows=" + sourceRows.size());
+		log.debug("Start Rows=" + sourceRows.size());
 
 		// Row level Funcions
 		// would come here
@@ -235,7 +237,7 @@ class RModelData implements IRModelMetadata
 			groupLevel2ColumnIndex[groupLevel] = columnIndex;
 			groupLevel2Value[groupLevel] = INITVALUE;
 			columnIndex2groupLevel.put(groupLevel, columnIndex);
-			log.fine("GroupBy level=" + groupLevel + " col=" + groupLevel2ColumnIndex[groupLevel]);
+			log.debug("GroupBy level=" + groupLevel + " col=" + groupLevel2ColumnIndex[groupLevel]);
 		}
 		// Add additional row to force group change
 		final ArrayList<Object> lastRowMarker;
@@ -379,7 +381,7 @@ class RModelData implements IRModelMetadata
 			rows.add(totalsRow);
 		} // total row
 
-		log.fine("End Rows=" + rows.size());
+		log.debug("End Rows=" + rows.size());
 		sourceRows.clear();
 	}   // process
 
@@ -473,10 +475,10 @@ class RModelData implements IRModelMetadata
 		for (int i = 0; i < cols.size(); i++)
 		{
 			final RColumn rc = cols.get(i);
-			// log.fine( "Column " + i + " " + rc.getColSQL() + " ? " + columnName);
+			// log.debug( "Column " + i + " " + rc.getColSQL() + " ? " + columnName);
 			if (rc.getColSQL().startsWith(columnName))
 			{
-				log.fine("Column " + i + " " + rc.getColSQL() + " = " + columnName);
+				log.debug("Column " + i + " " + rc.getColSQL() + " = " + columnName);
 				return i;
 			}
 		}
@@ -561,7 +563,7 @@ class RModelData implements IRModelMetadata
 	 */
 	public void setGroup(final int col)
 	{
-		log.config("RModel.setGroup col=" + col);
+		log.info("RModel.setGroup col=" + col);
 		if (col < 0 || col >= cols.size())
 		{
 			return;
@@ -587,7 +589,7 @@ class RModelData implements IRModelMetadata
 	 */
 	public void setFunction(final int col, final String function)
 	{
-		log.config("RModel.setFunction col=" + col + " - " + function);
+		log.info("RModel.setFunction col=" + col + " - " + function);
 		if (col < 0 || col >= cols.size())
 		{
 			return;

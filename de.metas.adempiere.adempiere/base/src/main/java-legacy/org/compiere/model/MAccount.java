@@ -19,7 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
@@ -30,7 +31,6 @@ import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
@@ -125,7 +125,7 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
 		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
 		InterfaceWrapperHelper.save(newAccount);
-		s_log.log(Level.FINE, "New: {0}", newAccount);
+		s_log.debug("New: {}", newAccount);
 		return newAccount;
 	}	// get
 
@@ -224,7 +224,7 @@ public class MAccount extends X_C_ValidCombination
 	}	// updateValueDescription
 
 	/** Logger */
-	private static final transient CLogger s_log = CLogger.getCLogger(MAccount.class);
+	private static final transient Logger s_log = LogManager.getLogger(MAccount.class);
 
 	/**************************************************************************
 	 * Default constructor
@@ -330,7 +330,7 @@ public class MAccount extends X_C_ValidCombination
 		final I_C_ElementValue elementValue = getAccount();
 		if (elementValue == null)
 		{
-			log.log(Level.SEVERE, "No ElementValue for Account_ID=" + getAccount_ID());
+			log.error("No ElementValue for Account_ID=" + getAccount_ID());
 			return "";
 		}
 		return elementValue.getAccountType();

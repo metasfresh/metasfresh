@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.facet.impl;
 
 import org.adempiere.facet.ClassBasedFacetCollectorFactory;
 import org.adempiere.facet.IFacetCollector;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
@@ -34,7 +34,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 public class InvoiceCandidateFacetCollectorFactory implements IInvoiceCandidateFacetCollectorFactory
 {
 	// services
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateFacetCollectorFactory.class);
 	
 	private ClassBasedFacetCollectorFactory<I_C_Invoice_Candidate> factory = new ClassBasedFacetCollectorFactory<I_C_Invoice_Candidate>()
 			.setLogger(logger);			

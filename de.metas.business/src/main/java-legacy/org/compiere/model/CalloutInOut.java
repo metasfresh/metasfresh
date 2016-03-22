@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -244,7 +245,7 @@ public class CalloutInOut extends CalloutEngine {
 				}
 			}
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		} finally {
 			DB.close(rs, pstmt);
@@ -356,7 +357,7 @@ public class CalloutInOut extends CalloutEngine {
 				}//
 			}
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		} finally {
 			DB.close(rs, pstmt);
@@ -405,14 +406,14 @@ public class CalloutInOut extends CalloutEngine {
 				if (rs.wasNull())
 					Env.setContext(ctx, WindowNo, 0, "M_Locator_ID", null);
 				else {
-					log.config("M_Locator_ID=" + ii);
+					log.info("M_Locator_ID=" + ii);
 					Env
 							.setContext(ctx, WindowNo, "M_Locator_ID", ii
 									.intValue());
 				}
 			}
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		} finally {
 			DB.close(rs, pstmt);
@@ -592,10 +593,10 @@ public class CalloutInOut extends CalloutEngine {
 				mTab.setValue("M_Locator_ID", new Integer(product
 						.getM_Locator_ID()));
 			else
-				log.fine("No Locator for M_Product_ID=" + M_Product_ID
+				log.debug("No Locator for M_Product_ID=" + M_Product_ID
 						+ " and M_Warehouse_ID=" + M_Warehouse_ID);
 		} else
-			log.fine("No Locator for M_Product_ID=" + M_Product_ID);
+			log.debug("No Locator for M_Product_ID=" + M_Product_ID);
 		return "";
 	} // product
 
@@ -621,7 +622,7 @@ public class CalloutInOut extends CalloutEngine {
 			return "";
 
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		// log.log(Level.WARNING,"qty - init - M_Product_ID=" + M_Product_ID);
+		// log.warn("qty - init - M_Product_ID=" + M_Product_ID);
 		BigDecimal MovementQty, QtyEntered;
 
 		// No Product
@@ -636,7 +637,7 @@ public class CalloutInOut extends CalloutEngine {
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx,
 					C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0) {
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
 						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -646,7 +647,7 @@ public class CalloutInOut extends CalloutEngine {
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
-			log.fine("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
 					+ " -> " + conversion + " MovementQty=" + MovementQty);
 			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y"
 					: "N");
@@ -684,7 +685,7 @@ public class CalloutInOut extends CalloutEngine {
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx,
 					C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0) {
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
 						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -694,7 +695,7 @@ public class CalloutInOut extends CalloutEngine {
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
-			log.fine("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
 					+ " -> " + conversion + " MovementQty=" + MovementQty);
 			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y"
 					: "N");
@@ -708,7 +709,7 @@ public class CalloutInOut extends CalloutEngine {
 			BigDecimal MovementQty1 = MovementQty.setScale(precision,
 					BigDecimal.ROUND_HALF_UP);
 			if (MovementQty.compareTo(MovementQty1) != 0) {
-				log.fine("Corrected MovementQty " + MovementQty + "->"
+				log.debug("Corrected MovementQty " + MovementQty + "->"
 						+ MovementQty1);
 				MovementQty = MovementQty1;
 				mTab.setValue("MovementQty", MovementQty);
@@ -718,7 +719,7 @@ public class CalloutInOut extends CalloutEngine {
 			if (QtyEntered == null)
 				QtyEntered = MovementQty;
 			boolean conversion = MovementQty.compareTo(QtyEntered) != 0;
-			log.fine("UOM=" + C_UOM_To_ID + ", MovementQty=" + MovementQty
+			log.debug("UOM=" + C_UOM_To_ID + ", MovementQty=" + MovementQty
 					+ " -> " + conversion + " QtyEntered=" + QtyEntered);
 			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y"
 					: "N");
@@ -755,7 +756,7 @@ public class CalloutInOut extends CalloutEngine {
 		int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
 				"M_Warehouse_ID");
 		int M_Locator_ID = Env.getContextAsInt(ctx, WindowNo, "M_Locator_ID");
-		log.fine("M_Product_ID=" + M_Product_ID + ", M_ASI_ID=" + M_ASI_ID
+		log.debug("M_Product_ID=" + M_Product_ID + ", M_ASI_ID=" + M_ASI_ID
 				+ " - M_Warehouse_ID=" + M_Warehouse_ID + ", M_Locator_ID="
 				+ M_Locator_ID);
 		// Check Selection
@@ -765,7 +766,7 @@ public class CalloutInOut extends CalloutEngine {
 			int selectedM_Locator_ID = Env.getContextAsInt(Env.getCtx(),
 					WindowNo, Env.TAB_INFO, "M_Locator_ID");
 			if (selectedM_Locator_ID != 0) {
-				log.fine("Selected M_Locator_ID=" + selectedM_Locator_ID);
+				log.debug("Selected M_Locator_ID=" + selectedM_Locator_ID);
 				mTab
 						.setValue("M_Locator_ID", new Integer(
 								selectedM_Locator_ID));

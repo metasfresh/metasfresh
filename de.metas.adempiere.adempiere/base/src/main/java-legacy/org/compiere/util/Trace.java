@@ -18,6 +18,9 @@ package org.compiere.util;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
 /**
  *  Trace Information
  *
@@ -27,7 +30,7 @@ import java.util.ArrayList;
 public class Trace
 {
 	/**	Logger	*/
-	private static final transient CLogger log = CLogger.getCLogger (Trace.class);
+	private static final transient Logger log = LogManager.getLogger(Trace.class);
 	
 	/**
 	 * Get Caller Array
@@ -112,7 +115,7 @@ public class Trace
 				|| (adempiereOnly && elements[i].getClassName().startsWith("org.compiere"))
 				)
 			{
-				log.fine(i + ": " + elements[i]);
+				log.debug(i + ": " + elements[i]);
 				if (first9only && ++counter > 8)
 					break;
 			}

@@ -133,14 +133,14 @@ public class CodeSnipitElementHandler extends AbstractElementHandler {
 				try {				
 					idDetail = record_log (ctx, 1, sourceName,"codesnipit", 0,0, Object_Status,sourceName,0);
 				} catch (SAXException e) {
-					log.info ("setfile:"+e);
+					log.info("setfile:"+e);
 				}           		        		
 			}
 			else{
 				try {
 					idDetail = record_log (ctx, 0, sourceName,"codesnipit", 0,0, Object_Status,sourceName,0);
 				} catch (SAXException e) {
-					log.info ("setfile:"+e);
+					log.info("setfile:"+e);
 				}
 			}
 			//Record in transaction file 

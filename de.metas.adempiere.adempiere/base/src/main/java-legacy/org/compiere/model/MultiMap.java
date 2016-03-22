@@ -23,7 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  MultiMap allows multiple keys with their values.
@@ -249,14 +250,14 @@ public final class MultiMap<K,V> implements Map<K,V>, Serializable
 	 */
 	public void printToLog()
 	{
-		CLogger	log = CLogger.getCLogger(getClass());
-		log.fine("MultiMap.printToLog");
+		Logger	log = LogManager.getLogger(getClass());
+		log.debug("MultiMap.printToLog");
 		int size = m_keys.size();
 		for (int i = 0; i < size; i++)
 		{
 			Object k = m_keys.get(i);
 			Object v = m_values.get(i);
-			log.finest(k==null ? "null" : k.toString() + "=" + v==null ? "null" : v.toString());
+			log.trace(k==null ? "null" : k.toString() + "=" + v==null ? "null" : v.toString());
 		}
 	}   //  printToLog
 

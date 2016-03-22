@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableSet;
  */
 class TargetPOKeyPropertiesPartDescriptor implements ICachedMethodPartDescriptor
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(TargetPOKeyPropertiesPartDescriptor.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(TargetPOKeyPropertiesPartDescriptor.class);
 
 	public static final TargetPOKeyPropertiesPartDescriptor createIfApplies(Method method, Cached annotation)
 	{

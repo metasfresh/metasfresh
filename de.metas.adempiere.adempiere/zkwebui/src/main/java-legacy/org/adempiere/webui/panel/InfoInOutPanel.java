@@ -364,7 +364,7 @@ public class InfoInOutPanel extends InfoPanel implements ValueChangeListener, Ev
 		{
 			Integer bp = (Integer)fBPartner_ID.getValue();
 			pstmt.setInt(index++, bp.intValue());
-			log.fine("BPartner=" + bp);
+			log.debug("BPartner=" + bp);
 		}
 
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
@@ -375,7 +375,7 @@ public class InfoInOutPanel extends InfoPanel implements ValueChangeListener, Ev
 			Date t = fDateTo.getValue();
 			Timestamp to = new Timestamp(t.getTime());
 
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -405,7 +405,7 @@ public class InfoInOutPanel extends InfoPanel implements ValueChangeListener, Ev
 		if (!s.endsWith("%"))
 			s += "%";
 
-		log.fine("String=" + s);
+		log.debug("String=" + s);
 		return s;
 	} // getSQLText
 

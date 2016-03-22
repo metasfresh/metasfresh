@@ -102,7 +102,7 @@ public class MHierarchy extends X_PA_Hierarchy
 		if (MTree.TREETYPE_SalesRegion.equals(TreeType))
 			return getAD_Tree_SalesRegion_ID();
 		//
-		log.warning("Not supported: " + TreeType);
+		log.warn("Not supported: " + TreeType);
 		return 0;
 	}	//	getAD_Tree_ID
 	

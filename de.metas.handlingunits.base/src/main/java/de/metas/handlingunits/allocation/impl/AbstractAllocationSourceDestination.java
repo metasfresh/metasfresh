@@ -26,15 +26,14 @@ package de.metas.handlingunits.allocation.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
@@ -52,7 +51,7 @@ import de.metas.handlingunits.storage.IProductStorage;
  */
 public abstract class AbstractAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IProductStorage storage;
 	private final Object referenceModel;
@@ -87,7 +86,7 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 		{
 			// FIXME: we need a clean way to specify M_HU_Item
 			final AdempiereException ex = new AdempiereException("HU Item was not specified but the referenced model it's a HU Item. Assuming huItem=referencedModel");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 
 			this.huItem = InterfaceWrapperHelper.create(referenceModel, I_M_HU_Item.class);
 		}

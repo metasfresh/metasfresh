@@ -28,7 +28,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -42,8 +43,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -98,7 +97,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	//
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	//
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final String MSG_NoQtyPicked = "MSG_NoQtyPicked";
 
@@ -298,7 +297,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0)
 			{
 				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
-				logger.log(Level.WARNING, ex.getLocalizedMessage() + " [Skipped]", ex);
+				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
 				continue;
 			}
 

@@ -24,7 +24,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -136,7 +137,7 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, "getLines", ex);
+			log.error("getLines", ex);
 		}
 		try
 		{
@@ -191,7 +192,7 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, "getM_Locator_ID", ex);
+			log.error("getM_Locator_ID", ex);
 		}
 		try
 		{
@@ -221,7 +222,7 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 			+ "' WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
 		m_lines = null;
-		log.fine(processed + " - Lines=" + noLine);
+		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
 	
 	/**
@@ -246,7 +247,7 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF

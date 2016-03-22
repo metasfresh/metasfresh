@@ -28,7 +28,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -52,7 +53,8 @@ import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -144,7 +146,7 @@ public class WFPanel extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "WFPanel", e);
+			log.error("WFPanel", e);
 		}
 	}	// WFPanel
 
@@ -180,7 +182,7 @@ public class WFPanel extends CPanel
 	private int m_WF_Window_ID = -1;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(WFPanel.class);
+	private static Logger log = LogManager.getLogger(WFPanel.class);
 
 	// UI
 	private BorderLayout mainLayout = new BorderLayout();
@@ -258,7 +260,7 @@ public class WFPanel extends CPanel
 		// m_WindowNo = WindowNo;
 		m_frame = frame;
 		//
-		log.fine("WindowNo=" + WindowNo);
+		log.debug("WindowNo=" + WindowNo);
 		try
 		{
 			if (!isSimpleWorkflowWindow())
@@ -272,7 +274,7 @@ public class WFPanel extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "init", e);
+			log.error("init", e);
 		}
 	}	// init
 
@@ -337,7 +339,7 @@ public class WFPanel extends CPanel
 	 */
 	public void load(int AD_Workflow_ID, boolean readWrite)
 	{
-		log.fine("RW=" + readWrite + " - AD_Workflow_ID=" + AD_Workflow_ID);
+		log.debug("RW=" + readWrite + " - AD_Workflow_ID=" + AD_Workflow_ID);
 		if (AD_Workflow_ID <= 0)
 			return;
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
@@ -454,7 +456,7 @@ public class WFPanel extends CPanel
 	 */
 	private void start(WFNode node)
 	{
-		log.fine("Node=" + node);
+		log.debug("Node=" + node);
 		MWFNode model = node.getModel();
 		// Info Text
 		StringBuffer msg = new StringBuffer("<HTML>");

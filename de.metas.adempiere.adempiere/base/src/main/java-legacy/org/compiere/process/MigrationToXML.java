@@ -15,8 +15,6 @@
 
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.xml.XMLWriter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,7 +54,7 @@ public class MigrationToXML extends SvrProcess
 			migrationId = getRecord_ID();
 		}
 
-		log.log(Level.FINE, "AD_Migration_ID = " + migrationId + ", filename = " + fileName);
+		log.debug("AD_Migration_ID = " + migrationId + ", filename = " + fileName);
 	}
 
 	@Override

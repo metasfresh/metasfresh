@@ -21,7 +21,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -68,7 +69,7 @@ public class MAchievement extends X_PA_Achievement
 
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MAchievement.class);
+	private static Logger s_log = LogManager.getLogger(MAchievement.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor

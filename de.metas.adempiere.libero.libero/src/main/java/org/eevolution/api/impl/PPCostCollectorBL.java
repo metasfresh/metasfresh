@@ -52,7 +52,7 @@ import de.metas.document.IDocTypeDAO;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
-	//	private final transient CLogger log = CLogger.getCLogger(getClass());
+	//	private final transient Logger log = CLogMgt.getLogger(getClass());
 
 	@Override
 	public IReceiptCostCollectorCandidate createReceiptCostCollectorCandidate()

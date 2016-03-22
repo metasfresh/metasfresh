@@ -33,7 +33,8 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.jfree.chart.ChartMouseEvent;
@@ -106,7 +107,7 @@ public class Graph extends CPanel implements ChartMouseListener
 //	private BarGraphLayout	m_layout = new BarGraphLayout(this);
 
 	/**	Logger					*/
-	private static CLogger log = CLogger.getCLogger (Graph.class);
+	private static Logger log = LogManager.getLogger(Graph.class);
 
 
 	/** Y Axis Target Line		*/
@@ -292,7 +293,7 @@ public class Graph extends CPanel implements ChartMouseListener
 				if (query != null)
 					AEnv.zoom(query);
 				else
-					log.warning("Nothing to zoom to - " + bgc);
+					log.warn("Nothing to zoom to - " + bgc);
 			}
 			finally
 			{

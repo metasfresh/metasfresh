@@ -22,8 +22,6 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
-
 import org.adempiere.util.Services;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionAmt;
@@ -68,7 +66,7 @@ public class CommissionCalc extends SvrProcess
 			else if (name.equals("StartDate"))
 				p_StartDate = (Timestamp)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -211,7 +209,7 @@ public class CommissionCalc extends SvrProcess
 				}
 				else
 				{
-					log.warning("Not 1 User/Contact for C_BPartner_ID=" 
+					log.warn("Not 1 User/Contact for C_BPartner_ID=" 
 						+ m_com.getC_BPartner_ID() + " but " + users.length);
 					sql.append(" AND h.SalesRep_ID IN (SELECT AD_User_ID FROM AD_User WHERE C_BPartner_ID=")
 						.append(m_com.getC_BPartner_ID()).append(")");
@@ -246,7 +244,7 @@ public class CommissionCalc extends SvrProcess
 			if (!m_com.isListDetails())
 				sql.append(" GROUP BY h.C_Currency_ID");
 			//
-			log.fine("Line=" + lines[i].getLine() + " - " + sql);
+			log.debug("Line=" + lines[i].getLine() + " - " + sql);
 			//
 			createDetail(sql.toString(), comAmt);
 			comAmt.calculateCommission();
@@ -324,7 +322,7 @@ public class CommissionCalc extends SvrProcess
 			cal.add(Calendar.DAY_OF_YEAR, -1); 
 			m_EndDate = new Timestamp (cal.getTimeInMillis());
 		}
-		log.fine("setStartEndDate = " + p_StartDate + " - " + m_EndDate);
+		log.debug("setStartEndDate = " + p_StartDate + " - " + m_EndDate);
 		
 		/**
 		String sd = DB.TO_DATE(p_StartDate, true);
@@ -385,7 +383,7 @@ public class CommissionCalc extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "createDetail", e);
+			log.error("createDetail", e);
 		}
 		try
 		{

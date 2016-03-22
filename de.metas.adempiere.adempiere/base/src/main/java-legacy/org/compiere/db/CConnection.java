@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 
 import javax.naming.CommunicationException;
 import javax.sql.DataSource;
@@ -31,13 +30,14 @@ import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.jms.IJMSService;
 import de.metas.session.jaxrs.IStatusService;
 
 /**
@@ -58,8 +58,11 @@ public final class CConnection implements Serializable, Cloneable
 	/** Singleton Connection */
 	private static volatile CConnection s_cc = null;
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(CConnection.class)
-			.setSkipIssueReporting();
+	private static final transient Logger log = LogManager.getLogger(CConnection.class);
+	static
+	{
+		LogManager.skipIssueReportingForLoggerName(log);
+	}
 
 	/** System property flag to embed server bean in process **/
 	public final static String SERVER_EMBEDDED_PROPERTY = "de.metas.server.embedded";
@@ -126,13 +129,13 @@ public final class CConnection implements Serializable, Cloneable
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, e.getMessage(), e);
+					log.error(e.getMessage(), e);
 				}
 			}
 
 			// set also in ALogin and Ctrl
 			Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
-			Ini.saveProperties(Ini.isClient());
+			Ini.saveProperties();
 		}
 		//
 		// Case: connection settings are available
@@ -142,7 +145,7 @@ public final class CConnection implements Serializable, Cloneable
 			cc.setAttributes(attributes);
 		}
 
-		log.log(Level.FINE, "Created: {0}", cc);
+		log.debug("Created: {0}", cc);
 		return cc;
 	}
 
@@ -329,7 +332,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		catch (Exception e)
 		{
-			log.severe(e.toString());
+			log.error(e.toString());
 		}
 	} 	// setAppsPort
 
@@ -366,6 +369,7 @@ public final class CConnection implements Serializable, Cloneable
 		// Contact it
 		try
 		{
+			Services.get(IJMSService.class).updateConfiguration();
 			m_version = statusService.getDateVersion();
 			m_okApps = true;
 		}
@@ -377,7 +381,7 @@ public final class CConnection implements Serializable, Cloneable
 			{
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
-			log.log(Level.SEVERE, "Caught this while trying to connect to application server {0}: {1}", connect, t.toString());
+			log.error("Caught this while trying to connect to application server {0}: {1}", connect, t.toString());
 			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
@@ -541,7 +545,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Error parsing db port: " + db_portString, e);
+			log.error("Error parsing db port: " + db_portString, e);
 		}
 	} 	// setDbPort
 
@@ -596,7 +600,7 @@ public final class CConnection implements Serializable, Cloneable
 		closeDataSource();
 	}	// setDbUid
 
-	
+
 	/**
 	 * Get Database Type
 	 *
@@ -649,6 +653,7 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
+
 	 * Is PostgreSQL DB
 	 *
 	 * @return true if PostgreSQL
@@ -703,7 +708,7 @@ public final class CConnection implements Serializable, Cloneable
 		//
 		// Actually try to aquire a new database connection.
 		// The getConnection(...) method will actually the the _okDB flag.
-		try (final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
+		try (final IAutoCloseable c = LogManager.temporaryDisableIssueReporting())
 		{
 			Connection conn = null;
 			try
@@ -827,7 +832,7 @@ public final class CConnection implements Serializable, Cloneable
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "Failed retrieving database informations", e);
+				log.error("Failed retrieving database informations", e);
 				return "?";
 			}
 		}
@@ -897,7 +902,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		catch (Exception e)
 		{
-			log.severe(attributes + " - " + e.toString());
+			log.error(attributes + " - " + e.toString());
 		}
 	}	// setAttributes
 
@@ -996,10 +1001,11 @@ public final class CConnection implements Serializable, Cloneable
 
 			if (Ini.isClient())
 			{
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "There is a configuration error:\n" + ee
-						+ "\nDo you want to reset the saved configuration?",
-						"Adempiere Configuration Error",
-						JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog
+						(null, "There is a configuration error:\n" + ee
+								+ "\nDo you want to reset the saved configuration?",
+								"Adempiere Configuration Error",
+								JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
 				{
 					Ini.deletePropertyFile();
 				}
@@ -1127,7 +1133,7 @@ public final class CConnection implements Serializable, Cloneable
 //			m_appsException = ex;
 //			if (connect == null)
 //				connect = m_env.get(Context.PROVIDER_URL);
-//			log.severe(connect
+//			log.error(connect
 //					+ "\n - " + ex.toString()
 //					+ "\n - " + m_env);
 //			if (CLogMgt.isLevelFinest())
@@ -1162,7 +1168,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	private boolean queryAppsServerInfo()
 	{
-		log.finer(getAppsHost());
+		log.trace(getAppsHost());
 		long start = System.currentTimeMillis();
 
 		m_appsException = null;
@@ -1189,7 +1195,7 @@ public final class CConnection implements Serializable, Cloneable
 			{
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
-			log.warning(connect + "\n - " + ce.toString());
+			log.warn(connect + "\n - " + ce.toString());
 			ce.printStackTrace();
 		}
 		catch (Exception e)
@@ -1200,10 +1206,10 @@ public final class CConnection implements Serializable, Cloneable
 			{
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
-			log.warning(connect + "\n - " + e.toString());
+			log.warn(connect + "\n - " + e.toString());
 			e.printStackTrace();
 		}
-		log.fine("Success=" + m_okApps + " - " + (System.currentTimeMillis() - start) + "ms");
+		log.debug("Success=" + m_okApps + " - " + (System.currentTimeMillis() - start) + "ms");
 		return m_okApps;
 	}	// setAppsServerInfo
 
@@ -1235,9 +1241,9 @@ public final class CConnection implements Serializable, Cloneable
 		setDbName(svr.getDbName());
 		setDbUid(svr.getDbUid());
 		setDbPwd(svr.getDbPwd());
-		
+
 		m_version = svr.getDateVersion();
-		log.config("Server=" + getDbHost() + ", DB=" + getDbName());
+		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
 
 	/**

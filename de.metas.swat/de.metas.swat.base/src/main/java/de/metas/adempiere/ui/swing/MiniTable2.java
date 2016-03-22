@@ -31,7 +31,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -44,7 +45,6 @@ import org.adempiere.util.Check;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
@@ -65,7 +65,7 @@ public class MiniTable2 extends MiniTable
 
 	public static final int ROW_SIZE = 50;
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private String sql;
 
@@ -183,7 +183,7 @@ public class MiniTable2 extends MiniTable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

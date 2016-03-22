@@ -29,14 +29,10 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
-import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -46,7 +42,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
-import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -55,13 +50,10 @@ import org.adempiere.plaf.PLAFEditorPanel;
 import org.adempiere.plaf.UIDefaultsEditorDialog;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.VDate;
-import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MSequence;
-import org.compiere.model.MUser;
 import org.compiere.print.CPrinter;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -71,13 +63,15 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextArea;
-import org.compiere.swing.CToggleButton;
-import org.compiere.util.CLogErrorBuffer;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.SupportInfo;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Customize settings like L&F, AutoCommit, etc. & Diagnostics
@@ -102,7 +96,7 @@ public final class Preference extends CDialog
 	private static final long serialVersionUID = -8923143271736597338L;
 
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(Preference.class);
+	private static final transient Logger log = LogManager.getLogger(Preference.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
@@ -114,14 +108,13 @@ public final class Preference extends CDialog
 	public Preference(Frame frame, int WindowNo)
 	{
 		super(frame, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Preference"), true);
-		log.config("Preference");
 		try
 		{
 			jbInit();
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, ex.getMessage());
+			log.error("Failed initalizing", ex);
 		}
 		load();
 		//
@@ -160,7 +153,7 @@ public final class Preference extends CDialog
 	private ConfirmPanel confirm = ConfirmPanel.builder()
 			.withCancelButton(true)
 			.build();
-	private CComboBox<Level> traceLevel = new CComboBox<>(CLogMgt.LEVELS);
+	private CComboBox<Level> traceLevel = new CComboBox<>(LogManager.getAvailableLoggingLevels());
 	private CLabel traceLabel = new CLabel();
 	private CCheckBox traceFile = new CCheckBox();
 	private CCheckBox autoLogin = new CCheckBox();
@@ -181,17 +174,6 @@ public final class Preference extends CDialog
 	
 	private CLabel lDate = new CLabel();
 	private VDate fDate = new VDate();
-	// private CComboBox connectionProfile = new CComboBox(CConnection.CONNECTIONProfiles);
-	// private CLabel connectionProfileLabel = new CLabel();
-	private CPanel errorPane = new CPanel();
-	private BorderLayout errorLayout = new BorderLayout();
-	private JScrollPane errorScrollPane = new JScrollPane();
-	private MiniTable errorTable = new MiniTable();
-	private CPanel errorPanel = new CPanel(new FlowLayout(FlowLayout.TRAILING));
-	private CToggleButton bErrorsOnly = new CToggleButton(msgBL.getMsg(Env.getCtx(), "ErrorsOnly"));
-	private CButton bErrorReset = new CButton(msgBL.getMsg(Env.getCtx(), "Reset"));
-	private CButton bErrorEMail = new CButton(msgBL.getMsg(Env.getCtx(), "SendEMail"));
-	private CButton bErrorSave = new CButton(msgBL.getMsg(Env.getCtx(), "SaveFile"));
 	private CButton bRoleInfo = new CButton(msgBL.translate(Env.getCtx(), "AD_Role_ID"));
 	// Charset:
 	private CLabel lCharset = new CLabel();
@@ -440,18 +422,7 @@ public final class Preference extends CDialog
 		contextDetail.setLineWrap(true);
 		contextDetail.setWrapStyleWord(true);
 		contextDetail.setBorder(BorderFactory.createLoweredBevelBorder());
-		// Error Pane
-		errorPane.setLayout(errorLayout);
-		// tabPane.add(errorPane, msgBL.getMsg(Env.getCtx(), "Errors"));
-		tabPane.add(errorPane, "Errors");
-		errorPane.add(errorScrollPane, BorderLayout.CENTER);
-		errorScrollPane.getViewport().add(errorTable, null);
-		//
-		errorPanel.add(bErrorsOnly);
-		errorPanel.add(bErrorReset);
-		errorPanel.add(bErrorEMail);
-		errorPanel.add(bErrorSave);
-		errorPane.add(errorPanel, BorderLayout.SOUTH);
+		
 		// South
 		panel.add(southPanel, BorderLayout.SOUTH);
 		southPanel.setLayout(southLayout);
@@ -502,15 +473,6 @@ public final class Preference extends CDialog
 		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 			cmd_save();
 		//
-		else if (e.getSource() == bErrorsOnly)
-			cmd_displayErrors();
-		else if (e.getSource() == bErrorReset)
-			cmd_errorReset();
-		else if (e.getSource() == bErrorEMail)
-			cmd_errorEMail();
-		else if (e.getSource() == bErrorSave)
-			cmd_errorSave();
-		//
 		else if (e.getSource() == bRoleInfo)
 		{
 			final String roleInfo = Env.getUserRolePermissions().toStringX();
@@ -524,8 +486,8 @@ public final class Preference extends CDialog
 	 */
 	private void load()
 	{
-		log.config("");
-		infoArea.setText(CLogMgt.getInfo(null).toString());
+		log.debug("Loading");
+		infoArea.setText(SupportInfo.getInfo());
 		infoArea.setCaretPosition(0);
 
 		// -- Load Settings --
@@ -620,16 +582,19 @@ public final class Preference extends CDialog
 		//
 		// TraceLevel
 		{
-			traceLevel.setSelectedItem(CLogMgt.getLevel());
+			final Level logLevel = LogManager.getLevel();
+			final File logFile = LogManager.getActiveLogFile();
+			final boolean logFileEnabled = LogManager.isFileLoggingEnabled();
+			
+			traceLevel.setSelectedItem(logLevel);
 			String traceFileText = msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE, true);
-			final String logFileName = CLogMgt.getFileLogger().getFileName().orNull();
-			if (!Check.isEmpty(logFileName, true))
+			if (logFile != null)
 			{
-				traceFileText += " (" + logFileName + ")";
+				traceFileText += " (" + logFile + ")";
 			}
 			traceFile.setText(traceFileText);
 			traceFile.setToolTipText(msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE, false));
-			traceFile.setSelected(Ini.isPropertyBool(Ini.P_TRACEFILE));
+			traceFile.setSelected(logFileEnabled);
 		}
 
 		// Printer
@@ -643,22 +608,9 @@ public final class Preference extends CDialog
 		fCharset.setSelectedItem(Ini.getCharset());
 
 		// -- Load and sort Context --
-		String[] context = Env.getEntireContext(Env.getCtx());
+		final String[] context = Env.getEntireContext(Env.getCtx());
 		Arrays.sort(context);
 		infoList.setListData(context);
-
-		// Load Errors
-		// CLogMgt mgt = new CLogMgt(); // creates test trace
-		bErrorsOnly.setSelected(true);
-		errorTable.setCellSelectionEnabled(true);
-		cmd_displayErrors();
-		// for (int i = 2; i < 6; i++)
-		// errorTable.setColumnReadOnly(i, false);
-		//
-		bErrorsOnly.addActionListener(this);
-		bErrorReset.addActionListener(this);
-		bErrorSave.addActionListener(this);
-		bErrorEMail.addActionListener(this);
 	}	// load
 
 	/**
@@ -666,7 +618,7 @@ public final class Preference extends CDialog
 	 */
 	private void cmd_save()
 	{
-		log.config("");
+		log.debug("Saving");
 		// UI
 		// AutoCommit
 		Ini.setProperty(Ini.P_A_COMMIT, (autoCommit.isSelected()));
@@ -717,11 +669,12 @@ public final class Preference extends CDialog
 
 		//
 		// TraceLevel/File
-		final Level level = traceLevel.getSelectedItem();
-		CLogMgt.setLevel(level);
-		Ini.setProperty(Ini.P_TRACELEVEL, level.getName());
-		Ini.setProperty(Ini.P_TRACEFILE, traceFile.isSelected());
-		CLogMgt.getFileLogger().updateConfigurationFromIni();
+		{
+			final Level logLevel = traceLevel.getSelectedItem();
+			final boolean logFileEnabled = traceFile.isSelected();
+			LogManager.setLevelAndUpdateIni(logLevel);
+			LogManager.setFileLoggingEnabled(logFileEnabled);
+		}
 
 		// Printer
 		String printer = (String)fPrinter.getSelectedItem();
@@ -776,71 +729,4 @@ public final class Preference extends CDialog
 		dispose();
 	}	// cmd_save
 
-	/**
-	 * (Re)Display Errors
-	 */
-	private void cmd_displayErrors()
-	{
-		final CLogErrorBuffer errorBuffer = CLogMgt.getErrorBuffer();
-		Vector<Vector<Object>> data = errorBuffer.getLogData(bErrorsOnly.isSelected());
-		Vector<String> columnNames = errorBuffer.getColumnNames(Env.getCtx());
-		DefaultTableModel model = new DefaultTableModel(data, columnNames);
-		errorTable.setModel(model);
-		//
-		if (bErrorsOnly.isSelected())
-			tabPane.setTitleAt(4, msgBL.getMsg(Env.getCtx(), "Errors") + " (" + data.size() + ")");
-		else
-			tabPane.setTitleAt(4, msgBL.getMsg(Env.getCtx(), "TraceInfo") + " (" + data.size() + ")");
-		errorTable.autoSize();
-	}	// cmd_errorsOnly
-
-	/**
-	 * Reset Errors
-	 */
-	private void cmd_errorReset()
-	{
-		CLogMgt.getErrorBuffer().resetBuffer(bErrorsOnly.isSelected());
-		cmd_displayErrors();
-	}	// cmd_errorReset
-
-	/**
-	 * EMail Errors
-	 */
-	private void cmd_errorEMail()
-	{
-		new EMailDialog(this,
-				"EMail Trace",
-				MUser.get(Env.getCtx()),
-				"",			// to
-				"Adempiere Trace Info",
-				CLogMgt.getErrorBuffer().getErrorInfo(Env.getCtx(), bErrorsOnly.isSelected()), null);
-
-	}	// cmd_errorEMail
-
-	/**
-	 * Save Error to File
-	 */
-	private void cmd_errorSave()
-	{
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-		chooser.setDialogTitle("Adempiere Trace File");
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		chooser.setSelectedFile(new File("traceInfo.log"));
-		int returnVal = chooser.showSaveDialog(this);
-		if (returnVal != JFileChooser.APPROVE_OPTION)
-			return;
-		try
-		{
-			File file = chooser.getSelectedFile();
-			FileWriter writer = new FileWriter(file);
-			writer.write(CLogMgt.getErrorBuffer().getErrorInfo(Env.getCtx(), bErrorsOnly.isSelected()));
-			writer.flush();
-			writer.close();
-		}
-		catch (Exception e)
-		{
-			log.log(Level.SEVERE, "", e);
-		}
-	}	// cmd_errorSave
-}	// Preference
+}

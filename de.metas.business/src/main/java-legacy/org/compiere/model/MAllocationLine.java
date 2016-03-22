@@ -250,7 +250,7 @@ public class MAllocationLine extends X_C_AllocationLine
 	 */
 	protected int processIt (boolean reverse)
 	{
-		log.fine("Reverse=" + reverse + " - " + toString());
+		log.debug("Reverse=" + reverse + " - " + toString());
 		int C_Invoice_ID = getC_Invoice_ID();
 		MInvoice invoice = getInvoice();
 		if (invoice != null 
@@ -267,7 +267,7 @@ public class MAllocationLine extends X_C_AllocationLine
 
 			// NOTE: we shall allow having different invoice and payment bpartners! (task 09105)
 			// if (getC_BPartner_ID() != payment.getC_BPartner_ID())
-			// log.warning("C_BPartner_ID different - Invoice=" + getC_BPartner_ID() + " - Payment=" + payment.getC_BPartner_ID());
+			// log.warn("C_BPartner_ID different - Invoice=" + getC_BPartner_ID() + " - Payment=" + payment.getC_BPartner_ID());
 
 			if (reverse)
 			{
@@ -291,13 +291,13 @@ public class MAllocationLine extends X_C_AllocationLine
 			if (reverse)
 			{
 				invoice.setC_Payment_ID(0);
-				log.fine("C_Payment_ID=" + C_Payment_ID
+				log.debug("C_Payment_ID=" + C_Payment_ID
 					+ " Unlinked from C_Invoice_ID=" + C_Invoice_ID);
 			}
 			else if (invoice.isPaid())
 			{
 				invoice.setC_Payment_ID(C_Payment_ID);
-				log.fine("C_Payment_ID=" + C_Payment_ID
+				log.debug("C_Payment_ID=" + C_Payment_ID
 					+ " Linked to C_Invoice_ID=" + C_Invoice_ID);
 			}
 			
@@ -308,7 +308,7 @@ public class MAllocationLine extends X_C_AllocationLine
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
 			if (DB.executeUpdate(update, get_TrxName()) > 0)
-				log.fine("C_Payment_ID=" + C_Payment_ID 
+				log.debug("C_Payment_ID=" + C_Payment_ID 
 					+ (reverse ? " UnLinked from" : " Linked to")
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
 		}
@@ -320,13 +320,13 @@ public class MAllocationLine extends X_C_AllocationLine
 			if (reverse)
 			{
 				invoice.setC_CashLine_ID(0);
-				log.fine("C_CashLine_ID=" + C_CashLine_ID 
+				log.debug("C_CashLine_ID=" + C_CashLine_ID 
 					+ " Unlinked from C_Invoice_ID=" + C_Invoice_ID);
 			}
 			else
 			{
 				invoice.setC_CashLine_ID(C_CashLine_ID);
-				log.fine("C_CashLine_ID=" + C_CashLine_ID 
+				log.debug("C_CashLine_ID=" + C_CashLine_ID 
 					+ " Linked to C_Invoice_ID=" + C_Invoice_ID);
 			}
 			
@@ -337,7 +337,7 @@ public class MAllocationLine extends X_C_AllocationLine
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
 			if (DB.executeUpdate(update, get_TrxName()) > 0)
-				log.fine("C_CashLine_ID=" + C_CashLine_ID 
+				log.debug("C_CashLine_ID=" + C_CashLine_ID 
 					+ (reverse ? " UnLinked from" : " Linked to")
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
 		}		

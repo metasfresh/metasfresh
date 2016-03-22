@@ -44,8 +44,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
-
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
@@ -118,7 +116,7 @@ public class ReplenishReport extends SvrProcess
 			else if (name.equals("C_DocType_ID"))
 				p_C_DocType_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -170,7 +168,7 @@ public class ReplenishReport extends SvrProcess
 			+ "WHERE Level_Max < Level_Min";
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Corrected Max_Level=" + no);
+			log.debug("Corrected Max_Level=" + no);
 		
 		//	Minimum Order should be 1
 		sql = "UPDATE M_Product_PO"
@@ -178,7 +176,7 @@ public class ReplenishReport extends SvrProcess
 			+ "WHERE Order_Min IS NULL OR Order_Min < 1";
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Corrected Order Min=" + no);
+			log.debug("Corrected Order Min=" + no);
 		
 		//	Pack should be 1
 		sql = "UPDATE M_Product_PO"
@@ -186,7 +184,7 @@ public class ReplenishReport extends SvrProcess
 			+ "WHERE Order_Pack IS NULL OR Order_Pack < 1";
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Corrected Order Pack=" + no);
+			log.debug("Corrected Order Pack=" + no);
 
 		//	Set Current Vendor where only one vendor
 		sql = "UPDATE M_Product_PO p"
@@ -198,7 +196,7 @@ public class ReplenishReport extends SvrProcess
 				+ "HAVING COUNT(*) = 1)";
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Corrected CurrentVendor(Y)=" + no);
+			log.debug("Corrected CurrentVendor(Y)=" + no);
 
 		//	More then one current vendor
 		sql = "UPDATE M_Product_PO p"
@@ -210,13 +208,13 @@ public class ReplenishReport extends SvrProcess
 				+ "HAVING COUNT(*) > 1)";
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Corrected CurrentVendor(N)=" + no);
+			log.debug("Corrected CurrentVendor(N)=" + no);
 		
 		//	Just to be sure
 		sql = "DELETE FROM T_Replenish WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Deleted Existing Temp=" + no);
+			log.debug("Deleted Existing Temp=" + no);
 	}	//	prepareTable
 
 	/**
@@ -250,8 +248,8 @@ public class ReplenishReport extends SvrProcess
 		if (p_C_BPartner_ID != 0)
 			sql += " AND po.C_BPartner_ID=" + p_C_BPartner_ID;
 		int no = DB.executeUpdate(sql, get_TrxName());
-		log.finest(sql);
-		log.fine("Insert (1) #" + no);
+		log.trace(sql);
+		log.debug("Insert (1) #" + no);
 		
 		if (p_C_BPartner_ID == 0)
 		{
@@ -278,7 +276,7 @@ public class ReplenishReport extends SvrProcess
 					+ "WHERE r.M_Product_ID=t.M_Product_ID"
 					+ " AND AD_PInstance_ID=" + getAD_PInstance_ID() + ")";
 			no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("Insert (BP) #" + no);
+			log.debug("Insert (BP) #" + no);
 		}
 		
 		sql = "UPDATE T_Replenish t SET "
@@ -293,7 +291,7 @@ public class ReplenishReport extends SvrProcess
 		sql += " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Update #" + no);
+			log.debug("Update #" + no);
 
 		//	Delete inactive products and replenishments
 		sql = "DELETE FROM T_Replenish r "
@@ -304,7 +302,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Deleted Inactive=" + no);
+			log.debug("Deleted Inactive=" + no);
 	 
 		//	Ensure Data consistency
 		sql = "UPDATE T_Replenish SET QtyOnHand = 0 WHERE QtyOnHand IS NULL";
@@ -324,7 +322,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Update Type-1=" + no);
+			log.debug("Update Type-1=" + no);
 		//
 		//	X_M_Replenish.REPLENISHTYPE_MaintainMaximumLevel
 		sql = "UPDATE T_Replenish"
@@ -333,7 +331,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Update Type-2=" + no);
+			log.debug("Update Type-2=" + no);
 	
 
 		//	Minimum Order Quantity
@@ -344,7 +342,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Set MinOrderQty=" + no);
+			log.debug("Set MinOrderQty=" + no);
 
 		//	Even dividable by Pack
 		sql = "UPDATE T_Replenish"
@@ -354,7 +352,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Set OrderPackQty=" + no);
+			log.debug("Set OrderPackQty=" + no);
 		
 		//	Source from other warehouse
 		if (wh.getM_WarehouseSource_ID() != 0)
@@ -364,7 +362,7 @@ public class ReplenishReport extends SvrProcess
 				+ " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
 			no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
-				log.fine("Set Source Warehouse=" + no);
+				log.debug("Set Source Warehouse=" + no);
 		}
 		//	Check Source Warehouse
 		sql = "UPDATE T_Replenish"
@@ -373,7 +371,7 @@ public class ReplenishReport extends SvrProcess
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Set same Source Warehouse=" + no);
+			log.debug("Set same Source Warehouse=" + no);
 		
 		//	Custom Replenishment
 		String className = wh.getReplenishmentClass();
@@ -407,7 +405,7 @@ public class ReplenishReport extends SvrProcess
 		    + " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("Deleted No QtyToOrder=" + no);
+			log.debug("Deleted No QtyToOrder=" + no);
 	}	//	fillTable
 
 	private void excecReplenishInterface(MWarehouse wh,
@@ -426,7 +424,7 @@ public class ReplenishReport extends SvrProcess
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, custom.toString(), e);
+					log.error(custom.toString(), e);
 				}
 				if (qto == null)
 					qto = Env.ZERO;
@@ -471,7 +469,7 @@ public class ReplenishReport extends SvrProcess
 				order.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 				if (!order.save())
 					return;
-				log.fine(order.toString());
+				log.debug(order.toString());
 				noOrders++;
 				info += " - " + order.getDocumentNo();
 			}
@@ -514,7 +512,7 @@ public class ReplenishReport extends SvrProcess
 				requisition.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 				if (!requisition.save())
 					return;
-				log.fine(requisition.toString());
+				log.debug(requisition.toString());
 				noReqs++;
 				info += " - " + requisition.getDocumentNo();
 			}
@@ -570,7 +568,7 @@ public class ReplenishReport extends SvrProcess
 				move.setAD_Org_ID(whSource.getAD_Org_ID());
 				if (!move.save())
 					return;
-				log.fine(move.toString());
+				log.debug(move.toString());
 				noMoves++;
 				info += " - " + move.getDocumentNo();
 			}
@@ -613,7 +611,7 @@ public class ReplenishReport extends SvrProcess
 		if (replenishs.length == 0)
 		{
 			m_info = "No Source Warehouse";
-			log.warning(m_info);
+			log.warn(m_info);
 		}
 		else
 		{
@@ -648,7 +646,7 @@ public class ReplenishReport extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

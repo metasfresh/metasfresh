@@ -17,7 +17,8 @@ import org.adempiere.webui.component.FilenameBox;
 import org.adempiere.webui.component.FolderBrowser;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -30,7 +31,7 @@ public class WFileDirectoryEditor extends WEditor
 {
 	private static final String[] LISTENER_EVENTS = {Events.ON_CLICK, Events.ON_CHANGE, Events.ON_OK};
 
-	private static final CLogger log = CLogger.getCLogger(WFileDirectoryEditor.class);
+	private static final Logger log = LogManager.getLogger(WFileDirectoryEditor.class);
 
 	private String oldValue;
 

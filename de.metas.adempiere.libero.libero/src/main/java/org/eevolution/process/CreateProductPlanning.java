@@ -44,7 +44,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MWarehouse;
@@ -186,7 +185,7 @@ public class CreateProductPlanning extends SvrProcess
 			}                        
 			else
 			{
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 		

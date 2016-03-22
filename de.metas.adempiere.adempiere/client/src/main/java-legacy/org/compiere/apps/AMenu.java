@@ -34,7 +34,8 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -67,7 +68,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -130,7 +132,7 @@ public final class AMenu extends CFrame
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "AMenu", ex);
+			log.error("AMenu", ex);
 		}
 
 		m_AD_User_ID = Env.getAD_User_ID(m_ctx);
@@ -246,7 +248,7 @@ public final class AMenu extends CFrame
 	private String m_requestSQL = null;
 	// private DecimalFormat m_memoryFormat = DisplayType.getNumberFormat(DisplayType.Integer);
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(AMenu.class);
+	private static Logger log = LogManager.getLogger(AMenu.class);
 
 	/** The Info Update instance **/
 	private InfoUpdater infoUpdater = null;
@@ -309,7 +311,7 @@ public final class AMenu extends CFrame
 		/**
 		 * Show Login Screen - if not successful - exit
 		 */
-		log.finer("Login");
+		log.trace("Login");
 
 		final ALogin login = new ALogin(splash, m_ctx);
 		if (!login.initLogin())		// no automatic login
@@ -321,7 +323,7 @@ public final class AMenu extends CFrame
 			}
 			catch (Exception ex)
 			{
-				log.severe(ex.toString());
+				log.error(ex.toString());
 			}
 			if (!login.isConnected() || !login.isOKpressed())
 				AEnv.exit(1);
@@ -641,7 +643,7 @@ public final class AMenu extends CFrame
 		else if (WindowMenu.ShowAllWindows_ActionName.equals(e.getActionCommand()))
 			m_WindowMenu.expose();
 		else if (!AEnv.actionPerformed(e.getActionCommand(), m_WindowNo, this))
-			log.log(Level.SEVERE, "unknown action=" + e.getActionCommand());
+			log.error("unknown action=" + e.getActionCommand());
 		// updateInfo();
 	}	// actionPerformed
 
@@ -727,7 +729,7 @@ public final class AMenu extends CFrame
 			final int notes = getNotes();
 			bNotes.setText(msgBL.translate(m_ctx, "AD_Note_ID") + ": " + notes);
 			/*
-			 * log.config(msg + ", Processors=" + Runtime.getRuntime().availableProcessors() + ", Requests=" + requests + ", Notes=" + notes + ", Activities=" + activities + "," +
+			 * log.info(msg + ", Processors=" + Runtime.getRuntime().availableProcessors() + ", Requests=" + requests + ", Notes=" + notes + ", Activities=" + activities + "," +
 			 * CConnection.get().getStatus() );
 			 */
 			// MSystem.get(m_ctx).info();

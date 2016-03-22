@@ -47,7 +47,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -192,7 +191,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 		{
 			final List<I_PP_Order_Node> nodes = Services.get(IPPOrderWorkflowDAO.class).retrieveNodes(this);
 			m_nodes = LegacyAdapters.convertToPOList(nodes);
-			log.fine("#" + m_nodes.size());
+			log.debug("#" + m_nodes.size());
 		}
 		return m_nodes;
 	}
@@ -352,7 +351,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 					}
 					if (!found)
 					{
-						log.log(Level.WARNING, "Added Node w/o transition: " + node);
+						log.warn("Added Node w/o transition: " + node);
 						list.add(node);
 					}
 				}
@@ -393,7 +392,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 					else
 					{
 						final LiberoException ex = new LiberoException("Cyclic transition found - " + node + " -> " + child);
-						log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+						log.warn(ex.getLocalizedMessage(), ex);
 					}
 				}
 			}
@@ -538,7 +537,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
-		log.fine("Success=" + success);
+		log.debug("Success=" + success);
 		if (success && newRecord)
 		{
 			//	save all nodes -- Creating new Workflow
@@ -608,7 +607,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 		if (activity == null)
 		{
 			final LiberoException ex = new LiberoException("No activity provided for "+getPP_Order()+". Skip closing activities.");
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 			return;
 		}
 		

@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -69,7 +69,7 @@ public class MInterestArea extends X_R_InterestArea
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -109,7 +109,7 @@ public class MInterestArea extends X_R_InterestArea
 	private static CCache<Integer,MInterestArea> s_cache = 
 		new CCache<Integer,MInterestArea>("R_InterestArea", 5);
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MInterestArea.class);
+	private static Logger s_log = LogManager.getLogger(MInterestArea.class);
 	
 	
 	/**

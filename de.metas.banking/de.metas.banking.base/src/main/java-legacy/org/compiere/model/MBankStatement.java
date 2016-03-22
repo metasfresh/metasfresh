@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -176,7 +175,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 				+ "' WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
 		m_lines = null;
-		log.fine("setProcessed - " + processed + " - Lines=" + noLine);
+		log.debug("setProcessed - " + processed + " - Lines=" + noLine);
 	}	// setProcessed
 
 	/**
@@ -205,7 +204,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF
@@ -431,7 +430,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.log(Level.INFO, "{0}", this);
+		log.info("{}", this);
 		
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);

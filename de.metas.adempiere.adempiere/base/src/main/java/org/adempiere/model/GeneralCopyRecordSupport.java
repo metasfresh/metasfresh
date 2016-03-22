@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -54,7 +55,6 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.CompositeEvaluatee;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -80,7 +80,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private boolean m_base = false;
 	private int AD_Window_ID = -1;
 
-	private static final transient CLogger log = CLogger.getCLogger(GeneralCopyRecordSupport.class);
+	private static final transient Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
 
 	@Override
 	public void copyRecord(PO po, String trxName)
@@ -446,7 +446,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				}
 				catch (Exception e)
 				{
-					log.warning("Cannot parse: " + value + " - " + e.getMessage());
+					log.warn("Cannot parse: " + value + " - " + e.getMessage());
 				}
 				return new Integer(0);
 			}
@@ -483,7 +483,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, columnName + " - " + e.getMessage());
+			log.error(columnName + " - " + e.getMessage());
 		}
 		return null;
 	}
@@ -528,7 +528,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		// Always Active
 		if (columnName.equals("IsActive"))
 		{
-			log.fine("[IsActive] " + columnName + "=Y");
+			log.debug("[IsActive] " + columnName + "=Y");
 			return "Y";
 		}
 
@@ -544,14 +544,14 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			if (accessLevel.isSystemOnly()
 					&& (columnName.equals("AD_Client_ID") || columnName.equals("AD_Org_ID")))
 			{
-				log.log(Level.FINE, "[SystemAccess] {0}=0", columnName);
+				log.debug("[SystemAccess] {}=0", columnName);
 				return 0;
 			}
 			// Set Org to System, if Client access
 			else if (accessLevel == TableAccessLevel.SystemPlusClient
 					&& columnName.equals("AD_Org_ID"))
 			{
-				log.log(Level.FINE, "[ClientAccess] {0}=0", columnName);
+				log.debug("[ClientAccess] {}=0", columnName);
 				return 0;
 			}
 		}
@@ -571,7 +571,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			sql = Evaluator.parseContext(evaluatee, sql);
 			if (sql.equals(""))
 			{
-				log.log(Level.WARNING, "(" + columnName + ") - Default SQL variable parse failed: " + defaultLogic);
+				log.warn("(" + columnName + ") - Default SQL variable parse failed: " + defaultLogic);
 			}
 			else
 			{
@@ -584,11 +584,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 					if (rs.next())
 						defStr = rs.getString(1);
 					else
-						log.log(Level.WARNING, "(" + columnName + ") - no Result: " + sql);
+						log.warn("(" + columnName + ") - no Result: " + sql);
 				}
 				catch (SQLException e)
 				{
-					log.log(Level.WARNING, "(" + columnName + ") " + sql, e);
+					log.warn("(" + columnName + ") " + sql, e);
 				}
 				finally
 				{
@@ -603,7 +603,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			}
 			if (defStr != null && defStr.length() > 0)
 			{
-				log.fine("[SQL] " + columnName + "=" + defStr);
+				log.debug("[SQL] " + columnName + "=" + defStr);
 				return createDefault(defStr, po, columnName);
 			}
 		} // SQL Statement
@@ -634,7 +634,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 				if (!defStr.equals(""))
 				{
-					log.fine("[DefaultValue] " + columnName + "=" + defStr);
+					log.debug("[DefaultValue] " + columnName + "=" + defStr);
 					return createDefault(defStr, po, columnName);
 				}
 			} // while more Tokens
@@ -646,7 +646,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		defStr = Env.getPreference(po.getCtx(), AD_Window_ID, columnName, false);
 		if (!defStr.equals(""))
 		{
-			log.fine("[UserPreference] " + columnName + "=" + defStr);
+			log.debug("[UserPreference] " + columnName + "=" + defStr);
 			return createDefault(defStr, po, columnName);
 		}
 
@@ -656,7 +656,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		defStr = Env.getPreference(po.getCtx(), AD_Window_ID, columnName, true);
 		if (!defStr.equals(""))
 		{
-			log.fine("[SystemPreference] " + columnName + "=" + defStr);
+			log.debug("[SystemPreference] " + columnName + "=" + defStr);
 			return createDefault(defStr, po, columnName);
 		}
 
@@ -667,25 +667,25 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		// Button to N
 		if (DisplayType.Button == displayType && !columnName.endsWith("_ID"))
 		{
-			log.fine("[Button=N] " + columnName);
+			log.debug("[Button=N] " + columnName);
 			return "N";
 		}
 		// CheckBoxes default to No
 		if (displayType == DisplayType.YesNo)
 		{
-			log.fine("[YesNo=N] " + columnName);
+			log.debug("[YesNo=N] " + columnName);
 			return "N";
 		}
 		// IDs remain null
 		if (columnName.endsWith("_ID"))
 		{
-			log.fine("[ID=null] " + columnName);
+			log.debug("[ID=null] " + columnName);
 			return null;
 		}
 		// actual Numbers default to zero
 		if (DisplayType.isNumeric(displayType))
 		{
-			log.fine("[Number=0] " + columnName);
+			log.debug("[Number=0] " + columnName);
 			return createDefault("0", po, columnName);
 		}
 

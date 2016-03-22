@@ -23,7 +23,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MInventory;
@@ -90,7 +91,7 @@ public class InventoryCountCreate extends SvrProcess
 			else if (name.equals("DeleteOld"))
 				p_DeleteOld = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_M_Inventory_ID = getRecord_ID();
 	}	// prepare
@@ -121,13 +122,13 @@ public class InventoryCountCreate extends SvrProcess
 					+ "(SELECT * FROM M_InventoryLine l WHERE l.M_InventoryLine_ID=ma.M_InventoryLine_ID"
 					+ " AND Processed='N' AND M_Inventory_ID=" + p_M_Inventory_ID + ")";
 			int no1 = DB.executeUpdate(sql1, get_TrxName());
-			log.fine("doIt - Deleted MA #" + no1);
+			log.debug("doIt - Deleted MA #" + no1);
 			// End of Added Line
 
 			String sql = "DELETE FROM M_InventoryLine WHERE Processed='N' "
 					+ "AND M_Inventory_ID=" + p_M_Inventory_ID;
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("doIt - Deleted #" + no);
+			log.debug("doIt - Deleted #" + no);
 		}
 
 		// Create Null Storage records
@@ -152,7 +153,7 @@ public class InventoryCountCreate extends SvrProcess
 					+ "WHERE sl.M_Warehouse_ID=l.M_Warehouse_ID"
 					+ " AND s.M_Product_ID=p.M_Product_ID)";
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("'0' Inserted #" + no);
+			log.debug("'0' Inserted #" + no);
 		}
 
 		StringBuffer sql = new StringBuffer(
@@ -236,7 +237,7 @@ public class InventoryCountCreate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		try
 		{
@@ -409,7 +410,7 @@ public class InventoryCountCreate extends SvrProcess
 				ret = ret + getSubCategoriesString(node.getNodeId(), categories, loopIndicatorId) + ",";
 			}
 		}
-		log.fine(ret);
+		log.debug(ret);
 		return ret + productCategoryId;
 	}
 

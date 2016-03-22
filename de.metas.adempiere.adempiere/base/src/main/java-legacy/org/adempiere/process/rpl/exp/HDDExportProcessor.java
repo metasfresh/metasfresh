@@ -45,7 +45,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.process.rpl.IExportProcessor;
 import org.compiere.model.I_EXP_ProcessorParameter;
 import org.compiere.model.MEXPProcessor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
 import org.w3c.dom.Document;
 
@@ -55,7 +56,7 @@ import org.w3c.dom.Document;
 public class HDDExportProcessor implements IExportProcessor {
 
 	/**	Logger	*/
-	protected CLogger	log = CLogger.getCLogger (getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	
 	public void process(Properties ctx, MEXPProcessor expProcessor, Document document, Trx trx) 
 			throws Exception 

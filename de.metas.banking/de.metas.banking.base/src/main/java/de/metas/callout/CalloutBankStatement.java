@@ -170,7 +170,7 @@ public class CalloutBankStatement extends CalloutEngine
 		{
 			dateTrx = SystemTime.asTimestamp();
 		}
-		log.fine("DateTrx=" + dateTrx);
+		log.debug("DateTrx=" + dateTrx);
 
 		//
 		lineOrRef.setDiscountAmt(Env.ZERO);
@@ -265,14 +265,14 @@ public class CalloutBankStatement extends CalloutEngine
 
 		int C_InvoicePaySchedule_ID = getC_InvoicePaySchedule_ID(ctx, C_Invoice_ID);
 		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(C_Invoice_ID, C_InvoicePaySchedule_ID, dateTrx);
-		log.fine("" + invoiceInfo);
+		log.debug("" + invoiceInfo);
 
 		// Get Info from Tab
 		BigDecimal InvoiceOpenAmt = invoiceInfo != null ? invoiceInfo.openAmt : Env.ZERO;
 		BigDecimal DiscountAmt = lineOrRef.getDiscountAmt();
 		BigDecimal WriteOffAmt = lineOrRef.getWriteOffAmt();
 		BigDecimal OverUnderAmt = lineOrRef.getOverUnderAmt();
-		log.fine("Pay=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt + ", OverUnderAmt=" + OverUnderAmt);
+		log.debug("Pay=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt + ", OverUnderAmt=" + OverUnderAmt);
 		final int C_Currency_ID = lineOrRef.getC_Currency_ID();
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, C_Currency_ID);
 		int C_ConversionType_ID = 0;
@@ -285,7 +285,7 @@ public class CalloutBankStatement extends CalloutEngine
 				|| colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID)
 				|| colName.equals("C_ConversionType_ID")) // TODO: this column is missing
 		{
-			log.fine("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate + ", Type=" + C_ConversionType_ID);
+			log.debug("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate + ", Type=" + C_ConversionType_ID);
 			if (invoiceInfo != null)
 			{
 				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -300,7 +300,7 @@ public class CalloutBankStatement extends CalloutEngine
 			}
 			//
 			InvoiceOpenAmt = InvoiceOpenAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			log.fine("Rate=" + CurrencyRate + ", InvoiceOpenAmt=" + InvoiceOpenAmt);
+			log.debug("Rate=" + CurrencyRate + ", InvoiceOpenAmt=" + InvoiceOpenAmt);
 		}
 
 		// Currency Changed - convert all

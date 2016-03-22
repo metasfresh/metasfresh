@@ -255,7 +255,7 @@ public class QueryTicket extends PosQuery
 		}
 		catch(Exception e)
 		{
-			log.severe("QueryTicket.setResults: " + e + " -> " + sql);
+			log.error("QueryTicket.setResults: " + e + " -> " + sql);
 			
 		}
 	}	//	setResults

@@ -29,7 +29,8 @@ import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,7 +47,8 @@ import org.compiere.model.MUser;
 import org.compiere.model.Scriptlet;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -123,7 +125,7 @@ public class BeanShellEditor extends CDialog implements ActionListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}   //  ScriptEditor
 
@@ -134,7 +136,7 @@ public class BeanShellEditor extends CDialog implements ActionListener
 	/** Original Script */
 	private String      m_origScript;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(BeanShellEditor.class);
+	private static Logger log = LogManager.getLogger(BeanShellEditor.class);
 	//  --
 
 	private CPanel mainPanel = new CPanel();

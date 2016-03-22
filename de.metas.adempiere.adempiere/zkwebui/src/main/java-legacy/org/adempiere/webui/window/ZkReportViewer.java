@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
@@ -55,11 +54,14 @@ import org.compiere.print.AReport;
 import org.compiere.print.ArchiveEngine;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.media.AMedia;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -121,7 +123,7 @@ public class ZkReportViewer extends Window implements EventListener {
 	private Menuitem 	m_daM = null;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ZkReportViewer.class);
+	private static Logger log = LogManager.getLogger(ZkReportViewer.class);
 
 	//
 	private StatusBarPanel statusBar = new StatusBarPanel();
@@ -167,11 +169,11 @@ public class ZkReportViewer extends Window implements EventListener {
 			dynInit();
 			
 			if (!ArchiveEngine.isValid(m_reportEngine.getLayout()))
-				log.warning("Cannot archive Document");
+				log.warn("Cannot archive Document");
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			FDialog.error(m_WindowNo, this, "LoadError", e.getLocalizedMessage());
 			this.onClose();
 		}
@@ -342,9 +344,9 @@ public class ZkReportViewer extends Window implements EventListener {
 		if (selected == null || "PDF".equals(selected.getValue())) {
 			String path = System.getProperty("java.io.tmpdir");
 			String prefix = makePrefix(m_reportEngine.getName());
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.log(Level.FINE, "Path="+path + " Prefix="+prefix);
+				log.debug("Path="+path + " Prefix="+prefix);
 			}
 			File file = File.createTempFile(prefix, ".pdf", new File(path));
 			m_reportEngine.createPDF(file);
@@ -352,9 +354,9 @@ public class ZkReportViewer extends Window implements EventListener {
 		} else if ("HTML".equals(previewType.getSelectedItem().getValue())) {
 			String path = System.getProperty("java.io.tmpdir");
 			String prefix = makePrefix(m_reportEngine.getName());
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.log(Level.FINE, "Path="+path + " Prefix="+prefix);
+				log.debug("Path="+path + " Prefix="+prefix);
 			}
 			File file = File.createTempFile(prefix, ".html", new File(path));
 			m_reportEngine.createHTML(file, false, AEnv.getLanguage(Env.getCtx()), new HTMLExtension(Executions.getCurrent().getContextPath(), "rp", this.getUuid()));
@@ -362,9 +364,9 @@ public class ZkReportViewer extends Window implements EventListener {
 		} else if ("XLS".equals(previewType.getSelectedItem().getValue())) {
 			String path = System.getProperty("java.io.tmpdir");
 			String prefix = makePrefix(m_reportEngine.getName());
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.log(Level.FINE, "Path="+path + " Prefix="+prefix);
+				log.debug("Path="+path + " Prefix="+prefix);
 			}
 			File file = File.createTempFile(prefix, ".xls", new File(path));
 			m_reportEngine.createXLS(file, AEnv.getLanguage(Env.getCtx()));
@@ -440,7 +442,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		if (comboDrill.getItemCount() == 1)
 		{
@@ -494,7 +496,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		StringBuffer sb = new StringBuffer("** ").append(Msg.getMsg(m_ctx, "NewReport")).append(" **");
 		KeyNamePair pp = new KeyNamePair(-1, sb.toString());
@@ -601,7 +603,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		if (AD_Table_ID != 0)
 			new WReport (AD_Table_ID, query, component, 0);
 		else
-			log.warning("No Table found for " + query.getWhereClause(true));
+			log.warn("No Table found for " + query.getWhereClause(true));
 	}	//	executeDrill
 	
 	/**
@@ -633,7 +635,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 
 		new WEMailDialog (this,
@@ -665,7 +667,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 			Services.get(IClientUI.class).error(m_WindowNo, "ArchiveError", e.getLocalizedMessage());
 		}
 	}	//	cmd_archive
@@ -675,7 +677,7 @@ public class ZkReportViewer extends Window implements EventListener {
 	 */
 	private void cmd_export()
 	{		
-		log.config("");
+		log.info("");
 		if (!m_isCanExport)
 		{
 			FDialog.error(m_WindowNo, this, "AccessCannotExport", getTitle());
@@ -795,7 +797,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Failed to export content.", e);
+			log.error("Failed to export content.", e);
 		}
 	}
 	
@@ -904,7 +906,7 @@ public class ZkReportViewer extends Window implements EventListener {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		GridField[] findFields = null;

@@ -29,8 +29,8 @@ package org.adempiere.webui.panel;
 import java.util.List;
 
 import org.adempiere.webui.component.Window;
-import org.compiere.apps.search.IInfoSimple;
 import org.compiere.apps.search.IInfoQueryCriteria;
+import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;

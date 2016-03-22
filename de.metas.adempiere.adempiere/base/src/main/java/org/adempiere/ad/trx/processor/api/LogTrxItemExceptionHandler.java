@@ -23,9 +23,8 @@ package org.adempiere.ad.trx.processor.api;
  */
 
 
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * An {@link ITrxItemProcessorExecutor}'s exception handler which just logs the exception but does nothing.
@@ -37,7 +36,7 @@ public final class LogTrxItemExceptionHandler implements ITrxItemExceptionHandle
 {
 	public static final LogTrxItemExceptionHandler instance = new LogTrxItemExceptionHandler();
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	
 	private LogTrxItemExceptionHandler()
 	{
@@ -47,30 +46,30 @@ public final class LogTrxItemExceptionHandler implements ITrxItemExceptionHandle
 	@Override
 	public void onNewChunkError(final Exception e, final Object item)
 	{
-		logger.log(Level.WARNING, "Error while trying to create a new chunk for item: " + item, e);
+		logger.warn("Error while trying to create a new chunk for item: " + item, e);
 	}
 
 	@Override
 	public void onItemError(final Exception e, final Object item)
 	{
-		logger.log(Level.WARNING, "Error while trying to process item: " + item, e);
+		logger.warn("Error while trying to process item: " + item, e);
 	}
 
 	@Override
 	public void onCompleteChunkError(final Exception e)
 	{
-		logger.log(Level.WARNING, "Error while completing current chunk", e);
+		logger.warn("Error while completing current chunk", e);
 	}
 
 	@Override
 	public void onCommitChunkError(final Exception e)
 	{
-		logger.log(Level.INFO, "Processor failed to commit current chunk => rollback transaction", e);
+		logger.info("Processor failed to commit current chunk => rollback transaction", e);
 	}
 
 	@Override
 	public void onCancelChunkError(Exception e)
 	{
-		logger.log(Level.WARNING, "Error while cancelling current chunk. Ignored.", e);
+		logger.warn("Error while cancelling current chunk. Ignored.", e);
 	}
 }

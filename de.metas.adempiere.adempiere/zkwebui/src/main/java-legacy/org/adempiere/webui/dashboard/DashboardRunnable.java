@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.webui.AdempiereWebUI;
 import org.adempiere.webui.desktop.IDesktop;
@@ -26,8 +25,11 @@ import org.adempiere.webui.session.ServerContext;
 import org.adempiere.webui.session.SessionContextListener;
 import org.adempiere.webui.util.ServerPushTemplate;
 import org.compiere.model.MSysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.Locales;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.DesktopUnavailableException;
@@ -50,7 +52,7 @@ public class DashboardRunnable implements Runnable, Serializable
 	private IDesktop appDesktop;
 	private Locale locale;
 
-	private static final CLogger logger = CLogger.getCLogger(DashboardRunnable.class);
+	private static final Logger logger = LogManager.getLogger(DashboardRunnable.class);
 
 	private final static String ZK_DASHBOARD_REFRESH_INTERVAL = "ZK_DASHBOARD_REFRESH_INTERVAL";
 
@@ -93,13 +95,13 @@ public class DashboardRunnable implements Runnable, Serializable
 				} catch (DesktopUnavailableException de) {
 					cumulativeFailure++;
 				} catch (Exception e) {
-					logger.log(Level.INFO, e.getLocalizedMessage(), (e.getCause() != null ? e.getCause() : e));
+					logger.info(e.getLocalizedMessage(), (e.getCause() != null ? e.getCause() : e));
 					cumulativeFailure++;
 				}
 				if (cumulativeFailure > 3)
 					break;
 			} else {
-				logger.log(Level.INFO, "Desktop destroy, will kill session.");
+				logger.info("Desktop destroy, will kill session.");
 				killSession();
 				break;
 			}

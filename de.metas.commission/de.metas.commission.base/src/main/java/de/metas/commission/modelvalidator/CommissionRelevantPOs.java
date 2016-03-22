@@ -31,7 +31,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.model.I_C_AdvComDoc;
 import de.metas.commission.model.I_C_AdvComSalesRepFact;
@@ -53,7 +54,7 @@ import de.metas.commission.service.IComRelevantPoBL;
 public class CommissionRelevantPOs implements ModelValidator
 {
 
-	private static final CLogger logger = CLogger.getCLogger(CommissionRelevantPOs.class);
+	private static final Logger logger = LogManager.getLogger(CommissionRelevantPOs.class);
 
 	private int ad_Client_ID = -1;
 

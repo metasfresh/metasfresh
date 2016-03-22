@@ -21,9 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -61,7 +61,7 @@ public class MDesktop
 	private int         PA_Goal_ID;
 
 	/**	Logger			*/
-	private CLogger	log = CLogger.getCLogger(getClass());
+	private Logger	log = LogManager.getLogger(getClass());
 	
 	/**
 	 *  Init Desktop
@@ -112,7 +112,7 @@ public class MDesktop
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		if (AD_Desktop_ID == 0)
@@ -221,7 +221,7 @@ public class MDesktop
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "MWorkbench.initDesktopWorkbenches", e);
+			log.error("MWorkbench.initDesktopWorkbenches", e);
 			return false;
 		}
 		return true;

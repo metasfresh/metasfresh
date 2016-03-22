@@ -33,7 +33,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -66,7 +67,8 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -95,7 +97,7 @@ final class SelectPaySelectionDialog
 	private static final long serialVersionUID = 5069654601970071033L;
 
 	// services
-	private static final CLogger logger = CLogger.getCLogger(SelectPaySelectionDialog.class);
+	private static final Logger logger = LogManager.getLogger(SelectPaySelectionDialog.class);
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -216,7 +218,7 @@ final class SelectPaySelectionDialog
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "", e);
+			logger.error("", e);
 		}
 	}
 

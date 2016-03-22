@@ -42,12 +42,12 @@ import org.compiere.model.X_R_Group;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.EMail;
 
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.logging.LogManager;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
@@ -127,7 +127,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 		{
 			addLog(prospect.toString()+": Error: "+e.getLocalizedMessage());
 			ok = false;
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 				e.printStackTrace();
 		}
 		return ok;
@@ -185,7 +185,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 					//ADialog.error(0, this, "MessageNotSent", status);
 					//updateDocExchange(Msg.getMsg(Env.getCtx(), "MessageNotSent") + " " + status); // metas
 				}
-				log.fine("Status: "+status);
+				log.debug("Status: "+status);
 				return email;
 			}
 		});

@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.StateEngine;
@@ -58,7 +56,7 @@ public class WFProcessManage extends SvrProcess
 			else if (name.equals("AD_WF_Responsible_ID"))
 				p_AD_WF_Responsible_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_WF_Process_ID = getRecord_ID();
 	}	//	prepare

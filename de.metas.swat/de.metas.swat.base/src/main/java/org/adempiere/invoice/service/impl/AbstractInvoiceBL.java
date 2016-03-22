@@ -33,7 +33,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -64,7 +65,6 @@ import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -99,7 +99,7 @@ import de.metas.tax.api.ITaxDAO;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	/** Logger */
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine)}.
@@ -391,7 +391,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				invoice.setIsPaid(test);
 			}
-			log.fine("Paid=" + test + " (" + alloc + "=" + total + ")");
+			log.debug("Paid=" + test + " (" + alloc + "=" + total + ")");
 		}
 
 		return change;
@@ -545,12 +545,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final int C_DocType_ID = docTypeDAO.getDocTypeIdOrNull(ctx, docBaseType, adClientId, adOrgId, trxName);
 		if (C_DocType_ID <= 0)
 		{
-			log.log(Level.SEVERE, "Not found for AD_Client_ID=" + adClientId + " - " + docBaseType);
+			log.error("Not found for AD_Client_ID=" + adClientId + " - " + docBaseType);
 			return false;
 		}
 		else
 		{
-			log.fine(docBaseType);
+			log.debug(docBaseType);
 			invoice.setC_DocTypeTarget_ID(C_DocType_ID);
 			final boolean isSOTrx = X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)
 					|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType);
@@ -956,15 +956,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 			if (stdTax != null)
 			{
-				log.fine("stdTax rate is " + stdTax.getRate());
-				log.fine("invoiceTax rate is " + invoiceTax.getRate());
+				log.debug("stdTax rate is " + stdTax.getRate());
+				log.debug("invoiceTax rate is " + invoiceTax.getRate());
 
 				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision));
 				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision));
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
-				log.fine("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
+				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
 						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
 			}
 		}

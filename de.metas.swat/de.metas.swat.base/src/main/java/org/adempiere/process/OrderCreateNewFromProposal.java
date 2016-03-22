@@ -36,16 +36,15 @@ import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 
 public final class OrderCreateNewFromProposal extends SvrProcess 
 {
-
-	private final static CLogger log = CLogger
-			.getCLogger(OrderCreateNewFromProposal.class);
+	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 
 	private MOrder sourceOrder;
 
@@ -170,7 +169,7 @@ public final class OrderCreateNewFromProposal extends SvrProcess
 			}
 			else
 			{
-				log.severe("Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

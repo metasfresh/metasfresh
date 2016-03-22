@@ -26,14 +26,16 @@ package org.compiere.report.core;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public abstract class AbstractRModelAggregatedValue implements IRModelAggregatedValue
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	protected final Properties getCtx()
 	{
@@ -63,7 +65,7 @@ public abstract class AbstractRModelAggregatedValue implements IRModelAggregated
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed converting " + valueObj
+				logger.warn("Failed converting " + valueObj
 						+ " (class " + valueObj.getClass() + ")"
 						+ " to BigDecimal. Returning ZERO.", e);
 			}

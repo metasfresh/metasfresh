@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -38,7 +37,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
@@ -46,6 +44,10 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorJobs;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 
@@ -70,7 +72,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 	}
 
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -135,7 +137,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Failed to complete PP_Order {0}. Skipped.", ppOrder);
+			logger.warn("Failed to complete PP_Order {}. Skipped.", ppOrder);
 		}
 	}
 
@@ -157,7 +159,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Failed to complete DD_Order {0}. Skipped.", ddOrder);
+			logger.warn("Failed to complete DD_Order {}. Skipped.", ddOrder);
 		}
 	}
 

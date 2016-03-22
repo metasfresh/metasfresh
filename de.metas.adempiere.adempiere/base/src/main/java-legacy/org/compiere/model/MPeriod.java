@@ -24,7 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,7 +36,6 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -185,7 +185,7 @@ public class MPeriod extends X_C_Period
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "DateAcct=" + DateAcct, e);
+			s_log.error("DateAcct=" + DateAcct, e);
 		}
 		finally
 		{
@@ -255,23 +255,23 @@ public class MPeriod extends X_C_Period
 	{
 		if (DateAcct == null)
 		{
-			s_log.warning("No DateAcct");
+			s_log.warn("No DateAcct");
 			return false;
 		}
 		if (DocBaseType == null)
 		{
-			s_log.warning("No DocBaseType");
+			s_log.warn("No DocBaseType");
 			return false;
 		}
 		MPeriod period = MPeriod.get (ctx, DateAcct, AD_Org_ID);
 		if (period == null)
 		{
-			s_log.warning("No Period for " + DateAcct + " (" + DocBaseType + ")");
+			s_log.warn("No Period for " + DateAcct + " (" + DocBaseType + ")");
 			return false;
 		}
 		boolean open = period.isOpen(DocBaseType, DateAcct, AD_Org_ID);
 		if (!open)
-			s_log.warning(period.getName()
+			s_log.warn(period.getName()
 				+ ": Not open for " + DocBaseType + " (" + DateAcct + ")");
 		return open;
 	}	//	isOpen
@@ -327,7 +327,7 @@ public class MPeriod extends X_C_Period
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -341,7 +341,7 @@ public class MPeriod extends X_C_Period
 	private static CCache<Integer,MPeriod> s_cache = new CCache<Integer,MPeriod>("C_Period", 10);
 	
 	/**	Logger							*/
-	private static CLogger			s_log = CLogger.getCLogger (MPeriod.class); 
+	private static Logger			s_log = LogManager.getLogger(MPeriod.class); 
 	
 	/** Calendar 					   */
 	private int 					m_C_Calendar_ID = 0;
@@ -449,7 +449,7 @@ public class MPeriod extends X_C_Period
 	{
 		if (!isActive())
 		{
-			s_log.warning("Period not active: " + getName());
+			s_log.warn("Period not active: " + getName());
 			return false;
 		}
 		
@@ -479,12 +479,12 @@ public class MPeriod extends X_C_Period
 				//
 				if (date1.before(first))
 				{
-					log.warning ("Automatic Period Control:" + date1 + " before first day - " + first);
+					log.warn("Automatic Period Control:" + date1 + " before first day - " + first);
 					return false;
 				}
 				if (date2.after(last))
 				{
-					log.warning ("Automatic Period Control:" + date2 + " after last day - " + last);
+					log.warn("Automatic Period Control:" + date2 + " after last day - " + last);
 					return false;
 				}
 				//	We are OK
@@ -506,13 +506,13 @@ public class MPeriod extends X_C_Period
 		// Check standard Period Control
 		if (DocBaseType == null)
 		{
-			log.warning(getName() + " - No DocBaseType");
+			log.warn(getName() + " - No DocBaseType");
 			return false;
 		}
 		final I_C_PeriodControl pc = getPeriodControl(DocBaseType);
 		if (pc == null)
 		{
-			log.warning(getName() + " - Period Control not found for " + DocBaseType);
+			log.warn(getName() + " - Period Control not found for " + DocBaseType);
 			return false;
 		}
 		return X_C_PeriodControl.PERIODSTATUS_Open.equals(pc.getPeriodStatus());
@@ -696,7 +696,7 @@ public class MPeriod extends X_C_Period
 			if (year != null)
 				m_C_Calendar_ID = year.getC_Calendar_ID();
 			else
-				log.severe("@NotFound@ C_Year_ID=" + getC_Year_ID());
+				log.error("@NotFound@ C_Year_ID=" + getC_Year_ID());
 		}
 		return m_C_Calendar_ID;
 	}   //  getC_Calendar_ID

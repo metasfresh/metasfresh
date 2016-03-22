@@ -29,7 +29,8 @@ import org.adempiere.util.Check;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
@@ -49,7 +50,7 @@ import com.google.common.base.Suppliers;
  */
 public class GridTabWrapper implements InvocationHandler
 {
-	private static final CLogger log = CLogger.getCLogger(GridTabWrapper.class);
+	private static final Logger log = LogManager.getLogger(GridTabWrapper.class);
 
 	public static <T> T create(Object model, Class<T> cl)
 	{
@@ -218,7 +219,7 @@ public class GridTabWrapper implements InvocationHandler
 		}
 		else
 		{
-			log.fine("Wrapped object is not a GridTab [SKIP]");
+			log.debug("Wrapped object is not a GridTab [SKIP]");
 		}
 	}
 
@@ -291,7 +292,7 @@ public class GridTabWrapper implements InvocationHandler
 			}
 			else
 			{
-				log.warning("Field " + propertyName + " not found for " + m_gridTab + ". Assuming default value.");
+				log.warn("Field " + propertyName + " not found for " + m_gridTab + ". Assuming default value.");
 			}
 			//
 			Object defaultValue = null;
@@ -420,7 +421,7 @@ public class GridTabWrapper implements InvocationHandler
 			}
 			else
 			{
-				log.severe(msg);
+				log.error(msg);
 			}
 		}
 	}
@@ -453,7 +454,7 @@ public class GridTabWrapper implements InvocationHandler
 		final GridField idField = m_gridTab.getField(idPropertyName);
 		if (idField == null)
 		{
-			log.warning("Field " + idPropertyName + " not found for " + m_gridTab + ". Assuming null value.");
+			log.warn("Field " + idPropertyName + " not found for " + m_gridTab + ". Assuming null value.");
 			return null;
 		}
 

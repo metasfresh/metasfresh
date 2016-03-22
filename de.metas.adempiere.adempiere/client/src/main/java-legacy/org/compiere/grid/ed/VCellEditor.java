@@ -25,7 +25,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.EventObject;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -42,7 +43,8 @@ import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTabLayoutMode;
 import org.compiere.model.GridTable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -80,7 +82,7 @@ public final class VCellEditor extends AbstractCellEditor
 	}	//	VCellEditor
 
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(VCellEditor.class);
+	private static final transient Logger log = LogManager.getLogger(VCellEditor.class);
 	private final transient ISwingEditorFactory editorFactory = Services.get(ISwingEditorFactory.class);
 
 	/** The Field               */
@@ -210,8 +212,8 @@ public final class VCellEditor extends AbstractCellEditor
 	@Override
 	public Component getTableCellEditorComponent (final JTable table, final Object value, final boolean isSelected, final int rowIndexView, final int columnIndexView)
 	{
-		if(log.isLoggable(Level.FINEST))
-			log.finest(m_mField.getColumnName() + ": Value=" + value + ", row(view)=" + rowIndexView + ", col(view)=" + columnIndexView);
+		if(log.isTraceEnabled())
+			log.trace(m_mField.getColumnName() + ": Value=" + value + ", row(view)=" + rowIndexView + ", col(view)=" + columnIndexView);
 		
 		if (rowIndexView >= 0)
 			table.setRowSelectionInterval(rowIndexView, rowIndexView);     //  force moving to new row
@@ -297,8 +299,8 @@ public final class VCellEditor extends AbstractCellEditor
 			return null;
 		}
 		
-		if(log.isLoggable(Level.FINEST))
-			log.finest(m_mField.getColumnName() + ": " + m_editor.getValue());
+		if(log.isTraceEnabled())
+			log.trace(m_mField.getColumnName() + ": " + m_editor.getValue());
 		
 		return m_editor.getValue();
 	}	//	getCellEditorValue
@@ -317,7 +319,7 @@ public final class VCellEditor extends AbstractCellEditor
 			return;
 		}
 		
-		log.log(Level.FINE, "{0}", e);
+		log.debug("{}", e);
 		//
 		final GridTable gridTable = (GridTable)m_table.getModel();
 		
@@ -399,8 +401,8 @@ public final class VCellEditor extends AbstractCellEditor
 			return;
 		}
 		
-		if(log.isLoggable(Level.FINER))
-			log.finer(m_mField.getColumnName() + ": Value=" + m_editor.getValue());
+		if(log.isTraceEnabled())
+			log.trace(m_mField.getColumnName() + ": Value=" + m_editor.getValue());
 		
 		//
 		// When user presses enter, automatically stop editing (for some basic text fields)

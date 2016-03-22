@@ -40,7 +40,8 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -59,7 +60,6 @@ import net.miginfocom.swing.MigLayout;
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.compiere.swing.CButton;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
@@ -77,7 +77,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		extends de.metas.adempiere.form.terminal.AbstractTerminalTextField
 		implements IComponentSwing
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SwingTerminalTextField.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingTerminalTextField.class);
 
 	private JPanel panel;
 	private JTextComponent textComponent;
@@ -438,9 +438,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	public void setText(final String text)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("text=" + text);
+			logger.debug("text=" + text);
 		}
 
 		final String textOld = textComponent.getText();
@@ -478,7 +478,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	protected void setFieldValue(final String value, final boolean fireEvent)
 	{
-		logger.log(Level.FINE, "value={0}", value);
+		logger.debug("value={}", value);
 
 		if (textComponent instanceof JFormattedTextField)
 		{
@@ -496,7 +496,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.INFO, "Error parsing text: " + value, e);
+				logger.info("Error parsing text: " + value, e);
 			}
 			((JFormattedTextField)textComponent).setValue(valueToUse);
 

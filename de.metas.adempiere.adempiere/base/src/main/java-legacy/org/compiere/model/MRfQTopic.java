@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 
@@ -83,7 +81,7 @@ public class MRfQTopic extends X_C_RfQ_Topic
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getSubscribers", e);
+			log.error("getSubscribers", e);
 		}
 		try
 		{

@@ -24,7 +24,8 @@ package org.adempiere.ad.callout.api.impl;
 
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.api.ICalloutFactory;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -32,11 +33,10 @@ import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.impl.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.DefaultCalloutProvider;
-import org.compiere.util.CLogger;
 
 public class CalloutFactory implements ICalloutFactory
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CalloutFactory.class);
+	private static final transient Logger logger = LogManager.getLogger(CalloutFactory.class);
 	private final CompositeCalloutProvider providers = new CompositeCalloutProvider();
 
 	public CalloutFactory()
@@ -54,7 +54,7 @@ public class CalloutFactory implements ICalloutFactory
 		final boolean added = providers.addCalloutProvider(provider);
 		if (added)
 		{
-			logger.log(Level.CONFIG, "Registered provider: {0}", provider);
+			logger.info("Registered provider: {}", provider);
 		}
 	}
 

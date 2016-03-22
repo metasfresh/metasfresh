@@ -35,7 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -47,7 +48,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Period;
@@ -62,6 +62,7 @@ import de.metas.commission.interfaces.I_C_InvoiceLine;
 import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.service.ICommissionConditionDAO;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * 
@@ -142,7 +143,7 @@ public class InvoiceCommission extends SvrProcess
 				}
 				else
 				{
-					final String msgError = Msg.getMsg(getCtx(), InvoiceCommission.MSG_HR_PROCESSING_ERROR_1P, new Object[] { hrProcess.getDocumentNo() }) + " " + CLogger.retrieveError().getValue();
+					final String msgError = Msg.getMsg(getCtx(), InvoiceCommission.MSG_HR_PROCESSING_ERROR_1P, new Object[] { hrProcess.getDocumentNo() }) + " " + MetasfreshLastError.retrieveError();
 					addLog(0, SystemTime.asTimestamp(), new BigDecimal(invoiceCount + processCount), msgError);
 				}
 			}
@@ -190,7 +191,7 @@ public class InvoiceCommission extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 

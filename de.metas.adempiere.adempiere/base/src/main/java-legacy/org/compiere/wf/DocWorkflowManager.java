@@ -18,12 +18,12 @@ package org.compiere.wf;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.DocWorkflowMgr;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
@@ -56,7 +56,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 	/**	Document Workflow Manager		*/
 	private static DocWorkflowManager	s_mgr = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(DocWorkflowManager.class);
+	private static Logger log = LogManager.getLogger(DocWorkflowManager.class);
 	
 	
 	/**
@@ -96,7 +96,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			String logic = wf.getDocValueLogic();
 			if (logic == null || logic.length() == 0)
 			{
-				log.severe ("Workflow has no Logic - " + wf.getName());
+				log.error("Workflow has no Logic - " + wf.getName());
 				continue;
 			}
 		
@@ -108,17 +108,17 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			boolean sql = logic.startsWith("SQL=");
 			if (sql && !testStart(wf, document))
 			{
-				log.fine("SQL Logic evaluated to false (" + logic + ")");
+				log.debug("SQL Logic evaluated to false (" + logic + ")");
 				continue;
 			}
 			if (!sql && !Evaluator.evaluateLogic(document, logic))
 			{
-				log.fine("Logic evaluated to false (" + logic + ")");
+				log.debug("Logic evaluated to false (" + logic + ")");
 				continue;
 			}
 		
 			//	Start Workflow
-			log.fine(logic);
+			log.debug(logic);
 			int AD_Process_ID = 305;		//	HARDCODED
 			ProcessInfo pi = new ProcessInfo (wf.getName(), AD_Process_ID, 
 				AD_Table_ID, document.get_ID());
@@ -127,7 +127,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			//
 			if (wf.start(pi, document.get_TrxName()) != null)
 			{
-				log.config(wf.getName());
+				log.info(wf.getName());
 				m_noStarted++;
 				started = true;
 			}
@@ -151,7 +151,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 		String[] keyColumns = document.get_KeyColumns();
 		if (keyColumns.length != 1)
 		{
-			log.severe("Tables with more then one key column not supported - " 
+			log.error("Tables with more then one key column not supported - " 
 				+ tableName + " = " + keyColumns.length);
 			return false;
 		}
@@ -182,7 +182,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, "Logic=" + logic
+			log.error("Logic=" + logic
 				+ " - SQL=" + sql.toString(), e);
 		}
 		finally

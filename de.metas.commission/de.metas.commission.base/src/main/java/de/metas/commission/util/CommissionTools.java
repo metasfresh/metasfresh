@@ -40,9 +40,10 @@ import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.interfaces.I_M_ProductPrice;
@@ -53,9 +54,7 @@ import de.metas.commission.model.I_M_DiscountSchema;
 
 public final class CommissionTools
 {
-
-	private static final CLogger logger = CLogger
-			.getCLogger(CommissionTools.class);
+	private static final Logger logger = LogManager.getLogger(CommissionTools.class);
 
 	private CommissionTools()
 	{
@@ -79,7 +78,7 @@ public final class CommissionTools
 			final Timestamp time,
 			final String trxName)
 	{
-		CommissionTools.logger.config("productId=" + productId + ", qty=" + qty + ", pl=" + pl + ", time=" + time + ",trxName=" + trxName);
+		CommissionTools.logger.info("productId=" + productId + ", qty=" + qty + ", pl=" + pl + ", time=" + time + ",trxName=" + trxName);
 
 		final BigDecimal commissionPoints;
 
@@ -89,7 +88,7 @@ public final class CommissionTools
 		if (psp != null)
 		{
 			commissionPoints = psp.getCommissionPoints();
-			CommissionTools.logger.fine("Got " + commissionPoints + " from product scale price");
+			CommissionTools.logger.debug("Got " + commissionPoints + " from product scale price");
 		}
 		else
 		{
@@ -107,12 +106,12 @@ public final class CommissionTools
 			if (pps.length > 0)
 			{
 				commissionPoints = POWrapper.create(pps[0], I_M_ProductPrice.class).getCommissionPoints();
-				CommissionTools.logger.fine("Got " + commissionPoints + " from product price");
+				CommissionTools.logger.debug("Got " + commissionPoints + " from product price");
 			}
 			else
 			{
 				commissionPoints = BigDecimal.ZERO;
-				CommissionTools.logger.fine("No pricing info for product. Assuming zero");
+				CommissionTools.logger.debug("No pricing info for product. Assuming zero");
 			}
 		}
 		return commissionPoints;

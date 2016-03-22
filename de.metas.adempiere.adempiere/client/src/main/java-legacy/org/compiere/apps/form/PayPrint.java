@@ -18,13 +18,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MPaySelectionCheck;
 import org.compiere.model.MPaymentBatch;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -48,7 +50,7 @@ public class PayPrint {
 	/** Payment Batch		*/
 	public MPaymentBatch	m_batch = null; 
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(PayPrint.class);
+	public static Logger log = LogManager.getLogger(PayPrint.class);
 	
 	public PayPrint()
 	{
@@ -60,7 +62,7 @@ public class PayPrint {
 	{
 		ArrayList<KeyNamePair> data = new ArrayList<KeyNamePair>();
 		
-		log.config("");
+		log.info("");
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 
 		//  Load PaySelect
@@ -83,7 +85,7 @@ public class PayPrint {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return data;
@@ -125,14 +127,14 @@ public class PayPrint {
 				bank = "";
 				currency = "";
 				balance = Env.ZERO;
-				log.log(Level.SEVERE, "No active BankAccount for C_PaySelection_ID=" + C_PaySelection_ID);
+				log.error("No active BankAccount for C_PaySelection_ID=" + C_PaySelection_ID);
 			}
 			rs.close();
 			pstmt.close();
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}   //  loadPaySelectInfo
 
@@ -167,11 +169,11 @@ public class PayPrint {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		if (data.size() == 0)
-			log.config("PaySel=" + C_PaySelection_ID + ", BAcct=" + m_C_BP_BankAccount_ID + " - " + sql);
+			log.info("PaySel=" + C_PaySelection_ID + ", BAcct=" + m_C_BP_BankAccount_ID + " - " + sql);
 		
 		return data;
 	}   //  loadPaymentRule
@@ -204,7 +206,7 @@ public class PayPrint {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		//  DocumentNo
@@ -222,7 +224,7 @@ public class PayPrint {
 				documentNo = new Integer(rs.getInt(1));
 			else
 			{
-				log.log(Level.SEVERE, "VPayPrint.loadPaymentRuleInfo - No active BankAccountDoc for C_BP_BankAccount_ID="
+				log.error("VPayPrint.loadPaymentRuleInfo - No active BankAccountDoc for C_BP_BankAccount_ID="
 					+ m_C_BP_BankAccount_ID + " AND PaymentRule=" + PaymentRule);
 				msg = "VPayPrintNoDoc";
 			}
@@ -231,7 +233,7 @@ public class PayPrint {
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return msg;

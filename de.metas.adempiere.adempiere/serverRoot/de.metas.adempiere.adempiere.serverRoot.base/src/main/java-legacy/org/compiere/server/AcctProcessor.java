@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -141,7 +140,7 @@ public class AcctProcessor extends AdempiereServer
 						final Doc doc = docFactory.get(getCtx(), docMetaInfo, acctSchemas, rs, ITrx.TRXNAME_None);
 						if (doc == null)
 						{
-							log.severe(getName() + ": No Doc for " + tableName);
+							log.error(getName() + ": No Doc for " + tableName);
 							postOk = false;
 						}
 						else
@@ -153,7 +152,7 @@ public class AcctProcessor extends AdempiereServer
 					catch (Exception e)
 					{
 						postOk = false;
-						log.log(Level.SEVERE, getName() + ": " + tableName + ": " + e.getLocalizedMessage(), e);
+						log.error(getName() + ": " + tableName + ": " + e.getLocalizedMessage(), e);
 					}
 					finally
 					{
@@ -166,7 +165,7 @@ public class AcctProcessor extends AdempiereServer
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql.toString(), e);
+				log.error(sql.toString(), e);
 			}
 			finally
 			{
@@ -180,11 +179,11 @@ public class AcctProcessor extends AdempiereServer
 				if (countError.get() > 0)
 					m_summary.append("(Errors=").append(countError).append(")");
 				m_summary.append(" - ");
-				log.finer(getName() + ": " + m_summary.toString());
+				log.trace(getName() + ": " + m_summary.toString());
 			}
 			else
 			{
-				log.finer(getName() + ": " + tableName + " - no work");
+				log.trace(getName() + ": " + tableName + " - no work");
 			}
 		}
 	}	// postSession

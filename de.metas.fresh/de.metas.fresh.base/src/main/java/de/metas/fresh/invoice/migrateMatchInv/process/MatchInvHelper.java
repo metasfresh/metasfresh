@@ -29,7 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,7 +47,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
@@ -62,7 +62,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 /* package */class MatchInvHelper
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -187,7 +187,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 				{
 					final I_M_InOutLine directInoutLine = il.getM_InOutLine();
 					inoutLines.add(0, directInoutLine);
-					logger.log(Level.WARNING, "Direct link was not found in IC-IOL associations. Adding now."
+					logger.warn("Direct link was not found in IC-IOL associations. Adding now."
 							+"\n C_InvoiceLine: "+il
 							+"\n M_InOutLine: "+directInoutLine);
 				}
@@ -336,7 +336,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 				final int countAll = getCounter(COUNTER_ALL);
 				if (countAll > 0 && countAll % 100 == 0)
 				{
-					logger.warning("STATUS: " + getCountersAsString());
+					logger.warn("STATUS: " + getCountersAsString());
 				}
 			}
 

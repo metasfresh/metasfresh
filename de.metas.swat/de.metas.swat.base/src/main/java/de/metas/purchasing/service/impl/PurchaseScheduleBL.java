@@ -57,7 +57,8 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -70,7 +71,7 @@ import de.metas.purchasing.service.IPurchaseScheduleBL;
 public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(PurchaseScheduleBL.class);
+	private static final Logger logger = LogManager.getLogger(PurchaseScheduleBL.class);
 
 	/**
 	 * 
@@ -100,7 +101,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 
 		if (!X_M_Replenish.REPLENISHTYPE_ReorderBelowMinimumLevel.equals(replenish.getReplenishType()))
 		{
-			logger.warning("Don't know how to handle replenish type '" + replenish.getReplenishType() + "'");
+			logger.warn("Don't know how to handle replenish type '" + replenish.getReplenishType() + "'");
 			return qtyToOrder;
 		}
 
@@ -215,7 +216,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 					final ArrayKey purchaseOrderKey = mkExistingOrderKey(purchaseOrder);
 					if (!purchaseOrderKey.equals(key))
 					{
-						logger.warning("Preset order " + purchaseOrder + " can't be updated with " + purchaseSchedule);
+						logger.warn("Preset order " + purchaseOrder + " can't be updated with " + purchaseSchedule);
 						purchaseOrder = mkPurchaseOrder(purchaseSchedule, processLog);
 						if (purchaseOrder == null)
 						{
@@ -389,7 +390,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 		{
 			final String msg = "Skipping " + purchaseSchedule + " because it has no bPartner";
 			log(msg, processLog);
-			logger.warning(msg);
+			logger.warn(msg);
 			return null;
 		}
 
@@ -397,7 +398,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 		{
 			final String msg = "Skipping " + purchaseSchedule + " because it has no warehouse";
 			log(msg, processLog);
-			logger.warning(msg);
+			logger.warn(msg);
 			return null;
 		}
 		final Properties ctx = purchaseSchedule.getCtx();
@@ -623,7 +624,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 			final I_M_Product product = ol.getM_Product();
 			if (product == null || !product.isPurchased())
 			{
-				logger.fine("Skipping " + ol + ", because product '" + (product == null ? "<null>" : product) + "' is not purchased");
+				logger.debug("Skipping " + ol + ", because product '" + (product == null ? "<null>" : product) + "' is not purchased");
 				continue;
 			}
 

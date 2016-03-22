@@ -28,7 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.CLogger;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.IHUContext;
@@ -57,7 +57,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 {
 	private static final String DYNATTR_ReferencedObject = HUTransactionAttributeProcessor.class.getName() + "#ReferencedObject";
 
-	private static final transient CLogger logger = CLogger.getCLogger(HUTransactionAttributeProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(HUTransactionAttributeProcessor.class);
 
 	private final IHUContext huContext;
 
@@ -297,6 +297,6 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 	{
 		// TODO implement trx line attributes reversal
 		final AdempiereException ex = new AdempiereException("attribute transactions reversal not implemented");
-		logger.log(Level.WARNING, ex.getLocalizedMessage() + ". Skip it for now", ex);
+		logger.warn(ex.getLocalizedMessage() + ". Skip it for now", ex);
 	}
 }

@@ -19,10 +19,10 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 
@@ -119,7 +119,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "getCounterDocType", e);
+			s_log.error("getCounterDocType", e);
 		}
 		try
 		{
@@ -194,7 +194,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			retValue = MDocType.DOCBASETYPE_ARReceipt;
 		//
 		else
-			s_log.log(Level.SEVERE, "getCounterDocBaseType for " + DocBaseType + ": None found");
+			s_log.error("getCounterDocBaseType for " + DocBaseType + ": None found");
 		return retValue;
 	}	//	getCounterDocBaseType
 	
@@ -204,7 +204,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	/**	Counter Relationship Cache	*/
 	private static CCache<Integer,MDocTypeCounter> s_counter = new CCache<Integer,MDocTypeCounter>("C_DocTypeCounter", 20);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MDocTypeCounter.class);
+	private static Logger	s_log	= LogManager.getLogger(MDocTypeCounter.class);
 	
 	
 	/**************************************************************************
@@ -300,21 +300,21 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		MDocType dt = getDocType();
 		if (dt == null)
 		{
-			log.log(Level.SEVERE, "No DocType=" + getC_DocType_ID());
+			log.error("No DocType=" + getC_DocType_ID());
 			setIsValid(false);
 			return "No Document Type";
 		}
 		MDocType c_dt = getCounterDocType();
 		if (c_dt == null)
 		{
-			log.log(Level.SEVERE, "No Counter DocType=" + getCounter_C_DocType_ID());
+			log.error("No Counter DocType=" + getCounter_C_DocType_ID());
 			setIsValid(false);
 			return "No Counter Document Type";
 		}
 		//
 		String dtBT = dt.getDocBaseType();
 		String c_dtBT = c_dt.getDocBaseType();
-		log.fine(dtBT + " -> " + c_dtBT);
+		log.debug(dtBT + " -> " + c_dtBT);
 
 		//	SO / PO
 		if ((MDocType.DOCBASETYPE_SalesOrder.equals(dtBT) && MDocType.DOCBASETYPE_PurchaseOrder.equals(c_dtBT))
@@ -338,7 +338,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			setIsValid(true);
 		else
 		{
-			log.warning("NOT - " + dtBT + " -> " + c_dtBT);
+			log.warn("NOT - " + dtBT + " -> " + c_dtBT);
 			setIsValid(false);
 			return "Not valid";
 		}

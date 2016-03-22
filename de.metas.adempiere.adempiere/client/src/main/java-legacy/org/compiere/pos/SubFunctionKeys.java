@@ -18,7 +18,8 @@ import net.miginfocom.swing.MigLayout;
 
 import org.compiere.apps.ADialog;
 import org.compiere.model.I_C_POSKey;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -46,7 +47,7 @@ public class SubFunctionKeys extends PosSubPanel implements PosKeyListener
 	}	//	PosSubFunctionKeys
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(SubFunctionKeys.class);
+	private static Logger log = LogManager.getLogger(SubFunctionKeys.class);
 	
 	/**
 	 * 	Initialize

@@ -30,8 +30,6 @@
 package org.adempiere.process;
 
 import java.util.Enumeration;
-import java.util.logging.Level;
-
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
@@ -98,7 +96,7 @@ public class ASPGenerateLevel extends SvrProcess
 			else if (name.equals("IsGenerateFields"))
 				p_IsGenerateFields = para.getParameter().equals("Y");
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_ASP_Level_ID = getRecord_ID();
 	}	//	prepare

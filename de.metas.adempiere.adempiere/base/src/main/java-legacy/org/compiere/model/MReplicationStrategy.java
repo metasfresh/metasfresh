@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * @author Trifon N. Trifonov
@@ -42,7 +43,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 	
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MReplicationStrategy.class);
+	private static Logger	s_log	= LogManager.getLogger(MReplicationStrategy.class);
 
 	
 	/**

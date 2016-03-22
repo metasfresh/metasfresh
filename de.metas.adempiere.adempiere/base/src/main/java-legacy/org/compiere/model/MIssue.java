@@ -16,11 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
@@ -32,15 +30,12 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.util.Check;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Secure;
@@ -58,79 +53,6 @@ public class MIssue extends X_AD_Issue
 	 * 
 	 */
 	private static final long serialVersionUID = -3680542992654002121L;
-
-	/**	Logger	*/
-	private static final transient CLogger s_log = CLogger.getCLogger (MIssue.class)
-			.setSkipIssueReporting();
-
-	/**
-	 * 	Create and report issue
-	 *	@param record log record
-	 *	@return reported issue or null
-	 */
-	public static MIssue create (LogRecord record)
-	{
-		// Temporarily relax our DB constraints
-		DB.saveConstraints();
-		try
-		{
-			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
-			
-			s_log.config(record.getMessage());
-			
-			// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
-			MSystem system = MSystem.get(Env.getCtx()); 
-			if (!DB.isConnected() 
-				|| system == null
-				|| !system.isAutoErrorReport())
-			{
-				return null;
-			}
-			
-			//
-			final MIssue issue = new MIssue(record);
-			final String error = issue.report();
-			issue.save();
-			IssueReportableExceptions.markReportedIfPossible(record.getThrown(), issue.getAD_Issue_ID());
-
-			if (error != null)
-				return null;
-			return issue;
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
-		
-	}	//	create
-	
-	/**
-	 * 	Create from decoded hash map string
-	 *	@param ctx context
-	 *	@param hexInput hex string
-	 *	@return issue
-	 */
-	@SuppressWarnings("unchecked")
-	public static MIssue create (Properties ctx, String hexInput)
-	{
-		HashMap hmIn = null;
-		try		//	encode in report
-		{
-			byte[] byteArray = Secure.convertHexString(hexInput);	
-			ByteArrayInputStream bIn = new ByteArrayInputStream(byteArray);
-			ObjectInputStream oIn = new ObjectInputStream(bIn);
-			hmIn = (HashMap)oIn.readObject();
-		
-		}
-		catch (Exception e) 
-		{
-			s_log.log(Level.SEVERE, "",e);
-			return null;
-		}
-
-		MIssue issue = new MIssue(ctx, hmIn);
-		return issue;
-	}	//	create
 	
 	/** Answer Delimiter		*/
 	public static String	DELIMITER = "|";
@@ -174,6 +96,7 @@ public class MIssue extends X_AD_Issue
 	 * 	Log Record Constructor
 	 *	@param record
 	 */
+	@Deprecated
 	public MIssue(final LogRecord record)
 	{
 		this(Env.getCtx(), 0, ITrx.TRXNAME_None);
@@ -232,18 +155,6 @@ public class MIssue extends X_AD_Issue
 
 		setIssueSummary(summary);
 		setRecord_ID(1); // just to have something there because it's mandatory
-	}	//	MIssue
-
-	/**
-	 * 	HashMap Constructor
-	 *	@param ctx context
-	 *	@param hmIn hash map
-	 */
-	public MIssue (Properties ctx, HashMap<String,String> hmIn)
-	{
-		super (ctx, 0, null);
-		load(hmIn);
-		setRecord_ID(0);
 	}	//	MIssue
 
 	/**
@@ -488,7 +399,7 @@ public class MIssue extends X_AD_Issue
 			}
 			catch (Exception e) 
 			{
-				log.severe(e.getLocalizedMessage());
+				log.error(e.getLocalizedMessage());
 				return "New-" + e.getLocalizedMessage();
 			}
 		}
@@ -502,7 +413,7 @@ public class MIssue extends X_AD_Issue
 			}
 			catch (Exception e) 
 			{
-				log.severe(e.getLocalizedMessage());
+				log.error(e.getLocalizedMessage());
 				return "Update-" + e.getLocalizedMessage();
 			}
 		}
@@ -525,7 +436,7 @@ public class MIssue extends X_AD_Issue
 			else
 			{
 				msg += "\nCheck connection - " + e.getLocalizedMessage();
-				log.log(Level.FINE, msg);
+				log.debug(msg);
 			}
 			return msg;
 		}
@@ -549,9 +460,9 @@ public class MIssue extends X_AD_Issue
 			while ((c = in.read()) != -1)
 				sb.append((char)c);
 			in.close();
-			log.fine(sb.toString());
+			log.debug(sb.toString());
 			String clear = URLDecoder.decode(sb.toString(), "UTF-8");
-			log.fine(clear);
+			log.debug(clear);
 			//	Interpret Data
 			StringTokenizer st = new StringTokenizer(clear, DELIMITER);
 			while (st.hasMoreElements())
@@ -572,13 +483,13 @@ public class MIssue extends X_AD_Issue
 				}
 				catch (Exception e)
 				{
-					log.warning(pair + " - " + e.getMessage());
+					log.warn(pair + " - " + e.getMessage());
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.FINE, "", ex);
+			log.debug("", ex);
 			return "Reading-" + ex.getLocalizedMessage();
 		}
 

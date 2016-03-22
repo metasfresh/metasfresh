@@ -33,12 +33,13 @@ import java.util.Date;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfoColumn;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 
 public class DefaultDataConverter implements IDataConverter
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final transient DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -99,7 +100,7 @@ public class DefaultDataConverter implements IDataConverter
 			}
 			else
 			{
-				logger.warning("Invalid boolean value '" + valueStr + "' for column " + column + ". Returning false.");
+				logger.warn("Invalid boolean value '" + valueStr + "' for column " + column + ". Returning false.");
 				return false;
 			}
 		}
@@ -151,7 +152,7 @@ public class DefaultDataConverter implements IDataConverter
 		{
 			if (isMandatory)
 			{
-				logger.warning("Value is null even if is marked to be mandatory [Returning null]");
+				logger.warn("Value is null even if is marked to be mandatory [Returning null]");
 			}
 			return null;
 		}

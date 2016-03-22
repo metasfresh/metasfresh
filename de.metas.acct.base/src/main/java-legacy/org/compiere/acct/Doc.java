@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IDocFactory;
@@ -44,6 +43,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
@@ -53,11 +53,14 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocumentEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -183,9 +186,9 @@ public abstract class Doc
 	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
 	/** Static Log */
-	protected static CLogger s_log = CLogger.getCLogger(Doc.class);
+	protected static Logger s_log = LogManager.getLogger(Doc.class);
 	/** Log per Document */
-	protected CLogger log = CLogger.getCLogger(getClass());
+	protected Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * @param docBuilder construction parameters
@@ -409,7 +412,7 @@ public abstract class Doc
 		catch (Exception e)
 		{
 			final String errmsg = e.getLocalizedMessage();
-			log.log(Level.SEVERE, "Failed to lock: " + errmsg, e);
+			log.error("Failed to lock: " + errmsg, e);
 			return errmsg;
 		}
 
@@ -453,7 +456,7 @@ public abstract class Doc
 				{
 					createErrorNote(postingException);
 				}
-				log.log(postingException.getLogLevel(), postingException.getLocalizedMessage(), postingException);
+				LoggingHelper.log(log, postingException.getLogLevel(), postingException.getLocalizedMessage(), postingException);
 
 				return true; // rollack, but don't throw the error
 			}
@@ -898,7 +901,7 @@ public abstract class Doc
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -909,7 +912,7 @@ public abstract class Doc
 		}
 		if (m_DocumentType == null)
 		{
-			log.log(Level.SEVERE, "No DocBaseType for C_DocType_ID=" + getC_DocType_ID() + ", DocumentNo=" + getDocumentNo());
+			log.error("No DocBaseType for C_DocType_ID=" + getC_DocType_ID() + ", DocumentNo=" + getDocumentNo());
 		}
 
 		// We have a document Type, but no GL info - search for DocType
@@ -929,7 +932,7 @@ public abstract class Doc
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -957,7 +960,7 @@ public abstract class Doc
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -966,7 +969,7 @@ public abstract class Doc
 		}
 		//
 		if (m_GL_Category_ID <= 0)
-			log.log(Level.SEVERE, "No default GL_Category - " + toString());
+			log.error("No default GL_Category - " + toString());
 
 		if (m_DocumentType == null)
 			throw new IllegalStateException("Document Type not found");
@@ -985,9 +988,9 @@ public abstract class Doc
 		//
 		boolean retValue = getBalance().signum() == 0;
 		if (retValue)
-			log.log(Level.FINE, "Yes - {0}", this);
+			log.debug("Yes - {}", this);
 		else
-			log.log(Level.WARNING, "NO - {0}", this);
+			log.warn("NO - {}", this);
 		return retValue;
 	}	// isBalanced
 
@@ -1001,7 +1004,7 @@ public abstract class Doc
 		// No Currency in document
 		if (getC_Currency_ID() == NO_CURRENCY)
 		{
-			log.log(Level.FINE, "(none) - {0}", this);
+			log.debug("(none) - {}", this);
 			return;
 		}
 		
@@ -1075,7 +1078,7 @@ public abstract class Doc
 		else
 			m_C_Period_ID = -1;
 		//
-		log.fine(	// + AD_Client_ID + " - "
+		log.debug(	// + AD_Client_ID + " - "
 		getDateAcct() + " - " + getDocumentType() + " => " + m_C_Period_ID);
 	}   // setC_Period_ID
 
@@ -1101,9 +1104,9 @@ public abstract class Doc
 		setPeriod();
 		boolean open = m_C_Period_ID > 0;
 		if (open)
-			log.fine("Yes - " + toString());
+			log.debug("Yes - " + toString());
 		else
-			log.warning("NO - " + toString());
+			log.warn("NO - " + toString());
 		return open;
 	}	// isPeriodOpen
 
@@ -1302,14 +1305,14 @@ public abstract class Doc
 		else if (AcctType == ACCTTYPE_V_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
-			log.log(Level.WARNING, "V_Prepayment account shall not be used", new Exception());
+			log.warn("V_Prepayment account shall not be used", new Exception());
 			sql = "SELECT V_Prepayment_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			para_1 = getC_BPartner_ID();
 		}
 		else if (AcctType == ACCTTYPE_C_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
-			log.log(Level.WARNING, "C_Prepayment account shall not be used", new Exception());
+			log.warn("C_Prepayment account shall not be used", new Exception());
 			sql = "SELECT C_Prepayment_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			para_1 = getC_BPartner_ID();
 		}
@@ -1439,13 +1442,13 @@ public abstract class Doc
 		}
 		else
 		{
-			log.severe("Not found AcctType=" + AcctType);
+			log.error("Not found AcctType=" + AcctType);
 			return 0;
 		}
 		// Do we have sql & Parameter
 		if (sql == null || para_1 == 0)
 		{
-			log.severe("No Parameter for AcctType=" + AcctType + " - SQL=" + sql);
+			log.error("No Parameter for AcctType=" + AcctType + " - SQL=" + sql);
 			return 0;
 		}
 
@@ -1469,7 +1472,7 @@ public abstract class Doc
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "AcctType=" + AcctType + " - SQL=" + sql, e);
+			log.error("AcctType=" + AcctType + " - SQL=" + sql, e);
 			return 0;
 		}
 		finally
@@ -1481,7 +1484,7 @@ public abstract class Doc
 		// No account
 		if (Account_ID == 0)
 		{
-			log.severe("NO account Type=" + AcctType + ", Record=" + get_ID() + ", SQL=" + sql + ", para_1=" + para_1);
+			log.error("NO account Type=" + AcctType + ", Record=" + get_ID() + ", SQL=" + sql + ", para_1=" + para_1);
 			return 0;
 		}
 		return Account_ID;
@@ -2353,7 +2356,7 @@ public abstract class Doc
 		}
 		catch (final Exception ex)
 		{
-			log.log(Level.WARNING, "Failed to create the error note. Skipped", ex);
+			log.warn("Failed to create the error note. Skipped", ex);
 		}
 		finally
 		{
@@ -2394,7 +2397,7 @@ public abstract class Doc
 			final PostingException ex = newPostingException()
 					.setDocument(this)
 					.setDetailMessage("There are too many depending document models to post. This might be a problem in filtering (legacy-bug in InArrayFilter).");
-			log.log(Level.WARNING, "Got to many depending documents to post. Skip posting depending documents.", ex);
+			log.warn("Got to many depending documents to post. Skip posting depending documents.", ex);
 			return;
 		}
 

@@ -24,7 +24,8 @@ package org.adempiere.ad.security.model.validator;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -34,7 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -44,7 +44,7 @@ public class AD_Org
 {
 	public static final transient AD_Org instance = new AD_Org();
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Org org)
@@ -59,7 +59,7 @@ public class AD_Org
 				orgAccessCreatedCounter++;
 			}
 		}
-		logger.log(Level.INFO, "{0} - created #{1}", new Object[] { org, orgAccessCreatedCounter });
+		logger.info("{} - created #{}", new Object[] { org, orgAccessCreatedCounter });
 
 		// Reset role permissions, just to make sure we are on the safe side
 		if (orgAccessCreatedCounter > 0)

@@ -40,7 +40,6 @@ package de.metas.banking.payment.process;
 
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,7 +88,7 @@ public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements IS
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}	// prepare

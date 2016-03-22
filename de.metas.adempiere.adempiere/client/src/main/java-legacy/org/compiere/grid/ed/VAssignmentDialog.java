@@ -30,7 +30,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.WindowConstants;
@@ -46,7 +47,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -92,7 +94,7 @@ public class VAssignmentDialog extends CDialog
 		boolean allowZoom, boolean allowDelete)
 	{
 		super (frame, Msg.getMsg(Env.getCtx(), "VAssignmentDialog"), true);
-		log.config(mAssignment.toString());
+		log.info(mAssignment.toString());
 		m_mAssignment = mAssignment;
 		m_frame = frame;
 		try
@@ -104,7 +106,7 @@ public class VAssignmentDialog extends CDialog
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		setDisplay();	//	from mAssignment
 		//
@@ -118,7 +120,7 @@ public class VAssignmentDialog extends CDialog
 	/**	True if setting Value			*/
 	private boolean		m_setting = false;
 	/**	Logger							*/
-	private static CLogger log = CLogger.getCLogger(VAssignmentDialog.class);
+	private static Logger log = LogManager.getLogger(VAssignmentDialog.class);
 	/**	Lookup with Resource & UOM		*/
 	private HashMap<KeyNamePair,KeyNamePair>	m_lookup = new HashMap<KeyNamePair,KeyNamePair>();
 	
@@ -208,7 +210,7 @@ public class VAssignmentDialog extends CDialog
 			if (m_mAssignment.getS_ResourceAssignment_ID() == 0)	//	new record select first
 				fResource.setSelectedItem(fResource.getSelectedItem());		//	initiates UOM display
 			else
-				log.log(Level.SEVERE, "Resource not found ID=" + S_Resource_ID);
+				log.error("Resource not found ID=" + S_Resource_ID);
 		}
 
 		//	Set Date, Qty
@@ -323,7 +325,7 @@ public class VAssignmentDialog extends CDialog
 	 */
 	private boolean cmd_save()
 	{
-		log.config("");
+		log.info("");
 		//	Set AssignDateTo
 		Timestamp assignDateFrom = fDateFrom.getTimestamp();
 		BigDecimal qty = (BigDecimal)fQty.getValue();
@@ -372,7 +374,7 @@ public class VAssignmentDialog extends CDialog
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 		}
 		//	Convert to Array

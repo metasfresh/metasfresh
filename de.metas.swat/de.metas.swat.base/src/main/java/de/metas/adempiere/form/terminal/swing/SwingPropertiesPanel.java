@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
@@ -67,7 +67,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 /* package */final class SwingPropertiesPanel implements IPropertiesPanel
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(SwingPropertiesPanel.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingPropertiesPanel.class);
 	
 	private static final float DEFAULT_FONT_SIZE = 12f;
 	private static final String DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS = "";
@@ -374,7 +374,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 										+"\n Model(now): "+modelActual
 										+"\n Input method: "+inputMethod
 										+"\n Value aquired: "+value);
-								logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
 							

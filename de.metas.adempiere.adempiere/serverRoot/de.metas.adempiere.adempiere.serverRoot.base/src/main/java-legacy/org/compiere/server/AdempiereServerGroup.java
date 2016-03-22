@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Adempiere Server Group
@@ -54,7 +55,7 @@ public final class AdempiereServerGroup extends ThreadGroup
 	}	//	AdempiereServerGroup
 
 	/**	Logger			*/
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
 	/**
 	 * 	Uncaught Exception
@@ -64,7 +65,7 @@ public final class AdempiereServerGroup extends ThreadGroup
 	@Override
 	public void uncaughtException (Thread t, Throwable e)
 	{
-		log.info ("uncaughtException = " + e.toString());
+		log.info("uncaughtException = " + e.toString());
 		super.uncaughtException (t, e);
 	}	//	uncaughtException
 	
@@ -83,12 +84,12 @@ public final class AdempiereServerGroup extends ThreadGroup
 	 */
 	public void dump ()
 	{
-		log.fine(getName() + (isDestroyed() ? " (destroyed)" : ""));
-		log.fine("- Parent=" + getParent());
+		log.debug(getName() + (isDestroyed() ? " (destroyed)" : ""));
+		log.debug("- Parent=" + getParent());
 		Thread[] list = new Thread[activeCount()];
-		log.fine("- Count=" + enumerate(list, true));
+		log.debug("- Count=" + enumerate(list, true));
 		for (int i = 0; i < list.length; i++)
-			log.fine("-- " + list[i]);
+			log.debug("-- " + list[i]);
 	}	//	dump
 
 }	//	AdempiereServerGroup

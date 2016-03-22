@@ -44,7 +44,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.commission.exception.SponsorConfigException;
@@ -60,7 +61,7 @@ import de.metas.commission.util.Messages;
 
 public abstract class AbstractSponsorDAO implements ISponsorDAO
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Cached
 	@Override
@@ -227,7 +228,7 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 		}
 		else if (bPartnerPO.isCustomer() || bPartnerPO.isSalesRep())
 		{
-			logger.warning(bPartnerPO + " has no " + I_C_BPartner.COLUMNNAME_C_Sponsor_Parent_ID);
+			logger.warn(bPartnerPO + " has no " + I_C_BPartner.COLUMNNAME_C_Sponsor_Parent_ID);
 		}
 		return newSponsor;
 	}
@@ -399,7 +400,7 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 			throw new FillMandatoryException(I_C_Sponsor_SalesRep.COLUMNNAME_C_Sponsor_ID);
 		}
 
-		logger.fine("Checking validFrom and validTo");
+		logger.debug("Checking validFrom and validTo");
 
 		if (sponsorSalesRep.getValidFrom() == null)
 		{
@@ -412,19 +413,19 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 
 		if (sponsorSalesRep.getValidFrom().after(sponsorSalesRep.getValidTo()))
 		{
-			// logger.saveError(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_LATE, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
+			// logger.error(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_LATE, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
 			// return false;
 			throw new AdempiereException(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_LATE + ": " + get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
 		}
 		else if (sponsorSalesRep.getValidFrom().before(CommissionConstants.VALID_RANGE_MIN))
 		{
-			// logger.saveError(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_EARLY, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
+			// logger.error(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_EARLY, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
 			// return false;
 			throw new AdempiereException(Messages.SPONSOR_SALESREP_VALIDFROM_TOO_EARLY + ": " + get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, true));
 		}
 		else if (sponsorSalesRep.getValidTo().after(CommissionConstants.VALID_RANGE_MAX))
 		{
-			// logger.saveError(Messages.SPONSOR_SALESREP_VALIDTO_TOO_LATE, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, true));
+			// logger.error(Messages.SPONSOR_SALESREP_VALIDTO_TOO_LATE, get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, true));
 			// return false;
 			throw new AdempiereException(Messages.SPONSOR_SALESREP_VALIDTO_TOO_LATE + ": " + get_DisplayValue(sponsorSalesRep, I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, true));
 		}

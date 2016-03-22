@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,7 +42,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyConversionContext;
@@ -108,7 +110,7 @@ public class Doc_AllocationHdr extends Doc
 		for (final MAllocationLine line : alloc.getLines(false))
 		{
 			final DocLine_Allocation docLine = new DocLine_Allocation(line, this);
-			log.log(Level.FINE, "Line: {0}", docLine);
+			log.debug("Line: {}", docLine);
 
 			docLines.add(docLine);
 			id2docLine.put(docLine.get_ID(), docLine);
@@ -229,7 +231,7 @@ public class Doc_AllocationHdr extends Doc
 					// metas: this situation (neither payment nor invoice) can be legal ok,
 					// e.g. if a payed metas-prepay order is closed
 					// p_Error = "Cannot determine SO/PO";
-					// log.log(Level.SEVERE, p_Error);
+					// log.error(p_Error);
 					// return null;
 					assert line.getC_OrderLine_ID() > 0 || line.getC_Order_ID() > 0 : line;
 					return m_facts;
@@ -545,7 +547,7 @@ public class Doc_AllocationHdr extends Doc
 					.addDetailMessage("Cannot calculate the discount factor when invoice grand total is ZERO")
 					.setParameter("DiscountAmt", discountAmt)
 					.setParameter("C_Invoice_ID", invoice);
-			log.log(Level.WARNING, "Cannot calculate the discount factor when invoice grand total is ZERO. Considering ZERO", ex);
+			log.warn("Cannot calculate the discount factor when invoice grand total is ZERO. Considering ZERO", ex);
 			return BigDecimal.ZERO;
 		}
 
@@ -780,7 +782,7 @@ public class Doc_AllocationHdr extends Doc
 		double percent = invoice.getGrandTotal().doubleValue() / allocationSource.doubleValue();
 		if (percent > 0.99 && percent < 1.01)
 			percent = 1.0;
-		log.config("Multiplier=" + percent + " - GrandTotal=" + invoice.getGrandTotal() + " - Allocation Source=" + allocationSource);
+		log.info("Multiplier=" + percent + " - GrandTotal=" + invoice.getGrandTotal() + " - Allocation Source=" + allocationSource);
 
 		// Get Invoice Postings
 		Doc_Invoice docInvoice = (Doc_Invoice)getDocFactory().getOrNull(
@@ -790,7 +792,7 @@ public class Doc_AllocationHdr extends Doc
 				getTrxName());
 		docInvoice.loadDocumentDetails();
 		allocationAccounted = docInvoice.createFactCash(as, fact, new BigDecimal(percent));
-		log.config("Allocation Accounted=" + allocationAccounted);
+		log.info("Allocation Accounted=" + allocationAccounted);
 
 		// Cash Based Commitment Release
 		if (as.isCreatePOCommitment() && !invoice.isSOTrx())
@@ -1030,7 +1032,7 @@ public class Doc_AllocationHdr extends Doc
 	}	// Doc_AllocationTax
 
 	// services
-	private static final CLogger log = CLogger.getCLogger(Doc_AllocationTax.class);
+	private static final Logger log = LogManager.getLogger(Doc_AllocationTax.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 
 	private final Doc_AllocationHdr doc;
@@ -1266,8 +1268,8 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	private static final BigDecimal calcAmount(final BigDecimal taxAmt, final BigDecimal invoiceGrandTotalAmt, final BigDecimal discountAmt, final int precision)
 	{
-		if (log.isLoggable(Level.FINE))
-			log.fine("DiscountAmt=" + discountAmt + " - Invoice Total=" + invoiceGrandTotalAmt + ", TaxAmt=" + taxAmt);
+		if (log.isDebugEnabled())
+			log.debug("DiscountAmt=" + discountAmt + " - Invoice Total=" + invoiceGrandTotalAmt + ", TaxAmt=" + taxAmt);
 
 		if (taxAmt.signum() == 0
 				|| invoiceGrandTotalAmt.signum() == 0
@@ -1282,8 +1284,8 @@ public class Doc_AllocationHdr extends Doc
 		if (taxAmtPart.scale() > precision)
 			taxAmtPart = taxAmtPart.setScale(precision, BigDecimal.ROUND_HALF_UP);
 
-		if (log.isLoggable(Level.FINE))
-			log.fine(taxAmtPart + " (Mult=" + multiplier + "(Prec=" + precision + ")");
+		if (log.isDebugEnabled())
+			log.debug(taxAmtPart + " (Mult=" + multiplier + "(Prec=" + precision + ")");
 		return taxAmtPart;
 	}	// calcAmount
 

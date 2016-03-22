@@ -43,7 +43,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Custom form controller base class
@@ -59,7 +60,7 @@ public abstract class MvcGenForm implements ASyncProcess {
 	
 	public static final String PROP_GENPANEL_REFRESHBUTTON_ENABLED = "genPanelRefreshButton";
 	
-	private static final CLogger logger = CLogger.getCLogger(MvcGenForm.class);
+	private static final Logger logger = LogManager.getLogger(MvcGenForm.class);
 
 	private IFormView view;
 

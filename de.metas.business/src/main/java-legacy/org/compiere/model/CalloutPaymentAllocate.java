@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -114,7 +115,7 @@ public class CalloutPaymentAllocate extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -155,7 +156,7 @@ public class CalloutPaymentAllocate extends CalloutEngine
 		BigDecimal WriteOffAmt = (BigDecimal)mTab.getValue("WriteOffAmt");
 		BigDecimal OverUnderAmt = (BigDecimal)mTab.getValue("OverUnderAmt");
 		BigDecimal InvoiceAmt = (BigDecimal)mTab.getValue("InvoiceAmt");
-		log.fine("Amt=" + Amount + ", Discount=" + DiscountAmt
+		log.debug("Amt=" + Amount + ", Discount=" + DiscountAmt
 			+ ", WriteOff=" + WriteOffAmt + ", OverUnder=" + OverUnderAmt
 			+ ", Invoice=" + InvoiceAmt);
 

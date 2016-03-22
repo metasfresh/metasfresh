@@ -22,7 +22,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -84,7 +85,7 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	//	init
 
@@ -239,7 +240,7 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 		//
 		if (success)
 		{
-			ADialog.info (m_WindowNo, panel, "MergeSuccess", 
+			ADialog.info(m_WindowNo, panel, "MergeSuccess", 
 				msg + " #" + m_totalCount);
 		}
 		else

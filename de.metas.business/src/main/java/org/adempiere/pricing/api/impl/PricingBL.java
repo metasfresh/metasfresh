@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,7 +52,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -61,7 +63,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class PricingBL implements IPricingBL
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	public static final PricingBL instance = new PricingBL();
 
@@ -128,7 +130,7 @@ public class PricingBL implements IPricingBL
 			// in the initial result are the ones from the reference object.
 			// TODO: a new pricing rule for manual prices (if needed)
 			// Keeping the fine log anyway
-			logger.log(Level.FINE, "The pricing engine doesn't have to calculate the price because it was already manually set in the priocing context: {0}.", pricingCtxToUse);
+			logger.debug("The pricing engine doesn't have to calculate the price because it was already manually set in the priocing context: {}.", pricingCtxToUse);
 
 			// return result;
 		}
@@ -144,10 +146,10 @@ public class PricingBL implements IPricingBL
 		adjustPriceByUOM(pricingCtxToUse, result);
 		setPrecision(pricingCtxToUse, result);
 
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("" + pricingCtxToUse);
-			logger.fine("" + result);
+			logger.debug("" + pricingCtxToUse);
+			logger.debug("" + result);
 		}
 
 		return result;
@@ -215,7 +217,7 @@ public class PricingBL implements IPricingBL
 				if (plv != null)
 				{
 					final int priceListVersionId = plv.getM_PriceList_Version_ID();
-					logger.log(Level.INFO, "Setting to context: M_PriceList_Version_ID={0} from M_PriceList={1} and PriceDate={2}", priceListVersionId, priceList, priceDate);
+					logger.info("Setting to context: M_PriceList_Version_ID={} from M_PriceList={} and PriceDate={}", priceListVersionId, priceList, priceDate);
 					pricingCtxToUse.setM_PriceList_Version_ID(priceListVersionId);
 				}
 			}
@@ -223,7 +225,7 @@ public class PricingBL implements IPricingBL
 			{
 				// NOTE: don't fail here because it could be a valid case and some particular pricing rules can handle it.
 				// NOTE2: also pls keep in mind that if we would fail here the whole pricing calculation would fail.
-				logger.log(Level.INFO, "Skip setting pricing context's price list version because it was not found", e);
+				logger.info("Skip setting pricing context's price list version because it was not found", e);
 			}
 		}
 
@@ -234,7 +236,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
-			logger.log(Level.INFO, "Setting to context: M_PriceList_ID={0} from M_PriceList_Version={1}", priceListVersion.getM_PriceList_ID(), priceListVersion);
+			logger.info("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
 			pricingCtxToUse.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
 		}
 
@@ -245,7 +247,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
-			logger.log(Level.INFO, "Setting to context: PriceDate={0} from M_PriceList_Version={1}", priceListVersion.getValidFrom(), priceListVersion);
+			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
 			pricingCtxToUse.setPriceDate(priceListVersion.getValidFrom());
 		}
 
@@ -378,7 +380,7 @@ public class PricingBL implements IPricingBL
 			}
 			if (rules.contains(rule))
 			{
-				logger.warning("Rule was already loaded: " + rule + " [SKIP]");
+				logger.warn("Rule was already loaded: " + rule + " [SKIP]");
 				continue;
 			}
 			rules.add(rule);
@@ -402,7 +404,7 @@ public class PricingBL implements IPricingBL
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot load rule for classname " + classname, e);
+			logger.warn("Cannot load rule for classname " + classname, e);
 		}
 		return null;
 	}

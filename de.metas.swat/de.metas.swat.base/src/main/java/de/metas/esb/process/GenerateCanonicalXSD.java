@@ -31,7 +31,6 @@ import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -62,12 +61,13 @@ import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
+import ch.qos.logback.classic.Level;
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.util.CanonicalXSDGenerator;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -300,7 +300,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 			throw new AdempiereException("Please set the EntityType");
 		}
 
-		CLogMgt.initialize(true); // just to make sure we are using the client side settings
+		LogManager.initialize(true); // just to make sure we are using the client side settings
 
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
@@ -314,7 +314,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 		final GenerateCanonicalXSD process = new GenerateCanonicalXSD();
 		process.p_FilterBy_AD_Client_ID = false;
 
-		CLogMgt.setLevel(Level.INFO);
+		LogManager.setLevel(Level.INFO);
 		process.startProcess(Env.getCtx(), pi, ITrx.TRX_None);
 
 		//

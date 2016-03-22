@@ -25,12 +25,11 @@ import java.awt.Toolkit;
 import java.awt.geom.Point2D;
 import java.awt.image.ImageObserver;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MQuery;
 import org.compiere.print.MPrintFormatItem;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 
 /**
  *  Print Element
@@ -65,7 +64,7 @@ public abstract class PrintElement implements ImageObserver
 	private boolean					m_imageNotLoaded = true;
 	
 	/**	Logger			*/
-	protected CLogger	log = CLogger.getCLogger(getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	
 	
 	/**************************************************************************
@@ -185,7 +184,7 @@ public abstract class PrintElement implements ImageObserver
 	{
 		Point2D.Double retValue = new Point2D.Double(
 			p_pageLocation.x + pageStart.getX(), p_pageLocation.y + pageStart.getY());
-	//	log.finest( "PrintElement.getAbsoluteLocation", "PageStart=" + pageStart.getX() + "/" + pageStart.getY()
+	//	log.trace( "PrintElement.getAbsoluteLocation", "PageStart=" + pageStart.getX() + "/" + pageStart.getY()
 	//		+ ",PageLocaton=" + p_pageLocation.x + "/" + p_pageLocation.y + " => " + retValue.x + "/" + retValue.y);
 		return retValue;
 	}	//	getAbsoluteLocation
@@ -270,8 +269,8 @@ public abstract class PrintElement implements ImageObserver
 	{
 		//	copied from java.awt.component
 		m_imageNotLoaded = (infoflags & (ALLBITS|ABORT)) == 0;
-		if (CLogMgt.isLevelFinest())
-			log.finest("Flags=" + infoflags
+		if (LogManager.isLevelFinest())
+			log.trace("Flags=" + infoflags
 				+ ", x=" + x + ", y=" + y + ", width=" + width + ", height=" + height 
 				+ " - NotLoaded=" + m_imageNotLoaded);
 		return m_imageNotLoaded;
@@ -295,7 +294,7 @@ public abstract class PrintElement implements ImageObserver
 				//	Timeout
 				if (count > 1000)	//	about 20+ sec overall
 				{
-					log.severe (this + " - Timeout - " 
+					log.error(this + " - Timeout - " 
 						+ (System.currentTimeMillis()-start) + "ms - #" + count);
 					return false;
 				}
@@ -310,7 +309,7 @@ public abstract class PrintElement implements ImageObserver
 				}
 				catch (InterruptedException ex)
 				{
-					log.log(Level.SEVERE, "", ex);
+					log.error("", ex);
 					break;
 				}
 				count++;
@@ -318,11 +317,11 @@ public abstract class PrintElement implements ImageObserver
 		}
 		catch (Exception e)		//	java.lang.SecurityException
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			return false;
 		}
 		if (count > 0)
-			log.fine((System.currentTimeMillis()-start) + "ms - #" + count);
+			log.debug((System.currentTimeMillis()-start) + "ms - #" + count);
 		return true;
 	}	//	waitForLoad
 

@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
@@ -53,7 +54,7 @@ public class PackageCreate extends SvrProcess
 			else if (name.equals("M_InOut_ID")) // BF [ 1754889 ] Create Package error
 				p_M_InOut_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 
 		// Bug [ 1754889 ] Create Package error

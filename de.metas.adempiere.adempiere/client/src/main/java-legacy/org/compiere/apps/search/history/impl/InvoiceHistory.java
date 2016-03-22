@@ -32,7 +32,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -64,8 +67,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -85,7 +88,7 @@ public class InvoiceHistory
 	private static final long serialVersionUID = 7886949815469558804L;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(InvoiceHistory.class);
+	private static Logger log = LogManager.getLogger(InvoiceHistory.class);
 
 	public static final int TAB_PRICEHISTORY = 0;
 	public static final int TAB_ORDERED = 1;
@@ -116,7 +119,7 @@ public class InvoiceHistory
 	{
 		super(owner, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "PriceHistory"), true);
 
-		log.config(ihCtx.toString());
+		log.info(ihCtx.toString());
 		Check.assumeNotNull(ihCtx, "ihCtx not null");
 		this.ihCtx = ihCtx;
 
@@ -127,7 +130,7 @@ public class InvoiceHistory
 		}
 		catch (final Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		mainPanel.setPreferredSize(new Dimension(700, 400));
 		AEnv.positionCenterWindow(owner, this);
@@ -393,7 +396,7 @@ public class InvoiceHistory
 	{
 		final Properties ctx = Env.getCtx();
 
-		log.fine(sql + "; Parameter=" + parameter);
+		log.debug(sql + "; Parameter=" + parameter);
 		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -445,7 +448,7 @@ public class InvoiceHistory
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -454,7 +457,7 @@ public class InvoiceHistory
 			pstmt = null;
 		}
 
-		log.fine("#" + data.size());
+		log.debug("#" + data.size());
 
 		return data;
 	}	// fillTable
@@ -724,7 +727,7 @@ public class InvoiceHistory
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -732,7 +735,7 @@ public class InvoiceHistory
 			rs = null;
 			pstmt = null;
 		}
-		log.fine("#" + data.size());
+		log.debug("#" + data.size());
 
 		// Table
 		m_modelUnconfirmed = new DefaultTableModel(data, columnNames);
@@ -779,7 +782,7 @@ public class InvoiceHistory
 		columnNames.add(msgBL.translate(ctx, "M_Warehouse_ID"));
 
 		// Fill Storage Data
-		final boolean showDetail = CLogMgt.isLevelFine();
+		final boolean showDetail = LogManager.isLevelFine();
 
 		final IInvoiceHistoryDAO invoiceHistoryDAO = Services.get(IInvoiceHistoryDAO.class);
 		final String storageSql = invoiceHistoryDAO.buildStorageInvoiceHistorySQL(showDetail, ihCtx.getM_Warehouse_ID(), ihCtx.getM_AttributeSetInstance_ID());
@@ -827,7 +830,7 @@ public class InvoiceHistory
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, storageSql, e);
+			log.error(storageSql, e);
 		}
 		finally
 		{
@@ -1001,7 +1004,7 @@ public class InvoiceHistory
 		// Fill Data
 		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		{
-			log.fine(sql + "; Parameter=" + productPartnerId);
+			log.debug(sql + "; Parameter=" + productPartnerId);
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -1034,7 +1037,7 @@ public class InvoiceHistory
 			}
 			catch (final SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -1043,7 +1046,7 @@ public class InvoiceHistory
 				pstmt = null;
 			}
 
-			log.fine("#" + data.size());
+			log.debug("#" + data.size());
 		}
 
 		// Table
@@ -1083,7 +1086,7 @@ public class InvoiceHistory
 	 */
 	private void fillLabel(final String sql, final int parameter)
 	{
-		log.fine(sql + "; Parameter=" + parameter);
+		log.debug(sql + "; Parameter=" + parameter);
 		final String retValue = DB.getSQLValueString(null, sql, parameter);
 		if (retValue != null)
 		{

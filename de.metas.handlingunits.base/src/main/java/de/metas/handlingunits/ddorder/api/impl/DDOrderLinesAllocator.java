@@ -31,7 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.Quantity;
@@ -40,7 +41,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderMovementBuilder;
 import org.eevolution.model.I_DD_Order;
@@ -63,7 +63,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 /* package */class DDOrderLinesAllocator
 {
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(DDOrderLinesAllocator.class);
+	private static final transient Logger logger = LogManager.getLogger(DDOrderLinesAllocator.class);
 	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
@@ -241,7 +241,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 			final HUException ex = new HUException("No DD Order Lines where found for our product"
 					+ "\n @M_Product_ID@: " + product
 					+ "\n HUProductStorage: " + huProductStorage);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return;
 		}
 

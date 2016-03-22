@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.io.File;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
@@ -80,7 +81,7 @@ public class DunningPrint extends SvrProcess
 			else if (name.equals("PrintUnprocessedOnly"))
 				p_PrintUnprocessedOnly = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -195,7 +196,7 @@ public class DunningPrint extends SvrProcess
 				//
 				if (re != null) {
 					File attachment = re.getPDF(File.createTempFile("Dunning", ".pdf"));
-					log.fine(to + " - " + attachment);
+					log.debug(to + " - " + attachment);
 					email.addAttachment(attachment);
 				}
 				//

@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -40,7 +41,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
@@ -126,7 +126,7 @@ public class MUser extends X_AD_User
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -174,7 +174,7 @@ public class MUser extends X_AD_User
 	{
 		if (name == null || name.length() == 0 || password == null || password.length() == 0)
 		{
-			s_log.warning ("Invalid Name/Password = " + name + "/" + password);
+			s_log.warn("Invalid Name/Password = " + name + "/" + password);
 			return null;
 		}
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
@@ -198,14 +198,14 @@ public class MUser extends X_AD_User
 			{
 				retValue = new MUser (ctx, rs, null);
 				if (rs.next())
-					s_log.warning ("More then one user with Name/Password = " + name);
+					s_log.warn("More then one user with Name/Password = " + name);
 			}
 			else
-				s_log.fine("No record");
+				s_log.debug("No record");
  		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -237,7 +237,7 @@ public class MUser extends X_AD_User
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -264,7 +264,7 @@ public class MUser extends X_AD_User
 	}	//	isSalesRep
 
 	/**	Static Logger			*/
-	private static CLogger	s_log	= CLogger.getCLogger (MUser.class);
+	private static Logger	s_log	= LogManager.getLogger(MUser.class);
 
 
 	/**************************************************************************
@@ -548,7 +548,7 @@ public class MUser extends X_AD_User
 		}
 		catch (AddressException ex)
 		{
-			log.warning(email + " - " + ex.getLocalizedMessage());
+			log.warn(email + " - " + ex.getLocalizedMessage());
 		}
 		return null;
 	}	//	getInternetAddress

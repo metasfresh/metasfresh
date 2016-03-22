@@ -36,9 +36,10 @@ import org.adempiere.webui.part.ITabOnSelectHandler;
 import org.adempiere.webui.session.SessionManager;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkforge.keylistener.Keylistener;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.HtmlBasedComponent;
@@ -69,7 +70,7 @@ import de.metas.ui.web.base.session.UserPreference;
 public class ADWindowPanel extends AbstractADWindowPanel
 {
     @SuppressWarnings("unused")
-	private static final CLogger logger = CLogger.getCLogger(ADWindowPanel.class);
+	private static final Logger logger = LogManager.getLogger(ADWindowPanel.class);
     
 	private Borderlayout layout;
 

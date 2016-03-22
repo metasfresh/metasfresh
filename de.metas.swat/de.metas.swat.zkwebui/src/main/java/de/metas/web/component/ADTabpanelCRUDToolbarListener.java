@@ -33,9 +33,10 @@ import org.adempiere.webui.window.FDialog;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.DataStatusListener;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Toolbar for CRUD operations. At this moment we support following: Ignore, Save, Delete, Refresh
@@ -337,7 +338,7 @@ public class ADTabpanelCRUDToolbarListener implements ToolbarListener, DataStatu
 
 	private void showLastError()
 	{
-		final String msg = CLogger.retrieveErrorString(null);
+		final String msg = MetasfreshLastError.retrieveErrorString(null);
 		if (msg != null)
 		{
 			showErrorMessage(Msg.getMsg(Env.getCtx(), msg));

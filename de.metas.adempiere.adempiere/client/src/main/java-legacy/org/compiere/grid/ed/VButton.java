@@ -24,7 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.images.Images;
@@ -35,7 +36,8 @@ import org.compiere.model.GridField;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CButton;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -161,7 +163,7 @@ public final class VButton extends CButton
 	private int				m_AD_Process_ID;
 	private MLookup			m_lookup;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VButton.class);
+	private static Logger log = LogManager.getLogger(VButton.class);
 
 	/**
 	 *	Set Value
@@ -347,7 +349,7 @@ public final class VButton extends CButton
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 		}
 	}	//	readReference
 

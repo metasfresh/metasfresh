@@ -23,7 +23,8 @@ import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -42,7 +43,8 @@ import org.compiere.model.PO;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -93,7 +95,7 @@ public class SubCurrentLine extends PosSubPanel implements ActionListener, Focus
 	private int 			m_M_PriceList_Version_ID;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(SubCurrentLine.class);
+	private static Logger log = LogManager.getLogger(SubCurrentLine.class);
 	
 
 	/** The Table					*/
@@ -368,7 +370,7 @@ public class SubCurrentLine extends PosSubPanel implements ActionListener, Focus
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, m_sql, e);
+			log.error(m_sql, e);
 		}
 		finally
 		{
@@ -596,7 +598,7 @@ public class SubCurrentLine extends PosSubPanel implements ActionListener, Focus
 	 */
 	public void setM_Product_ID (int M_Product_ID)
 	{
-		log.fine( "PosSubProduct.setM_Product_ID=" + M_Product_ID);
+		log.debug( "PosSubProduct.setM_Product_ID=" + M_Product_ID);
 		if (M_Product_ID <= 0)
 			m_product = null;
 		else
@@ -669,7 +671,7 @@ public class SubCurrentLine extends PosSubPanel implements ActionListener, Focus
 		if ( lineId <= 0 )
 			return;
 	
-		log.fine("SubCurrentLine - loading line " + lineId);
+		log.debug("SubCurrentLine - loading line " + lineId);
 		MOrderLine ol = new MOrderLine(p_ctx, lineId, null);
 		if ( ol != null )
 		{

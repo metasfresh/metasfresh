@@ -22,9 +22,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.MimeType;
 
 
@@ -84,7 +84,7 @@ public class MAttachmentEntry
 	private int				m_index = 0; 
 
 	/**	Logger			*/
-	protected CLogger	log = CLogger.getCLogger(getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	
 	
 	/**
@@ -249,7 +249,7 @@ public class MAttachmentEntry
 		}
 		catch (IOException ioe)
 		{
-			log.log(Level.SEVERE, "getFile", ioe);
+			log.error("getFile", ioe);
 		}
 		return file;
 	}	//	getFile

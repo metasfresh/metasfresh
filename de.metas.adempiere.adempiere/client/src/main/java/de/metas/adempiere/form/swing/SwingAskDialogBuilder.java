@@ -44,7 +44,7 @@ public class SwingAskDialogBuilder implements IAskDialogBuilder
 {
 	// Services
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	// private final transient CLogger log = CLogger.getCLogger(getClass());
+	// private final transient Logger log = CLogMgt.getLogger(getClass());
 
 	private Object _parentCompObj;
 	private int _parentWindowNo;

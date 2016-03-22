@@ -58,7 +58,8 @@ import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
@@ -103,7 +104,7 @@ import de.metas.commission.util.Messages;
 public class SponsorBL implements ISponsorBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(SponsorBL.class);
+	private static final Logger logger = LogManager.getLogger(SponsorBL.class);
 
 	// private void checkFirstAndLast(final List<I_C_Sponsor_SalesRep> seList) throws SponsorConfigException
 	// {
@@ -146,7 +147,7 @@ public class SponsorBL implements ISponsorBL
 		// final MCAdvComSystem comSystem = MCAdvComSystem.retrieveForRootSponsor(ctx, rootSponsor, trxName);
 		// if (comSystem == null)
 		// {
-		// logger.warning("RootSponsor " + rootSponsor + " has no commission system");
+		// logger.warn("RootSponsor " + rootSponsor + " has no commission system");
 		// return null;
 		// }
 
@@ -263,7 +264,7 @@ public class SponsorBL implements ISponsorBL
 		// final MCAdvComSystem comSystem = MCAdvComSystem.retrieveForRootSponsor(ctx, rootSponsor, trxName);
 		// if (comSystem == null)
 		// {
-		// logger.warning("RootSponsor " + rootSponsor + " has no commission system");
+		// logger.warn("RootSponsor " + rootSponsor + " has no commission system");
 		// return null;
 		// }
 
@@ -296,7 +297,7 @@ public class SponsorBL implements ISponsorBL
 			}
 		}
 
-		SponsorBL.logger.config(this + " has no sales rep at date " + date);
+		SponsorBL.logger.info(this + " has no sales rep at date " + date);
 
 		if (throwEx)
 		{
@@ -1087,7 +1088,7 @@ public class SponsorBL implements ISponsorBL
 			}
 			if (salesRepSSR.getC_AdvComSystem_ID() != ssr.getC_AdvComSystem_ID())
 			{
-				SponsorBL.logger.warning(
+				SponsorBL.logger.warn(
 						ssr + " has C_AdvComSystem_ID=" + ssr.getC_AdvComSystem_ID()
 								+ " but sibling-ssr " + salesRepSSR + " has C_AdvComSystem_ID=" + salesRepSSR.getC_AdvComSystem_ID());
 
@@ -1141,7 +1142,7 @@ public class SponsorBL implements ISponsorBL
 			final I_C_Sponsor_SalesRep ssr,
 			final int sponsorID)
 	{
-		SponsorBL.logger.config("sponsorID=" + sponsorID);
+		SponsorBL.logger.info("sponsorID=" + sponsorID);
 
 		final Properties ctx = POWrapper.getCtx(ssr);
 		final String trxName = POWrapper.getTrxName(ssr);

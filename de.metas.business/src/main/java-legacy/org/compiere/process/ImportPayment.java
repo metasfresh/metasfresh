@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -72,7 +73,7 @@ public class ImportPayment extends SvrProcess
 			else if (name.equals("DocAction"))
 				m_docAction = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		m_ctx = Env.getCtx();
 	}	//	prepare
@@ -105,7 +106,7 @@ public class ImportPayment extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_Payment "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Deleted Old Imported =" + no);
+			log.debug("Deleted Old Imported =" + no);
 		}
 
 		//	Set Client, Org, IsActive, Created/Updated
@@ -121,7 +122,7 @@ public class ImportPayment extends SvrProcess
 			  + " I_IsImported = 'N' "
 			  + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL OR AD_Client_ID IS NULL OR AD_Org_ID IS NULL OR AD_Client_ID=0 OR AD_Org_ID=0");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.info ("Reset=" + no);
+		log.info("Reset=" + no);
 
 		sql = new StringBuffer ("UPDATE I_Payment o "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
@@ -130,7 +131,7 @@ public class ImportPayment extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Org=" + no);
+			log.warn("Invalid Org=" + no);
 			
 		//	Set Bank Account
 		sql = new StringBuffer("UPDATE I_Payment i "
@@ -187,7 +188,7 @@ public class ImportPayment extends SvrProcess
 			+ "OR I_isImported IS NULL").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid Bank Account=" + no);
+			log.warn("Invalid Bank Account=" + no);
 		 
 		//	Set Currency
 		sql = new StringBuffer ("UPDATE I_Payment i "
@@ -214,7 +215,7 @@ public class ImportPayment extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No Currency=" + no);
+			log.warn("No Currency=" + no);
 		 
 		//	Set Amount
 		sql = new StringBuffer("UPDATE I_Payment "
@@ -275,7 +276,7 @@ public class ImportPayment extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set Invoice from DocumentNo=" + no);
+			log.debug("Set Invoice from DocumentNo=" + no);
 		
 		//	BPartner
 		sql = new StringBuffer ("UPDATE I_Payment i "
@@ -285,7 +286,7 @@ public class ImportPayment extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set BP from Value=" + no);
+			log.debug("Set BP from Value=" + no);
 		
 		sql = new StringBuffer ("UPDATE I_Payment i "
 			  + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_Invoice ii"
@@ -294,7 +295,7 @@ public class ImportPayment extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set BP from Invoice=" + no);
+			log.debug("Set BP from Invoice=" + no);
 		
 		sql = new StringBuffer ("UPDATE I_Payment "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner,' "
@@ -303,7 +304,7 @@ public class ImportPayment extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No BPartner=" + no);
+			log.warn("No BPartner=" + no);
 		
 		
 		//	Check Payment<->Invoice combination
@@ -391,21 +392,21 @@ public class ImportPayment extends SvrProcess
 			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set DocType=" + no);
+			log.debug("Set DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Payment "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocTypeName, ' "
 			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid DocTypeName=" + no);
+			log.warn("Invalid DocTypeName=" + no);
 		sql = new StringBuffer ("UPDATE I_Payment "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No DocType, ' "
 			  + "WHERE C_DocType_ID IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("No DocType=" + no);
+			log.warn("No DocType=" + no);
 
 		commitEx();
 		
@@ -521,7 +522,7 @@ public class ImportPayment extends SvrProcess
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		
 		//	Set Error to indicator to not imported

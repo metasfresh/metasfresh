@@ -38,7 +38,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.commission.interfaces.I_C_OrderLine;
@@ -49,7 +50,7 @@ import de.metas.commission.service.IOrderLineBL;
 public class OrderLine implements ModelValidator
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(OrderLine.class);
 	public static final String SYSCONFIG_IS_UPDATE_DISCOUNTS = "de.metas.commission.IsUpdateDiscounts";
 
 	private int ad_Client_ID = -1;

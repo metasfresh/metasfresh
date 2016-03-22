@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -50,7 +51,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -98,7 +100,7 @@ public class VBOMDrop extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		sizeIt();
 	}	//	init
@@ -153,7 +155,7 @@ public class VBOMDrop extends CPanel
 	/**	Line Counter				*/
 	private int			m_bomLine = 0;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VBOMDrop.class);
+	private static Logger log = LogManager.getLogger(VBOMDrop.class);
 	
 	/**	List of all selectors		*/
 	private ArrayList<JToggleButton>	m_selectionList = new ArrayList<JToggleButton>();
@@ -298,7 +300,7 @@ public class VBOMDrop extends CPanel
 	 */
 	private void createMainPanel ()
 	{
-		log.config(": " + m_product);
+		log.info(": " + m_product);
 		this.removeAll();
 		this.setPreferredSize(null);
 		this.invalidate();
@@ -333,7 +335,7 @@ public class VBOMDrop extends CPanel
 		MProductBOM[] bomLines = MProductBOM.getBOMLines(product);
 		for (int i = 0; i < bomLines.length; i++)
 			addBOMLine (bomLines[i], qty);
-		log.fine("#" + bomLines.length);
+		log.debug("#" + bomLines.length);
 	}	//	addBOMLines
 
 	/**
@@ -344,7 +346,7 @@ public class VBOMDrop extends CPanel
 	 */
 	private void addBOMLine (MProductBOM line, BigDecimal qty)
 	{
-		log.fine(line.toString());
+		log.debug(line.toString());
 		String bomType = line.getBOMType();
 		if (bomType == null)
 			bomType = MProductBOM.BOMTYPE_StandardPart;
@@ -371,7 +373,7 @@ public class VBOMDrop extends CPanel
 	private void addDisplay (int parentM_Product_ID,
 		int M_Product_ID, String bomType, String name, BigDecimal lineQty)
 	{
-		log.fine("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
+		log.debug("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
 		//
 		boolean selected = true;
 		if (MProductBOM.BOMTYPE_StandardPart.equals(bomType))
@@ -402,7 +404,7 @@ public class VBOMDrop extends CPanel
 			ButtonGroup group = m_buttonGroups.get(groupName);
 			if (group == null)
 			{
-				log.fine("ButtonGroup=" + groupName);
+				log.debug("ButtonGroup=" + groupName);
 				group = new ButtonGroup();
 				m_buttonGroups.put(groupName, group);
 				group.add(b);
@@ -452,7 +454,7 @@ public class VBOMDrop extends CPanel
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-		log.config(e.getActionCommand());
+		log.info(e.getActionCommand());
 		
 		Object source = e.getSource();
 
@@ -572,7 +574,7 @@ public class VBOMDrop extends CPanel
 				return;
 			}
 		}
-		log.log(Level.SEVERE, "not found - " + source);
+		log.error("not found - " + source);
 	}	//	cmd_selection
 
 	/**
@@ -588,7 +590,7 @@ public class VBOMDrop extends CPanel
 		else if (source instanceof JRadioButton)
 			retValue = ((JRadioButton)source).isSelected();
 		else
-			log.log(Level.SEVERE, "Not valid - " + source);
+			log.error("Not valid - " + source);
 		return retValue;
 	}	//	isSelected
 
@@ -611,7 +613,7 @@ public class VBOMDrop extends CPanel
 		if (pp != null && pp.getKey() > 0)
 			return cmd_saveProject (pp.getKey());
 		//
-		log.log(Level.SEVERE, "Nothing selected");
+		log.error("Nothing selected");
 		return false;
 	}	//	cmd_save
 
@@ -622,11 +624,11 @@ public class VBOMDrop extends CPanel
 	 */
 	private boolean cmd_saveOrder (int C_Order_ID)
 	{
-		log.config("C_Order_ID=" + C_Order_ID);
+		log.info("C_Order_ID=" + C_Order_ID);
 		MOrder order = new MOrder (Env.getCtx(), C_Order_ID, null);
 		if (order.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Order_ID=" + C_Order_ID);
+			log.error("Not found - C_Order_ID=" + C_Order_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -647,11 +649,11 @@ public class VBOMDrop extends CPanel
 				if (ol.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveOrder
 
@@ -662,11 +664,11 @@ public class VBOMDrop extends CPanel
 	 */
 	private boolean cmd_saveInvoice (int C_Invoice_ID)
 	{
-		log.config("C_Invoice_ID=" + C_Invoice_ID);
+		log.info("C_Invoice_ID=" + C_Invoice_ID);
 		MInvoice invoice = new MInvoice (Env.getCtx(), C_Invoice_ID, null);
 		if (invoice.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Invoice_ID=" + C_Invoice_ID);
+			log.error("Not found - C_Invoice_ID=" + C_Invoice_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -687,11 +689,11 @@ public class VBOMDrop extends CPanel
 				if (il.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveInvoice
 
@@ -702,11 +704,11 @@ public class VBOMDrop extends CPanel
 	 */
 	private boolean cmd_saveProject (int C_Project_ID)
 	{
-		log.config("C_Project_ID=" + C_Project_ID);
+		log.info("C_Project_ID=" + C_Project_ID);
 		MProject project = new MProject (Env.getCtx(), C_Project_ID, null);
 		if (project.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Project_ID=" + C_Project_ID);
+			log.error("Not found - C_Project_ID=" + C_Project_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -726,11 +728,11 @@ public class VBOMDrop extends CPanel
 				if (pl.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveProject
 

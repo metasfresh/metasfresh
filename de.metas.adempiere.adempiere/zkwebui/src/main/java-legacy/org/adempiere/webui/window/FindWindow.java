@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -77,13 +76,16 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MUserQuery;
 import org.compiere.model.X_AD_Column;
 import org.compiere.util.AdempiereSystemError;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuFocus;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -137,7 +139,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     /** Is cancel ?                 */
     private boolean         m_isCancel = false; // teo_sarca [ 1708717 ]
     /** Logger          */
-    private static CLogger log = CLogger.getCLogger(FindWindow.class);
+    private static Logger log = LogManager.getLogger(FindWindow.class);
     /** Number of records           */
     private int             m_total;
     
@@ -522,7 +524,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     **/
     private void initFind()
     {
-        log.config("");
+        log.info("");
         
         Arrays.sort(m_findFields, fieldNamesComparator);
 
@@ -576,7 +578,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
      */
     private void initFindAdvanced()
     {
-        log.config("");
+        log.info("");
         createFields();
 
     }   //  initFindAdvanced
@@ -716,7 +718,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     **/
     public void addSelectionColumn(final GridField mField)
     {
-        log.config(mField.getHeader());
+        log.info(mField.getHeader());
         
         int displayLength = mField.getDisplayLength();
         if (displayLength <= 0 || displayLength > FIELDLENGTH)
@@ -987,7 +989,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, in + "(" + in.getClass() + ")" + e);
+					log.error(in + "(" + in.getClass() + ")" + e);
 					time = DisplayType.getDateFormat(dt).parse(in).getTime();
 				}
 
@@ -1018,7 +1020,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "Object=" + in, ex);
+			log.error("Object=" + in, ex);
 			return null;
 		}
 
@@ -1117,7 +1119,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
 			{
 				if (uq.delete(true))
 				{
-					FDialog.info (m_targetWindowNo, this, "Deleted", name);
+					FDialog.info(m_targetWindowNo, this, "Deleted", name);
 					refreshUserQueries();
 				}
 				else
@@ -1131,7 +1133,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
 			//
 			if (uq.save())
 			{
-				FDialog.info (m_targetWindowNo, this, "Saved", name);
+				FDialog.info(m_targetWindowNo, this, "Saved", name);
 				refreshUserQueries();
 			}
 			else
@@ -1211,7 +1213,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     private void addOperators(ListItem column, Listbox listOperator)
     {
         String columnName = column.getValue().toString();
-        log.config("Column: " + columnName);
+        log.info("Column: " + columnName);
 
         if (columnName.endsWith("_ID") || columnName.endsWith("_Acct"))
         {
@@ -1318,7 +1320,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
             if (value != null && value.toString().length() > 0)
             {
                 String ColumnName = wed.getColumnName();
-                log.fine(ColumnName + "=" + value);
+                log.debug(ColumnName + "=" + value);
 
                 // globalqss - Carlos Ruiz - 20060711
                 // fix a bug with virtualColumn + isSelectionColumn not yielding results
@@ -1363,7 +1365,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     @Override
 	public void dispose()
     {
-        log.config("");
+        log.info("");
 
         //  TargetFields
         if (m_targetFields != null)
@@ -1469,7 +1471,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
     **/
     private int getNoOfRecords (MQuery query, boolean alertZeroRecords)
     {
-        log.config("" + query);
+        log.info("" + query);
         StringBuffer sql = new StringBuffer("SELECT COUNT(*) FROM ");
         sql.append(m_tableName);
         boolean hasWhere = false;
@@ -1515,7 +1517,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
             m_total = -1; // return 0 if more then allowed - teo_sarca [ 1708717 ]
         }
         else
-            log.config("#" + m_total);
+            log.info("#" + m_total);
         //
         /*if (query != null)
             statusBar.setStatusToolTip (query.getWhereClause());*/
@@ -1584,10 +1586,10 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
             rs.close();
             stmt.close();
         } catch (SQLException e) {
-            log.log(Level.SEVERE, sql, e);
+            log.error(sql, e);
             retString = "";
         } catch (AdempiereSystemError e) {
-            log.log(Level.SEVERE, sql, e);
+            log.error(sql, e);
             retString = "";
         }
         return retString;
@@ -1614,7 +1616,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
                 ret = ret + getSubCategoriesString(node.getNodeId(), categories, loopIndicatorId) + ",";
             }
         }
-        log.fine(ret);
+        log.debug(ret);
         return ret + productCategoryId;
 
     }   //  getSubCategoriesString
@@ -1686,7 +1688,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
                 }
                 catch (Exception e)
                 {
-                    log.log(Level.SEVERE, in + "(" + in.getClass() + ")" + e);
+                    log.error(in + "(" + in.getClass() + ")" + e);
                     time = DisplayType.getDateFormat(dt).parse(in.toString()).getTime();
                 }
                 return new Timestamp(time);
@@ -1697,7 +1699,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
         }
         catch (Exception ex)
         {
-            log.log(Level.SEVERE, "Object=" + in, ex);
+            log.error("Object=" + in, ex);
             String error = ex.getLocalizedMessage();
             if (error == null || error.length() == 0)
                 error = ex.toString();
@@ -1725,7 +1727,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
         {
             m_query = MQuery.getNoRecordQuery (m_tableName, false);
             m_total = 0;
-            log.warning("Query - over max");
+            log.warn("Query - over max");
         }
         else
             log.info("Query=" + m_query);

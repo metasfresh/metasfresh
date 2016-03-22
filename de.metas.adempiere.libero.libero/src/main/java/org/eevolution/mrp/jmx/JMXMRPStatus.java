@@ -28,8 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -40,7 +38,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.jmx.IJMXNameAware;
 import org.adempiere.util.text.IndentedStringBuilder;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -51,6 +48,15 @@ import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.eevolution.mrp.spi.impl.DDOrderLineMRPForwardNavigator;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 {
@@ -109,25 +115,23 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 		return mrpSegmentInfos.toArray(new String[mrpSegmentInfos.size()]);
 	}
 
-	private final CLogger getMRPLogger()
+	private final Logger getMRPLogger()
 	{
-		final CLogger mrpLogger = CLogger.getCLogger(IMRPContext.LOGGERNAME);
+		final Logger mrpLogger = LogManager.getLogger(IMRPContext.LOGGERNAME);
 		return mrpLogger;
 	}
 
 	@Override
 	public String getMRPLogLevel()
 	{
-		final CLogger mrpLogger = getMRPLogger();
-		final Level level = mrpLogger.getLevel();
-		return level == null ? null : level.getName();
+		final Logger mrpLogger = getMRPLogger();
+		return LogManager.getLoggerLevelName(mrpLogger);
 	}
 
 	@Override
 	public void setMRPLogLevel(final String logLevel)
 	{
-		final Level level = Level.parse(logLevel);
-		getMRPLogger().setLevel(level);
+		LogManager.setLoggerLevel(getMRPLogger(), logLevel);
 	}
 
 	@Override
@@ -167,8 +171,8 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 					.setPP_Plant_ID(ppPlantId);
 			final Logger logger = navigator.getLogger();
 
-			logger.setLevel(Level.ALL);
-			logger.log(Level.INFO, "-----------------------------------------------------------------------------------");
+			LogManager.setLoggerLevel(logger, Level.ALL);
+			logger.info("-----------------------------------------------------------------------------------");
 
 			navigator.navigateForward(mrpDemand);
 
@@ -180,14 +184,14 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 						.addInArrayFilter(I_DD_Order.COLUMN_DD_Order_ID, collectedDD_Order_IDs)
 						.create()
 						.list();
-				logger.log(Level.INFO, "Collected DD Orders: {0}", collectedDDOrders);
+				logger.info("Collected DD Orders: {}", collectedDDOrders);
 			}
 			else
 			{
-				logger.log(Level.INFO, "No DD Orders were collected");
+				logger.info("No DD Orders were collected");
 			}
 
-			logger.log(Level.INFO, "-----------------------------------------------------------------------------------");
+			logger.info("-----------------------------------------------------------------------------------");
 		}
 	}
 

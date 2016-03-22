@@ -28,8 +28,6 @@
  **********************************************************************/
 package org.adempiere.process.rpl.imp;
 
-import java.util.logging.Level;
-
 import org.adempiere.process.rpl.XMLHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
@@ -90,7 +88,7 @@ public class ModelImporter extends SvrProcess {
 			else if (name.equals("FileName"))
 				p_FileName = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		
 		if(p_EXP_Format_ID == 0)

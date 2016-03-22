@@ -13,14 +13,15 @@
 
 package org.adempiere.webui.editor;
 
-import java.util.logging.Level;
-
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WImageDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.MImage;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.image.AImage;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -37,11 +38,11 @@ public class WImageEditor extends WEditor
 {
     private static final String[] LISTENER_EVENTS = {Events.ON_CLICK};
     
-	private static final CLogger logger;
+	private static final Logger logger;
     
     static
     {
-        logger = CLogger.getCLogger(WImageEditor.class);
+        logger = LogManager.getLogger(WImageEditor.class);
     }
     
     /** The Image Model         */
@@ -52,7 +53,7 @@ public class WImageEditor extends WEditor
 	private boolean readwrite;
     
     /**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WImageEditor.class);
+	private static Logger log = LogManager.getLogger(WImageEditor.class);
     
     public WImageEditor(GridField gridField)
     {
@@ -129,14 +130,14 @@ public class WImageEditor extends WEditor
 		if (m_mImage == null || newValue != m_mImage.get_ID())
 			m_mImage = MImage.get (Env.getCtx(), newValue);
 		//
-		log.fine(m_mImage.toString());
+		log.debug(m_mImage.toString());
 		AImage img = null;
 		byte[] data = m_mImage.getData();
 		if (data != null && data.length > 0) {
 			try {
 				img = new AImage(null, data);				
 			} catch (Exception e) {		
-				logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+				logger.warn(e.getLocalizedMessage(), e);
 			}
 		}
 		getComponent().setContent(img);

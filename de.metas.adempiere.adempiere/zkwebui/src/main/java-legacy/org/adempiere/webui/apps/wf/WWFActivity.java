@@ -15,7 +15,6 @@ package org.adempiere.webui.apps.wf;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.apps.wf.WFActivityModel;
 import org.adempiere.webui.apps.AEnv;
@@ -41,7 +40,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -49,6 +47,10 @@ import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.compiere.wf.MWFActivity;
 import org.compiere.wf.MWFNode;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -84,7 +86,7 @@ public class WWFActivity extends ADForm implements EventListener
 	/**	Set Column					*/
 	private	MColumn 			m_column = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WWFActivity.class);
+	private static Logger log = LogManager.getLogger(WWFActivity.class);
 
 	//
 	private Label lNode = new Label(Msg.translate(Env.getCtx(), "AD_WF_Node_ID"));
@@ -370,7 +372,7 @@ public class WWFActivity extends ADForm implements EventListener
 	 */
 	public void display (int index)
 	{
-		log.fine("Index=" + index);
+		log.debug("Index=" + index);
 		//
 		m_activity = resetDisplay(index);
 		//	Nothing to show
@@ -429,7 +431,7 @@ public class WWFActivity extends ADForm implements EventListener
 			fAnswerButton.setVisible(true);
 		}
 		else
-			log.log(Level.SEVERE, "Unknown Node Action: " + node.getAction());
+			log.error("Unknown Node Action: " + node.getAction());
 
 		statusBar.setStatusDB((m_index+1) + "/" + m_activities.length);
 		statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), "WFActivities"));
@@ -441,7 +443,7 @@ public class WWFActivity extends ADForm implements EventListener
 	 */
 	private void cmd_zoom()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 			return;
 		AEnv.zoom(m_activity.getAD_Table_ID(), m_activity.getRecord_ID());
@@ -452,7 +454,7 @@ public class WWFActivity extends ADForm implements EventListener
 	 */
 	private void cmd_button()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 			return;
 		//
@@ -478,7 +480,7 @@ public class WWFActivity extends ADForm implements EventListener
 			AEnv.showWindow(form);
 		}
 		else
-			log.log(Level.SEVERE, "No User Action:" + node.getAction());
+			log.error("No User Action:" + node.getAction());
 	}	//	cmd_button
 
 
@@ -487,7 +489,7 @@ public class WWFActivity extends ADForm implements EventListener
 	 */
 	public void onOK()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 		{
 			Clients.showBusy(null, false);
@@ -508,11 +510,11 @@ public class WWFActivity extends ADForm implements EventListener
 
 			if (forward != null)
 			{
-				log.config("Forward to " + forward);
+				log.info("Forward to " + forward);
 				int fw = ((Integer)forward).intValue();
 				if (fw == AD_User_ID || fw == 0)
 				{
-					log.log(Level.SEVERE, "Forward User=" + fw);
+					log.error("Forward User=" + fw);
 					trx.rollback();
 					trx.close();
 					return;
@@ -546,14 +548,14 @@ public class WWFActivity extends ADForm implements EventListener
 					return;
 				}
 				//
-				log.config("Answer=" + value + " - " + textMsg);
+				log.info("Answer=" + value + " - " + textMsg);
 				try
 				{
 					m_activity.setUserChoice(AD_User_ID, value, dt, textMsg);
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, node.getName(), e);
+					log.error(node.getName(), e);
 					FDialog.error(m_WindowNo, this, "Error", e.toString());
 					trx.rollback();
 					trx.close();
@@ -563,7 +565,7 @@ public class WWFActivity extends ADForm implements EventListener
 			//	User Action
 			else
 			{
-				log.config("Action=" + node.getAction() + " - " + textMsg);
+				log.info("Action=" + node.getAction() + " - " + textMsg);
 				try
 				{
 					// ensure activity is ran within a transaction
@@ -571,7 +573,7 @@ public class WWFActivity extends ADForm implements EventListener
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, node.getName(), e);
+					log.error(node.getName(), e);
 					FDialog.error(m_WindowNo, this, "Error", e.toString());
 					trx.rollback();
 					trx.close();

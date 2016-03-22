@@ -21,13 +21,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -123,7 +123,7 @@ public class MRefList extends X_AD_Ref_List
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql + " -- " + key, ex);
+			s_log.error(sql + " -- " + key, ex);
 		}
 		finally
 		{
@@ -181,7 +181,7 @@ public class MRefList extends X_AD_Ref_List
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -195,7 +195,7 @@ public class MRefList extends X_AD_Ref_List
 
 
 	/**	Logger							*/
-	private static CLogger		s_log = CLogger.getCLogger (MRefList.class);
+	private static Logger		s_log = LogManager.getLogger(MRefList.class);
 	/** Value Cache						*/
 	private static CCache<String,String> s_cache = new CCache<String,String>(Table_Name, 20);
 

@@ -109,8 +109,8 @@ public class Doc_PPCostCollector extends Doc
 		
 		//	Pseudo Line Check
 		if (m_line.getM_Product_ID() == 0)
-			log.warning(m_line.toString() + " - No Product");
-		log.fine(m_line.toString());
+			log.warn(m_line.toString() + " - No Product");
+		log.debug(m_line.toString());
 		
 		// Load the RoutingService
 		m_routingService = RoutingServiceFactory.get().getRoutingService(m_cc.getAD_Client_ID());

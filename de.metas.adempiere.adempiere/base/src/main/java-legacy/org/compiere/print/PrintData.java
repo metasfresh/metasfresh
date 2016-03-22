@@ -20,7 +20,8 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,7 +33,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Trace;
 import org.w3c.dom.Document;
@@ -124,7 +124,7 @@ public class PrintData implements Serializable
 	public static final String	XML_ATTRIBUTE_FUNCTION_ROW = "function_row";
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PrintData.class);
+	private static Logger log = LogManager.getLogger(PrintData.class);
 	
 	/**
 	 * 	Get Context
@@ -492,10 +492,10 @@ public class PrintData implements Serializable
 					return i;
 			}
 			else
-				log.log(Level.SEVERE, "Element not PrintData(Element) " + o.getClass().getName());
+				log.error("Element not PrintData(Element) " + o.getClass().getName());
 		}
 		//	As Data is stored sparse, there might be lots of NULL values
-	//	log.log(Level.SEVERE, "PrintData.getIndex - Element not found - " + name);
+	//	log.error("PrintData.getIndex - Element not found - " + name);
 		return -1;
 	}	//	getIndex
 
@@ -513,7 +513,7 @@ public class PrintData implements Serializable
 			if (m_columnInfo[i].getAD_Column_ID() == AD_Column_ID)
 				return getIndex(m_columnInfo[i].getColumnName());
 		}
-		log.log(Level.SEVERE, "Column not found - AD_Column_ID=" + AD_Column_ID);
+		log.error("Column not found - AD_Column_ID=" + AD_Column_ID);
 		if (AD_Column_ID == 0)
 			Trace.printStack();
 		return -1;
@@ -565,7 +565,7 @@ public class PrintData implements Serializable
 		if (pd.getColumnInfo() != null)
 		{
 			for (int i = 0; i < pd.getColumnInfo().length; i++)
-				log.config(i + ": " + pd.getColumnInfo()[i]);
+				log.info(i + ": " + pd.getColumnInfo()[i]);
 		}
 	}	//	dump
 
@@ -579,31 +579,31 @@ public class PrintData implements Serializable
 		log.info("Row #" + row);
 		if (row < 0 || row >= pd.getRowCount())
 		{
-			log.warning("- invalid -");
+			log.warn("- invalid -");
 			return;
 		}
 		pd.setRowIndex(row);
 		if (pd.getNodeCount() == 0)
 		{
-			log.config("- n/a -");
+			log.info("- n/a -");
 			return;
 		}
 		for (int i = 0; i < pd.getNodeCount(); i++)
 		{
 			Object obj = pd.getNode(i);
 			if (obj == null)
-				log.config("- NULL -");
+				log.info("- NULL -");
 			else if (obj instanceof PrintData)
 			{
-				log.config("- included -");
+				log.info("- included -");
 				dump((PrintData)obj);
 			}
 			else if (obj instanceof PrintDataElement)
 			{
-				log.config(((PrintDataElement)obj).toStringX());
+				log.info(((PrintDataElement)obj).toStringX());
 			}
 			else
-				log.config("- INVALID: " + obj);
+				log.info("- INVALID: " + obj);
 		}
 	}	//	dumpRow
 
@@ -680,7 +680,7 @@ public class PrintData implements Serializable
 					}
 				}
 				else
-					log.log(Level.SEVERE, "Element not PrintData(Element) " + o.getClass().getName());
+					log.error("Element not PrintData(Element) " + o.getClass().getName());
 			}	//	columns
 		}	//	rows
 	}	//	processTree
@@ -702,7 +702,7 @@ public class PrintData implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(StreamResult)", e);
+			log.error("(StreamResult)", e);
 			return false;
 		}
 		return true;
@@ -724,7 +724,7 @@ public class PrintData implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(file)", e);
+			log.error("(file)", e);
 			return false;
 		}
 		return true;
@@ -739,7 +739,7 @@ public class PrintData implements Serializable
 	 */
 	public static PrintData parseXML (Properties ctx, File input)
 	{
-		log.config(input.toString());
+		log.info(input.toString());
 		PrintData pd = null;
 		try
 		{
@@ -751,7 +751,7 @@ public class PrintData implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return pd;
 	}	//	parseXML

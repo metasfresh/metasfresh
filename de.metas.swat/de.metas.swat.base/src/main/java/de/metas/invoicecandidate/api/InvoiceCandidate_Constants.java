@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -26,11 +27,11 @@ import org.compiere.util.CLogger;
 
 public class InvoiceCandidate_Constants
 {
-	private static final String LOGGER_NAME = CLogger.createModuleLoggerName("de.metas.invoicecandidate");
-
-	public static final CLogger getLogger()
+	public static final String LOGGERNAME_ROOT = InvoiceCandidate_Constants.class.getPackage().getName();
+	
+	public static final Logger getLogger(Class<?> clazz)
 	{
-		return CLogger.getCLogger(LOGGER_NAME);
+		return LogManager.getLogger(clazz);
 	}
 
 	public static final String ENTITY_TYPE = "de.metas.invoicecandidate";

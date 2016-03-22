@@ -268,7 +268,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 		{
 			next.setFromSplitAnd(splitAnd);
 		}
-		log.fine("#" + m_next.size());
+		log.debug("#" + m_next.size());
 		return m_next;
 	}	//	loadNext
 	
@@ -423,7 +423,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 		String docStatus = getDocStatus();
 		if (DOCSTATUS_Voided.equals(docStatus))
 		{
-			log.warning("Activity already voided - "+this);
+			log.warn("Activity already voided - "+this);
 			return;
 		}
 		BigDecimal qtyRequired = getQtyRequiered();
@@ -508,7 +508,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 		}
 		if (!override && getDateFinish() != null)
 		{
-			log.fine("DateFinish already set : Date="+getDateFinish()+", Override="+override);
+			log.debug("DateFinish already set : Date="+getDateFinish()+", Override="+override);
 			return;
 		}
 		//
@@ -525,7 +525,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 								MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl);
 		if (dateFinish == null)
 		{
-			log.warning("Activity Completed/Closed but no cost collectors found!");
+			log.warn("Activity Completed/Closed but no cost collectors found!");
 			return;
 		}
 		setDateFinish(dateFinish);

@@ -28,7 +28,8 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -38,8 +39,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
 
@@ -64,8 +63,6 @@ public class MSequence extends X_AD_Sequence
 	//private static final boolean USE_PROCEDURE = true;
 	private static boolean USE_PROCEDURE = false;
 	//end vpj-cd e-evolution 02/11/2005
-	/** Log Level for Next ID Call					*/
-	private static final Level LOGLEVEL = Level.ALL;
 
 	public static final int QUERY_TIME_OUT = 10;
 
@@ -96,8 +93,8 @@ public class MSequence extends X_AD_Sequence
 		//	Check AdempiereSys
 		final boolean adempiereSys = isAdempiereSys(AD_Client_ID);
 		//
-		if (CLogMgt.isLevel(LOGLEVEL))
-			s_log.log(LOGLEVEL, TableName + " - AdempiereSys=" + adempiereSys  + " [" + trxName + "]");
+		if (s_log.isTraceEnabled())
+			s_log.trace(TableName + " - AdempiereSys=" + adempiereSys  + " [" + trxName + "]");
 		  //begin vpj-cd e-evolution 09/02/2005 PostgreSQL
 		final String selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
 				+ "FROM AD_Sequence "
@@ -128,8 +125,8 @@ public class MSequence extends X_AD_Sequence
 				if (!USE_PROCEDURE && DB.getDatabase().isQueryTimeoutSupported())
 					pstmt.setQueryTimeout(QUERY_TIME_OUT);
 				rs = pstmt.executeQuery();
-				if (CLogMgt.isLevelFinest())
-					s_log.finest("AC=" + conn.getAutoCommit() + ", RO=" + conn.isReadOnly()
+				if (LogManager.isLevelFinest())
+					s_log.trace("AC=" + conn.getAutoCommit() + ", RO=" + conn.isReadOnly()
 						+ " - Isolation=" + conn.getTransactionIsolation() + "(" + Connection.TRANSACTION_READ_COMMITTED
 						+ ") - RSType=" + pstmt.getResultSetType() + "(" + ResultSet.TYPE_SCROLL_SENSITIVE
 						+ "), RSConcur=" + pstmt.getResultSetConcurrency() + "(" + ResultSet.CONCUR_UPDATABLE
@@ -211,14 +208,14 @@ public class MSequence extends X_AD_Sequence
 					conn.commit();
 				}
 				else
-					s_log.severe ("No record found - " + TableName);
+					s_log.error("No record found - " + TableName);
 
 				//
 				break;		//	EXIT
 			}
 			catch (Exception e)
 			{
-				s_log.log(Level.SEVERE, TableName + " - " + e.getMessage(), e);
+				s_log.error(TableName + " - " + e.getMessage(), e);
 				try
 				{
 					if (conn != null)
@@ -242,7 +239,7 @@ public class MSequence extends X_AD_Sequence
 		}
 
 
-		//s_log.finest (retValue + " - Table=" + TableName + " [" + trx + "]");
+		//s_log.trace(retValue + " - Table=" + TableName + " [" + trx + "]");
 		return retValue;
 	}	//	getNextID
 
@@ -277,7 +274,7 @@ public class MSequence extends X_AD_Sequence
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, e.toString());
+			s_log.error(e.toString());
 		}
 		finally
 		{
@@ -317,7 +314,7 @@ public class MSequence extends X_AD_Sequence
 			cstmt.execute();
 			retValue = cstmt.getInt(4);
 		} catch (Exception e) {
-			s_log.log(Level.SEVERE, e.toString());
+			s_log.error(e.toString());
 		} finally {
 			DB.close(cstmt);
 		}
@@ -354,13 +351,13 @@ public class MSequence extends X_AD_Sequence
 			while (rs.next())
 			{
 				String tableName = rs.getString(1);
-				s_log.fine("Add: " + tableName);
+				s_log.debug("Add: " + tableName);
 				MSequence seq = new MSequence (ctx, AD_Client_ID, tableName, trxName);
 				if (seq.save())
 					counter++;
 				else
 				{
-					s_log.severe ("Not created - AD_Client_ID=" + AD_Client_ID
+					s_log.error("Not created - AD_Client_ID=" + AD_Client_ID
 						+ " - "  + tableName);
 					success = false;
 				}
@@ -368,7 +365,7 @@ public class MSequence extends X_AD_Sequence
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -376,7 +373,7 @@ public class MSequence extends X_AD_Sequence
 			rs = null;
 			pstmt = null;
 		}
-		s_log.info ("AD_Client_ID=" + AD_Client_ID
+		s_log.info("AD_Client_ID=" + AD_Client_ID
 			+ " - created #" + counter
 			+ " - success=" + success);
 		return success;
@@ -420,7 +417,7 @@ public class MSequence extends X_AD_Sequence
 	// public static final int		INIT_SYS_NO = 100; // start number for Compiere
 	public static final int		INIT_SYS_NO = 50000;   // start number for Adempiere
 	/** Static Logger			*/
-	private static CLogger 		s_log = CLogger.getCLogger(MSequence.class);
+	private static Logger 		s_log = LogManager.getLogger(MSequence.class);
 
 
 	/**************************************************************************
@@ -593,7 +590,7 @@ public class MSequence extends X_AD_Sequence
 					+ "\b Response: " + response;
 			throw new AdempiereException(errmsg, e);
 		}
-		s_log.log(Level.INFO, "getNextID_HTTP - " + TableName + "=" + response + "(" + retValue + ")");
+		s_log.info("getNextID_HTTP - " + TableName + "=" + response + "(" + retValue + ")");
 
 		return retValue;
 	}
@@ -698,23 +695,23 @@ public class MSequence extends X_AD_Sequence
 	{
 		if (!isAdempiereSys(AD_Client_ID))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because isAdempiereSys()==false for AD_Client_ID {0}", AD_Client_ID);
+			s_log.debug("Returning 'false' because isAdempiereSys()==false for AD_Client_ID {}", AD_Client_ID);
 			return false;
 		}
 		if (Ini.getRunMode() == RunMode.BACKEND)
 		{
-			s_log.log(Level.FINE, "Returning 'false' because RunMode == BACKEND");
+			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts
 		}
 		if (!MSysConfig.getBooleanValue(SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID, true))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because AD_Sysconfig {0} (default=true) returned false", SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID);
+			s_log.debug("Returning 'false' because AD_Sysconfig {} (default=true) returned false", SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID);
 			return false;
 		}
 		// Check if is an exception
 		if (TableName != null && isExceptionCentralized(TableName))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because TableName {0} is excluded from getting centralized IDs", TableName);
+			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;
 		}
 
@@ -732,37 +729,37 @@ public class MSequence extends X_AD_Sequence
 	{
 		if (isAdempiereSys(AD_Client_ID))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because isAdempiereSys()==true for AD_Client_ID {0}", AD_Client_ID);
+			s_log.debug("Returning 'false' because isAdempiereSys()==true for AD_Client_ID {}", AD_Client_ID);
 			return false;
 		}
 		if (Ini.getRunMode() == RunMode.BACKEND)
 		{
-			s_log.log(Level.FINE, "Returning 'false' because RunMode == BACKEND");
+			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts
 		}
 		if (!MSysConfig.getBooleanValue(SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID, false))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because AD_Sysconfig {0} (default=false) returned false", SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID);
+			s_log.debug("Returning 'false' because AD_Sysconfig {} (default=false) returned false", SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID);
 			return false;
 		}
 		// Check if is an exception
 		if (TableName != null && isExceptionCentralized(TableName))
 		{
-			s_log.log(Level.FINE, "Returning 'false' because TableName {0} is excluded from getting centralized IDs", TableName);
+			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;
 		}
 
 		// If LogMigrationScript flag is activated, always ask Project ID Server
 		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
 		{
-			s_log.log(Level.FINE, "Returning 'true' because Ini {0} is true", Ini.P_LOGMIGRATIONSCRIPT);
+			s_log.debug("Returning 'true' because Ini {} is true", Ini.P_LOGMIGRATIONSCRIPT);
 			return true;
 		}
 		else
 		{
 			// If LogMigrationScript flag is not activated, then ask the Project ID server only if we logged in as System
 			final boolean queryProjectIdServer = (AD_Client_ID == 0);
-			s_log.log(Level.FINE, "Returning '{0}' because AD_Client_ID is {1}", new Object[] { queryProjectIdServer, AD_Client_ID });
+			s_log.debug("Returning '{}' because AD_Client_ID is {}", new Object[] { queryProjectIdServer, AD_Client_ID });
 			return queryProjectIdServer;
 		}
 	}

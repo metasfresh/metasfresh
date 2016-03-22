@@ -31,14 +31,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.adempiere.util.GenerateModel;
-import org.compiere.util.CLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -55,7 +55,7 @@ import org.w3c.dom.NodeList;
  */
 public class AddressLookup implements AddressLookupInterface {
 	/** The logger. */
-	private static CLogger log = CLogger.getCLogger(GenerateModel.class);
+	private static Logger log = LogManager.getLogger(GenerateModel.class);
 
 	/**
 	 * The access code which is used along with clientID to authenticate the
@@ -130,7 +130,7 @@ public class AddressLookup implements AddressLookupInterface {
 			URL url = new URL(urlStr.toString());
 			return url;
 		} catch (MalformedURLException e) {
-			log.log(Level.SEVERE, "Lookup URL: " + e.getMessage());
+			log.error("Lookup URL: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return null;
@@ -168,34 +168,34 @@ public class AddressLookup implements AddressLookupInterface {
 					Element firstElement = (Element) firstDataNode;
 					NodeList firstNameList = firstElement.getElementsByTagName("Name");
 					Element NameElement = (Element) firstNameList.item(0);
-					log.log(Level.FINE, "Name: "  + NameElement.getChildNodes().item(0).getNodeValue().trim() + " Node: " + i);
+					log.debug("Name: "  + NameElement.getChildNodes().item(0).getNodeValue().trim() + " Node: " + i);
 					
 					// Found and ADDR Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("ADDR")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);						
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);						
 						postcode.setAddr(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}
 					// Found and STREET Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("STREET")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setStreet1(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}
 					//	Found and LOCALITY Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("LOCALITY")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setStreet2(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}
 					// Found and POSTTOWN Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("POSTTOWN")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setCity(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 						
@@ -203,56 +203,56 @@ public class AddressLookup implements AddressLookupInterface {
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("COUNTY")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setRegion(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and POSTCODE Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("POSTCODE")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setPostcode(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and COUNTRY Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("COUNTRY")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setCountry(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and COUNTRYCODE Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("COUNTRYCODE")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setCountryCode(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and TRADCOUNTY Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("TRADCOUNTY")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setTradCounty(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and LONLOCOUT Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("LONLOCOUT")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setLonLocation(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}	 
 					// Found and ADMINCOUNTY Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("ADMINCOUNTY")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						postcode.setAdminCounty(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}
 					//	Found and ADMINCOUNTY Node
 					if (NameElement.getChildNodes().item(0).getNodeValue().trim().equals("RESCODE")) {
 						NodeList firstValueList = firstElement.getElementsByTagName("Value");
 						Element ValueElement = (Element) firstValueList.item(0);
-						log.log(Level.FINE, "Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
+						log.debug("Value: "  + ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim() + " Node: " + i);
 						resultCode = (int) new Integer(ValueElement.getChildNodes().item(0).getNodeValue().replaceAll("\n","").trim());
 					}
 						
@@ -317,7 +317,7 @@ public class AddressLookup implements AddressLookupInterface {
 		
 			postcodeData.put(postcode.getPostcode(), postcode);
 		} else
-			log.log(Level.WARNING, "Postcode lookup error: " + postcode.getPostcode());
+			log.warn("Postcode lookup error: " + postcode.getPostcode());
 		
 		//if (postcode.getPostcode().length()==0)
 		//	System.out.println("Postcode NOT found! ");
@@ -351,12 +351,12 @@ public class AddressLookup implements AddressLookupInterface {
 					Document doc = docBuilder.parse(inStream);
 					return doc;
 				} catch (org.xml.sax.SAXException e) {
-					log.log(Level.SEVERE, "Fetch Result: " + e.getMessage());
+					log.error("Fetch Result: " + e.getMessage());
 					e.printStackTrace();
 				}
 			}
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Fetch Result: " + e.getMessage());
+			log.error("Fetch Result: " + e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -402,13 +402,13 @@ public class AddressLookup implements AddressLookupInterface {
 		// Build server application URL.
 		URL url = buildUrl(postcode);
 		if (url == null) {
-			log.log(Level.SEVERE, "URL: Can't build URL.");
+			log.error("URL: Can't build URL.");
 			return -1;
 		}
 		// Fetch the lookup result from server.
 		Document resultDoc = fetchResult(url);
 		if (resultDoc == null) {
-			log.log(Level.SEVERE, "Result document is null.");
+			log.error("Result document is null.");
 			return -1;
 		}
 		// Extract addresses and postkeys out of lookup results.

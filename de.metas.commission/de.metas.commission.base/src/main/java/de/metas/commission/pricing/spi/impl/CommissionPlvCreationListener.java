@@ -30,7 +30,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL.IPlvCreationListener;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_ProductPrice;
@@ -45,7 +46,7 @@ import de.metas.commission.service.IPriceListBL;
 public class CommissionPlvCreationListener implements IPlvCreationListener
 {
 
-	private static final CLogger logger = CLogger.getCLogger(CommissionPlvCreationListener.class);
+	private static final Logger logger = LogManager.getLogger(CommissionPlvCreationListener.class);
 
 	@Override
 	public void onPlvCreation(final IContextAware ctxAware,

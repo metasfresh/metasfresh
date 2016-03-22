@@ -19,16 +19,18 @@ package org.adempiere.webui.window;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.Window;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.media.AMedia;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
@@ -55,7 +57,7 @@ public class WMediaDialog extends Window implements EventListener
 	 */
 	private static final long serialVersionUID = -329919930778203892L;
 
-	private static CLogger log = CLogger.getCLogger(WMediaDialog.class);
+	private static Logger log = LogManager.getLogger(WMediaDialog.class);
 
 	/** data	*/
 	private Object m_data;
@@ -100,7 +102,7 @@ public class WMediaDialog extends Window implements EventListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		
 		try
@@ -226,7 +228,7 @@ public class WMediaDialog extends Window implements EventListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Failed to preview content", e);
+				log.error("Failed to preview content", e);
 			}
 		}		
 	}   //  displayData
@@ -272,7 +274,7 @@ public class WMediaDialog extends Window implements EventListener
 	
 	public void onEvent(Event e)
 	{
-		//	log.config(e.getActionCommand());
+		//	log.info(e.getActionCommand());
 		//	Save and Close
 		
 		if (e.getTarget() == bOk)
@@ -333,7 +335,7 @@ public class WMediaDialog extends Window implements EventListener
 		}
 	
 		String fileName = media.getName(); 
-		log.config(fileName);
+		log.info(fileName);
 		//update		
 		m_change = true;
 		m_data = Util.readBytes(media.getStreamData());
@@ -357,7 +359,7 @@ public class WMediaDialog extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Failed to export content.", e);
+			log.error("Failed to export content.", e);
 		}
 	}	//	saveAttachmentToFile
 	

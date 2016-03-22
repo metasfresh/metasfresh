@@ -20,7 +20,6 @@ package org.adempiere.webui.apps.form;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.ProcessModalDialog;
 import org.adempiere.webui.component.Button;
@@ -129,7 +128,7 @@ public class WPaySelect extends PaySelect
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
@@ -279,7 +278,7 @@ public class WPaySelect extends PaySelect
 	{
 		Timestamp payDate = (Timestamp)fieldPayDate.getValue();
 		miniTable.setColorCompare(payDate);
-		log.config("PayDate=" + payDate);
+		log.info("PayDate=" + payDate);
 		
 		BankInfo bi = (BankInfo)fieldBankAccount.getSelectedItem().getValue();
 		
@@ -386,9 +385,9 @@ public class WPaySelect extends PaySelect
 				dialog.setPage(form.getPage());
 				dialog.doModal();
 			} catch (SuspendNotAllowedException e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			} catch (InterruptedException e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}   //  generatePaySelect

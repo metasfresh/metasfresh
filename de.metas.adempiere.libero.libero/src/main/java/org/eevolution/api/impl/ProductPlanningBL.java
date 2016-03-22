@@ -34,7 +34,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 public class ProductPlanningBL implements IProductPlanningBL
 {
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	private static final ModelDynAttributeAccessor<I_PP_Product_Planning, Integer> DYNATTR_Base_Product_Planning_ID = new ModelDynAttributeAccessor<>("Base_Product_Planning_ID", Integer.class);
 

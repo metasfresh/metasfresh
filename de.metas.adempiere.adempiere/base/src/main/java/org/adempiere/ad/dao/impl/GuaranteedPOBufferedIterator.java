@@ -26,14 +26,14 @@ package org.adempiere.ad.dao.impl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import com.google.common.collect.Iterators;
@@ -50,7 +50,7 @@ import com.google.common.collect.PeekingIterator;
  */
 /* package */final class GuaranteedPOBufferedIterator<T, ET extends T> implements Iterator<ET>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(GuaranteedPOBufferedIterator.class);
+	private static final transient Logger logger = LogManager.getLogger(GuaranteedPOBufferedIterator.class);
 
 	/** Original query */
 	private final TypedSqlQuery<T> query;
@@ -135,7 +135,7 @@ import com.google.common.collect.PeekingIterator;
 					params == null ? null : params.toArray(),
 					trxName);
 
-			if (logger.isLoggable(Level.FINEST))
+			if (logger.isTraceEnabled())
 			{
 				logger.info("sql=" + sql + ", params=" + params + ", trxName=" + trxName + ", rowsCount=" + rowsCount);
 			}

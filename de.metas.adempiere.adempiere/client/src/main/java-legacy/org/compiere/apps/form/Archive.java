@@ -21,7 +21,8 @@ import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.MBPartner;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -43,7 +44,7 @@ public class Archive {
 	public int 		m_Record_ID = 0;
 	
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(Archive.class);
+	public static Logger log = LogManager.getLogger(Archive.class);
 
 	public KeyNamePair[] getProcessData()
 	{
@@ -119,7 +120,7 @@ public class Archive {
 		IUserRolePermissions role = Env.getUserRolePermissions();
 		if (!role.isCanReport())
 		{
-			log.warning("User/Role cannot Report; AD_User_ID=" + Env.getAD_User_ID(Env.getCtx()) + "; Role: " + role.getName());
+			log.warn("User/Role cannot Report; AD_User_ID=" + Env.getAD_User_ID(Env.getCtx()) + "; Role: " + role.getName());
 			Services.get(IClientUI.class).warn(m_WindowNo, "User/Role cannot Report; AD_User_ID=" + Env.getAD_User_ID(Env.getCtx()) + "; Role: " + role.getName());
 			return;
 		}
@@ -198,7 +199,7 @@ public class Archive {
 		if (createdTo != null)
 			sql.append(" AND Created<").append(DB.TO_DATE(TimeUtil.addDays(createdTo,1), true));
 		
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		
 		//metas: Bugfix zu included_Role
 		//	Process Access
@@ -216,7 +217,7 @@ public class Archive {
 			+ "WHERE wa.AD_Role_ID=").append(role.getAD_Role_ID())
 			.append(" OR ").append(role.getIncludedRolesWhereClause("wa.AD_Role_ID", null))
 			.append("))");
-		log.finest(sql.toString());
+		log.trace(sql.toString());
 		//metas: Bugfix zu included_Role ende
 		//
 		final List<I_AD_Archive> archivesList = Services.get(IArchiveDAO.class).retrieveArchives(Env.getCtx(), sql.toString());

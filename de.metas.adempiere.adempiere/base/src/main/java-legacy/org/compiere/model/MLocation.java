@@ -20,13 +20,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -96,7 +96,7 @@ public class MLocation extends X_C_Location
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql + " - " + C_BPartner_Location_ID, e);
+			s_log.error(sql + " - " + C_BPartner_Location_ID, e);
 			loc = null;
 		}
 		finally
@@ -107,7 +107,7 @@ public class MLocation extends X_C_Location
 	}	//	getBPLocation
 
 	/**	Static Logger				*/
-	private static CLogger	s_log = CLogger.getCLogger(MLocation.class);
+	private static Logger	s_log = LogManager.getLogger(MLocation.class);
 
 	
 	/**************************************************************************
@@ -510,7 +510,7 @@ public class MLocation extends X_C_Location
 
 		String retValue = Util.replace(outStr.toString(), "\\n", "\n");
 		retValue = retValue.trim(); // metas
-		log.finest("parseCRP - " + c.getDisplaySequence() + " -> " +  retValue);
+		log.trace("parseCRP - " + c.getDisplaySequence() + " -> " +  retValue);
 		return retValue;
 	}	//	parseContext
 

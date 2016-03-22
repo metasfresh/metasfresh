@@ -25,7 +25,8 @@ package org.compiere.apps.search;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -41,14 +42,15 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CEditor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCriteria
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private IInfoSimple _parent = null;
 	private I_AD_InfoColumn _infoColumn = null;
@@ -172,7 +174,7 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 		{
 			// Exception was thrown mainly because DefaultValue expression could not be evaluated.
 			// It's not such a big deal, so a lower logging level shall be fine
-			logger.log(Level.INFO, e.getLocalizedMessage(), e);
+			logger.info(e.getLocalizedMessage(), e);
 		}
 	}
 

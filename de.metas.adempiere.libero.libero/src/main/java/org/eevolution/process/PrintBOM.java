@@ -43,7 +43,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.sql.RowSet;
 
@@ -54,12 +53,13 @@ import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.X_T_BOMLine;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Multi-Level BOM & Formula Detail
@@ -100,7 +100,7 @@ public class PrintBOM extends SvrProcess
 				p_implosion = ((String) para[i].getParameter()).equals("N") ? false : true;
 			}
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	} // prepare
 
@@ -123,7 +123,7 @@ public class PrintBOM extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "PrintBOM", e.toString());
+			log.error("PrintBOM", e.toString());
 			throw new Exception(e.getLocalizedMessage());
 		}
 		finally
@@ -220,7 +220,7 @@ public class PrintBOM extends SvrProcess
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+				log.error(e.getLocalizedMessage() + sql, e);
 				throw new Exception("SQLException: "+e.getLocalizedMessage());
 			}
 			finally
@@ -251,7 +251,7 @@ public class PrintBOM extends SvrProcess
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+				log.error(e.getLocalizedMessage() + sql, e);
 				throw new Exception("SQLException: "+e.getLocalizedMessage());
 			}
 			finally
@@ -279,11 +279,11 @@ public class PrintBOM extends SvrProcess
 		PP_Product_BOM_ID = DB.getSQLValue(null, 
 				"SELECT PP_Product_BOM_ID FROM PP_Product_BOMLine WHERE PP_Product_BOMLine_ID=?",PP_Product_BOMLine_ID);
 		if (PP_Product_BOM_ID < 0)
-			throw new Exception(CLogger.retrieveErrorString("Error: PrintBOM.parentImplotion()"));
+			throw new Exception(MetasfreshLastError.retrieveErrorString("Error: PrintBOM.parentImplotion()"));
 		M_Product_ID = DB.getSQLValue(null,
 				"SELECT M_Product_ID FROM PP_Product_BOM WHERE PP_Product_BOM_ID=?", PP_Product_BOM_ID);
 		if (M_Product_ID < 0)
-			throw new Exception(CLogger.retrieveErrorString("Error: PrintBOM.parentImplotion()"));
+			throw new Exception(MetasfreshLastError.retrieveErrorString("Error: PrintBOM.parentImplotion()"));
 
 		tboml.setPP_Product_BOM_ID(PP_Product_BOM_ID);
 		tboml.setPP_Product_BOMLine_ID(PP_Product_BOMLine_ID);
@@ -318,7 +318,7 @@ public class PrintBOM extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+			log.error(e.getLocalizedMessage() + sql, e);
 			throw new Exception("SQLException: "+e.getLocalizedMessage());
 		}
 		finally
@@ -365,7 +365,7 @@ public class PrintBOM extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+			log.error(e.getLocalizedMessage() + sql, e);
 			throw new Exception("SQLException: "+e.getLocalizedMessage());
 		}
 		finally
@@ -407,7 +407,7 @@ public class PrintBOM extends SvrProcess
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+				log.error(e.getLocalizedMessage() + sql, e);
 				throw new Exception("SQLException: "+e.getLocalizedMessage());
 			}
 			finally
@@ -429,7 +429,7 @@ public class PrintBOM extends SvrProcess
 						"SELECT Value FROM M_PRODUCT WHERE M_PRODUCT_ID=?", M_Product_ID);
 				if (Value == null) 
 				{
-					throw new Exception(CLogger.retrieveErrorString("Error: PrintBOM.component()"));
+					throw new Exception(MetasfreshLastError.retrieveErrorString("Error: PrintBOM.component()"));
 				}
 				stmt = DB.prepareStatement(sql, get_TrxName());
 				stmt.setString(1, Value);
@@ -445,7 +445,7 @@ public class PrintBOM extends SvrProcess
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage() + sql, e);
+				log.error(e.getLocalizedMessage() + sql, e);
 				throw new Exception("SQLException: "+e.getLocalizedMessage());
 			}
 			finally
@@ -461,7 +461,7 @@ public class PrintBOM extends SvrProcess
 	private void raiseError(String string, String hint) throws Exception
 	{
 		String msg = string;
-		ValueNamePair pp = CLogger.retrieveError();
+		ValueNamePair pp = MetasfreshLastError.retrieveError();
 		if (pp != null) msg = pp.getName() + " - ";
 		msg += hint;
 		throw new Exception(msg);

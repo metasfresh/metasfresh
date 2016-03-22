@@ -48,7 +48,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.event.ListSelectionEvent;
 
@@ -265,7 +264,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 			priceDate = new Timestamp(System.currentTimeMillis());
 		}
 		//
-		log.config("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
+		log.info("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
 		int retValue = 0;
 		final String sql = "SELECT plv.M_PriceList_Version_ID, plv.ValidFrom "
 				+ "FROM M_PriceList pl, M_PriceList_Version plv "
@@ -291,7 +290,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

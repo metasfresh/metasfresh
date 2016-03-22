@@ -22,7 +22,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -142,7 +143,7 @@ public class MProject extends X_C_Project
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, pj, ex);
+			log.error(pj, ex);
 		}
 		return C_ProjectType_ID;
 	}	//	getC_ProjectType_ID_Int
@@ -220,7 +221,7 @@ public class MProject extends X_C_Project
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -259,7 +260,7 @@ public class MProject extends X_C_Project
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -298,7 +299,7 @@ public class MProject extends X_C_Project
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -355,7 +356,7 @@ public class MProject extends X_C_Project
 				count++;
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Lines difference - Project=" + fromLines.length + " <> Saved=" + count);
+			log.error("Lines difference - Project=" + fromLines.length + " <> Saved=" + count);
 
 		return count;
 	}	//	copyLinesFrom
@@ -411,7 +412,7 @@ public class MProject extends X_C_Project
 			}
 		}
 		if (fromPhases.length != count)
-			log.warning("Count difference - Project=" + fromPhases.length + " <> Saved=" + count);
+			log.warn("Count difference - Project=" + fromPhases.length + " <> Saved=" + count);
 
 		return count + taskCount;
 	}	//	copyPhasesFrom
@@ -452,10 +453,10 @@ public class MProject extends X_C_Project
 				taskCount += toPhase.copyTasksFrom(typePhases[i]);
 			}
 		}
-		log.fine("#" + count + "/" + taskCount 
+		log.debug("#" + count + "/" + taskCount 
 			+ " - " + type);
 		if (typePhases.length != count)
-			log.log(Level.SEVERE, "Count difference - Type=" + typePhases.length + " <> Saved=" + count);
+			log.error("Count difference - Type=" + typePhases.length + " <> Saved=" + count);
 		return count;
 	}	//	copyPhasesFrom
 

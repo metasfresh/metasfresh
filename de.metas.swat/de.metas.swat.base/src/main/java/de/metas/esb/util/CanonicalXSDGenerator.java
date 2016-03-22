@@ -74,7 +74,8 @@ import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
@@ -90,7 +91,7 @@ import org.xml.sax.SAXException;
 public class CanonicalXSDGenerator
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(CanonicalXSDGenerator.class);
+	private static final transient Logger logger = LogManager.getLogger(CanonicalXSDGenerator.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 

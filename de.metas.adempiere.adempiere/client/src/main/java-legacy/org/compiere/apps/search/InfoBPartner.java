@@ -455,7 +455,7 @@ public class InfoBPartner extends Info
 			if (!value.endsWith("%"))
 				value += "%";
 			pstmt.setString(index++, value);
-			log.fine("Value: " + value);
+			log.debug("Value: " + value);
 		}
 		// => Name
 		String name = fieldName.getText().toUpperCase();
@@ -464,7 +464,7 @@ public class InfoBPartner extends Info
 			if (!name.endsWith("%"))
 				name += "%";
 			pstmt.setString(index++, name);
-			log.fine("Name: " + name);
+			log.debug("Name: " + name);
 		}
 		// => Name2
 		// start: metas: c.ghita@metas.ro : 01436
@@ -474,7 +474,7 @@ public class InfoBPartner extends Info
 			if (!name2.endsWith("%"))
 				name2 += "%";
 			pstmt.setString(index++, name2);
-			log.fine("Name2: " + name2);
+			log.debug("Name2: " + name2);
 		}
 		// end: metas: c.ghita@metas.ro : 01436
 		// => Contact
@@ -484,7 +484,7 @@ public class InfoBPartner extends Info
 			if (!contact.endsWith("%"))
 				contact += "%";
 			pstmt.setString(index++, contact);
-			log.fine("Contact: " + contact);
+			log.debug("Contact: " + contact);
 		}
 		// => EMail
 		String email = fieldEMail.getText().toUpperCase();
@@ -493,7 +493,7 @@ public class InfoBPartner extends Info
 			if (!email.endsWith("%"))
 				email += "%";
 			pstmt.setString(index++, email);
-			log.fine("EMail: " + email);
+			log.debug("EMail: " + email);
 		}
 		// => Phone
 		String phone = fieldPhone.getText().toUpperCase();
@@ -502,7 +502,7 @@ public class InfoBPartner extends Info
 			if (!phone.endsWith("%"))
 				phone += "%";
 			pstmt.setString(index++, phone);
-			log.fine("Phone: " + phone);
+			log.debug("Phone: " + phone);
 		}
 		// => Postal
 		String postal = fieldPostal.getText().toUpperCase();
@@ -511,7 +511,7 @@ public class InfoBPartner extends Info
 			if (!postal.endsWith("%"))
 				postal += "%";
 			pstmt.setString(index++, postal);
-			log.fine("Postal: " + postal);
+			log.debug("Postal: " + postal);
 		}
 		// => Search
 		String search = fieldSearch.getText().toUpperCase();
@@ -535,7 +535,7 @@ public class InfoBPartner extends Info
 				{
 					search = ("%" + itr.next() + "%").replace(" ", "%");
 					pstmt.setString(index++, search);
-					log.fine("Search: " + search);
+					log.debug("Search: " + search);
 				}
 			}
 			else
@@ -546,7 +546,7 @@ public class InfoBPartner extends Info
 				if (!search.endsWith("%"))
 					search += "%";
 				pstmt.setString(index++, search);
-				log.fine("Search: " + search);
+				log.debug("Search: " + search);
 			}
 		}
 	} // setParameters

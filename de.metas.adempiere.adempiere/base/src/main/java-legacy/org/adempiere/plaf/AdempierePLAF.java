@@ -27,9 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
@@ -64,7 +63,7 @@ import com.jgoodies.looks.plastic.PlasticTheme;
 public final class AdempierePLAF
 {
 	/**	Logger			*/
-	private static final transient Logger log = Logger.getLogger(AdempierePLAF.class.getName());
+	private static final transient Logger log = LogManager.getLogger(AdempierePLAF.class.getName());
 	
 	/****** Background *******************************************************/
 
@@ -429,7 +428,7 @@ public final class AdempierePLAF
 	{
 		if (plaf == null)
 			return;
-		log.config(plaf	+ (themeVNP == null ? "" : (" - " + themeVNP)));
+		log.info(plaf	+ (themeVNP == null ? "" : (" - " + themeVNP)));
 
 		//	  Look & Feel
 		final Class<?> lafClass;
@@ -438,7 +437,7 @@ public final class AdempierePLAF
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Failed loading the L&F class", e);
+			log.error("Failed loading the L&F class", e);
 			return;
 		}
 		
@@ -477,7 +476,7 @@ public final class AdempierePLAF
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Theme - " + e.getMessage(), e);
+				log.error("Theme - " + e.getMessage(), e);
 			}
 		}
 		try
@@ -486,9 +485,9 @@ public final class AdempierePLAF
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
-		log.config(plaf + " - " + themeVNP);
+		log.info(plaf + " - " + themeVNP);
 	}   //  setPLAF
 
 	/**
@@ -702,7 +701,7 @@ public final class AdempierePLAF
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Failed getting the uiClassID of " + componentClass, e);
+			log.warn("Failed getting the uiClassID of " + componentClass, e);
 			return defaultUIClassID;
 		}
 	}

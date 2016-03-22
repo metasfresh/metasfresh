@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 
@@ -63,7 +63,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -76,7 +76,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 	}	//	getActive
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MAlertProcessor.class);
+	private static Logger	s_log	= LogManager.getLogger(MAlertProcessor.class);
 
 	
 	/**************************************************************************
@@ -148,7 +148,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -201,7 +201,7 @@ public class MAlertProcessor extends X_AD_AlertProcessor
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

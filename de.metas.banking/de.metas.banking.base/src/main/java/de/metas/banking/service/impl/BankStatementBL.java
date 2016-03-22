@@ -25,7 +25,6 @@ package de.metas.banking.service.impl;
 
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,8 +39,9 @@ import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -54,7 +54,7 @@ import de.metas.currency.ICurrencyConversionContext;
 
 public class BankStatementBL implements IBankStatementBL
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public void handleAfterPrepare(final I_C_BankStatement bankStatement)
@@ -219,9 +219,9 @@ public class BankStatementBL implements IBankStatementBL
 
 		//
 		// Update the bank statement line with calculated aggregated amounts
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine(" stmtAmt: " + totalStmtAmt + " discountAmt: " + totalDiscountAmt + " writeOffAmt: " + totalWriteOffAmt + " overUnderAmt: " + totalOverUnderAmt);
+			logger.debug(" stmtAmt: " + totalStmtAmt + " discountAmt: " + totalDiscountAmt + " writeOffAmt: " + totalWriteOffAmt + " overUnderAmt: " + totalOverUnderAmt);
 		}
 		bsl.setStmtAmt(totalStmtAmt);
 		bsl.setTrxAmt(totalTrxAmt);

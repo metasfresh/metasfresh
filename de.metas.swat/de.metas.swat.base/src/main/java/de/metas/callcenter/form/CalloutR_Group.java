@@ -117,7 +117,7 @@ public class CalloutR_Group extends CalloutEngine
 				}
 				if (contact.getAD_User_ID() <= 0)
 				{
-					log.warning("Invalid contact (no user found): " + contact + " [SKIP]");
+					log.warn("Invalid contact (no user found): " + contact + " [SKIP]");
 					continue;
 				}
 				MRGroupProspect rgp = new MRGroupProspect(ctx, R_Group_ID, contact.getC_BPartner_ID(), contact.getAD_User_ID(), null);

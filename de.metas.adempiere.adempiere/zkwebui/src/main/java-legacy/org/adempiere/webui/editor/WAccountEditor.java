@@ -15,7 +15,6 @@ package org.adempiere.webui.editor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.component.Combinationbox;
@@ -26,9 +25,12 @@ import org.adempiere.webui.window.WAccountDialog;
 import org.adempiere.webui.window.WFieldRecordInfo;
 import org.compiere.model.GridField;
 import org.compiere.model.MAccountLookup;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -48,7 +50,7 @@ public class WAccountEditor extends WEditor implements ContextMenuListener
 	private WEditorPopupMenu popupMenu;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WAccountEditor.class);
+	private static Logger log = LogManager.getLogger(WAccountEditor.class);
 
 	public WAccountEditor(GridField gridField)
 	{
@@ -160,7 +162,7 @@ public class WAccountEditor extends WEditor implements ContextMenuListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

@@ -25,7 +25,8 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -34,8 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -47,7 +46,7 @@ import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 
 public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends WorkpackageProcessorAdapter
 {
-	private static final transient CLogger logger = CLogger.getCLogger(M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -139,7 +138,7 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
 			final ILoggable loggable = getLoggable();
 			loggable.addLog(msg);
-			logger.log(Level.WARNING, msg, e);
+			logger.warn(msg, e);
 		}
 	}
 

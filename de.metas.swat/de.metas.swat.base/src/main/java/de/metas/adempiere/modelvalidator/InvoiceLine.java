@@ -34,7 +34,8 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
@@ -45,7 +46,7 @@ import de.metas.adempiere.service.impl.InvoiceLineBL;
 public class InvoiceLine implements ModelValidator
 {
 
-	private static final CLogger logger = CLogger.getCLogger(InvoiceLine.class);
+	private static final Logger logger = LogManager.getLogger(InvoiceLine.class);
 
 	private int ad_Client_ID = -1;
 
@@ -100,10 +101,10 @@ public class InvoiceLine implements ModelValidator
 			if (!il.isProcessed())
 			{
 
-				logger.fine("Reevaluating tax for " + il);
+				logger.debug("Reevaluating tax for " + il);
 				invoiceLineBL.setTax(po.getCtx(), il, po.get_TrxName());
 
-				logger.fine("Setting TaxAmtInfo for " + il);
+				logger.debug("Setting TaxAmtInfo for " + il);
 				invoiceLineBL.setTaxAmtInfo(po.getCtx(), il, po.get_TrxName());				
 			}
 

@@ -24,7 +24,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 
@@ -34,7 +35,8 @@ import org.compiere.model.GridTab;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorEditor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -82,7 +84,7 @@ public class VColor extends CButton
 	private CompiereColor   m_cc = null;
 	private Object          m_value;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VColor.class);
+	private static Logger log = LogManager.getLogger(VColor.class);
 
 	/**
 	 *  Set Mandatory
@@ -120,7 +122,7 @@ public class VColor extends CButton
 	@Override
 	public void setValue (Object value)
 	{
-		log.config("Value=" + value);
+		log.info("Value=" + value);
 		m_value = value;
 		m_cc = getAdempiereColor();
 
@@ -165,7 +167,7 @@ public class VColor extends CButton
 	@Override
 	public void propertyChange (PropertyChangeEvent evt)
 	{
-	//	log.config( "VColor.propertyChange", evt);
+	//	log.info( "VColor.propertyChange", evt);
 		if (evt.getPropertyName().equals(org.compiere.model.GridField.PROPERTY))
 		{
 			setValue(evt.getNewValue());
@@ -201,14 +203,14 @@ public class VColor extends CButton
 	private CompiereColor getAdempiereColor()
 	{
 		Integer AD_Color_ID = (Integer)m_mTab.getValue("AD_Color_ID");
-		log.fine("AD_Color_ID=" + AD_Color_ID);
+		log.debug("AD_Color_ID=" + AD_Color_ID);
 		CompiereColor cc = null;
 
 		//  Color Type
 		String ColorType = (String)m_mTab.getValue("ColorType");
 		if (ColorType == null)
 		{
-			log.fine("No ColorType");
+			log.debug("No ColorType");
 			return null;
 		}
 		//
@@ -245,7 +247,7 @@ public class VColor extends CButton
 		else
 			return null;
 
-		log.fine("AdempiereColor=" + cc);
+		log.debug("AdempiereColor=" + cc);
 		return cc;
 	}   //  getAdempiereColor
 
@@ -295,7 +297,7 @@ public class VColor extends CButton
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		return retValue;
 	}   //  getURL

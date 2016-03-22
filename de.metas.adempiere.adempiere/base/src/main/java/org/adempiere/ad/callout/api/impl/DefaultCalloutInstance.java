@@ -38,7 +38,7 @@ import org.compiere.util.Util;
 
 public class DefaultCalloutInstance implements ICalloutInstance
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(DefaultCalloutInstance.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(DefaultCalloutInstance.class);
 
 	private final String id;
 	private ICallout callout;

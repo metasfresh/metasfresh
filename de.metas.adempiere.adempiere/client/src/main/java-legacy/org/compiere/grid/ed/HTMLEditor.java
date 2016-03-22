@@ -27,7 +27,8 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Hashtable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -49,7 +50,8 @@ import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridField;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -103,7 +105,7 @@ public class HTMLEditor extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "HTMLEditor", e);
+			log.error("HTMLEditor", e);
 		}
 		setHtmlText(htmlText);
 		editorPane.setEditable(editable);
@@ -111,7 +113,7 @@ public class HTMLEditor extends CDialog
 	}	//	init
 
 	/**	Logger				*/
-	private CLogger	log = CLogger.getCLogger(getClass());
+	private Logger	log = LogManager.getLogger(getClass());
 	/**	The HTML Text		*/
 	private String	m_text;
 	
@@ -354,7 +356,7 @@ public class HTMLEditor extends CDialog
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-	//	log.fine("actionPerformed - Text:" + getHtmlText());
+	//	log.debug("actionPerformed - Text:" + getHtmlText());
 		//
 		
 		if (e.getSource() == bImport)
@@ -396,7 +398,7 @@ public class HTMLEditor extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "HTMLEditor.import" + e.getMessage());
+			log.error("HTMLEditor.import" + e.getMessage());
 			return;
 		}
 		setHtmlText(sb.toString());
@@ -426,7 +428,7 @@ public class HTMLEditor extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "HTMLEditor.export" + e.getMessage());
+			log.error("HTMLEditor.export" + e.getMessage());
 		}
 	}	//	cmd_export
 

@@ -20,7 +20,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -29,7 +30,8 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.Adempiere;
 import org.compiere.model.MTask;
 import org.compiere.swing.CFrame;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Task;
 
 
@@ -89,13 +91,13 @@ public class ATask extends CFrame
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, task.toString(), e);
+			log.error(task.toString(), e);
 		}
 	}   //  ATask
 
 	private Task    m_task = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ATask.class);
+	private static Logger log = LogManager.getLogger(ATask.class);
 
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private JScrollPane infoScrollPane = new JScrollPane();

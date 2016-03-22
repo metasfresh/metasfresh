@@ -23,12 +23,12 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  */
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.HUConstants;
@@ -52,7 +52,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  */
 public class HUDocumentLineLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HUDocumentLineLineMaterialTrackingListener.class);
+	private static final transient Logger logger = LogManager.getLogger(HUDocumentLineLineMaterialTrackingListener.class);
 
 	public static HUDocumentLineLineMaterialTrackingListener INSTANCE = new HUDocumentLineLineMaterialTrackingListener();
 
@@ -66,7 +66,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 	{
 		if (!request.getParams().getParameterAsBool(HUConstants.PARAM_CHANGE_HU_MAterial_Tracking_ID))
 		{
-			logger.log(Level.FINE,
+			logger.debug(
 					"request {0} has no Params or has {1} == false; nothing to do",
 					new Object[] { request, HUConstants.PARAM_CHANGE_HU_MAterial_Tracking_ID });
 			return;
@@ -130,7 +130,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 								.build());
 
 				final String msg = "Updated M_Material_Tracking_Ref for PP_Order " + ppOrder + " of M_HU " + hu;
-				logger.log(Level.FINE, msg);
+				logger.debug(msg);
 				loggable.addLog(msg);
 			}
 		}

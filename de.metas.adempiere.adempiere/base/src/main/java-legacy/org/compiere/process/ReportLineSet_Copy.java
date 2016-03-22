@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.report.MReportLine;
 import org.compiere.report.MReportLineSet;
 import org.compiere.report.MReportSource;
@@ -56,7 +54,7 @@ public class ReportLineSet_Copy extends SvrProcess
 			else if (name.equals("PA_ReportLineSet_ID"))
 				m_PA_ReportLineSet_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

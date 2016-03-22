@@ -22,7 +22,6 @@ import java.beans.PropertyChangeListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.apps.AEnv;
@@ -38,10 +37,13 @@ import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -63,7 +65,7 @@ public class WLocatorEditor extends WEditor implements EventListener, PropertyCh
 	
 	private WEditorPopupMenu popupMenu;
 	
-	private static CLogger log = CLogger.getCLogger(WLocatorEditor.class);
+	private static Logger log = LogManager.getLogger(WLocatorEditor.class);
 	/**
 	 *  IDE Constructor
 	 */
@@ -219,7 +221,7 @@ public class WLocatorEditor extends WEditor implements EventListener, PropertyCh
 			int only_Warehouse_ID = getOnly_Warehouse_ID();
 			int only_Product_ID = getOnly_Product_ID();
 			
-			log.config("Only Warehouse_ID=" + only_Warehouse_ID	+ ", Product_ID=" + only_Product_ID);
+			log.info("Only Warehouse_ID=" + only_Warehouse_ID	+ ", Product_ID=" + only_Product_ID);
 	
 			//	Text Entry ok
 			
@@ -317,7 +319,7 @@ public class WLocatorEditor extends WEditor implements EventListener, PropertyCh
 	private boolean actionText(int only_Warehouse_ID, int only_Product_ID)
 	{
 		String text = getComponent().getText();
-		log.fine(text);
+		log.debug(text);
 		
 		//	Null
 		
@@ -388,7 +390,7 @@ public class WLocatorEditor extends WEditor implements EventListener, PropertyCh
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, finalSql, ex);
+			log.error(finalSql, ex);
 		}
 		
 		try

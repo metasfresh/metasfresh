@@ -19,15 +19,17 @@ package org.adempiere.webui.panel;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.ToolBarButton;
 import org.adempiere.webui.window.InfoSchedule;
 import org.adempiere.webui.window.WAssignmentDialog;
 import org.compiere.model.MResourceAssignment;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkforge.timeline.Bandinfo;
 import org.zkforge.timeline.Timeline;
 import org.zkforge.timeline.event.BandScrollEvent;
@@ -70,12 +72,12 @@ public class WSchedule extends Panel implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VSchedule", e);
+			log.error("VSchedule", e);
 		}		
 	}	//	WSchedule
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WSchedule.class);
+	private static Logger log = LogManager.getLogger(WSchedule.class);
 
 	Timeline timeLine;
 	private Bandinfo hourBand;

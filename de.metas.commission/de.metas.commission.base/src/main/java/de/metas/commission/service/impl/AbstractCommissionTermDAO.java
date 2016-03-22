@@ -40,7 +40,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.util.CacheCtx;
@@ -61,7 +62,7 @@ import de.metas.commission.service.ISponsorBL;
 
 public class AbstractCommissionTermDAO implements ICommissionTermDAO
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public List<I_C_AdvCommissionTerm> retrieveAll(final Properties ctx, final I_C_AdvComSystem_Type type, final int adOrgId, final String trxName)
@@ -77,7 +78,7 @@ public class AbstractCommissionTermDAO implements ICommissionTermDAO
 				.setOrderBy(orderBy)
 				.list(I_C_AdvCommissionTerm.class);
 
-		logger.config("Retrieved " + result.size() + " record(s) for AD_Org_ID=" + adOrgId + " and " + type);
+		logger.info("Retrieved " + result.size() + " record(s) for AD_Org_ID=" + adOrgId + " and " + type);
 		return result;
 	}
 
@@ -93,7 +94,7 @@ public class AbstractCommissionTermDAO implements ICommissionTermDAO
 				.setOrderBy(I_C_AdvCommissionTerm.COLUMNNAME_SeqNo)
 				.list(I_C_AdvCommissionTerm.class);
 
-		logger.config("Retrieved " + result.size() + " record(s) for AD_Org_ID=" + orgId);
+		logger.info("Retrieved " + result.size() + " record(s) for AD_Org_ID=" + orgId);
 
 		return result;
 	}
@@ -112,7 +113,7 @@ public class AbstractCommissionTermDAO implements ICommissionTermDAO
 				.setOrderBy(I_C_AdvCommissionTerm.COLUMNNAME_SeqNo)
 				.list(I_C_AdvCommissionTerm.class);
 
-		logger.config("Retrieved " + result.size() + " record(s) for " + condition);
+		logger.info("Retrieved " + result.size() + " record(s) for " + condition);
 		return result;
 	}
 

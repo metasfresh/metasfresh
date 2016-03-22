@@ -33,7 +33,7 @@ import java.util.Properties;
  */
 public class MCSponsor extends X_C_Sponsor
 {
-	// private static final CLogger logger = CLogger.getCLogger(MCSponsor.class);
+	// private static final Logger logger = CLogMgt.getLogger(MCSponsor.class);
 
 	/**
 	 * 

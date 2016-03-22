@@ -41,7 +41,6 @@ package org.eevolution.process;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MOrg;
@@ -108,7 +107,7 @@ public class MRPUpdate extends SvrProcess
 				p_M_Warehouse_ID = para[i].getParameterAsInt();                
 			}
 			else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}            
 
 	}	//	prepare
@@ -381,7 +380,7 @@ public class MRPUpdate extends SvrProcess
 
 		int no = DB.executeUpdateEx(sql, pa, get_TrxName());
 		commit();
-		log.fine("#"+no+" -- "+sql);
+		log.debug("#"+no+" -- "+sql);
 
 	}
 

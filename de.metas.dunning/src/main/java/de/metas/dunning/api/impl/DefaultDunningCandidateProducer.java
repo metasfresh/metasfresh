@@ -26,13 +26,13 @@ package de.metas.dunning.api.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -65,7 +65,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
  */
 public class DefaultDunningCandidateProducer implements IDunningCandidateProducer
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	protected static final int DAYS_NotAvailable = Integer.MIN_VALUE;
 
@@ -224,7 +224,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		// Validate DunningGrace
 		if (sourceDoc.getGraceDate() != null && sourceDoc.getGraceDate().compareTo(context.getDunningDate()) >= 0)
 		{
-			logger.log(Level.INFO, "Skip because DunnableDoc's grace date is >= context DunningDate");
+			logger.info("Skip because DunnableDoc's grace date is >= context DunningDate");
 			return false;
 		}
 
@@ -339,7 +339,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			// We have future dunning candidates (relatively to dunningDate) => rule not respected
 			// metas-mo: don't create candidates!
 
-			logger.log(Level.INFO, "Negative DaysAfterLast={0}. Consider rule not respected", daysAfterLast);
+			logger.info("Negative DaysAfterLast={}. Consider rule not respected", daysAfterLast);
 			return false;
 		}
 		else if (daysAfterLast >= requiredDaysBetweenDunnings)

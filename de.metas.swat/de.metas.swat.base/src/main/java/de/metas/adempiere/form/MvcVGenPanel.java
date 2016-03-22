@@ -41,7 +41,8 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeListener;
@@ -58,7 +59,6 @@ import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -80,7 +80,7 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 	private FormFrame m_frame;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VInOutGen.class);
+	private static Logger log = LogManager.getLogger(VInOutGen.class);
 	//
 
 	private CTabbedPane tabbedPane = new CTabbedPane();
@@ -117,7 +117,7 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 			frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 			frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
 		} catch (Exception ex) {
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	} // init
 

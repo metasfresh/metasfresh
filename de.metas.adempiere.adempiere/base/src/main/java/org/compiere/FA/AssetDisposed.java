@@ -109,7 +109,7 @@ public class AssetDisposed extends SvrProcess
 				  + " AND A_Entry_Type = 'DIS'" + clientCheck;
 			
 			no = DB.executeUpdate (sql,null);
-			log.info ("doIt - Delete old processed entries =" + no);
+			log.info("doIt - Delete old processed entries =" + no);
 		}
 		
 		sql = null;

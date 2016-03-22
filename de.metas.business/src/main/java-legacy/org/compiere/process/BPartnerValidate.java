@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
@@ -60,7 +61,7 @@ public class BPartnerValidate extends SvrProcess
 			else if (name.equals("C_BP_Group_ID"))
 				p_C_BP_Group_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

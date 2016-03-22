@@ -37,8 +37,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Scanner;
 import java.util.Vector;
-import java.util.logging.Level;
-
 import org.compiere.Adempiere;
 import org.compiere.model.MSequence;
 import org.compiere.process.ProcessInfoParameter;
@@ -83,7 +81,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 			fileName.add(dirList[i].toString()
 					.substring(directory.length() + 1));
 			log
-					.fine("Found file ["
+					.debug("Found file ["
 							+ fileName.get(i)
 							+ "]. Finding out if the script has or hasn't been applied yet...");
 			try {
@@ -94,7 +92,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 				pstmt.setString(1, fileName.get(i));
 				ResultSet rs = pstmt.executeQuery();
 				if (rs.next()) {
-					log.warning("Script " + fileName.get(i)
+					log.warn("Script " + fileName.get(i)
 							+ " already in the database");
 					pstmt.close();
 					continue;
@@ -217,7 +215,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 				if (result > 0)
 					log.info("Header inserted. Now inserting the script body");
 				else {
-					log.severe("Script " + fileName.get(i) + " failed!");
+					log.error("Script " + fileName.get(i) + " failed!");
 					msg = msg + "Script " + fileName.get(i) + " failed!";
 					continue;
 				}
@@ -230,7 +228,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 				if (result > 0)
 					log.info("Script Body inserted.");
 				else {
-					log.severe("Script Body " + fileName.get(i) + " failed!");
+					log.error("Script Body " + fileName.get(i) + " failed!");
 					msg = msg + "Script Body " + fileName.get(i) + " failed!";
 					pstmt = DB
 							.prepareStatement(
@@ -241,7 +239,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 					continue;
 				}
 			} catch (Exception ex) {
-				log.severe(ex.getMessage());
+				log.error(ex.getMessage());
 			}
 		}
 		return "Sucess";
@@ -257,7 +255,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 			else if (name.equals("ScriptsPath"))
 				path = (String) para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 
 	}

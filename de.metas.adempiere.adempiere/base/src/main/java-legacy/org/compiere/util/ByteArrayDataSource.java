@@ -22,7 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.activation.DataSource;
 
@@ -61,7 +62,7 @@ public class ByteArrayDataSource
 		}
 		catch (IOException ioex)
 		{
-			log.log(Level.WARNING, "", ioex);
+			log.warn("", ioex);
 		}
 		if (type != null && type.length() > 0)
 			m_type = type;
@@ -95,7 +96,7 @@ public class ByteArrayDataSource
 		}
 		catch (UnsupportedEncodingException uex)
 		{
-			log.log(Level.WARNING, "CharSetName=" + charSetName, uex);
+			log.warn("CharSetName=" + charSetName, uex);
 		}
 		if (type != null && type.length() > 0)
 			m_type = type;
@@ -109,7 +110,7 @@ public class ByteArrayDataSource
 	private String		m_name = null;
 
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (ByteArrayDataSource.class);
+	private static Logger log = LogManager.getLogger(ByteArrayDataSource.class);
 	
 	/**
 	 * 	Return an InputStream for the data.

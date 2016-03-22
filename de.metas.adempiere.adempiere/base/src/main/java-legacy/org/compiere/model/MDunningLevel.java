@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -36,7 +37,7 @@ public class MDunningLevel extends X_C_DunningLevel
 	 */
 	private static final long serialVersionUID = 4869909989789113387L;
 	/** Logger								*/
-	private static CLogger		s_log = CLogger.getCLogger (MDunningLevel.class);
+	private static Logger		s_log = LogManager.getLogger(MDunningLevel.class);
 	
 	/**
 	 * 	Standard Constructor

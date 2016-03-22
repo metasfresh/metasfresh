@@ -43,7 +43,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
@@ -118,7 +117,7 @@ public class RollupBillOfMaterial extends SvrProcess
 			else if (name.equals(MProduct.COLUMNNAME_ProductType))
 				p_ProductType = para.getParameter() == null ? null : para.getParameter().toString();
 			else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

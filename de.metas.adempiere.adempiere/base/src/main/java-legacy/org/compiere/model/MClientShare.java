@@ -19,10 +19,10 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -99,7 +99,7 @@ public class MClientShare extends X_AD_ClientShare
 			}
 			catch (Exception e)
 			{
-				s_log.log (Level.SEVERE, sql, e);
+				s_log.error(sql, e);
 			}
 			finally
 			{
@@ -119,7 +119,7 @@ public class MClientShare extends X_AD_ClientShare
 	/**	Shared Info								*/
 	private static final CCache<String, Boolean> s_shares = new CCache<>(Table_Name, 10, 120);	// 2h
 	/**	Logger	*/
-	private static final transient CLogger s_log = CLogger.getCLogger(MClientShare.class);
+	private static final transient Logger s_log = LogManager.getLogger(MClientShare.class);
 	
 	/**************************************************************************
 	 * 	Default Constructor
@@ -264,7 +264,7 @@ public class MClientShare extends X_AD_ClientShare
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

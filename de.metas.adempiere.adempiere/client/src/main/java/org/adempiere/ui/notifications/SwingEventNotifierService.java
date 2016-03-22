@@ -24,12 +24,14 @@ package org.adempiere.ui.notifications;
 
 
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -46,7 +48,7 @@ import de.metas.event.Topic;
 public final class SwingEventNotifierService
 {
 	public static final transient SwingEventNotifierService instance = new SwingEventNotifierService();
-	private static final transient CLogger logger = CLogger.getCLogger(SwingEventNotifierService.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingEventNotifierService.class);
 
 	/** Current notifications UI frame */
 	private SwingEventNotifierFrame frame = null;
@@ -66,7 +68,7 @@ public final class SwingEventNotifierService
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed registering JMX bean", e);
+			logger.warn("Failed registering JMX bean", e);
 		}
 	}
 
@@ -84,7 +86,7 @@ public final class SwingEventNotifierService
 	{
 		if (!EventBusConstants.isEnabled())
 		{
-			logger.log(Level.CONFIG, "Not starting because it's not enabled");
+			logger.info("Not starting because it's not enabled");
 			return;
 		}
 
@@ -102,7 +104,7 @@ public final class SwingEventNotifierService
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed starting the notification frame: " + frame, e);
+			logger.warn("Failed starting the notification frame: " + frame, e);
 		}
 	}
 
@@ -124,7 +126,7 @@ public final class SwingEventNotifierService
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed disposing the notification frame: " + frame, e);
+			logger.warn("Failed disposing the notification frame: " + frame, e);
 		}
 	}
 

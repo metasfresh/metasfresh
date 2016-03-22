@@ -33,7 +33,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -87,7 +88,7 @@ import de.metas.adempiere.model.I_AD_Role;
 public final class Env
 {
 	/** Logging */
-	private static final CLogger s_log = CLogger.getCLogger(Env.class);
+	private static final Logger s_log = LogManager.getLogger(Env.class);
 
 	/**
 	 * This field is volatile because i encountered occasional NPEs in {@link #getCtx()} during adempiere startup and i suspect it'S related to multiple parts of adempiere starting concurrently. To
@@ -148,7 +149,7 @@ public final class Env
 		reset(true);	// final cache reset
 		s_log.info("");
 		//
-		CLogMgt.shutdown();
+		LogManager.shutdown();
 		//
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
@@ -431,18 +432,18 @@ public final class Env
 		final String nullValue = getNullPropertyValue(key);
 		ctx.setProperty(key, nullValue);
 
-		if (s_log.isLoggable(Level.FINER))
+		if (s_log.isTraceEnabled())
 		{
-			s_log.finer("Unset " + key + "==" + nullValue);
+			s_log.trace("Unset " + key + "==" + nullValue);
 		}
 
 	}
 
 	private static final void setProperty(final Properties ctx, final String key, final String value)
 	{
-		if (s_log.isLoggable(Level.FINER))
+		if (s_log.isTraceEnabled())
 		{
-			s_log.finer("Set " + key + "==" + value);
+			s_log.trace("Set " + key + "==" + value);
 		}
 
 		ctx.setProperty(key, value);
@@ -861,7 +862,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "(" + context + ") = " + s, e);
+			s_log.error("(" + context + ") = " + s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -886,7 +887,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "(" + context + ") = " + s, e);
+			s_log.error("(" + context + ") = " + s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -912,7 +913,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "(" + context + ") = " + s, e);
+			s_log.error("(" + context + ") = " + s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -938,7 +939,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "(" + context + ") = " + s, e);
+			s_log.error("(" + context + ") = " + s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -1100,7 +1101,7 @@ public final class Env
 		if (timestamp == null)
 		{
 			// metas: tsa: added a dummy exception to be able to track it quickly
-			s_log.log(Level.SEVERE, "No value for '" + context + "' or value '" + timestampStr + "' could not be parsed", new Exception());
+			s_log.error("No value for '" + context + "' or value '" + timestampStr + "' could not be parsed", new Exception());
 			return SystemTime.asTimestamp();
 		}
 
@@ -1413,7 +1414,7 @@ public final class Env
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "", e);
+			s_log.error("", e);
 		}
 		finally
 		{
@@ -1425,7 +1426,7 @@ public final class Env
 		// No Language - set to System
 		if (AD_Languages.size() == 0)
 		{
-			s_log.warning("NO System Language - Set to Base " + Language.getBaseAD_Language());
+			s_log.warn("NO System Language - Set to Base " + Language.getBaseAD_Language());
 			language.setAD_Language(Language.getBaseAD_Language());
 			return;
 		}
@@ -1438,7 +1439,7 @@ public final class Env
 			String langCompare = language.getAD_Language().substring(0, 2);
 			if (lang.equals(langCompare))
 			{
-				s_log.fine("Found similar Language " + AD_Language);
+				s_log.debug("Found similar Language " + AD_Language);
 				language.setAD_Language(AD_Language);
 				return;
 			}
@@ -1447,7 +1448,7 @@ public final class Env
 		// We found same language
 		// if (!"0".equals(Msg.getMsg(AD_Language, "0")))
 
-		s_log.warning("Not System Language=" + language
+		s_log.warn("Not System Language=" + language
 				+ " - Set to Base Language " + Language.getBaseAD_Language());
 		language.setAD_Language(Language.getBaseAD_Language());
 	}   // verifyLanguage
@@ -1632,7 +1633,7 @@ public final class Env
 			int j = inStr.indexOf('@');						// next @
 			if (j < 0)
 			{
-				s_log.log(Level.SEVERE, "No second tag: " + inStr);
+				s_log.error("No second tag: " + inStr);
 				return "";						// no second tag
 			}
 
@@ -1799,7 +1800,7 @@ public final class Env
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, e.toString());
+			s_log.error(e.toString());
 		}
 		return retValue;
 	}	// getWindow
@@ -2038,7 +2039,7 @@ public final class Env
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.WARNING, "", e);
+			s_log.warn("", e);
 		}
 		s_log.info("End");
 	}	// sleep
@@ -2348,7 +2349,7 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.log(Level.SEVERE, "No value for: " + context);
+			s_log.error("No value for: " + context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
@@ -2365,7 +2366,7 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.log(Level.SEVERE, "No value for: " + context);
+			s_log.error("No value for: " + context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
@@ -2397,7 +2398,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "(" + context + ") = " + s, e);
+			s_log.error("(" + context + ") = " + s, e);
 		}
 		return CTXVALUE_NoValueInt;
 	}

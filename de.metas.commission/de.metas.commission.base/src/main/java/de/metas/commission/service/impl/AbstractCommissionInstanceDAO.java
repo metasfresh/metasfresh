@@ -46,7 +46,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -67,7 +68,7 @@ import de.metas.commission.service.ISponsorBL;
 public abstract class AbstractCommissionInstanceDAO implements ICommissionInstanceDAO
 {
 
-	private static final CLogger logger = CLogger.getCLogger(CommissionInstanceDAO.class);
+	private static final Logger logger = LogManager.getLogger(CommissionInstanceDAO.class);
 
 	public static final String WHERE_TOCALC_UNPROCESSED =
 			"  (0=? OR " + IAdvComInstance.COLUMNNAME_C_AdvComSystem_Type_ID + "=?) "
@@ -311,7 +312,7 @@ public abstract class AbstractCommissionInstanceDAO implements ICommissionInstan
 			final int bPartnerId = salesRep == null ? 0 : salesRep.getC_BPartner_ID();
 			if (salesRep == null)
 			{
-				AbstractCommissionInstanceDAO.logger.fine("SponsorNo " + sponsorSalesRep.getSponsorNo() + " has no sales rep at date " + instance.getDateDoc());
+				AbstractCommissionInstanceDAO.logger.debug("SponsorNo " + sponsorSalesRep.getSponsorNo() + " has no sales rep at date " + instance.getDateDoc());
 			}
 
 			final ArrayKey key = Util.mkKey(bPartnerId, instance.getC_AdvCommissionInstance_ID());

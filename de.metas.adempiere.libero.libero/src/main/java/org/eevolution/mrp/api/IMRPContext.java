@@ -35,9 +35,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 
 /**
  * MRP working context.
@@ -68,7 +68,7 @@ public interface IMRPContext extends IContextAware
 	 * 
 	 * @return MRP logger; never return null
 	 */
-	CLogger getLogger();
+	Logger getLogger();
 
 	//
 	// Planning Segment

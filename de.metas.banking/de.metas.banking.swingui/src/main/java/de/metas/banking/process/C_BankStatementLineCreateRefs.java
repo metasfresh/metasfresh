@@ -311,7 +311,7 @@ public class C_BankStatementLineCreateRefs extends SvrProcess implements ActionL
 				allocLine.setAmount(paySelectionLine.getPayAmt());
 				InterfaceWrapperHelper.save(allocLine);
 
-				log.fine("new Line saved (" + i + ")");
+				log.debug("new Line saved (" + i + ")");
 
 				i += 10;
 			}

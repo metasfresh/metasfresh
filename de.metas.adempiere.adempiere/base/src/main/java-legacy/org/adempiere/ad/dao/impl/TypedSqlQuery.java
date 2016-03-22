@@ -30,7 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -52,8 +53,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -69,7 +68,7 @@ import org.compiere.util.Env;
  */
 public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 {
-	private static final CLogger log = CLogger.getCLogger(TypedSqlQuery.class);
+	private static final Logger log = LogManager.getLogger(TypedSqlQuery.class);
 
 	private final Properties ctx;
 	private final String tableName;
@@ -290,14 +289,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 				if (limit > 0 && list.size() >= limit)
 				{
-					log.fine("Limit of " + limit + " reached. Stop.");
+					log.debug("Limit of " + limit + " reached. Stop.");
 					break;
 				}
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -382,7 +381,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			final AdempiereException ex = new AdempiereException("Using first() without an ORDER BY clause can be a developer error."
 					+ " Please specify ORDER BY clause or in case you know that only one result shall be returned then use firstOnly()."
 					+ " Query: " + toString());
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		// metas: end
 
@@ -405,7 +404,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -473,7 +472,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -914,7 +913,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -955,7 +954,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -1074,18 +1073,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (this.onlyActiveRecords)
 		{
 			parametersEffective.add(true);
-			log.finest("Parameter IsActive = Y");
+			log.trace("Parameter IsActive = Y");
 		}
 		if (this.onlyClient_ID)
 		{
 			int AD_Client_ID = Env.getAD_Client_ID(ctx);
 			parametersEffective.add(AD_Client_ID);
-			log.finest("Parameter AD_Client_ID = " + AD_Client_ID);
+			log.trace("Parameter AD_Client_ID = " + AD_Client_ID);
 		}
 		if (this.onlySelection_ID > 0)
 		{
 			parametersEffective.add(this.onlySelection_ID);
-			log.finest("Parameter Selection AD_PInstance_ID = " + this.onlySelection_ID);
+			log.trace("Parameter Selection AD_PInstance_ID = " + this.onlySelection_ID);
 		}
 
 		//
@@ -1171,13 +1170,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Paging is not supported. Ignored", new Exception());
+				log.error("Paging is not supported. Ignored", new Exception());
 			}
 		}
 		// metas: end
 
-		if (CLogMgt.isLevelFinest())
-			log.finest("TableName = " + getTableName() + "... SQL = " + sql); // red1 - to assist in debugging SQL
+		if (LogManager.isLevelFinest())
+			log.trace("TableName = " + getTableName() + "... SQL = " + sql); // red1 - to assist in debugging SQL
 		return sql;
 	}
 	
@@ -1194,7 +1193,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final long durationMaxMillis = 1000 * 60 * duarationMaxMinutes;
 		if (durationMaxMillis > 0 && durationMillis > durationMaxMillis)
 		{
-			log.log(Level.WARNING,
+			log.warn(
 					"Query " + this + " took " + durationMillis + " millis (longer than " + duarationMaxMinutes + " minutes) to create the ResultSet",
 					new Exception("Just to print the Stacktrace"));
 		}

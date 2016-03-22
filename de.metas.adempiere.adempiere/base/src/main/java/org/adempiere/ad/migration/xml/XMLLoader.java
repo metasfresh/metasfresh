@@ -37,7 +37,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.w3c.dom.Document;
@@ -48,7 +49,7 @@ import org.xml.sax.SAXException;
 
 public class XMLLoader
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final String fileName;
 	private final Properties ctx;

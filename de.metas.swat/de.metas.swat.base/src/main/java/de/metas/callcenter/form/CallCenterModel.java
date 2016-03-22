@@ -29,7 +29,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
@@ -45,7 +46,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -70,7 +70,7 @@ public class CallCenterModel
 {
 	public static final int R_Group_AllBundles = -2;
 	
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
 	private Properties m_ctx;
 	private int m_windowNo;
@@ -321,7 +321,7 @@ public class CallCenterModel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -364,7 +364,7 @@ public class CallCenterModel
 		}
 		if (m_Default_R_RequestType_ID <= 0)
 		{
-			log.warning("No Call Center Default request type defined."
+			log.warn("No Call Center Default request type defined."
 					+" Please open the Request Type window and check Default for Call Center."); 
 		}
 		return m_Default_R_RequestType_ID;

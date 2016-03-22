@@ -20,7 +20,6 @@ package org.adempiere.webui.window;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -39,11 +38,14 @@ import org.compiere.model.MClient;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zkex.zul.Borderlayout;
@@ -126,7 +128,7 @@ public class WEMailDialog extends Window implements EventListener, ValueChangeLi
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "EMailDialog", ex);
+			log.error("EMailDialog", ex);
 		}
 		set(from, to, subject, message);
 		setAttachment(attachment);
@@ -150,7 +152,7 @@ public class WEMailDialog extends Window implements EventListener, ValueChangeLi
 	/**	File to be optionally attached	*/
 	private File	m_attachFile;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WEMailDialog.class);
+	private static Logger log = LogManager.getLogger(WEMailDialog.class);
 
 //	private CPanel mainPanel = new CPanel();
 //	private BorderLayout mainLayout = new BorderLayout();

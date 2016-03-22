@@ -20,7 +20,8 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MOrder;
 import org.compiere.util.AdempiereUserError;
@@ -77,7 +78,7 @@ public class OrderBatchProcess extends SvrProcess
 				p_IsInvoiced = (String)para[i].getParameter();
 			}
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -147,7 +148,7 @@ public class OrderBatchProcess extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		try
 		{

@@ -21,9 +21,9 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -60,7 +60,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -73,7 +73,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	}	//	getActive
 	
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (MLdapProcessor.class);
+	private static Logger log = LogManager.getLogger(MLdapProcessor.class);
 	
 	/**************************************************************************
 	 * 	Ldap Processor
@@ -160,7 +160,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -242,7 +242,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 			error = "@NotFound@ User";
 			ldapUser.setErrorString(error);
 			m_error++;
-			log.warning (error);
+			log.warn(error);
 			return ldapUser;
 		}
 		usr = usr.trim();
@@ -252,7 +252,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 			error = "@NotFound@ O";
 			ldapUser.setErrorString(error);
 			m_error++;
-			log.warning (error);
+			log.warn(error);
 			return ldapUser;
 		}
 		int AD_Client_ID = findClient(o);
@@ -261,7 +261,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 			error = "@NotFound@ O=" + o;
 			ldapUser.setErrorString(error);
 			m_error++;
-			log.config (error);
+			log.info(error);
 			return ldapUser;
 		}
 		//	Optional Interest Area
@@ -274,7 +274,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 				error = "@NotFound@ OU=" + ou;
 				ldapUser.setErrorString(error);
 				m_error++;
-				log.config (error);
+				log.info(error);
 				return ldapUser;
 			}
 		}
@@ -321,7 +321,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 			error = "System Error";
 		}
 		finally
@@ -406,7 +406,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 			error = "System Error (2)";
 		}
 		finally
@@ -506,12 +506,12 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	{
 		if (error != null)
 		{
-			log.log (Level.CONFIG, info);
+			log.info(info);
 			m_error++;
 		}
 		else
 		{
-			log.log (Level.INFO, info);
+			log.info(info);
 			m_ok++;
 		}
 		//

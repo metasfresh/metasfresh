@@ -18,7 +18,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ColorUIResource;
@@ -76,7 +77,7 @@ public class AdempiereTheme extends com.jgoodies.looks.plastic.PlasticTheme
 
 	protected static final String NAME = s_name;
 	/** Logger */
-	protected static Logger log = Logger.getLogger(org.adempiere.plaf.AdempiereTheme.class.getName());
+	protected static Logger log = LogManager.getLogger(org.adempiere.plaf.AdempiereTheme.class.getName());
 	/** Active Theme */
 	protected static AdempiereTheme s_theme = null;
 

@@ -83,7 +83,7 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ ")";
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("afterSave - Set Instance Attribute");
+			log.debug("afterSave - Set Instance Attribute");
 		//
 		sql = "UPDATE M_AttributeSet mas"
 			+ " SET IsInstanceAttribute='N' "
@@ -97,7 +97,7 @@ public class MAttributeUse extends X_M_AttributeUse
 				+ " AND ma.IsInstanceAttribute='Y')";
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("afterSave - Reset Instance Attribute");
+			log.debug("afterSave - Reset Instance Attribute");
 		
 		return success;
 	}	//	afterSave

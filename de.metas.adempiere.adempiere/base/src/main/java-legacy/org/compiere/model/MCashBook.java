@@ -20,10 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -111,7 +111,7 @@ public class MCashBook extends X_C_CashBook
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "get", e);
+			s_log.error("get", e);
 		}
 		try
 		{
@@ -131,7 +131,7 @@ public class MCashBook extends X_C_CashBook
 	private static CCache<Integer,MCashBook> s_cache
 		= new CCache<Integer,MCashBook>("", 20);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MCashBook.class);
+	private static Logger	s_log	= LogManager.getLogger(MCashBook.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor

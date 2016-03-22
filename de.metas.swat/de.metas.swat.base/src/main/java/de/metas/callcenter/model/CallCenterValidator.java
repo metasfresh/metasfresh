@@ -41,7 +41,7 @@ public class CallCenterValidator implements ModelValidator
 {
 	public static final String ENTITYTYPE="de.metas.callcenter";
 	
-//	private final CLogger log = CLogger.getCLogger(getClass());
+//	private final Logger log = CLogMgt.getLogger(getClass());
 	
 	private int m_AD_Client_ID = -1;
 

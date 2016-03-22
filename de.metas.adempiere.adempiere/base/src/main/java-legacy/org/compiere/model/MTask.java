@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Task;
@@ -84,7 +82,7 @@ public class MTask extends X_AD_Task
 	 */
 	public String executeLocal(String cmd)
 	{
-		log.config(cmd);
+		log.info(cmd);
 		if (m_task != null && m_task.isAlive())
 			m_task.interrupt();
 
@@ -101,7 +99,7 @@ public class MTask extends X_AD_Task
 			}
 			catch (InterruptedException ioe)
 			{
-				log.log(Level.SEVERE, cmd, ioe);
+				log.error(cmd, ioe);
 			}
 			//  Info to user
 			//metas: c.ghita@metas.ro : start
@@ -116,7 +114,7 @@ public class MTask extends X_AD_Task
 			if (!m_task.isAlive())
 				break;
 		}
-		log.config("done");
+		log.info("done");
 		return sb.toString();
 	}	//	executeLocal
 	
@@ -127,7 +125,7 @@ public class MTask extends X_AD_Task
 	 */
 	public String executeRemote(String cmd)
 	{
-		log.config(cmd);
+		log.info(cmd);
 		return "Remote:\n";
 	}	//	executeRemote
 	

@@ -36,7 +36,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -55,7 +56,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	private static final String MSG_RECORDS_CREATED_1P = "de.metas.inoutCandidate.RECORDS_CREATED";
 	private static final String MSG_RECORD_CREATION_VETOED_1P = "de.metas.inoutCandidate.RECORD_CREATION_VETOED";
 
-	private final static CLogger logger = CLogger.getCLogger(InOutCandHandlerBL.class);
+	private final static Logger logger = LogManager.getLogger(InOutCandHandlerBL.class);
 
 	private final Map<String, IInOutCandHandler> tableName2Handler = new HashMap<String, IInOutCandHandler>();
 
@@ -150,7 +151,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model, handler);
 					if (listenerResult == OnMissingCandidate.SKIP_CREATION)
 					{
-						logger.fine("IInOutCandHandlerListener " + l + " doesn't want us to create a shipment schedule");
+						logger.debug("IInOutCandHandlerListener " + l + " doesn't want us to create a shipment schedule");
 						vetoListeners.add(l);
 					}
 				}

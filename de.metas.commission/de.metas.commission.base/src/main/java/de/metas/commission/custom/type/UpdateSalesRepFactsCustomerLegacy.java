@@ -40,7 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.model.I_C_AdvComRankCollection;
 import de.metas.commission.model.I_C_AdvComSalesRepFact;
@@ -74,7 +75,7 @@ public class UpdateSalesRepFactsCustomerLegacy extends UpdateSalesRepFacts
 {
 	public static final String MSG_DISCOUNT_SCHEMA_MISSING_1P = "DiscountSchemaMissing_1P";
 
-	private static final CLogger logger = CLogger.getCLogger(UpdateSalesRepFactsCustomerLegacy.class);
+	private static final Logger logger = LogManager.getLogger(UpdateSalesRepFactsCustomerLegacy.class);
 
 	// /**
 	// * If <code>isApvSponsor</code> is true:
@@ -906,7 +907,7 @@ public class UpdateSalesRepFactsCustomerLegacy extends UpdateSalesRepFacts
 			if (oldRankIs2AOrBetter == newRankIs2AOrBetter)
 			{
 				UpdateSalesRepFactsCustomerLegacy.logger
-						.fine("No reevaluation of the volumeOfSales points needed");
+						.debug("No reevaluation of the volumeOfSales points needed");
 
 			}
 			else if (newRankIs2AOrBetter)

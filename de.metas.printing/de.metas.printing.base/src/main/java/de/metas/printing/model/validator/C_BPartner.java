@@ -24,7 +24,8 @@ package de.metas.printing.model.validator;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -39,7 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.printing.model.I_C_Printing_Queue;
@@ -47,7 +47,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 @Validator(I_C_BPartner.class)
 public class C_BPartner
 {
-	private static final transient CLogger logger = CLogger.getCLogger(C_BPartner.class);
+	private static final transient Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	/**
 	 * If the bpartner's <code>DocumentCopies</code> changes, then this method updates all unprocessed C_Printing_Queues which reference the bpartner. The update is performed in a dedicated
@@ -101,7 +101,7 @@ public class C_BPartner
 										.setExecuteDirectly(true) // just to be sure
 										.execute();
 
-								logger.log(Level.FINE, "C_BPartner={0}: set C_Printing_Queue.Copies={1} for {2} C_Printing_Queue records",
+								logger.debug("C_BPartner={}: set C_Printing_Queue.Copies={} for {} C_Printing_Queue records",
 										new Object[] { bPartner, documentCopies, updatedCount });
 							}
 						});

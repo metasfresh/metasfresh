@@ -26,7 +26,8 @@ package org.adempiere.user.api.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -38,14 +39,12 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
 
 public class UserDAO implements IUserDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(UserDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
 
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final Properties ctx, final String userId)
@@ -59,7 +58,7 @@ public class UserDAO implements IUserDAO
 				.list(I_AD_User.class);
 		if (users.size() > 1)
 		{
-			logger.log(Level.CONFIG, "More then one user found for UserId '{0}': {1}", new Object[] { userId, users });
+			logger.info("More then one user found for UserId '{}': {}", new Object[] { userId, users });
 			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
 		}
 		if (users.size() == 0)

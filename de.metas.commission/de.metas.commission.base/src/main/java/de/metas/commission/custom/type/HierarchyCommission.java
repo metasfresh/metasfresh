@@ -47,7 +47,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.IProductAware;
 import de.metas.commission.interfaces.IAdvComInstance;
@@ -96,7 +97,7 @@ public abstract class HierarchyCommission extends BaseCommission
 
 	public static final BigDecimal FACTOR = BigDecimal.ONE;
 
-	private static final CLogger logger = CLogger.getCLogger(HierarchyCommission.class);
+	private static final Logger logger = LogManager.getLogger(HierarchyCommission.class);
 
 	/**
 	 * @param cand the candidate to evaluate
@@ -107,7 +108,7 @@ public abstract class HierarchyCommission extends BaseCommission
 	@Override
 	protected final void createInstanceAndFact(final MCAdvCommissionFactCand cand, final PO poLine, final String status, final int adPInstanceId)
 	{
-		HierarchyCommission.logger.config("cand=" + cand + "; poLine=" + poLine);
+		HierarchyCommission.logger.info("cand=" + cand + "; poLine=" + poLine);
 
 		// Note: in the end, 'posToHandle' might contain more (or different) cands
 		// and POs than the given ones (due to retroactive evaluation)
@@ -294,13 +295,13 @@ public abstract class HierarchyCommission extends BaseCommission
 				if (bPartner == null)
 				{
 					// 'salesRepsponsor' is not a sales rep at all
-					HierarchyCommission.logger.fine(salesRepSponsor + " represents no sales rep at " + dateToUse);
+					HierarchyCommission.logger.debug(salesRepSponsor + " represents no sales rep at " + dateToUse);
 
 					final boolean skipNonSalesReps = isSkipOrphanedSponsor(salesRepSponsor, date);
 
 					if (skipNonSalesReps)
 					{
-						HierarchyCommission.logger.fine("Skipping " + salesRepSponsor + " because it has no assigned C_BPartner");
+						HierarchyCommission.logger.debug("Skipping " + salesRepSponsor + " because it has no assigned C_BPartner");
 						return Result.SKIP_EXTEND;
 					}
 				}
@@ -533,7 +534,7 @@ public abstract class HierarchyCommission extends BaseCommission
 		final Map<PO, MCAdvCommissionFactCand> result = new HashMap<PO, MCAdvCommissionFactCand>();
 		if (X_C_AdvComSystem_Type.RETROACTIVEEVALUATION_Keine.equals(getComSystemType().getRetroactiveEvaluation()))
 		{
-			HierarchyCommission.logger.fine(getComSystemType() + " has no retroactive evaluation -> returning empty map");
+			HierarchyCommission.logger.debug(getComSystemType() + " has no retroactive evaluation -> returning empty map");
 			return Collections.emptyMap();
 		}
 		// no need to update anything that happened after start date
@@ -550,7 +551,7 @@ public abstract class HierarchyCommission extends BaseCommission
 
 				final List<MCIncidentLineFact> lineFacts = retrieveOlsAndIls(customerCurrentLevel, startDate);
 
-				HierarchyCommission.logger.fine("Got " + lineFacts.size() + " indicent line facts for customer" + customerCurrentLevel);
+				HierarchyCommission.logger.debug("Got " + lineFacts.size() + " indicent line facts for customer" + customerCurrentLevel);
 
 				final Map<PO, MCAdvCommissionFactCand> resultTmp = mkCandidates(startDate, lineFacts, cand);
 
@@ -623,7 +624,7 @@ public abstract class HierarchyCommission extends BaseCommission
 
 			if (factPO == null)
 			{
-				HierarchyCommission.logger.warning(fact + " has PO = null");
+				HierarchyCommission.logger.warn(fact + " has PO = null");
 				continue;
 			}
 			final Object headerPO = faBL.retrieveHeader(factPO);

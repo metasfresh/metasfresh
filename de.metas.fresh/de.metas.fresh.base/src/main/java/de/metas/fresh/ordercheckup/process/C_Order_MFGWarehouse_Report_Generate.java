@@ -23,7 +23,8 @@ package de.metas.fresh.ordercheckup.process;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,15 +33,13 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
-
 import de.metas.document.engine.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 
 public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements ISvrProcessPrecondition
 {
 	// services
-	private static final CLogger logger = CLogger.getCLogger(C_Order_MFGWarehouse_Report_Generate.class);
+	private static final Logger logger = LogManager.getLogger(C_Order_MFGWarehouse_Report_Generate.class);
 	private final transient IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
@@ -77,7 +76,7 @@ public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements 
 		// Only completed/closed orders
 		if (!docActionBL.isStatusCompletedOrClosed(order))
 		{
-			logger.log(Level.FINE, "{0} has DocStatus={1}; nothing to do", new Object[] { order, order.getDocStatus() });
+			logger.debug("{} has DocStatus={}; nothing to do", new Object[] { order, order.getDocStatus() });
 			return false; // nothing to do
 		}
 

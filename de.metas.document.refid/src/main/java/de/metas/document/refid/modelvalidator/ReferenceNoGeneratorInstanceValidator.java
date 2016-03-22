@@ -30,7 +30,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionBL;
@@ -39,7 +40,7 @@ import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 
 class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IReferenceNoGeneratorInstance instance;
 	private int m_AD_Client_ID = -1;
@@ -160,12 +161,12 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 			if (Services.get(IDocActionBL.class).isDocumentTable(tableName))
 			{
 				engine.addDocValidate(tableName, this);
-				logger.config("Registered docValidate " + this);
+				logger.info("Registered docValidate " + this);
 			}
 			else
 			{
 				engine.addModelChange(tableName, this);
-				logger.config("Registered modelChange " + this);
+				logger.info("Registered modelChange " + this);
 			}
 		}
 	}
@@ -179,7 +180,7 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 			engine.removeDocValidate(tableName, this);
 		}
 
-		logger.config("Unregistered " + this);
+		logger.info("Unregistered " + this);
 	}
 
 	public IReferenceNoGeneratorInstance getInstance()

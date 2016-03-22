@@ -23,7 +23,6 @@ package org.adempiere.webui.apps.form;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -132,7 +131,7 @@ public class WArchiveViewer extends Archive implements IFormController, EventLis
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "init", e);
+			log.error("init", e);
 		}
 	}
 	
@@ -495,7 +494,7 @@ public class WArchiveViewer extends Archive implements IFormController, EventLis
 	private void updateQDisplay()
 	{
 		boolean reports = reportField.isChecked();
-		log.config("Reports=" + reports);
+		log.info("Reports=" + reports);
 
 		//	Show
 		processLabel.setVisible(reports);
@@ -564,7 +563,7 @@ public class WArchiveViewer extends Archive implements IFormController, EventLis
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "pdf", e);
+			log.error("pdf", e);
 			iframe.getChildren().clear();//pdfViewer.clearDocument();
 		}
 	}	//	updateVDisplay
@@ -621,7 +620,7 @@ public class WArchiveViewer extends Archive implements IFormController, EventLis
 	
 	public void query (boolean isReport, int AD_Table_ID, int Record_ID)
 	{
-		log.config("Report=" + isReport + ", AD_Table_ID=" + AD_Table_ID + ",Record_ID=" + Record_ID);
+		log.info("Report=" + isReport + ", AD_Table_ID=" + AD_Table_ID + ",Record_ID=" + Record_ID);
 		reportField.setChecked(isReport);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;

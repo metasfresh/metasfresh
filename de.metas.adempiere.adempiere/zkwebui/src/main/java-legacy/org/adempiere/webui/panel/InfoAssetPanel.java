@@ -322,7 +322,7 @@ public class InfoAssetPanel extends InfoPanel implements ValueChangeListener, Ev
 				value += "%";
 		
 			pstmt.setString(index++, value);
-			log.fine("Value: " + value);
+			log.debug("Value: " + value);
 		}
 		
 		//	=> Name
@@ -335,7 +335,7 @@ public class InfoAssetPanel extends InfoPanel implements ValueChangeListener, Ev
 				name += "%";
 		
 			pstmt.setString(index++, name);
-			log.fine("Name: " + name);
+			log.debug("Name: " + name);
 		}
 	} // setParameters
 

@@ -29,15 +29,15 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -71,7 +71,7 @@ import com.google.common.base.Supplier;
  */
 public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<Integer, ConstantWorkpackagePrio>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SysconfigBackedSizeBasedWorkpackagePrioConfig.class);
+	private static final transient Logger logger = LogManager.getLogger(SysconfigBackedSizeBasedWorkpackagePrioConfig.class);
 
 	/**
 	 * Internal cache for our sorted AD_SysConfig records. The cache is reset if the AD_SysConfig changes.
@@ -150,10 +150,9 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 			return result;
 		}
 
-		logger.log(
-				Level.INFO,
-				"Found no priority for the given position {0} (current queue size={1}).\nThe {2} AD_SysConfig-records which we checked are: {3}.\nReturning the preset default prio: {4}.",
-				new Object[] { position, size, sortedMap.size(), sortedMap, defaultPrio.retrievePrioName() });
+		logger.info(
+				"Found no priority for the given position {} (current queue size={}).\nThe {} AD_SysConfig-records which we checked are: {}.\nReturning the preset default prio: {}.",
+				position, size, sortedMap.size(), sortedMap, defaultPrio.retrievePrioName());
 		return defaultPrio;
 	}
 
@@ -202,10 +201,7 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 							final ConstantWorkpackagePrio constrantPrio = ConstantWorkpackagePrio.fromString(entry.getValue());
 							if (constrantPrio == null)
 							{
-								logger.log(
-										Level.WARNING,
-										"Unable to parse the the priority string {0}.\nPlease fix the value of the AD_SysConfig record with name={1}",
-										new Object[] { entry.getValue(), entry.getKey() });
+								logger.warn("Unable to parse the the priority string {}.\nPlease fix the value of the AD_SysConfig record with name={}", entry.getValue(), entry.getKey());
 								continue;
 							}
 							sortedMap.put(sizeInt, constrantPrio);
@@ -227,7 +223,7 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 		}
 		catch (NumberFormatException e)
 		{
-			logger.log(Level.WARNING, "Unable to parse the prio int value from AD_SysConfig.Name={0}. Ignoring its value.", completeString);
+			logger.warn("Unable to parse the prio int value from AD_SysConfig.Name={}. Ignoring its value.", completeString);
 		}
 		return size;
 	}

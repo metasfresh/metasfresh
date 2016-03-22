@@ -19,7 +19,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
@@ -31,7 +32,8 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MMatchPO;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MStorage;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -43,7 +45,7 @@ public class Match
 {
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Match.class);
+	private static Logger log = LogManager.getLogger(Match.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 
@@ -84,7 +86,7 @@ public class Match
 	 */
 	protected Vector<String> cmd_matchFrom(String selection)
 	{
-	//	log.fine( "VMatch.cmd_matchFrom");
+	//	log.debug( "VMatch.cmd_matchFrom");
 		//String selection = (String)matchFrom.getSelectedItem();
 		Vector<String> vector = new Vector<String>(2);
 		if (selection.equals(m_matchOptions[MATCH_INVOICE]))
@@ -152,7 +154,7 @@ public class Match
 	 */
 	protected void cmd_process(IMiniTable xMatchedTable, IMiniTable xMatchedToTable, int matchMode, int matchFrom, Object matchTo, BigDecimal m_xMatched)
 	{
-		log.config("");
+		log.info("");
 		//  Matched From
 		int matchedRow = xMatchedTable.getSelectedRow();
 		if (matchedRow < 0)
@@ -219,7 +221,7 @@ public class Match
 	protected IMiniTable cmd_searchTo(IMiniTable xMatchedTable, IMiniTable xMatchedToTable, String displayString, int matchToType, boolean sameBPartner, boolean sameProduct, boolean sameQty, boolean matched)
 	{
 		int row = xMatchedTable.getSelectedRow();
-		log.config("Row=" + row);
+		log.info("Row=" + row);
 
 		//  ** Create SQL **
 		//String displayString = (String)matchTo.getSelectedItem();
@@ -234,7 +236,7 @@ public class Match
 		KeyNamePair BPartner = (KeyNamePair)xMatchedTable.getValueAt(row, I_BPartner);
 		//KeyNamePair Org = (KeyNamePair)xMatchedTable.getValueAt(row, I_Org); //JAVIER
 		KeyNamePair Product = (KeyNamePair)xMatchedTable.getValueAt(row, I_Product);
-		log.fine("BPartner=" + BPartner + " - Product=" + Product);
+		log.debug("BPartner=" + BPartner + " - Product=" + Product);
 		//
 		if (sameBPartner)
 			m_sql.append(" AND hdr.C_BPartner_ID=").append(BPartner.getKey());
@@ -267,7 +269,7 @@ public class Match
 	protected void tableInit (int display, int matchToType, boolean matched)
 	{
 		//boolean matched = matchMode.getSelectedIndex() == MODE_MATCHED;
-		log.config("Display=" + m_matchOptions[display]
+		log.info("Display=" + m_matchOptions[display]
 			+ ", MatchTo=" + m_matchOptions[matchToType]
 			+ ", Matched=" + matched);
 
@@ -361,11 +363,11 @@ public class Match
 	 */
 	protected void tableLoad (IMiniTable table)
 	{
-		//	log.finest(m_sql + " - " +  m_groupBy);
+		//	log.trace(m_sql + " - " +  m_groupBy);
 		String sql = Env.getUserRolePermissions().addAccessSQL(
 			m_sql.toString(), "hdr", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)
 			+ m_groupBy;
-		log.finest(sql);
+		log.trace(sql);
 		try
 		{
 			Statement stmt = DB.createStatement();
@@ -375,7 +377,7 @@ public class Match
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}   //  tableLoad
 
@@ -392,7 +394,7 @@ public class Match
 	{
 		if (qty.compareTo(Env.ZERO) == 0)
 			return true;
-		log.fine("IsInvoice=" + invoice
+		log.debug("IsInvoice=" + invoice
 			+ ", M_InOutLine_ID=" + M_InOutLine_ID + ", Line_ID=" + Line_ID
 			+ ", Qty=" + qty);
 		//
@@ -421,7 +423,7 @@ public class Match
 //				if (match.save())
 //					success = true;
 //				else
-//					log.log(Level.SEVERE, "Inv Match not created: " + match);
+//					log.error("Inv Match not created: " + match);
 			}
 			else
 			{
@@ -435,7 +437,7 @@ public class Match
 				matchPO.setC_InvoiceLine(iLine);
 				matchPO.setM_InOutLine_ID(M_InOutLine_ID);
 				if (!matchPO.save())
-					log.log(Level.SEVERE, "PO(Inv) Match not created: " + matchPO);
+					log.error("PO(Inv) Match not created: " + matchPO);
 			}
 		}
 		else	//	Shipment - Order
@@ -450,7 +452,7 @@ public class Match
 //			{
 //				oLine.setQtyReserved(oLine.getQtyReserved().subtract(qty));
 //				if(!oLine.save())
-//					log.severe("QtyReserved not updated - C_OrderLine_ID=" + Line_ID);
+//					log.error("QtyReserved not updated - C_OrderLine_ID=" + Line_ID);
 //			}
 
 			//	Create PO - Shipment Link
@@ -458,7 +460,7 @@ public class Match
 			{
 				MMatchPO match = new MMatchPO (sLine, null, qty);
 				if (!match.save())
-					log.log(Level.SEVERE, "PO Match not created: " + match);
+					log.error("PO Match not created: " + match);
 				else
 				{
 					success = true;

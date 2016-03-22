@@ -1,7 +1,5 @@
 package de.metas.procurement.base.order.impl;
 
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -9,7 +7,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -56,7 +54,7 @@ public class PurchaseOrderGeneratedEventBus extends QueueableForwardingEventBus
 			.setType(Type.REMOTE)
 			.build();
 
-	private static final transient CLogger logger = ProcurementConstants.getLogger();
+	private static final transient Logger logger = ProcurementConstants.getLogger(PurchaseOrderGeneratedEventBus.class);
 
 	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
 
@@ -102,7 +100,7 @@ public class PurchaseOrderGeneratedEventBus extends QueueableForwardingEventBus
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed creating event for " + document + ". Ignored.", e);
+			logger.warn("Failed creating event for " + document + ". Ignored.", e);
 		}
 
 		return this;

@@ -40,14 +40,17 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
+import de.metas.logging.MetasfreshLastError;
+
 public final class VPaymentProcess
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	public static BigDecimal getAmount(ProcessingCtx pctx, IVPaymentPanel panel)
 	{
@@ -141,7 +144,7 @@ public final class VPaymentProcess
 		final BigDecimal payAmount = getPayAmount();
 		final int currencyId = panel.getC_Currency_ID();
 
-		log.fine("Payment - " + pctx.newPaymentRule);
+		log.debug("Payment - " + pctx.newPaymentRule);
 		pctx.newPayment.setAmount(currencyId, payAmount);
 		pctx.newPayment.setDateTrx(panel.getDate());
 		pctx.newPayment.setDateAcct(panel.getDate());
@@ -197,10 +200,10 @@ public final class VPaymentProcess
 		final I_C_Invoice invoice = getC_Invoice();
 		final BigDecimal payAmount = getPayAmount();
 
-		log.fine("Cash");
+		log.debug("Cash");
 		if (invoice == null && order == null)
 		{
-			log.config("No Invoice!");
+			log.info("No Invoice!");
 			throw new AdempiereException("@CashNotCreated@. @NotFound@ @C_Invoice_ID@ / @C_Order_ID@");
 		}
 
@@ -222,7 +225,7 @@ public final class VPaymentProcess
 		else if (newC_CashBook_ID != oldC_CashBook_ID
 				|| !TimeUtil.isSameDay(pctx.oldCashLine.getStatementDate(), panel.getDate()))
 		{
-			log.config("Changed CashBook/Date: " + oldC_CashBook_ID + "->" + newC_CashBook_ID);
+			log.info("Changed CashBook/Date: " + oldC_CashBook_ID + "->" + newC_CashBook_ID);
 			reverseCashLine();
 		}
 		// Changed Amount
@@ -286,7 +289,7 @@ public final class VPaymentProcess
 		else
 		{
 			invoice = list.get(0);
-			log.warning("More then one invoice found for order " + order + ". Returning first.");
+			log.warn("More then one invoice found for order " + order + ". Returning first.");
 			return invoice;
 		}
 	}
@@ -318,11 +321,11 @@ public final class VPaymentProcess
 	{
 		assert pctx.newCashLine == null : "newCashLine should be null";
 
-		log.config("New CashBook");
+		log.info("New CashBook");
 		final MCash cash = MCash.get(pctx.ctx, panel.getC_CashBook_ID(), panel.getDate(), pctx.trxName);
 
 		if (cash == null || cash.getC_Cash_ID() <= 0)
-			throw new AdempiereException(CLogger.retrieveErrorString("CashNotCreated"));
+			throw new AdempiereException(MetasfreshLastError.retrieveErrorString("CashNotCreated"));
 
 		pctx.newCashLine = new MCashLine(cash);
 	}
@@ -344,7 +347,7 @@ public final class VPaymentProcess
 		}
 		pctx.newCashLine.setAmount(payAmount);
 		pctx.newCashLine.saveEx();
-		log.config("CashCreated");
+		log.info("CashCreated");
 
 		if (invoice != null)
 		{
@@ -356,7 +359,7 @@ public final class VPaymentProcess
 			order.setC_CashLine_ID(pctx.newCashLine.getC_CashLine_ID());
 			InterfaceWrapperHelper.save(order);
 		}
-		log.config("Update Order & Invoice with CashLine");
+		log.info("Update Order & Invoice with CashLine");
 
 		pctx.info.add("@Created@ " + pctx.newCashLine.getSummary());
 	}
@@ -366,7 +369,7 @@ public final class VPaymentProcess
 		if (pctx.oldCashLine == null)
 			return;
 
-		log.fine("Reversion Old Cash - " + pctx.oldCashLine);
+		log.debug("Reversion Old Cash - " + pctx.oldCashLine);
 		MCashLine reverseLine = pctx.oldCashLine.createReversal();
 		reverseLine.saveEx();
 
@@ -386,7 +389,7 @@ public final class VPaymentProcess
 		if (!ok)
 			throw new AdempiereException("@PaymentNotCancelled@ " + pctx.oldPayment.getSummary());
 
-		log.fine("PaymentCancelled " + pctx.oldPayment.getDocumentNo());
+		log.debug("PaymentCancelled " + pctx.oldPayment.getDocumentNo());
 		// m_mTab.getTableModel().dataSave(true); // TODO: why we need this?
 		pctx.info.add("@Reversed@ " + pctx.oldPayment.getSummary());
 	}
@@ -399,7 +402,7 @@ public final class VPaymentProcess
 		// e.g. a model validator which changed the order that we are processing right now
 		InterfaceWrapperHelper.refresh(doc);
 
-		log.config("Updating payable document");
+		log.info("Updating payable document");
 		//
 		// this.m_needSave = pctx.isParentNeedSave;
 		doc.setPaymentRule(pctx.newPaymentRule);

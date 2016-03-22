@@ -50,10 +50,11 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MSysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Space;
@@ -62,7 +63,7 @@ import de.metas.adempiere.form.IClientUI;
 
 public class WCreditCardPanel extends AbstractCreditCardPanel
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	public static final String MODE_VALIDATE = WCreditCardPanel.class.getName() + ".validate";
 	public static final String MODE_PAY = WCreditCardPanel.class.getName() + ".pay";

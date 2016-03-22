@@ -11,26 +11,13 @@ else
 	exit 1
 fi
 
-#Minor rollouts don't include AOP anyways, but the script might check if the variable is set
-JBOSS_AOP_VERSION="None"
-
-ANT_HOME=/opt/apache-ant-1.7.0
-
-#Configfile, sets these variables:
-#  ADEMPIERE_HOME
-#  JAVA_HOME
-#  LOGFILE
-#  PATH
-
-#set_CONFIGFILE_var
-#check_file_readable $CONFIGFILE
-#source $CONFIGFILE
 
 LOCAL_DIR=$(dirname $0)
 
 if [ "$LOCAL_DIR" == "." ]; then
 	LOCAL_DIR=$(pwd)
 fi
+
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 ROLLOUT_DIR=$LOCAL_DIR/..
 
@@ -75,56 +62,31 @@ prepare()
 	trace prepare END
 }
 
-install_adempiere()
+install_metasfresh()
 {	
-	trace install_adempiere BEGIN
+	trace install_metasfresh BEGIN
 
 	prepare
-		
-	stop_adempiere
+
+	stop_metasfresh
 	
-	local JBOSS_APP_FOLDER=adempiere
-
-	if [[ -d "${ADEMPIERE_HOME}/jboss/server/metasfresh" ]]; then
-	   JBOSS_APP_FOLDER=metasfresh
-	fi
-
-        if [[ -d ${ADEMPIERE_HOME}/src ]]; then
-          trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
-          tar czf ${ADEMPIERE_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
-          trace install_adempiere "Done adding source files to app-dir"
-        else
-          trace install_adempiere "No source-folder present in app-dir. Skipping adding sourcefiles."
-        fi
-
-	#This is only required until we also modernized the server-rollout
-	trace install_adempiere "Deleting the legacy adempiere.ear if it exists"
-	if [ -d "${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiere.ear" ]; then
-		rm -vr ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiere.ear
-	fi
-
-	#This is only required until we also modernized the server-rollout
-	trace install_adempiere "Deleting the legacy adempiereJasper.war if it exists"
-	if [ -f "${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiereJasper.war" ]; then
-		rm -vr ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiereJasper.war
+    if [[ -d ${METASFRESH_HOME}/src ]]; then
+          trace install_metasfresh "Adding source files to app-dir ( ${METASFRESH_HOME}/src/sources.tar.gz )"
+          tar czf ${METASFRESH_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
+          trace install_metasfresh "Done adding source files to app-dir"
+    else
+          trace install_metasfresh "No source-folder present in app-dir. Skipping adding sourcefiles."
 	fi
 	
-	trace install_adempiere "Copying our deployable files to the jboss deploy folder" 
-	cp -Rv ${ROLLOUT_DIR}/deploy/* ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy
+	trace install_metasfresh "Copying our files to the metasfresh folder" 
+	cp -Rv ${ROLLOUT_DIR}/deploy/* ${METASFRESH_HOME}
 	
-	trace install_adempiere "Copying the 'client' allInOne jar to ${ADEMPIERE_HOME}/lib" 
-	cp -v ${ROLLOUT_DIR}/adempiere_lib/* ${ADEMPIERE_HOME}/lib
-	
-	trace install_adempiere "Making ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/reports.war writable to allowing everyone to install jasper files"
-	chmod -R a+w ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/reports.war
+	trace install_metasfresh "Making ${METASFRESH_HOME}/reports/ writable to allowing everyone to install jasper files"
+	chmod -R a+w ${METASFRESH_HOME}/reports/
 
-	trace install_adempiere "Calling RUN_Post_Rollout_Processes.sh" 
-	cd $ADEMPIERE_HOME/utils
-	./RUN_Post_Rollout_Processes.sh
+	start_metasfresh
 	
-	start_adempiere
-	
-	trace install_adempiere END
+	trace install_metasfresh END
 }
 
 # task 06284
@@ -162,10 +124,9 @@ while getopts "d:s:" OPTION; do
 	esac
 done
 
-install_adempiere 
+install_metasfresh 
 
 # task 06284
 invoke_customer_script
 
 trace $(basename $0) "END"
-

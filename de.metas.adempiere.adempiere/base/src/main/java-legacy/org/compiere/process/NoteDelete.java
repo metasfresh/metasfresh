@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -53,7 +51,7 @@ public class NoteDelete extends SvrProcess
 			else if (name.equals("KeepLogDays"))
 				p_KeepLogDays = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

@@ -23,13 +23,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -98,7 +100,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e); 
+			s_log.error(sql, e); 
 		}
 		finally
 		{
@@ -139,7 +141,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e); 
+			s_log.error(sql, e); 
 		}
 		finally
 		{
@@ -180,7 +182,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e); 
+			s_log.error(sql, e); 
 		}
 		finally
 		{
@@ -219,7 +221,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e); 
+			s_log.error(sql, e); 
 		}
 		finally
 		{
@@ -360,7 +362,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (final Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -390,7 +392,7 @@ public class MMatchPO extends X_M_MatchPO
 	}	//	create
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MMatchPO.class);
+	private static Logger	s_log	= LogManager.getLogger(MMatchPO.class);
 
 	
 	/**************************************************************************
@@ -671,7 +673,7 @@ public class MMatchPO extends X_M_MatchPO
 						.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 					difference = difference.abs();
 					boolean ok = difference.compareTo(maxTolerance) <= 0;
-					log.config("Difference=" + getPriceMatchDifference() 
+					log.info("Difference=" + getPriceMatchDifference() 
 						+ ", Max=" + maxTolerance + " => " + ok);
 					setIsApproved(ok);
 				}
@@ -689,7 +691,7 @@ public class MMatchPO extends X_M_MatchPO
 			String err = createMatchPOCostDetail();
 			if(err != null && err.length() > 0) 
 			{
-				s_log.warning(err);
+				s_log.warn(err);
 				return false;
 			}
 		}
@@ -904,7 +906,7 @@ public class MMatchPO extends X_M_MatchPO
 						if (no1 != 1)
 						{
 							errors++;
-							s_log.warning("Not updated M_MatchPO_ID=" + po1.getM_MatchPO_ID());
+							s_log.warn("Not updated M_MatchPO_ID=" + po1.getM_MatchPO_ID());
 							continue;
 						}
 						//
@@ -916,7 +918,7 @@ public class MMatchPO extends X_M_MatchPO
 							success++;
 						else
 						{
-							s_log.warning("M_MatchPO_ID=" + po2.getM_MatchPO_ID()
+							s_log.warn("M_MatchPO_ID=" + po2.getM_MatchPO_ID()
 								+ " - Deleted=" + no2 + ", Acct=" + no3); 
 							errors++;
 						}
@@ -926,7 +928,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -971,7 +973,7 @@ public class MMatchPO extends X_M_MatchPO
 						{
 							final int stdPrecision = Services.get(IOrderLineBL.class).getPrecision(oLine);
 							BigDecimal costTax = Services.get(ITaxBL.class).calculateTax(tax, poCost, true, stdPrecision);
-							log.fine("Costs=" + poCost + " - Tax=" + costTax);
+							log.debug("Costs=" + poCost + " - Tax=" + costTax);
 							poCost = poCost.subtract(costTax);
 						}
 					}	//	correct included Tax

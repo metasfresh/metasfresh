@@ -23,7 +23,8 @@ import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
@@ -42,7 +43,8 @@ import org.compiere.model.MAttributeSetInstance;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -106,7 +108,7 @@ public class PAttributeInstance extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	// init	
 
@@ -128,7 +130,7 @@ public class PAttributeInstance extends CDialog
 	private String				m_M_AttributeSetInstanceName = null;
 	private String				m_sql;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PAttributeInstance.class);
+	private static Logger log = LogManager.getLogger(PAttributeInstance.class);
 
 	/**
 	 * 	Static Init
@@ -187,7 +189,7 @@ public class PAttributeInstance extends CDialog
 	 */
 	private void dynInit(int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		if (C_BPartner_ID > 0)
 		{
 			int ShelfLifeMinPct = 0;
@@ -216,7 +218,7 @@ public class PAttributeInstance extends CDialog
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally {
 				DB.close(rs, pstmt);
@@ -225,12 +227,12 @@ public class PAttributeInstance extends CDialog
 			if (ShelfLifeMinPct > 0)
 			{
 				m_sqlMinLife = " AND COALESCE(TRUNC(((TRUNC(asi.GuaranteeDate)-TRUNC(now()))/p.GuaranteeDays)*100),0)>=" + ShelfLifeMinPct;
-				log.config( "PAttributeInstance.dynInit - ShelfLifeMinPct=" + ShelfLifeMinPct);
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinPct=" + ShelfLifeMinPct);
 			}
 			if (ShelfLifeMinDays > 0)
 			{
 				m_sqlMinLife += " AND COALESCE((TRUNC(asi.GuaranteeDate)-TRUNC(now())),0)>=" + ShelfLifeMinDays;
-				log.config( "PAttributeInstance.dynInit - ShelfLifeMinDays=" + ShelfLifeMinDays);
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinDays=" + ShelfLifeMinDays);
 			}
 		}	//	BPartner != 0
 
@@ -262,7 +264,7 @@ public class PAttributeInstance extends CDialog
 			sql += m_sql.substring(pos);
 		}
 		//
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -276,7 +278,7 @@ public class PAttributeInstance extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -345,7 +347,7 @@ public class PAttributeInstance extends CDialog
 			}
 		}
 		confirmPanel.getOKButton().setEnabled(enabled);
-		log.fine("M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID 
+		log.debug("M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID 
 			+ " - " + m_M_AttributeSetInstanceName
 			+ "; M_Locator_ID=" + m_M_Locator_ID);
 	}	//	enableButtons

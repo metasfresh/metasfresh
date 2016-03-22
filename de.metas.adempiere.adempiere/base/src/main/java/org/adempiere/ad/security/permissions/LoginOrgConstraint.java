@@ -23,12 +23,12 @@ package org.adempiere.ad.security.permissions;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.collections.Predicate;
-import org.compiere.util.CLogger;
 
 @Immutable
 public final class LoginOrgConstraint extends Constraint
@@ -40,7 +40,7 @@ public final class LoginOrgConstraint extends Constraint
 
 	public static final LoginOrgConstraint DEFAULT = new LoginOrgConstraint();
 
-	private static final transient CLogger logger = CLogger.getCLogger(LoginOrgConstraint.class);
+	private static final transient Logger logger = LogManager.getLogger(LoginOrgConstraint.class);
 
 	private final int loginOrgId;
 	private final boolean orgLoginMandatory;
@@ -101,14 +101,14 @@ public final class LoginOrgConstraint extends Constraint
 	{
 		if (isOrgLoginMandatory() && org.getAD_Org_ID() <= 0)
 		{
-			logger.log(Level.FINE, "Not valid {0} because is OrgLoginMandatory is set", org);
+			logger.debug("Not valid {} because is OrgLoginMandatory is set", org);
 			return false;
 		}
 
 		// Enforce Login_Org_ID:
 		if (getLogin_Org_ID() > 0 && org.getAD_Org_ID() != loginOrgId)
 		{
-			logger.log(Level.FINE, "Not valid {0} because is not Login_Org_ID", org);
+			logger.debug("Not valid {} because is not Login_Org_ID", org);
 			return false;
 		}
 

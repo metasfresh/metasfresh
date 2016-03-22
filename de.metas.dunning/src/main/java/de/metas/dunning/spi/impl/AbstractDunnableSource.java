@@ -27,7 +27,8 @@ import java.util.Iterator;
 
 import org.adempiere.util.collections.FilterIterator;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
@@ -36,7 +37,7 @@ import de.metas.dunning.spi.IDunnableSource;
 
 public abstract class AbstractDunnableSource implements IDunnableSource
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	protected abstract Iterator<IDunnableDoc> createRawSourceIterator(IDunningContext context);
 

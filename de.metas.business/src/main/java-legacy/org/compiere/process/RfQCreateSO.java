@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
@@ -57,7 +58,7 @@ public class RfQCreateSO extends SvrProcess
 			else if (name.equals("C_DocType_ID"))
 				p_C_DocType_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_C_RfQ_ID = getRecord_ID();
 	}	//	prepare
@@ -121,7 +122,7 @@ public class RfQCreateSO extends SvrProcess
 						if (price == null || price.signum() == 0)
 						{
 							price = Env.ZERO;
-							log.warning(" - BestResponse=0 - " + qty);
+							log.warn(" - BestResponse=0 - " + qty);
 						}
 						else
 						{

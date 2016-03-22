@@ -43,7 +43,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(ADColumnCalloutDAO.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(ADColumnCalloutDAO.class);
 
 	@Override
 	public List<I_AD_ColumnCallout> retrieveActiveColumnCallouts(final Properties ctx, final int adColumnId)

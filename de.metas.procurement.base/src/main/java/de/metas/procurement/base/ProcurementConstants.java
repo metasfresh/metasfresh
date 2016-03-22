@@ -1,6 +1,7 @@
 package de.metas.procurement.base;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.event.Topic;
 import de.metas.event.Type;
@@ -29,11 +30,9 @@ import de.metas.event.Type;
 
 public final class ProcurementConstants
 {
-	private static final String LOGGER_NAME = CLogger.createModuleLoggerNameForPackage(ProcurementConstants.class);
-
-	public static final CLogger getLogger()
+	public static final Logger getLogger(Class<?> clazz)
 	{
-		return CLogger.getCLogger(LOGGER_NAME);
+		return LogManager.getLogger(clazz);
 	}
 	
 	public static final Topic EVENTBUS_TOPIC_PurchaseOrderGenerated = Topic.builder()

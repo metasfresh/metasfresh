@@ -30,7 +30,8 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -56,7 +57,8 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -125,7 +127,7 @@ public class Editor extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		//	Set Text
 		m_text = text;
@@ -141,7 +143,7 @@ public class Editor extends CDialog
 	
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private static CLogger log = CLogger.getCLogger(Editor.class);
+	private static Logger log = LogManager.getLogger(Editor.class);
 
 	/** The Text			*/
 	private String 		m_text;
@@ -209,7 +211,7 @@ public class Editor extends CDialog
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			m_text = textArea.getText();
-			log.fine("OK - length=" + m_text.length());
+			log.debug("OK - length=" + m_text.length());
 			dispose();
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
@@ -242,7 +244,7 @@ public class Editor extends CDialog
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			log.log(Level.SEVERE, str, e);
+			log.error(str, e);
 		}
 		
 		if (m_maxSize == 0)
@@ -292,7 +294,7 @@ public class Editor extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getMessage());
+			log.warn(e.getMessage());
 			return;
 		}
 		textArea.setText(sb.toString());
@@ -321,7 +323,7 @@ public class Editor extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getMessage());
+			log.warn(e.getMessage());
 		}
 	}	//	exportText
 
@@ -380,7 +382,7 @@ public class Editor extends CDialog
 			catch (Exception e)
 			{
 				final AdempiereException ex = new AdempiereException("Cannot get GridField from " + c, e);
-				log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				log.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 		return field;

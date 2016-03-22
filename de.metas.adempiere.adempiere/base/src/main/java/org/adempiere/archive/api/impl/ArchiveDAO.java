@@ -39,7 +39,7 @@ import org.compiere.util.Env;
 
 public class ArchiveDAO implements IArchiveDAO
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(ArchiveDAO.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(ArchiveDAO.class);
 
 	@Override
 	public List<I_AD_Archive> retrieveArchives(final Properties ctx, final String whereClause)

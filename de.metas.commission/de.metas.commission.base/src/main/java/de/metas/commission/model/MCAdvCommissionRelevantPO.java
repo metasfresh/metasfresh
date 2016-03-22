@@ -40,9 +40,10 @@ import org.compiere.model.MReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
@@ -54,9 +55,7 @@ import de.metas.adempiere.util.CacheIgnore;
  */
 public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 {
-
-	private static final CLogger logger = CLogger
-			.getCLogger(MCAdvCommissionRelevantPO.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvCommissionRelevantPO.class);
 
 	final static String SQL_FOR_TABLE_ID = //
 	"  SELECT cr.* " //
@@ -164,7 +163,7 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 		{
 			if (relevantPO.whereClauseMatches(po))
 			{
-				MCAdvCommissionRelevantPO.logger.fine(I_C_AdvCommissionRelevantPO.Table_Name + " entry with name '" + relevantPO.getName() + "' matches PO " + po);
+				MCAdvCommissionRelevantPO.logger.debug(I_C_AdvCommissionRelevantPO.Table_Name + " entry with name '" + relevantPO.getName() + "' matches PO " + po);
 				return relevantPO;
 			}
 		}
@@ -184,7 +183,7 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 
 		if (Check.isEmpty(where, true))
 		{
-			MCAdvCommissionRelevantPO.logger.fine("whereClause is empty. Returning true");
+			MCAdvCommissionRelevantPO.logger.debug("whereClause is empty. Returning true");
 			return true;
 		}
 
@@ -201,7 +200,7 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 
 		final boolean match = new Query(po.getCtx(), po.get_TableName(), whereClause, po.get_TrxName()).setOnlyActiveRecords(true).match();
 
-		MCAdvCommissionRelevantPO.logger.fine("whereClause='" + whereClause + "' matches po='" + po + "':" + match);
+		MCAdvCommissionRelevantPO.logger.debug("whereClause='" + whereClause + "' matches po='" + po + "':" + match);
 		return match;
 	}
 
@@ -274,7 +273,7 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 
 		if (tableId == illegalTableId)
 		{
-			log.severe("Illegal Table " + I_C_AdvCommissionFactCand.Table_Name);
+			log.error("Illegal Table " + I_C_AdvCommissionFactCand.Table_Name);
 			return true;
 		}
 		return false;

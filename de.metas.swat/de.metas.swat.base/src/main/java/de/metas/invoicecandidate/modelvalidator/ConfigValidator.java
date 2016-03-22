@@ -13,12 +13,12 @@ package de.metas.invoicecandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,8 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -58,7 +56,6 @@ import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.callout.C_Invoice_Candidate_TabCallout;
-import de.metas.invoicecandidate.jmx.JMXInvoiceCandidates;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
@@ -98,18 +95,14 @@ public class ConfigValidator extends AbstractModuleInterceptor
 
 		setupAggregations();
 
-		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains 
+		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains
 		// are inserts into the table, if an embedded async processor is running somewhere in the background
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
 		migrationLogger.addTableToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
-		
+
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceGeneratedEventBus.EVENTBUS_TOPIC);
-
-		//
-		// JMX
-		JMXRegistry.get().registerJMX(new JMXInvoiceCandidates(), OnJMXAlreadyExistsPolicy.Replace);
 	}
 
 	@Override

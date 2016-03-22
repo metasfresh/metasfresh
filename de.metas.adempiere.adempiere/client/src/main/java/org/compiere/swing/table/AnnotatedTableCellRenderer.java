@@ -28,7 +28,8 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -38,7 +39,8 @@ import javax.swing.table.TableModel;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VHeaderRenderer;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 
 final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
@@ -46,7 +48,7 @@ final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 	private static final long serialVersionUID = 1L;
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(AnnotatedTableCellRenderer.class);
+	private static final transient Logger logger = LogManager.getLogger(AnnotatedTableCellRenderer.class);
 
 	/**
 	 * Constructor for MiniGrid
@@ -227,7 +229,7 @@ final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "(" + value + ") " + value.getClass().getName(), e);
+			logger.error("(" + value + ") " + value.getClass().getName(), e);
 			valueToSet = value.toString();
 		}
 

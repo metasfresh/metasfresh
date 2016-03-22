@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -95,7 +94,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 	
@@ -239,7 +238,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 	 */
 	public void onEvent(Event e)
 	{
-	//	log.config( "VPayPrint.actionPerformed" + e.toString());
+	//	log.info( "VPayPrint.actionPerformed" + e.toString());
 		if (e.getTarget() == fPaySelect)
 			loadPaySelectInfo();
 		else if (e.getTarget() == fPaymentRule)
@@ -357,7 +356,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 		}
 		catch (Exception e) 
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 	}   //  cmd_export
 
@@ -398,7 +397,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 				return;
 			}
 		}
@@ -414,7 +413,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return;
 		}
 
@@ -447,7 +446,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+					log.error(e.getLocalizedMessage(), e);
 				}
 			}
 			
@@ -462,7 +461,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}	//	remittance
 
@@ -496,7 +495,7 @@ public class WPayPrint extends PayPrint implements IFormController, EventListene
 		int C_PaySelection_ID = fPaySelect.getSelectedItem().toKeyNamePair().getKey();
 		int startDocumentNo = ((Number)fDocumentNo.getValue()).intValue();
 
-		log.config("C_PaySelection_ID=" + C_PaySelection_ID + ", PaymentRule=" +  PaymentRule + ", DocumentNo=" + startDocumentNo);
+		log.info("C_PaySelection_ID=" + C_PaySelection_ID + ", PaymentRule=" +  PaymentRule + ", DocumentNo=" + startDocumentNo);
 		//
 		//	get Slecetions
 		m_checks = MPaySelectionCheck.get(C_PaySelection_ID, PaymentRule, startDocumentNo, null);

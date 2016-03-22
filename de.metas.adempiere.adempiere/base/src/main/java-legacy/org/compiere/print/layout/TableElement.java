@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import net.sourceforge.barbecue.Barcode;
@@ -141,7 +140,7 @@ public class TableElement extends PrintElement
 			ArrayList<Integer> pageBreak, boolean[] colSuppressRepeats)
 	{
 		super();
-		log.fine("Cols=" + columnHeader.length + ", Rows=" + data.length);
+		log.debug("Cols=" + columnHeader.length + ", Rows=" + data.length);
 		m_colSuppressRepeats = colSuppressRepeats;
 		m_columnHeader = columnHeader;
 		m_columnMaxWidth = columnMaxWidth;
@@ -186,7 +185,7 @@ public class TableElement extends PrintElement
 				Integer nextRow = m_pageBreak.get(i + 1);
 				if ((row.intValue() + 1) == nextRow.intValue())
 				{
-					log.fine("- removing PageBreak row=" + row);
+					log.debug("- removing PageBreak row=" + row);
 					m_pageBreak.remove(i);
 					row = nextRow;
 				}
@@ -317,7 +316,7 @@ public class TableElement extends PrintElement
 			if (m_additionalLines.containsKey(new Integer(dataCol)))
 			{
 				col = m_additionalLines.get(new Integer(dataCol)).intValue();
-				log.finest("DataColumn=" + dataCol + ", BelowColumn=" + col);
+				log.trace("DataColumn=" + dataCol + ", BelowColumn=" + col);
 			}
 			float colWidth = 0;
 			for (int row = 0; row < rows; row++)
@@ -377,7 +376,7 @@ public class TableElement extends PrintElement
 				if (m_columnMaxWidth[col] == 0 || m_columnMaxWidth[col] == -1)
 				{
 					// if (HTMLElement.isHTML(string))
-					// log.finest( "HTML (no) r=" + row + ",c=" + dataCol);
+					// log.trace( "HTML (no) r=" + row + ",c=" + dataCol);
 					TextLayout layout = new TextLayout(string, font, frc);
 					float width = layout.getAdvance() + 2; // buffer
 					float height = layout.getAscent() + layout.getDescent()
@@ -390,7 +389,7 @@ public class TableElement extends PrintElement
 					if (dataSizes[row][col] == null)
 					{
 						dataSizes[row][col] = new Dimension2DImpl();
-						log.log(Level.WARNING, "No Size for r=" + row + ",c="
+						log.warn("No Size for r=" + row + ",c="
 								+ col);
 					}
 					dataSizes[row][col].addBelow(width, height);
@@ -402,7 +401,7 @@ public class TableElement extends PrintElement
 					//
 					if (HTMLElement.isHTML(string))
 					{
-						// log.finest( "HTML (limit) r=" + row + ",c=" +
+						// log.trace( "HTML (limit) r=" + row + ",c=" +
 						// dataCol);
 						HTMLRenderer renderer = HTMLRenderer.get(string);
 						colWidth = renderer.getWidth();
@@ -411,7 +410,7 @@ public class TableElement extends PrintElement
 						else
 							height = renderer.getHeight();
 						renderer.setAllocation((int)colWidth, (int)height);
-						// log.finest( "calculateSize HTML - " +
+						// log.trace( "calculateSize HTML - " +
 						// renderer.getAllocation());
 						m_data[row][dataCol] = renderer; // replace for printing
 					}
@@ -459,7 +458,7 @@ public class TableElement extends PrintElement
 					m_rowColDrillDown.put(new Point(row, col),
 							(NamePair)dataItem);
 				//
-				log.finest("Col=" + col + ", row=" + row + " => "
+				log.trace("Col=" + col + ", row=" + row + " => "
 						+ dataSizes[row][col] + " - ColWidth=" + colWidth);
 			} // for all data rows
 
@@ -555,13 +554,13 @@ public class TableElement extends PrintElement
 				m_columnWidths.add(new Float(0.0)); // for the data column
 				Float origWidth = m_columnWidths.get(col);
 				if (origWidth == null)
-					log.log(Level.SEVERE, "Column " + dataCol + " below " + col
+					log.error("Column " + dataCol + " below " + col
 							+ " - no value for orig width");
 				else
 				{
 					if (origWidth.compareTo(new Float(colWidth)) >= 0)
 					{
-						log.finest("Same Width - Col=" + col + " - OrigWidth="
+						log.trace("Same Width - Col=" + col + " - OrigWidth="
 								+ origWidth + " - Width=" + colWidth
 								+ " - Total=" + p_width);
 					}
@@ -569,7 +568,7 @@ public class TableElement extends PrintElement
 					{
 						m_columnWidths.set(col, new Float(colWidth));
 						p_width += (colWidth - origWidth.floatValue());
-						log.finest("New Width - Col=" + col + " - OrigWidth="
+						log.trace("New Width - Col=" + col + " - OrigWidth="
 								+ origWidth + " - Width=" + colWidth
 								+ " - Total=" + p_width);
 					}
@@ -580,7 +579,7 @@ public class TableElement extends PrintElement
 			{
 				m_columnWidths.add(new Float(colWidth));
 				p_width += colWidth;
-				log.finest("Width - Col=" + dataCol + " - Width=" + colWidth
+				log.trace("Width - Col=" + dataCol + " - Width=" + colWidth
 						+ " - Total=" + p_width);
 			}
 		} // for all columns
@@ -615,11 +614,11 @@ public class TableElement extends PrintElement
 
 		// Page Layout *******************************************************
 
-		log.fine("FirstPage=" + m_firstPage + ", NextPages=" + m_nextPages);
+		log.debug("FirstPage=" + m_firstPage + ", NextPages=" + m_nextPages);
 		// One Page on Y | Axis
 		if (m_firstPage.height >= p_height && m_pageBreak.size() == 0)
 		{
-			log.finest("Page Y=1 - PageHeight=" + m_firstPage.height
+			log.trace("Page Y=1 - PageHeight=" + m_firstPage.height
 					+ " - TableHeight=" + p_height);
 			m_firstRowOnPage.add(new Integer(0)); // Y
 			m_pageHeight.add(new Float(p_height)); // Y index only
@@ -648,7 +647,7 @@ public class TableElement extends PrintElement
 				{
 					if (availableHeight > 40 && rowHeight > 40)
 					{
-						log.finest("- Split (leave on current) Row=" + dataRow
+						log.trace("- Split (leave on current) Row=" + dataRow
 								+ " - Available=" + availableHeight
 								+ ", RowHeight=" + rowHeight);
 						// if (splitRow (dataRow))
@@ -665,10 +664,10 @@ public class TableElement extends PrintElement
 					if (!firstPage)
 					{
 						m_pageHeight.add(new Float(usedHeight)); // Y index only
-						log.finest("Page Y=" + m_pageHeight.size()
+						log.trace("Page Y=" + m_pageHeight.size()
 								+ " - PageHeight=" + usedHeight);
 					}
-					log.finest("Page Y=" + m_firstRowOnPage.size() + " - Row="
+					log.trace("Page Y=" + m_firstRowOnPage.size() + " - Row="
 							+ dataRow + " - force=" + isPageBreak(dataRow));
 					firstPage = false;
 					//
@@ -679,25 +678,25 @@ public class TableElement extends PrintElement
 				usedHeight += rowHeight;
 				if (availableHeight < 0)
 				{
-					log.finest("- Split (move to next) Row=" + dataRow
+					log.trace("- Split (move to next) Row=" + dataRow
 							+ " - Available=" + availableHeight
 							+ ", RowHeight=" + rowHeight);
 
 				}
-				log.finest("Page Y=" + m_pageHeight.size() + ", Row=" + dataRow
+				log.trace("Page Y=" + m_pageHeight.size() + ", Row=" + dataRow
 						+ ",AddlRows=" + addlRows + ", Height=" + rowHeight
 						+ " - Available=" + availableHeight + ", Used="
 						+ usedHeight);
 			} // for all rows
 			m_pageHeight.add(new Float(usedHeight)); // Y index only
-			log.finest("Page Y=" + m_pageHeight.size() + " - PageHeight="
+			log.trace("Page Y=" + m_pageHeight.size() + " - PageHeight="
 					+ usedHeight);
 		} // multiple Y | pages
 
 		// One page on - X Axis
 		if (m_firstPage.width >= p_width)
 		{
-			log.finest("Page X=1 - PageWidth=" + m_firstPage.width
+			log.trace("Page X=1 - PageWidth=" + m_firstPage.width
 					+ " - TableWidth=" + p_width);
 			m_firstColumnOnPage.add(new Integer(0)); // X
 			//
@@ -719,7 +718,7 @@ public class TableElement extends PrintElement
 						distributeColumns(availableWidth, lastStart, col);
 					//
 					m_firstColumnOnPage.add(new Integer(col)); // X
-					log.finest("Page X=" + m_firstColumnOnPage.size()
+					log.trace("Page X=" + m_firstColumnOnPage.size()
 							+ " - Col=" + col);
 					lastStart = col;
 					availableWidth = m_firstPage.width; // Width is the same on
@@ -740,7 +739,7 @@ public class TableElement extends PrintElement
 			} // for acc columns
 		} // multiple - X pages
 
-		log.fine("Pages=" + getPageCount() + " X=" + m_firstColumnOnPage.size()
+		log.debug("Pages=" + getPageCount() + " X=" + m_firstColumnOnPage.size()
 				+ "/Y=" + m_firstRowOnPage.size() + " - Width=" + p_width
 				+ ", Height=" + p_height);
 		return true;
@@ -758,7 +757,7 @@ public class TableElement extends PrintElement
 	 */
 	private void distributeColumns(int availableWidth, int fromCol, int toCol)
 	{
-		log.finest("Available=" + availableWidth + ", Columns " + fromCol
+		log.trace("Available=" + availableWidth + ", Columns " + fromCol
 				+ "->" + toCol);
 		int start = fromCol;
 		if (fromCol == 0 && m_repeatedColumns > 0)
@@ -771,7 +770,7 @@ public class TableElement extends PrintElement
 		// distribute proportionally (does not increase zero width columns)
 		for (int x = 0; remainingWidth > 0 && x < 5; x++) // max 4 iterations
 		{
-			log.finest("TotalWidth=" + totalWidth + ", Remaining="
+			log.trace("TotalWidth=" + totalWidth + ", Remaining="
 					+ remainingWidth);
 			for (int col = start; col < toCol && remainingWidth != 0; col++)
 			{
@@ -792,7 +791,7 @@ public class TableElement extends PrintElement
 								+ additionalPart));
 						remainingWidth -= additionalPart;
 					}
-					log.finest("  col=" + col + " - From " + columnWidth
+					log.trace("  col=" + col + " - From " + columnWidth
 							+ " to " + m_columnWidths.get(col));
 				}
 			}
@@ -804,7 +803,7 @@ public class TableElement extends PrintElement
 			if (columnWidth > 0)
 			{
 				m_columnWidths.set(c, new Float(columnWidth + remainingWidth));
-				log.finest("Final col=" + c + " - From " + columnWidth + " to "
+				log.trace("Final col=" + c + " - From " + columnWidth + " to "
 						+ m_columnWidths.get(c));
 				remainingWidth = 0;
 			}
@@ -837,11 +836,11 @@ public class TableElement extends PrintElement
 	public void setHeightToLastPage()
 	{
 		int lastLayoutPage = getPageCount() + m_pageNoStart - 1;
-		log.fine("PageCount - Table=" + getPageCount() + "(Start="
+		log.debug("PageCount - Table=" + getPageCount() + "(Start="
 				+ m_pageNoStart + ") Layout=" + lastLayoutPage
 				+ " - Old Height=" + p_height);
 		p_height = getHeight(lastLayoutPage);
-		log.fine("New Height=" + p_height);
+		log.debug("New Height=" + p_height);
 	} // setHeightToLastPage
 
 	/**************************************************************************
@@ -949,14 +948,14 @@ public class TableElement extends PrintElement
 	{
 		int pageIndex = getPageIndex(pageNo);
 		int pageYindex = getPageYIndex(pageIndex);
-		log.fine("Page=" + pageNo + " - PageIndex=" + pageIndex
+		log.debug("Page=" + pageNo + " - PageIndex=" + pageIndex
 				+ ", PageYindex=" + pageYindex);
 		float pageHeight = m_pageHeight.get(pageYindex).floatValue();
 		float pageHeightPrevious = 0f;
 		if (pageYindex > 0)
 			pageHeightPrevious = m_pageHeight.get(pageYindex - 1).floatValue();
 		float retValue = pageHeight - pageHeightPrevious;
-		log.fine("Page=" + pageNo + " - PageIndex=" + pageIndex
+		log.debug("Page=" + pageNo + " - PageIndex=" + pageIndex
 				+ ", PageYindex=" + pageYindex + ", Height="
 				+ String.valueOf(retValue));
 		return retValue;
@@ -999,7 +998,7 @@ public class TableElement extends PrintElement
 	{
 		int index = pageNo - m_pageNoStart;
 		if (index < 0)
-			log.log(Level.SEVERE, "index=" + index, new Exception());
+			log.error("index=" + index, new Exception());
 		return index;
 	} // getPageIndex
 
@@ -1117,7 +1116,7 @@ public class TableElement extends PrintElement
 		int col = getCol(relativePoint.x, pageNo);
 		if (col == -1)
 			return null;
-		log.fine("Row=" + row + ", Col=" + col + ", PageNo=" + pageNo);
+		log.debug("Row=" + row + ", Col=" + col + ", PageNo=" + pageNo);
 		//
 		NamePair pp = m_rowColDrillDown.get(new Point(row, col));
 		if (pp == null)
@@ -1152,7 +1151,7 @@ public class TableElement extends PrintElement
 		int row = getRow(relativePoint.y, pageNo);
 		if (row == -1)
 			return null;
-		log.fine("Row=" + row + ", PageNo=" + pageNo);
+		log.debug("Row=" + row + ", PageNo=" + pageNo);
 		//
 		if (m_pk[row] == null) // FunctionRows
 			return null;
@@ -1282,7 +1281,7 @@ public class TableElement extends PrintElement
 		int pageXindex = getPageXIndex(pageIndex);
 		int pageYindex = getPageYIndex(pageIndex);
 		if (DEBUG_PRINT)
-			log.config("Page=" + pageNo + " [x=" + pageXindex + ", y="
+			log.info("Page=" + pageNo + " [x=" + pageXindex + ", y="
 					+ pageYindex + "]");
 		//
 		int firstColumn = m_firstColumnOnPage.get(pageXindex).intValue();
@@ -1295,7 +1294,7 @@ public class TableElement extends PrintElement
 		if (pageYindex + 1 < m_firstRowOnPage.size())
 			nextPageRow = m_firstRowOnPage.get(pageYindex + 1).intValue();
 		if (DEBUG_PRINT)
-			log.finest("Col=" + firstColumn + "-" + (nextPageColumn - 1)
+			log.trace("Col=" + firstColumn + "-" + (nextPageColumn - 1)
 					+ ", Row=" + firstRow + "-" + (nextPageRow - 1));
 
 		// Top Left
@@ -1305,7 +1304,7 @@ public class TableElement extends PrintElement
 		startX += pageXindex == 0 ? m_firstPage.x : m_nextPages.x;
 		startY += pageYindex == 0 ? m_firstPage.y : m_nextPages.y;
 		if (DEBUG_PRINT)
-			log.finest("PageStart=" + pageStart + ", StartTable x=" + startX
+			log.trace("PageStart=" + pageStart + ", StartTable x=" + startX
 					+ ", y=" + startY);
 
 		// paint first fixed volumns
@@ -1378,7 +1377,7 @@ public class TableElement extends PrintElement
 		float netHeight = rowHeight - (4 * m_tFormat.getLineStroke().floatValue()) + (2 * V_GAP);
 
 		if (DEBUG_PRINT)
-			log.finer("#" + col + " - x=" + curX + ", y=" + curY
+			log.trace("#" + col + " - x=" + curX + ", y=" + curY
 					+ ", width=" + colWidth + "/" + netWidth + ", HeaderHeight=" + rowHeight + "/" + netHeight);
 		String alignment = m_columnJustification[col];
 
@@ -1600,7 +1599,7 @@ public class TableElement extends PrintElement
 					{
 						HTMLRenderer renderer = (HTMLRenderer)printItems[index];
 						Rectangle allocation = new Rectangle((int)colWidth, (int)netHeight);
-						// log.finest( "printColumn HTML - " + allocation);
+						// log.trace( "printColumn HTML - " + allocation);
 						g2D.translate(curX, penY);
 						renderer.paint(g2D, allocation);
 						g2D.translate(-curX, -penY);
@@ -1630,7 +1629,7 @@ public class TableElement extends PrintElement
 						}
 						
 						if (DEBUG_PRINT)
-							log.fine("row=" + row + ",col=" + col + " - " + str + " 8Bit=" + Util.is8Bit(str));
+							log.debug("row=" + row + ",col=" + col + " - " + str + " 8Bit=" + Util.is8Bit(str));
 						if (str.length() > 0)
 						{
 							usedHeight = 0;
@@ -1690,7 +1689,7 @@ public class TableElement extends PrintElement
 										else
 											layout.draw(g2D, penX, penY);										// -> text
 										if (DEBUG_PRINT)
-											log.fine("row=" + row + ",col=" + col + " - " + str + " - x=" + penX + ",y=" + penY);
+											log.debug("row=" + row + ",col=" + col + " - " + str + " - x=" + penX + ",y=" + penY);
 										penY += layout.getDescent() + layout.getLeading();
 										usedHeight += lineHeight;
 										//
@@ -1788,7 +1787,7 @@ public class TableElement extends PrintElement
 		//
 		columns.set(col, coordinate);
 		m_printRows.set(row, columns);
-		log.finest("row=" + row + ", col=" + col + " - Rows="
+		log.trace("row=" + row + ", col=" + col + " - Rows="
 				+ m_printRows.size() + ", Cols=" + columns.size() + " - "
 				+ data);
 	} // addAdditionalLines

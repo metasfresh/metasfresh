@@ -81,7 +81,7 @@ public class MDepreciationWorkfile extends X_A_Depreciation_Workfile
 	protected boolean afterSave (boolean newRecord)
 	{
 		
-		log.info ("beforeSave");
+		log.info("beforeSave");
 		//int		p_A_Asset_ID = 0;
 		int		p_wkasset_ID = 0;
 		//p_A_Asset_ID = getA_Asset_ID();
@@ -104,13 +104,13 @@ public class MDepreciationWorkfile extends X_A_Depreciation_Workfile
 	protected boolean beforeSave (boolean newRecord)
 	{
 		
-		log.info ("beforeSave");
+		log.info("beforeSave");
 		int		p_A_Asset_ID = 0;
 		//int		p_wkasset_ID = 0;
 		p_A_Asset_ID = getA_Asset_ID();
 		//p_wkasset_ID = getA_Depreciation_Workfile_ID();
 		
-		log.info ("afterSave");
+		log.info("afterSave");
 		X_A_Asset asset = new X_A_Asset (getCtx(), p_A_Asset_ID, null);
 		asset.setA_QTY_Current(getA_QTY_Current());
 		asset.setA_QTY_Original(getA_QTY_Current());

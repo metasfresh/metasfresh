@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.util.List;
-import java.util.logging.Level;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -203,7 +201,7 @@ public class TabCreateFields extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 			addLog("Error creating " + adColumn.getColumnName() + ": " + e.getLocalizedMessage());
 			return false;
 		}

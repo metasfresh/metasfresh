@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -65,7 +64,7 @@ public class Doc_HRProcess extends Doc
 		setDateDoc(getDateAcct());
 		//	Contained Objects
 		p_lines = loadLines(process);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   //  loadDocumentDetails
 
@@ -84,7 +83,7 @@ public class Doc_HRProcess extends Doc
 			MHRMovement line = lines[i];
 			DocLine_Payroll docLine = new DocLine_Payroll (line, this);
 			//
-			log.fine(docLine.toString());
+			log.debug(docLine.toString());
 			list.add(docLine);
 		}
 		//	Return Array
@@ -150,7 +149,7 @@ public class Doc_HRProcess extends Doc
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			p_Error = e.getLocalizedMessage();
 			return null;
 		}

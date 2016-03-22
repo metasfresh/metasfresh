@@ -29,7 +29,8 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.sql.DataSource;
 
@@ -42,7 +43,6 @@ import org.adempiere.util.SystemUtils;
 import org.compiere.dbPort.Convert;
 import org.compiere.dbPort.Convert_PostgreSQL;
 import org.compiere.dbPort.Convert_PostgreSQL_Native;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
@@ -121,7 +121,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private String m_connectionURL;
 
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(DB_PostgreSQL.class);
+	private static final Logger log = LogManager.getLogger(DB_PostgreSQL.class);
 
 	private int m_maxbusyconnectionsThreshold = 0;
 
@@ -278,7 +278,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	{
 		if (m_dbName != null)
 			return m_dbName;
-		// log.severe("Database Name not set (yet) - call getConnectionURL first");
+		// log.error("Database Name not set (yet) - call getConnectionURL first");
 		return null;
 	}	// getCatalog
 
@@ -363,7 +363,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		if (retValue == null)
 		// begin vpj-cd 24/06/2005 e-evolution
 		{
-			log.log(Level.SEVERE, ("DB_PostgreSQL.convertStatement - Not Converted (" + oraStatement + ") - "
+			log.error(("DB_PostgreSQL.convertStatement - Not Converted (" + oraStatement + ") - "
 					+ converter.getConversionError()));
 			throw new IllegalArgumentException("DB_PostgreSQL.convertStatement - Not Converted (" + oraStatement + ") - "
 					+ converter.getConversionError());
@@ -380,7 +380,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		if (retValue.size() != 1)
 		// begin vpj-cd 24/06/2005 e-evolution
 		{
-			log.log(Level.SEVERE, ("DB_PostgreSQL.convertStatement - Convert Command Number=" + retValue.size()
+			log.error(("DB_PostgreSQL.convertStatement - Convert Command Number=" + retValue.size()
 					+ " (" + oraStatement + ") - " + converter.getConversionError()));
 			throw new IllegalArgumentException("DB_PostgreSQL.convertStatement - Convert Command Number=" + retValue.size()
 					+ " (" + oraStatement + ") - " + converter.getConversionError());
@@ -390,12 +390,12 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		final String sql0 = retValue.get(0);
 
 		// Diagnostics (show changed, but not if AD_Error)
-		if (log.isLoggable(Level.FINE))
+		if (log.isDebugEnabled())
 		{
 			if (!oraStatement.equals(sql0) && sql0.indexOf("AD_Error") == -1)
 			{
 				// begin vpj-cd 24/06/2005 e-evolution
-				log.log(Level.FINE, "PostgreSQL =>" + sql0 + "<= <" + oraStatement + ">");
+				log.debug("PostgreSQL =>" + sql0 + "<= <" + oraStatement + ">");
 			}
 		}
 		// end vpj-cd 24/06/2005 e-evolution
@@ -598,7 +598,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			}
 			catch (Exception e)
 			{
-				// log.severe("Number=" + number + ", Scale=" + " - " + e.getMessage());
+				// log.error("Number=" + number + ", Scale=" + " - " + e.getMessage());
 			}
 		}
 		return result.toString();
@@ -641,7 +641,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				final String statusAfter = getStatus();
 
 				final Thread currentThread = Thread.currentThread();
-				log.warning("Too many busy connections found. Running finalizations..."
+				log.warn("Too many busy connections found. Running finalizations..."
 						+ "\n                              Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
 						+ "\n                     Status(initial): " + statusBefore
 						+ "\n Status(after finalizations started): " + statusAfter
@@ -734,7 +734,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	{
 		try
 		{
-			System.setProperty("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
+			System.setProperty("com.mchange.v2.log.MLog", com.mchange.v2.log.slf4j.Slf4jMLog.class.getName());
 			// System.setProperty("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "ALL");
 			final ComboPooledDataSource cpds = new ComboPooledDataSource();
 			cpds.setDataSourceName("AdempiereDS");
@@ -797,7 +797,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				try
 				{
 					_dataSource.close();
-					log.log(Level.INFO, "Datasource closed: {0}", _dataSource);
+					log.info("Datasource closed: {}", _dataSource);
 				}
 				catch (Exception e)
 				{
@@ -833,7 +833,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	@Override
 	public void close()
 	{
-		log.config(toString());
+		log.info(toString());
 
 		closeDataSource();
 	}	// close
@@ -1099,7 +1099,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				return "CHAR(" + fieldLength + ")";
 		}
 		if (!DisplayType.isText(displayType))
-			log.severe("Unhandled Data Type = " + displayType);
+			log.error("Unhandled Data Type = " + displayType);
 
 		return "VARCHAR(" + fieldLength + ")";
 	}	// getSQLDataType

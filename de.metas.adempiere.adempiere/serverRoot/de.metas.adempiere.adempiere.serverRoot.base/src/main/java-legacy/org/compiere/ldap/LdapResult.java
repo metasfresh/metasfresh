@@ -15,12 +15,10 @@
  *****************************************************************************/
 package org.compiere.ldap;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MLdapUser;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import com.sun.jndi.ldap.BerEncoder;
 
 /**
@@ -36,7 +34,7 @@ public class LdapResult
 	/** Encoder							*/
 	private BerEncoder m_encoder = null;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (LdapResult.class);
+	private static Logger log = LogManager.getLogger(LdapResult.class);
 	/** Error number */
 	private int errNo = LDAP_SUCCESS;
 	/** Error String */
@@ -172,7 +170,7 @@ public class LdapResult
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 
 		return m_encoder.getTrimmedBuf();
@@ -204,7 +202,7 @@ public class LdapResult
 		}
 	    catch (Exception ex)
 	    {
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 	    }
 	}  // generateResult()
 

@@ -29,7 +29,8 @@ import java.util.Collections;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -51,7 +52,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
 	// Services
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	/** NOTE: keep it private and use {@link #getHandlingUnitsDAO()} to get it */
 	private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);

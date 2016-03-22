@@ -19,7 +19,8 @@ package org.compiere.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  Execute OS Task
@@ -54,14 +55,14 @@ public class Task extends Thread
 	private OutputStream    m_inStream;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Task.class);
+	private static Logger log = LogManager.getLogger(Task.class);
 	
 	/** Read Out                            */
 	private Thread          m_outReader = new Thread()
 	{
 		public void run()
 		{
-			log.fine("outReader");
+			log.debug("outReader");
 			try
 			{
 				int c;
@@ -74,9 +75,9 @@ public class Task extends Thread
 			}
 			catch (IOException ioe)
 			{
-				log.log(Level.SEVERE, "outReader", ioe);
+				log.error("outReader", ioe);
 			}
-			log.fine("outReader - done");
+			log.debug("outReader - done");
 		}   //  run
 	};   //  m_outReader
 
@@ -85,7 +86,7 @@ public class Task extends Thread
 	{
 		public void run()
 		{
-			log.fine("errReader");
+			log.debug("errReader");
 			try
 			{
 				int c;
@@ -98,9 +99,9 @@ public class Task extends Thread
 			}
 			catch (IOException ioe)
 			{
-				log.log(Level.SEVERE, "errReader", ioe);
+				log.error("errReader", ioe);
 			}
-			log.fine("errReader - done");
+			log.debug("errReader - done");
 		}   //  run
 	};   //  m_errReader
 
@@ -141,27 +142,27 @@ public class Task extends Thread
 			{
 				m_errorLog = m_errorLog+""+ie.getMessage(); //metas: c.ghita@metas.ro 
 				m_exitValue = -1;//metas: c.ghita@metas.ro
-				log.log(Level.INFO, "(ie) - " + ie);
+				log.info("(ie) - " + ie);
 			}
 			//  ExitValue
 			try
 			{
 				if (m_child != null)
 				{	
-					log.fine("run - ExitValue=" + m_exitValue); //metas: c.ghita@metas.ro : start
+					log.debug("run - ExitValue=" + m_exitValue); //metas: c.ghita@metas.ro : start
 				}
 			}
 			catch (Exception e) 
 			{
 				m_exitValue = -1; //metas: c.ghita@metas.ro 
 			}
-			log.config("done");
+			log.info("done");
 		}
 		catch (IOException ioe)
 		{
 			m_errorLog = m_errorLog+""+ioe.getMessage(); //metas: c.ghita@metas.ro 
 			m_exitValue = -1; //metas: c.ghita@metas.ro 
-			log.log(Level.SEVERE, "(ioe)", ioe);
+			log.error("(ioe)", ioe);
 		}
 	}   //  run
 
@@ -173,7 +174,7 @@ public class Task extends Thread
 	{
 		if (isInterrupted())
 		{
-			log.config("interrupted");
+			log.info("interrupted");
 			//  interrupt child processes
 			if (m_child != null)
 				m_child.destroy();

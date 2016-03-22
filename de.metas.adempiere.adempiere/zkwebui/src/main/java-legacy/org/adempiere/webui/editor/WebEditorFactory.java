@@ -19,8 +19,9 @@ package org.adempiere.webui.editor;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -35,11 +36,11 @@ public class WebEditorFactory
 {
 
     @SuppressWarnings("unused")
-	private final static CLogger logger;
+	private final static Logger logger;
     
     static
     {
-        logger = CLogger.getCLogger(WebEditorFactory.class);
+        logger = LogManager.getLogger(WebEditorFactory.class);
     }
     
     public static WEditor getEditor(GridField gridField, boolean tableEditor)

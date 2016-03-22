@@ -29,12 +29,13 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public final class TablePA implements ITablePA {
 
-	private static final CLogger logger = CLogger.getCLogger(TablePA.class);
+	private static final Logger logger = LogManager.getLogger(TablePA.class);
 
 	public PO retrievePO(final I_AD_Table table, final int recordId,
 			final String trxName) {
@@ -42,7 +43,7 @@ public final class TablePA implements ITablePA {
 		if (!(table instanceof MTable)) {
 
 			String msg = "Param 'table' needs to be an MTable. Is: " + table;
-			logger.severe(msg);
+			logger.error(msg);
 			throw new IllegalArgumentException(msg);
 		}
 

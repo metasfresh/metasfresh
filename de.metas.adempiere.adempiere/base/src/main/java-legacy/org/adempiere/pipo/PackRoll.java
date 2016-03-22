@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
-
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
@@ -58,7 +56,7 @@ public class PackRoll extends SvrProcess {
 			else if (name.equals("Processing"))
 				m_Processing = (String) para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		m_AD_Package_Imp_ID = getRecord_ID();
 	} // prepare
@@ -138,7 +136,7 @@ public class PackRoll extends SvrProcess {
 						pstmt2.close();
 						pstmt2 = null;
 					} catch (Exception e) {
-						log.log(Level.SEVERE, "doIt", e);
+						log.error("doIt", e);
 					} finally {
 						try {
 							if (pstmt2 != null)
@@ -378,7 +376,7 @@ public class PackRoll extends SvrProcess {
 							pstmt2.close();
 							pstmt2 = null;
 						} catch (Exception e) {
-							log.log(Level.SEVERE, "doIt", e);
+							log.error("doIt", e);
 						} finally {
 							try {
 								if (pstmt2 != null)
@@ -417,7 +415,7 @@ public class PackRoll extends SvrProcess {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "doIt", e);
+			log.error("doIt", e);
 		} finally {
 			try {
 				if (pstmt != null)

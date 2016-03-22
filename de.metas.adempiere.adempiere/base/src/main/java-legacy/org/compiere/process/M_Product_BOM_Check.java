@@ -21,14 +21,13 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-
 import org.compiere.model.X_M_Product;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Title:	Check BOM Structure (free of cycles)
@@ -51,6 +50,7 @@ public class M_Product_BOM_Check extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -60,7 +60,7 @@ public class M_Product_BOM_Check extends SvrProcess
 			if (para[i].getParameter() == null)
 				;			
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_Record_ID = getRecord_ID();
 		m_AD_PInstance_ID = getAD_PInstance_ID();
@@ -71,6 +71,7 @@ public class M_Product_BOM_Check extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
         StringBuffer sql1 = null;
@@ -124,7 +125,7 @@ public class M_Product_BOM_Check extends SvrProcess
     		{
     			throw new Exception ("count t_selection", e);
     		}
-    		log.fine("Count T_Selection =" + countno);
+    		log.debug("Count T_Selection =" + countno);
     		
     		if (countno == 0)
     			break;
@@ -177,7 +178,7 @@ public class M_Product_BOM_Check extends SvrProcess
 	private void raiseError(String string, String sql) throws Exception {
 		DB.rollback(false, get_TrxName());
 		String msg = string;
-		ValueNamePair pp = CLogger.retrieveError();
+		ValueNamePair pp = MetasfreshLastError.retrieveError();
 		if (pp != null)
 			msg = pp.getName() + " - ";
 		msg += sql;

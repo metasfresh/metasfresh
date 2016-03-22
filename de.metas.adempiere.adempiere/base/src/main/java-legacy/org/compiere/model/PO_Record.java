@@ -18,9 +18,9 @@ package org.compiere.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -85,7 +85,7 @@ public class PO_Record
 	};
 
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (PO_Record.class);
+	private static Logger log = LogManager.getLogger(PO_Record.class);
 	
 	/**
 	 * 	Delete Cascade including (selected)parent relationships
@@ -108,10 +108,10 @@ public class PO_Record
 					.append(" WHERE AD_Table_ID=? AND Record_ID=?");
 				int no = DB.executeUpdate(sql.toString(), params, false, trxName);
 				if (no > 0)
-					log.config(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
+					log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
 				else if (no < 0)
 				{
-					log.severe(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
+					log.error(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
 					return false;
 				}
 			}
@@ -135,11 +135,11 @@ public class PO_Record
 						.append(s_parentNames[j]).append("_ID=?)");
 					int no = DB.executeUpdate(sql.toString(), params, false, trxName);
 					if (no > 0)
-						log.config(s_cascadeNames[i] + " " + s_parentNames[j]  
+						log.info(s_cascadeNames[i] + " " + s_parentNames[j]  
 		                   + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
 					else if (no < 0)
 					{
-						log.severe(s_cascadeNames[i] + " " + s_parentNames[j]
+						log.error(s_cascadeNames[i] + " " + s_parentNames[j]
 						   + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
 						return false;
 					}
@@ -191,7 +191,7 @@ public class PO_Record
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -207,7 +207,7 @@ public class PO_Record
 	{
 		MTable table = new MTable(Env.getCtx(), AD_Table_ID, null);
 		if (table.isView())
-			log.warning("Ignored - View " + table.getTableName());
+			log.warn("Ignored - View " + table.getTableName());
 		else
 			validate (table.getAD_Table_ID(), table.getTableName());
 	}	//	validate
@@ -228,7 +228,7 @@ public class PO_Record
 				.append(TableName).append("_ID FROM ").append(TableName).append(")");
 			int no = DB.executeUpdate(sql.toString(), null);
 			if (no > 0)
-				log.config(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + TableName 
+				log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + TableName 
 					+ ") Invalid #" + no);
 		}
 	}	//	validate

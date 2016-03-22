@@ -28,7 +28,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -45,7 +46,8 @@ import org.compiere.model.MSetup;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.print.PrintUtil;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
@@ -88,7 +90,7 @@ public class VSetup extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VSetup.init", e);
+			log.error("VSetup.init", e);
 		}
 	}	//	init
 
@@ -100,7 +102,7 @@ public class VSetup extends CPanel
 	/*  Natural Account file    */
 	private File        m_file = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VSetup.class);
+	private static Logger log = LogManager.getLogger(VSetup.class);
 	
 	//
 	private JScrollPane centerPane = new JScrollPane();
@@ -263,7 +265,7 @@ public class VSetup extends CPanel
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "VSetup.dynInit -currency", e1);
+			log.error("VSetup.dynInit -currency", e1);
 		}
 		finally
 		{
@@ -289,7 +291,7 @@ public class VSetup extends CPanel
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "VSetup.dynInit -country", e1);
+			log.error("VSetup.dynInit -country", e1);
 		}
 		finally
 		{
@@ -316,7 +318,7 @@ public class VSetup extends CPanel
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "VSetup.dynInit -region", e1);
+			log.error("VSetup.dynInit -region", e1);
 		}
 		finally
 		{
@@ -377,7 +379,7 @@ public class VSetup extends CPanel
 	{
 		File file = null;
 		String dirName = org.compiere.Adempiere.getAdempiereHome() + File.separator + "data" + File.separator + "import";
-		log.config(dirName);
+		log.info(dirName);
 		JFileChooser chooser = new JFileChooser(dirName);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setMultiSelectionEnabled(false);

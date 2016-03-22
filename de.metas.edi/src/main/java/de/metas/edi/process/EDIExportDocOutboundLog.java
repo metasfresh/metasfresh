@@ -26,7 +26,6 @@ package de.metas.edi.process;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -40,7 +39,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
@@ -60,7 +60,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
-	private static final transient CLogger logger = CLogger.getCLogger(EDIExportDocOutboundLog.class);
+	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
 	
 	@Override
 	protected void prepare()
@@ -75,7 +75,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 		final String whereClause = piQueryFilter.getSql();
 
 		final int pInstanceId = getAD_PInstance_ID();
-		logger.log(Level.INFO, "AD_Pinstance_ID={0}", pInstanceId);
+		logger.info("AD_Pinstance_ID={}", pInstanceId);
 
 		//
 		// Create selection for PInstance and make sure we're enqueuing something
@@ -114,7 +114,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 
 			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
 
-			logger.log(Level.INFO, "Enqueued ediDocument {0} into C_Queue_WorkPackage {1}", new Object[] { ediDocument, workpackage });
+			logger.info("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 
 			// Mark the Document as: EDI enqueued (async) - before starting
 			ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
@@ -142,7 +142,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 				.list(I_C_Doc_Outbound_Log.class);
 
 		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<I_EDI_Document_Extension>();
-		logger.log(Level.INFO, "Preselected {0} C_Doc_Outbound_Log records to be filtered", logs.size());
+		logger.info("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
 		
 		for (final I_C_Doc_Outbound_Log log : logs)
 		{
@@ -157,7 +157,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 			// Only EDI-enabled documents
 			if (!ediDocument.isEdiEnabled())
 			{
-				logger.log(Level.INFO, "Skipping ediDocument={0}, because IsEdiEnabled='N'", ediDocument);
+				logger.info("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
 				continue;
 			}
 
@@ -166,7 +166,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				logger.log(Level.INFO, "Skipping ediDocument={0}, because EDI_ExportStatus={1} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				logger.info("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
 				continue;
 			}
 
@@ -189,7 +189,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 //			}
 //			// @formatter:on
 
-			logger.log(Level.INFO, "Adding ediDocument {0}",ediDocument);
+			logger.info("Adding ediDocument {}",ediDocument);
 			filteredDocuments.add(ediDocument);
 		}
 		return filteredDocuments;

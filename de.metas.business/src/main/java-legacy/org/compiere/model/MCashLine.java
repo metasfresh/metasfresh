@@ -414,14 +414,14 @@ public class MCashLine extends X_C_CashLine
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
-			log.warning("Difference #" + no);
+			log.warn("Difference #" + no);
 		//	Ending Balance
 		sql = "UPDATE C_Cash"
 			+ " SET EndingBalance = BeginningBalance + StatementDifference "
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
-			log.warning("Balance #" + no);
+			log.warn("Balance #" + no);
 		return no == 1;
 	}	//	updateHeader
 

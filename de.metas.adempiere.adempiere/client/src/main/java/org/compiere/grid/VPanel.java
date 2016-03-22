@@ -46,7 +46,8 @@ import org.compiere.model.GridTab;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.MoreObjects;
 
@@ -85,7 +86,7 @@ public final class VPanel extends CTabbedPane
 	}
 
 	// services
-	static final transient CLogger log = CLogger.getCLogger(VPanel.class);
+	static final transient Logger log = LogManager.getLogger(VPanel.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 
 	private final int _windowNo;

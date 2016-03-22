@@ -23,8 +23,6 @@ package org.adempiere.user.process;
  */
 
 
-import java.util.logging.Level;
-
 import org.adempiere.model.POWrapper;
 import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfoParameter;
@@ -47,7 +45,7 @@ public class UserAccountUnlock extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 	} // prepare

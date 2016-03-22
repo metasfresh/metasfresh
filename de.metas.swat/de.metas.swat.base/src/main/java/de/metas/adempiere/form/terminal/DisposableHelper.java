@@ -23,9 +23,8 @@ package de.metas.adempiere.form.terminal;
  */
 
 
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Little tool class fpr {@link IDisposable}. The methods are lenient against parameters that are empty, <code>null</code> or have a non-IDisposable type.
@@ -35,7 +34,7 @@ import org.compiere.util.CLogger;
  */
 public final class DisposableHelper
 {
-	private static final CLogger logger = CLogger.getCLogger(DisposableHelper.class);
+	private static final Logger logger = LogManager.getLogger(DisposableHelper.class);
 
 	/**
 	 * Calls {@link IDisposable#dispose()} on all given <code>disposables</code>.
@@ -74,7 +73,7 @@ public final class DisposableHelper
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot dispose " + disposable + ". Skipped.", e);
+			logger.warn("Cannot dispose " + disposable + ". Skipped.", e);
 		}
 
 		return null;

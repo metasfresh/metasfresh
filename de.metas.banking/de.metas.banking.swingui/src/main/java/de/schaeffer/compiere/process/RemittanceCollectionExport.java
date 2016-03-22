@@ -95,7 +95,7 @@ public class RemittanceCollectionExport extends SvrProcess {
 			throw new AdempiereSystemError(window.getErrorMessage());
 		}
 
-		log.warning("Exit");
+		log.warn("Exit");
 		
 		return null;
 	}

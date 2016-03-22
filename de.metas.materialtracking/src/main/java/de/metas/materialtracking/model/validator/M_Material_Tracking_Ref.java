@@ -29,14 +29,15 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 @Interceptor(I_M_Material_Tracking_Ref.class)
 public class M_Material_Tracking_Ref
 {
-	private static final transient CLogger logger = CLogger.getCLogger(M_Material_Tracking_Ref.class);
+	private static final transient Logger logger = LogManager.getLogger(M_Material_Tracking_Ref.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ignoreColumnsChanged = { I_M_Material_Tracking_Ref.COLUMNNAME_QtyIssued })

@@ -31,15 +31,16 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.mrp.api.IMRPDemand;
 import org.eevolution.mrp.api.IMRPDemandAggregation;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractMRPDemandAggregation implements IMRPDemandAggregation
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	//
 	// Parameters
@@ -111,7 +112,7 @@ public abstract class AbstractMRPDemandAggregation implements IMRPDemandAggregat
 		mrpDemandQty = mrpDemandQty.add(qty);
 		mrpDemands.add(mrpDemand);
 
-		logger.fine("Demand Qty (Accumulation):" + mrpDemandQty);
+		logger.debug("Demand Qty (Accumulation):" + mrpDemandQty);
 	}
 
 	@Override

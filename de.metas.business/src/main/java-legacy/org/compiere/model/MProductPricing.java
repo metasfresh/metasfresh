@@ -23,7 +23,8 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IOrderLineBL;
 
@@ -57,7 +58,7 @@ public class MProductPricing
 	}	// MProductPricing
 
 	/** Logger */
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Calculate Price

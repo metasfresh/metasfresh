@@ -20,8 +20,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.logging.Level;
-
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
@@ -71,7 +69,7 @@ public class TableCreateColumns extends SvrProcess
 			else if (name.equals("AllTables"))
 				p_AllTables = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_Table_ID = getRecord_ID();
 	}	//	prepare
@@ -163,7 +161,7 @@ public class TableCreateColumns extends SvrProcess
 					|| tn.indexOf("EXPLAIN") != -1	//	explain plan
 					)
 				{
-					log.fine("Ignored: " + tableName + " - " + tableType);
+					log.debug("Ignored: " + tableName + " - " + tableType);
 					continue;
 				}
 				//
@@ -217,7 +215,7 @@ public class TableCreateColumns extends SvrProcess
 			int size = rs.getInt ("COLUMN_SIZE");
 			int digits = rs.getInt ("DECIMAL_DIGITS");
 			//
-			log.config (columnName + " - DataType=" + dataType + " " + typeName
+			log.info(columnName + " - DataType=" + dataType + " " + typeName
 				+ ", Nullable=" + nullable + ", Size=" + size + ", Digits="
 				+ digits);
 			//

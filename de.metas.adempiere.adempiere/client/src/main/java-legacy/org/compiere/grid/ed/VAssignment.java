@@ -26,7 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -43,7 +44,8 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -141,7 +143,7 @@ public class VAssignment extends JComponent
 	private NumberFormat		m_qtyFormat = DisplayType.getNumberFormat(DisplayType.Quantity);
 	private GridField m_mField;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VAssignment.class);
+	private static Logger log = LogManager.getLogger(VAssignment.class);
 	
 	/**
 	 * 	Dispose resources
@@ -156,7 +158,7 @@ public class VAssignment extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "VAssignment.dispose");
+			log.error("VAssignment.dispose");
 		}
 		m_text = null;
 		m_button = null;
@@ -298,7 +300,7 @@ public class VAssignment extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	setValue
 
@@ -389,7 +391,7 @@ public class VAssignment extends JComponent
 				}
 				catch (PropertyVetoException pve)
 				{
-					log.log(Level.SEVERE, "", pve);
+					log.error("", pve);
 				}
 			}
 		}

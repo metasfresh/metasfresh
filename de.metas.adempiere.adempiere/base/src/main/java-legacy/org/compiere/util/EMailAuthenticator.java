@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
@@ -39,12 +40,12 @@ public class EMailAuthenticator extends Authenticator
 		m_pass = new PasswordAuthentication (username, password);
 		if (username == null || username.length() == 0)
 		{
-			log.log(Level.SEVERE, "Username is NULL");
+			log.error("Username is NULL");
 			Thread.dumpStack();
 		}
 		if (password == null || password.length() == 0)
 		{
-			log.log(Level.SEVERE, "Password is NULL");
+			log.error("Password is NULL");
 			Thread.dumpStack();
 		}
 	}	//	EMailAuthenticator
@@ -52,7 +53,7 @@ public class EMailAuthenticator extends Authenticator
 	/**	Password		*/
 	private PasswordAuthentication 	m_pass = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(EMailAuthenticator.class);
+	private static Logger log = LogManager.getLogger(EMailAuthenticator.class);
 
 	/**
 	 *	Ger PasswordAuthentication
@@ -71,7 +72,7 @@ public class EMailAuthenticator extends Authenticator
 	{
 		if (m_pass == null)
 			return "EMailAuthenticator[]";
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 			return "EMailAuthenticator[" 
 				+ m_pass.getUserName() + "/" + m_pass.getPassword() + "]";
 		return "EMailAuthenticator[" 

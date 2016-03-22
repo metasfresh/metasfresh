@@ -29,7 +29,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,7 +41,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionBL;
@@ -50,7 +50,7 @@ public class ADHyperlinkBuilder
 	public static String PROTOCOL = "http";
 	public static String HOST = "adempiere";
 
-	private static final transient CLogger logger = CLogger.getCLogger(ADHyperlinkBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(ADHyperlinkBuilder.class);
 
 	public String createShowWindowHTML(final ITableRecordReference recordRef)
 	{
@@ -68,7 +68,7 @@ public class ADHyperlinkBuilder
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.INFO, "Failed retrieving record for " + recordRef, e);
+			logger.info("Failed retrieving record for " + recordRef, e);
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 

@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -32,8 +31,6 @@ import org.adempiere.util.Check;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -42,6 +39,8 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Data Engine.
@@ -88,7 +87,7 @@ public class DataEngine
 	}	//	DataEngine
 
 	/**	Logger							*/
-	private static CLogger	log = CLogger.getCLogger (DataEngine.class);
+	private static Logger	log = LogManager.getLogger(DataEngine.class);
 
 	/**	Synonym							*/
 	private	String			m_synonym = "A";
@@ -169,7 +168,7 @@ public class DataEngine
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 				return null;
 			}
 			finally
@@ -184,7 +183,7 @@ public class DataEngine
 		}
 		if (tableName == null)
 		{
-			log.log(Level.SEVERE, "Not found Format=" + format);
+			log.error("Not found Format=" + format);
 			return null;
 		}
 		if (format.isTranslationView() && tableName.toLowerCase().endsWith("_v"))	//	_vt not just _v
@@ -214,8 +213,8 @@ public class DataEngine
 	{
 		m_startTime = System.currentTimeMillis();
 		log.info(reportName + " - " + m_language.getAD_Language());
-		log.fine("TableName=" + tableName + ", Query=" + query);
-		log.fine("Format=" + format);
+		log.debug("TableName=" + tableName + ", Query=" + query);
+		log.debug("Format=" + format);
 		ArrayList<PrintDataColumn> columns = new ArrayList<PrintDataColumn>();
 		m_group = new PrintDataGroup();
 
@@ -224,7 +223,7 @@ public class DataEngine
 		ArrayList<String> orderColumns = new ArrayList<String>(orderAD_Column_IDs.length);
 		for (int i = 0; i < orderAD_Column_IDs.length; i++)
 		{
-			log.finest("Order AD_Column_ID=" + orderAD_Column_IDs[i]);
+			log.trace("Order AD_Column_ID=" + orderAD_Column_IDs[i]);
 			orderColumns.add("");		//	initial value overwritten with fully qualified name
 		}
 
@@ -384,7 +383,7 @@ public class DataEngine
 					}
 					if (AD_Reference_Value_ID <= 0)
 					{
-						log.warning(ColumnName + " - AD_Reference_Value_ID not set");
+						log.warn(ColumnName + " - AD_Reference_Value_ID not set");
 						continue;
 					}
 					TableReference tr = getTableReference(AD_Reference_Value_ID);
@@ -507,7 +506,7 @@ public class DataEngine
 						table = "M_AttributeSetInstance";
 						key = "M_AttributeSetInstance_ID";
 						display = "Description";
-						if (CLogMgt.isLevelFine())
+						if (LogManager.isLevelFine())
 							display += "||'{'||" + m_synonym + ".M_AttributeSetInstance_ID||'}'";
 						synonym = "Description";
 					}
@@ -596,7 +595,7 @@ public class DataEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "SQL=" + sql + " - ID=" + format.get_ID(), e);
+			log.error("SQL=" + sql + " - ID=" + format.get_ID(), e);
 		}
 		finally
 		{
@@ -608,10 +607,10 @@ public class DataEngine
 		if (columns.size() == 0)
 		{
 			//metas: Ausschalten dieser Meldung
-			//log.log(Level.SEVERE, "No Columns - Delete Report Format " + reportName + " and start again");
-			log. finest("No Columns - Delete Report Format " + reportName + " and start again");
+			//log.error("No Columns - Delete Report Format " + reportName + " and start again");
+			log.trace("No Columns - Delete Report Format " + reportName + " and start again");
 			//metas end
-			log.finest("No Colums - SQL=" + sql + " - ID=" + format.get_ID());
+			log.trace("No Colums - SQL=" + sql + " - ID=" + format.get_ID());
 			return null;
 		}
 
@@ -699,8 +698,8 @@ public class DataEngine
 		pd.setSQL(finalSQL.toString());
 		pd.setHasLevelNo(hasLevelNo);
 
-		log.finest (finalSQL.toString ());
-		log.finest ("Group=" + m_group);
+		log.trace(finalSQL.toString ());
+		log.trace("Group=" + m_group);
 		return pd;
 	}	//	getPrintDataInfo
 
@@ -765,7 +764,7 @@ public class DataEngine
 				{
 					// TODO: implement support for table references without display column
 					final AdempiereException ex = new AdempiereException("Table references without AD_Display column are not supported (AD_Reference_ID="+AD_Reference_Value_ID+")");
-					log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					log.warn(ex.getLocalizedMessage(), ex);
 					
 					// NOTE: until it's fixed it's better to display the KeyColumn instead of letting it fail in other parts.
 					tr.DisplayColumn = tr.KeyColumn;
@@ -776,7 +775,7 @@ public class DataEngine
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, SQL, ex);
+			log.error(SQL, ex);
 		}
 		finally
 		{
@@ -838,7 +837,7 @@ public class DataEngine
 								for (int c = 0; c < pd.getColumnInfo().length; c++)
 								{
 									pdc = pd.getColumnInfo()[c];
-								//	log.fine("loadPrintData - PageBreak = " + pdc.isPageBreak());
+								//	log.debug("loadPrintData - PageBreak = " + pdc.isPageBreak());
 
 									if (group_pdc.getColumnName().equals(pdc.getColumnName()))
 									{
@@ -1010,7 +1009,7 @@ public class DataEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, pdc + " - " + e.getMessage() + "\nSQL=" + pd.getSQL());
+			log.error(pdc + " - " + e.getMessage() + "\nSQL=" + pd.getSQL());
 		}
 		finally
 		{
@@ -1104,11 +1103,11 @@ public class DataEngine
 
 		if (pd.getRowCount() == 0)
 		{
-			if (CLogMgt.isLevelFiner())
-				log.warning("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime) 
+			if (LogManager.isLevelFiner())
+				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime) 
 					+ " - " + pd.getSQL());
 			else
-				log.warning("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime)); 
+				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime)); 
 		}
 		else
 			log.info("Rows=" + pd.getRowCount()
@@ -1125,12 +1124,12 @@ public class DataEngine
 	{
 		if (m_runningTotalLines < 1)	//	-1 = none
 			return;
-		log.fine("(" + m_runningTotalLines + ") - Row=" + rowNo 
+		log.debug("(" + m_runningTotalLines + ") - Row=" + rowNo 
 			+ ", mod=" + rowNo % m_runningTotalLines);
 		if (rowNo % m_runningTotalLines != 0)
 			return;
 			
-		log.fine("Row=" + rowNo);
+		log.debug("Row=" + rowNo);
 		PrintDataColumn pdc = null;
 		int start = 0;
 		if (rowNo == 0)	//	no page break on page 1

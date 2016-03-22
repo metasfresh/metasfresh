@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import java.util.logging.Level;
-
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
@@ -52,7 +50,7 @@ public class WorkflowMoveToClient extends SvrProcess
 			else if (name.equals("AD_Workflow_ID"))
 				p_AD_Workflow_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

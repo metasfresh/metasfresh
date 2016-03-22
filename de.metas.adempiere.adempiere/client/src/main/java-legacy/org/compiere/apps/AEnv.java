@@ -35,7 +35,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -68,8 +69,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -641,7 +642,7 @@ public final class AEnv
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		zoom(TableName, Record_ID, AD_Window_ID, PO_Window_ID);
@@ -688,7 +689,7 @@ public final class AEnv
 			windowIdToUse = PO_Window_ID;
 		}
 
-		log.config(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
+		log.info(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
 		AWindow frame = new AWindow();
 		// metas: begin: 01880
 		final MQuery query = new MQuery(TableName);
@@ -746,7 +747,7 @@ public final class AEnv
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -792,7 +793,7 @@ public final class AEnv
 			return;
 		}
 
-		log.config(query + " (IsSOTrx=" + isSOTrx + ")");
+		log.info(query + " (IsSOTrx=" + isSOTrx + ")");
 		AWindow frame = new AWindow();
 		if (!frame.initWindow(adWindowIdToUse, query))
 		{
@@ -897,7 +898,7 @@ public final class AEnv
 				}
 				else
 				{
-					log.config(s_workflow.toString());
+					log.info(s_workflow.toString());
 				}
 			}
 			// Get Window
@@ -910,7 +911,7 @@ public final class AEnv
 					s_workflow_Window_ID = 297;	// fallback HARDCODED
 				}
 				// s_workflow = Boolean.FALSE;
-				log.config(s_workflow + ", Window=" + s_workflow_Window_ID);
+				log.info(s_workflow + ", Window=" + s_workflow_Window_ID);
 			}
 		}
 		return s_workflow.booleanValue();
@@ -958,7 +959,7 @@ public final class AEnv
 	private static int s_serverTries = 0;
 
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(AEnv.class);
+	private static final transient Logger log = LogManager.getLogger(AEnv.class);
 
 	/**
 	 * Is AppsServer Active ?
@@ -980,11 +981,11 @@ public final class AEnv
 		}
 
 		// Try to connect
-		CLogMgt.enable(false);
+		//CLogMgt.enable(false);
 		try
 		{
 			s_serverTries++;
-			log.config("try #" + s_serverTries);
+			log.info("try #" + s_serverTries);
 			ok = CConnection.get().isAppsServerOK(true);
 			if (ok)
 			{
@@ -997,7 +998,7 @@ public final class AEnv
 		}
 		finally
 		{
-			CLogMgt.enable(true);
+			//CLogMgt.enable(true);
 		}
 		//
 		return ok;
@@ -1027,7 +1028,7 @@ public final class AEnv
 	 */
 	public static GridWindowVO getMWindowVO(final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
 	{
-		log.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
 
 		//
 		// Check cache (if any)
@@ -1046,7 +1047,7 @@ public final class AEnv
 		// Create Window Model on Client
 		if (mWindowVO == null)
 		{
-			log.config("create local");
+			log.info("create local");
 			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID);
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
@@ -1089,7 +1090,7 @@ public final class AEnv
 	public static void postImmediate(final int WindowNo, final int AD_Client_ID,
 			final int AD_Table_ID, final int Record_ID, final boolean force)
 	{
-		log.config("Window=" + WindowNo
+		log.info("Window=" + WindowNo
 				+ ", AD_Table_ID=" + AD_Table_ID + "/" + Record_ID
 				+ ", Force=" + force);
 
@@ -1118,12 +1119,12 @@ public final class AEnv
 	 */
 	public static void cacheReset(final String tableName, final int Record_ID)
 	{
-		log.config("TableName=" + tableName + ", Record_ID=" + Record_ID);
+		log.info("TableName=" + tableName + ", Record_ID=" + Record_ID);
 
 		// try to get from Server when enabled
 		if (isServerActive())
 		{
-			log.config("trying server");
+			log.info("trying server");
 			try
 			{
 				final IServerService server = Services.get(IServerService.class);
@@ -1131,7 +1132,7 @@ public final class AEnv
 			}
 			catch (final Exception e)
 			{
-				log.log(Level.SEVERE, "ex", e);
+				log.error("ex", e);
 			}
 		}
 	}   // cacheReset

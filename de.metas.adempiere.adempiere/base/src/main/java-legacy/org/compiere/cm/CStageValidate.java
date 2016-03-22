@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.cm;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MCStage;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -44,7 +42,7 @@ public class CStageValidate extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_CM_CStage_ID = getRecord_ID();
 	}	//	prepare

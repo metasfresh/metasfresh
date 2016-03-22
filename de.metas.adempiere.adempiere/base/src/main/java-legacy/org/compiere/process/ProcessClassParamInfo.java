@@ -8,7 +8,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -48,7 +48,7 @@ import de.metas.process.Param;
 public final class ProcessClassParamInfo
 {
 	@SuppressWarnings("unused")
-	private static final transient CLogger logger = SvrProcess.s_log;
+	private static final transient Logger logger = SvrProcess.s_log;
 
 	public static final Builder builder()
 	{

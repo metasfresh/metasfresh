@@ -111,7 +111,7 @@ public class MWFNextCondition extends X_AD_WF_NextCondition
 		else
 			result = compareString(valueObj, value1, value2);
 		//
-		log.fine(resultStr + " -> " + result 
+		log.debug(resultStr + " -> " + result 
 			+ (m_numeric ? " (#)" : " ($)"));
 		return result;
 	}	//	evaluate
@@ -166,7 +166,7 @@ public class MWFNextCondition extends X_AD_WF_NextCondition
 		}
 		catch (Exception e)
 		{
-			log.fine("compareNumber - valueObj=" + valueObj + " - " + e.toString());
+			log.debug("compareNumber - valueObj=" + valueObj + " - " + e.toString());
 			return compareString(valueObj, value1, value2);
 		}
 		try
@@ -175,7 +175,7 @@ public class MWFNextCondition extends X_AD_WF_NextCondition
 		}
 		catch (Exception e)
 		{
-			log.fine("compareNumber - value1=" + value1 + " - " + e.toString());
+			log.debug("compareNumber - value1=" + value1 + " - " + e.toString());
 			return compareString(valueObj, value1, value2);
 		}
 		
@@ -210,7 +210,7 @@ public class MWFNextCondition extends X_AD_WF_NextCondition
 			}
 			catch (Exception e)
 			{
-				log.fine("compareNumber - value2=" + value2 + " - " + e.toString());
+				log.debug("compareNumber - value2=" + value2 + " - " + e.toString());
 				return false;
 			}
 		}

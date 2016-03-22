@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -80,10 +79,9 @@ import org.compiere.model.MNote;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
+import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -145,7 +143,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = TimeUtil.getDay(9999, 12, 31);
 
-	private final CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -396,7 +394,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		if (ic.isToClear())
 		{
-			logger.fine(ic + "is not directly invoiced. QtyInvoiced is handled by a specific module");
+			logger.debug(ic + "is not directly invoiced. QtyInvoiced is handled by a specific module");
 		}
 		else
 		{
@@ -727,14 +725,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (ic.getM_Product_ID() <= 0)
 		{
-			logger.log(Level.FINE, "returing param qty {0} as result, because ic.getM_Product_ID() <= 0");
+			logger.debug("returing param qty {} as result, because ic.getM_Product_ID() <= 0");
 			return qty;
 		}
 
 		final I_C_UOM productUOM = ic.getM_Product().getC_UOM();
 		if (productUOM == null || productUOM.getC_UOM_ID() <= 0)
 		{
-			logger.log(Level.FINE, "returing param qty {0} as result, because ic.getM_Product_ID()");
+			logger.debug("returing param qty {} as result, because ic.getM_Product_ID()");
 			return qty;
 		}
 
@@ -752,7 +750,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final I_M_Product product = ic.getM_Product();
 		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertQty(product, qty, productUOM, priceUOM);
 
-		logger.log(Level.FINE, "converted qty {0} of product {1} from {2} to {3} => {4} for ic {5}",
+		logger.debug("converted qty {} of product {} from {} to {} => {} for ic {}",
 				new Object[] { qty, product.getValue(), productUOM.getName(), priceUOM.getName(), qtyInPriceUOM, ic });
 		return qtyInPriceUOM;
 	}
@@ -761,7 +759,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		if (Check.isEmpty(amendment))
 		{
-			logger.fine("there is nothing to amend");
+			logger.debug("there is nothing to amend");
 			return;
 		}
 
@@ -835,7 +833,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					.append(ic.getErrorMsg())
 					.toString();
 
-			logger.fine(msg);
+			logger.debug(msg);
 			// loggable.addLog(msg); don't log to the user, it's already shown to the user via field coloring *before* he/she enqueues
 			return true;
 		}
@@ -864,7 +862,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ic), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
-			logger.fine(msg);
+			logger.debug(msg);
 			// loggable.addLog(msg); don't log to the user, it's already shown to the user via field coloring *before* he/she enqueues
 			return true;
 		}
@@ -1367,11 +1365,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 
-					logger.log(Level.FINE, "Current C_InvoiceLine {0} has a C_OrderLine {1} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
+					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
 					final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
 					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
 
-					logger.log(Level.FINE, "Created C_Invoice_Candidates for C_OrderLine {0}: {1}", new Object[] { ol, invoiceCandsNew });
+					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}", new Object[] { ol, invoiceCandsNew });
 					toLinkAgainstIl.addAll(invoiceCandsNew);
 
 					//
@@ -1562,7 +1560,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			logger.log(Level.WARNING, "Failed processing invoice candidate BUT GOING FORWARD: " + ic, e);
+			logger.warn("Failed processing invoice candidate BUT GOING FORWARD: " + ic, e);
 		}
 
 		setError(ic, errorMsg, note, askForRegeneration);

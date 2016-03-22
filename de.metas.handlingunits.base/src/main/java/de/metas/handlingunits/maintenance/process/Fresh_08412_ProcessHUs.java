@@ -31,8 +31,6 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -137,7 +135,7 @@ public class Fresh_08412_ProcessHUs extends SvrProcess
 			{
 				countErrors++;
 				addLog("Failed to process " + huToProcess + ": " + e.getLocalizedMessage());
-				log.log(Level.WARNING, e.getLocalizedMessage(), e);
+				log.warn(e.getLocalizedMessage(), e);
 				return true; // rollback
 			}
 

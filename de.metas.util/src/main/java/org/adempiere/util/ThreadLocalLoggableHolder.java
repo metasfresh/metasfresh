@@ -1,9 +1,10 @@
 package org.adempiere.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.logging.LogbackLoggable;
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
 
 /*
  * #%L
@@ -83,7 +84,7 @@ public final class ThreadLocalLoggableHolder
 		return loggable != null ? loggable : defaultLoggable;
 	}
 
-	/** @return current thread's {@link ILoggable} instance or a {@link JULLoggable} instance if there was no thread level {@link ILoggable} */
+	/** @return current thread's {@link ILoggable} instance or a loggable which is forwarding to given logger instance if there was no thread level {@link ILoggable} */
 	public ILoggable getLoggableOrLogger(final Logger logger, final Level logLevel)
 	{
 		final ILoggable loggable = loggableRef.get();
@@ -92,7 +93,7 @@ public final class ThreadLocalLoggableHolder
 			return loggable;
 		}
 
-		return new JULLoggable(logger, logLevel);
+		return new LogbackLoggable(logger, logLevel);
 	}
 
 	public static final transient ThreadLocalLoggableHolder instance = new ThreadLocalLoggableHolder();

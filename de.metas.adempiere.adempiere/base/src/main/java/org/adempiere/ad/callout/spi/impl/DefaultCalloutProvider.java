@@ -29,7 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -38,11 +39,10 @@ import org.adempiere.ad.callout.api.ICalloutInstanceFactory;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ColumnCallout;
-import org.compiere.util.CLogger;
 
 public class DefaultCalloutProvider implements ICalloutProvider
 {
-	private static final transient CLogger logger = CLogger.getCLogger(DefaultCalloutProvider.class);
+	private static final transient Logger logger = LogManager.getLogger(DefaultCalloutProvider.class);
 
 	@Override
 	public List<ICalloutInstance> getCallouts(final ICalloutField field)
@@ -69,7 +69,7 @@ public class DefaultCalloutProvider implements ICalloutProvider
 			final String calloutId = callout.getId();
 			if (calloutIds.contains(calloutId))
 			{
-				logger.log(Level.WARNING, "Callout with ID '" + calloutId + "' was already added. Skipping");
+				logger.warn("Callout with ID '" + calloutId + "' was already added. Skipping");
 				continue;
 			}
 
@@ -100,7 +100,7 @@ public class DefaultCalloutProvider implements ICalloutProvider
 		{
 			// We are just logging and discarding the error because there is nothing that we can do about it
 			// More, we want to load the other callouts and not just fail
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 		}
 
 		return null;

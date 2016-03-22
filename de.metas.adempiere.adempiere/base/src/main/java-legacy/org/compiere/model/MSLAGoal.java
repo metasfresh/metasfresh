@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -115,7 +113,7 @@ public class MSLAGoal extends X_PA_SLA_Goal
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -36,11 +35,13 @@ import org.adempiere.webui.component.WListbox;
 import org.adempiere.webui.component.Window;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPriceList;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -49,6 +50,8 @@ import org.zkoss.zkex.zul.Borderlayout;
 import org.zkoss.zkex.zul.Center;
 import org.zkoss.zkex.zul.North;
 import org.zkoss.zkex.zul.South;
+
+import de.metas.logging.LogManager;
 
 /**
  * Price History for BPartner/Product
@@ -74,7 +77,7 @@ public class InvoiceHistory extends Window implements EventListener
 	{
 		super();
 		setTitle(Msg.getMsg(Env.getCtx(), "PriceHistory"));
-		log.config("C_BPartner_ID=" + C_BPartner_ID
+		log.info("C_BPartner_ID=" + C_BPartner_ID
 			+ ", M_Product_ID=" + M_Product_ID
 			+ ", M_Warehouse_ID=" + M_Warehouse_ID
 			+ ", M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
@@ -89,7 +92,7 @@ public class InvoiceHistory extends Window implements EventListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		
 		AEnv.showCenterWindow(parent, this);
@@ -101,7 +104,7 @@ public class InvoiceHistory extends Window implements EventListener
 	private int		m_M_AttributeSetInstance_ID;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InvoiceHistory.class);
+	private static Logger log = LogManager.getLogger(InvoiceHistory.class);
 
 	private Label 			label = new Label();
 	//
@@ -294,7 +297,7 @@ public class InvoiceHistory extends Window implements EventListener
 	 */
 	private Vector<Vector<Object>> fillTable (String sql, int parameter)
 	{
-		log.fine(sql + "; Parameter=" + parameter);
+		log.debug(sql + "; Parameter=" + parameter);
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -333,13 +336,13 @@ public class InvoiceHistory extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine("#" + data.size());
+		log.debug("#" + data.size());
 		return data;
 	}	//	fillTable
 
@@ -349,7 +352,7 @@ public class InvoiceHistory extends Window implements EventListener
 	 */
 	private void fillLabel (String sql, int parameter)
 	{
-		log.fine(sql + "; Parameter=" + parameter);
+		log.debug(sql + "; Parameter=" + parameter);
 		String retValue = DB.getSQLValueString(null, sql, parameter);
 		if (retValue != null)
 			label.setText(retValue);
@@ -548,13 +551,13 @@ public class InvoiceHistory extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine("#" + data.size());
+		log.debug("#" + data.size());
 
 		//  Table
 		m_modelUnconfirmed = new ListModelTable(data);
@@ -591,7 +594,7 @@ public class InvoiceHistory extends Window implements EventListener
 		columnNames.add(Msg.translate(Env.getCtx(), "M_Warehouse_ID"));
 
 		//	Fill Storage Data
-		boolean showDetail = CLogMgt.isLevelFine();
+		boolean showDetail = LogManager.isLevelFine();
 		String sql = "SELECT s.QtyOnHand, s.QtyReserved, s.QtyOrdered,"
 			+ " productAttribute(s.M_AttributeSetInstance_ID), s.M_AttributeSetInstance_ID,";
 		if (!showDetail)
@@ -646,7 +649,7 @@ public class InvoiceHistory extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -713,7 +716,7 @@ public class InvoiceHistory extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);

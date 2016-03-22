@@ -28,7 +28,8 @@ import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -43,8 +44,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.X_M_DiscountSchemaLine;
-import org.compiere.util.CLogger;
-
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_M_PriceList;
@@ -59,7 +58,7 @@ import de.metas.pricing.attributebased.ProductPriceAttributeAware;
 public class AttributePricing extends PricingRuleAdapter
 {
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Checks if the attribute pricing rule could be applied. Mainly it checks:
@@ -74,19 +73,19 @@ public class AttributePricing extends PricingRuleAdapter
 	{
 		if (result.isCalculated())
 		{
-			logger.log(Level.INFO, "Not applying because already calculated: {0}", result);
+			logger.info("Not applying because already calculated: {}", result);
 			return false;
 		}
 
 		if (pricingCtx.getM_Product_ID() <= 0)
 		{
-			logger.log(Level.INFO, "Not applying because no product: {0}", pricingCtx);
+			logger.info("Not applying because no product: {}", pricingCtx);
 			return false;
 		}
 
 		if (!getAttributeSetInstanceAware(pricingCtx).isPresent())
 		{
-			logger.log(Level.INFO, "Not applying because not ASI aware: {0}", pricingCtx);
+			logger.info("Not applying because not ASI aware: {}", pricingCtx);
 			return false;
 		}
 
@@ -96,7 +95,7 @@ public class AttributePricing extends PricingRuleAdapter
 		final Optional<? extends I_M_ProductPrice_Attribute> productPriceAttribute = getProductPriceAttribute(pricingCtx);
 		if (!productPriceAttribute.isPresent())
 		{
-			logger.log(Level.INFO, "Not applying because no product attribute pricing found: {0}" + pricingCtx);
+			logger.info("Not applying because no product attribute pricing found: {}" + pricingCtx);
 			return false;
 		}
 
@@ -214,21 +213,21 @@ public class AttributePricing extends PricingRuleAdapter
 	{
 		if (productPriceAttributeId <= 0)
 		{
-			logger.log(Level.FINE, "Returning null because M_ProductPrice_Attribute_ID is not set: {0}", pricingCtx);
+			logger.debug("Returning null because M_ProductPrice_Attribute_ID is not set: {}", pricingCtx);
 			return Optional.absent();
 		}
 
 		final I_M_ProductPrice_Attribute productPriceAttribute = InterfaceWrapperHelper.create(pricingCtx.getCtx(), productPriceAttributeId, I_M_ProductPrice_Attribute.class, pricingCtx.getTrxName());
 		if (productPriceAttribute == null || productPriceAttribute.getM_ProductPrice_Attribute_ID() <= 0)
 		{
-			logger.log(Level.FINE, "Returning null because M_ProductPrice_Attribute_ID={0} was not found", productPriceAttributeId);
+			logger.debug("Returning null because M_ProductPrice_Attribute_ID={} was not found", productPriceAttributeId);
 			return Optional.absent();
 		}
 
 		// Make sure the product price attribute is still active.
 		if (!productPriceAttribute.isActive())
 		{
-			logger.log(Level.FINE, "Returning null because M_ProductPrice_Attribute is not active: {0}", productPriceAttribute);
+			logger.debug("Returning null because M_ProductPrice_Attribute is not active: {}", productPriceAttribute);
 			return Optional.absent();
 		}
 
@@ -236,12 +235,12 @@ public class AttributePricing extends PricingRuleAdapter
 		final org.compiere.model.I_M_ProductPrice productPrice = productPriceAttribute.getM_ProductPrice();
 		if (!productPrice.isActive())
 		{
-			logger.log(Level.FINE, "Returning null because M_ProductPrice is not active: {0}", productPrice);
+			logger.debug("Returning null because M_ProductPrice is not active: {}", productPrice);
 			return Optional.absent();
 		}
 		if (productPrice.getM_Product_ID() != pricingCtx.getM_Product_ID())
 		{
-			logger.log(Level.FINE, "Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {0}", productPrice);
+			logger.debug("Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
 			return Optional.absent();
 		}
 
@@ -266,14 +265,14 @@ public class AttributePricing extends PricingRuleAdapter
 		final int attributeSetInstanceId = getM_AttributeSetInstance_ID(pricingCtx);
 		if (attributeSetInstanceId <= 0)
 		{
-			logger.log(Level.INFO, "No M_AttributeSetInstance_ID found: {0}", pricingCtx);
+			logger.info("No M_AttributeSetInstance_ID found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv == null)
 		{
-			logger.log(Level.INFO, "No M_PriceList_Version found: {0}", pricingCtx);
+			logger.info("No M_PriceList_Version found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
@@ -285,7 +284,7 @@ public class AttributePricing extends PricingRuleAdapter
 
 		if (null == productPriceAttribute || productPriceAttribute.getM_ProductPrice_Attribute_ID() <= 0)
 		{
-			logger.log(Level.INFO, "No product attribute pricing found: {0}", pricingCtx);
+			logger.info("No product attribute pricing found: {}", pricingCtx);
 			return Optional.absent(); // no matching
 		}
 

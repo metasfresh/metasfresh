@@ -7,13 +7,15 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -59,7 +61,7 @@ public class BankStatementPaymentMatchingAutoBuilder
 	}
 
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// Parameters
 	private List<IBankStatementLine> bankStatementLines = ImmutableList.of();
@@ -117,8 +119,8 @@ public class BankStatementPaymentMatchingAutoBuilder
 
 	private IBankStatementPaymentMatching createMatching(final IBankStatementLine bankStatementLine, final BatchWithPayments batch)
 	{
-		logger.log(Level.INFO, "Bank statement line: {0}", bankStatementLine);
-		logger.log(Level.INFO, "Batch with payments: {0}", batch);
+		logger.info("Bank statement line: {}", bankStatementLine);
+		logger.info("Batch with payments: {}", batch);
 
 		// Match Bank Account
 		if (!Check.equals(bankStatementLine.getBankAccount(), batch.getBankAccount()))
@@ -149,7 +151,7 @@ public class BankStatementPaymentMatchingAutoBuilder
 				.setPayments(batch.getPayments())
 				.setFailIfNotValid(false)
 				.build();
-		logger.log(Level.INFO, "Matched: {0}", matching);
+		logger.info("Matched: {}", matching);
 		return matching;
 	}
 

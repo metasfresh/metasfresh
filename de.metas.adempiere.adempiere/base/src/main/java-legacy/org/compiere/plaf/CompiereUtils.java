@@ -32,7 +32,7 @@ import java.awt.geom.RoundRectangle2D;
 public final class CompiereUtils
 {
 	///**	Logger			*/
-	//private static Logger log = Logger.getLogger(CompiereUtils.class.getName());
+	//private static Logger log = CLogMgt.getLogger(CompiereUtils.class.getName());
 
 	/** Top Top Color - white 128       the higher the ligher   */
 	static public final Color COL_1TOP = new Color(255, 255, 255, 128);

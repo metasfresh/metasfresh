@@ -36,7 +36,8 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -57,7 +58,7 @@ import de.metas.order.IOrderPA;
 public class ContractChangeBL implements IContractChangeBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(ContractChangeBL.class);
+	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
 	@Override
 	public void cancelContract(
@@ -205,7 +206,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 		InterfaceWrapperHelper.save(chargeOl);
 
-		logger.fine("created new order line " + chargeOlPO);
+		logger.debug("created new order line " + chargeOlPO);
 		return chargeOl;
 	}
 
@@ -235,7 +236,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 		// compute the difference (see javaDoc of computePriceDifference for details)
 		final BigDecimal difference = subscriptionBL.computePriceDifference(ctx, pricingSystemId, deliveries, trxName);
-		logger.fine("The price difference to be applied on deliveries before the change is " + difference);
+		logger.debug("The price difference to be applied on deliveries before the change is " + difference);
 		return difference;
 	}
 

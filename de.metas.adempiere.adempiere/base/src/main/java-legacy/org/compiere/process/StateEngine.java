@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -26,7 +27,7 @@ import org.compiere.util.CLogger;
  *  @author Jorg Janke
  *  @version $Id: StateEngine.java,v 1.3 2006/07/30 00:54:44 jjanke Exp $
  */
-public class StateEngine
+public final class StateEngine
 {
 	/**
 	 * 	Default Constructor (not started)
@@ -34,7 +35,6 @@ public class StateEngine
 	public StateEngine ()
 	{
 		this (STATE_NotStarted);
-		log = CLogger.getCLogger(getClass());
 	}	//	State
 	
 	/**
@@ -82,7 +82,7 @@ public class StateEngine
 	private boolean	m_throwException	= false;
 	
 	/**	Logger			*/
-	protected CLogger	log = null;
+	private static final transient Logger log = LogManager.getLogger(StateEngine.class);
 	
 	/**
 	 * 	Are Exception Thrown
@@ -233,8 +233,6 @@ public class StateEngine
 	 */
 	public boolean start()
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isNotStarted())
 		{
 			m_state = STATE_Running;
@@ -244,7 +242,7 @@ public class StateEngine
 		String msg = "start failed: Not Not Started (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	start
 	
@@ -254,8 +252,6 @@ public class StateEngine
 	 */
 	public boolean resume()	//	raises CannotResume, NotRunning, NotSuspended
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isSuspended())
 		{
 			m_state = STATE_Running;
@@ -265,7 +261,7 @@ public class StateEngine
 		String msg = "resume failed: Not Suspended (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	resume
 
@@ -275,8 +271,6 @@ public class StateEngine
 	 */
 	public boolean suspend()	//	raises CannotSuspend, NotRunning, AlreadySuspended
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isRunning())
 		{
 			m_state = STATE_Suspended;
@@ -286,7 +280,7 @@ public class StateEngine
 		String msg = "suspend failed: Not Running (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	suspend
 
@@ -296,8 +290,6 @@ public class StateEngine
 	 */
 	public boolean complete()
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isRunning())
 		{
 			m_state = STATE_Completed;
@@ -307,7 +299,7 @@ public class StateEngine
 		String msg = "complete failed: Not Running (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	complete
 	
@@ -317,8 +309,6 @@ public class StateEngine
 	 */
 	public boolean abort()	//	raises CannotStop, NotRunning
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isOpen())
 		{
 			m_state = STATE_Aborted;
@@ -328,7 +318,7 @@ public class StateEngine
 		String msg = "abort failed: Not Open (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	abort
 	
@@ -338,8 +328,6 @@ public class StateEngine
 	 */
 	public boolean terminate()	//	raises CannotStop, NotRunning
 	{
-		if (log == null)
-			log = CLogger.getCLogger(getClass());
 		if (isOpen())
 		{
 			m_state = STATE_Terminated;
@@ -349,7 +337,7 @@ public class StateEngine
 		String msg = "terminate failed: Not Open (" + getState() + ")";
 		if (m_throwException)
 			throw new IllegalStateException (msg);
-		log.warning(msg);
+		log.warn(msg);
 		return false;
 	}	//	terminate
 	
@@ -496,6 +484,7 @@ public class StateEngine
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		return getStateInfo();

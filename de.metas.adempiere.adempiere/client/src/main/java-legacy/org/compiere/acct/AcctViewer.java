@@ -29,7 +29,8 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -74,8 +75,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -83,6 +84,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  *  Account Viewer
@@ -174,7 +176,7 @@ public class AcctViewer extends CFrame
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			dispose();
 		}
 	}   //  AcctViewer
@@ -185,7 +187,7 @@ public class AcctViewer extends CFrame
 	private final ImageIcon m_iFind = Images.getImageIcon2("Find16");
 	
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(AcctViewer.class);
+	private static final Logger log = LogManager.getLogger(AcctViewer.class);
 
 	/** @todo Display Record Info & Zoom */
 
@@ -898,7 +900,7 @@ public class AcctViewer extends CFrame
 		{
 			statusLine.setText(" " + msgBL.getMsg(ctx, "Processing"));
 
-			log.config(para.toString());
+			log.info(para.toString());
 			Thread.yield();
 
 			// Switch to Result pane
@@ -952,7 +954,7 @@ public class AcctViewer extends CFrame
 		final ValueNamePair vp = selTable.getSelectedItem();
 		final String tableName = vp.getValue();
 		m_data.setAD_Table_ID(tableName);
-		log.config(tableName + " = " + m_data.getAD_Table_ID());
+		log.info(tableName + " = " + m_data.getAD_Table_ID());
 		//  Reset Record
 		m_data.setRecord_ID(0);
 		selRecord.setText("");
@@ -980,7 +982,7 @@ public class AcctViewer extends CFrame
 		final int factAcctIdColumnIndex = tableModel.getColumnIndex(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
 		if (factAcctIdColumnIndex < 0)
 		{
-			// log.warning("@NotFound@ @" + I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "@");
+			// log.warn("@NotFound@ @" + I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "@");
 			return null;
 		}
 
@@ -1128,7 +1130,7 @@ public class AcctViewer extends CFrame
 		}
 
 		//  Save for query
-		log.config(keyColumn + " - " + key);
+		log.info(keyColumn + " - " + key);
 		if (button == selRecord)                            //  Record_ID
 		{
 			m_data.setRecord_ID(key);
@@ -1186,7 +1188,7 @@ public class AcctViewer extends CFrame
 		catch (Exception e)
 		{
 			ADialog.error(0, this, "Error", e.getLocalizedMessage());
-			if (CLogMgt.isLevelFinest())
+			if (LogManager.isLevelFinest())
 				e.printStackTrace();
 		}
 	}

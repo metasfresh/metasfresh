@@ -24,7 +24,8 @@ package org.adempiere.process.rpl.requesthandler.api.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.POWrapper;
 import org.adempiere.process.rpl.exp.ExportHelper;
@@ -38,13 +39,12 @@ import org.adempiere.server.rpl.interfaces.I_EXP_Format;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.w3c.dom.Document;
 
 public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public IReplRequestHandler getRequestHandlerInstance(I_IMP_RequestHandler requestHandlerDef)
@@ -67,7 +67,7 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 		final PO poToExport = result.getPOToExport();
 		if (poToExport == null)
 		{
-			logger.log(Level.FINE, "Skip because poToExport is null");
+			logger.debug("Skip because poToExport is null");
 			return null;
 		}
 

@@ -27,14 +27,14 @@ import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -55,7 +55,7 @@ public class TableModelClassLoader
 
 	private static final transient Class<?> NO_CLASS = Object.class;
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * EntityTypes cache
@@ -188,7 +188,7 @@ public class TableModelClassLoader
 				return clazz;
 			}
 
-			log.log(Level.WARNING, "No class for import table: {0}", tableName);
+			log.warn("No class for import table: {}", tableName);
 			return NO_CLASS;
 		}
 
@@ -222,7 +222,7 @@ public class TableModelClassLoader
 			{
 				return clazz;
 			}
-			log.log(Level.WARNING, "No class for table with it entity: {0}", tableName);
+			log.warn("No class for table with it entity: {}", tableName);
 		}
 
 		// Strip table name prefix (e.g. AD_) Customizations are 3/4
@@ -311,7 +311,7 @@ public class TableModelClassLoader
 			// Make sure that it is a PO class
 			if (!PO.class.isAssignableFrom(clazz))
 			{
-				log.log(Level.FINE, "Skip {0} because it does not have PO class as supertype", clazz);
+				log.debug("Skip {} because it does not have PO class as supertype", clazz);
 				return null;
 			}
 
@@ -319,9 +319,9 @@ public class TableModelClassLoader
 		}
 		catch (ClassNotFoundException e)
 		{
-			if (log.isLoggable(Level.INFO))
+			if (log.isDebugEnabled())
 			{
-				log.log(Level.INFO, "No class found for " + className + " (classloader: " + classLoader + ")", e);
+				log.debug("No class found for " + className + " (classloader: " + classLoader + ")", e);
 			}
 		}
 

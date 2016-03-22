@@ -39,7 +39,8 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CEditor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * @author teo_sarca
@@ -47,7 +48,7 @@ import org.compiere.util.CLogger;
  */
 public final class SwingFieldsUtil
 {
-	private static CLogger log = CLogger.getCLogger(SwingFieldsUtil.class);
+	private static Logger log = LogManager.getLogger(SwingFieldsUtil.class);
 	
 	public static void setSelectAllOnFocus(final JComponent c)
 	{
@@ -103,7 +104,7 @@ public final class SwingFieldsUtil
 			return Check.isEmpty(c.getText(), true);
 		}
 		//
-		log.warning("Component type not supported - "+editor.getClass());
+		log.warn("Component type not supported - "+editor.getClass());
 		return false;
 	}
 	
@@ -118,7 +119,7 @@ public final class SwingFieldsUtil
 		if (c instanceof JTextComponent)
 			return ((JTextComponent)c).isEditable();
 		//
-		log.warning("Unknown component type - "+c.getClass());
+		log.warn("Unknown component type - "+c.getClass());
 		return false;
 	}
 
@@ -144,7 +145,7 @@ public final class SwingFieldsUtil
 		}
 		//
 		if (!found)
-			log.warning("Component not found - "+component);
+			log.warn("Component not found - "+component);
 		if (found && last != null)
 			last.requestFocus();
 	}

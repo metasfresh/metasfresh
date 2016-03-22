@@ -20,7 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
@@ -87,7 +88,7 @@ public class SendMailText extends SvrProcess
 			else if (name.equals("AD_User_ID"))
 				m_AD_User_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -116,7 +117,7 @@ public class SendMailText extends SvrProcess
 			if (m_from.getAD_User_ID() == 0)
 				throw new Exception ("No found @AD_User_ID@=" + m_AD_User_ID);
 		}
-		log.fine("From " + m_from);
+		log.debug("From " + m_from);
 		long start = System.currentTimeMillis();
 		
 		if (m_R_InterestArea_ID > 0)
@@ -187,7 +188,7 @@ public class SendMailText extends SvrProcess
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		//	Clean Up
 		try
@@ -237,7 +238,7 @@ public class SendMailText extends SvrProcess
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		//	Clean Up
 		try
@@ -283,7 +284,7 @@ public class SendMailText extends SvrProcess
 		}
 		if (!email.isValid() && !email.isValid(true))
 		{
-			log.warning("NOT VALID - " + email);
+			log.warn("NOT VALID - " + email);
 			to.setIsActive(false);
 			to.addDescription("Invalid EMail");
 			to.save();
@@ -293,9 +294,9 @@ public class SendMailText extends SvrProcess
 		new MUserMail(m_MailText, AD_User_ID, email).save();
 		//
 		if (OK)
-			log.fine(to.getEMail());
+			log.debug(to.getEMail());
 		else
-			log.warning("FAILURE - " + to.getEMail());
+			log.warn("FAILURE - " + to.getEMail());
 		addLog(0, null, null, (OK ? "@OK@" : "@ERROR@") + " - " + to.getEMail());
 		return new Boolean(OK);
 	}	//	sendIndividualMail

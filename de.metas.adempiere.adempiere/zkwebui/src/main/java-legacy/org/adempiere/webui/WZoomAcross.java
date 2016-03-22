@@ -24,9 +24,10 @@ import org.adempiere.webui.apps.AEnv;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -69,7 +70,7 @@ public class WZoomAcross
 
 	public WZoomAcross(Component invoker, PO po, final int windowID) {
 		
-		log.config("PO=" + po+", WindowID="+windowID);
+		log.info("PO=" + po+", WindowID="+windowID);
 		
 		mkZoomTargets(po, windowID);
 				
@@ -99,7 +100,7 @@ public class WZoomAcross
 
 	private Menupopup 	m_popup = new Menupopup(); //"ZoomMenu"
 	
-	private static final CLogger log = CLogger.getCLogger(WZoomAcross.class);
+	private static final Logger log = LogManager.getLogger(WZoomAcross.class);
 
 	private final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<ZoomInfoFactory.ZoomInfo>();
 
@@ -109,7 +110,7 @@ public class WZoomAcross
 				windowID)) {
 
 			if (zoomInfo.query.getRecordCount() == 0) {
-				log.fine("No target records for destination "
+				log.debug("No target records for destination "
 						+ zoomInfo.destinationDisplay);
 				continue;
 			}

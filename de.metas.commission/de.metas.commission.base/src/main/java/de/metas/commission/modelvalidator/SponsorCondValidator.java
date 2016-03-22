@@ -35,7 +35,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 
 import de.metas.adempiere.form.IClientUI;
@@ -53,7 +54,7 @@ public class SponsorCondValidator implements ModelValidator
 
 	public static final String MSG_COMMISSION_RETROACTIVE_HIERARCHY_CHANGE_1P = "CommissionRetroactiveHierarchyChange_Forbidden_1P";
 
-	private final CLogger logger = CLogger.getCLogger(SponsorCondValidator.class);
+	private final Logger logger = LogManager.getLogger(SponsorCondValidator.class);
 
 	private int ad_Client_ID = -1;
 
@@ -124,7 +125,7 @@ public class SponsorCondValidator implements ModelValidator
 									SponsorValidator.SYSCFG_ON_INVALID_HIERARCHY_CHANGE_WARN,
 									po.getAD_Client_ID(), po.getAD_Org_ID());
 
-					logger.warning(errors);
+					logger.warn(errors);
 					logger.info(SponsorValidator.SYSCFG_ON_INVALID_HIERARCHY_CHANGE + "='" + value + "'");
 
 					if (SponsorValidator.SYSCFG_ON_INVALID_HIERARCHY_CHANGE_WARN.equalsIgnoreCase(value))

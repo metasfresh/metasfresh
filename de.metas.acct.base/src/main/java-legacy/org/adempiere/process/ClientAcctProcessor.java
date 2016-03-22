@@ -32,7 +32,8 @@ package org.adempiere.process;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -87,7 +88,7 @@ public class ClientAcctProcessor extends SvrProcess
 			else if (name.equals("AD_Table_ID"))
 				p_AD_Table_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	// prepare
 
@@ -168,7 +169,7 @@ public class ClientAcctProcessor extends SvrProcess
 						Doc doc = docFactory.get(getCtx(), docMetaInfo, m_ass, rs, innerTrxName);
 						if (doc == null)
 						{
-							log.severe(getName() + ": No Doc for " + TableName);
+							log.error(getName() + ": No Doc for " + TableName);
 							ok = false;
 						}
 						else
@@ -179,7 +180,7 @@ public class ClientAcctProcessor extends SvrProcess
 					}
 					catch (Exception e)
 					{
-						log.log(Level.SEVERE, getName() + ": " + TableName + ": " + e.getLocalizedMessage(), e); // metas: improve error logging
+						log.error(getName() + ": " + TableName + ": " + e.getLocalizedMessage(), e); // metas: improve error logging
 						ok = false;
 					}
 					finally
@@ -197,7 +198,7 @@ public class ClientAcctProcessor extends SvrProcess
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql.toString(), e);
+				log.error(sql.toString(), e);
 			}
 			finally
 			{
@@ -211,10 +212,10 @@ public class ClientAcctProcessor extends SvrProcess
 				if (countError > 0)
 					m_summary.append("(Errors=").append(countError).append(")");
 				m_summary.append(" - ");
-				log.finer(getName() + ": " + m_summary.toString());
+				log.trace(getName() + ": " + m_summary.toString());
 			}
 			else
-				log.finer(getName() + ": " + TableName + " - no work");
+				log.trace(getName() + ": " + TableName + " - no work");
 		}
 	}	// postSession
 

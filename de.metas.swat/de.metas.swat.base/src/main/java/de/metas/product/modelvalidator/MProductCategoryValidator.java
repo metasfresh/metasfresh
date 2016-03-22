@@ -41,18 +41,18 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Tree;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.product.tree.spi.impl.MProductCategoryTreeSupport;
 
 public final class MProductCategoryValidator implements ModelValidator
 {
-
-	private static final CLogger log = CLogger
-			.getCLogger(MProductCategoryValidator.class);
+	private static final Logger logger = LogManager.getLogger(MProductCategoryValidator.class);
 
 	public final static String TABLENAME = MTree_Base
 			.getNodeTableName(X_AD_Tree.TREETYPE_ProductCategory);
@@ -139,16 +139,19 @@ public final class MProductCategoryValidator implements ModelValidator
 
 	private int ad_Client_ID = -1;
 
+	@Override
 	public String docValidate(final PO po, final int timing)
 	{
 		return null;
 	}
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
@@ -161,6 +164,7 @@ public final class MProductCategoryValidator implements ModelValidator
 		engine.addModelChange(I_M_Product_Category.Table_Name, this);
 	}
 
+	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		return null;
@@ -193,6 +197,7 @@ public final class MProductCategoryValidator implements ModelValidator
 		}
 	}
 
+	@Override
 	public String modelChange(PO po, int type) throws Exception
 	{
 		if ((ModelValidator.TYPE_BEFORE_NEW == type || ModelValidator.TYPE_BEFORE_CHANGE == type)
@@ -380,16 +385,14 @@ public final class MProductCategoryValidator implements ModelValidator
 			else if (preparedStatement == SQL_DELETE_NODE)
 			{
 
-				pstmt.setInt(1, (Integer)params[0]);
+				pstmt.setInt(1, params[0]);
 			}
 			return pstmt.executeUpdate();
 
 		}
 		catch (SQLException e)
 		{
-			log.saveError(
-					"Unable to modify table ad_treenodepc. SQL statement: "
-							+ preparedStatement, e);
+			MetasfreshLastError.saveError(logger, "Unable to modify table ad_treenodepc. SQL statement: " + preparedStatement, e);
 			return 0;
 		}
 		finally
@@ -425,7 +428,7 @@ public final class MProductCategoryValidator implements ModelValidator
 		}
 		catch (SQLException e)
 		{
-			log.saveError("Unable to select an integer. SQL statement: "
+			MetasfreshLastError.saveError(logger, "Unable to select an integer. SQL statement: "
 					+ preparedStatement + "; parameter: " + parameter, e);
 			throw new RuntimeException(e);
 
@@ -452,7 +455,7 @@ public final class MProductCategoryValidator implements ModelValidator
 		}
 		catch (SQLException e)
 		{
-			log.saveError("Unable to update IsSummary", e);
+			MetasfreshLastError.saveError(logger, "Unable to update IsSummary", e);
 		}
 		finally
 		{

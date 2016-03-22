@@ -47,7 +47,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class RoleDAO implements IRoleDAO
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(RoleDAO.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(RoleDAO.class);
 
 	@Override
 	public I_AD_Role retrieveRole(final Properties ctx)

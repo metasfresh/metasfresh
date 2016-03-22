@@ -24,7 +24,8 @@ package org.eevolution.api.impl;
 
 
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -35,14 +36,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductLowLevelUpdater;
 
 /*package */class ProductLowLevelUpdater implements IProductLowLevelUpdater
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -105,7 +105,7 @@ import org.eevolution.api.IProductLowLevelUpdater;
 				throw ex;
 			}
 
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 			count_err++;
 		}
 	}

@@ -25,7 +25,8 @@ package de.metas.order.model.validator;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -36,8 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -49,7 +48,7 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 public class C_OrderLine
 {
 
-	private static final CLogger logger = CLogger.getCLogger(C_OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
@@ -170,7 +169,7 @@ public class C_OrderLine
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
 					+ "\nStorage: " + ol);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
 

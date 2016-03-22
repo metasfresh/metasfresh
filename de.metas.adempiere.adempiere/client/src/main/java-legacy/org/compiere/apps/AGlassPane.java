@@ -27,7 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
@@ -39,7 +40,8 @@ import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -104,7 +106,7 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 	private int                 m_timervalue = 0;
 	private int                 m_timermax = 0;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(AGlassPane.class);
+	private static Logger log = LogManager.getLogger(AGlassPane.class);
 	
 	/**
 	 * Set Message using a given AD_Message.
@@ -153,7 +155,7 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 	 */
 	public void setBusyTimer (int time)
 	{
-		log.config("Time=" + time);
+		log.info("Time=" + time);
 		//  should we display a progress bar?
 		if (time < 2 )
 		{
@@ -220,7 +222,7 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 		int height = imageSize.height + GAP + messageSize.height + GAP + progressSize.height;
 		if (height > panelSize.height)
 		{
-			log.log(Level.SEVERE, "Panel too small - height=" + panelSize.height);
+			log.error("Panel too small - height=" + panelSize.height);
 			return;
 		}
 		int yImage = (panelSize.height/2) - (height/2);
@@ -231,7 +233,7 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 		//  Vertical layout
 		if (imageSize.width > panelSize.width || messageSize.width > panelSize.width)
 		{
-			log.log(Level.SEVERE, "Panel too small - width=" + panelSize.width);
+			log.error("Panel too small - width=" + panelSize.width);
 			return;
 		}
 		int xImage = (panelSize.width/2) - (imageSize.width/2);

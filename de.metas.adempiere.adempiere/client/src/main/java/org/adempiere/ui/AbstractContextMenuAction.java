@@ -38,12 +38,13 @@ import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public abstract class AbstractContextMenuAction implements IContextMenuAction
 {
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	private IContextMenuActionContext context;
 

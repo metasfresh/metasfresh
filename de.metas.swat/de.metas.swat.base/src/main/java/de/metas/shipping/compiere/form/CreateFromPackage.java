@@ -41,8 +41,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -81,7 +79,7 @@ public class CreateFromPackage extends CreateFrom
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		setTitle(Msg.translate(Env.getCtx(), "M_Package_ID") + " .. " + Msg.translate(Env.getCtx(), "CreateFrom"));
 		
 		return true;
@@ -117,7 +115,7 @@ public class CreateFromPackage extends CreateFrom
 				sql.append(" AND TRUNC(p.ShipDate) BETWEEN ? AND ?");
 		}
 		//
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		
 		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(false);
 		if (!Check.isEmpty(orgWhere, true))
@@ -146,21 +144,21 @@ public class CreateFromPackage extends CreateFrom
 		{
 			Integer sh = (Integer) Shipper;
 			pstmt.setInt(index++, sh.intValue());
-			log.fine("Shipper=" + sh);
+			log.debug("Shipper=" + sh);
 		}
 
 		if (Country != null)
 		{
 			Integer co = (Integer) Country;
 			pstmt.setInt(index++, co.intValue());
-			log.fine("Country=" + co);
+			log.debug("Country=" + co);
 		}
 		//
 		if (DateFrom != null || DateTo != null)
 		{
 			Timestamp from = (Timestamp) DateFrom;
 			Timestamp to = (Timestamp) DateTo;
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
 			else if (from != null && to == null)
@@ -214,7 +212,7 @@ public class CreateFromPackage extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -253,7 +251,7 @@ public class CreateFromPackage extends CreateFrom
 		//  fixed values
 		int M_ShipperTransportation_ID = ((Integer)getGridTab().getValue("M_ShipperTransportation_ID")).intValue();
 		MMShipperTransportation st = new MMShipperTransportation (Env.getCtx(), M_ShipperTransportation_ID, trxName);
-		log.config(st.toString());
+		log.info(st.toString());
 
 		//  Lines
 		for (int i = 0; i < miniTable.getRowCount(); i++)
@@ -263,7 +261,7 @@ public class CreateFromPackage extends CreateFrom
 				KeyNamePair pp = (KeyNamePair)miniTable.getValueAt(i, 1);   //  1-M_Package_ID
 				int M_Package_ID = pp.getKey();
 
-				log.fine("Line Package=" + M_Package_ID);
+				log.debug("Line Package=" + M_Package_ID);
 				//	
 				final I_M_Package mpackage = InterfaceWrapperHelper.create(Env.getCtx(), M_Package_ID, I_M_Package.class, trxName);
 				Services.get(IShipperTransportationBL.class).createShippingPackage(st, mpackage);

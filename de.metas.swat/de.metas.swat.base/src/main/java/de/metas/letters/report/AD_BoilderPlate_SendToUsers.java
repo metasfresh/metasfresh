@@ -44,11 +44,11 @@ import org.compiere.model.MUser;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.EMail;
 
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.logging.LogManager;
 
 /**
  * Send BoilerPlate to selected contacts
@@ -149,7 +149,7 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 		{
 			createNote(text, user, e);
 			ok = false;
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 				e.printStackTrace();
 		}
 		return ok;
@@ -207,7 +207,7 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 			if (status != null && status.indexOf("Could not connect to SMTP host:") != -1
 					&& count < maxRetries)
 			{
-				log.warning("SMTP error: "+status+" [ Retry "+count+" ]");
+				log.warn("SMTP error: "+status+" [ Retry "+count+" ]");
 			}
 			else
 			{

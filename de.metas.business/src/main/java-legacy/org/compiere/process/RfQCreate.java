@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MRfQ;
 import org.compiere.model.MRfQResponse;
@@ -50,7 +51,7 @@ public class RfQCreate extends SvrProcess
 			else if (name.equals("IsSendRfQ"))
 				p_IsSendRfQ = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_RfQ_ID = getRecord_ID();
 	}	//	prepare

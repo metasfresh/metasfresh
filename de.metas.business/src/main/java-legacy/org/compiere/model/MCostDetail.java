@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -29,7 +30,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -85,7 +87,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "C_OrderLine_ID=?", 
 			C_OrderLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -120,7 +122,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createOrder
 
@@ -154,7 +156,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "C_InvoiceLine_ID=?", 
 			C_InvoiceLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -189,7 +191,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createInvoice
 	
@@ -223,7 +225,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "M_InOutLine_ID=?", 
 			M_InOutLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -259,7 +261,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createShipment
 	
@@ -302,7 +304,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "M_InventoryLine_ID=?", 
 			M_InventoryLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -337,7 +339,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createInventory
 	
@@ -372,7 +374,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "M_MovementLine_ID=? AND IsSOTrx=" 
 			+ (from ? "'Y'" : "'N'"), 
 			M_MovementLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
@@ -409,7 +411,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createMovement
 
@@ -442,7 +444,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.config("Deleted #" + no);
+			s_log.info("Deleted #" + no);
 		MCostDetail cd = get (as.getCtx(), "M_ProductionLine_ID=?", 
 			M_ProductionLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -477,7 +479,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.config("(" + ok + ") " + cd);
+		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createProduction
 	
@@ -514,12 +516,12 @@ public class MCostDetail extends X_M_CostDetail
 			}
 			if (rs.next())
 			{
-				s_log.log(Level.SEVERE, "More then one M_CostDetail found for ID=" + ID + ", SQL=sql. Returning the first one");
+				s_log.error("More then one M_CostDetail found for ID=" + ID + ", SQL=sql. Returning the first one");
 			}
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql + " - " + ID, e);
+			s_log.error(sql + " - " + ID, e);
 		}
 		finally
 		{
@@ -562,7 +564,7 @@ public class MCostDetail extends X_M_CostDetail
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 			counterError++;
 		}
 		finally
@@ -571,12 +573,12 @@ public class MCostDetail extends X_M_CostDetail
 			rs = null; pstmt = null;
 		}
 		
-		s_log.config("OK=" + counterOK + ", Errors=" + counterError);
+		s_log.info("OK=" + counterOK + ", Errors=" + counterError);
 		return counterError == 0;
 	}	//	processProduct
 	
 	/**	Logger	*/
-	private static CLogger 	s_log = CLogger.getCLogger (MCostDetail.class);
+	private static Logger 	s_log = LogManager.getLogger(MCostDetail.class);
 	
 	
 	/**************************************************************************
@@ -882,7 +884,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (ce.isAveragePO())
 			{
 				cost.setWeightedAverage(amt, qty);
-				log.finer("PO - AveragePO - " + cost);
+				log.trace("PO - AveragePO - " + cost);
 			}
 			else if (ce.isLastPOPrice())
 			{
@@ -897,19 +899,19 @@ public class MCostDetail extends X_M_CostDetail
 					}
 				}
 				cost.add(amt, qty);
-				log.finer("PO - LastPO - " + cost);
+				log.trace("PO - LastPO - " + cost);
 			}
 			else if (ce.isUserDefined())
 			{
 				//	Interface
-				log.finer("PO - UserDef - " + cost);
+				log.trace("PO - UserDef - " + cost);
 			}
 			else if (!ce.isCostingMethod())
 			{
-				log.finer("PO - " + ce + " - " + cost);
+				log.trace("PO - " + ce + " - " + cost);
 			}
 		//	else
-		//		log.warning("PO - " + ce + " - " + cost);
+		//		log.warn("PO - " + ce + " - " + cost);
 		}
 		
 		//	*** AP Invoice Detail Record ***
@@ -920,7 +922,7 @@ public class MCostDetail extends X_M_CostDetail
 			if (ce.isAverageInvoice())
 			{
 				cost.setWeightedAverage(amt, qty);
-				log.finer("Inv - AverageInv - " + cost);
+				log.trace("Inv - AverageInv - " + cost);
 			}
 			else if (ce.isFifo()
 				|| ce.isLifo())
@@ -936,7 +938,7 @@ public class MCostDetail extends X_M_CostDetail
 				if (cQueue != null && cQueue.length > 0)
 					cost.setCurrentCostPrice(cQueue[0].getCurrentCostPrice());
 				cost.add(amt, qty);
-				log.finer("Inv - FiFo/LiFo - " + cost);
+				log.trace("Inv - FiFo/LiFo - " + cost);
 			}
 			else if (ce.isLastInvoice())
 			{
@@ -951,7 +953,7 @@ public class MCostDetail extends X_M_CostDetail
 					}
 				}
 				cost.add(amt, qty);
-				log.finer("Inv - LastInv - " + cost);
+				log.trace("Inv - LastInv - " + cost);
 			}
 			else if (ce.isStandardCosting())
 			{
@@ -968,17 +970,17 @@ public class MCostDetail extends X_M_CostDetail
 						cost.setCurrentCostPrice(MCost.getSeedCosts(product, M_ASI_ID, 
 								as, Org_ID, ce.getCostingMethod(), getC_OrderLine_ID(),
 								trxName));
-						log.finest("Inv - Standard - CurrentCostPrice(seed)="+cost.getCurrentCostPrice()+", price="+price);
+						log.trace("Inv - Standard - CurrentCostPrice(seed)="+cost.getCurrentCostPrice()+", price="+price);
 					}
 				}
 				cost.add(amt, qty);
-				log.finer("Inv - Standard - " + cost);
+				log.trace("Inv - Standard - " + cost);
 			}
 			else if (ce.isUserDefined())
 			{
 				//	Interface
 				cost.add(amt, qty);
-				log.finer("Inv - UserDef - " + cost);
+				log.trace("Inv - UserDef - " + cost);
 			}
 			else if (!ce.isCostingMethod())		//	Cost Adjustments
 			{
@@ -1023,10 +1025,10 @@ public class MCostDetail extends X_M_CostDetail
 					cost.add(amt, qty);
 				}
 				// end AZ
-				log.finer("Inv - Landed Costs - " + cost);
+				log.trace("Inv - Landed Costs - " + cost);
 			}
 		//	else
-		//		log.warning("Inv - " + ce + " - " + cost);
+		//		log.warn("Inv - " + ce + " - " + cost);
 		}
 		
 		//	*** Qty Adjustment Detail Record ***
@@ -1045,7 +1047,7 @@ public class MCostDetail extends X_M_CostDetail
 					cost.setWeightedAverage(amt, qty);
 				else
 					cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - AverageInv - " + cost);
+				log.trace("QtyAdjust - AverageInv - " + cost);
 			}
 			else if (ce.isAveragePO())
 			{
@@ -1053,7 +1055,7 @@ public class MCostDetail extends X_M_CostDetail
 					cost.setWeightedAverage(amt, qty);
 				else
 					cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - AveragePO - " + cost);
+				log.trace("QtyAdjust - AveragePO - " + cost);
 			}
 			else if (ce.isFifo() || ce.isLifo())
 			{
@@ -1077,17 +1079,17 @@ public class MCostDetail extends X_M_CostDetail
 				if (cQueue != null && cQueue.length > 0)
 					cost.setCurrentCostPrice(cQueue[0].getCurrentCostPrice());
 				cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - FiFo/Lifo - " + cost);
+				log.trace("QtyAdjust - FiFo/Lifo - " + cost);
 			}
 			else if (ce.isLastInvoice())
 			{
 				cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - LastInv - " + cost);
+				log.trace("QtyAdjust - LastInv - " + cost);
 			}
 			else if (ce.isLastPOPrice())
 			{
 				cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - LastPO - " + cost);
+				log.trace("QtyAdjust - LastPO - " + cost);
 			}
 			else if (ce.isStandardCosting())
 			{
@@ -1100,14 +1102,14 @@ public class MCostDetail extends X_M_CostDetail
 						&& cost.is_new())
 					{
 						cost.setCurrentCostPrice(price);
-						log.finest("QtyAdjust - Standard - CurrentCostPrice="+price);
+						log.trace("QtyAdjust - Standard - CurrentCostPrice="+price);
 					}
 				}
 				else
 				{
 					cost.setCurrentQty(cost.getCurrentQty().add(qty));
 				}
-				log.finer("QtyAdjust - Standard - " + cost);
+				log.trace("QtyAdjust - Standard - " + cost);
 			}
 			else if (ce.isUserDefined())
 			{
@@ -1116,15 +1118,15 @@ public class MCostDetail extends X_M_CostDetail
 					cost.add(amt, qty);
 				else
 					cost.setCurrentQty(cost.getCurrentQty().add(qty));
-				log.finer("QtyAdjust - UserDef - " + cost);
+				log.trace("QtyAdjust - UserDef - " + cost);
 			}
 			else if (!ce.isCostingMethod())
 			{
 			//	Should not happen
-				log.finer("QtyAdjust - ?none? - " + cost);
+				log.trace("QtyAdjust - ?none? - " + cost);
 			}
 			else
-				log.warning("QtyAdjust - " + ce + " - " + cost);
+				log.warn("QtyAdjust - " + ce + " - " + cost);
 			
 			//AZ Goodwill
 			//Also update Landed Costs to reflect the actual qty in storage
@@ -1163,7 +1165,7 @@ public class MCostDetail extends X_M_CostDetail
 							lCost.setCurrentQty(qtyOnhand);
 							if (!lCost.save())
 							{
-								log.warning("Update Landed Costs (Qty) fail: " + lce + " - " + lCost);
+								log.warn("Update Landed Costs (Qty) fail: " + lce + " - " + lCost);
 								return false;
 							}
 						}
@@ -1174,7 +1176,7 @@ public class MCostDetail extends X_M_CostDetail
 		}
 		else	//	unknown or no id
 		{
-			log.warning("Unknown Type: " + toString());
+			log.warn("Unknown Type: " + toString());
 			return false;
 		}
 		return cost.save();

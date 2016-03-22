@@ -56,7 +56,7 @@ import de.metas.lock.api.ILock;
 /* package*/class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
 	// services
-	// private final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	// private final transient Logger logger = InvoiceCandidate_Constants.getLogger();
 	private final transient InvoiceCandBL invoiceCandBL;
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);

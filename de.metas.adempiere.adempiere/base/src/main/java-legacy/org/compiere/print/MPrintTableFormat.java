@@ -29,14 +29,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -585,7 +585,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 
 	private static final CCache<Integer, MPrintTableFormat> s_cache = new CCache<>(Table_Name, 3);
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MPrintTableFormat.class);
+	private static Logger s_log = LogManager.getLogger(MPrintTableFormat.class);
 
 	/**
 	 * Get Table Format.
@@ -657,7 +657,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -685,12 +685,12 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 			MAttachment attachment = MAttachment.get(getCtx(), Table_ID, get_ID());
 			if (attachment == null)
 			{
-				log.log(Level.WARNING, "No Attachment - ID=" + get_ID());
+				log.warn("No Attachment - ID=" + get_ID());
 				return null;
 			}
 			if (attachment.getEntryCount() != 1)
 			{
-				log.log(Level.WARNING, "Need just 1 Attachment Entry = " + attachment.getEntryCount());
+				log.warn("Need just 1 Attachment Entry = " + attachment.getEntryCount());
 				return null;
 			}
 			byte[] imageData = attachment.getEntryData(0);
@@ -700,11 +700,11 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 			}
 			if (m_image != null)
 			{
-				log.fine(attachment.getEntryName(0) + " - Size=" + imageData.length);
+				log.debug(attachment.getEntryName(0) + " - Size=" + imageData.length);
 			}
 			else
 			{
-				log.log(Level.WARNING, attachment.getEntryName(0) + " - not loaded (must be gif or jpg) - ID=" + get_ID());
+				log.warn(attachment.getEntryName(0) + " - not loaded (must be gif or jpg) - ID=" + get_ID());
 			}
 		}
 		else if (getImageURL() != null)
@@ -718,7 +718,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 			}
 			catch (MalformedURLException e)
 			{
-				log.log(Level.WARNING, "Malformed URL - " + getImageURL(), e);
+				log.warn("Malformed URL - " + getImageURL(), e);
 			}
 		}
 		return m_image;

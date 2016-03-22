@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import java.util.regex.Pattern;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -19,7 +20,8 @@ import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MUserQuery;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -54,7 +56,7 @@ class FindUserQueryRepository
 	private static final int INDEX_VALUE2 = 4;
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(FindUserQueryRepository.class);
+	private static final transient Logger logger = LogManager.getLogger(FindUserQueryRepository.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	// Config
@@ -206,7 +208,7 @@ class FindUserQueryRepository
 				final FindPanelSearchField searchField = row.getSearchField();
 				if (searchField == null)
 				{
-					logger.log(Level.WARNING, "No search column found for {0}", segment);
+					logger.warn("No search column found for {}", segment);
 					continue;
 				}
 				final Object value = searchField.parseValueFromString(fields[j]);

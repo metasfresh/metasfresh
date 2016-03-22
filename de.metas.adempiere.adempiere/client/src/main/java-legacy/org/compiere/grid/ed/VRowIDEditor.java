@@ -26,7 +26,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  RowID Cell Editor providing Selection
@@ -56,7 +57,7 @@ public class VRowIDEditor extends AbstractCellEditor implements TableCellEditor
 	private Object[] 	m_rid;
 	private boolean		m_select;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VRowIDEditor.class);
+	private static Logger log = LogManager.getLogger(VRowIDEditor.class);
 
 	/**
 	 *	Enable Selection to be displayed
@@ -90,7 +91,7 @@ public class VRowIDEditor extends AbstractCellEditor implements TableCellEditor
 	public Component getTableCellEditorComponent(JTable table, 
 		Object value, boolean isSelected, int row, int col)
 	{
-		log.fine("Value=" + value + ", row=" + row + ", col=" + col);
+		log.debug("Value=" + value + ", row=" + row + ", col=" + col);
 		m_rid = (Object[])value;
 		if (m_rid == null || m_rid[1] == null)
 			m_cb.setSelected(false);
@@ -117,7 +118,7 @@ public class VRowIDEditor extends AbstractCellEditor implements TableCellEditor
 	@Override
 	public Object getCellEditorValue()
 	{
-		log.fine("" + m_cb.isSelected());
+		log.debug("" + m_cb.isSelected());
 		if (m_rid == null)
 			return null;
 		m_rid[1] = Boolean.valueOf(m_cb.isSelected());

@@ -26,7 +26,8 @@ package org.adempiere.user.api.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -46,7 +47,6 @@ import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.model.X_AD_User_SortPref_Hdr;
-import org.compiere.util.CLogger;
 
 /**
  * User default sorting preferences for sequencing in Application Windows (applies to all types of windows)
@@ -55,7 +55,7 @@ import org.compiere.util.CLogger;
  */
 public class UserSortPrefDAO implements IUserSortPrefDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(UserSortPrefDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(UserSortPrefDAO.class);
 
 	// @Cached don't cache: it's a small table so we won't loose much performance and until we have distributed cache invalidation, caching always introduces the risk of stale data.
 	@Override
@@ -229,7 +229,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 			InterfaceWrapperHelper.delete(line);
 			count++;
 		}
-		logger.log(Level.INFO, "Deleted {0} records in sum", count);
+		logger.info("Deleted {} records in sum", count);
 		return count;
 	}
 }

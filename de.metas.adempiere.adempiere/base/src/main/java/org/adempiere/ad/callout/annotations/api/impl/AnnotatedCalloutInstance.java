@@ -30,7 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -38,11 +39,10 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 public final class AnnotatedCalloutInstance implements ICalloutInstance
 {
-	private static final transient CLogger logger = CLogger.getCLogger(AnnotatedCalloutInstance.class);
+	private static final transient Logger logger = LogManager.getLogger(AnnotatedCalloutInstance.class);
 
 	private final String id;
 	private final Object annotatedObject;
@@ -125,7 +125,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		// Skip executing this callout if we were asked to skip when record copying mode is active
 		if (pointcut.isSkipIfCopying() && field.isRecordCopyingMode())
 		{
-			logger.log(Level.INFO, "Skip invoking callout because we are in copying mode: {0}", pointcut.getMethod());
+			logger.info("Skip invoking callout because we are in copying mode: {}", pointcut.getMethod());
 			return;
 		}
 

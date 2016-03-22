@@ -19,7 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.IStatusBar;
 import org.compiere.minigrid.IDColumn;
@@ -31,7 +32,8 @@ import org.compiere.model.MPrivateAccess;
 import org.compiere.model.MRMA;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -45,7 +47,7 @@ import org.compiere.util.Trx;
 public class InOutGen extends GenForm
 {
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InOutGen.class);
+	private static Logger log = LogManager.getLogger(InOutGen.class);
 	//
 	
 	public Object 			m_M_Warehouse_ID = null;
@@ -179,7 +181,7 @@ public class InOutGen extends GenForm
 		    sql = getOrderSQL();
 		}
 
-		log.fine(sql);
+		log.debug(sql);
 		//  reset table
 		int row = 0;
 		miniTable.setRowCount(row);
@@ -210,7 +212,7 @@ public class InOutGen extends GenForm
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		//
 		miniTable.autoSize();
@@ -233,14 +235,14 @@ public class InOutGen extends GenForm
 		for (int i = 0; i < rows; i++)
 		{
 			IDColumn id = (IDColumn)miniTable.getValueAt(i, 0);     //  ID in column 0
-		//	log.fine( "Row=" + i + " - " + id);
+		//	log.debug( "Row=" + i + " - " + id);
 			if (id != null && id.isSelected())
 				results.add(id.getRecord_ID());
 		}
 
 		if (results.size() == 0)
 			return;
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 		setSelection(results);
 	}	//	saveSelection
 
@@ -298,7 +300,7 @@ public class InOutGen extends GenForm
 				if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 				{
 					String msg = "No Shipments";     //  not translated!
-					log.config(msg);
+					log.info(msg);
 					info = msg;
 					trx.rollback();
 					return info;
@@ -313,7 +315,7 @@ public class InOutGen extends GenForm
 			if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 			{
 				String msg = "No Shipments";     //  not translated!
-				log.config(msg);
+				log.info(msg);
 				info = msg;
 				trx.rollback();
 				return info;
@@ -331,7 +333,7 @@ public class InOutGen extends GenForm
 		{
 			String msg = "No Parameter added";  //  not translated
 			info = msg;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return info;
 		}
 		//Add Document action parameter
@@ -342,7 +344,7 @@ public class InOutGen extends GenForm
 		{
 			String msg = "No DocACtion Parameter added";
 			info = msg;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return info;
 		}
 		//	Add Parameter - M_Warehouse_ID=x
@@ -352,7 +354,7 @@ public class InOutGen extends GenForm
 		{
 			String msg = "No Parameter added";  //  not translated
 			info = msg;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return info;
 		}
 		

@@ -28,7 +28,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.PO;
@@ -134,7 +135,7 @@ public class BuildRelevantPOQueue extends SvrProcess
 			else
 			{
 
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

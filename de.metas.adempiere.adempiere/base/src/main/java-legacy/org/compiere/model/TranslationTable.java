@@ -19,7 +19,8 @@ package org.compiere.model;
 import java.util.ArrayList;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -119,11 +120,11 @@ public class TranslationTable
 		m_baseTableName = baseTableName;
 		m_trlTableName = baseTableName + "_Trl";
 		initColumns();
-		log.fine(toString());
+		log.debug(toString());
 	}	//	TranslationTable
 
 	/**	Static Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (TranslationTable.class);
+	private static Logger	log	= LogManager.getLogger(TranslationTable.class);
 
 	/**	Translation Table Name		*/
 	private String				m_trlTableName = null;
@@ -200,7 +201,7 @@ public class TranslationTable
 				+ " b WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND b."
 				+ m_baseTableName + "_ID=").append(po.get_ID());
 		int no = DB.executeUpdate(sql.toString(), po.get_TrxName());
-		log.fine(m_trlTableName + ": ID=" + po.get_ID() + " #" + no);
+		log.debug(m_trlTableName + ": ID=" + po.get_ID() + " #" + no);
 		return no != 0;
 	}	//	createTranslation
 	
@@ -221,7 +222,7 @@ public class TranslationTable
 			.append(" SET IsTranslated='N',Updated=now() WHERE ")
 			.append(m_baseTableName).append("_ID=").append(po.get_ID());
 		int no = DB.executeUpdate(sb.toString(), po.get_TrxName());
-		log.fine(m_trlTableName + ": ID=" + po.get_ID() + " #" + no);
+		log.debug(m_trlTableName + ": ID=" + po.get_ID() + " #" + no);
 		return no != 0;
 	}	//	resetTranslationFlag
 
@@ -242,7 +243,7 @@ public class TranslationTable
 			.append(" WHERE ")
 			.append(m_baseTableName).append("_ID=").append(po.get_IDOld());
 		int no = DB.executeUpdate(sb.toString(), po.get_TrxName());
-		log.fine(m_trlTableName + ": ID=" + po.get_IDOld() + " #" + no);
+		log.debug(m_trlTableName + ": ID=" + po.get_IDOld() + " #" + no);
 		return no != 0;
 	}	//	resetTranslationFlag
 

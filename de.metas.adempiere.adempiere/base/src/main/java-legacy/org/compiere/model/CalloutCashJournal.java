@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -102,7 +100,7 @@ public class CalloutCashJournal extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "invoice", e);
+			log.error("invoice", e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -140,7 +138,7 @@ public class CalloutCashJournal extends CalloutEngine
 		BigDecimal DiscountAmt = (BigDecimal)mTab.getValue("DiscountAmt");
 		BigDecimal WriteOffAmt = (BigDecimal)mTab.getValue("WriteOffAmt");
 		String colName = mField.getColumnName();
-		log.fine(colName + " - Invoice=" + InvTotalAmt
+		log.debug(colName + " - Invoice=" + InvTotalAmt
 			+ " - Amount=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt);
 
 		//  Amount - calculate write off

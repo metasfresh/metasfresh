@@ -25,12 +25,12 @@ package de.metas.edi.sscc18;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -139,7 +139,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	public static class Builder
 	{
 		// services
-		private static final transient CLogger logger = CLogger.getCLogger(PrintableDesadvLineSSCC18Labels.class);
+		private static final transient Logger logger = LogManager.getLogger(PrintableDesadvLineSSCC18Labels.class);
 		private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 		private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -240,7 +240,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				}
 				catch (Exception e)
 				{
-					logger.log(Level.WARNING, "Failed to calculate qtys for " + _desadvLine, e);
+					logger.warn("Failed to calculate qtys for " + _desadvLine, e);
 					_huQtysCalculator = TotalQtyCUBreakdownCalculator.NULL;
 				}
 			}
@@ -301,7 +301,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				final I_M_ShipmentSchedule shipmentSchedule = desadvDAO.retrieveM_ShipmentScheduleOrNull(desadvLine);
 				if (shipmentSchedule == null)
 				{
-					logger.log(Level.WARNING, "No shipment schedule was found for {0}", desadvLine);
+					logger.warn("No shipment schedule was found for {}", desadvLine);
 				}
 				_shipmentSchedule = Optional.fromNullable(shipmentSchedule);
 			}
@@ -328,12 +328,12 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.getM_HU_LUTU_Configuration(shipmentSchedule);
 			if (lutuConfiguration == null) // shall not happen
 			{
-				logger.log(Level.WARNING, "No LU/TU configuration found for {0}", shipmentSchedule);
+				logger.warn("No LU/TU configuration found for {}", shipmentSchedule);
 				return Optional.absent();
 			}
 			if (lutuConfigurationFactory.isNoLU(lutuConfiguration))
 			{
-				logger.log(Level.WARNING, "No LU PI found for {0}", shipmentSchedule);
+				logger.warn("No LU PI found for {}", shipmentSchedule);
 				return Optional.absent();
 			}
 

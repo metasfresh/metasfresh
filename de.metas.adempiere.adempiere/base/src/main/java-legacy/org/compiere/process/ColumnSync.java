@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -53,7 +51,7 @@ public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
 			if (para[i].getParameter() == null)
 				;			
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_Column_ID = getRecord_ID();
 	}	//	prepare

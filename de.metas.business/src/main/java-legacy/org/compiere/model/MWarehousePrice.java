@@ -21,10 +21,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -92,7 +94,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 		//
 		String finalSQL = Env.getUserRolePermissions().addAccessSQL(sql.toString(), 
 			"RV_WarehousePrice", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
-		s_log.fine("find - M_PriceList_Version_ID=" + M_PriceList_Version_ID 
+		s_log.debug("find - M_PriceList_Version_ID=" + M_PriceList_Version_ID 
 			+ ", M_Warehouse_ID=" + M_Warehouse_ID
 			+ " - " + finalSQL);
 		ArrayList<MWarehousePrice> list = new ArrayList<MWarehousePrice>();
@@ -120,7 +122,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, finalSQL, e);
+			s_log.error(finalSQL, e);
 		}
 		try
 		{
@@ -133,7 +135,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 			pstmt = null;
 		}
 		//
-		s_log.fine("find - #" + list.size());
+		s_log.debug("find - #" + list.size());
 		MWarehousePrice[] retValue = new MWarehousePrice[list.size()];
 		list.toArray(retValue);
 		return retValue;
@@ -164,13 +166,13 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 			pl = MPriceList.get(bPartner.getCtx(), M_PriceList_ID, trxName);
 		if (pl == null)
 		{
-			s_log.severe ("No PriceList found");
+			s_log.error("No PriceList found");
 			return null;
 		}
 		MPriceListVersion plv = pl.getPriceListVersion (valid);
 		if (plv == null)
 		{
-			s_log.severe ("No PriceListVersion found for M_PriceList_ID=" + pl.getM_PriceList_ID());
+			s_log.error("No PriceListVersion found for M_PriceList_ID=" + pl.getM_PriceList_ID());
 			return null;
 		}
 		//
@@ -208,7 +210,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -224,7 +226,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 	}	//	get
 
 	/** Static Logger					*/
-	private static CLogger 	s_log = CLogger.getCLogger(MWarehousePrice.class);
+	private static Logger 	s_log = LogManager.getLogger(MWarehousePrice.class);
 
 	
 	/*************************************************************************

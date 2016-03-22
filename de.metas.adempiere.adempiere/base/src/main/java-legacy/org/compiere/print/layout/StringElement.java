@@ -60,7 +60,7 @@ public class StringElement extends PrintElement
 	public StringElement (String inText, Font font, Paint paint, NamePair ID, boolean translateText)
 	{
 		super();
-		log.finest("Text=" + inText + ", ID=" + ID + ", Translate=" + translateText);
+		log.trace("Text=" + inText + ", ID=" + ID + ", Translate=" + translateText);
 		m_font = font;
 		m_paint = paint;
 		if (translateText)
@@ -83,7 +83,7 @@ public class StringElement extends PrintElement
 			m_string_paper[i] = new AttributedString(line);
 			if (line.length() == 0)
 				continue;
-			log.finest(" - line=" + i + " - " + line);
+			log.trace(" - line=" + i + " - " + line);
 			m_string_paper[i].addAttribute(TextAttribute.FONT, font);
 			m_string_paper[i].addAttribute(TextAttribute.FOREGROUND, paint);
 			if (m_ID != null && i == 0)		//	first line only - create special Attributed String
@@ -126,7 +126,7 @@ public class StringElement extends PrintElement
 	public StringElement (Object content, Font font, Paint paint, NamePair ID, String label, String labelSuffix)
 	{
 		super();
-		log.finest("Label=" + label + "|" + labelSuffix
+		log.trace("Label=" + label + "|" + labelSuffix
 				+ ", Content=" + content + ", ID=" + ID);
 		m_font = font;
 		m_paint = paint;
@@ -158,7 +158,7 @@ public class StringElement extends PrintElement
 			m_string_paper[i] = new AttributedString(line);
 			if (line.length() == 0)
 				continue;
-			log.finest(" - line=" + i + " - " + line);
+			log.trace(" - line=" + i + " - " + line);
 			m_string_paper[i].addAttribute(TextAttribute.FONT, font);
 			m_string_paper[i].addAttribute(TextAttribute.FOREGROUND, paint);
 			if (m_ID != null && i == 0)		//	first line only - create special Attributed String
@@ -223,7 +223,7 @@ public class StringElement extends PrintElement
 		if (m_originalString == null)
 			return;
 		String inText = Msg.parseTranslation(ctx, m_originalString);
-	//	log.fine( "StringElement.translate", inText);
+	//	log.debug( "StringElement.translate", inText);
 		String[] lines = Pattern.compile("$", Pattern.MULTILINE).split(inText);
 		m_string_paper = new AttributedString[lines.length];
 		for (int i = 0; i < lines.length; i++)
@@ -369,7 +369,7 @@ public class StringElement extends PrintElement
 	{
 		if (m_ID != null && getBounds().contains(relativePoint))
 		{
-			log.fine(toString());
+			log.debug(toString());
 			String columnName = MQuery.getZoomColumnName(m_ID.getName());
 			String tableName = MQuery.getZoomTableName(columnName);
 			Object code = m_ID.getID();
@@ -391,7 +391,7 @@ public class StringElement extends PrintElement
 	 */
 	public MQuery getDrillAcross (Point relativePoint, int pageNo)
 	{
-	//	log.fine( "StringElement.getDrillAcross");
+	//	log.debug( "StringElement.getDrillAcross");
 	//	if (getBounds().contains(relativePoint));
 		return null;
 	}	//	getDrillAcross
@@ -409,7 +409,7 @@ public class StringElement extends PrintElement
 	 */
 	public void paint (Graphics2D g2D, int pageNo, Point2D pageStart, Properties ctx, boolean isView)
 	{
-	//	log.finest( "StringElement.paint", "<" + m_originalString + "> " + p_pageLocation.x + "/" + p_pageLocation.y
+	//	log.trace( "StringElement.paint", "<" + m_originalString + "> " + p_pageLocation.x + "/" + p_pageLocation.y
 	//		+ ", Clip=" + g2D.getClip()
 	//		+ ", Translate=" + g2D.getTransform().getTranslateX() + "/" + g2D.getTransform().getTranslateY()
 	//		+ ", Scale=" + g2D.getTransform().getScaleX() + "/" + g2D.getTransform().getScaleY()
@@ -497,7 +497,7 @@ public class StringElement extends PrintElement
 					if (width < lineWidth)
 						width = lineWidth;
 				}
-				//	log.finest( "StringElement.paint - No Limit - " + location.x + "/" + yPos
+				//	log.trace( "StringElement.paint - No Limit - " + location.x + "/" + yPos
 				//		+ " w=" + layout.getAdvance() + ",h=" + lineHeight + ", Bounds=" + layout.getBounds());
 			}
 			//	Size Limits
@@ -559,7 +559,7 @@ public class StringElement extends PrintElement
 							layout.draw(g2D, xPen, yPen);
 						}
 						height += lineHeight;
-					//	log.finest( "StringElement.paint - Limit - " + xPen + "/" + yPen
+					//	log.trace( "StringElement.paint - Limit - " + xPen + "/" + yPen
 					//		+ " w=" + layout.getAdvance() + ",h=" + lineHeight + ", Align=" + p_FieldAlignmentType + ", Max w=" + p_maxWidth + ",h=" + p_maxHeight + ", Bounds=" + layout.getBounds());
 					}
 				}

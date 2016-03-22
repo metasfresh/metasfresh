@@ -224,7 +224,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -280,7 +280,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		final String sql = "UPDATE M_InventoryLine SET Processed=? WHERE M_Inventory_ID=?";
 		int noLine = DB.executeUpdateEx(sql, new Object[]{processed, getM_Inventory_ID()}, get_TrxName());
 		m_lines = null;
-		log.fine("Processed=" + processed + " - Lines=" + noLine);
+		log.debug("Processed=" + processed + " - Lines=" + noLine);
 	}	//	setProcessed
 
 
@@ -429,7 +429,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 			if (product != null
 					&& Services.get(IProductBL.class).isStocked(product) )
 			{
-				log.fine("Material Transaction");
+				log.debug("Material Transaction");
 				MTransaction mtrx = null;
 
 				//If AttributeSetInstance = Zero then create new  AttributeSetInstance use Inventory Line MA else use current AttributeSetInstance
@@ -443,7 +443,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 						MInventoryLineMA ma = mas[j];
 						BigDecimal QtyMA = ma.getMovementQty();
 						BigDecimal QtyNew = QtyMA.add(qtyDiff);
-						log.fine("Diff=" + qtyDiff
+						log.debug("Diff=" + qtyDiff
 								+ " - Instance OnHand=" + QtyMA + "->" + QtyNew);
 
 						if (!MStorage.add(getCtx(), getM_Warehouse_ID(),
@@ -608,7 +608,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 	{
 		int no = MInventoryLineMA.deleteInventoryLineMA(line.getM_InventoryLine_ID(), get_TrxName());
 		if (no > 0)
-			log.config("Deleted old #" + no);
+			log.info("Deleted old #" + no);
 
 		//	Check Line
 		boolean needSave = false;
@@ -654,7 +654,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 								qtyToDeliver);
 						ma.saveEx();
 						qtyToDeliver = Env.ZERO;
-						log.fine( ma + ", QtyToDeliver=" + qtyToDeliver);
+						log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 					}
 					else
 					{
@@ -663,7 +663,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 								storage.getQtyOnHand());
 						ma.saveEx();
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-						log.fine( ma + ", QtyToDeliver=" + qtyToDeliver);
+						log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 					}
 					if (qtyToDeliver.signum() == 0)
 						break;
@@ -678,7 +678,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 					MInventoryLineMA ma = new MInventoryLineMA (line, M_AttributeSetInstance_ID , qtyToDeliver);
 
 					ma.saveEx();
-					log.fine("##: " + ma);
+					log.debug("##: " + ma);
 				}
 			}	//	outgoing Trx
 

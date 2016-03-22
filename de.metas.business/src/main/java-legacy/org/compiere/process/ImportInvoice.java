@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -73,7 +74,7 @@ public class ImportInvoice extends SvrProcess
 			else if (name.equals("DocAction"))
 				m_docAction = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		if (m_DateValue == null)
 			m_DateValue = new Timestamp (System.currentTimeMillis());
@@ -100,7 +101,7 @@ public class ImportInvoice extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_Invoice "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Deleted Old Impored =" + no);
+			log.debug("Deleted Old Impored =" + no);
 		}
 
 		//	Set Client, Org, IsActive, Created/Updated
@@ -116,7 +117,7 @@ public class ImportInvoice extends SvrProcess
 			  + " I_IsImported = 'N' "
 			  + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.info ("Reset=" + no);
+		log.info("Reset=" + no);
 
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
@@ -125,7 +126,7 @@ public class ImportInvoice extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Org=" + no);
+			log.warn("Invalid Org=" + no);
 
 		//	Document Type - PO - SO
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -134,14 +135,14 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set PO DocType=" + no);
+			log.debug("Set PO DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
 			  + " AND d.DocBaseType IN ('ARI','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
 			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set SO DocType=" + no);
+			log.debug("Set SO DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
 			  + " AND d.DocBaseType IN ('API','ARI','APC','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
@@ -149,14 +150,14 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set DocType=" + no);
+			log.debug("Set DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocTypeName, ' "
 			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid DocTypeName=" + no);
+			log.warn("Invalid DocTypeName=" + no);
 		//	DocType Default
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
@@ -164,28 +165,28 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set PO Default DocType=" + no);
+			log.debug("Set PO Default DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
 			  + " AND d.DocBaseType='ARI' AND o.AD_Client_ID=d.AD_Client_ID) "
 			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set SO Default DocType=" + no);
+			log.debug("Set SO Default DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
 			  + " AND d.DocBaseType IN('ARI','API') AND o.AD_Client_ID=d.AD_Client_ID) "
 			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.fine("Set Default DocType=" + no);
+			log.debug("Set Default DocType=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No DocType, ' "
 			  + "WHERE C_DocType_ID IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("No DocType=" + no);
+			log.warn("No DocType=" + no);
 
 		//	Set IsSOTrx
 		sql = new StringBuffer ("UPDATE I_Invoice o SET IsSOTrx='Y' "
@@ -193,13 +194,13 @@ public class ImportInvoice extends SvrProcess
 			  + " AND C_DocType_ID IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set IsSOTrx=Y=" + no);
+		log.debug("Set IsSOTrx=Y=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o SET IsSOTrx='N' "
 			  + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='API' AND o.AD_Client_ID=d.AD_Client_ID)"
 			  + " AND C_DocType_ID IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set IsSOTrx=N=" + no);
+		log.debug("Set IsSOTrx=N=" + no);
 
 		//	Price List
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -207,25 +208,25 @@ public class ImportInvoice extends SvrProcess
 			  + " AND p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Default Currency PriceList=" + no);
+		log.debug("Set Default Currency PriceList=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
 			  + " AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Default PriceList=" + no);
+		log.debug("Set Default PriceList=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
 			  + " WHERE p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Currency PriceList=" + no);
+		log.debug("Set Currency PriceList=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
 			  + " WHERE p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set PriceList=" + no);
+		log.debug("Set PriceList=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PriceList, ' "
@@ -233,7 +234,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No PriceList=" + no);
+			log.warn("No PriceList=" + no);
 
 		//	Payment Term
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -241,13 +242,13 @@ public class ImportInvoice extends SvrProcess
 			  + " WHERE o.PaymentTermValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set PaymentTerm=" + no);
+		log.debug("Set PaymentTerm=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_PaymentTerm_ID=(SELECT MAX(C_PaymentTerm_ID) FROM C_PaymentTerm p"
 			  + " WHERE p.IsDefault='Y' AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE C_PaymentTerm_ID IS NULL AND o.PaymentTermValue IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Default PaymentTerm=" + no);
+		log.debug("Set Default PaymentTerm=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PaymentTerm, ' "
@@ -255,7 +256,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("No PaymentTerm=" + no);
+			log.warn("No PaymentTerm=" + no);
 
 		// globalqss - Add project and activity
 		//	Project
@@ -264,28 +265,28 @@ public class ImportInvoice extends SvrProcess
 			  + " WHERE o.ProjectValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Project=" + no);
+		log.debug("Set Project=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, ' "
 				  + "WHERE C_Project_ID IS NULL AND (ProjectValue IS NOT NULL)"
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Project=" + no);
+			log.warn("Invalid Project=" + no);
 		//	Activity
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_Activity_ID=(SELECT C_Activity_ID FROM C_Activity p"
 			  + " WHERE o.ActivityValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE C_Activity_ID IS NULL AND ActivityValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Activity=" + no);
+		log.debug("Set Activity=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Activity, ' "
 				  + "WHERE C_Activity_ID IS NULL AND (ActivityValue IS NOT NULL)"
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Activity=" + no);
+			log.warn("Invalid Activity=" + no);
 		// globalqss - add charge
 		//	Charge
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -293,14 +294,14 @@ public class ImportInvoice extends SvrProcess
 			  + " WHERE o.ChargeName=p.Name AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE C_Charge_ID IS NULL AND ChargeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Charge=" + no);
+		log.debug("Set Charge=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Charge, ' "
 				  + "WHERE C_Charge_ID IS NULL AND (ChargeName IS NOT NULL)"
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Charge=" + no);
+			log.warn("Invalid Charge=" + no);
 		//
 		
 		//	BP from EMail
@@ -310,7 +311,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND EMail IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
-		log.fine("Set BP from EMail=" + no);
+		log.debug("Set BP from EMail=" + no);
 		//	BP from ContactName
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
@@ -319,7 +320,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND EXISTS (SELECT Name FROM AD_User u WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL GROUP BY Name HAVING COUNT(*)=1)"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
-		log.fine("Set BP from ContactName=" + no);
+		log.debug("Set BP from ContactName=" + no);
 		//	BP from Value
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
@@ -327,7 +328,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set BP from Value=" + no);
+		log.debug("Set BP from Value=" + no);
 		//	Default BP
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_BPartner_ID=(SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo c"
@@ -335,7 +336,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NULL AND Name IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Default BP=" + no);
+		log.debug("Set Default BP=" + no);
 
 		//	Existing Location ? Exact Match
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -351,7 +352,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 			  + " AND I_IsImported='N'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Found Location=" + no);
+		log.debug("Found Location=" + no);
 		//	Set Location from BPartner
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_BPartner_Location_ID=(SELECT MAX(C_BPartner_Location_ID) FROM C_BPartner_Location l"
@@ -364,7 +365,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set BP Location from BP=" + no);
+		log.debug("Set BP Location from BP=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BP Location, ' "
@@ -372,7 +373,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("No BP Location=" + no);
+			log.warn("No BP Location=" + no);
 
 		//	Set Country
 		/**
@@ -382,7 +383,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND CountryCode IS NULL AND C_Country_ID IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Country Default=" + no);
+		log.debug("Set Country Default=" + no);
 		**/
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
@@ -390,7 +391,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL AND CountryCode IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Country=" + no);
+		log.debug("Set Country=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Country, ' "
@@ -398,7 +399,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Country=" + no);
+			log.warn("Invalid Country=" + no);
 
 		//	Set Region
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -408,7 +409,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Region Default=" + no);
+		log.debug("Set Region Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
@@ -417,7 +418,7 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Region=" + no);
+		log.debug("Set Region=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Region, ' "
@@ -427,7 +428,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Region=" + no);
+			log.warn("Invalid Region=" + no);
 
 		//	Product
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -436,28 +437,28 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Product from Value=" + no);
+		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
 			  + " WHERE o.UPC=p.UPC AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_Product_ID IS NULL AND UPC IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Product from UPC=" + no);
+		log.debug("Set Product from UPC=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice o "
 			  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
 			  + " WHERE o.SKU=p.SKU AND o.AD_Client_ID=p.AD_Client_ID) "
 			  + "WHERE M_Product_ID IS NULL AND SKU IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Product fom SKU=" + no);
+		log.debug("Set Product fom SKU=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
 			  + "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Product=" + no);
+			log.warn("Invalid Product=" + no);
 
 		// globalqss - charge and product are exclusive
 		sql = new StringBuffer ("UPDATE I_Invoice "
@@ -466,7 +467,7 @@ public class ImportInvoice extends SvrProcess
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Product and Charge exclusive=" + no);
+			log.warn("Invalid Product and Charge exclusive=" + no);
 
 			//	Tax
 		sql = new StringBuffer ("UPDATE I_Invoice o "
@@ -475,14 +476,14 @@ public class ImportInvoice extends SvrProcess
 			  + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Tax=" + no);
+		log.debug("Set Tax=" + no);
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Tax, ' "
 			  + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Tax=" + no);
+			log.warn("Invalid Tax=" + no);
 		
 		commitEx();
 		
@@ -608,7 +609,7 @@ public class ImportInvoice extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "CreateBP", e);
+			log.error("CreateBP", e);
 		}
 		sql = new StringBuffer ("UPDATE I_Invoice "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner, ' "
@@ -616,7 +617,7 @@ public class ImportInvoice extends SvrProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("No BPartner=" + no);
+			log.warn("No BPartner=" + no);
 		
 		commitEx();
 		
@@ -762,7 +763,7 @@ public class ImportInvoice extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "CreateInvoice", e);
+			log.error("CreateInvoice", e);
 		}
 
 		//	Set Error to indicator to not imported

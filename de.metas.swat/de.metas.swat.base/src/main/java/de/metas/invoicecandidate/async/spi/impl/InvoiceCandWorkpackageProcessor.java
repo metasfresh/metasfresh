@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.async.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -32,8 +31,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
 import com.google.common.base.Optional;
 
 import de.metas.async.api.IQueueDAO;
@@ -66,7 +64,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
 	private InvoicingParams _invoicingParams = null; // lazy loaded
@@ -117,7 +115,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 			// Log invoices generation result
 			final String createInvoiceResultsSummary = createInvoiceResults.getSummary(localCtx);
-			logger.log(Level.INFO, createInvoiceResultsSummary);
+			logger.info(createInvoiceResultsSummary);
 			loggable.addLog(createInvoiceResultsSummary);
 
 			// invalidate them all at once

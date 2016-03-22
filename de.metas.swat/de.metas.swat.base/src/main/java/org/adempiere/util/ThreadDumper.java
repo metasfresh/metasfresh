@@ -27,11 +27,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public final class ThreadDumper {
 
-	private static CLogger log = CLogger.getCLogger(ThreadDumper.class);
+	private static Logger log = LogManager.getLogger(ThreadDumper.class);
 
 	private static ThreadDumper instance = new ThreadDumper();
 

@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -60,7 +61,7 @@ public class PaySelectionCreateCheck extends SvrProcess
 			else if (name.equals("PaymentRule"))
 				p_PaymentRule = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_PaySelection_ID = getRecord_ID();
 		if (p_PaymentRule != null && p_PaymentRule.equals(X_C_Order.PAYMENTRULE_DirectDebit))
@@ -74,7 +75,7 @@ public class PaySelectionCreateCheck extends SvrProcess
 	 */
 	protected String doIt () throws Exception
 	{
-		log.info ("C_PaySelection_ID=" + p_C_PaySelection_ID
+		log.info("C_PaySelection_ID=" + p_C_PaySelection_ID
 			+ ", PaymentRule=" + p_PaymentRule);
 		
 		MPaySelection psel = new MPaySelection (getCtx(), p_C_PaySelection_ID, get_TrxName());

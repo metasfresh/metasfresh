@@ -27,22 +27,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.SingletonIterator;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 
 public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	private final Class<T> modelClass;
 	private final String tableName;
 
@@ -134,7 +133,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.WARNING, "Error while creating source from " + model + ". Skipping.", e);
+				logger.warn("Error while creating source from " + model + ". Skipping.", e);
 			}
 		}
 	}

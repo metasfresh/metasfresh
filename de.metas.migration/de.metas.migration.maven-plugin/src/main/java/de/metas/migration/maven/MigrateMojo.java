@@ -31,7 +31,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import de.metas.migration.IDatabase;
 import de.metas.migration.applier.IScriptsApplier;
@@ -75,7 +74,7 @@ public class MigrateMojo extends AbstractMojo
 	{
 		//
 		// Bind slf4j to maven log
-		StaticLoggerBinder.getSingleton().setLog(getLog());
+//		StaticLoggerBinder.getSingleton().setLog(getLog());
 
 		System.out.println("PROJECT: " + project);
 

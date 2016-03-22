@@ -19,7 +19,8 @@ package org.compiere.model;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -31,7 +32,7 @@ import org.compiere.util.CLogger;
 public class MPaymentValidate
 {
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MPaymentValidate.class);
+	private static Logger	s_log	= LogManager.getLogger(MPaymentValidate.class);
 
 	
 	/**
@@ -185,7 +186,7 @@ public class MPaymentValidate
 		if (sum % 10 == 0)
 			return "";
 
-		s_log.fine("validateCreditCardNumber - " + creditCardNumber + " -> "
+		s_log.debug("validateCreditCardNumber - " + creditCardNumber + " -> "
 			+ ccNumber + ", Luhn=" + sum);
 		return "CreditCardNumberError";
 	}   //  validateCreditCardNumber
@@ -263,7 +264,7 @@ public class MPaymentValidate
 		}
 		if (!ccLengthOK)
 		{
-			s_log.fine("validateCreditCardNumber Length="
+			s_log.debug("validateCreditCardNumber Length="
 				+ ccLength + " <> " + ccLengthList);
 			return "CreditCardNumberError";
 		}
@@ -279,7 +280,7 @@ public class MPaymentValidate
 				ccIdentified = true;
 		}
 		if (!ccIdentified)
-			s_log.fine("validateCreditCardNumber Type="
+			s_log.debug("validateCreditCardNumber Type="
 				+ creditCardType + " <> " + ccStartList);
 
 		//
@@ -311,9 +312,9 @@ public class MPaymentValidate
 		}
 		catch (NumberFormatException ex)
 		{
-			s_log.fine("validateCreditCardVV - " + ex);
+			s_log.debug("validateCreditCardVV - " + ex);
 		}
-		s_log.fine("validateCreditCardVV - length=" + length);
+		s_log.debug("validateCreditCardVV - length=" + length);
 		return "CreditCardVVError";
 	}   //  validateCreditCardVV
 
@@ -344,10 +345,10 @@ public class MPaymentValidate
 				}
 				catch (NumberFormatException ex)
 				{
-					s_log.fine("validateCreditCardVV - " + ex);
+					s_log.debug("validateCreditCardVV - " + ex);
 				}
 			}
-			s_log.fine("validateCreditCardVV(4) CC=" + creditCardType + ", length=" + length);
+			s_log.debug("validateCreditCardVV(4) CC=" + creditCardType + ", length=" + length);
 			return "CreditCardVVError";
 		}
 		//	Visa & MasterCard - 3 digits
@@ -363,10 +364,10 @@ public class MPaymentValidate
 				}
 				catch (NumberFormatException ex)
 				{
-					s_log.fine("validateCreditCardVV - " + ex);
+					s_log.debug("validateCreditCardVV - " + ex);
 				}
 			}
-			s_log.fine("validateCreditCardVV(3) CC=" + creditCardType + ", length=" + length);
+			s_log.debug("validateCreditCardVV(3) CC=" + creditCardType + ", length=" + length);
 			return "CreditCardVVError";
 		}
 

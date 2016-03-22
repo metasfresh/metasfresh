@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MRequest;
 import org.compiere.util.AdempiereUserError;
@@ -47,7 +48,7 @@ public class RequestReOpen extends SvrProcess
 			else if (name.equals("R_Request_ID"))
 				p_R_Request_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

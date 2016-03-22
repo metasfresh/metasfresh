@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.cm;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MTemplate;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -42,7 +40,7 @@ public class TemplateValidate extends SvrProcess
 			//else if (name.equals("CM_WebProject_ID"))
 				//p_CM_WebProject_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	} // prepare
 

@@ -21,10 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
@@ -112,7 +111,7 @@ public class MPAttributeLookup extends Lookup
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Value=" + value, e);
+				log.error("Value=" + value, e);
 			}
 		}
 		if (M_AttributeSetInstance_ID == 0)
@@ -133,7 +132,7 @@ public class MPAttributeLookup extends Lookup
 				Description = rs.getString(1);			//	Description
 				if (Description == null || Description.length() == 0)
 				{
-					if (CLogMgt.isLevelFine())
+					if (LogManager.isLevelFine())
 						Description = "{" + M_AttributeSetInstance_ID + "}";
 					else
 						Description = "";
@@ -142,7 +141,7 @@ public class MPAttributeLookup extends Lookup
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "get", e);
+			log.error("get", e);
 		}
 		finally
 		{
@@ -161,7 +160,7 @@ public class MPAttributeLookup extends Lookup
 	@Override
 	public void dispose()
 	{
-		log.fine("");
+		log.debug("");
 		super.dispose();
 	}	//	dispose
 
@@ -176,7 +175,7 @@ public class MPAttributeLookup extends Lookup
 	@Override
 	public ArrayList<Object> getData (boolean mandatory, boolean onlyValidated, boolean onlyActive, boolean temporary)
 	{
-		log.log(Level.SEVERE, "Not implemented");
+		log.error("Not implemented");
 		return null;
 	}   //  getArray
 	

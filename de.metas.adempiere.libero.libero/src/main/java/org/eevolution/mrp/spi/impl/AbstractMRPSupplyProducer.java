@@ -44,7 +44,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -61,13 +60,15 @@ import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	//
 	// Services
@@ -289,7 +290,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 			// final LiberoException ex = new LiberoException("MRP segment for MRP record is not fully defined. Skipped."
 			// + "\nMRP Segment: " + mrpSegment
 			// + "\nMRP record: " + mrp);
-			// log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			// log.warn(ex.getLocalizedMessage(), ex);
 
 			return;
 		}

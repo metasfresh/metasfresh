@@ -52,7 +52,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -64,7 +65,7 @@ import de.metas.tax.api.ITaxBL;
 public class InvoiceLineBL implements IInvoiceLineBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(InvoiceLineBL.class);
+	private static final Logger logger = LogManager.getLogger(InvoiceLineBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
@@ -97,14 +98,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		if (il.getM_InOutLine_ID() <= 0)
 		{
-			logger.fine(il + "has M_InOutLine_ID=" + il.getM_InOutLine_ID() + ": returning");
+			logger.debug(il + "has M_InOutLine_ID=" + il.getM_InOutLine_ID() + ": returning");
 			return false;
 		}
 
 		if (il.getM_Product_ID() <= 0)
 		{
 			// this might be the case if a descriptional il refers to an iol.
-			logger.fine(il + "has M_Product_ID=" + il.getM_Product_ID() + ": returning");
+			logger.debug(il + "has M_Product_ID=" + il.getM_Product_ID() + ": returning");
 			return false;
 		}
 

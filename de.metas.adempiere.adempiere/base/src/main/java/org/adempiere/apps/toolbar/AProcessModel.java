@@ -30,7 +30,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 
@@ -46,7 +47,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 /**
@@ -57,7 +57,7 @@ public class AProcessModel
 {
 	private static final String ACTION_Name = "Process";
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	public String getActionName()
 	{
@@ -85,13 +85,13 @@ public class AProcessModel
 			final Boolean accessRW = role.checkProcessAccess(process.getAD_Process_ID());
 			if (accessRW == null)
 			{
-				logger.log(Level.FINE, "Removing process {0} because user has no access at all to it", process);
+				logger.debug("Removing process {} because user has no access at all to it", process);
 				it.remove();
 				continue;
 			}
 			else if (!accessRW)
 			{
-				logger.log(Level.FINE, "Removing process {0} because user has only readonly access to it", process);
+				logger.debug("Removing process {} because user has only readonly access to it", process);
 				it.remove();
 				continue;
 			}
@@ -99,7 +99,7 @@ public class AProcessModel
 			// Filter out processes which have preconditions which don't apply
 			if (!isPreconditionApplicable(process, gridTab))
 			{
-				logger.log(Level.FINE, "Removing process {0} because preconditions were not met", process);
+				logger.debug("Removing process {} because preconditions were not met", process);
 				it.remove();
 				continue;
 			}
@@ -199,7 +199,7 @@ public class AProcessModel
 		}
 		catch (ClassNotFoundException e)
 		{
-			logger.log(Level.SEVERE, "Cannot load class: " + classname, e);
+			logger.error("Cannot load class: " + classname, e);
 			return false;
 		}
 
@@ -216,7 +216,7 @@ public class AProcessModel
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 			return false;
 		}
 	}

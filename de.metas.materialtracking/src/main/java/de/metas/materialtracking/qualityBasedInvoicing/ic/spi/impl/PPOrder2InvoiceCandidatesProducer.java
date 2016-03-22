@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +37,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -71,7 +71,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 /* package */final class PPOrder2InvoiceCandidatesProducer
 {
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(PPOrder2InvoiceCandidatesProducer.class);
+	private static final transient Logger logger = LogManager.getLogger(PPOrder2InvoiceCandidatesProducer.class);
 	private final transient IQualityInspectionHandlerDAO qualityInspectionHandlerDAO = Services.get(IQualityInspectionHandlerDAO.class);
 	private final transient IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
 	private final transient IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
@@ -132,7 +132,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		if (!qualityInspectionHandler.isInvoiceable(ppOrder))
 		{
 			final String msg = "Skip invoice candidates creation because model {0} is not invoiceable according to handler {1}";
-			logger.log(Level.INFO, msg, ppOrder, qualityInspectionHandler);
+			logger.info(msg, ppOrder, qualityInspectionHandler);
 			loggable.addLog(msg, ppOrder, qualityInspectionHandler);
 			return Collections.emptyList(); // nothing to do here
 		}
@@ -145,7 +145,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
 			final String msg = "Skip invoice candidates creation because model {0} is not assigned to a material tracking";
 			loggable.addLog(msg, ppOrder);
-			logger.log(Level.INFO, msg, ppOrder);
+			logger.info(msg, ppOrder);
 			return Collections.emptyList();
 		}
 
@@ -156,7 +156,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		{
 			final String msg = "Skip invoice candidates creation because there is no quality inspection for model {0}";
 			loggable.addLog(msg, ppOrder);
-			logger.log(Level.INFO, msg, ppOrder);
+			logger.info(msg, ppOrder);
 			return Collections.emptyList();
 		}
 
@@ -174,7 +174,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
 				final String msg = "Skip invoice candidates creation because {0} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {1} for it";
 				loggable.addLog(msg, qiOrder.getPP_Order(), firstDownPaymentIC);
-				logger.log(Level.INFO, msg, ppOrder, firstDownPaymentIC);
+				logger.info(msg, ppOrder, firstDownPaymentIC);
 				return Collections.emptyList();
 			}
 		}
@@ -277,7 +277,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 				.getCreatedInvoiceLineGroups();
 
 		// Log builder configuration and status
-		logger.log(Level.INFO, "{0}", invoiceLineGroupsBuilder);
+		logger.info("{}", invoiceLineGroupsBuilder);
 
 		//
 		// Return created invoice line groups

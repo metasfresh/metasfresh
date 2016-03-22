@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -125,7 +126,7 @@ public class MRfQ extends X_C_RfQ
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -165,7 +166,7 @@ public class MRfQ extends X_C_RfQ
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -234,7 +235,7 @@ public class MRfQ extends X_C_RfQ
 			MRfQLineQty[] qtys = line.getQtys();
 			if (qtys.length > 1)
 			{
-				log.warning("isQuoteTotalAmtOnlyValid - #" + qtys.length + " - " + line);
+				log.warn("isQuoteTotalAmtOnlyValid - #" + qtys.length + " - " + line);
 				String msg = "@Line@ " + line.getLine() 
 					+ ": #@C_RfQLineQty@=" + qtys.length + " - @IsQuoteTotalAmt@";
 				return msg;

@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -194,7 +192,7 @@ public class ReportViewElementHandler extends AbstractElementHandler {
 		}
 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "reportview", e);
+			log.error("reportview", e);
 			if (e instanceof SAXException)
 				throw (SAXException) e;
 			else if (e instanceof SQLException)

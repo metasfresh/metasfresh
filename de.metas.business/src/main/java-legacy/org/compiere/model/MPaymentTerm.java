@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
@@ -111,7 +112,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getSchedule", e); 
+			log.error("getSchedule", e); 
 		}
 		try
 		{
@@ -187,7 +188,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		MInvoice invoice = new MInvoice (getCtx(), C_Invoice_ID, get_TrxName());
 		if (invoice == null || invoice.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "apply - Not valid C_Invoice_ID=" + C_Invoice_ID);
+			log.error("apply - Not valid C_Invoice_ID=" + C_Invoice_ID);
 			return false;
 		}
 		return apply (invoice);
@@ -202,7 +203,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	{
 		if (invoice == null || invoice.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "No valid invoice - " + invoice);
+			log.error("No valid invoice - " + invoice);
 			return false;
 		}
 
@@ -247,7 +248,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		{
 			ips = new MInvoicePaySchedule (invoice, m_schedule[i]);
 			ips.save(invoice.get_TrxName());
-			log.fine(ips.toString());
+			log.debug(ips.toString());
 			remainder = remainder.subtract(ips.getDueAmt());
 		}	//	for all schedules
 		//	Remainder - update last
@@ -255,7 +256,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		{
 			ips.setDueAmt(ips.getDueAmt().add(remainder));
 			ips.save(invoice.get_TrxName());
-			log.fine("Remainder=" + remainder + " - " + ips);
+			log.debug("Remainder=" + remainder + " - " + ips);
 		}
 		
 		//	updateInvoice
@@ -273,7 +274,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	{
 		String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
 		int no = DB.executeUpdate(sql, trxName);
-		log.fine("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
+		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
 	}	//	deleteInvoicePaySchedule
 
 	

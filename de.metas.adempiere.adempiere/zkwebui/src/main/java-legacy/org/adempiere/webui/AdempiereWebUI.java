@@ -64,9 +64,10 @@ import org.adempiere.webui.util.BrowserToken;
 import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.Command;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -117,7 +118,7 @@ public class AdempiereWebUI extends Window implements EventListener, IWebClient
 
 	private UserPreference userPreference;
 
-	private static final CLogger logger = CLogger.getCLogger(AdempiereWebUI.class);
+	private static final Logger logger = LogManager.getLogger(AdempiereWebUI.class);
 
 	public static final String EXECUTION_CARRYOVER_SESSION_KEY = "execution.carryover";
 
@@ -313,7 +314,7 @@ public class AdempiereWebUI extends Window implements EventListener, IWebClient
 			}
 			catch (Throwable t)
 			{
-				logger.warning("Failed to instantiate desktop. Class=" + className);
+				logger.warn("Failed to instantiate desktop. Class=" + className);
 			}
 		}
 		//fallback to default

@@ -25,7 +25,8 @@ package org.compiere.print;
 
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MProcess;
 import org.compiere.model.MQuery;
@@ -35,7 +36,6 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.ServerProcessCtl;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 
@@ -50,7 +50,7 @@ public class ServerReportCtl {
 	public static final String PARAM_PRINT_INFO = "PRINT_INFO";
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (ServerReportCtl.class);
+	private static Logger	s_log	= LogManager.getLogger(ServerReportCtl.class);
 	
 	/**
 	 * 	Start Document Print for Type with specified printer.
@@ -66,8 +66,8 @@ public class ServerReportCtl {
 		ReportEngine re = ReportEngine.get (Env.getCtx(), type, Record_ID);
 		if (re == null)
 		{
-			CLogger log = CLogger.getCLogger(ServerReportCtl.class);
-			log.warning("NoDocPrintFormat");
+			Logger log = LogManager.getLogger(ServerReportCtl.class);
+			log.warn("NoDocPrintFormat");
 			return false;
 		}
 		if (customPrintFormat!=null) {
@@ -269,7 +269,7 @@ public class ServerReportCtl {
 			format = (MPrintFormat)pi.getSerializableObject();
 		if (format == null)
 		{
-			s_log.log(Level.SEVERE, "startFinReport - No PrintFormat");
+			s_log.error("startFinReport - No PrintFormat");
 			return false;
 		}
 		PrintInfo info = new PrintInfo(pi);

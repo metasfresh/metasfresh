@@ -40,7 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -64,7 +65,8 @@ import org.compiere.model.Query;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
@@ -99,7 +101,7 @@ public class VSortTab extends CPanel implements APanelTab
 	 */
 	public VSortTab(int WindowNo, int AD_Table_ID, int AD_ColumnSortOrder_ID, int AD_ColumnSortYesNo_ID)
 	{
-		log.config("SortOrder=" + AD_ColumnSortOrder_ID + ", SortYesNo=" + AD_ColumnSortYesNo_ID);
+		log.info("SortOrder=" + AD_ColumnSortOrder_ID + ", SortYesNo=" + AD_ColumnSortYesNo_ID);
 		m_WindowNo = WindowNo;
 
 		try
@@ -109,12 +111,12 @@ public class VSortTab extends CPanel implements APanelTab
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	VSortTab
 
 	/**	Logger			*/
-	static CLogger log = CLogger.getCLogger(VSortTab.class);
+	static Logger log = LogManager.getLogger(VSortTab.class);
 	private int			m_WindowNo;
 	private int			m_AD_Table_ID;
 	private String		m_TableName = null;
@@ -231,32 +233,32 @@ public class VSortTab extends CPanel implements APanelTab
 				//	Sort Column
 				if (AD_ColumnSortOrder_ID == rs.getInt(2))
 				{
-					log.fine("Sort=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Sort=" + rs.getString(1) + "." + rs.getString(3));
 					m_ColumnSortName = rs.getString(3);
 					yesLabel.setText(rs.getString(4));
 				}
 				//	Optional YesNo
 				else if (AD_ColumnSortYesNo_ID == rs.getInt(2))
 				{
-					log.fine("YesNo=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("YesNo=" + rs.getString(1) + "." + rs.getString(3));
 					m_ColumnYesNoName = rs.getString(3);
 				}
 				//	Parent2
 				else if (rs.getString(5).equals("Y"))
 				{
-					log.fine("Parent=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Parent=" + rs.getString(1) + "." + rs.getString(3));
 					m_ParentColumnName = rs.getString(3);
 				}
 				//	KeyColumn
 				else if (rs.getString(6).equals("Y"))
 				{
-					log.fine("Key=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Key=" + rs.getString(1) + "." + rs.getString(3));
 					m_KeyColumnName = rs.getString(3);
 				}
 				//	Identifier
 				else if (rs.getString(7).equals("Y"))
 				{
-					log.fine("Identifier=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("Identifier=" + rs.getString(1) + "." + rs.getString(3));
 					boolean isTranslated = trl && "Y".equals(rs.getString(8));
 					if (identifierSql.length() > 0)
 						identifierSql.append(",");
@@ -267,12 +269,12 @@ public class VSortTab extends CPanel implements APanelTab
 						m_IdentifierTranslated = true;
 				}
 				else
-					log.fine("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
+					log.debug("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -288,7 +290,7 @@ public class VSortTab extends CPanel implements APanelTab
 			m_IdentifierSql = identifierSql.insert(0, "COALESCE(").append(")").toString();
 		//
 		noLabel.setText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Available"));
-		log.fine(m_ColumnSortName);
+		log.debug(m_ColumnSortName);
 	}	//	dynInit
 
 	/**
@@ -485,7 +487,7 @@ public class VSortTab extends CPanel implements APanelTab
 		if(m_ParentColumnName != null)
 		{	
 			ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, m_ParentColumnName);
-			log.fine(sql.toString() + " - ID=" + ID);
+			log.debug(sql.toString() + " - ID=" + ID);
 		}
 		else
 		{
@@ -543,7 +545,7 @@ public class VSortTab extends CPanel implements APanelTab
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -659,7 +661,7 @@ public class VSortTab extends CPanel implements APanelTab
 			// see org.compiere.grid.VSortTab.DragListener#mouseReleased(MouseEvent)
 		}
 		else
-			log.severe("Unknown source: " + source);
+			log.error("Unknown source: " + source);
 		//
 		if (change) {
 			yesList.setSelectedIndices(indices);
@@ -685,7 +687,7 @@ public class VSortTab extends CPanel implements APanelTab
 	{
 		if (!m_aPanel.aSave.isEnabled())
 			return;
-		log.fine("");
+		log.debug("");
 		
 		final AtomicBoolean ok = new AtomicBoolean(true);
 		final StringBuffer info = new StringBuffer();
@@ -710,7 +712,7 @@ public class VSortTab extends CPanel implements APanelTab
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
-				log.log(Level.SEVERE, "NoModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
+				log.error("NoModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
 		}
 		//	yesList - Set SortColumn to value and optional YesNo Column to 'Y'
@@ -730,7 +732,7 @@ public class VSortTab extends CPanel implements APanelTab
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
-				log.log(Level.SEVERE, "YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
+				log.error("YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
 		}
 					}

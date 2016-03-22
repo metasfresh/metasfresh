@@ -171,7 +171,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -225,7 +225,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		final String sql = "UPDATE M_MovementLine SET Processed=? WHERE M_Movement_ID=?";
 		int noLine = DB.executeUpdateEx(sql, new Object[]{processed, get_ID()}, get_TrxName());
 		m_lines = null;
-		log.fine("Processed=" + processed + " - Lines=" + noLine);
+		log.debug("Processed=" + processed + " - Lines=" + noLine);
 	}	//	setProcessed
 	
 	
@@ -558,7 +558,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	{
 		int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
-			log.config("Deleted old #" + no);
+			log.info("Deleted old #" + no);
 		
 		boolean needSave = false;
 
@@ -581,7 +581,7 @@ public class MMovement extends X_M_Movement implements DocAction
 							qtyToDeliver);
 					ma.saveEx();		
 					qtyToDeliver = Env.ZERO;
-					log.fine( ma + ", QtyToDeliver=" + qtyToDeliver);		
+					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);		
 				}
 				else
 				{	
@@ -590,7 +590,7 @@ public class MMovement extends X_M_Movement implements DocAction
 								storage.getQtyOnHand());
 					ma.saveEx();	
 					qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-					log.fine( ma + ", QtyToDeliver=" + qtyToDeliver);		
+					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);		
 				}
 				if (qtyToDeliver.signum() == 0)
 					break;
@@ -604,7 +604,7 @@ public class MMovement extends X_M_Movement implements DocAction
 				int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
 				MMovementLineMA ma = new MMovementLineMA (line, M_AttributeSetInstance_ID , qtyToDeliver);
 				ma.saveEx();
-				log.fine("##: " + ma);
+				log.debug("##: " + ma);
 			}
 		}	//	attributeSetInstance
 		

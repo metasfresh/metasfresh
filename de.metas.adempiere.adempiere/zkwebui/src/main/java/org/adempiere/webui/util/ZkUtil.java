@@ -32,16 +32,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.Applet;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkforge.keylistener.Keylistener;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.WrongValueException;
@@ -65,7 +67,7 @@ import org.zkoss.zul.impl.api.XulElement;
 
 public final class ZkUtil
 {
-	private static final transient CLogger logger = CLogger.getCLogger(ZkUtil.class);
+	private static final transient Logger logger = LogManager.getLogger(ZkUtil.class);
 
 	private static final String ATTR_ValueToBeSet = ZkUtil.class.getCanonicalName() + "#ValueToBeSet";
 
@@ -710,7 +712,7 @@ public final class ZkUtil
 	 */
 	public static Applet createApplet(String sysconfigPrefix)
 	{
-		logger.log(Level.CONFIG, "Creating applet for prefix '{0}'", sysconfigPrefix);
+		logger.info("Creating applet for prefix '{}'", sysconfigPrefix);
 
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -725,21 +727,21 @@ public final class ZkUtil
 		if (!Util.isEmpty(paramValueArchive, true))
 		{
 			applet.setArchive(paramValueArchive);
-			logger.log(Level.CONFIG, "Set parameter: archive={0}", paramValueArchive);
+			logger.info("Set parameter: archive={}", paramValueArchive);
 		}
 
 		final String paramValueCode = sysConfigParams.remove(sysconfigPrefix + "code");
 		if (!Util.isEmpty(paramValueCode, true))
 		{
 			applet.setCode(paramValueCode);
-			logger.log(Level.CONFIG, "Set parameter: code={0}", paramValueCode);
+			logger.info("Set parameter: code={}", paramValueCode);
 		}
 
 		final String paramValueCodebase = sysConfigParams.remove(sysconfigPrefix + "codebase");
 		if (!Util.isEmpty(paramValueCodebase, true))
 		{
 			applet.setCodebase(paramValueCodebase);
-			logger.log(Level.CONFIG, "Set parameter: codebase={0}", paramValueCodebase);
+			logger.info("Set parameter: codebase={}", paramValueCodebase);
 		}
 
 		String paramValueWidth = sysConfigParams.remove(sysconfigPrefix + "width");
@@ -748,7 +750,7 @@ public final class ZkUtil
 			paramValueWidth = "1px";
 		}
 		applet.setWidth(paramValueWidth);
-		logger.log(Level.CONFIG, "Set parameter: width={0}", paramValueWidth);
+		logger.info("Set parameter: width={}", paramValueWidth);
 
 		String paramValueHeight = sysConfigParams.remove(sysconfigPrefix + "height");
 		if (Util.isEmpty(paramValueHeight, true))
@@ -756,7 +758,7 @@ public final class ZkUtil
 			paramValueHeight = "1px";
 		}
 		applet.setHeight(paramValueHeight);
-		logger.log(Level.CONFIG, "Set parameter: height={0}", paramValueHeight);
+		logger.info("Set parameter: height={}", paramValueHeight);
 
 		// give the current session ID to our applet, so ADempiere can apply user and role permission on incoming data
 		applet.setParam("sessionId", Env.getContext(Env.getCtx(), Env.CTXNAME_AD_Session_ID));
@@ -768,7 +770,7 @@ public final class ZkUtil
 			final String name = e.getKey();
 			final String value = e.getValue();
 			applet.setParam(name, value);
-			logger.log(Level.CONFIG, "Set parameter: {0}={1}", new Object[] { name, value });
+			logger.info("Set parameter: {}={}", new Object[] { name, value });
 		}
 
 		return applet;

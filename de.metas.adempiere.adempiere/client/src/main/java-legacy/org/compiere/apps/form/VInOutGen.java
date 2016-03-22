@@ -18,7 +18,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.apps.ADialog;
@@ -29,7 +30,8 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MRMA;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -49,7 +51,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	private FormFrame 		m_frame;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VInOutGen.class);
+	private static Logger log = LogManager.getLogger(VInOutGen.class);
 	//
 
 	private CLabel lWarehouse = new CLabel();
@@ -83,7 +85,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	}	//	init
 	

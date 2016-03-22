@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -94,7 +94,7 @@ public class MStatus extends X_R_Status
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		try
 		{
@@ -136,7 +136,7 @@ public class MStatus extends X_R_Status
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		try
 		{
@@ -154,7 +154,7 @@ public class MStatus extends X_R_Status
 
 	
 	/** Static Logger					*/
-	private static CLogger s_log = CLogger.getCLogger(MStatus.class);
+	private static Logger s_log = LogManager.getLogger(MStatus.class);
 	/**	Cache							*/
 	static private CCache<Integer,MStatus> s_cache
 		= new CCache<Integer,MStatus> ("R_Status", 10);

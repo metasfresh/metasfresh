@@ -26,17 +26,16 @@ package de.metas.adempiere.form.terminal.context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.WeakList;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.terminal.IDisposable;
 
 /* package */final class TerminalContextReferences implements ITerminalContextReferences
 {
-	private static final transient CLogger logger = CLogger.getCLogger(TerminalContextReferences.class);
+	private static final transient Logger logger = LogManager.getLogger(TerminalContextReferences.class);
 
 	private List<WeakPropertyChangeSupport> propertyChangeSupports = null;
 	private final WeakList<IDisposable> _disposableComponents = new WeakList<>(true); // weakDefault=true
@@ -107,11 +106,11 @@ import de.metas.adempiere.form.terminal.IDisposable;
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Error while disposing component " + disposable + ". Ignored.", e);
+				logger.warn("Error while disposing component " + disposable + ". Ignored.", e);
 			}
 		}
 
-		logger.log(Level.INFO, "Disposed {0} components", countDisposed);
+		logger.info("Disposed {} components", countDisposed);
 	}
 
 	/**
@@ -133,7 +132,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 		this.propertyChangeSupports.clear();
 		this.propertyChangeSupports = null;
 
-		logger.log(Level.INFO, "Cleared {0} property change supports", countAll);
+		logger.info("Cleared {} property change supports", countAll);
 	}
 
 }

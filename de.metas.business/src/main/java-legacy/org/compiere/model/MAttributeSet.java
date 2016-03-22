@@ -400,7 +400,7 @@ public class MAttributeSet extends X_M_AttributeSet
 			int no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
 			{
-				log.warning("Set Instance Attribute");
+				log.warn("Set Instance Attribute");
 				setIsInstanceAttribute(true);
 			}
 		}
@@ -420,7 +420,7 @@ public class MAttributeSet extends X_M_AttributeSet
 			int no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
 			{
-				log.warning("Reset Instance Attribute");
+				log.warn("Reset Instance Attribute");
 				setIsInstanceAttribute(false);
 			}
 		}

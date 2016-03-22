@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,9 +35,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.db.CConnection;
-import org.compiere.db.Database;
 import org.compiere.db.LDAP;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -263,17 +261,17 @@ public class MSystem extends X_AD_System
 	{
 		if (getName() == null || getName().length() < 2)
 		{
-			log.log(Level.WARNING, "Name not valid: " + getName());
+			log.warn("Name not valid: " + getName());
 			return false;
 		}
 		if (getPassword() == null || getPassword().length() < 2)
 		{
-			log.log(Level.WARNING, "Password not valid: " + getPassword());
+			log.warn("Password not valid: " + getPassword());
 			return false;
 		}
 		if (getInfo() == null || getInfo().length() < 2)
 		{
-			log.log(Level.WARNING, "Need to run Migration once");
+			log.warn("Need to run Migration once");
 			return false;
 		}
 		return true;
@@ -312,7 +310,7 @@ public class MSystem extends X_AD_System
 		{
 			setSupportUnits(9999);
 			setInfo(e.getLocalizedMessage());
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return true;
 	}	//	setInfo
@@ -389,17 +387,17 @@ public class MSystem extends X_AD_System
 	 */
 	public void info()
 	{
-		if (!CLogMgt.isLevelFine())
+		if (!LogManager.isLevelFine())
 			return;
 		//	OS
 	//	OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-	//	log.fine(os.getName() + " " + os.getVersion() + " " + os.getArch() 
+	//	log.debug(os.getName() + " " + os.getVersion() + " " + os.getArch() 
 	//		+ " Processors=" + os.getAvailableProcessors());
 		//	Runtime
 		RuntimeMXBean rt = ManagementFactory.getRuntimeMXBean();
-		// log.fine(rt.getName() + " (" + rt.getVmVersion() + ") Up=" + TimeUtil.formatElapsed(rt.getUptime()));
+		// log.debug(rt.getName() + " (" + rt.getVmVersion() + ") Up=" + TimeUtil.formatElapsed(rt.getUptime()));
 		//	Memory
-		if (CLogMgt.isLevelFiner())
+		if (LogManager.isLevelFiner())
 		{
 			List<MemoryPoolMXBean> list = ManagementFactory.getMemoryPoolMXBeans();
 			Iterator<MemoryPoolMXBean> it = list.iterator();
@@ -407,7 +405,7 @@ public class MSystem extends X_AD_System
 			{
 				MemoryPoolMXBean pool = (MemoryPoolMXBean)it.next();
 				/*
-				log.finer(pool.getName() + " " + pool.getType() 
+				log.trace(pool.getName() + " " + pool.getType() 
 					+ ": " + new CMemoryUsage(pool.getUsage()));
 				*/
 			}
@@ -415,13 +413,13 @@ public class MSystem extends X_AD_System
 		else
 		{
 			MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
-			// log.fine("VM: " + new CMemoryUsage(memory.getNonHeapMemoryUsage()));
-			// log.fine("Heap: " + new CMemoryUsage(memory.getHeapMemoryUsage()));
+			// log.debug("VM: " + new CMemoryUsage(memory.getNonHeapMemoryUsage()));
+			// log.debug("Heap: " + new CMemoryUsage(memory.getHeapMemoryUsage()));
 		}
 		//	Thread
 		ThreadMXBean th = ManagementFactory.getThreadMXBean();
 		/*
-		log.fine("Threads=" + th.getThreadCount()
+		log.debug("Threads=" + th.getThreadCount()
 			+ ", Peak=" + th.getPeakThreadCount()
 			+ ", Demons=" + th.getDaemonThreadCount()
 			+ ", Total=" + th.getTotalStartedThreadCount()

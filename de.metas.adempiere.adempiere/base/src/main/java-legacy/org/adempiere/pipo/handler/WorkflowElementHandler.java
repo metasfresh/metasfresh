@@ -24,8 +24,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -184,7 +182,7 @@ public class WorkflowElementHandler extends AbstractElementHandler {
 				MWorkflow m_Workflow = new MWorkflow(ctx, element.recordId, getTrxName(ctx));
 				int id = get_IDWithMasterAndColumn(ctx, "AD_WF_Node", "Name", name, "AD_Workflow", m_Workflow.getAD_Workflow_ID()); 
 				if (id <= 0) {
-					log.warning("Failed to resolve start node reference for workflow element. Workflow=" 
+					log.warn("Failed to resolve start node reference for workflow element. Workflow=" 
 							+ m_Workflow.getName() + " StartNode=" + name);
 					return;
 				}
@@ -310,7 +308,7 @@ public class WorkflowElementHandler extends AbstractElementHandler {
 				}				
 			}
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Workflow", e);
+			log.error("Workflow", e);
 			if (e instanceof SAXException)
 				throw (SAXException) e;
 			else if (e instanceof SQLException)

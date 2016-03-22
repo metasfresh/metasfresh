@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -33,7 +34,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -51,6 +51,8 @@ import org.compiere.util.Env;
  */
 public class GridFieldVO implements Serializable
 {
+	private static final transient Logger logger = LogManager.getLogger(GridFieldVO.class);
+
 
 	/**
 	 *  Return the SQL statement used for the MFieldVO.create
@@ -107,7 +109,7 @@ public class GridFieldVO implements Serializable
 			if (vo.ColumnName == null)
 				return null;
 
-			CLogger.get().fine(vo.ColumnName);
+			logger.debug(vo.ColumnName);
 			
 			String fieldGroupName = null;
 			FieldGroupType fieldGroupType = null;
@@ -278,7 +280,7 @@ public class GridFieldVO implements Serializable
 		}
 		catch (SQLException e)
 		{
-			CLogger.get().log(Level.SEVERE, "ColumnName=" + columnName, e);
+			logger.error("ColumnName=" + columnName, e);
 			return null;
 		}
 		// ASP
@@ -359,7 +361,7 @@ public class GridFieldVO implements Serializable
 		}
 		catch (SQLException e)
 		{
-			CLogger.get().log(Level.SEVERE, "createParameter", e);
+			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
@@ -705,7 +707,7 @@ public class GridFieldVO implements Serializable
 			}
 			catch (Exception e)     //  Cannot create Lookup
 			{
-				CLogger.get().log(Level.SEVERE, "No LookupInfo for " + ColumnName, e);
+				logger.error("No LookupInfo for " + ColumnName, e);
 				displayType = DisplayType.ID;
 				lookupInfo = null;
 			}

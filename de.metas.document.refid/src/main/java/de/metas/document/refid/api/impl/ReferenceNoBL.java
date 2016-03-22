@@ -26,15 +26,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -47,7 +47,7 @@ import de.metas.document.refid.spi.IReferenceNoGenerator;
 
 public class ReferenceNoBL implements IReferenceNoBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public void linkReferenceNo(final PO po, final IReferenceNoGeneratorInstance instance)
@@ -65,7 +65,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final String referenceNoStr = instance.generateReferenceNo(po);
 		if (IReferenceNoGenerator.REFERENCENO_None == referenceNoStr)
 		{
-			logger.log(Level.FINE, "Instance {0} did not generate any referenceNo for '{1}'. Skip.", new Object[] { instance, po });
+			logger.debug("Instance {} did not generate any referenceNo for '{}'. Skip.", new Object[] { instance, po });
 			return;
 		}
 
@@ -80,9 +80,9 @@ public class ReferenceNoBL implements IReferenceNoBL
 			InterfaceWrapperHelper.save(referenceNo); // make sure the flag is saved
 		}
 
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("Created reference " + referenceNoStr + " for " + po);
+			logger.debug("Created reference " + referenceNoStr + " for " + po);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Error loading referenceNo generator '" + classname + "'. Ignored.", e);
+			logger.error("Error loading referenceNo generator '" + classname + "'. Ignored.", e);
 			return null;
 		}
 	}
@@ -173,13 +173,13 @@ public class ReferenceNoBL implements IReferenceNoBL
 	{
 		if (fromModel == null)
 		{
-			logger.log(Level.FINE, "fromModel is null. Skip.");
+			logger.debug("fromModel is null. Skip.");
 			return;
 		}
 
 		if (toModel == null)
 		{
-			logger.log(Level.FINE, "toModel is null. Skip.");
+			logger.debug("toModel is null. Skip.");
 			return;
 		}
 
@@ -191,7 +191,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final int fromRecordId = InterfaceWrapperHelper.getId(fromModel);
 		if (fromRecordId <= 0)
 		{
-			logger.log(Level.WARNING, "fromModel {0} was not saved yet or does not support simple primary key. Skip.", fromModel);
+			logger.warn("fromModel {} was not saved yet or does not support simple primary key. Skip.", fromModel);
 			return;
 		}
 
@@ -200,7 +200,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final int toRecordId = InterfaceWrapperHelper.getId(toModel);
 		if (toRecordId <= 0)
 		{
-			logger.log(Level.WARNING, "toModel {0} was not saved yet or does not support simple primary key. Skip.", toModel);
+			logger.warn("toModel {} was not saved yet or does not support simple primary key. Skip.", toModel);
 			return;
 		}
 
@@ -216,7 +216,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 			final I_C_ReferenceNo referenceNo = fromAssignment.getC_ReferenceNo();
 			dao.getCreateReferenceNoDoc(referenceNo, toTableId, toRecordId);
 
-			logger.log(Level.INFO, "Linked {0} to {1}", new Object[] { toModel, referenceNo });
+			logger.info("Linked {} to {}", new Object[] { toModel, referenceNo });
 		}
 
 	}

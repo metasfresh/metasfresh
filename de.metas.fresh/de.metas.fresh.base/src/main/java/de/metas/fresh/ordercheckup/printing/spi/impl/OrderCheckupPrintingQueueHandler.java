@@ -22,14 +22,13 @@ package de.metas.fresh.ordercheckup.printing.spi.impl;
  * #L%
  */
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -54,7 +53,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 {
 	public static final transient OrderCheckupPrintingQueueHandler instance = new OrderCheckupPrintingQueueHandler();
 
-	private static final transient CLogger logger = CLogger.getCLogger(OrderCheckupPrintingQueueHandler.class);
+	private static final transient Logger logger = LogManager.getLogger(OrderCheckupPrintingQueueHandler.class);
 
 	/**
 	 * Set the number of copies to the configured value.
@@ -118,7 +117,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		final int userToPrintId = report.getAD_User_Responsible_ID();
 		if (userToPrintId <= 0)
 		{
-			logger.log(Level.INFO, "Cancel from printing because there was no user to print: {0}", report);
+			logger.info("Cancel from printing because there was no user to print: {}", report);
 			queueItem.setIsActive(false);
 			return;
 		}

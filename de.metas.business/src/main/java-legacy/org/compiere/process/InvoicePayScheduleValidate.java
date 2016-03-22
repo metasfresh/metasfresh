@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
@@ -44,7 +45,7 @@ public class InvoicePayScheduleValidate extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -55,7 +56,7 @@ public class InvoicePayScheduleValidate extends SvrProcess
 	 */
 	protected String doIt() throws Exception
 	{
-		log.info ("C_InvoicePaySchedule_ID=" + getRecord_ID());
+		log.info("C_InvoicePaySchedule_ID=" + getRecord_ID());
 		MInvoicePaySchedule[] schedule = MInvoicePaySchedule.getInvoicePaySchedule
 			(getCtx(), 0, getRecord_ID(), null);
 		if (schedule.length == 0)

@@ -32,7 +32,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
@@ -41,7 +42,7 @@ import de.metas.commission.service.ISponsorBL;
 public class ValidateSponsors extends SvrProcess
 {
 
-	final static CLogger logger = CLogger.getCLogger(ValidateSponsors.class);
+	final static Logger logger = LogManager.getLogger(ValidateSponsors.class);
 
 	private int orgId;
 

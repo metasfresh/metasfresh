@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -58,8 +57,6 @@ import org.adempiere.util.GridRowCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab.DataNewCopyMode;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -70,8 +67,11 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *	Grid Table Model for JDBC access including buffering.
@@ -140,7 +140,7 @@ public class GridTable extends AbstractTableModel
 		m_virtual = virtual && MTable.get(ctx, AD_Table_ID).isHighVolume(); // metas: is this metas change?
 	}	//	MTable
 
-	private static CLogger		log = CLogger.getCLogger(GridTable.class.getName());
+	private static final Logger log = LogManager.getLogger(GridTable.class);
 	private final Properties          m_ctx;
 	private final int					m_AD_Table_ID;
 	private String 		        m_tableName = "";
@@ -235,7 +235,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (m_open)
 		{
-			log.log(Level.SEVERE, "Table already open - ignored");
+			log.error("Table already open - ignored");
 			return;
 		}
 		if (newTableName == null || newTableName.length() == 0)
@@ -269,7 +269,7 @@ public class GridTable extends AbstractTableModel
 // metas: end
 		if (m_open)
 		{
-			log.log(Level.SEVERE, "Table already open - ignored");
+			log.error("Table already open - ignored");
 			return false;
 		}
 		//
@@ -288,7 +288,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (m_open)
 		{
-			log.log(Level.SEVERE, "Table already open - ignored");
+			log.error("Table already open - ignored");
 			return false;
 		}
 		//
@@ -418,7 +418,7 @@ public class GridTable extends AbstractTableModel
 		}
 		
 		//
-		log.fine(m_SQL_Count);
+		log.debug(m_SQL_Count);
 		Env.setContext(m_ctx, m_WindowNo, m_TabNo, GridTab.CTX_SQL, m_SQL);
 		return m_SQL;
 	}	//	createSelectSql
@@ -443,7 +443,7 @@ public class GridTable extends AbstractTableModel
 				}
 				else
 				{
-					log.log(Level.WARNING, "Failed to parse where clause. whereClause="+m_whereClause);
+					log.warn("Failed to parse where clause. whereClause="+m_whereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -498,17 +498,17 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void addField (GridField field)
 	{
-		log.fine("(" + m_tableName + ") - " + field.getColumnName());
+		log.debug("(" + m_tableName + ") - " + field.getColumnName());
 		if (m_open)
 		{
-			log.log(Level.SEVERE, "Table already open - ignored: " + field.getColumnName());
+			log.error("Table already open - ignored: " + field.getColumnName());
 			return;
 		}
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
 		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), true))
 		{
-			log.fine("No Column Access " + field.getColumnName());
+			log.debug("No Column Access " + field.getColumnName());
 			return;			
 		}
 		//  Set Index for Key column
@@ -538,7 +538,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (index < 0 || index > m_fields.size())
 		{
-			log.log(Level.SEVERE, "Invalid index=" + index);
+			log.error("Invalid index=" + index);
 			return "";
 		}
 		//
@@ -575,7 +575,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (index < 0 || index >= m_fields.size())
 		{
-			log.log(Level.SEVERE, "Invalid index=" + index);
+			log.error("Invalid index=" + index);
 			return null;
 		}
 		GridField field = m_fields.get(index);
@@ -670,7 +670,7 @@ public class GridTable extends AbstractTableModel
 		m_maxRows = maxRows;
 		if (m_open)
 		{
-			log.fine("already open");
+			log.debug("already open");
 			dataRefreshAll();
 			return true;
 		}
@@ -684,7 +684,7 @@ public class GridTable extends AbstractTableModel
 		createSelectSql();
 		if (m_SQL == null || m_SQL.equals(""))
 		{
-			log.log(Level.SEVERE, "No SQL");
+			log.error("No SQL");
 			return false;
 		}
 
@@ -767,7 +767,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (!m_open)
 			return;
-		log.fine("final=" + finalCall);
+		log.debug("final=" + finalCall);
 
 		//  remove listeners
 		if (finalCall)
@@ -786,7 +786,7 @@ public class GridTable extends AbstractTableModel
 		//	Stop loader
 		while (m_loader != null && m_loader.isAlive())
 		{
-			log.fine("Interrupting Loader ...");
+			log.debug("Interrupting Loader ...");
 			m_loader.interrupt();
 			try
 			{
@@ -816,7 +816,7 @@ public class GridTable extends AbstractTableModel
 			dispose();
 
 		//  Fields are disposed from MTab
-		log.fine("");
+		log.debug("");
 		m_open = false;
 	}	//	close
 
@@ -980,10 +980,10 @@ public class GridTable extends AbstractTableModel
 	@Override
 	public Object getValueAt (int row, int col)
 	{
-	//	log.config( "MTable.getValueAt r=" + row + " c=" + col);
+	//	log.info( "MTable.getValueAt r=" + row + " c=" + col);
 		if (!m_open || row < 0 || col < 0 || row >= m_rowCount)
 		{
-		//	log.fine( "Out of bounds - Open=" + m_open + ", RowCount=" + m_rowCount);
+		//	log.debug( "Out of bounds - Open=" + m_open + ", RowCount=" + m_rowCount);
 			return null;
 		}
 
@@ -991,7 +991,7 @@ public class GridTable extends AbstractTableModel
 		int loops = 0;
 		while (row >= m_sort.size() && m_loader.isAlive() && loops < 15)
 		{
-			log.fine("Waiting for loader row=" + row + ", size=" + m_sort.size());
+			log.debug("Waiting for loader row=" + row + ", size=" + m_sort.size());
 			try
 			{
 				Thread.sleep(500);		//	1/2 second
@@ -1004,7 +1004,7 @@ public class GridTable extends AbstractTableModel
 		//	empty buffer
 		if (row >= m_sort.size())
 		{
-		//	log.fine( "Empty buffer");
+		//	log.debug( "Empty buffer");
 			return null;
 		}
 
@@ -1013,7 +1013,7 @@ public class GridTable extends AbstractTableModel
 		//	out of bounds
 		if (rowData == null || col > rowData.length)
 		{
-		//	log.fine( "No data or Column out of bounds");
+		//	log.debug( "No data or Column out of bounds");
 			return null;
 		}
 		return rowData[col];
@@ -1120,7 +1120,7 @@ public class GridTable extends AbstractTableModel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 		finally
 		{
@@ -1140,7 +1140,7 @@ public class GridTable extends AbstractTableModel
 		
 		if (!isInserting() && changed == false && m_changed == true)
 		{
-			log.warning("Marking a record as not changed could be an issue");
+			log.warn("Marking a record as not changed could be an issue");
 		}
 
 		//	Indicate Change
@@ -1183,7 +1183,7 @@ public class GridTable extends AbstractTableModel
 				|| m_rowCount == 0	//  no rows
 				|| row >= m_rowCount )     //invalid row
 		{
-			log.finest("r=" + row + " c=" + col + " - R/O=" + m_readOnly + ", Rows=" + m_rowCount + " - Ignored");
+			log.trace("r=" + row + " c=" + col + " - R/O=" + m_readOnly + ", Rows=" + m_rowCount + " - Ignored");
 			return false; // metas
 		}
 
@@ -1194,11 +1194,11 @@ public class GridTable extends AbstractTableModel
 		value = convertValue(value, col); // metas: tsa: convert the value to it's main type
 		if (!force && !isValueChanged(oldValue, value) )
 		{
-			log.finest("r=" + row + " c=" + col + " - New=" + value + "==Old=" + oldValue + " - Ignored");
+			log.trace("r=" + row + " c=" + col + " - New=" + value + "==Old=" + oldValue + " - Ignored");
 			return false; // false
 		}
 
-		log.fine("r=" + row + " c=" + col + " = " + value + " (" + oldValue + ")");
+		log.debug("r=" + row + " c=" + col + " = " + value + " (" + oldValue + ")");
 
 		//  Save old value
 		m_oldValue = new Object[3];
@@ -1305,7 +1305,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean needSave(int newRow, boolean onlyRealChange)
 	{
-		log.fine("Row=" + newRow +
+		log.debug("Row=" + newRow +
 			", Changed=" + m_rowChanged + "/" + m_changed);  //  m_rowChanged set in setValueAt
 		//  nothing done
 		if (!m_changed && m_rowChanged == -1)
@@ -1341,7 +1341,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean dataSave (int newRow, boolean manualCmd)
 	{
-		log.fine("Row=" + newRow +
+		log.debug("Row=" + newRow +
 			", Changed=" + m_rowChanged + "/" + m_changed);  //  m_rowChanged set in setValueAt
 		//  nothing done
 		if (!m_changed && m_rowChanged == -1)
@@ -1365,13 +1365,13 @@ public class GridTable extends AbstractTableModel
 		//	cannot save
 		if (!m_open)
 		{
-			log.warning ("Error - Open=" + m_open);
+			log.warn("Error - Open=" + m_open);
 			return SAVE_ERROR;
 		}
 		//	no need - not changed - row not positioned - no Value changed
 		if (m_rowChanged == -1)
 		{
-			log.config("NoNeed - Changed=" + m_changed + ", Row=" + m_rowChanged);
+			log.info("NoNeed - Changed=" + m_changed + ", Row=" + m_rowChanged);
 		//	return SAVE_ERROR;
 			if (!manualCmd)
 				return SAVE_OK;
@@ -1381,14 +1381,14 @@ public class GridTable extends AbstractTableModel
 		{
 			//reset out of sync variable
 			m_rowChanged = -1;
-			log.fine("No Changes");
+			log.debug("No Changes");
 			return SAVE_ERROR;
 		}
 
 		if (m_readOnly)
 		//	If Processed - not editable (Find always editable)  -> ok for changing payment terms, etc.
 		{
-			log.warning("IsReadOnly - ignored");
+			log.warn("IsReadOnly - ignored");
 			dataIgnore();
 			return SAVE_ACCESS;
 		}
@@ -1412,7 +1412,7 @@ public class GridTable extends AbstractTableModel
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
 		if (!role.canUpdate(AD_Client_ID, AD_Org_ID, m_AD_Table_ID, 0, true))
 		{
-			fireDataStatusEEvent(CLogger.retrieveError());
+			fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 			dataIgnore();
 			return SAVE_ACCESS;
 		}
@@ -1427,7 +1427,7 @@ public class GridTable extends AbstractTableModel
 		}
 		catch (PropertyVetoException pve)
 		{
-			log.warning(pve.getMessage());
+			log.warn(pve.getMessage());
 			//[ 2696732 ] Save changes dialog's cancel button shouldn't reset status
 			//https://sourceforge.net/tracker/index.php?func=detail&aid=2696732&group_id=176962&atid=879332
 			//dataIgnore();
@@ -1461,10 +1461,10 @@ public class GridTable extends AbstractTableModel
 		catch (Throwable e)
 		{
 			if (e instanceof ClassNotFoundException)
-				log.warning(m_tableName + " - " + e.getLocalizedMessage());
+				log.warn(m_tableName + " - " + e.getLocalizedMessage());
 			else
 			{
-				log.log(Level.SEVERE, "Persistency Issue - " 
+				log.error("Persistency Issue - " 
 					+ m_tableName + ": " + e.getLocalizedMessage(), e);
 				return SAVE_ERROR;
 			}
@@ -1527,16 +1527,16 @@ public class GridTable extends AbstractTableModel
 			if (m_inserting)
 			{
 				if (manualUpdate)
-					log.fine("Prepare inserting ... manual");
+					log.debug("Prepare inserting ... manual");
 				else
 				{
-					log.fine("Prepare inserting ... RowSet");
+					log.debug("Prepare inserting ... RowSet");
 					rs.moveToInsertRow ();
 				}
 			}
 			else
 			{
-				log.fine("Prepare updating ... manual=" + manualUpdate);
+				log.debug("Prepare updating ... manual=" + manualUpdate);
 				//	get current Data in DB
 				rowDataDB = readData (rs);
 			}
@@ -1570,7 +1570,7 @@ public class GridTable extends AbstractTableModel
 					continue;
 				}
 				String columnName = field.getColumnName ();
-			//	log.fine(columnName + "= " + m_rowData[col] + " <> DB: " + rowDataDB[col] + " -> " + rowData[col]);
+			//	log.debug(columnName + "= " + m_rowData[col] + " <> DB: " + rowDataDB[col] + " -> " + rowData[col]);
 
 				//	RowID, Virtual Column
 				if (field.getDisplayType () == DisplayType.RowID
@@ -1603,7 +1603,7 @@ public class GridTable extends AbstractTableModel
 						//
 						is = INFO + columnName + " -> " + str + " (StringKey)";
 					}
-					log.fine(is);
+					log.debug(is);
 				} //	New Key
 
 				//	New DocumentNo
@@ -1624,7 +1624,7 @@ public class GridTable extends AbstractTableModel
 						//  always overwrite if insering with mandatory DocType DocNo
 						if (m_inserting)
 							insertDoc = buildDocumentNo (m_ctx, m_WindowNo, m_tableName, true);	//	only doc type
-						log.fine("DocumentNo entered=" + docNo + ", DocTypeInsert=" + insertDoc + ", newDocNo=" + newDocNo);
+						log.debug("DocumentNo entered=" + docNo + ", DocTypeInsert=" + insertDoc + ", newDocNo=" + newDocNo);
 						// can we use entered DocNo?
 						if (insertDoc == null || insertDoc.length () == 0)
 						{
@@ -1643,7 +1643,7 @@ public class GridTable extends AbstractTableModel
 							{
 								error = true;
 								is = ERROR + field.getColumnName () + "= " + rowData[col] + " NO DocumentNo";
-								log.fine(is);
+								log.debug(is);
 								break;
 							}
 						}
@@ -1654,7 +1654,7 @@ public class GridTable extends AbstractTableModel
 							rs.updateString (colRs, insertDoc);					//	***
 							//
 						is = INFO + columnName + " -> " + insertDoc + " (DocNo)";
-						log.fine(is);
+						log.debug(is);
 					}
 				}	//	New DocumentNo
 
@@ -1672,7 +1672,7 @@ public class GridTable extends AbstractTableModel
 							error = true;
 							is = ERROR + field.getColumnName () + "= " + rowData[col]
 								 + " No Value";
-							log.fine(is);
+							log.debug(is);
 							break;
 						}
 					}
@@ -1682,7 +1682,7 @@ public class GridTable extends AbstractTableModel
 						rs.updateString (colRs, value); 							//	***
 						//
 					is = INFO + columnName + " -> " + value + " (Value)";
-					log.fine(is);
+					log.debug(is);
 				}	//	New Value(key)
 
 				//	Updated		- check database
@@ -1693,7 +1693,7 @@ public class GridTable extends AbstractTableModel
 						error = true;
 						is = ERROR + field.getColumnName () + "= " + m_rowData[col]
 							 + " != DB: " + rowDataDB[col];
-						log.fine(is);
+						log.debug(is);
 						break;
 					}
 					if (manualUpdate)
@@ -1702,7 +1702,7 @@ public class GridTable extends AbstractTableModel
 						rs.updateTimestamp (colRs, now); 							//	***
 						//
 					is = INFO + "Updated/By -> " + now + " - " + user;
-					log.fine(is);
+					log.debug(is);
 				} //	Updated
 
 				//	UpdatedBy	- update
@@ -1742,7 +1742,7 @@ public class GridTable extends AbstractTableModel
 						else
 							rs.updateNull (colRs); 								//	***
 						is = INFO + columnName + "= NULL";
-						log.fine(is);
+						log.debug(is);
 					}
 				}
 
@@ -1757,8 +1757,8 @@ public class GridTable extends AbstractTableModel
 					  || (m_rowData[col] == null && rowDataDB[col] == null)
 					  || (m_rowData[col] != null && m_rowData[col].equals (rowDataDB[col])))
 					{
-						if (CLogMgt.isLevelFinest())
-							log.fine(columnName + "=" + rowData[col]
+						if (LogManager.isLevelFinest())
+							log.debug(columnName + "=" + rowData[col]
 								+ " " + (rowData[col]==null ? "" : rowData[col].getClass().getName()));
 						//
 						boolean encrypted = field.isEncryptedColumn();
@@ -1866,7 +1866,7 @@ public class GridTable extends AbstractTableModel
 							 + " -> " + rowData[col] + " (" + type + ")";
 						if (encrypted)
 							is += " encrypted";
-						log.fine(is);
+						log.debug(is);
 					}
 					//	Original != DB
 					else
@@ -1874,7 +1874,7 @@ public class GridTable extends AbstractTableModel
 						error = true;
 						is = ERROR + field.getColumnName () + "= " + m_rowData[col]
 							 + " != DB: " + rowDataDB[col] + " -> " + rowData[col];
-						log.fine(is);
+						log.debug(is);
 					}
 				}	//	Data changed
 
@@ -1927,38 +1927,38 @@ public class GridTable extends AbstractTableModel
 				whereClause = multiRowWHERE.toString();
 			if (m_inserting)
 			{
-				log.fine("Inserting ...");
+				log.debug("Inserting ...");
 				if (manualUpdate)
 				{
 					String sql = createUpdateSql(true, null);
 					int no = DB.executeUpdateEx (sql, null);	//	no Trx
 					if (no != 1)
-						log.log(Level.SEVERE, "Insert #=" + no + " - " + sql);
+						log.error("Insert #=" + no + " - " + sql);
 				}
 				else
 					rs.insertRow();
 			}
 			else
 			{
-				log.fine("Updating ... " + whereClause);
+				log.debug("Updating ... " + whereClause);
 				if (manualUpdate)
 				{
 					String sql = createUpdateSql(false, whereClause);
 					int no = DB.executeUpdateEx (sql, null);	//	no Trx
 					if (no != 1)
-						log.log(Level.SEVERE, "Update #=" + no + " - " + sql);
+						log.error("Update #=" + no + " - " + sql);
 				}
 				else
 					rs.updateRow();
 			}
 
-			log.fine("Committing ...");
+			log.debug("Committing ...");
 			DB.commit(true, null);	//	no Trx
 			//
 			lobSave(whereClause);
 			
 			//	Need to re-read row to get ROWID, Key, DocumentNo, Trigger, virtual columns
-			log.fine("Reading ... " + whereClause);
+			log.debug("Reading ... " + whereClause);
 			StringBuilder refreshSQL = new StringBuilder(m_SQL_Select)
 				.append(" WHERE ").append(whereClause);
 			pstmt = DB.prepareStatement(refreshSQL.toString(), ITrx.TRXNAME_None);
@@ -1976,7 +1976,7 @@ public class GridTable extends AbstractTableModel
 				fireTableRowsUpdated(m_rowChanged, m_rowChanged);
 			}
 			else
-				log.log(Level.SEVERE, "Inserted row not found");
+				log.error("Inserted row not found");
 			//
 		}
 		catch (final Exception saveEx)
@@ -2014,7 +2014,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	private char dataSavePO (final int Record_ID) throws Exception
 	{
-		log.fine("ID=" + Record_ID);
+		log.debug("ID=" + Record_ID);
 		//
 		final Object[] rowData = getDataAtRow(m_rowChanged);
 		//
@@ -2065,7 +2065,7 @@ public class GridTable extends AbstractTableModel
 				{
 					//	Custom Fields not in PO
 					po.set_CustomColumn(columnName, value);
-				//	log.log(Level.SEVERE, "Column not found: " + columnName);
+				//	log.error("Column not found: " + columnName);
 					continue;
 				}
 				
@@ -2140,7 +2140,7 @@ public class GridTable extends AbstractTableModel
 		//
 		//	Refresh - update buffer
 		String whereClause = po.get_WhereClause(true);
-		log.fine("Reading ... " + whereClause);
+		log.debug("Reading ... " + whereClause);
 		StringBuilder refreshSQL = new StringBuilder(m_SQL_Select)
 			.append(" WHERE ").append(whereClause);
 		PreparedStatement pstmt = null;
@@ -2172,7 +2172,7 @@ public class GridTable extends AbstractTableModel
 		catch (SQLException e)
 		{
 			String msg = "SaveError";
-			log.log(Level.SEVERE, refreshSQL.toString(), e);
+			log.error(refreshSQL.toString(), e);
 			fireDataStatusEEvent(msg, e.getLocalizedMessage(), true);
 			return SAVE_ERROR;
 		}
@@ -2191,7 +2191,7 @@ public class GridTable extends AbstractTableModel
 		m_newRow = -1;
 		m_inserting = false;
 		//
-		ValueNamePair pp = CLogger.retrieveWarning();
+		ValueNamePair pp = MetasfreshLastError.retrieveWarning();
 		if (pp != null)
 		{
 			String msg = pp.getValue();
@@ -2200,7 +2200,7 @@ public class GridTable extends AbstractTableModel
 		}
 		else
 		{
-			pp = CLogger.retrieveInfo();
+			pp = MetasfreshLastError.retrieveInfo();
 			String msg = "Saved";
 			String info = "";
 			if (pp != null)
@@ -2211,7 +2211,7 @@ public class GridTable extends AbstractTableModel
 			fireDataStatusIEvent(msg, info);
 		}
 		//
-		log.config("fini");
+		log.info("fini");
 		return SAVE_OK;
 	}	//	dataSavePO
 	
@@ -2238,7 +2238,7 @@ public class GridTable extends AbstractTableModel
 		}
 		
 		// Log it, for audit/support purposes
-		log.log(Level.SEVERE, "Error while saving on " + this
+		log.error("Error while saving on " + this
 				+ "\n Type: " + errorAD_Message
 				, saveEx);
 
@@ -2268,7 +2268,7 @@ public class GridTable extends AbstractTableModel
 				Object value = rowData[col]; 
 				if (value == null)
 				{
-					log.log(Level.WARNING, "PK data is null - " + columnName);
+					log.warn("PK data is null - " + columnName);
 					return null;
 				}
 				if (columnName.endsWith ("_ID"))
@@ -2284,7 +2284,7 @@ public class GridTable extends AbstractTableModel
 				Object value = rowData[col]; 
 				if (value == null)
 				{
-					log.log(Level.INFO, "FK data is null - " + columnName);
+					log.info("FK data is null - " + columnName);
 					continue;
 				}
 				//
@@ -2306,7 +2306,7 @@ public class GridTable extends AbstractTableModel
 		if (multiRowWHERE != null)
 			return multiRowWHERE.toString();
 		
-		log.log(Level.WARNING, "No key Found on {0}. Returning NULL.", this);
+		log.warn("No key Found on {0}. Returning NULL.", this);
 		return null;
 	}	//	getWhereClause
 	
@@ -2324,7 +2324,7 @@ public class GridTable extends AbstractTableModel
 	{
 		m_createSqlColumn.add(columnName);
 		m_createSqlValue.add(value);
-		log.finest("#" + m_createSqlColumn.size()
+		log.trace("#" + m_createSqlColumn.size()
 				+ " - " + columnName + "=" + value);
 	}	//	createUpdateSQL
 
@@ -2366,7 +2366,7 @@ public class GridTable extends AbstractTableModel
 			}
 			sb.append(" WHERE ").append(whereClause);
 		}
-		log.fine(sb.toString());
+		log.debug(sb.toString());
 		//	reset
 		createUpdateSqlReset();
 		return sb.toString();
@@ -2435,7 +2435,7 @@ public class GridTable extends AbstractTableModel
 	 */	
 	private void lobAdd (PO_LOB lob)
 	{
-		log.fine("LOB=" + lob);
+		log.debug("LOB=" + lob);
 		if (m_lobInfo == null)
 			m_lobInfo = new ArrayList<PO_LOB>();
 		m_lobInfo.add(lob);
@@ -2634,10 +2634,10 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;  //  only changed in setValueAt
 
 		//	inform
-		log.fine("Current=" + currentRow + ", New=" + m_newRow);
+		log.debug("Current=" + currentRow + ", New=" + m_newRow);
 		fireTableRowsInserted(m_newRow, m_newRow);
 		fireDataStatusIEvent(isRecordCopyingMode() ? "UpdateCopied" : "Inserted", "");
-		log.fine("Current=" + currentRow + ", New=" + m_newRow + " - complete");
+		log.debug("Current=" + currentRow + ", New=" + m_newRow + " - complete");
 		return true;
 	}	//	dataNew
 
@@ -2709,7 +2709,7 @@ public class GridTable extends AbstractTableModel
 			}
 			catch (Throwable t)
 			{
-				log.log(Level.SEVERE, "Delete", t);
+				log.error("Delete", t);
 				deleteError = t;
 			}
 			
@@ -2733,7 +2733,7 @@ public class GridTable extends AbstractTableModel
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql.toString(), e);
+				log.error(sql.toString(), e);
 				String msg = "DeleteError";
 				if (DBException.isChildRecordFoundError(e))
 					msg = "DeleteErrorDependent";
@@ -2751,7 +2751,7 @@ public class GridTable extends AbstractTableModel
 			//	Check Result
 			if (no != 1)
 			{
-				log.log(Level.SEVERE, "Number of deleted rows = " + no);
+				log.error("Number of deleted rows = " + no);
 				return false;
 			}
 		}
@@ -2793,7 +2793,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		fireTableRowsDeleted(row, row);
 		fireDataStatusIEvent("Deleted", "");
-		log.fine("Row=" + row + " complete");
+		log.debug("Row=" + row + " complete");
 		return true;
 	}	//	dataDelete
 
@@ -2805,7 +2805,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (!m_inserting && !m_changed && m_rowChanged < 0)
 		{
-			log.fine("Nothing to ignore");
+			log.debug("Nothing to ignore");
 			return;
 		}
 		log.info("Inserting=" + m_inserting);
@@ -2896,7 +2896,7 @@ public class GridTable extends AbstractTableModel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			fireTableRowsUpdated(row, row);
 			fireDataStatusEEvent("RefreshError", sql, true);
 			return;
@@ -2983,7 +2983,7 @@ public class GridTable extends AbstractTableModel
 	@Override
 	public boolean isCellEditable (int row, int col)
 	{
-	//	log.fine( "MTable.isCellEditable - Row=" + row + ", Col=" + col);
+	//	log.debug( "MTable.isCellEditable - Row=" + row + ", Col=" + col);
 		//	Make Rows selectable
 	//	if (col == 0)
 	//		return true;
@@ -3032,7 +3032,7 @@ public class GridTable extends AbstractTableModel
 	private boolean isRowEditable(int row, boolean isAlwaysUpdateableColumn)
 	{
 // metas: end
-	//	log.fine( "MTable.isRowEditable - Row=" + row);
+	//	log.debug( "MTable.isRowEditable - Row=" + row);
 		//	Entire Table not editable or no row
 		if ((m_readOnly && !isAlwaysUpdateableColumn) || row < 0) // metas: check !isAlwaysUpdateableColumn
 			return false;
@@ -3100,7 +3100,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void setReadOnly (boolean value)
 	{
-		log.fine("ReadOnly=" + value);
+		log.debug("ReadOnly=" + value);
 		m_readOnly = value;
 	}	//	setReadOnly
 
@@ -3150,7 +3150,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void setDeleteable (boolean value)
 	{
-		log.fine("Deleteable=" + value);
+		log.debug("Deleteable=" + value);
 		m_deleteable = value;
 	}	//	setDeleteable
 
@@ -3240,7 +3240,7 @@ public class GridTable extends AbstractTableModel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, columnName + ", DT=" + displayType, e);
+			log.error(columnName + ", DT=" + displayType, e);
 		}
 		return rowData;
 	}	//	readData
@@ -3339,7 +3339,9 @@ public class GridTable extends AbstractTableModel
 		DataStatusEvent e = createDSE();
 		e.setInfo(AD_Message, info, isError, !isError);
 		if (isError)
-			log.saveWarning(AD_Message, info);
+		{
+			MetasfreshLastError.saveWarning(log, AD_Message, info);
+		}
 		fireDataStatusChanged (e);
 	}   //  fireDataStatusEvent
 
@@ -3430,7 +3432,7 @@ public class GridTable extends AbstractTableModel
 		protected int open(int maxRows, final MQuery myQuery)
 		{
 			// query = myQuery; // metas
-		//	log.config( "MTable Loader.open");
+		//	log.info( "MTable Loader.open");
 			//	Get Number of Rows
 			int rows = 0;
 			PreparedStatement pstmt = null;
@@ -3447,9 +3449,9 @@ public class GridTable extends AbstractTableModel
 			{
 				//	Zoom Query may have invalid where clause
 				if (DBException.isInvalidIdentifierError(e0))
-					log.warning("Count - " + e0.getLocalizedMessage() + "\nSQL=" + m_SQL_Count);
+					log.warn("Count - " + e0.getLocalizedMessage() + "\nSQL=" + m_SQL_Count);
 				else
-					log.log(Level.SEVERE, "Count SQL=" + m_SQL_Count, e0);
+					log.error("Count SQL=" + m_SQL_Count, e0);
 				return 0;
 			}
 			finally
@@ -3482,11 +3484,11 @@ public class GridTable extends AbstractTableModel
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, m_SQL, e);
+				log.error(m_SQL, e);
 				close();
 				return 0;
 			}
-			log.fine(info.toString());
+			log.debug(info.toString());
 			return rows;
 		}	//	open
 
@@ -3495,7 +3497,7 @@ public class GridTable extends AbstractTableModel
 		 */
 		private void close()
 		{
-		//	log.config( "MTable Loader.close");
+		//	log.info( "MTable Loader.close");
 			DB.close(m_rs, m_pstmt);
 			m_rs = null;
 			m_pstmt = null;
@@ -3522,7 +3524,7 @@ public class GridTable extends AbstractTableModel
 				{
 					if (this.isInterrupted())
 					{
-						log.fine("Interrupted");
+						log.debug("Interrupted");
 						close();
 						return;
 					}
@@ -3554,7 +3556,7 @@ public class GridTable extends AbstractTableModel
 						}
 						catch (InterruptedException ie)
 						{
-							log.fine("Interrupted while sleeping");
+							log.debug("Interrupted while sleeping");
 							close();
 							return;
 						}
@@ -3566,7 +3568,7 @@ public class GridTable extends AbstractTableModel
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "run", e);
+				log.error("run", e);
 			}
 			finally
 			{
@@ -3614,7 +3616,7 @@ public class GridTable extends AbstractTableModel
 				{
 					Object para = m_parameterSELECT.get(i);
 					if (para != null)
-						log.fine("Select " + i + "=" + para);
+						log.debug("Select " + i + "=" + para);
 					//
 					if (para == null)
 						;
@@ -3633,7 +3635,7 @@ public class GridTable extends AbstractTableModel
 				{
 					Object para = m_parameterWHERE.get(i);
 					if (para != null)
-						log.fine("Where " + i + "=" + para);
+						log.debug("Where " + i + "=" + para);
 					//
 					if (para == null)
 						;
@@ -3650,7 +3652,7 @@ public class GridTable extends AbstractTableModel
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "parameter", e);
+				log.error("parameter", e);
 			}
 		}	//	setParameter
 
@@ -3727,7 +3729,7 @@ public class GridTable extends AbstractTableModel
 	    		}
 	    		else
 	    		{
-					log.log(Level.INFO, "No Value for sql={0}", sql);
+					log.info("No Value for sql={}", sql);
 	    		}
 	    	}
 	    	catch (SQLException e)
@@ -4054,9 +4056,7 @@ public class GridTable extends AbstractTableModel
 				if (context != null && context.trim().length() > 0) {
 					where.append(context);
 				} else {
-					log.log(Level.WARNING,
-							"Failed to parse where clause. whereClause="
-									+ m_whereClause);
+					log.warn("Failed to parse where clause. whereClause=" + m_whereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -4077,9 +4077,7 @@ public class GridTable extends AbstractTableModel
 				if (ctx != null && ctx.trim().length() > 0) {
 					where.append(ctx);
 				} else {
-					log.log(Level.WARNING,
-							"Failed to parse where clause. defaultwhereClause="
-									+ m_defaultWhereClause);
+					log.warn("Failed to parse where clause. defaultwhereClause=" + m_defaultWhereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -4119,7 +4117,7 @@ public class GridTable extends AbstractTableModel
 		if (!m_orderClause.equals("")) {
 			m_SQL += " ORDER BY " + m_orderClause;
 		}
-		log.fine(m_SQL_Count);
+		log.debug(m_SQL_Count);
 		Env.setContext(m_ctx, m_WindowNo, m_TabNo, "SQL", m_SQL);
 		return m_SQL;
 	} // createSelectSql
@@ -4129,7 +4127,7 @@ public class GridTable extends AbstractTableModel
 		log.info("MaxRows=" + maxRows);
 		m_maxRows = maxRows;
 		if (m_open) {
-			log.fine("already open");
+			log.debug("already open");
 			dataRefreshAll();
 			return true;
 		}
@@ -4137,7 +4135,7 @@ public class GridTable extends AbstractTableModel
 		// create m_SQL and m_countSQL
 		createSelectSql(oneRow);
 		if (m_SQL == null || m_SQL.equals("")) {
-			log.log(Level.SEVERE, "No SQL");
+			log.error("No SQL");
 			return false;
 		}
 
@@ -4249,7 +4247,7 @@ public class GridTable extends AbstractTableModel
 		
 		if (C_DocType_ID <= 0)
 		{
-			log.fine("Window=" + WindowNo
+			log.debug("Window=" + WindowNo
 					+ " - Target=" + Env.getContextAsInt(ctx, WindowNo + "|C_DocTypeTarget_ID") + "/" + Env.getContextAsInt(ctx, WindowNo, "C_DocTypeTarget_ID")
 					+ " - Actual=" + Env.getContextAsInt(ctx, WindowNo + "|C_DocType_ID") + "/" + Env.getContextAsInt(ctx, WindowNo, "C_DocType_ID"));
 			return documentNoFactory.forTableName(TableName, AD_Client_ID, AD_Org_ID)

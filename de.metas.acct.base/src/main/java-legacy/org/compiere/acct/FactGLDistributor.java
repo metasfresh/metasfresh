@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.GLDistributionBuilder;
 import org.adempiere.acct.api.GLDistributionResult;
@@ -19,7 +20,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableList;
 
@@ -61,7 +63,7 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(FactGLDistributor.class);
+	private static final transient Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 
@@ -154,7 +156,7 @@ import com.google.common.collect.ImmutableList;
 					+ "\nPostingType: " + postingType
 					+ "\nC_DocType_ID: " + docTypeId
 					+ "\nGL_Distribution(s): " + distributions);
-			logger.log(Level.WARNING, "More then one GL_Distribution found. Using the first one.", ex);
+			logger.warn("More then one GL_Distribution found. Using the first one.", ex);
 		}
 		final I_GL_Distribution distribution = distributions.get(0);
 		return distribution;
@@ -230,7 +232,7 @@ import com.google.common.collect.ImmutableList;
 		// Description
 		factLine.addDescription(glDistributionLine.getDescription());
 
-		logger.log(Level.INFO, "{0}", factLine);
+		logger.info("{}", factLine);
 		return factLine;
 	}
 }

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -48,7 +47,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderDAO;
@@ -61,6 +59,10 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.IMRPSegment;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 
@@ -68,7 +70,7 @@ import de.metas.document.engine.IDocActionBL;
 
 public class MRPDAO implements IMRPDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(MRPDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(MRPDAO.class);
 
 	@Override
 	public IMRPQueryBuilder createMRPQueryBuilder()
@@ -140,7 +142,7 @@ public class MRPDAO implements IMRPDAO
 		final String keyColumnName = tableName + "_ID";
 		if (!InterfaceWrapperHelper.hasColumnName(I_PP_MRP.class, keyColumnName))
 		{
-			logger.log(Level.INFO, "There is PP_MRP.{0} column. Skip deleting related MRP records for {1}", new Object[] { keyColumnName, model });
+			logger.info("There is PP_MRP.{} column. Skip deleting related MRP records for {}", new Object[] { keyColumnName, model });
 			return;
 		}
 

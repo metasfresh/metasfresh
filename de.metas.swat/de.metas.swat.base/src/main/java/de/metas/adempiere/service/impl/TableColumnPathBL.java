@@ -35,7 +35,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Util;
 
@@ -53,7 +54,7 @@ import de.metas.adempiere.service.ITableColumnPathBL;
  */
 public class TableColumnPathBL implements ITableColumnPathBL
 {
-	private static final CLogger log = CLogger.getCLogger(TableColumnPathBL.class);
+	private static final Logger log = LogManager.getLogger(TableColumnPathBL.class);
 
 	public TableColumnPathBL()
 	{

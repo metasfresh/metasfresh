@@ -31,7 +31,8 @@ import org.compiere.model.GridTable;
 import org.compiere.swing.CColumnControlButton;
 import org.compiere.swing.CTable;
 import org.compiere.swing.CTableModelRowSorter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.jdesktop.swingx.action.BoundAction;
 
 /**
@@ -87,7 +88,7 @@ public final class VTable extends CTable
 	}
 
 	/**	Logger			*/
-	private static final transient CLogger log = CLogger.getCLogger(VTable.class);
+	private static final transient Logger log = LogManager.getLogger(VTable.class);
 	
 	/**
 	 *  Property Change Listener for CurrentRow.
@@ -98,20 +99,20 @@ public final class VTable extends CTable
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
-	//	log.config(evt);
+	//	log.info(evt);
 		if (evt.getPropertyName().equals(GridTab.PROPERTY))
 		{
 			int row = ((Integer)evt.getNewValue()).intValue();
 			int selRow = getSelectedRow();
 			if (row == selRow)
 				return;
-			log.config(GridTab.PROPERTY + "=" + row + " from " + selRow);
+			log.info(GridTab.PROPERTY + "=" + row + " from " + selRow);
 			setRowSelectionInterval(row,row);
 			setColumnSelectionInterval(0, 0);
 		    Rectangle cellRect = getCellRect(row, 0, false);
 		    if (cellRect != null)
 		    	scrollRectToVisible(cellRect);
-			log.config(GridTab.PROPERTY + "=" + row + " from " + selRow);
+			log.info(GridTab.PROPERTY + "=" + row + " from " + selRow);
 		}
 	}   //  propertyChange
 	
@@ -141,7 +142,7 @@ public final class VTable extends CTable
 				{
 					//  other sort columns
 					final boolean sortAscending = addToSortColumnsAndRemoveOtherColumns(modelColumnIndex);
-					log.config("#" + modelColumnIndex + " - rows=" + rows + ", asc=" + sortAscending);
+					log.info("#" + modelColumnIndex + " - rows=" + rows + ", asc=" + sortAscending);
 			
 					gridTable.sort(modelColumnIndex, sortAscending);
 				}
@@ -167,7 +168,7 @@ public final class VTable extends CTable
 	{
 		if (!super.editCellAt(row, column, e))
 			return false;
-	//	log.fine( "VTable.editCellAt", "r=" + row + ", c=" + column);
+	//	log.debug( "VTable.editCellAt", "r=" + row + ", c=" + column);
 
 		Object ed = getCellEditor();
 		if (ed instanceof VEditor)

@@ -27,7 +27,8 @@ import java.util.Map;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.pipo.exception.NonUniqueIDLookupException;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 /**
@@ -37,7 +38,7 @@ import org.compiere.util.DB;
  */
 public final class IDFinder
 {
-	private static CLogger log = CLogger.getCLogger(IDFinder.class);
+	private static Logger log = LogManager.getLogger(IDFinder.class);
 	
 	private static Map<String, Integer> idCache = new HashMap<String, Integer>(); 
 	
@@ -360,7 +361,7 @@ public final class IDFinder
 				}
 				else
 				{
-					log.warning("Non Unique ID Lookup found for "+key);
+					log.warn("Non Unique ID Lookup found for "+key);
 				}
 			}
 		}

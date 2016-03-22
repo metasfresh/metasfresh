@@ -28,14 +28,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
-import org.compiere.util.CLogger;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 
@@ -51,7 +51,7 @@ import org.compiere.util.Util.ArrayKey;
 	 * 
 	 */
 	private static final long serialVersionUID = -7868426685745727939L;
-	private static final transient CLogger log = CLogger.getCLogger(MLookupLoader.class);
+	private static final transient Logger log = LogManager.getLogger(MLookupLoader.class);
 
 	//
 	// Services
@@ -77,7 +77,7 @@ import org.compiere.util.Util.ArrayKey;
 		super();
 
 		threadName = "MLookupLoader-W" + lookupInfo.getWindowNo() + "-" + lookupInfo.getKeyColumnFQ();
-		log.log(Level.FINE, "Loading: " + threadName);
+		log.debug("Loading: " + threadName);
 
 		this.validationCtx = validationCtx;
 		this.lookupInfo = lookupInfo;
@@ -130,7 +130,7 @@ import org.compiere.util.Util.ArrayKey;
 		// check
 		if (Thread.interrupted())
 		{
-			log.log(Level.WARNING, threadName + ": Loader interrupted");
+			log.warn(threadName + ": Loader interrupted");
 			this.wasInterrupted = true;
 			return this;
 		}
@@ -149,7 +149,7 @@ import org.compiere.util.Util.ArrayKey;
 				final String errmsg = lookupInfo.KeyColumn + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
 						+ "\n Fetched Rows: " + rows
 						+ "\n Max rows allowed: " + MLookup.MAX_ROWS;
-				log.warning(errmsg);
+				log.warn(errmsg);
 				allLoaded = false;
 				break;
 			}
@@ -173,10 +173,10 @@ import org.compiere.util.Util.ArrayKey;
 			values.put(item.getID(), item);
 		}
 
-		if (log.isLoggable(Level.FINER))
+		if (log.isTraceEnabled())
 		{
 			final int size = values.size();
-			log.finer(lookupInfo.getKeyColumnFQ()
+			log.trace(lookupInfo.getKeyColumnFQ()
 					+ " (" + lookupInfo.getAD_Column_ID() + "):"
 					// + " ID=" + m_info.AD_Column_ID + " " +
 					+ " - Loader complete #" + size + " - all=" + allLoaded

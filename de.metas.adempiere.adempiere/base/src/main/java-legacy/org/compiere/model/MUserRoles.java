@@ -20,9 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -63,7 +63,7 @@ public class MUserRoles extends X_AD_User_Roles
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "getOfRole", e);
+			s_log.error("getOfRole", e);
 		}
 		try
 		{
@@ -104,7 +104,7 @@ public class MUserRoles extends X_AD_User_Roles
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "getOfUser", e);
+			s_log.error("getOfUser", e);
 		}
 		try
 		{
@@ -122,7 +122,7 @@ public class MUserRoles extends X_AD_User_Roles
 	}	//	getOfUser
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MUserRoles.class);
+	private static Logger	s_log	= LogManager.getLogger(MUserRoles.class);
 
 	
 	/**************************************************************************

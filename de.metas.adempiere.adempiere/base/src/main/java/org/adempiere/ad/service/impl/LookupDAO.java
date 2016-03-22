@@ -29,7 +29,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
@@ -55,7 +56,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -69,7 +69,7 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 
 public class LookupDAO implements ILookupDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(LookupDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(LookupDAO.class);
 
 	private final static String COLUMNNAME_Value = "Value";
 
@@ -399,12 +399,12 @@ public class LookupDAO implements ILookupDAO
 			}
 			else
 			{
-				logger.log(Level.SEVERE, "Column Not Found - AD_Column_ID=" + adColumnId);
+				logger.error("Column Not Found - AD_Column_ID=" + adColumnId);
 			}
 		}
 		catch (SQLException ex)
 		{
-			logger.log(Level.SEVERE, "create", ex);
+			logger.error("create", ex);
 		}
 		finally
 		{
@@ -471,7 +471,7 @@ public class LookupDAO implements ILookupDAO
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 			return null;
 		}
 		finally
@@ -483,7 +483,7 @@ public class LookupDAO implements ILookupDAO
 
 		if (tableRefInfo == null)
 		{
-			logger.log(Level.SEVERE, "No Table Reference Table ID=" + AD_Reference_ID);
+			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
 			return null;
 		}
 
@@ -535,7 +535,7 @@ public class LookupDAO implements ILookupDAO
 		catch (SQLException e)
 		{
 			final DBException ex = new DBException(e, sql.toString(), sqlParams);
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 			return null;
 		}
 		finally
@@ -668,7 +668,7 @@ public class LookupDAO implements ILookupDAO
 						, rs.getString(8) // FormatPattern
 				);
 				lookupDisplayColumns.add(ldc);
-				// s_log.fine("getLookup_TableDir: " + ColumnName + " - " + ldc);
+				// s_log.debug("getLookup_TableDir: " + ColumnName + " - " + ldc);
 				//
 				if (!isTranslated && ldc.isTranslated())
 				{
@@ -681,7 +681,7 @@ public class LookupDAO implements ILookupDAO
 		catch (SQLException e)
 		{
 			DBException ex = new DBException(e, sql.toString(), sqlParams);
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 			return null;
 		}
 		finally
@@ -828,10 +828,10 @@ public class LookupDAO implements ILookupDAO
 		final boolean numericKey = lookupInfo.isNumericKey();
 		final int entityTypeColumnIndex = lookupInfo.isQueryHasEntityType() ? MLookupFactory.COLUMNINDEX_EntityType : -1;
 
-		if (logger.isLoggable(Level.FINER))
+		if (logger.isTraceEnabled())
 		{
 			Env.setContext(lookupInfo.getCtx(), Env.WINDOW_MLOOKUP, lookupInfo.getAD_Column_ID(), lookupInfo.getKeyColumnFQ(), sql);
-			logger.fine(lookupInfo.getKeyColumnFQ() + ": " + sql);
+			logger.debug(lookupInfo.getKeyColumnFQ() + ": " + sql);
 		}
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
@@ -975,7 +975,7 @@ public class LookupDAO implements ILookupDAO
 			{
 				if (directValue != null)
 				{
-					logger.log(Level.SEVERE, lookupInfo.KeyColumn + ": Not unique (first returned) for " + key + " SQL=" + sql);
+					logger.error(lookupInfo.KeyColumn + ": Not unique (first returned) for " + key + " SQL=" + sql);
 					break;
 				}
 

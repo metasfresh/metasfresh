@@ -27,13 +27,13 @@ package de.metas.adempiere.form.terminal.context;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -53,7 +53,7 @@ public class TerminalContextFactory
 		return TerminalContextFactory.instance;
 	}
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/* Internal list of created terminal contexts, to avoid being GCed */
 	private final IdentityHashSet<ITerminalContext> terminalContexts = new IdentityHashSet<ITerminalContext>();
@@ -148,7 +148,7 @@ public class TerminalContextFactory
 		{
 			if (!terminalContextUnwrapped.isDisposed())
 			{
-				logger.log(Level.WARNING, "Cannot remove {0} from internal terminal contexts list because it was not found."
+				logger.warn("Cannot remove {} from internal terminal contexts list because it was not found."
 						+ "\nCurrent contexts are: {1}"
 						, new Object[] { terminalContext, terminalContexts });
 			}

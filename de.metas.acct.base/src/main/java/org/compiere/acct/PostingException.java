@@ -25,12 +25,13 @@ package org.compiere.acct;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
+
+import ch.qos.logback.classic.Level;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
@@ -54,7 +55,7 @@ public final class PostingException extends AdempiereException
 	private I_Fact_Acct _factLine;
 	private String _detailMessage;
 	private boolean _preserveDocumentPostedStatus = false;
-	private Level _logLevel = Level.SEVERE;
+	private Level _logLevel = Level.ERROR;
 	private final Map<String, Object> parameters = new LinkedHashMap<>();
 
 	public PostingException(final Doc document)

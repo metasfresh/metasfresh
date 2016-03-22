@@ -18,7 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
@@ -67,7 +68,7 @@ public class ProjectGenPO extends SvrProcess
 			else if (name.equals("ConsolidateDocument"))
 				m_ConsolidateDocument = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -142,7 +143,7 @@ public class ProjectGenPO extends SvrProcess
 			int AD_Org_ID = projectLine.getAD_Org_ID();
 			if (AD_Org_ID == 0)
 			{
-				log.warning("createPOfromProjectLine - AD_Org_ID=0");
+				log.warn("createPOfromProjectLine - AD_Org_ID=0");
 				AD_Org_ID = Env.getAD_Org_ID(getCtx());	
 				if (AD_Org_ID != 0)
 					projectLine.setAD_Org_ID(AD_Org_ID);

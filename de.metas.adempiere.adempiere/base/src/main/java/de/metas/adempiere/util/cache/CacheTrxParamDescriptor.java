@@ -24,9 +24,8 @@ package de.metas.adempiere.util.cache;
 
 
 import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheTrx;
 
@@ -38,7 +37,7 @@ import de.metas.adempiere.util.CacheTrx;
  */
 class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CacheTrxParamDescriptor.class);
+	private static final transient Logger logger = LogManager.getLogger(CacheTrxParamDescriptor.class);
 
 	private final int parameterIndex;
 
@@ -84,7 +83,7 @@ class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
 					.setMethodArguments(params)
 					.setInvalidParameter(parameterIndex, trxNameObj)
 					.setAnnotation(CacheTrx.class);
-			logger.log(Level.WARNING, "Invalid parameter. Skip caching", ex);
+			logger.warn("Invalid parameter. Skip caching", ex);
 			return;
 		}
 

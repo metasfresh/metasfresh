@@ -23,7 +23,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -44,7 +45,8 @@ import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -88,7 +90,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, ex.getMessage());
+			log.error(ex.getMessage());
 		}
 		initBPartner();
 		//
@@ -112,7 +114,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	private int				m_line;
 	private Object[]		m_greeting;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VBPartner.class);
+	private static Logger log = LogManager.getLogger(VBPartner.class);
 	//
 	private VString	fValue, fName, fName2, fContact, fTitle, fPhone, fFax, fPhone2, fEMail;
 	private VLocation 		fAddress;
@@ -291,7 +293,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	 */
 	public boolean loadBPartner (int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		//  New bpartner
 		if (C_BPartner_ID == 0)
 		{
@@ -380,7 +382,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	 */
 	private boolean actionSave()
 	{
-		log.config("");
+		log.info("");
 
 		//	Check Mandatory fields
 		if (fName.getText().equals(""))
@@ -430,7 +432,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		else
 			m_partner.setC_Greeting_ID(0);
 		if (m_partner.save())
-			log.fine("C_BPartner_ID=" + m_partner.getC_BPartner_ID());
+			log.debug("C_BPartner_ID=" + m_partner.getC_BPartner_ID());
 		else
 			ADialog.error(m_WindowNo, this, "BPartnerNotSaved");
 		
@@ -443,7 +445,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		m_pLocation.setPhone2(fPhone2.getText());
 		m_pLocation.setFax(fFax.getText());
 		if (m_pLocation.save())
-			log.fine("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
+			log.debug("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
 		else
 			ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "C_BPartner_Location_ID"));
 			
@@ -469,7 +471,7 @@ public final class VBPartner extends CDialog implements ActionListener
 			m_user.setPhone2(fPhone2.getText());
 			m_user.setFax(fFax.getText());
 			if (m_user.save())
-				log.fine("AD_User_ID=" + m_user.getAD_User_ID());
+				log.debug("AD_User_ID=" + m_user.getAD_User_ID());
 			else
 				ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "AD_User_ID"));
 		}

@@ -50,7 +50,7 @@ public class UnitTestServiceNamePolicy extends DefaultServiceNamePolicy implemen
 		}
 		catch (ClassNotFoundException e)
 		{
-			// logger.log(Level.FINE, "No Plain/Unit service found for "+clazz+". Tried "+plainServiceClassNameFQ);
+			// logger.debug("No Plain/Unit service found for "+clazz+". Tried "+plainServiceClassNameFQ);
 			// Plain Service not found, use original one
 
 			// TODO also try to load

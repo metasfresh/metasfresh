@@ -27,7 +27,8 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -40,8 +41,7 @@ import org.compiere.util.Env;
  */
 public class GenericZoomProvider implements IZoomProvider {
 
-	private static final CLogger logger = CLogger
-			.getCLogger(GenericZoomProvider.class);
+	private static final Logger logger = LogManager.getLogger(GenericZoomProvider.class);
 
 	@Override
 	public List<ZoomInfoFactory.ZoomInfo> retrieveZoomInfos(PO po) {

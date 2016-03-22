@@ -29,7 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -37,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -62,7 +62,7 @@ import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 /* package */class HUTrxAttributesCollector extends AttributeStorageListenerAdapter
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(HUTrxAttributesCollector.class);
+	private static final transient Logger logger = LogManager.getLogger(HUTrxAttributesCollector.class);
 
 	/** Is this collector disposed? */
 	private boolean _disposed = false;
@@ -91,7 +91,7 @@ import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 		// and we still have collected transactions.
 		if (transactions != null && !transactions.isEmpty())
 		{
-			logger.warning("Possible development error on " + HUTrxAttributesCollector.class
+			logger.warn("Possible development error on " + HUTrxAttributesCollector.class
 					+ "\n There are still collected " + transactions.size() + "transactions."
 					+ "\n Disposed flag: " + _disposed);
 		}
@@ -113,7 +113,7 @@ import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 			{
 				throw ex;
 			}
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 		this._disposed = true;
 	}

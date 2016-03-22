@@ -29,15 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -62,7 +59,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 {
 	//
 	// Logger
-	private static final transient Logger logger = CLogger.getLogger(HUSplitDefaultQtyHandler.class.getName());
+	private static final transient Logger logger = LogManager.getLogger(HUSplitDefaultQtyHandler.class.getName());
 
 	//
 	// Services
@@ -385,7 +382,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 			// Due to the high number of test cases and low-to-none GUI test coverage, there are cases where auto-detection does not work.
 			// Therefore, we want to skip the initial qty calculation and not interfere with the user's work (albeit a bit annoying that the qtys are not calculated)
 			final AdempiereException ex = new AdempiereException("Developer error: tuKey was null (not detected) for huToSplit value={0}", new Object[] { huToSplit.getValue() });
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 
 			return; // protection: log the exception message and do not attempt to calculate any further.
 		}

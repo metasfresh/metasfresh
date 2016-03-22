@@ -19,7 +19,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +38,7 @@ import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -123,7 +123,7 @@ public class Doc_MatchInv extends Doc
 				{
 					final int taxPrecision = getStdPrecision();
 					final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, invoiceLineNetAmt, true, taxPrecision);
-					log.log(Level.FINE, "LineNetAmt={0} - LineTaxAmt={1}", new Object[] { invoiceLineNetAmt, lineTaxAmt });
+					log.debug("LineNetAmt={} - LineTaxAmt={}", new Object[] { invoiceLineNetAmt, lineTaxAmt });
 					invoiceLineNetAmt = invoiceLineNetAmt.subtract(lineTaxAmt);
 				}
 			}	// correct included Tax
@@ -204,7 +204,7 @@ public class Doc_MatchInv extends Doc
 				|| m_receiptLine.getMovementQty().signum() == 0	// Qty = 0
 				|| getQtyInvoiced().signum() == 0) // 08643 avoid division by zero further down; note that we don't really know if and what to book in this case.
 		{
-			log.fine("No Product/Qty - M_Product_ID=" + getM_Product_ID()
+			log.debug("No Product/Qty - M_Product_ID=" + getM_Product_ID()
 					+ ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty() + ",InvoiceQty=" + getQtyInvoiced());
 			return facts;
 		}
@@ -214,7 +214,7 @@ public class Doc_MatchInv extends Doc
 		setC_Currency_ID(as.getC_Currency_ID());
 
 		/**
-		 * Needs to be handled in PO Matching as no Receipt info if (m_pc.isService()) { log.fine("Service - skipped"); return fact; }
+		 * Needs to be handled in PO Matching as no Receipt info if (m_pc.isService()) { log.debug("Service - skipped"); return fact; }
 		 **/
 
 		// NotInvoicedReceipt DR
@@ -253,8 +253,8 @@ public class Doc_MatchInv extends Doc
 					.setLogLevel(Level.INFO)
 					.setDetailMessage("Mat.Receipt not posted yet");
 		}
-		if (log.isLoggable(Level.FINE))
-			log.fine("DR - Amt(" + dr.getAcctBalance() + ") - " + dr.toString());
+		if (log.isDebugEnabled())
+			log.debug("DR - Amt(" + dr.getAcctBalance() + ") - " + dr.toString());
 
 		//
 		// InventoryClearing CR
@@ -293,7 +293,7 @@ public class Doc_MatchInv extends Doc
 					.buildAndAdd();
 			if (cr == null)
 			{
-				log.fine("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
+				log.debug("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
 				createFacts_InvoicePriceVariance(fact, dr, cr);
 				
 				facts.add(fact);
@@ -301,8 +301,8 @@ public class Doc_MatchInv extends Doc
 			}
 			cr.setQty(getQty().negate());
 			
-			if (log.isLoggable(Level.FINE))
-				log.fine("CR - Amt(" + cr.getAcctBalance() + ") - " + cr.toString());
+			if (log.isDebugEnabled())
+				log.debug("CR - Amt(" + cr.getAcctBalance() + ") - " + cr.toString());
 		}
 		else
 		// Cash Acct
@@ -423,8 +423,8 @@ public class Doc_MatchInv extends Doc
 		
 		updateFromInvoiceLine(ipvFactLine);
 		
-		if (log.isLoggable(Level.FINE))
-			log.fine("IPV=" + ipvAmount + "; Balance=" + fact.getSourceBalance());
+		if (log.isDebugEnabled())
+			log.debug("IPV=" + ipvAmount + "; Balance=" + fact.getSourceBalance());
 	}
 
 	/**
@@ -463,7 +463,7 @@ public class Doc_MatchInv extends Doc
 		{
 			return true; // task 08529: we extend the use of matchInv to also keep track of the SoTrx side. However, currently we don't need the accounting of that side to work
 		}
-		log.fine("M_MatchInv_ID=" + get_ID());
+		log.debug("M_MatchInv_ID=" + get_ID());
 
 		// update Product Costing Qty/Amt
 		// requires existence of currency conversion !!
@@ -488,7 +488,7 @@ public class Doc_MatchInv extends Doc
 						+ " AND m.M_MatchInv_ID=").append(get_ID()).append(")");
 		final String sqlNative = DB.convertSqlToNative(sql.toString());
 		int no = DB.executeUpdate(sqlNative, getTrxName());
-		log.fine("M_Product_Costing - Qty/Amt Updated #=" + no);
+		log.debug("M_Product_Costing - Qty/Amt Updated #=" + no);
 
 		// Update Average Cost
 		sql = new StringBuilder(
@@ -498,7 +498,7 @@ public class Doc_MatchInv extends Doc
 						+ "WHERE C_AcctSchema_ID=").append(C_AcctSchema_ID)
 				.append(" AND M_Product_ID=").append(getM_Product_ID());
 		no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.fine("M_Product_Costing - AvgCost Updated #=" + no);
+		log.debug("M_Product_Costing - AvgCost Updated #=" + no);
 
 		// Update Current Cost
 		if (!standardCosting)
@@ -509,7 +509,7 @@ public class Doc_MatchInv extends Doc
 							+ "WHERE C_AcctSchema_ID=").append(C_AcctSchema_ID)
 					.append(" AND M_Product_ID=").append(getM_Product_ID());
 			no = DB.executeUpdate(sql.toString(), getTrxName());
-			log.fine("M_Product_Costing - CurrentCost Updated=" + no);
+			log.debug("M_Product_Costing - CurrentCost Updated=" + no);
 		}
 		return true;
 	}   // updateProductInfo

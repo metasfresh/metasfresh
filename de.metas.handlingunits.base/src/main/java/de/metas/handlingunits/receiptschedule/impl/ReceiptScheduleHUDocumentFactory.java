@@ -30,7 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ProcessInfoSelectionQueryFilter;
@@ -40,8 +41,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -52,7 +51,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 
 public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 {
-	private static final CLogger logger = CLogger.getCLogger(ReceiptScheduleHUDocumentFactory.class);
+	private static final Logger logger = LogManager.getLogger(ReceiptScheduleHUDocumentFactory.class);
 
 	private final void assumeTableName(final String tableName)
 	{
@@ -144,7 +143,7 @@ public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.WARNING, "Error while creating line from " + schedule + ". Skipping.", e);
+				logger.warn("Error while creating line from " + schedule + ". Skipping.", e);
 			}
 		}
 

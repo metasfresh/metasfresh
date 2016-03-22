@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MCostDetail;
 import org.compiere.model.MProduct;
@@ -42,13 +43,13 @@ public class CostCreate extends SvrProcess
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
-		//	log.fine("prepare - " + para[i]);
+		//	log.debug("prepare - " + para[i]);
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("M_Product_ID"))
 				p_M_Product_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);		
+				log.error("Unknown Parameter: " + name);		
 		}
 	}	//	prepare
 

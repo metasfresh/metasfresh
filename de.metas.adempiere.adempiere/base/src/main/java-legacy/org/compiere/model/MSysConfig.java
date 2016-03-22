@@ -17,14 +17,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import com.google.common.base.Supplier;
@@ -75,7 +75,7 @@ public class MSysConfig extends X_AD_SysConfig
 	}	// MSysConfig
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MSysConfig.class);
+	private static Logger s_log = LogManager.getLogger(MSysConfig.class);
 	/** Cache */
 	private static CCache<String, String> s_cache = new CCache<>(Table_Name, 40, 0); // expire=never
 	
@@ -135,7 +135,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -159,7 +159,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -233,7 +233,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -258,7 +258,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -350,7 +350,7 @@ public class MSysConfig extends X_AD_SysConfig
 		catch (final SQLException sqlEx)
 		{
 			final DBException ex = new DBException(sqlEx, sql, sqlParams);
-			s_log.log(Level.SEVERE, "Failed retrieving the sysconfig value", ex);
+			s_log.error("Failed retrieving the sysconfig value", ex);
 			
 			value = null;
 		}
@@ -401,7 +401,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getIntValue (" + Name + ") = " + s, e);
+			s_log.error("getIntValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -427,7 +427,7 @@ public class MSysConfig extends X_AD_SysConfig
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.log(Level.SEVERE, "getDoubleValue (" + Name + ") = " + s, e);
+			s_log.error("getDoubleValue (" + Name + ") = " + s, e);
 		}
 		return defaultValue;
 	}
@@ -464,7 +464,7 @@ public class MSysConfig extends X_AD_SysConfig
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		log.fine("New=" + newRecord);
+		log.debug("New=" + newRecord);
 
 		if (getAD_Client_ID() != 0 || getAD_Org_ID() != 0)
 		{
@@ -484,7 +484,7 @@ public class MSysConfig extends X_AD_SysConfig
 			}
 			catch (SQLException e)
 			{
-				s_log.log(Level.SEVERE, "getValue", e);
+				s_log.error("getValue", e);
 			}
 			finally
 			{
@@ -512,7 +512,7 @@ public class MSysConfig extends X_AD_SysConfig
 					}
 					catch (SQLException e)
 					{
-						s_log.log(Level.SEVERE, "getValue", e);
+						s_log.error("getValue", e);
 					}
 					finally
 					{

@@ -37,7 +37,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductCategory;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.IProductAware;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -52,9 +53,7 @@ import de.metas.commission.util.CommissionTools;
 
 public class InstanceTriggerBL implements IInstanceTriggerBL
 {
-
-	private static final CLogger logger = CLogger
-			.getCLogger(InstanceTriggerBL.class);
+	private static final Logger logger = LogManager.getLogger(InstanceTriggerBL.class);
 
 	@Override
 	public String setCommissionPoints(final Properties ctx, final IInstanceTrigger it, final boolean nullIfOk, final String trxName)

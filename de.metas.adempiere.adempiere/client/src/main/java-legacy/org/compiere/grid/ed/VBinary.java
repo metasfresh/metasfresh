@@ -25,13 +25,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 	Binary Editor.
@@ -78,7 +80,7 @@ public class VBinary extends JButton
 	private Object	m_data = null;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VBinary.class);
+	private static Logger log = LogManager.getLogger(VBinary.class);
 
 	/**
 	 *  Set Value
@@ -86,7 +88,7 @@ public class VBinary extends JButton
 	 */
 	public void setValue(Object value)
 	{
-		log.config("=" + value);
+		log.info("=" + value);
 		m_data = value;
 		if (m_data == null)
 			setText("-");
@@ -234,7 +236,7 @@ public class VBinary extends JButton
 				os.write(buffer);
 				os.flush();
 				os.close();
-				log.config("Save to " + file + " #" + buffer.length);
+				log.info("Save to " + file + " #" + buffer.length);
 			}
 			else	//	load
 			{
@@ -247,13 +249,13 @@ public class VBinary extends JButton
 				is.close();
 				byte[] data = os.toByteArray();
 				m_data = data;
-				log.config("Load from " + file + " #" + data.length);
+				log.info("Load from " + file + " #" + data.length);
 				os.close();
 			}
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.WARNING, "Save=" + save, ex);
+			log.warn("Save=" + save, ex);
 		}
 		
 		try

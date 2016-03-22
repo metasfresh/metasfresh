@@ -39,7 +39,8 @@ import org.compiere.model.M_Element;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -47,7 +48,7 @@ import org.zkoss.lang.Objects;
 
 /* package */class TrlElementHelper
 {
-	private static final CLogger logger = CLogger.getCLogger(TrlElementHelper.class);
+	private static final Logger logger = LogManager.getLogger(TrlElementHelper.class);
 
 	/**
 	 * Create {@link TrlElement} from given PO.
@@ -321,7 +322,7 @@ import org.zkoss.lang.Objects;
 		final int no = DB.executeUpdateEx(sql, params.toArray(), trxName);
 		if (no != 1)
 		{
-			TrlElementHelper.logger.warning("Trl update error (sql=" + sql + ")");
+			TrlElementHelper.logger.warn("Trl update error (sql=" + sql + ")");
 		}
 
 		// Do cache reset if we have changes

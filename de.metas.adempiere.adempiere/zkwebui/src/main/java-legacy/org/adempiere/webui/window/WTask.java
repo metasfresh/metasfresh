@@ -16,17 +16,18 @@
  *****************************************************************************/
 package org.adempiere.webui.window;
 
-import java.util.logging.Level;
-
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.util.OSTask;
 import org.compiere.model.MTask;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.DesktopUnavailableException;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -95,7 +96,7 @@ public class WTask extends Window implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, task.toString(), e);
+			log.error(task.toString(), e);
 		}
 	}   //  ATask
 
@@ -134,11 +135,11 @@ public class WTask extends Window implements EventListener
 							Executions.deactivate(desktop);
 						}
 					} catch (DesktopUnavailableException e) {
-						log.log(Level.FINE, e.getLocalizedMessage(), e);
+						log.debug(e.getLocalizedMessage(), e);
 						osTask.interrupt();
 						break;
 					} catch (InterruptedException e) {
-						log.log(Level.FINE, e.getLocalizedMessage(), e);
+						log.debug(e.getLocalizedMessage(), e);
 						osTask.interrupt();
 						break;
 					}
@@ -150,7 +151,7 @@ public class WTask extends Window implements EventListener
 	}
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WTask.class);
+	private static Logger log = LogManager.getLogger(WTask.class);
 
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
 	private Html info = new Html();

@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutConfirm;
@@ -49,7 +50,7 @@ public class InOutCreateConfirm extends SvrProcess
 			else if (name.equals("ConfirmType"))
 				p_ConfirmType = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_M_InOut_ID = getRecord_ID();
 	}	//	prepare

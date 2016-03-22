@@ -29,7 +29,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -57,7 +58,8 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_M_PriceList;
@@ -67,7 +69,7 @@ import de.metas.adempiere.util.CacheTrx;
 
 public class PriceListDAO implements IPriceListDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(PriceListDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
 
 	@Override
 	public void updateTaxCategory(final I_M_PriceList_Version plv,
@@ -514,7 +516,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_PriceList_Version result = query.first();
 		if (result == null)
 		{
-			logger.log(Level.WARNING, "None found M_PriceList_ID=" + priceListId + ", date=" + date + ", query=" + query);
+			logger.warn("None found M_PriceList_ID=" + priceListId + ", date=" + date + ", query=" + query);
 		}
 		return result;
 	}

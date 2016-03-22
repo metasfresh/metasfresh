@@ -23,7 +23,6 @@ package de.metas.lock.api.impl;
  */
 
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -34,7 +33,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
@@ -53,7 +53,7 @@ import de.metas.lock.spi.ILockDatabase;
  */
 public abstract class AbstractLockDatabase implements ILockDatabase
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Asserts given lock owner is a valid owner to be used on for Locks */
 	protected final void assertValidLockOwner(final LockOwner lockOwner)
@@ -318,7 +318,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// and every time the item we selected (at select time it wasn't locked yet) was then locked by another
 		// DB-client before we could lock it. This means that we are either too slow to do anything meaningful at all
 		// or that there are already way too many clients attempting to find work on this table
-		logger.log(Level.INFO, "Unable to select and lock a record in {0} after {1} retries."
+		logger.info("Unable to select and lock a record in {} after {} retries."
 				+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work."
 				, new Object[] { query.getTableName(), maxLockRetries });
 

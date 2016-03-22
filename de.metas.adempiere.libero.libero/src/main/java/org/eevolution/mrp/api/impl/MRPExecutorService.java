@@ -25,11 +25,9 @@ package org.eevolution.mrp.api.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPContext;
@@ -40,11 +38,13 @@ import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
 import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 public class MRPExecutorService implements IMRPExecutorService
 {
 	// Services
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	public static final String MRP_ERROR_MRPExecutorMaxIterationsExceeded = IMRPExecutor.MRP_ERROR_999_Unknown; // TODO: add particular MRP code for this
 
@@ -169,7 +169,7 @@ public class MRPExecutorService implements IMRPExecutorService
 		Check.assumeNotNull(mrpExecutor, LiberoException.class, "mrpExecutor not null");
 		Check.assumeNotNull(mrpRunnable, LiberoException.class, "mrpRunnable not null");
 
-		final CLogger logger = mrpContext0.getLogger();
+		final Logger logger = mrpContext0.getLogger();
 
 		// Services
 		final IMRPSegmentBL mrpSegmentBL = Services.get(IMRPSegmentBL.class);
@@ -192,7 +192,7 @@ public class MRPExecutorService implements IMRPExecutorService
 		}
 		else
 		{
-			logger.log(Level.INFO, "NOTE: not enforcing MRP boundaries because our initial segment is not defined at all: {0}", mrpSegment0);
+			logger.info("NOTE: not enforcing MRP boundaries because our initial segment is not defined at all: {}", mrpSegment0);
 			mrpBoundaries = null;
 		}
 
@@ -204,10 +204,10 @@ public class MRPExecutorService implements IMRPExecutorService
 		{
 			final MRPSegmentAndTrace mrpSegmentAndTrace = mrpSegments.removeFirst();
 			final IMRPSegment mrpSegment = mrpSegmentAndTrace.getMRPSegment();
-			logger.log(Level.INFO, "\n\n\n------------------------------------------------------------------------------------------------------------------");
-			logger.log(Level.INFO, "Iteration: {0}/{1}", new Object[] { iterationNo, maxIterations });
-			logger.log(Level.INFO, "Evaluating segment: {0}", mrpSegment);
-			logger.log(Level.INFO, "Trace: {0}", mrpSegmentAndTrace.getTrace());
+			logger.info("\n\n\n------------------------------------------------------------------------------------------------------------------");
+			logger.info("Iteration: {}/{}", new Object[] { iterationNo, maxIterations });
+			logger.info("Evaluating segment: {}", mrpSegment);
+			logger.info("Trace: {}", mrpSegmentAndTrace.getTrace());
 
 			final IMRPContext currentMRPContext = mrpContextFactory.createMRPContext(mrpContext0, mrpSegment);
 

@@ -39,7 +39,8 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,7 +79,8 @@ import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.EMail;
@@ -89,7 +91,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
 
 	private static final long serialVersionUID = 5825759144157759944L;
-	private static final CLogger log = CLogger.getCLogger(MADBoilerPlate.class);
+	private static final Logger log = LogManager.getLogger(MADBoilerPlate.class);
 
 	public static final String FunctionSeparator = "/";
 	public static final String NamePattern = "[a-zA-Z0-9-_+]+";
@@ -181,7 +183,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 			catch (IOException e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 				file = null;
 			}
 		}
@@ -250,7 +252,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 			else
 			{
-				log.warning("Object type not supported - " + a + " - " + a.getClass());
+				log.warn("Object type not supported - " + a + " - " + a.getClass());
 			}
 		}
 		if (requestAttachment.getEntryCount() > 0)
@@ -432,7 +434,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 			else
 			{
-				log.warning("boilerPlate entry '" + boilerPlate.getName() + "' has null value as snippet");
+				log.warn("boilerPlate entry '" + boilerPlate.getName() + "' has null value as snippet");
 				continue;
 			}
 		}
@@ -561,7 +563,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				}
 				catch (Exception e)
 				{
-					log.log(Level.WARNING, e.getLocalizedMessage(), e);
+					log.warn(e.getLocalizedMessage(), e);
 					replacement = m.group();
 				}
 			}

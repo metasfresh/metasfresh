@@ -40,13 +40,14 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_M_DiscountSchema;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(MDiscountSchemaBL.class);
+	private static final Logger logger = LogManager.getLogger(MDiscountSchemaBL.class);
 
 	/**
 	 * Calculate Discount Percentage
@@ -124,11 +125,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 		if (isQtyBased)
 		{
-			logger.finer("Qty=" + qty + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
+			logger.trace("Qty=" + qty + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
 		}
 		else
 		{
-			logger.finer("Amt=" + amt + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
+			logger.trace("Amt=" + amt + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
 		}
 
 		I_M_DiscountSchemaBreak breakApplied = null;
@@ -185,7 +186,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			{
 				discount = breakApplied.getBreakDiscount();
 			}
-			logger.fine("Discount=>" + discount);
+			logger.debug("Discount=>" + discount);
 			return discount;
 			// for all breaks
 		}
@@ -213,20 +214,20 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			{
 				if (!breakApplies(br, qty, M_Product_ID, M_Product_Category_ID, attributeValueID))
 				{
-					logger.finer("No: " + br);
+					logger.trace("No: " + br);
 					continue;
 				}
-				logger.finer("Yes: " + br);
+				logger.trace("Yes: " + br);
 				return br;
 			}
 			else
 			{
 				if (!breakApplies(br, amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
 				{
-					logger.finer("No: " + br);
+					logger.trace("No: " + br);
 					continue;
 				}
-				logger.finer("Yes: " + br);
+				logger.trace("Yes: " + br);
 				return br;
 			}
 		}
@@ -368,7 +369,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final List<I_M_AttributeInstance> instances,
 			final BigDecimal bPartnerFlatDiscount)
 	{
-		logger.fine("Price=" + price + ",Qty=" + qty);
+		logger.debug("Price=" + price + ",Qty=" + qty);
 		if (price == null || Env.ZERO.compareTo(price) == 0)
 		{
 			return price;
@@ -394,7 +395,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		BigDecimal multiplier = (onehundred).subtract(discount);
 		multiplier = multiplier.divide(onehundred, 6, BigDecimal.ROUND_HALF_UP);
 		BigDecimal newPrice = price.multiply(multiplier);
-		logger.fine("=>" + newPrice);
+		logger.debug("=>" + newPrice);
 		return newPrice;
 	}
 

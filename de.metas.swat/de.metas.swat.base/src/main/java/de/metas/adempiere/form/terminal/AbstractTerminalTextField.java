@@ -28,9 +28,9 @@ package de.metas.adempiere.form.terminal;
 
 import java.text.DecimalFormat;
 import java.text.Format;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -42,7 +42,7 @@ public abstract class AbstractTerminalTextField
 		extends AbstractTerminalField<String>
 		implements ITerminalTextField
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = LogManager.getLogger(getClass());
 
 	private final FactorySupport factories = new FactorySupport();
 
@@ -124,9 +124,9 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine(propertyName + ": " + valueOld + "->" + valueNew);
+			logger.debug(propertyName + ": " + valueOld + "->" + valueNew);
 		}
 
 		// Case: valueOld=valueNew=null
@@ -193,7 +193,7 @@ public abstract class AbstractTerminalTextField
 
 		try
 		{
-			logger.fine("Show keyboard");
+			logger.debug("Show keyboard");
 			final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
 
 			activeKeyboard = factories.create(ITerminalKeyDialog.class, textField);

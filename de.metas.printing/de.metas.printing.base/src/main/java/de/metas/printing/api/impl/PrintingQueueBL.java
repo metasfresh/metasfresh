@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -41,7 +42,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -65,7 +65,7 @@ import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
  */
 public class PrintingQueueBL implements IPrintingQueueBL
 {
-	private final static transient CLogger logger = CLogger.getCLogger(PrintingQueueBL.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 	// private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler();
@@ -207,7 +207,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		if (printingQueueQuery.getAD_User_ID() >= 0)
 		{
-			logger.log(Level.FINE, "Using AD_User_ToPrint from from query");
+			logger.debug("Using AD_User_ToPrint from from query");
 			return printingQueueQuery.getAD_User_ID();
 		}
 
@@ -219,7 +219,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			final int printJobUserId = pinstance.getAD_User_ID();
 			if (printJobUserId > 0)
 			{
-				logger.log(Level.FINE, "Using AD_User_ToPrint from AD_PInstance");
+				logger.debug("Using AD_User_ToPrint from AD_PInstance");
 				return printJobUserId;
 			}
 		}
@@ -227,11 +227,11 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		if (Env.getAD_User_ID(ctx) > 0)
 		{
 			final int printJobUserId = Env.getAD_User_ID(ctx);
-			logger.log(Level.FINE, "Using AD_User_ToPrint from context (logged user)");
+			logger.debug("Using AD_User_ToPrint from context (logged user)");
 			return printJobUserId;
 		}
 
-		logger.log(Level.FINE, "Will use the AD_User_ID of first item to be added to the job");
+		logger.debug("Will use the AD_User_ID of first item to be added to the job");
 		return -1;
 	}
 

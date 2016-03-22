@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -108,7 +106,7 @@ public class MRecordAccess extends X_AD_Record_Access
 	// if (m_keyColumnName == null)
 	// m_keyColumnName = s;
 	// else
-	// log.log(Level.SEVERE, "More than one key = " + s);
+	// log.error("More than one key = " + s);
 	// }
 	// rs.close();
 	// pstmt.close();
@@ -116,7 +114,7 @@ public class MRecordAccess extends X_AD_Record_Access
 	// }
 	// catch (Exception e)
 	// {
-	// log.log(Level.SEVERE, sql, e);
+	// log.error(sql, e);
 	// }
 	// try
 	// {
@@ -129,7 +127,7 @@ public class MRecordAccess extends X_AD_Record_Access
 	// pstmt = null;
 	// }
 	// if (m_keyColumnName == null)
-	// log.log(Level.SEVERE, "Record Access requires Table with one key column");
+	// log.error("Record Access requires Table with one key column");
 	// //
 	// return m_keyColumnName;
 	// } // getKeyColumnName
@@ -267,7 +265,7 @@ public class MRecordAccess extends X_AD_Record_Access
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			try
 			{

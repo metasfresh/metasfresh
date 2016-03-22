@@ -18,7 +18,8 @@ package de.metas.session.jaxrs.impl;
 
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.session.jaxrs.IStatusService;
 
@@ -35,7 +36,7 @@ public class StatusService implements IStatusService
 	private static final String ALLOW_CLIENT_QUERY_DB_PWD = "adempiere.client.getDBPwd";
 
 	/**	Logging				*/
-	private static CLogger	log = CLogger.getCLogger(StatusService.class);
+	private static Logger	log = LogManager.getLogger(StatusService.class);
 
 	private int				m_no = 0;
 	//
@@ -50,7 +51,7 @@ public class StatusService implements IStatusService
 	public String getDateVersion()
 	{
 		m_versionCount++;
-		log.info ("getDateVersion " + m_versionCount);
+		log.info("getDateVersion " + m_versionCount);
 		return Adempiere.getDateVersion();
 	}	//	getDateVersion
 
@@ -79,7 +80,7 @@ public class StatusService implements IStatusService
 	public String getDbHost()
 	{
 		m_databaseCount++;
-		log.info ("getDbHost " + m_databaseCount);
+		log.info("getDbHost " + m_databaseCount);
 		return CConnection.get().getDbHost();
 	}   //  getDbHost
 

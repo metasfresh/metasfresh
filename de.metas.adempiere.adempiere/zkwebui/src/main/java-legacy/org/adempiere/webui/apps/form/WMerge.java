@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.adempiere.webui.apps.form;
 
-import java.util.logging.Level;
-
 import org.adempiere.webui.apps.BusyDialog;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Grid;
@@ -92,7 +90,7 @@ public class WMerge extends Merge implements IFormController, EventListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	//	init
 
@@ -280,7 +278,7 @@ public class WMerge extends Merge implements IFormController, EventListener
 	{
 		if (m_success)
 		{
-			FDialog.info (m_WindowNo, form, "MergeSuccess", 
+			FDialog.info(m_WindowNo, form, "MergeSuccess", 
 				m_msg + " #" + m_totalCount);
 		}
 		else

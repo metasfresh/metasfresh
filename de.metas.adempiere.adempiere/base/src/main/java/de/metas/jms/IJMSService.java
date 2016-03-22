@@ -54,5 +54,12 @@ public interface IJMSService extends ISingletonService
 	 * <p>
 	 * Note: this method is thread-safe. Only the first invocation will start a broker. Consecutive invocations will have no effect.
 	 */
-	void startEmbeddedBrocker();
+	void startEmbeddedBroker();
+
+	/**
+	 * Updates the JMS configuration.
+	 * 
+	 * NOTE: this method will just update the configuration and will not start new services. If for example the embedded broker is not start, this method won't start it.
+	 */
+	void updateConfiguration();
 }

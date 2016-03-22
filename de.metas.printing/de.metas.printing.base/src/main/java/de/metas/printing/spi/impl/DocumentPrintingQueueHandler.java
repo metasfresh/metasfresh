@@ -26,7 +26,6 @@ package de.metas.printing.spi.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,8 +34,8 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -61,7 +60,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 {
 	public static final transient DocumentPrintingQueueHandler instance = new DocumentPrintingQueueHandler();
 
-	private static final CLogger logger = CLogger.getCLogger(DocumentPrintingQueueHandler.class);
+	private static final Logger logger = LogManager.getLogger(DocumentPrintingQueueHandler.class);
 
 	/**
 	 * Extracts information from the given <code>archive</code> and sets it to the given <code>queueItem</code>.<br>
@@ -77,7 +76,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive archive)
 	{
-		logger.log(Level.FINE, "C_Printing_Queue={0}; AD_Archive {1} has [AD_Table_ID={2}, Record_ID={3}, C_BPartner_ID={4}];",
+		logger.debug("C_Printing_Queue={}; AD_Archive {} has [AD_Table_ID={}, Record_ID={}, C_BPartner_ID={}];",
 				new Object[] { queueItem, archive, archive.getAD_Table_ID(), archive.getRecord_ID(), archive.getC_BPartner_ID() });
 
 		queueItem.setCopies(1); // may be overridden further down
@@ -86,7 +85,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		// try to set the C_BPartner_ID for our queueItem
 		if (archive.getC_BPartner_ID() > 0)
 		{
-			logger.log(Level.FINE, "Setting column of C_Printing_Queue {0} from AD_Archive {1}: [C_BPartner_ID={2}]",
+			logger.debug("Setting column of C_Printing_Queue {} from AD_Archive {}: [C_BPartner_ID={}]",
 					new Object[] { queueItem, archive, archive.getC_BPartner_ID() });
 			queueItem.setC_BPartner_ID(archive.getC_BPartner_ID()); // may be overridden further down.
 		}
@@ -95,7 +94,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		final Object archiveRerencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
 		if (archiveRerencedModel == null)
 		{
-			logger.log(Level.FINE, "AD_Archive {0} does not reference a PO; returning", archive);
+			logger.debug("AD_Archive {} does not reference a PO; returning", archive);
 			return;
 		}
 
@@ -105,7 +104,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			final Optional<Integer> bpartnerID = InterfaceWrapperHelper.getValue(archiveRerencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 			if (bpartnerID.isPresent())
 			{
-				logger.log(Level.FINE, "Setting column of C_Printing_Queue {0} from PO {1} that is referenced by AD_Archive {2}: [C_BPartner_ID={3}]",
+				logger.debug("Setting column of C_Printing_Queue {} from PO {} that is referenced by AD_Archive {}: [C_BPartner_ID={}]",
 						new Object[] { queueItem, archiveRerencedModel, archive, bpartnerID });
 				queueItem.setC_BPartner_ID(bpartnerID.get()); // may be overridden further down.
 			}
@@ -116,7 +115,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		final DocAction document = docActionBL.getDocActionOrNull(archiveRerencedModel);
 		if (document != null)
 		{
-			logger.log(Level.FINE, "Setting column of C_Printing_Queue {0} from DocAction-PO {1} that is referenced by AD_Archive {2}: [AD_User_ID={3}]",
+			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
 					new Object[] { queueItem, archiveRerencedModel, archive, document.getDoc_User_ID() });
 			queueItem.setAD_User_ID(document.getDoc_User_ID());
 		}
@@ -163,7 +162,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			queueItem.setDeliveryDate(deliveryDateToset);
 		}
 
-		logger.log(Level.FINE, "Setting columns of C_Printing_Queue {0} from M_InOut {1}: [C_BPartner_ID={2}, C_BPartner_Location_ID={3}, DeliveryDate={4}]",
+		logger.debug("Setting columns of C_Printing_Queue {} from M_InOut {}: [C_BPartner_ID={}, C_BPartner_Location_ID={}, DeliveryDate={}]",
 				new Object[] { queueItem, inout, inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID(), deliveryDateToset });
 	}
 
@@ -204,11 +203,9 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			queueItem.setCopies(documentCopies);
 		}
 
-		logger.log(
-				Level.FINE,
-				"Setting columns of C_Printing_Queue {0} from C_Invoice {1}: [Bill_BPartner_ID={2}, Bill_Location_ID={3}, C_BPartner_ID={4}, C_BPartner_Location_ID={5}, Copies={6}]",
-				new Object[] { queueItem, invoice, invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(), invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(),
-						queueItem.getCopies() });
+		logger.debug(
+				"Setting columns of C_Printing_Queue {} from C_Invoice {}: [Bill_BPartner_ID={}, Bill_Location_ID={}, C_BPartner_ID={}, C_BPartner_Location_ID={}, Copies={}]",
+				queueItem, invoice, invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(), invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(), queueItem.getCopies());
 	}
 
 	@Override

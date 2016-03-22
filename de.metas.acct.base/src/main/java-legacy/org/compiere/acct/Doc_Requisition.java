@@ -18,7 +18,8 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -66,7 +67,7 @@ public class Doc_Requisition extends Doc
 		setAmount(AMTTYPE_Net, req.getTotalLines());
 		// Contained Objects
 		p_lines = loadLines (req);
-		// log.fine( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
+		// log.debug( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
 		return null;
 	}	// loadDocumentDetails
 
@@ -144,7 +145,7 @@ public class Doc_Requisition extends Doc
 			if (offset == null)
 			{
 				p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-				log.log (Level.SEVERE, p_Error);
+				log.error(p_Error);
 				return null;
 			}
 			fact.createLine (null, offset, getC_Currency_ID(), null, total);

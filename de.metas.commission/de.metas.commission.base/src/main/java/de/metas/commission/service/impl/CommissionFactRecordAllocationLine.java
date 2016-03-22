@@ -49,7 +49,8 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
 
 import de.metas.commission.custom.type.ICommissionType;
@@ -79,7 +80,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
  */
 class CommissionFactRecordAllocationLine
 {
-	private static final CLogger logger = CLogger.getCLogger(CommissionFactBL.class);
+	private static final Logger logger = LogManager.getLogger(CommissionFactBL.class);
 
 	private final CommissionFactBL factBL;
 
@@ -119,9 +120,9 @@ class CommissionFactRecordAllocationLine
 				{
 					if (instanceForPOLine.isClosed())
 					{
-						CommissionFactRecordAllocationLine.logger.fine("Also processing closed instance " + instanceForPOLine);
+						CommissionFactRecordAllocationLine.logger.debug("Also processing closed instance " + instanceForPOLine);
 					}
-					CommissionFactRecordAllocationLine.logger.fine("Recording " + allocLinePO + " within " + instanceForPOLine);
+					CommissionFactRecordAllocationLine.logger.debug("Recording " + allocLinePO + " within " + instanceForPOLine);
 					recordAllocationLine(instanceForPOLine, cand, allocLinePO, il, RecordAllocLineMode.COMMISSIOM_PAYMENT, adPInstanceId);
 				}
 			}
@@ -211,7 +212,7 @@ class CommissionFactRecordAllocationLine
 			}
 			else
 			{
-				CommissionFactRecordAllocationLine.logger.fine(allocLinePO + " does not refer to a prepay order or invoice. Nothing to do.");
+				CommissionFactRecordAllocationLine.logger.debug(allocLinePO + " does not refer to a prepay order or invoice. Nothing to do.");
 				return;
 			}
 
@@ -225,7 +226,7 @@ class CommissionFactRecordAllocationLine
 						CommissionFactRecordAllocationLine.logger.info("Not processing closed instance " + instanceForPOLine);
 						continue;
 					}
-					CommissionFactRecordAllocationLine.logger.fine("Recording " + allocLinePO + " within " + instanceForPOLine);
+					CommissionFactRecordAllocationLine.logger.debug("Recording " + allocLinePO + " within " + instanceForPOLine);
 					recordAllocationLine(instanceForPOLine, cand, allocLinePO, poLine, RecordAllocLineMode.INSTANCE_TRIGGER, adPInstanceId);
 				}
 			}
@@ -257,7 +258,7 @@ class CommissionFactRecordAllocationLine
 		final String allocParentStatus = allocLine.getParent().getDocStatus();
 		if (!X_C_AllocationHdr.DOCSTATUS_Completed.equals(allocParentStatus) && !X_C_AllocationHdr.DOCSTATUS_Reversed.equals(allocParentStatus))
 		{
-			CommissionFactRecordAllocationLine.logger.fine("Parent of " + allocLine + " has DocStatus=" + allocParentStatus + ". Nothing to do.");
+			CommissionFactRecordAllocationLine.logger.debug("Parent of " + allocLine + " has DocStatus=" + allocParentStatus + ". Nothing to do.");
 			return;
 		}
 
@@ -316,7 +317,7 @@ class CommissionFactRecordAllocationLine
 					.list()
 					.isEmpty())
 			{
-				CommissionFactRecordAllocationLine.logger.fine("Commission payment allocLine" + allocLine + " has already been recorded");
+				CommissionFactRecordAllocationLine.logger.debug("Commission payment allocLine" + allocLine + " has already been recorded");
 				return;
 			}
 		}
@@ -719,7 +720,7 @@ class CommissionFactRecordAllocationLine
 								.list();
 				if (!existingAllocLineMinusFacts.isEmpty())
 				{
-					CommissionFactRecordAllocationLine.logger.fine("Nothing to do");
+					CommissionFactRecordAllocationLine.logger.debug("Nothing to do");
 					return;
 				}
 				else
@@ -733,7 +734,7 @@ class CommissionFactRecordAllocationLine
 									.list();
 					if (existingAllocLineFacts.isEmpty())
 					{
-						CommissionFactRecordAllocationLine.logger.fine("Nothing to do");
+						CommissionFactRecordAllocationLine.logger.debug("Nothing to do");
 						return;
 					}
 					else
@@ -849,7 +850,7 @@ class CommissionFactRecordAllocationLine
 								.list();
 				if (!existingAllocLinePlusFacts.isEmpty())
 				{
-					CommissionFactRecordAllocationLine.logger.fine("Nothing to do");
+					CommissionFactRecordAllocationLine.logger.debug("Nothing to do");
 					return;
 				}
 				else
@@ -874,7 +875,7 @@ class CommissionFactRecordAllocationLine
 				}
 				break;
 			case G:
-				CommissionFactRecordAllocationLine.logger.fine("Nothing to do");
+				CommissionFactRecordAllocationLine.logger.debug("Nothing to do");
 				return;
 			default:
 				throw new AssertionError();
@@ -885,7 +886,7 @@ class CommissionFactRecordAllocationLine
 		//
 
 		Check.assume(minusPO != null || plusPO != null, "At least one of minusPO and plusPO is != null");
-		CommissionFactRecordAllocationLine.logger.fine("Recording " + allocLine + " within " + instance);
+		CommissionFactRecordAllocationLine.logger.debug("Recording " + allocLine + " within " + instance);
 
 		final MCAdvCommissionFact newMinusFact;
 

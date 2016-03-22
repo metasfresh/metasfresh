@@ -19,7 +19,8 @@ package org.compiere.grid.ed;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -28,7 +29,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 
 /**
@@ -88,13 +90,13 @@ public final class MDocNumber extends PlainDocument
 	/** Minus Sign					*/
 	private final char m_minusSign; //  = '-';
 	/**	Logger	*/
-	private static final transient CLogger log = CLogger.getCLogger (MDocNumber.class);
+	private static final transient Logger log = LogManager.getLogger(MDocNumber.class);
 	
 	@Override
 	public void insertString(final int origOffset, final String string, final AttributeSet attr) throws BadLocationException
 	{
-		if(log.isLoggable(Level.FINEST))
-			log.finest("Offset=" + origOffset + " String=" + string + " Length=" + string.length());
+		if(log.isTraceEnabled())
+			log.trace("Offset=" + origOffset + " String=" + string + " Length=" + string.length());
 		
 		if (origOffset < 0 || string == null)
 			throw new IllegalArgumentException("Invalid argument");
@@ -216,8 +218,8 @@ public final class MDocNumber extends PlainDocument
 		//	Something else - open calculator popup?
 		else if (VNumber.AUTO_POPUP)
 		{
-			if (log.isLoggable(Level.FINE))
-				log.fine("Input=" + ch + " (" + (int)ch + ")");
+			if (log.isDebugEnabled())
+				log.debug("Input=" + ch + " (" + (int)ch + ")");
 			
 			final String result = VNumber.startCalculator(m_tc, getText(), m_format, m_displayType, m_title);
 			super.remove(0, content.length());
@@ -235,8 +237,8 @@ public final class MDocNumber extends PlainDocument
 	@Override
 	public void remove (final int origOffset, final int length) throws BadLocationException
 	{
-		if(log.isLoggable(Level.FINEST))
-			log.finest("Offset=" + origOffset + " Length=" + length);
+		if(log.isTraceEnabled())
+			log.trace("Offset=" + origOffset + " Length=" + length);
 		
 		if (origOffset < 0 || length < 0)
 			throw new IllegalArgumentException("MDocNumber.remove - invalid argument");
@@ -359,11 +361,11 @@ public final class MDocNumber extends PlainDocument
 		catch (BadLocationException e)
 		{
 			// ignore it, shall not happen
-			log.log(Level.FINE, "Error while getting the string content", e);
+			log.debug("Error while getting the string content", e);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.FINE, "Error while getting the string content", e);
+			log.debug("Error while getting the string content", e);
 		}
 		
 		return str;

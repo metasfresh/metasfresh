@@ -25,7 +25,8 @@ package org.adempiere.ad.security.permissions;
 
 import java.util.Collection;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
 
 public abstract class AbstractPermissions<PermissionType extends Permission> implements Permissions<PermissionType>
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** {@link Permission}s indexed by {@link Permission#getResource()} */
 	private final ImmutableMap<Resource, PermissionType> permissions;

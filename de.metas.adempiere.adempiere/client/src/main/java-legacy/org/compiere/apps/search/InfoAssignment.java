@@ -21,7 +21,8 @@ import java.awt.event.ActionEvent;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
@@ -116,7 +117,7 @@ public class InfoAssignment extends Info
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "InfoAssignment.initLookup");
+			log.error("InfoAssignment.initLookup");
 			return false;
 		}
 		//

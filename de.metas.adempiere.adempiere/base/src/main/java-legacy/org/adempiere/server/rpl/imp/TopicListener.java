@@ -31,7 +31,8 @@
 package org.adempiere.server.rpl.imp;
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -56,7 +57,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.compiere.util.CLogger;
 //import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
 import org.w3c.dom.Document;
@@ -131,7 +131,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 	private IReplicationProcessor replicationProcessor = null;
 
 	/** Logger */
-	protected CLogger log = CLogger.getCLogger(TopicListener.class);
+	protected Logger log = LogManager.getLogger(TopicListener.class);
 
 	/**
 	 * Is Durable Subscription
@@ -231,7 +231,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 	private void run0() throws JMSException
 	{
 		final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-		log.finest("ActiveMQConnectionFactory = " + factory);
+		log.trace("ActiveMQConnectionFactory = " + factory);
 
 		if (userName != null && password != null)
 		{
@@ -242,7 +242,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 			conn = factory.createConnection();
 		}
 		conn.setExceptionListener(this);
-		log.finest("conn = " + conn);
+		log.trace("conn = " + conn);
 
 		if (conn.getClientID() == null)
 		{
@@ -261,13 +261,13 @@ public class TopicListener implements MessageListener, ExceptionListener
 		}
 
 		session = conn.createSession(true, Session.AUTO_ACKNOWLEDGE); // TODO - could be parameter
-		log.finest("session = " + session);
+		log.trace("session = " + session);
 
-		log.finest("topicName = " + topicName);
-		log.finest("subscriptionName = " + subscriptionName);
+		log.trace("topicName = " + topicName);
+		log.trace("subscriptionName = " + subscriptionName);
 
 		topic = session.createTopic(topicName);
-		log.finest("topic = " + topic);
+		log.trace("topic = " + topic);
 
 		final MessageConsumer consumer;
 		if (isDurableSubscription)
@@ -281,7 +281,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 			consumer = session.createConsumer(topic);
 		}
 
-		log.finest("consumer = " + consumer);
+		log.trace("consumer = " + consumer);
 
 		consumer.setMessageListener(this);
 
@@ -309,7 +309,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 		try
 		{
 			text = getText(message);
-			log.log(Level.FINEST, "Received message(text): \n{0}", text);
+			log.trace("Received message(text): \n{}", text);
 
 			responseStr = importXMLDocument(text);
 
@@ -323,7 +323,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 		catch (final JMSException e)
 		{
 			logException(e, text);
-			log.finest("Rollback = " + e.toString());
+			log.trace("Rollback = " + e.toString());
 			stop();
 		}
 		finally
@@ -348,7 +348,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 			catch (final JMSException e)
 			{
 				logException(e, responseStr);
-				log.finest("Rollback = " + e.toString());
+				log.trace("Rollback = " + e.toString());
 				stop();
 			}
 		}
@@ -437,7 +437,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 		isStopping = true;
 		try
 		{
-			log.finest("Closing JMS Connection!");
+			log.trace("Closing JMS Connection!");
 			if (session != null)
 			{
 				try

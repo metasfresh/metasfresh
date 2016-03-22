@@ -41,7 +41,8 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AMenuStartItem;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.wf.MWFNode;
@@ -81,7 +82,7 @@ public class WFContentPanel extends CPanel
 	
 	private WFPanel 	m_parent = null;
 	/**	Logger			*/
-	private static CLogger	log = CLogger.getCLogger(WFContentPanel.class);
+	private static Logger	log = LogManager.getLogger(WFContentPanel.class);
 	/** Node List		*/
 	private ArrayList<WFNode>	m_nodes = new ArrayList<WFNode>();
 	/** Line List		*/
@@ -176,7 +177,7 @@ public class WFContentPanel extends CPanel
 	 */
 	protected void createLines()
 	{
-		log.fine("Lines #" + m_lines.size());
+		log.debug("Lines #" + m_lines.size());
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			WFLine line = m_lines.get(i);
@@ -311,7 +312,7 @@ public class WFContentPanel extends CPanel
 		else if (e.getSource() instanceof WFNode)
 		{
 			WFNode selected = (WFNode)e.getSource();
-			log.fine(selected.toString());
+			log.debug(selected.toString());
 			for (int i = 0; i < m_nodes.size(); i++)
 			{
 				WFNode node = m_nodes.get(i);
@@ -412,8 +413,8 @@ public class WFContentPanel extends CPanel
 			if (newLocation.y < 0)
 				newLocation.y = 0;
 			m_draggedNode.setLocation(newLocation.x, newLocation.y);
-		//	log.fine("mouseDragged - " + m_draggedNode + " - " + e);
-		//	log.fine("mouseDragged - Delta=" + xDelta + "/" + yDelta); 
+		//	log.debug("mouseDragged - " + m_draggedNode + " - " + e);
+		//	log.debug("mouseDragged - Delta=" + xDelta + "/" + yDelta); 
 			m_draggedStart = mousePosition;
 			invalidate();
 			validate();
@@ -429,7 +430,7 @@ public class WFContentPanel extends CPanel
 	@Override
 	public void mouseReleased (MouseEvent e)
 	{
-	//	log.fine("mouseReleased - " + m_draggedNode);
+	//	log.debug("mouseReleased - " + m_draggedNode);
 		m_dragged = false;
 		m_draggedNode = null;
 		m_draggedStart = null;
@@ -610,7 +611,7 @@ public class WFContentPanel extends CPanel
 				m_parent.load(m_wf.getAD_Workflow_ID(), true);
 			}
 			else
-				log.severe("No Action??");
+				log.error("No Action??");
 		}	//	execute
 		
 	}	//	WFPopupItem

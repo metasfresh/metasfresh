@@ -23,7 +23,8 @@ import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -42,7 +43,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -93,7 +95,7 @@ public class Waiting extends CDialog
 	 */
 	private void init (String text, boolean canNotWait, int timer)
 	{
-		log.fine(text + " - Sec=" + timer);
+		log.debug(text + " - Sec=" + timer);
 		//  don't show if 1 sec average
 		if (timer == 1)
 			return;
@@ -107,7 +109,7 @@ public class Waiting extends CDialog
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "Waiting", e);
+			log.error("Waiting", e);
 		}
 		//  set progress Bar
 		progressBar.setMinimum(0);
@@ -122,7 +124,7 @@ public class Waiting extends CDialog
 	private int     m_timervalue = 0;
 	private Timer   m_timer;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Waiting.class);
+	private static Logger log = LogManager.getLogger(Waiting.class);
 
 	private CButton bDoNotWait = new CButton();
 	private CLabel infoLabel = new CLabel();

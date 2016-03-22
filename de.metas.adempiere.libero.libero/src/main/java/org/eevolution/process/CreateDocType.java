@@ -1,29 +1,5 @@
 package org.eevolution.process;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.logging.Level;
-
 import org.compiere.model.MDocType;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MSequence;
@@ -52,7 +28,7 @@ public class CreateDocType extends SvrProcess
 	protected void prepare()
 	{
 		System.out.println("In AddLiberoRecords prepare");
-		log.fine("In AddLiberoRecords prepare");
+		log.debug("In AddLiberoRecords prepare");
 		AD_Client_ID = Integer.parseInt(Env.getContext(Env.getCtx(), "#AD_Client_ID"));
 	}	//	prepare
 
@@ -61,7 +37,7 @@ public class CreateDocType extends SvrProcess
 	protected String doIt() throws Exception                
 	{
 		System.out.println("In AddLiberoRecords doIt");
-		log.fine("In AddLiberoRecords doIt");
+		log.debug("In AddLiberoRecords doIt");
 
 			//MClient c = (MClient)po;
 	        //Properties m_ctx = Env.getCtx();
@@ -112,7 +88,7 @@ public class CreateDocType extends SvrProcess
 		cat.setIsDefault(isDefault);
 		if (!cat.save())
 		{
-			log.log(Level.SEVERE, "GL Category NOT created - " + Name);
+			log.error("GL Category NOT created - " + Name);
 			return 0;
 		}
 		//
@@ -136,16 +112,16 @@ public class CreateDocType extends SvrProcess
 		int C_DocTypeShipment_ID, int C_DocTypeInvoice_ID,
 		int StartNo, int GL_Category_ID)
 	{
-	        log.fine("In createDocType");
-	        log.fine("docBaseType: " + DocBaseType);
-	        log.fine("GL_Category_ID: " + GL_Category_ID);
+	        log.debug("In createDocType");
+	        log.debug("docBaseType: " + DocBaseType);
+	        log.debug("GL_Category_ID: " + GL_Category_ID);
 		MSequence sequence = null;
 		if (StartNo != 0)
 		{
 			sequence = new MSequence(Env.getCtx(), getAD_Client_ID(), Name, StartNo, trxname);
 			if (!sequence.save())
 			{
-				log.log(Level.SEVERE, "Sequence NOT created - " + Name);
+				log.error("Sequence NOT created - " + Name);
 				return 0;
 			}
 		}
@@ -174,7 +150,7 @@ public class CreateDocType extends SvrProcess
 		dt.setIsSOTrx(false);
 		if (!dt.save())
 		{
-			log.log(Level.SEVERE, "DocType NOT created - " + Name);
+			log.error("DocType NOT created - " + Name);
 			return 0;
 		}
 		//

@@ -28,7 +28,6 @@ package de.metas.adempiere.process;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -39,14 +38,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.IDocumentLocationBL;
+import de.metas.logging.LogManager;
 
 /**
  * @author ts
@@ -110,7 +110,7 @@ public class C_Invoice_Fix_DocumentLocations
 	public static void main(String[] args)
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
-		CLogMgt.setLevel(Level.WARNING);
+		LogManager.setLevel(Level.WARN);
 
 		C_Invoice_Fix_DocumentLocations process = new C_Invoice_Fix_DocumentLocations();
 		try

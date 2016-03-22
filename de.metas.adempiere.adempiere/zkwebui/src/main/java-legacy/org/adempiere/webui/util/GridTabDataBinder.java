@@ -22,9 +22,10 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.GridTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Transfer data from editor to GridTab
@@ -33,7 +34,7 @@ import org.compiere.util.Trx;
  */
 public class GridTabDataBinder implements ValueChangeListener {
 
-	private final static CLogger logger = CLogger.getCLogger(GridTabDataBinder.class);
+	private final static Logger logger = LogManager.getLogger(GridTabDataBinder.class);
 	
 	private GridTab gridTab;
 
@@ -64,23 +65,23 @@ public class GridTabDataBinder implements ValueChangeListener {
             	{
             		if(!gridField.isEditable(true))
             		{
-            			logger.config("(" + gridTab.toString() + ") " + e.getPropertyName());
+            			logger.info("(" + gridTab.toString() + ") " + e.getPropertyName());
             			return;
             		}
             	}
             	else if(!editor.isReadWrite())
             	{
-            		logger.config("(" + gridTab.toString() + ") " + e.getPropertyName());
+            		logger.info("(" + gridTab.toString() + ") " + e.getPropertyName());
             		return;            		
             	}
             }
             else
             {
-                logger.config("(" + gridTab.toString() + ") " + e.getPropertyName());
+                logger.info("(" + gridTab.toString() + ") " + e.getPropertyName());
                 return;
             }
         }   //  processed
-        logger.config("(" + gridTab.toString() + ") "
+        logger.info("(" + gridTab.toString() + ") "
             + e.getPropertyName() + "=" + e.getNewValue() + " (" + e.getOldValue() + ") "
             + (e.getOldValue() == null ? "" : e.getOldValue().getClass().getName()));
         
@@ -119,7 +120,7 @@ public class GridTabDataBinder implements ValueChangeListener {
 			}
 			else if (newValue instanceof Object[])
 			{
-				logger.severe("Multiple values can only be processed for IDs (Integer)");
+				logger.error("Multiple values can only be processed for IDs (Integer)");
 				throw new IllegalArgumentException("Multiple Selection values not available for this field. " + e.getPropertyName());
 			}
 			
@@ -156,7 +157,7 @@ public class GridTabDataBinder implements ValueChangeListener {
 				catch(Exception ex)
 				{
 					trx.rollback();
-					logger.severe(ex.getMessage());
+					logger.error(ex.getMessage());
 					throw new AdempiereException("SaveError");
 				}
 				finally

@@ -69,7 +69,7 @@ public class MProductPrice extends X_M_ProductPrice
 	}	//	get
 	
 	/**	Logger	*/
-//	private static CLogger s_log = CLogger.getCLogger (MProductPrice.class);
+//	private static Logger s_log = CLogMgt.getLogger(MProductPrice.class);
 	
 	/**
 	 * 	Persistency Constructor

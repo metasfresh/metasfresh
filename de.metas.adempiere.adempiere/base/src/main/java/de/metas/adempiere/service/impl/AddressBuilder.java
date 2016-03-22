@@ -34,7 +34,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Greeting;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -48,7 +49,7 @@ import de.metas.interfaces.I_C_BPartner;
 
 public class AddressBuilder
 {
-	private static final transient CLogger log = CLogger.getCLogger(AddressBuilder.class);
+	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
 	
 	public enum Uservars
 	{
@@ -360,7 +361,7 @@ public class AddressBuilder
 			}
 			else
 			{
-				log.warning("Token " + token + " is not recognized in display sequence of country " + country);
+				log.warn("Token " + token + " is not recognized in display sequence of country " + country);
 			}
 
 			inStr = inStr.substring(j + 1, inStr.length()); // from second @
@@ -392,7 +393,7 @@ public class AddressBuilder
 	{
 		if (bPartner == null || location == null)
 		{
-			log.fine("One of bPartner=" + bPartner + ", location=" + location + " is null. Returning");
+			log.debug("One of bPartner=" + bPartner + ", location=" + location + " is null. Returning");
 			return "";
 		}
 

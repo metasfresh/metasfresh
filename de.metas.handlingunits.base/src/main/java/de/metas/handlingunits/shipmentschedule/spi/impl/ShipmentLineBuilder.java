@@ -70,7 +70,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 {
 	//
 	// Services
-	// private static final transient CLogger logger = CLogger.getCLogger(ShipmentLineBuilder.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(ShipmentLineBuilder.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

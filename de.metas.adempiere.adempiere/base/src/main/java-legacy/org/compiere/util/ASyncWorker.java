@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -46,13 +47,13 @@ public class ASyncWorker extends Thread
 		}
 		catch (InterruptedException e)
 		{
-			log.log(Level.SEVERE, "executeSync", e);
+			log.error("executeSync", e);
 		}
 		return worker.getResult();
 	}   //  executeSync
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ASyncWorker.class);
+	private static Logger log = LogManager.getLogger(ASyncWorker.class);
 	
 	/**
 	 *  Constructor

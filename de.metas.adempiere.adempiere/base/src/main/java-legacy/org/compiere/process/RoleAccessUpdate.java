@@ -16,42 +16,41 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.logging.Level;
+import java.util.List;
+import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.tools.AdempiereToolsHelper;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
-import org.compiere.model.MRole;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
- *	Update Role Access
- *	
- *  @author Jorg Janke
- *  @version $Id: RoleAccessUpdate.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
+ * Update Role Access
+ * 
+ * @author Jorg Janke
+ * @version $Id: RoleAccessUpdate.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
 public class RoleAccessUpdate extends SvrProcess
 {
-	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (RoleAccessUpdate.class);
-	
-	/**	Update Role				*/
-	private int	p_AD_Role_ID = 0;
-	/**	Update Roles of Client	*/
-	private int	p_AD_Client_ID = 0;
-	
-	
+	/** Static Logger */
+	private static Logger s_log = LogManager.getLogger(RoleAccessUpdate.class);
+
+	/** Update Role */
+	private int p_AD_Role_ID = 0;
+	/** Update Roles of Client */
+	private int p_AD_Client_ID = 0;
+
 	/**
-	 * 	Prepare
+	 * Prepare
 	 */
 	@Override
-	protected void prepare ()
+	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
 		for (int i = 0; i < para.length; i++)
@@ -64,88 +63,69 @@ public class RoleAccessUpdate extends SvrProcess
 			else if (name.equals("AD_Client_ID"))
 				p_AD_Client_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
-	}	//	prepare
+	}	// prepare
 
 	/**
-	 * 	Process
-	 *	@return info
-	 *	@throws Exception
+	 * Process
+	 * 
+	 * @return info
+	 * @throws Exception
 	 */
 	@Override
-	protected String doIt () throws Exception
+	protected String doIt() throws Exception
 	{
 		log.info("AD_Client_ID=" + p_AD_Client_ID + ", AD_Role_ID=" + p_AD_Role_ID);
 		//
-		if (p_AD_Role_ID != 0)
-			updateRole (new MRole (getCtx(), p_AD_Role_ID, get_TrxName()));
+		if (p_AD_Role_ID > 0)
+		{
+			final I_AD_Role role = InterfaceWrapperHelper.create(getCtx(), p_AD_Role_ID, I_AD_Role.class, ITrx.TRXNAME_ThreadInherited);
+			updateRole(role, this);
+		}
 		else
 		{
-			String sql = "SELECT * FROM AD_Role WHERE IsActive='Y'";
-			if (p_AD_Client_ID != 0)
-			{
-				sql += " AND AD_Client_ID=? ";
-			}
-			sql += "ORDER BY AD_Client_ID, Name";
-
-			PreparedStatement pstmt = null;
-			try
-			{
-				pstmt = DB.prepareStatement (sql, get_TrxName());
-				if (p_AD_Client_ID != 0)
-					pstmt.setInt (1, p_AD_Client_ID);
-				ResultSet rs = pstmt.executeQuery ();
-				while (rs.next ())
-					updateRole (new MRole (getCtx(), rs, get_TrxName()));
-				rs.close ();
-				pstmt.close ();
-				pstmt = null;
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, sql, e);
-			}
-			try
-			{
-				if (pstmt != null)
-					pstmt.close ();
-				pstmt = null;
-			}
-			catch (Exception e)
-			{
-				pstmt = null;
-			}
+			updateAllRoles(getCtx(), this, p_AD_Client_ID);
 		}
+
+		return MSG_OK;
+	}	// doIt
+
+	public static void updateAllRoles(final Properties ctx, final ILoggable loggable)
+	{
+		final int adClientId = -1; // all
+		updateAllRoles(ctx, loggable, adClientId);
+	}
+
+	public static void updateAllRoles(final Properties ctx, final ILoggable loggable, final int adClientId)
+	{
+		final IQueryBuilder<I_AD_Role> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addOnlyActiveRecordsFilter();
+		if (adClientId > 0)
+		{
+			queryBuilder.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, adClientId);
+		}
+		queryBuilder.orderBy()
+				.addColumn(I_AD_Role.COLUMNNAME_AD_Client_ID)
+				.addColumn(I_AD_Role.COLUMNNAME_Name);
 		
-		return "";
-	}	//	doIt
+		final List<I_AD_Role> roles = queryBuilder.create().list();
+		
+		for (final I_AD_Role role : roles)
+		{
+			updateRole(role, loggable);
+		}
+	}
 
 	/**
-	 * 	Update Role
-	 *	@param role role
+	 * Update Role
+	 * 
+	 * @param role role
 	 */
-	private void updateRole(I_AD_Role role)
+	private static void updateRole(final I_AD_Role role, final ILoggable loggable)
 	{
 		final String result = Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-		addLog(role.getName() + ": " + result);
-	}	//	updateRole
-	
-	//add main method, preparing for nightly build
-	public static void main(String[] args) 
-	{
-		AdempiereToolsHelper.getInstance().startupMinimal();
-		CLogMgt.setLevel(Level.FINE);
-		s_log.info("Role Access Update");
-		s_log.info("------------------");
-		ProcessInfo pi = new ProcessInfo("Role Access Update", 295);
-		pi.setAD_Client_ID(0);
-		pi.setAD_User_ID(100);
-		
-		RoleAccessUpdate rau = new RoleAccessUpdate();
-		rau.startProcess(Env.getCtx(), pi, null);
-		
-		System.out.println("Process=" + pi.getTitle() + " Error="+pi.isError() + " Summary=" + pi.getSummary());
-	}
-	
-}	//	RoleAccessUpdate
+		loggable.addLog(role.getName() + ": " + result);
+	}	// updateRole
+}

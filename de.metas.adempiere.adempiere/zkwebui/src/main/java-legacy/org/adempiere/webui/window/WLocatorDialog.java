@@ -24,7 +24,6 @@ package org.adempiere.webui.window;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.component.Button;
@@ -36,11 +35,14 @@ import org.adempiere.webui.component.Textbox;
 import org.adempiere.webui.component.Window;
 import org.compiere.model.MLocator;
 import org.compiere.model.MLocatorLookup;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -104,7 +106,7 @@ public class WLocatorDialog extends Window implements EventListener
 
 	private String title;
 
-	private static CLogger log = CLogger.getCLogger(WLocatorDialog.class);
+	private static Logger log = LogManager.getLogger(WLocatorDialog.class);
 	
 	/**
 	 *	Constructor
@@ -247,7 +249,7 @@ public class WLocatorDialog extends Window implements EventListener
 	
 	private void initLocator()
 	{
-		log.fine("");
+		log.debug("");
 
 		//	Load Warehouse
 		
@@ -276,16 +278,16 @@ public class WLocatorDialog extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 		}
 
-		log.fine("Warehouses=" + lstWarehouse.getItemCount());
+		log.debug("Warehouses=" + lstWarehouse.getItemCount());
 
 		//	Load existing Locators
 		
 		m_mLocator.fillComboBox(m_mandatory, true, true, false);
 		
-		log.fine(m_mLocator.toString());
+		log.debug(m_mLocator.toString());
 		
 		for (int i = 0; i < m_mLocator.getSize(); i++)
 		{
@@ -417,7 +419,7 @@ public class WLocatorDialog extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 		}
 	} // getWarehouseInfo
 
@@ -498,7 +500,7 @@ public class WLocatorDialog extends Window implements EventListener
 			lstLocator.setSelectedIndex(lstLocator.getItemCount() - 1);
 		} // createNew
 
-		log.config("M_Locator_ID=" + m_M_Locator_ID);
+		log.info("M_Locator_ID=" + m_M_Locator_ID);
 	} // actionOK
 
 	/**

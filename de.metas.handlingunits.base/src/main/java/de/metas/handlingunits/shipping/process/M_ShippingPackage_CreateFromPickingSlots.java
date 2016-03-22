@@ -24,7 +24,8 @@ package de.metas.handlingunits.shipping.process;
 
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,8 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUPickingSlotBL;
@@ -64,7 +63,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
  */
 public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess implements ISvrProcessPrecondition
 {
-	private static final transient CLogger logger = CLogger.getCLogger(M_ShippingPackage_CreateFromPickingSlots.class);
+	private static final transient Logger logger = LogManager.getLogger(M_ShippingPackage_CreateFromPickingSlots.class);
 
 	//
 	// services
@@ -168,14 +167,14 @@ public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess impleme
 			// we need to close it to prevent inconsistencies and to make sure that is has a C_BPartner_ID and C_BPartner_Location_ID.
 			if (pickingSlot.getM_HU_ID() == hu.getM_HU_ID())
 			{
-				logger.log(Level.FINE, "Closing M_HU {0} that is still assigned to M_PickingSlot {1}", new Object[] { hu, pickingSlot });
+				logger.debug("Closing M_HU {} that is still assigned to M_PickingSlot {}", new Object[] { hu, pickingSlot });
 
 				final IQueueActionResult closeCurrentHUResult = huPickingSlotBL.closeCurrentHU(pickingSlot);
-				logger.log(Level.FINE, "Result of IHUPickingSlotBL.closeCurrentHU(): {0}", closeCurrentHUResult);
+				logger.debug("Result of IHUPickingSlotBL.closeCurrentHU(): {}", closeCurrentHUResult);
 
 				if (handlingUnitsBL.isDestroyed(hu))
 				{
-					logger.log(Level.FINE, "Closing M_HU {0} from M_PickingSlot {1} destroyed the HU (probably because it was empty; skipping it)", new Object[] { hu, pickingSlot });
+					logger.debug("Closing M_HU {} from M_PickingSlot {} destroyed the HU (probably because it was empty; skipping it)", new Object[] { hu, pickingSlot });
 					continue;
 				}
 			}
@@ -188,7 +187,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess impleme
 	{
 		if (huPackageDAO.isHUAssignedToPackage(hu))
 		{
-			logger.log(Level.FINE, "M_HU {0} is already assingned to a M_Package; returning", hu);
+			logger.debug("M_HU {} is already assingned to a M_Package; returning", hu);
 			return;
 		}
 
@@ -198,7 +197,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess impleme
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)
 		{
-			logger.log(Level.FINE, "Unable to create a M_ShippingPackage for M_ShipperTransportation {0} and the newly created M_Package {1}; returning",
+			logger.debug("Unable to create a M_ShippingPackage for M_ShipperTransportation {} and the newly created M_Package {}; returning",
 					new Object[] { shipperTransportation, mpackage });
 			return;
 		}

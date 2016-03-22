@@ -43,7 +43,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -149,7 +148,7 @@ public class MovementGenerate extends SvrProcess
 			else if (name.equals("MovementDate"))
                 p_DateShipped = (Timestamp)para.getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			
 			//  juddm - added ability to specify a shipment date from Generate Shipments
 			if (p_DateShipped == null) {
@@ -233,7 +232,7 @@ public class MovementGenerate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, m_sql, e);
+			log.error(m_sql, e);
 		}
 		return generate(pstmt);
 	}	//	doIt
@@ -260,7 +259,7 @@ public class MovementGenerate extends SvrProcess
 				{
 					completeMovement();
 				}
-				log.fine("check: " + order + " - DeliveryRule=" + order.getDeliveryRule());
+				log.debug("check: " + order + " - DeliveryRule=" + order.getDeliveryRule());
 				//
 				Timestamp minGuaranteeDate = m_movementDate;
 				boolean completeOrder = MDDOrder.DELIVERYRULE_CompleteOrder.equals(order.getDeliveryRule());
@@ -288,7 +287,7 @@ public class MovementGenerate extends SvrProcess
 					MLocator l = new MLocator(getCtx(),line.getM_Locator_ID(), get_TrxName());
 					if (l.getM_Warehouse_ID() != p_M_Warehouse_ID)
 						continue;
-					log.fine("check: " + line);
+					log.debug("check: " + line);
 					BigDecimal onHand = Env.ZERO;
 					//BigDecimal toDeliver = line.getQtyOrdered()
 					BigDecimal toDeliver = line.getConfirmedQty()
@@ -322,7 +321,7 @@ public class MovementGenerate extends SvrProcess
 						}
 						//	Adjust On Hand
 						onHand = onHand.subtract(unconfirmedShippedQty);
-						log.fine(logInfo);					
+						log.debug(logInfo);					
 					}
 					
 					//	Comments & lines w/o product & services
@@ -358,7 +357,7 @@ public class MovementGenerate extends SvrProcess
 					//	Complete Order
 					if (completeOrder && !fullLine)
 					{
-						log.fine("Failed CompleteOrder - OnHand=" + onHand 
+						log.debug("Failed CompleteOrder - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ "), ToDeliver=" + toDeliver + " - " + line);
 						completeOrder = false;
@@ -367,7 +366,7 @@ public class MovementGenerate extends SvrProcess
 					//	Complete Line
 					else if (fullLine && MDDOrder.DELIVERYRULE_CompleteLine.equals(order.getDeliveryRule()))
 					{
-						log.fine("CompleteLine - OnHand=" + onHand 
+						log.debug("CompleteLine - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ ", ToDeliver=" + toDeliver + " - " + line);
 						//	
@@ -381,7 +380,7 @@ public class MovementGenerate extends SvrProcess
 						BigDecimal deliver = toDeliver;
 						if (deliver.compareTo(onHand) > 0)
 							deliver = onHand;
-						log.fine("Available - OnHand=" + onHand 
+						log.debug("Available - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ "), ToDeliver=" + toDeliver 
 							+ ", Delivering=" + deliver + " - " + line);
@@ -392,7 +391,7 @@ public class MovementGenerate extends SvrProcess
 					else if (MDDOrder.DELIVERYRULE_Force.equals(order.getDeliveryRule()))
 					{
 						BigDecimal deliver = toDeliver;
-						log.fine("Force - OnHand=" + onHand 
+						log.debug("Force - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ "), ToDeliver=" + toDeliver 
 							+ ", Delivering=" + deliver + " - " + line);
@@ -401,11 +400,11 @@ public class MovementGenerate extends SvrProcess
 					}
 					//	Manual
 					else if (MDDOrder.DELIVERYRULE_Manual.equals(order.getDeliveryRule()))
-						log.fine("Manual - OnHand=" + onHand 
+						log.debug("Manual - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ ") - " + line);
 					else
-						log.fine("Failed: " + order.getDeliveryRule() + " - OnHand=" + onHand 
+						log.debug("Failed: " + order.getDeliveryRule() + " - OnHand=" + onHand 
 							+ " (Unconfirmed=" + unconfirmedShippedQty
 							+ "), ToDeliver=" + toDeliver + " - " + line);
 				}	//	for all order lines
@@ -448,7 +447,7 @@ public class MovementGenerate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, m_sql, e);
+			log.error(m_sql, e);
 		}
 		try
 		{
@@ -507,7 +506,7 @@ public class MovementGenerate extends SvrProcess
 			line.setLine(m_line + orderLine.getLine());
 			if (!line.save())
 				throw new IllegalStateException("Could not create Shipment Line");
-			log.fine(line.toString());
+			log.debug(line.toString());
 			return;
 		}
 		
@@ -569,7 +568,7 @@ public class MovementGenerate extends SvrProcess
 				line.setM_AttributeSetInstance_ID(storage.getM_AttributeSetInstance_ID());
 			if (!line.save())
 				throw new IllegalStateException("Could not create Shipment Line");
-			log.fine("ToDeliver=" + qty + "/" + deliver + " - " + line);
+			log.debug("ToDeliver=" + qty + "/" + deliver + " - " + line);
 			toDeliver = toDeliver.subtract(deliver);
 			//	Temp adjustment
 			storage.setQtyOnHand(storage.getQtyOnHand().subtract(deliver));
@@ -645,7 +644,7 @@ public class MovementGenerate extends SvrProcess
 		{
 			//	Fails if there is a confirmation
 			if (!Services.get(IDocActionBL.class).processIt(m_movement, p_docAction))
-				log.warning("Failed: " + m_movement);
+				log.warn("Failed: " + m_movement);
 			InterfaceWrapperHelper.save(m_movement);
 			//
 			addLog(m_movement.getM_Movement_ID(), m_movement.getMovementDate(), null, m_movement.getDocumentNo());

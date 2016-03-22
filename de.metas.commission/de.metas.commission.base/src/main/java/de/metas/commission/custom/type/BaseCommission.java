@@ -37,7 +37,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.commission.interfaces.IAdvComInstance;
@@ -62,7 +63,7 @@ import de.metas.commission.util.CommissionTools;
 public abstract class BaseCommission implements ICommissionType
 {
 
-	private static final CLogger logger = CLogger.getCLogger(BaseCommission.class);
+	private static final Logger logger = LogManager.getLogger(BaseCommission.class);
 
 	protected final static ICommissionFactBL commissionFactBL = Services.get(ICommissionFactBL.class);
 
@@ -112,7 +113,7 @@ public abstract class BaseCommission implements ICommissionType
 		}
 		else
 		{
-			BaseCommission.logger.warning("Not handling " + po + " (candidate=" + candidate + ")");
+			BaseCommission.logger.warn("Not handling " + po + " (candidate=" + candidate + ")");
 		}
 	}
 

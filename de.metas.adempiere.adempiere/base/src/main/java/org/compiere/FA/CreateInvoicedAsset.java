@@ -40,8 +40,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-
 import org.compiere.model.MAssetAcct;
 import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
@@ -337,7 +335,7 @@ public class CreateInvoicedAsset extends SvrProcess
 							}
 							catch (SQLException e)
 							{
-								log.log(Level.SEVERE, "Journal_Period - DateAcct", e);								
+								log.error("Journal_Period - DateAcct", e);								
 								return e.getLocalizedMessage();
 							}
 							

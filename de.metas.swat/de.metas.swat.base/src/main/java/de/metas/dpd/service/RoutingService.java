@@ -66,7 +66,8 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -115,7 +116,7 @@ public class RoutingService implements IDPDRoutingservice
 	// public static final String REPORT_RESOURCE = "de/metas/docs/sales/dpdlabel/report.jasper";
 	// public static final String REPORT_RESOURCE1 = "de/metas/docs/sales/dpdlabel/report1.jasper";
 
-	private static final CLogger logger = CLogger.getCLogger(RoutingService.class);
+	private static final Logger logger = LogManager.getLogger(RoutingService.class);
 
 	static
 	{

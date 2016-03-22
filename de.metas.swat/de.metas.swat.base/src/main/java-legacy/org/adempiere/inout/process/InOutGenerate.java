@@ -48,8 +48,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.shipment.IShipmentBL;
 import org.adempiere.inout.shipment.ShipmentParams;
@@ -174,7 +172,7 @@ public final class InOutGenerate extends SvrProcess
 				p_ignorePostageFreeAmount = "Y".equals(para[i].getParameter());
 			// metas end
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 
 			// juddm - added ability to specify a shipment date from Generate
 			// Shipments

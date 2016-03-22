@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
@@ -149,7 +150,7 @@ public class FinStatement extends SvrProcess
 			else if (name.equals("UserElement2_ID"))
 				p_UserElement2_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		//	Mandatory C_AcctSchema_ID, PostingType
 		m_parameterWhere.append("C_AcctSchema_ID=").append(p_C_AcctSchema_ID)
@@ -205,7 +206,7 @@ public class FinStatement extends SvrProcess
 		setDateAcct();
 		sb.append(" - DateAcct ").append(p_DateAcct_From).append("-").append(p_DateAcct_To);
 		sb.append(" - Where=").append(m_parameterWhere);
-		log.fine(sb.toString());
+		log.debug(sb.toString());
 	}	//	prepare
 
 	/**
@@ -253,7 +254,7 @@ public class FinStatement extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -279,7 +280,7 @@ public class FinStatement extends SvrProcess
 		else
 			getProcessInfo().setSerializableObject(MPrintFormat.get (getCtx(), AD_PrintFormat_ID, false));
 
-		log.fine((System.currentTimeMillis() - m_start) + " ms");
+		log.debug((System.currentTimeMillis() - m_start) + " ms");
 		return "";
 	}	//	doIt
 
@@ -310,13 +311,13 @@ public class FinStatement extends SvrProcess
 				if (first != null)
 					sb.append(" AND TRUNC(DateAcct) >= ").append(DB.TO_DATE(first.getStartDate()));
 				else
-					log.log(Level.SEVERE, "First period not found");
+					log.error("First period not found");
 			}
 		}
 		//
 		int no = DB.executeUpdate(sb.toString(), get_TrxName());
-		log.fine("#" + no + " (Account_ID=" + p_Account_ID + ")");
-		log.finest(sb.toString());
+		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
+		log.trace(sb.toString());
 	}	//	createBalanceLine
 
 	/**
@@ -337,8 +338,8 @@ public class FinStatement extends SvrProcess
 			.append(" AND ").append(DB.TO_DATE(p_DateAcct_To));
 		//
 		int no = DB.executeUpdate(sb.toString(), get_TrxName());
-		log.fine("#" + no);
-		log.finest(sb.toString());
+		log.debug("#" + no);
+		log.trace(sb.toString());
 
 		//	Set Name,Description
 		String sql_select = "SELECT e.Name, fa.Description "
@@ -352,8 +353,8 @@ public class FinStatement extends SvrProcess
 			+ "WHERE Fact_Acct_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID());
 		//
 	   no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
-	   log.fine("Name #" + no);
-	   log.finest("Name - " + sb);
+	   log.debug("Name #" + no);
+	   log.trace("Name - " + sb);
 
 	}	//	createDetailLines
 

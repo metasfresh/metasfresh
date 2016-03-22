@@ -62,7 +62,10 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -74,8 +77,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
 import org.compiere.model.Lookup;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -94,7 +97,7 @@ public class VTableExcelAdapter
 	private static KeyStroke KS_copyWithHeader = KeyStroke.getKeyStroke(KeyEvent.VK_C,ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK,false);
 
 	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	/** System clipboard */
 	private Clipboard system;
@@ -137,7 +140,7 @@ public class VTableExcelAdapter
 		// Only GridTable model is supported
 		if (!(table.getModel() instanceof GridTable))
 		{
-			if(CLogMgt.isLevelFine()) log.fine("Not supported - " + table.getModel());
+			if(LogManager.isLevelFine()) log.debug("Not supported - " + table.getModel());
 			return;
 		}
 
@@ -180,7 +183,7 @@ public class VTableExcelAdapter
 						}
 						catch(Exception ex)
 						{
-							log.log(Level.WARNING, "Copy-headers", ex);
+							log.warn("Copy-headers", ex);
 						}
 						
 						value = fixString(value);
@@ -264,7 +267,7 @@ public class VTableExcelAdapter
 						}
 						catch(Exception ex)
 						{
-							log.log(Level.WARNING, "Copy-rows", ex);
+							log.warn("Copy-rows", ex);
 						}
 						
 						value = fixString(value);
@@ -279,7 +282,7 @@ public class VTableExcelAdapter
 			}
 			catch (Exception ex)
 			{
-				log.log(Level.WARNING, "Copy", ex);
+				log.warn("Copy", ex);
 			}
 		}
 	} // actionPerformed

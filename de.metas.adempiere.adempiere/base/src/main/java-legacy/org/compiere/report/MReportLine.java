@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.TreeSet;
-import java.util.logging.Level;
-
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -104,7 +102,7 @@ public class MReportLine extends X_PA_ReportLine
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, null, e);
+			log.error(null, e);
 		}
 		finally
 		{
@@ -120,7 +118,7 @@ public class MReportLine extends X_PA_ReportLine
 		//
 		m_sources = new MReportSource[list.size()];
 		list.toArray(m_sources);
-		log.finest("ID=" + getPA_ReportLine_ID()
+		log.trace("ID=" + getPA_ReportLine_ID()
 			+ " - Size=" + list.size());
 	}	//	loadSources
 
@@ -165,7 +163,7 @@ public class MReportLine extends X_PA_ReportLine
 			}
 			else if (!ColumnName.equals(col))
 			{
-				log.config("More than one: " + ColumnName + " - " + col);
+				log.info("More than one: " + ColumnName + " - " + col);
 				return null;
 			}
 		}
@@ -212,7 +210,7 @@ public class MReportLine extends X_PA_ReportLine
 				sb.append("acctBalance(Account_ID,Qty,0)");		
 		else
 		{
-			log.log(Level.SEVERE, "AmountType=" + getPAAmountType () + ", at=" + at);
+			log.error("AmountType=" + getPAAmountType () + ", at=" + at);
 			return "NULL";
 		}
 		if (withSum)
@@ -326,7 +324,7 @@ public class MReportLine extends X_PA_ReportLine
 				}
 				// end globalqss
 			}
-			log.fine(m_whereClause);
+			log.debug(m_whereClause);
 		}
 		return m_whereClause;
 	}	//	getWhereClause

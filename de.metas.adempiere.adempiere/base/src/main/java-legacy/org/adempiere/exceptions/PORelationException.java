@@ -37,7 +37,8 @@ package org.adempiere.exceptions;
 
 
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 
 /**
@@ -47,8 +48,7 @@ import org.compiere.util.Msg;
  */
 public class PORelationException extends AdempiereException {
 
-	private static final CLogger logger = CLogger
-			.getCLogger(PORelationException.class);
+	private static final Logger logger = LogManager.getLogger(PORelationException.class);
 
 	/**
 	 * Message indicates that a po has more or less than one key columns.
@@ -90,7 +90,7 @@ public class PORelationException extends AdempiereException {
 
 	public static void throwWrongKeyColumnCount(final PO po) {
 
-		logger.fine("Invoked with po " + po);
+		logger.debug("Invoked with po " + po);
 
 		final Object[] msgParams = new Object[] { po.toString(),
 				po.get_KeyColumns().length };

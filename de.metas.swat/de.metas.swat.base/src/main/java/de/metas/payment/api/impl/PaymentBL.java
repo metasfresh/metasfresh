@@ -33,7 +33,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -51,7 +52,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Payment;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
@@ -73,7 +73,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
 public class PaymentBL implements IPaymentBL
 {
 
-	CLogger log = CLogger.getCLogger(getClass());
+	Logger log = LogManager.getLogger(getClass());
 	
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
@@ -98,7 +98,7 @@ public class PaymentBL implements IPaymentBL
 		{
 			C_Currency_Invoice_ID = payment.getC_Order().getC_Currency_ID();
 		}
-		log.fine("C_Currency_Invoice_ID = " + C_Currency_Invoice_ID + ", C_Invoice_ID=" + C_Invoice_ID);
+		log.debug("C_Currency_Invoice_ID = " + C_Currency_Invoice_ID + ", C_Invoice_ID=" + C_Invoice_ID);
 
 		return C_Currency_Invoice_ID;
 	}
@@ -130,7 +130,7 @@ public class PaymentBL implements IPaymentBL
 			InvoiceOpenAmt = grandTotal.subtract(allocated);
 		}
 
-		log.fine("Open=" + InvoiceOpenAmt + ", C_Invoice_ID=" + C_Invoice_ID);
+		log.debug("Open=" + InvoiceOpenAmt + ", C_Invoice_ID=" + C_Invoice_ID);
 
 		final int C_Currency_ID = payment.getC_Currency_ID();
 		final I_C_Currency currency = payment.getC_Currency();
@@ -144,7 +144,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal CurrencyRate = Env.ONE;
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
-			log.fine("InvCurrency=" + C_Currency_Invoice_ID + ", PayCurrency="
+			log.debug("InvCurrency=" + C_Currency_Invoice_ID + ", PayCurrency="
 					+ C_Currency_ID + ", Date=" + ConvDate + ", Type="
 					+ C_ConversionType_ID);
 
@@ -163,7 +163,7 @@ public class PaymentBL implements IPaymentBL
 			InvoiceOpenAmt = InvoiceOpenAmt.multiply(CurrencyRate).setScale(
 					currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
 
-			log.fine("Rate=" + CurrencyRate + ", InvoiceOpenAmt="
+			log.debug("Rate=" + CurrencyRate + ", InvoiceOpenAmt="
 					+ InvoiceOpenAmt);
 		}
 
@@ -271,7 +271,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal CurrencyRate = Env.ONE;
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
-			log.log(Level.FINE, "InvCurrency={0}, PayCurrency={1}, Date={2}, Type={3}"
+			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}"
 					, new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, C_ConversionType_ID });
 
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -447,7 +447,7 @@ public class PaymentBL implements IPaymentBL
 			payment.setIsAllocated(test);
 		}
 
-		log.fine("Allocated=" + test
+		log.debug("Allocated=" + test
 				+ " (" + alloc + "=" + total + ")");
 		return change;
 	}	// testAllocation

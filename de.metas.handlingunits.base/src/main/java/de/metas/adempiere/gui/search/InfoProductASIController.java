@@ -29,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,7 +47,6 @@ import org.compiere.grid.ed.IVPAttributeContext;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.swing.CEditor;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -63,7 +63,7 @@ import de.metas.product.IProductPA;
  */
 public class InfoProductASIController extends InfoColumnControllerAdapter implements IInfoQueryCriteria
 {
-	private static final transient CLogger logger = CLogger.getCLogger(InfoProductASIController.class);
+	private static final transient Logger logger = LogManager.getLogger(InfoProductASIController.class);
 	
 	private final Map<Integer, Integer> recordId2asi = new HashMap<Integer, Integer>();
 
@@ -190,7 +190,7 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		{
 			if (!InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
 			{
-				logger.log(Level.FINE, "Skip applying because it's not an order line: {0}", model);
+				logger.debug("Skip applying because it's not an order line: {}", model);
 				return;
 			}
 

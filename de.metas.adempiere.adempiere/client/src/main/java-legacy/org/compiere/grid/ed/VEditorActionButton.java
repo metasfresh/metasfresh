@@ -6,7 +6,8 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -16,7 +17,8 @@ import javax.swing.JComponent;
 import org.adempiere.images.Images;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * The action button which is displayed on {@link VEditor}'s corner.
@@ -38,7 +40,7 @@ class VEditorActionButton extends JButton
 
 	private static final long serialVersionUID = -7658517666763337529L;
 
-	private static final transient CLogger logger = CLogger.getCLogger(VEditorActionButton.class);
+	private static final transient Logger logger = LogManager.getLogger(VEditorActionButton.class);
 
 	private TextComponent2ButtonUISynchronizer textComponentRef = null;
 
@@ -64,7 +66,7 @@ class VEditorActionButton extends JButton
 		ImageIcon icon = Images.getImageIcon2(iconNameAndSize);
 		if (icon == null)
 		{
-			logger.log(Level.INFO, "No image icon was found for {0}", iconNameAndSize);
+			logger.info("No image icon was found for {}", iconNameAndSize);
 			iconNameAndSize = iconName + "10";
 			icon = Images.getImageIcon2(iconNameAndSize);
 		}

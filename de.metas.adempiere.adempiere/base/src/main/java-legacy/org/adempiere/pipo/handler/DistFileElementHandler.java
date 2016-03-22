@@ -145,14 +145,14 @@ public class DistFileElementHandler extends AbstractElementHandler {
 				try {				
 					idDetail = record_log (ctx, 1, fileName,"file", 0,0, Object_Status,fileName,0);
 				} catch (SAXException e) {
-					log.info ("setfile:"+e);
+					log.info("setfile:"+e);
 				}           		        		
 			}
 			else{
 				try {
 					idDetail = record_log (ctx, 0, fileName,"file", 0,0, Object_Status,fileName,0);
 				} catch (SAXException e) {
-					log.info ("setfile:"+e);
+					log.info("setfile:"+e);
 				}
 			}
 			//Record in transaction file 

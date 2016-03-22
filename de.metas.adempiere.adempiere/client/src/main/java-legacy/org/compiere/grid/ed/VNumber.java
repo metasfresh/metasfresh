@@ -37,7 +37,8 @@ import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -55,7 +56,8 @@ import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -200,7 +202,7 @@ public final class VNumber extends JComponent
 	}	//	getDocument
 
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(VNumber.class);
+	private static final Logger log = LogManager.getLogger(VNumber.class);
 
 	private final String m_columnName;
 	protected int m_displayType;	//  Currency / UoM via Context
@@ -469,7 +471,7 @@ public final class VNumber extends JComponent
 	@Override
 	public void setValue(final Object value)
 	{
-		log.log(Level.FINEST, "Value={0}", value);
+		log.trace("Value={}", value);
 		
 		if (value == null)
 			m_oldText = "";
@@ -496,8 +498,8 @@ public final class VNumber extends JComponent
 	@Override
 	public void requestFocus()
 	{
-		if (log.isLoggable(Level.FINE)) // 07068: logging when requestFocus is actually invoked
-			log.fine(this + ": Invoking requestFocus()");
+		if (log.isDebugEnabled()) // 07068: logging when requestFocus is actually invoked
+			log.debug(this + ": Invoking requestFocus()");
 		
 		if(m_text == null)
 		{
@@ -572,7 +574,7 @@ public final class VNumber extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Value=" + value, e);
+			log.error("Value=" + value, e);
 		}
 		m_text.setText(m_format.format(0));
 		if (m_displayType == DisplayType.Integer)
@@ -692,7 +694,7 @@ public final class VNumber extends JComponent
 				}
 			}
 			if (error != null)
-				log.warning(error);
+				log.warn(error);
 		}
 		try
 		{
@@ -714,7 +716,7 @@ public final class VNumber extends JComponent
 	 */
 	static String startCalculator(final Container jc, final String value, final DecimalFormat format, final int displayType, final String title)
 	{
-		log.config("Value=" + value);
+		log.info("Value=" + value);
 		BigDecimal startValue = new BigDecimal(0.0);
 		try
 		{
@@ -735,7 +737,7 @@ public final class VNumber extends JComponent
 		Calculator calc = new Calculator(frame, title, displayType, format, startValue);
 		AEnv.showCenterWindow(frame, calc);
 		BigDecimal result = calc.getNumber();
-		log.config( "Result=" + result);
+		log.info( "Result=" + result);
 		//
 		calc = null;
 		if (result != null)

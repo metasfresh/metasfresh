@@ -24,9 +24,8 @@ package de.metas.document.archive.async.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -48,7 +47,6 @@ import org.compiere.model.PO;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.Language;
 
 import de.metas.async.api.IQueueDAO;
@@ -77,7 +75,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
 	private static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
-	private static final transient Logger logger = CLogger.getCLogger(DocOutboundWorkpackageProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(DocOutboundWorkpackageProcessor.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -150,7 +148,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		{
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (@TableName@:" + po.get_TableName() + ")");
 		}
-		logger.log(Level.FINE, "Config: {0}", config);
+		logger.debug("Config: {}", config);
 
 		//
 		// Create ReportEngine
@@ -193,7 +191,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 
 			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
 		}
-		logger.log(Level.FINE, "ReportEngine: {0} (DocumentType:{1})", new Object[] { reportEngine, reportEngineDocumentType });
+		logger.debug("ReportEngine: {} (DocumentType:{})", new Object[] { reportEngine, reportEngineDocumentType });
 
 		//
 		// Create PDF data
@@ -202,12 +200,12 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		{
 			throw new AdempiereException("Cannot create PDF data for " + po);
 		}
-		logger.log(Level.FINE, "PDF Data: {0} bytes", data.length);
+		logger.debug("PDF Data: {} bytes", data.length);
 
 		//
 		// PrintInfo (needed for archiving)
 		final PrintInfo printInfo = reportEngine.getPrintInfo();
-		logger.log(Level.FINE, "PrintInfo: {0}", printInfo);
+		logger.debug("PrintInfo: {}", printInfo);
 
 		//
 		// Create AD_Archive and save it
@@ -218,7 +216,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		// archive.setIsDirectPrint(true);
 		archive.setC_Doc_Outbound_Config(config); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
 		InterfaceWrapperHelper.save(archive);
-		logger.log(Level.FINE, "Archive: {0}", archive);
+		logger.debug("Archive: {}", archive);
 
 		//
 		// Send data to CC Path if available

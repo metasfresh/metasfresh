@@ -50,7 +50,8 @@ import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.grid.ed.VNumber;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.exception.NoContainerException;
@@ -65,7 +66,7 @@ import de.metas.interfaces.I_C_OrderLine;
  */
 public class PackingDetailsCtrl
 {
-	private static final CLogger logger = CLogger.getCLogger(PackingDetailsCtrl.class);
+	private static final Logger logger = LogManager.getLogger(PackingDetailsCtrl.class);
 
 	private PackingDetailsV view;
 
@@ -396,7 +397,7 @@ public class PackingDetailsCtrl
 		}
 		catch (NoContainerException e)
 		{
-			logger.severe(e.toString());
+			logger.error(e.toString());
 			new ADialogDialog(view, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE).getReturnCode();
 
 		}

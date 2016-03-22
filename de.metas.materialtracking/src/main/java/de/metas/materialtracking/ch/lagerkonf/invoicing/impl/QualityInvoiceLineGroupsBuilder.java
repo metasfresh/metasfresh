@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -41,7 +42,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -103,7 +103,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	private IVendorReceipt<?> _receiptFromVendor;
 	private IPricingContext _pricingContext;
 
-	private static final transient CLogger logger = CLogger.getCLogger(QualityInvoiceLineGroupsBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
 
 	// Result
 	private final List<IQualityInvoiceLineGroup> _createdInvoiceLineGroups = new ArrayList<IQualityInvoiceLineGroup>();
@@ -909,7 +909,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
 		if (config.getOverallNumberOfInvoicings() < 2)
 		{
-			logger.log(Level.FINE, "Nothing to do as ILagerKonfQualityBasedConfig {0} has OverallNumberOfInvoicings = {1}",
+			logger.debug("Nothing to do as ILagerKonfQualityBasedConfig {} has OverallNumberOfInvoicings = {}",
 					new Object[] { config, config.getOverallNumberOfInvoicings() });
 			return null; // nothing to do
 		}
@@ -1017,7 +1017,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		IHandlingUnitsInfo currentRawHUInfo = currentRawProductionMaterial.getHandlingUnitsInfo();
 		if (currentRawHUInfo == null)
 		{
-			logger.log(Level.INFO, "IQualityInspectionOrder {0} has no IHandlingUnitsInfo; computing the probable TU-Qty", productionOrder);
+			logger.info("IQualityInspectionOrder {} has no IHandlingUnitsInfo; computing the probable TU-Qty", productionOrder);
 
 			final IQualityInspectionLine overallRaw = qualityInspectionLines.getByType(QualityInspectionLineType.Raw);
 			final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
@@ -1066,7 +1066,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);
 		if (priceActual == null)
 		{
-			logger.log(Level.FINE, "ILagerKonfQualityBasedConfig {0} has no price for dateOfProduction {1}. Assuming that there is nothing to do", new Object[] { config, dateOfProduction });
+			logger.debug("ILagerKonfQualityBasedConfig {} has no price for dateOfProduction {}. Assuming that there is nothing to do", new Object[] { config, dateOfProduction });
 			return false;
 		}
 		return true;

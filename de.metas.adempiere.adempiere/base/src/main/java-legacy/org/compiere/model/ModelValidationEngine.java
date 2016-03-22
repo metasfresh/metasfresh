@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.script.ScriptEngine;
 
@@ -59,7 +60,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
@@ -122,7 +122,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		if (s_engine != null)
 		{
 			final AdempiereException ex = new AdempiereException("Setting InitEntityTypes after the model validation engine was initialized has no effect.");
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 		}
 
 		_initEntityTypes = ImmutableList.copyOf(initEntityTypes);
@@ -185,14 +185,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 				final String entityType = modelValidator.getEntityType();
 				if (!EntityTypesCache.instance.isActive(entityType))
 				{
-					log.config("Skip " + className + " (EntityType '" + entityType + "' is not active)");
+					log.info("Skip " + className + " (EntityType '" + entityType + "' is not active)");
 				}
 
 				//
 				// Skip model validator if entity type is not in list of allowed entity types (task 03023)
 				if (initEntityTypes != null && !initEntityTypes.contains(entityType))
 				{
-					log.config("Skip " + className + " (EntityType '" + entityType + "' not in " + initEntityTypes + ")");
+					log.info("Skip " + className + " (EntityType '" + entityType + "' not in " + initEntityTypes + ")");
 					continue;
 				}
 
@@ -213,7 +213,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			loadModuleActivatorClasses(client, classNames.trim());
 		}
 		// logging to db will try to init ModelValidationEngine again!
-		// log.config(toString());
+		// log.info(toString());
 		// System.out.println(toString());
 
 		// metas: 02504: begin
@@ -231,7 +231,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final I_AD_Client client, final Throwable error)
 	{
 		// logging to db will try to init ModelValidationEngine again!
-		// log.warning(e.getLocalizedMessage());
+		// log.warn(e.getLocalizedMessage());
 		// System.err.println(e.getLocalizedMessage());
 
 		final ModelInterceptorInitException initException = new ModelInterceptorInitException(modelInterceptorClassName, client, error);
@@ -390,7 +390,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ModelValidationEngine.class);
+	private static Logger log = LogManager.getLogger(ModelValidationEngine.class);
 	// /** Change Support */
 	// private VetoableChangeSupport m_changeSupport = new VetoableChangeSupport(this);
 
@@ -545,7 +545,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -562,7 +562,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -597,7 +597,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			}
 			else
 			{
-				log.fine("Listener " + listener + " already added for " + propertyName);
+				log.debug("Listener " + listener + " already added for " + propertyName);
 			}
 		}
 	}	// addModelValidator
@@ -872,7 +872,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 						+ "\n PO: " + model
 						+ "\n Event: " + event
 						+ "\n trxName: " + trxName);
-				log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				log.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 	}
@@ -1257,7 +1257,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				}
 				catch (Exception e)
 				{
-					log.warning("" + validator + ": " + e.getLocalizedMessage());
+					log.warn("" + validator + ": " + e.getLocalizedMessage());
 				}
 			}
 		}
@@ -1291,7 +1291,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				}
 				catch (Exception e)
 				{
-					log.warning("" + validator + ": " + e.getLocalizedMessage());
+					log.warn("" + validator + ": " + e.getLocalizedMessage());
 				}
 			}
 		}
@@ -1353,7 +1353,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final IModelInterceptor annotatedInterceptor = AnnotatedModelInterceptorFactory.get().createModelInterceptor(validator);
 			if (annotatedInterceptor == null)
 			{
-				log.warning("No pointcuts found for model validator: " + validator + " [SKIP]");
+				log.warn("No pointcuts found for model validator: " + validator + " [SKIP]");
 			}
 			else
 			{

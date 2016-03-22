@@ -23,7 +23,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
@@ -90,7 +91,7 @@ public class Doc_Order extends Doc
 		// Contained Objects
 		m_taxes = loadTaxes();
 		p_lines = loadLines(order);
-		// log.fine( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
+		// log.debug( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
 		return null;
 	}   // loadDocumentDetails
 
@@ -131,7 +132,7 @@ public class Doc_Order extends Doc
 				if (!tax.isZeroTax())
 				{
 					BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, getStdPrecision());
-					log.fine("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+					log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 					LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 					for (int t = 0; t < m_taxes.length; t++)
 					{
@@ -210,7 +211,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -263,7 +264,7 @@ public class Doc_Order extends Doc
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -317,11 +318,11 @@ public class Doc_Order extends Doc
 		if (retValue.signum() != 0		// Sum of Cost(vs. Price) in lines may not add up
 				&& getDocumentType().equals(DOCTYPE_POrder))  	// PO
 		{
-			log.fine(toString() + " Balance=" + retValue + sb.toString() + " (ignored)");
+			log.debug(toString() + " Balance=" + retValue + sb.toString() + " (ignored)");
 			retValue = Env.ZERO;
 		}
 		else
-			log.fine(toString() + " Balance=" + retValue + sb.toString());
+			log.debug(toString() + " Balance=" + retValue + sb.toString());
 		return retValue;
 	}   // getBalance
 
@@ -376,7 +377,7 @@ public class Doc_Order extends Doc
 				if (offset == null)
 				{
 					p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-					log.log(Level.SEVERE, p_Error);
+					log.error(p_Error);
 					return null;
 				}
 				fact.createLine(null, offset,
@@ -410,7 +411,7 @@ public class Doc_Order extends Doc
 					if (offset == null)
 					{
 						p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-						log.log(Level.SEVERE, p_Error);
+						log.error(p_Error);
 						return null;
 					}
 					fact.createLine(null, offset,
@@ -445,7 +446,7 @@ public class Doc_Order extends Doc
 				if (offset == null)
 				{
 					p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-					log.log(Level.SEVERE, p_Error);
+					log.error(p_Error);
 					return null;
 				}
 				fact.createLine(null, offset,
@@ -490,7 +491,7 @@ public class Doc_Order extends Doc
 						+ " AND o.C_Order_ID=")
 				.append(get_ID()).append(")");
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.fine("Updated=" + no);
+		log.debug("Updated=" + no);
 	}	// updateProductPO
 
 	/**
@@ -560,7 +561,7 @@ public class Doc_Order extends Doc
 					if (!tax.isZeroTax())
 					{
 						BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, precision);
-						s_log.fine("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+						s_log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 						LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 						BigDecimal PriceListTax = tax.calculateTax(PriceList, true, precision);
 						PriceList = PriceList.subtract(PriceListTax);
@@ -573,7 +574,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -617,7 +618,7 @@ public class Doc_Order extends Doc
 			else if (C_Currency_ID != line.getC_Currency_ID())
 			{
 				doc.p_Error = "Different Currencies of Order Lines";
-				s_log.log(Level.SEVERE, doc.p_Error);
+				s_log.error(doc.p_Error);
 				return null;
 			}
 			BigDecimal cost = line.getAmtSource().multiply(multiplier);
@@ -633,7 +634,7 @@ public class Doc_Order extends Doc
 		if (offset == null)
 		{
 			doc.p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-			s_log.log(Level.SEVERE, doc.p_Error);
+			s_log.error(doc.p_Error);
 			return null;
 		}
 		fact.createLine(null, offset,
@@ -703,7 +704,7 @@ public class Doc_Order extends Doc
 					if (!tax.isZeroTax())
 					{
 						BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, precision);
-						s_log.fine("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+						s_log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 						LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 						BigDecimal PriceListTax = tax.calculateTax(PriceList, true, precision);
 						PriceList = PriceList.subtract(PriceListTax);
@@ -716,7 +717,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -760,7 +761,7 @@ public class Doc_Order extends Doc
 			else if (C_Currency_ID != line.getC_Currency_ID())
 			{
 				doc.p_Error = "Different Currencies of Order Lines";
-				s_log.log(Level.SEVERE, doc.p_Error);
+				s_log.error(doc.p_Error);
 				return null;
 			}
 			BigDecimal cost = line.getAmtSource().multiply(multiplier);
@@ -776,7 +777,7 @@ public class Doc_Order extends Doc
 		if (offset == null)
 		{
 			doc.p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-			s_log.log(Level.SEVERE, doc.p_Error);
+			s_log.error(doc.p_Error);
 			return null;
 		}
 		fact.createLine(null, offset,
@@ -795,7 +796,7 @@ public class Doc_Order extends Doc
 	@Deprecated
 	private void updateProductInfo(int C_AcctSchema_ID)
 	{
-		log.fine("C_Order_ID=" + get_ID());
+		log.debug("C_Order_ID=" + get_ID());
 
 		/**
 		 * @todo Last.. would need to compare document/last updated date
@@ -829,7 +830,7 @@ public class Doc_Order extends Doc
 				.append(C_AcctSchema_ID).append(" AND o.C_Order_ID=")
 				.append(get_ID()).append(")");
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.fine("M_Product_Costing - Updated=" + no);
+		log.debug("M_Product_Costing - Updated=" + no);
 	}   // updateProductInfo
 
 }   // Doc_Order

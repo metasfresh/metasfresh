@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -116,7 +115,7 @@ public class CRPSummary extends SvrProcess
 					p_FrequencyType = ((String)para[i].getParameter());				 		
 	        }
             else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
        
@@ -224,7 +223,7 @@ public class CRPSummary extends SvrProcess
 		}
         catch (Exception e)
 		{
-        	log.log(Level.SEVERE,"doIt - " + sql, e);
+        	log.error("doIt - " + sql, e);
             return "";
 		}    */
      	return "";
@@ -542,7 +541,7 @@ public class CRPSummary extends SvrProcess
 			}
 	        catch (Exception e)
 			{
-	        	log.log(Level.SEVERE,"doIt - " + sql, e);
+	        	log.error("doIt - " + sql, e);
 			}    
 	 			return 0;
  	}

@@ -2,7 +2,8 @@ package de.metas.acct.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -11,7 +12,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -48,7 +50,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class VATCodeDAO implements IVATCodeDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(VATCodeDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(VATCodeDAO.class);
 
 	@Override
 	public VATCode findVATCode(final VATCodeMatchingRequest request)
@@ -58,10 +60,10 @@ public class VATCodeDAO implements IVATCodeDAO
 
 		final List<I_C_VAT_Code> matchings = retriveVATCodeMatchingsForSchema(ctx, request.getC_AcctSchema_ID());
 		
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.log(Level.FINE, "Request: {0}" + request);
-			logger.log(Level.FINE, "Rules:\n" + Joiner.on("\n").join(matchings));
+			logger.debug("Request: {}" + request);
+			logger.debug("Rules:\n" + Joiner.on("\n").join(matchings));
 		}
 
 		for (final I_C_VAT_Code matching : matchings)
@@ -72,7 +74,7 @@ public class VATCodeDAO implements IVATCodeDAO
 			}
 		}
 
-		logger.log(Level.FINE, "Nothing matched. Returning NULL");
+		logger.debug("Nothing matched. Returning NULL");
 		return VATCode.NULL;
 	}
 
@@ -84,19 +86,19 @@ public class VATCodeDAO implements IVATCodeDAO
 	 */
 	private final boolean isMatching(final I_C_VAT_Code matching, final VATCodeMatchingRequest request)
 	{
-		logger.log(Level.FINE, "Matching: {0}", matching);
-		logger.log(Level.FINE, "Request: {0}", request);
+		logger.debug("Matching: {}", matching);
+		logger.debug("Request: {}", request);
 		// Match accounting schema
 		if (matching.getC_AcctSchema_ID() != request.getC_AcctSchema_ID())
 		{
-			logger.log(Level.FINE, "=> not matching (C_AcctSchema_ID)");
+			logger.debug("=> not matching (C_AcctSchema_ID)");
 			return false;
 		}
 
 		// Match tax
 		if (matching.getC_Tax_ID() != request.getC_Tax_ID())
 		{
-			logger.log(Level.FINE, "=> not matching (C_Tax_ID)");
+			logger.debug("=> not matching (C_Tax_ID)");
 			return false;
 		}
 
@@ -105,18 +107,18 @@ public class VATCodeDAO implements IVATCodeDAO
 		final Boolean matchingIsSOTrx = matchingIsSOTrxStr == null ? null : DisplayType.toBoolean(matchingIsSOTrxStr);
 		if (matchingIsSOTrx != null && matchingIsSOTrx != request.isSOTrx())
 		{
-			logger.log(Level.FINE, "=> not matching (IsSOTrx)");
+			logger.debug("=> not matching (IsSOTrx)");
 			return false;
 		}
 
 		// Match Date
 		if (!TimeUtil.isBetween(request.getDate(), matching.getValidFrom(), matching.getValidTo()))
 		{
-			logger.log(Level.FINE, "=> not matching (Date)");
+			logger.debug("=> not matching (Date)");
 			return false;
 		}
 
-		logger.log(Level.FINE, "=> matching");
+		logger.debug("=> matching");
 		return true;
 	}
 

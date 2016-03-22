@@ -21,7 +21,8 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -46,7 +47,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessInfo.ShowProcessLogs;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -100,8 +100,8 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	private ProcessInfo m_pi;
 
 	/** Logger */
-	protected final CLogger log = CLogger.getCLogger(getClass());
-	static final transient CLogger s_log = CLogger.getCLogger(SvrProcess.class);
+	protected final Logger log = LogManager.getLogger(getClass());
+	static final transient Logger s_log = LogManager.getLogger(SvrProcess.class);
 
 	/** Is the Object locked */
 	private boolean m_locked = false;
@@ -344,7 +344,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					}
 					catch (Exception e)
 					{
-						log.log(Level.SEVERE, "Commit failed.", e);
+						log.error("Commit failed.", e);
 						m_pi.addSummary("Commit Failed.");
 						m_pi.setError(true);
 						// Set the ProcessInfo throwable only it is not already set.
@@ -413,11 +413,11 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		{
 			if (e.getCause() != null)
 			{
-				log.log(Level.SEVERE, msg, e.getCause());
+				log.error(msg, e.getCause());
 			}
 			else
 			{
-				log.log(Level.SEVERE, msg, e);
+				log.error(msg, e);
 			}
 			m_pi.setThrowable(e); // only if it's really an error
 		}
@@ -662,7 +662,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			catch (Exception e)
 			{
 				// make sure this method never fails (to keep the legacy contract)
-				log.log(Level.SEVERE, "Failed loading AD_User_ID/AD_Client_ID from AD_PInstance. Ignored.", e);
+				log.error("Failed loading AD_User_ID/AD_Client_ID from AD_PInstance. Ignored.", e);
 			}
 		}
 		if (m_pi.getAD_User_ID() == null)
@@ -771,7 +771,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "doIt", ex);
+			log.error("doIt", ex);
 			throw new AdempiereException(ex);
 		}
 	}	// doIt
@@ -781,7 +781,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	private final void lock()
 	{
-		log.log(Level.FINE, "Locking AD_PInstance_ID={0}", m_pi.getAD_PInstance_ID());
+		log.debug("Locking AD_PInstance_ID={}", m_pi.getAD_PInstance_ID());
 		try
 		{
 			Services.get(IQueryBL.class)
@@ -794,7 +794,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Lock failed: " + e.getLocalizedMessage(), e);
+			log.error("Lock failed: " + e.getLocalizedMessage(), e);
 		}
 	}   // lock
 
@@ -816,7 +816,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			mpi.setErrorMsg(m_pi.getSummary());
 			InterfaceWrapperHelper.save(mpi);
 
-			log.log(Level.FINE, "Unlocked: {0}", mpi);
+			log.debug("Unlocked: {}", mpi);
 
 			ProcessInfoUtil.saveLogToDB(m_pi);
 		}
@@ -824,7 +824,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		{
 			// NOTE: it's very important this method to never throw exception.
 
-			log.log(Level.SEVERE, "Unlock failed: " + e.getLocalizedMessage(), e);
+			log.error("Unlock failed: " + e.getLocalizedMessage(), e);
 		}
 	}   // unlock
 

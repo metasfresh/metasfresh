@@ -1,7 +1,5 @@
 package org.eevolution.process;
 
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.process.ProcessInfoParameter;
@@ -23,7 +21,7 @@ public class PayrollProcessing extends SvrProcess
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				log.fine("Null Parameter: " + name);
+				log.debug("Null Parameter: " + name);
 			}
 			else if (name.equals(PARAM_HR_Process_ID))
 			{
@@ -31,7 +29,7 @@ public class PayrollProcessing extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

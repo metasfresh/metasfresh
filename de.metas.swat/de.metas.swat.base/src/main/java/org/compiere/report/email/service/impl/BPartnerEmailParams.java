@@ -32,7 +32,8 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfo;
 import org.compiere.report.email.service.IEmailParameters;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.letters.model.MADBoilerPlate;
@@ -46,7 +47,7 @@ import de.metas.letters.model.MADBoilerPlate;
  */
 public final class BPartnerEmailParams implements IEmailParameters {
 
-	private static final CLogger logger = CLogger.getCLogger(BPartnerEmailParams.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerEmailParams.class);
 
 	private final String attachmentPrefix;
 	private final static MADBoilerPlate DEFAULT_TEXT_PRESET = null;

@@ -40,7 +40,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import org.compiere.model.MDirectDebit;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.jdtaus.banking.AlphaNumericText27;
 import org.jdtaus.banking.Bankleitzahl;
@@ -53,13 +52,15 @@ import org.jdtaus.banking.dtaus.PhysicalFile;
 import org.jdtaus.banking.dtaus.PhysicalFileFactory;
 import org.jdtaus.banking.dtaus.Transaction;
 import org.jdtaus.core.container.ContainerFactory;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.exception.BankingException;
 
 public class DtaHelper {
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(DtaHelper.class);
+	private static Logger s_log = LogManager.getLogger(DtaHelper.class);
 
 	public static Transaction buildTransaction(Textschluessel textschluessel,
 			final String vz1, final String vz2, String currencyIso,

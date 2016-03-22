@@ -21,14 +21,16 @@ import java.awt.Dimension;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.model.ScheduleUtil;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -63,7 +65,7 @@ public class VSchedule extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VSchedule", e);
+			log.error("VSchedule", e);
 		}
 	}	//	VSchedule
 
@@ -83,7 +85,7 @@ public class VSchedule extends CPanel
 	/**	End Date				*/
 	private Timestamp		m_endDate;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VSchedule.class);
+	private static Logger log = LogManager.getLogger(VSchedule.class);
 
 	private BorderLayout mainLayout = new BorderLayout();
 	private VScheduleTimePanel timePanel = new VScheduleTimePanel();
@@ -134,7 +136,7 @@ public class VSchedule extends CPanel
 		cal.add(m_type, 1);
 		m_endDate = new Timestamp (cal.getTimeInMillis());
 		//
-		log.config("(" + m_type + ") Resource_ID=" + S_Resource_ID + ": " + m_startDate + "->" + m_endDate);
+		log.info("(" + m_type + ") Resource_ID=" + S_Resource_ID + ": " + m_startDate + "->" + m_endDate);
 		//	Create Slots
 		MAssignmentSlot[] mas = m_model.getAssignmentSlots (S_Resource_ID, m_startDate, m_endDate, null, true, null);
 		MAssignmentSlot[] mts = m_model.getDayTimeSlots ();

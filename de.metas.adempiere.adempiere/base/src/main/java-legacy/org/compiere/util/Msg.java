@@ -24,7 +24,8 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -57,7 +58,7 @@ public final class Msg
 	private static final Msg instance = new Msg();
 
 	/**	Logger							*/
-	private static final CLogger s_log = CLogger.getCLogger (Msg.class);
+	private static final Logger s_log = LogManager.getLogger(Msg.class);
 
 	/**
 	 *	@return {@link Msg} singleton instance
@@ -125,10 +126,10 @@ public final class Msg
 			// Log if there is no database connection.
 			// We use FINE for logging because this can be a standard use case (e.g. on logout).
 			// NOTE: we use RuntimeException instead of DBNoConnectionException to avoid trying to using Msg (which would introduce recursion).
-			if(s_log.isLoggable(Level.FINE))
+			if(s_log.isDebugEnabled())
 			{
 				final RuntimeException ex = new RuntimeException("No DB Connection. Loading messages postponed.");
-				s_log.log(Level.FINE, ex.getMessage(), ex);
+				s_log.debug(ex.getMessage(), ex);
 			}
 			return null;
 		}
@@ -162,7 +163,7 @@ public final class Msg
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "initMsg", e);
+			s_log.error("initMsg", e);
 			return null;
 		}
 		finally
@@ -175,11 +176,11 @@ public final class Msg
 		if (msg.size() < 100)
 		{
 			final AdempiereException ex = new AdempiereException("Too few (" + msg.size() + ") Records found for " + adLanguage);
-			s_log.log(Level.SEVERE, ex.getMessage(), ex);
+			s_log.error(ex.getMessage(), ex);
 			return null;
 		}
 		
-		if (s_log.isLoggable(Level.INFO))
+		if (s_log.isInfoEnabled())
 		{
 			s_log.info("Records=" + msg.size() + " - " + adLanguage);
 		}
@@ -311,7 +312,7 @@ public final class Msg
 		
 		if (message == null)
 		{
-			s_log.warning("AD_Message not found: " + adMessage);
+			s_log.warn("AD_Message not found: " + adMessage);
 			return Message.ofMissingADMessage(adMessage);
 		}
 
@@ -421,7 +422,7 @@ public final class Msg
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, msg, e);
+			s_log.error(msg, e);
 		}
 		return retStr;
 	}	//	getMsg
@@ -448,11 +449,11 @@ public final class Msg
 		}
 		catch (ClassNotFoundException e)
 		{
-			s_log.log(Level.FINER, "Class not found: " + className);
+			s_log.trace("Class not found: " + className);
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, className, e);
+			s_log.error(className, e);
 		}
 		
 		//	Fallback
@@ -518,7 +519,7 @@ public final class Msg
 				}
 				else
 				{
-					s_log.log(Level.WARNING, "Unknow element field "+display+" in "+ColumnName, new Exception());
+					s_log.warn("Unknow element field "+display+" in "+ColumnName, new Exception());
 				}
 				ColumnName = ColumnName.substring(0, idx);
 			}
@@ -567,7 +568,7 @@ public final class Msg
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "getElement", e);
+			s_log.error("getElement", e);
 			return "";
 		}
 		finally
@@ -655,7 +656,7 @@ public final class Msg
 
 		//	Nothing found
 		if (!text.startsWith("*"))
-			s_log.warning("NOT found: " + text);
+			s_log.warn("NOT found: " + text);
 		return text;
 	}	//	translate
 

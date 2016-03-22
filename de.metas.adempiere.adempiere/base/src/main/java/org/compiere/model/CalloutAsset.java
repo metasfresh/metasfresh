@@ -28,8 +28,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -96,7 +94,7 @@ public class CalloutAsset extends CalloutEngine
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 				return e.getLocalizedMessage();
 			}
 			finally
@@ -135,7 +133,7 @@ public class CalloutAsset extends CalloutEngine
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 				return e.getLocalizedMessage();
 			}
 			finally

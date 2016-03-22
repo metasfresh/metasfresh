@@ -205,7 +205,7 @@ public class WorkflowNodeNextConditionElementHandler extends
 			sql = "SELECT AD_WF_Node.Name FROM AD_WF_Node, AD_WF_NodeNext, AD_WF_NextCondition WHERE AD_WF_Node.AD_WF_Node_ID = AD_WF_NodeNext.AD_WF_Next_ID and AD_WF_NodeNext.AD_WF_NodeNext_ID =  ? group by AD_WF_Node.Name";
 			name = DB.getSQLValueString(null, sql, m_WF_NodeNextCondition
 					.getAD_WF_NodeNext_ID());
-			// log.log(Level.INFO,"node next name: ", name);
+			// log.info("node next name: ", name);
 			atts
 					.addAttribute("", "", "ADWorkflowNodeNextNameID", "CDATA",
 							name);

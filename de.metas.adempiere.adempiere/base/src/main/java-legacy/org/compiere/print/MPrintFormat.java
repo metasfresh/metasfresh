@@ -25,7 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
 
@@ -37,7 +38,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_PrintFormat;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -104,7 +104,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	private MPrintTableFormat 		m_tFormat;
 
 	/**	Static Logger	*/
-	private static CLogger			s_log = CLogger.getCLogger (MPrintFormat.class);
+	private static Logger			s_log = LogManager.getLogger(MPrintFormat.class);
 
 	// metas: we need to reset the whole cache on load/refresh
 	@Override
@@ -133,7 +133,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		if (language != null)
 		{
 			m_language = language;
-		//	log.fine("setLanguage - " + language);
+		//	log.debug("setLanguage - " + language);
 		}
 		m_translationViewLanguage = null;
 	}	//	getLanguage
@@ -273,7 +273,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 			+ " (SELECT AD_PrintFormatItem_ID FROM AD_PrintFormatItem WHERE AD_PrintFormat_ID=").append(get_ID()).append(")");
 		final String sqlNative = DB.convertSqlToNative(sb.toString());
 		int no = DB.executeUpdate(sqlNative, get_TrxName());
-		log.fine("setTranslation #" + no);
+		log.debug("setTranslation #" + no);
 	}	//	setTranslation
 
 	
@@ -401,7 +401,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	protected Object loadSpecial (ResultSet rs, int index) throws SQLException
 	{
 		//	CreateCopy
-	//	log.config(p_info.getColumnName(index));
+	//	log.info(p_info.getColumnName(index));
 		return null;
 	}   //  loadSpecial
 
@@ -419,7 +419,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	//	String colName = p_info.getColumnName(index);
 	//	String colClass = p_info.getColumnClass(index).toString();
 	//	String colValue = value == null ? "null" : value.getClass().toString();
-	//	log.log(Level.SEVERE, "Unknown class for column " + colName + " (" + colClass + ") - Value=" + colValue);
+	//	log.error("Unknown class for column " + colName + " (" + colClass + ") - Value=" + colValue);
 		if (value == null)
 			return "NULL";
 		return value.toString();
@@ -448,7 +448,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		int AD_Table_ID, int AD_PrintFormat_ID)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		s_log.info ("AD_Table_ID=" + AD_Table_ID + " - AD_Client_ID=" + AD_Client_ID);
+		s_log.info("AD_Table_ID=" + AD_Table_ID + " - AD_Client_ID=" + AD_Client_ID);
 
 		MPrintFormat pf = new MPrintFormat(ctx, AD_PrintFormat_ID, null);
 		pf.setAD_Table_ID (AD_Table_ID);
@@ -506,11 +506,11 @@ public class MPrintFormat extends X_AD_PrintFormat
 				error = false;
 			}
 			else
-				s_log.log(Level.SEVERE, "No info found " + AD_Table_ID);
+				s_log.error("No info found " + AD_Table_ID);
 		}
 		catch (SQLException e)
 		{
-			//s_log.log(Level.SEVERE, sql, e);
+			//s_log.error(sql, e);
 			throw new DBException(sql, e);
 		}
 		finally {
@@ -539,7 +539,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	static public MPrintFormat createFromReportView (Properties ctx, int AD_ReportView_ID, String ReportName)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		s_log.info ("AD_ReportView_ID=" + AD_ReportView_ID + " - AD_Client_ID=" + AD_Client_ID + " - " + ReportName);
+		s_log.info("AD_ReportView_ID=" + AD_ReportView_ID + " - AD_Client_ID=" + AD_Client_ID + " - " + ReportName);
 
 		MPrintFormat pf = new MPrintFormat(ctx, 0, null);
 		pf.setAD_ReportView_ID (AD_ReportView_ID);
@@ -588,11 +588,11 @@ public class MPrintFormat extends X_AD_PrintFormat
 				error = false;
 			}
 			else
-				s_log.log(Level.SEVERE, "Not found: AD_ReportView_ID=" + AD_ReportView_ID);
+				s_log.error("Not found: AD_ReportView_ID=" + AD_ReportView_ID);
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -620,7 +620,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	 */
 	static private MPrintFormatItem[] createItems (Properties ctx, MPrintFormat format)
 	{
-		s_log.fine ("From window Tab ...");
+		s_log.debug("From window Tab ...");
 		ArrayList<MPrintFormatItem> list = new ArrayList<MPrintFormatItem>();
 		//	Get Column List from Tab
 		String sql = "SELECT AD_Column_ID " //, Name, IsDisplayed, SeqNo
@@ -642,13 +642,13 @@ public class MPrintFormat extends X_AD_PrintFormat
 				if (pfi != null)
 				{
 					list.add (pfi);
-					s_log.finest("Tab: " + pfi);
+					s_log.trace("Tab: " + pfi);
 				}
 			}
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "(tab) - " + sql, e);
+			s_log.error("(tab) - " + sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -657,7 +657,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		//	No Tab found for Table
 		if (list.size() == 0)
 		{
-			s_log.fine("From Table ...");
+			s_log.debug("From Table ...");
 			sql = "SELECT AD_Column_ID "
 				+ "FROM AD_Column "
 				+ "WHERE AD_Table_ID=? "
@@ -674,13 +674,13 @@ public class MPrintFormat extends X_AD_PrintFormat
 					if (pfi != null)
 					{
 						list.add (pfi);
-						s_log.finest("Table: " + pfi);
+						s_log.trace("Table: " + pfi);
 					}
 				}
 			}
 			catch (SQLException e)
 			{
-				s_log.log(Level.SEVERE, "(table) - " + sql, e);
+				s_log.error("(table) - " + sql, e);
 			}			
 			finally {
 				DB.close(rs, pstmt);
@@ -758,7 +758,7 @@ public class MPrintFormat extends X_AD_PrintFormat
             	break;
             counter += no;
         }	//	for
-        s_log.finest("#" + counter);
+        s_log.trace("#" + counter);
     }	//	copyTranslationItems
 
 	
@@ -799,7 +799,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	private static MPrintFormat copy (Properties ctx, int from_AD_PrintFormat_ID,
 		int to_AD_PrintFormat_ID, int to_Client_ID)
 	{
-		s_log.info ("From AD_PrintFormat_ID=" + from_AD_PrintFormat_ID
+		s_log.info("From AD_PrintFormat_ID=" + from_AD_PrintFormat_ID
 			+ ", To AD_PrintFormat_ID=" + to_AD_PrintFormat_ID 
 			+ ", To Client_ID=" + to_Client_ID);
 		if (from_AD_PrintFormat_ID == 0)
@@ -900,7 +900,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -965,7 +965,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(pstmt);

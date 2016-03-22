@@ -17,8 +17,6 @@
 
 package org.adempiere.webui.panel;
 
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.webui.component.Window;
@@ -28,8 +26,11 @@ import org.adempiere.webui.util.ADClassNameMap;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MForm;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -47,11 +48,11 @@ public abstract class ADForm extends Window implements EventListener
 	 */
 	private static final long serialVersionUID = -5183711788893823434L;
 	/** The class' logging enabler */
-    protected static final CLogger logger;
+    protected static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(ADForm.class);
+        logger = LogManager.getLogger(ADForm.class);
     }
 
     /** The unique identifier of the form type */
@@ -378,7 +379,7 @@ public abstract class ADForm extends Window implements EventListener
         	}
         	catch (Exception ex)
         	{
-    			logger.log(Level.SEVERE, "Class=" + webClassName + ", AD_Form_ID=" + adFormID, ex);
+    			logger.error("Class=" + webClassName + ", AD_Form_ID=" + adFormID, ex);
     			throw new ApplicationException("The web user interface custom form '" +
     					webClassName +
     					"' failed to initialise:" + ex);

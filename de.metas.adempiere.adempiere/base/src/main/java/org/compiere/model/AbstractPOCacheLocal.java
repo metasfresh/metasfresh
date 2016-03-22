@@ -33,11 +33,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractPOCacheLocal
 {
-	protected static final CLogger logger = CLogger.getCLogger(AbstractPOCacheLocal.class);
+	protected static final Logger logger = LogManager.getLogger(AbstractPOCacheLocal.class);
 
 	private final String parentColumnName;
 	private final String tableName;
@@ -167,7 +168,7 @@ public abstract class AbstractPOCacheLocal
 		final String tableName = getTableName();
 		if (!po.get_TableName().equals(tableName))
 		{
-			logger.warning("PO " + po + " does not expected table: " + tableName);
+			logger.warn("PO " + po + " does not expected table: " + tableName);
 			return false;
 		}
 

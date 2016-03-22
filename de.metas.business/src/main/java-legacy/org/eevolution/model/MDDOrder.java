@@ -24,7 +24,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -320,7 +321,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 		if (getC_BPartner_Location_ID() == 0)
 		{
-			log.log(Level.SEVERE, "MDDOrder.setBPartner - Has no Ship To Address: " + bp);
+			log.error("MDDOrder.setBPartner - Has no Ship To Address: " + bp);
 		}
 
 		// Set Contact
@@ -367,7 +368,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 				count++;
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
 		return count;
 	}	// copyLinesFrom
 
@@ -414,7 +415,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF
@@ -466,7 +467,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (!requery)
 		{
 			final AdempiereException ex = new AdempiereException("requery parameter shall be true");
-			log.log(Level.WARNING, ex.getLocalizedMessage() + ". Considering it as true", ex);
+			log.warn(ex.getLocalizedMessage() + ". Considering it as true", ex);
 			requery = true;
 		}
 
@@ -535,7 +536,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -577,7 +578,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 					+ (processed ? "Y" : "N")
 					+ "' WHERE DD_Order_ID=" + getDD_Order_ID();
 			final int noLine = DB.executeUpdate("UPDATE DD_OrderLine " + sql, get_TrxName());
-			log.fine("setProcessed - " + processed + " - Lines=" + noLine);
+			log.debug("setProcessed - " + processed + " - Lines=" + noLine);
 
 			m_lines = null; // reset cached lines
 		}
@@ -600,7 +601,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 			if (context_AD_Org_ID != 0)
 			{
 				setAD_Org_ID(context_AD_Org_ID);
-				log.warning("Changed Org to Context=" + context_AD_Org_ID);
+				log.warn("Changed Org to Context=" + context_AD_Org_ID);
 			}
 		}
 		if (getAD_Client_ID() <= 0)
@@ -675,7 +676,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 					+ "FROM DD_Order o WHERE i.DD_Order_ID=o.DD_Order_ID) "
 					+ "WHERE DocStatus NOT IN ('RE','CL') AND DD_Order_ID=" + getDD_Order_ID());
 			int no = DB.executeUpdateEx(sql, get_TrxName());
-			log.fine("Description -> #" + no);
+			log.debug("Description -> #" + no);
 		}
 
 		// Sync Lines
@@ -699,7 +700,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 					+ " FROM DD_Order o WHERE ol.DD_Order_ID=o.DD_Order_ID) "
 					+ "WHERE DD_Order_ID=" + getDD_Order_ID();
 			int no = DB.executeUpdateEx(sql, get_TrxName());
-			log.fine(columnName + " Lines -> #" + no);
+			log.debug(columnName + " Lines -> #" + no);
 		}
 	}	// afterSaveSync
 
@@ -847,7 +848,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 				continue;
 			}
 
-			log.fine("Line=" + line.getLine()
+			log.debug("Line=" + line.getLine()
 					+ " - Ordered=" + line.getQtyOrdered()
 					+ ",Reserved=" + line.getQtyReserved() + ",Delivered=" + line.getQtyDelivered());
 

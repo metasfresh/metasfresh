@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -194,7 +195,7 @@ public final class EMail implements Serializable
 	public static final String SENT_OK = "OK";
 
 	/** Logger */
-	protected static CLogger log = CLogger.getCLogger(EMail.class);
+	protected static Logger log = LogManager.getLogger(EMail.class);
 
 	/**
 	 * Send Mail direct
@@ -218,7 +219,7 @@ public final class EMail implements Serializable
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", m_smtpHost);
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 			props.put("mail.debug", "true");
 		//
 		Session session = null;
@@ -235,17 +236,17 @@ public final class EMail implements Serializable
 			}
 
 			session = Session.getInstance(props, m_auth);
-			session.setDebug(CLogMgt.isLevelFinest());
+			session.setDebug(LogManager.isLevelFinest());
 		}
 		catch (SecurityException se)
 		{
-			log.log(Level.WARNING, "Auth=" + m_auth + " - " + se.toString());
+			log.warn("Auth=" + m_auth + " - " + se.toString());
 			m_sentMsg = se.toString();
 			return m_sentMsg;
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Auth=" + m_auth, e);
+			log.error("Auth=" + m_auth, e);
 			m_sentMsg = e.toString();
 			return m_sentMsg;
 		}
@@ -279,17 +280,17 @@ public final class EMail implements Serializable
 			//
 			setContent();
 			m_msg.saveChanges();
-			// log.fine("message =" + m_msg);
+			// log.debug("message =" + m_msg);
 			//
 			// Transport.send(msg);
 			// Transport t = session.getTransport("smtp");
-			// log.fine("transport=" + t);
+			// log.debug("transport=" + t);
 			// t.connect();
 			// t.connect(m_smtpHost, user, password);
-			// log.fine("transport connected");
+			// log.debug("transport connected");
 			Transport.send(m_msg);
 			// t.sendMessage(msg, msg.getAllRecipients());
-			log.fine("Success - MessageID=" + m_msg.getMessageID());
+			log.debug("Success - MessageID=" + m_msg.getMessageID());
 		}
 		catch (final MessagingException me)
 		{
@@ -372,10 +373,10 @@ public final class EMail implements Serializable
 			}
 			while (ex != null);	// error loop
 			//
-			if (CLogMgt.isLevelFinest())
-				log.log(Level.WARNING, sb.toString(), me);
+			if (LogManager.isLevelFinest())
+				log.warn(sb.toString(), me);
 			else
-				log.log(Level.WARNING, sb.toString());
+				log.warn(sb.toString());
 			m_sentMsg = sb.toString();
 			if (Check.isEmpty(m_sentMsg, true))
 			{
@@ -385,12 +386,12 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			m_sentMsg = e.getLocalizedMessage();
 			return e.getLocalizedMessage();
 		}
 		//
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 			dumpMessage();
 		m_sentMsg = SENT_OK;
 		return m_sentMsg;
@@ -464,11 +465,11 @@ public final class EMail implements Serializable
 			@SuppressWarnings("rawtypes")
 			final Enumeration e = m_msg.getAllHeaderLines();
 			while (e.hasMoreElements())
-				log.fine("- " + e.nextElement());
+				log.debug("- " + e.nextElement());
 		}
 		catch (MessagingException ex)
 		{
-			log.log(Level.WARNING, m_msg.toString(), ex);
+			log.warn(m_msg.toString(), ex);
 		}
 	}	// dumpMessage
 
@@ -496,7 +497,7 @@ public final class EMail implements Serializable
 		}
 		catch (MessagingException ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		return null;
 	}	// getMessageID
@@ -514,12 +515,12 @@ public final class EMail implements Serializable
 	{
 		if (username == null || password == null)
 		{
-			log.warning("Ignored - " + username + "/" + password);
+			log.warn("Ignored - " + username + "/" + password);
 			m_auth = null;
 		}
 		else
 		{
-			// log.fine("setEMailUser: " + username + "/" + password);
+			// log.debug("setEMailUser: " + username + "/" + password);
 			m_auth = new EMailAuthenticator(username, password);
 		}
 		return m_auth;
@@ -553,7 +554,7 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, newFrom + ": " + e.toString());
+			log.warn(newFrom + ": " + e.toString());
 			m_valid = false;
 		}
 	}   // setFrom
@@ -578,7 +579,7 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, newTo + ": " + e.toString());
+			log.warn(newTo + ": " + e.toString());
 			m_valid = false;
 			return false;
 		}
@@ -632,7 +633,7 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, newCc + ": " + e.toString());
+			log.warn(newCc + ": " + e.toString());
 			return false;
 		}
 		if (m_cc == null)
@@ -672,7 +673,7 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, newBcc + ": " + e.getMessage());
+			log.warn(newBcc + ": " + e.getMessage());
 			return false;
 		}
 		if (m_bcc == null)
@@ -712,7 +713,7 @@ public final class EMail implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, newTo + ": " + e.toString());
+			log.warn(newTo + ": " + e.toString());
 			return false;
 		}
 		m_replyTo = ia;
@@ -794,8 +795,8 @@ public final class EMail implements Serializable
 			else
 				sb.append(c);
 		}
-		// log.fine("IN  " + m_messageText);
-		// log.fine("OUT " + sb);
+		// log.debug("IN  " + m_messageText);
+		// log.debug("OUT " + sb);
 
 		return sb.toString();
 	}   // getMessageCRLF
@@ -946,7 +947,7 @@ public final class EMail implements Serializable
 				m_msg.setDataHandler(new DataHandler
 						(new ByteArrayDataSource(m_messageHTML, charSetName, "text/html")));
 			//
-			log.fine("(simple) " + getSubject());
+			log.debug("(simple) " + getSubject());
 		}
 		else
 		// Multi part message ***************************************
@@ -963,7 +964,7 @@ public final class EMail implements Serializable
 			// Create Multipart and its parts to it
 			Multipart mp = new MimeMultipart();
 			mp.addBodyPart(mbp_1);
-			log.fine("(multi) " + getSubject() + " - " + mbp_1);
+			log.debug("(multi) " + getSubject() + " - " + mbp_1);
 
 			// for all attachments
 			for (int i = 0; i < m_attachments.size(); i++)
@@ -977,7 +978,7 @@ public final class EMail implements Serializable
 						ds = new FileDataSource(file);
 					else
 					{
-						log.log(Level.WARNING, "File does not exist: " + file);
+						log.warn("File does not exist: " + file);
 						continue;
 					}
 				}
@@ -990,14 +991,14 @@ public final class EMail implements Serializable
 					ds = (DataSource)attachment;
 				else
 				{
-					log.log(Level.WARNING, "Attachement type unknown: " + attachment);
+					log.warn("Attachement type unknown: " + attachment);
 					continue;
 				}
 				// Attachment Part
 				MimeBodyPart mbp_2 = new MimeBodyPart();
 				mbp_2.setDataHandler(new DataHandler(ds));
 				mbp_2.setFileName(ds.getName());
-				log.fine("Added Attachment " + ds.getName() + " - " + mbp_2);
+				log.debug("Added Attachment " + ds.getName() + " - " + mbp_2);
 				mp.addBodyPart(mbp_2);
 			}
 
@@ -1063,7 +1064,7 @@ public final class EMail implements Serializable
 		{
 			final String errmsg = "From is invalid=" + m_from;
 			reason.append(errmsg);
-			log.warning(errmsg);
+			log.warn(errmsg);
 			return false;
 		}
 		// To
@@ -1072,7 +1073,7 @@ public final class EMail implements Serializable
 		{
 			final String errmsg = "No To";
 			reason.append(errmsg);
-			log.warning(errmsg);
+			log.warn(errmsg);
 			return false;
 		}
 		for (int i = 0; i < ias.length; i++)
@@ -1083,7 +1084,7 @@ public final class EMail implements Serializable
 			{
 				final String errmsg = "To(" + i + ") is invalid=" + ias[i];
 				reason.append(errmsg);
-				log.warning(errmsg);
+				log.warn(errmsg);
 				return false;
 			}
 		}
@@ -1093,7 +1094,7 @@ public final class EMail implements Serializable
 		{
 			final String errmsg = "SMTP Host is invalid" + m_smtpHost;
 			reason.append(errmsg);
-			log.warning(errmsg);
+			log.warn(errmsg);
 			return false;
 		}
 
@@ -1102,7 +1103,7 @@ public final class EMail implements Serializable
 		{
 			final String errmsg = "Subject is invalid=" + m_subject;
 			reason.append(errmsg);
-			log.warning(errmsg);
+			log.warn(errmsg);
 			return false;
 		}
 		return true;

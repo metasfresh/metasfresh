@@ -29,8 +29,9 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -39,7 +40,7 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 {
 	public static final LogicExpressionEvaluator instance = new LogicExpressionEvaluator();
 
-	private static final transient CLogger logger = CLogger.getCLogger(LogicExpressionEvaluator.class);
+	private static final transient Logger logger = LogManager.getLogger(LogicExpressionEvaluator.class);
 
 	/** Internal marker for value not found */
 	private static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
@@ -75,9 +76,9 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 
 			final boolean result = evaluateLogicTuple(firstEval, tuple.getOperator(), secondEval);
 
-			if (CLogMgt.isLevelFinest())
+			if (LogManager.isLevelFinest())
 			{
-				logger.finest(expr.getExpressionString() + " => \"" + firstEval + "\" " + tuple.getOperator() + " \"" + secondEval + "\" => " + result);
+				logger.trace(expr.getExpressionString() + " => \"" + firstEval + "\" " + tuple.getOperator() + " \"" + secondEval + "\" => " + result);
 			}
 
 			return result;

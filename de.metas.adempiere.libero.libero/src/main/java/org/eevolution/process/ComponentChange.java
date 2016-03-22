@@ -43,7 +43,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -109,7 +108,7 @@ public class ComponentChange extends SvrProcess
 			else if (name.equals("M_ChangeNotice_ID")) 
 				p_M_ChangeNotice_ID = para.getParameterAsInt();
 			else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriodControl;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -38,7 +38,7 @@ import org.compiere.util.DB;
 public class DocumentTypeVerify extends SvrProcess
 {
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (DocumentTypeVerify.class);
+	private static Logger	s_log	= LogManager.getLogger(DocumentTypeVerify.class);
 	
 	
 	/**
@@ -89,21 +89,21 @@ public class DocumentTypeVerify extends SvrProcess
 			{
 				String name = rs.getString(2);
 				String value = rs.getString(1);
-				s_log.config(name + "=" + value);
+				s_log.info(name + "=" + value);
 				MDocType dt = new MDocType (ctx, value, name, trxName);
 				if (dt.save())
 				{
 					if (sp != null)
 						sp.addLog (0, null, null, name);
 					else
-						s_log.fine(name);
+						s_log.debug(name);
 				}
 				else
 				{
 					if (sp != null)
 						sp.addLog (0, null, null, "Not created: " + name);
 					else
-						s_log.warning("Not created: " + name);
+						s_log.warn("Not created: " + name);
 				}
 			}
 			rs.close();
@@ -112,7 +112,7 @@ public class DocumentTypeVerify extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -172,17 +172,17 @@ public class DocumentTypeVerify extends SvrProcess
 				int Client_ID = rs.getInt(1);
 				int C_Period_ID = rs.getInt(2);
 				String DocBaseType = rs.getString(3);
-				s_log.config("AD_Client_ID=" + Client_ID 
+				s_log.info("AD_Client_ID=" + Client_ID 
 					+ ", C_Period_ID=" + C_Period_ID + ", DocBaseType=" + DocBaseType);
 				//
 				MPeriodControl pc = new MPeriodControl (ctx, Client_ID, C_Period_ID, DocBaseType, trxName);
 				if (pc.save())
 				{
 					counter++;
-					s_log.fine(pc.toString());
+					s_log.debug(pc.toString());
 				}
 				else
-					s_log.warning("Not saved: " + pc);
+					s_log.warn("Not saved: " + pc);
 			}
 			rs.close();
 			pstmt.close();
@@ -190,7 +190,7 @@ public class DocumentTypeVerify extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{

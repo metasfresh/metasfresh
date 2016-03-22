@@ -35,11 +35,12 @@ import org.adempiere.webui.event.WTableModelListener;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zkex.zul.Borderlayout;
@@ -89,7 +90,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 	private boolean 		m_isSOTrx;
 		
 	/**	Logger			*/
-	protected CLogger log = CLogger.getCLogger(getClass());
+	protected Logger log = LogManager.getLogger(getClass());
 	private Borderlayout layout;
 	private Vbox southBody;
 	
@@ -344,7 +345,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!value.endsWith("%"))
 				value += "%";
 			pstmt.setString(index++, value);
-			log.fine("Value: " + value);
+			log.debug("Value: " + value);
 		}
 		//	=> Name
 		String name = fieldName.getText().toUpperCase();
@@ -353,7 +354,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!name.endsWith("%"))
 				name += "%";
 			pstmt.setString(index++, name);
-			log.fine("Name: " + name);
+			log.debug("Name: " + name);
 		}
 		//	=> Contact
 		String contact = fieldContact.getText().toUpperCase();
@@ -362,7 +363,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!contact.endsWith("%"))
 				contact += "%";
 			pstmt.setString(index++, contact);
-			log.fine("Contact: " + contact);
+			log.debug("Contact: " + contact);
 		}
 		//	=> EMail
 		String email = fieldEMail.getText().toUpperCase();
@@ -371,7 +372,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!email.endsWith("%"))
 				email += "%";
 			pstmt.setString(index++, email);
-			log.fine("EMail: " + email);
+			log.debug("EMail: " + email);
 		}
 		//	=> Phone
 		String phone = fieldPhone.getText().toUpperCase();
@@ -380,7 +381,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!phone.endsWith("%"))
 				phone += "%";
 			pstmt.setString(index++, phone);
-			log.fine("Phone: " + phone);
+			log.debug("Phone: " + phone);
 		}
 		//	=> Postal
 		String postal = fieldPostal.getText().toUpperCase();
@@ -389,7 +390,7 @@ public class InfoBPartnerPanel extends InfoPanel implements EventListener, WTabl
 			if (!postal.endsWith("%"))
 				postal += "%";
 			pstmt.setString(index++, postal);
-			log.fine("Postal: " + postal);
+			log.debug("Postal: " + postal);
 		}
 	}   //  setParameters
 

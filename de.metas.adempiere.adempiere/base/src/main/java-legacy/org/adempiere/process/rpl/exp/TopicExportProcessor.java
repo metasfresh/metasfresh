@@ -53,7 +53,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.compiere.model.I_EXP_ProcessorParameter;
 import org.compiere.model.MEXPProcessor;
 import org.compiere.model.X_EXP_ProcessorParameter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
 import org.w3c.dom.Document;
 
@@ -69,7 +70,7 @@ import org.w3c.dom.Document;
 public class TopicExportProcessor implements IExportProcessor {
 
 	/**	Logger	*/
-	protected CLogger	log = CLogger.getCLogger (getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	
 	/**
 	 * 

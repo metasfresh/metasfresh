@@ -23,7 +23,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,7 +40,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -101,7 +101,7 @@ public class ProcessInfo implements Serializable
 	static final long serialVersionUID = -1993220053515488725L;
 	
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(ProcessInfo.class);
+	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
 
 	/** Title of the Process/Report */
 	private String m_Title;
@@ -334,7 +334,7 @@ public class ProcessInfo implements Serializable
 			case OnError:
 				return isError();
 			default:
-				logger.log(Level.WARNING, "Unknown ShowProcessLogsPolicy: " + showProcessLogsPolicy + ". Considering " + ShowProcessLogs.Always);
+				logger.warn("Unknown ShowProcessLogsPolicy: " + showProcessLogsPolicy + ". Considering " + ShowProcessLogs.Always);
 				return true;
 		}
 	}

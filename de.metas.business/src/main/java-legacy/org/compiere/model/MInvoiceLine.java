@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,7 +31,8 @@ import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -94,14 +96,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				if (rs.next())
 				{
 					// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
-					s_log.warning("More than one C_InvoiceLine of " + sLine + ". Returning null.");
+					s_log.warn("More than one C_InvoiceLine of " + sLine + ". Returning null.");
 					return null;
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -112,7 +114,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	}	// getOfInOutLine
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MInvoiceLine.class);
+	private static Logger s_log = LogManager.getLogger(MInvoiceLine.class);
 
 	/** Tax */
 	private MTax m_tax = null;
@@ -454,7 +456,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (getM_Product_ID() == 0 || isDescription())
 			return;
 		//
-		log.fine("M_PriceList_ID=" + M_PriceList_ID);
+		log.debug("M_PriceList_ID=" + M_PriceList_ID);
 		m_productPricing = new MProductPricing(getM_Product_ID(), C_BPartner_ID,
 				getQtyInvoiced(), m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
@@ -562,7 +564,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		if (taxCategoryId <= 0)
 		{
-			log.log(Level.SEVERE, "No Tax Category found");
+			log.error("No Tax Category found");
 			return false;
 		}
 
@@ -608,7 +610,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					billDate,
 					fromLocation.getC_Location_ID(),
 					toBPLocation.getC_Location_ID());
-			log.log(Level.SEVERE, "No Tax found: " + ex.getLocalizedMessage(), ex);
+			log.error("No Tax found: " + ex.getLocalizedMessage(), ex);
 			return false;
 		}
 		setC_Tax_ID(taxId);
@@ -918,7 +920,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "getName", e);
+				log.error("getName", e);
 			}
 			finally
 			{
@@ -990,7 +992,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		log.fine("New=" + newRecord);
+		log.debug("New=" + newRecord);
 		if (newRecord
 				&& Services.get(IInvoiceBL.class).isComplete(getC_Invoice()))
 		{
@@ -1420,7 +1422,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			largestAmtAllocation.setAmt(largestAmtAllocation.getAmt().add(difference));
 			largestAmtAllocation.save();
-			log.config("Difference=" + difference
+			log.info("Difference=" + difference
 					+ ", C_LandedCostAllocation_ID=" + largestAmtAllocation.getC_LandedCostAllocation_ID()
 					+ ", Amt" + largestAmtAllocation.getAmt());
 		}
@@ -1456,7 +1458,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getLandedCost", e);
+			log.error("getLandedCost", e);
 		}
 		finally
 		{
@@ -1500,7 +1502,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				count++;
 		}
 		if (fromLandedCosts.length != count)
-			log.log(Level.SEVERE, "LandedCost difference - From=" + fromLandedCosts.length + " <> Saved=" + count);
+			log.error("LandedCost difference - From=" + fromLandedCosts.length + " <> Saved=" + count);
 		return count;
 	}	// copyLinesFrom
 

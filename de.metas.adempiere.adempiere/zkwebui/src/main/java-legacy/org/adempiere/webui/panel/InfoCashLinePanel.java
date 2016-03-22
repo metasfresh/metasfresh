@@ -362,7 +362,7 @@ public class InfoCashLinePanel extends InfoPanel implements ValueChangeListener,
 			}
 		}
 
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		return sql.toString();
 	} // getSQLWhere
 
@@ -388,14 +388,14 @@ public class InfoCashLinePanel extends InfoPanel implements ValueChangeListener,
 		{
 			Integer cb = (Integer)fCashBook_ID.getValue();
 			pstmt.setInt(index++, cb.intValue());
-			log.fine("CashBook=" + cb);
+			log.debug("CashBook=" + cb);
 		}
 
 		if (fInvoice_ID.getValue() != null)
 		{
 			Integer i = (Integer)fInvoice_ID.getValue();
 			pstmt.setInt(index++, i.intValue());
-			log.fine("Invoice=" + i);
+			log.debug("Invoice=" + i);
 		}
 
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
@@ -406,7 +406,7 @@ public class InfoCashLinePanel extends InfoPanel implements ValueChangeListener,
 			Date t = fDateTo.getValue();
 			Timestamp to = new Timestamp(t.getTime());
 
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -432,7 +432,7 @@ public class InfoCashLinePanel extends InfoPanel implements ValueChangeListener,
 					to = to.abs();
 			}
 			
-			log.fine("Amt From=" + from + ", To=" + to + ", Absolute=" + cbAbsolute.isChecked());
+			log.debug("Amt From=" + from + ", To=" + to + ", Absolute=" + cbAbsolute.isChecked());
 			
 			if (from == null && to != null)
 				pstmt.setBigDecimal(index++, to);
@@ -464,7 +464,7 @@ public class InfoCashLinePanel extends InfoPanel implements ValueChangeListener,
 		if (!s.endsWith("%"))
 			s += "%";
 		
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		
 		return s;
 	} // getSQLText

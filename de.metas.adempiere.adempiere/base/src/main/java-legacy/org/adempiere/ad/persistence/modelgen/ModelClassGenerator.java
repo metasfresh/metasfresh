@@ -29,11 +29,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
@@ -86,7 +86,7 @@ public class ModelClassGenerator
 	public static final String NL = "\n";
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ModelClassGenerator.class);
+	private static Logger log = LogManager.getLogger(ModelClassGenerator.class);
 
 	/** Package Name */
 	private String packageName = "";
@@ -640,7 +640,7 @@ public class ModelClassGenerator
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, fileName, ex);
+			log.error(fileName, ex);
 			throw new RuntimeException(ex);
 		}
 	}

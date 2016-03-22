@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -61,12 +60,11 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.MPriceList;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
-
+import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocActionBL;
@@ -96,7 +94,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
@@ -970,7 +968,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
 //					{
-						logger.log(Level.WARNING, error.getLocalizedMessage(), error);
+						logger.warn(error.getLocalizedMessage(), error);
 //					}
 					// @formatter:on
 				}
@@ -980,7 +978,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					note = null;
 
 					// ...but in this case, at least log the error message
-					InvoiceCandBLCreateInvoices.logger.log(Level.WARNING, error.getLocalizedMessage(), error);
+					InvoiceCandBLCreateInvoices.logger.warn(error.getLocalizedMessage(), error);
 				}
 
 				//

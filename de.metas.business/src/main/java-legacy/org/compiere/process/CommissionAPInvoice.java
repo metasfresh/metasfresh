@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCommission;
@@ -47,7 +48,7 @@ public class CommissionAPInvoice extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

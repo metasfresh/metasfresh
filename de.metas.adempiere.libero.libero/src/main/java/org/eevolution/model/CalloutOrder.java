@@ -84,7 +84,7 @@ public class CalloutOrder extends CalloutEngine
 
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
 		if (steps)
-			log.warning("qty - init - M_Product_ID=" + M_Product_ID + " - ");
+			log.warn("qty - init - M_Product_ID=" + M_Product_ID + " - ");
 		BigDecimal QtyOrdered = Env.ZERO;
 		BigDecimal QtyEntered = Env.ZERO;
 
@@ -118,7 +118,7 @@ public class CalloutOrder extends CalloutEngine
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
-			log.fine("qty - UOM=" + C_UOM_To_ID
+			log.debug("qty - UOM=" + C_UOM_To_ID
 					+ ", QtyEntered=" + QtyEntered
 					+ " -> " + conversion
 					+ " QtyOrdered=" + QtyOrdered);
@@ -135,7 +135,7 @@ public class CalloutOrder extends CalloutEngine
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
-			log.fine("qty - UOM=" + C_UOM_To_ID
+			log.debug("qty - UOM=" + C_UOM_To_ID
 					+ ", QtyOrdered=" + QtyOrdered
 					+ " -> " + conversion
 					+ " QtyEntered=" + QtyEntered);

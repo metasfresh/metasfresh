@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -91,7 +89,7 @@ public class MProjectTypePhase extends X_C_Phase
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{

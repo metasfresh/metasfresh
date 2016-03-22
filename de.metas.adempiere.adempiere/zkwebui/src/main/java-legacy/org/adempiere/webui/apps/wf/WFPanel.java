@@ -17,18 +17,20 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
 import org.adempiere.webui.exception.ApplicationException;
 import org.adempiere.webui.session.SessionManager;
 import org.compiere.apps.wf.WFLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWFNodeNext;
 import org.compiere.wf.MWorkflow;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.image.AImage;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -66,7 +68,7 @@ public class WFPanel extends Borderlayout implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "WFPanel", e);
+			log.error("WFPanel", e);
 		}
 		m_WindowNo = SessionManager.getAppDesktop().registerWindow(this);
 	}	//	WFPanel
@@ -81,7 +83,7 @@ public class WFPanel extends Borderlayout implements EventListener
 	private Properties	m_ctx = Env.getCtx();
 
 	/**	Logger			*/
-	private static CLogger	log = CLogger.getCLogger(WFPanel.class);
+	private static Logger	log = LogManager.getLogger(WFPanel.class);
 	
 	//	IO
 	private WFNodeContainer nodeContainer = new WFNodeContainer();
@@ -138,7 +140,7 @@ public class WFPanel extends Borderlayout implements EventListener
 	 */
 	public void load (int AD_Workflow_ID)
 	{
-		log.fine("AD_Workflow_ID=" + AD_Workflow_ID);
+		log.debug("AD_Workflow_ID=" + AD_Workflow_ID);
 		if (AD_Workflow_ID == 0)
 			return;
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
@@ -192,7 +194,7 @@ public class WFPanel extends Borderlayout implements EventListener
 				area.setTooltiptext(tooltip.toString());
 			}
 		} catch (Exception e) {
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 		
 		//	Info Text

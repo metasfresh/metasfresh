@@ -38,7 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -70,7 +71,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -115,7 +115,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleBL.class.getName() + "#ProcessedByBackgroundProcess";
 
-	private final static CLogger logger = CLogger.getCLogger(ShipmentScheduleBL.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
 
@@ -299,7 +299,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						// we can s this log now
 						InterfaceWrapperHelper.delete(logRecord);
 					}
-					logger.fine("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
+					logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
 							+ "; QtyReserved=" + sched.getQtyReserved()
 							+ "; DocStatus=" + orderDocStatus
 							+ "; => Deleting " + sched);
@@ -318,7 +318,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 							ILoggable.THREADLOCAL.getLoggable().addLog(msg);
 
 							final AdempiereException ex = new AdempiereException(msg);
-							logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+							logger.warn(ex.getLocalizedMessage(), ex);
 
 							continue;
 						}
@@ -529,8 +529,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_C_Order order = co.retrieveAndCacheOrder(orderLine, trxName);
 			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
-			logger.log(Level.FINE, "check: {0} - DeliveryRule={1}", new Object[] { order, deliveryRule });
-			logger.log(Level.FINE, "check: {0}", orderLine);
+			logger.debug("check: {} - DeliveryRule={}", new Object[] { order, deliveryRule });
+			logger.debug("check: {}", orderLine);
 
 			final boolean ruleManual = DELIVERYRULE_Manual.equals(deliveryRule);
 
@@ -542,7 +542,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			else if (ruleManual)
 			{
 				// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
-				logger.fine("Manual - QtyOverride not set");
+				logger.debug("Manual - QtyOverride not set");
 				qtyRequired = BigDecimal.ZERO;
 			}
 			else
@@ -609,7 +609,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (ruleForce)
 			{
 				// delivery rule force
-				logger.fine("Force - OnHand=" + qtyOnHandBeforeAllocation
+				logger.debug("Force - OnHand=" + qtyOnHandBeforeAllocation
 						+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
 						+ ", Delivering=" + qtyToDeliver + " - " + orderLine);
 
@@ -634,7 +634,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 					// allocated.
 					// If the created line will make it into a real shipment will be
 					// decided later.
-					logger.fine("CompleteLine - OnHand=" + qtyOnHandBeforeAllocation
+					logger.debug("CompleteLine - OnHand=" + qtyOnHandBeforeAllocation
 							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus + " - " + orderLine);
 
@@ -642,7 +642,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				}
 				else
 				{
-					logger.fine("No qtyOnHand to deliver[SKIP] - OnHand=" + qtyOnHandBeforeAllocation
+					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand=" + qtyOnHandBeforeAllocation
 							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus + " - " + orderLine);
 				}
@@ -680,7 +680,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// dictionary that allows to enter invalid order lines
 		if (product == null && line.getQtyOrdered().signum() != 0)
 		{
-			logger.warning("Ignoring invalid order line " + line.getLine());
+			logger.warn("Ignoring invalid order line " + line.getLine());
 			return true;
 		}
 
@@ -715,7 +715,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			toDeliver = Env.ZERO;
 			logInfo.append(" (set to 0)");
 		}
-		logger.fine(logInfo.toString());
+		logger.debug(logInfo.toString());
 		return toDeliver;
 	}
 
@@ -766,7 +766,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (candidates.getInOutLineFor(orderLine) != null)
 		{
-			logger.log(Level.FINE,"candidates contains already an inoutLine for orderLine {0}", orderLine);
+			logger.debug("candidates contains already an inoutLine for orderLine {}", orderLine);
 			return;
 		}
 
@@ -813,7 +813,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// 05292 : Propagate ASI to InOutLine
 			// task 08811: no need to clone the ASI. The ASI won't be altered and the inoutLine won't be saved anyways.
 			inoutLine.setM_AttributeSetInstance_ID(sched.getM_AttributeSetInstance_ID());
-			logger.fine(inoutLine.toString());
+			logger.debug(inoutLine.toString());
 
 			candidates.addLine(candidate, inoutLine, sched, completeStatus, order);
 
@@ -927,7 +927,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// line.setM_AttributeSetInstance_ID(storage.getM_AttributeSetInstance_ID());
 			// }
 
-			logger.fine("ToDeliver=" + qty + "/" + deliver + " - " + inoutLine);
+			logger.debug("ToDeliver=" + qty + "/" + deliver + " - " + inoutLine);
 			toDeliver = toDeliver.subtract(deliver);
 
 			storage.subtractQtyOnHand(deliver);
@@ -1177,7 +1177,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), true);
 		if (!bpAllowsConsolidate)
 		{
-			logger.fine("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
+			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
 			return false;
 		}
 		final I_C_Order order = InterfaceWrapperHelper.create(sched.getC_Order(), I_C_Order.class);
@@ -1188,14 +1188,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						|| X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		if (isPrePayOrder)
 		{
-			logger.fine("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
+			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
 			return false;
 		}
 
 		final boolean isCustomFreightCostRule = isCustomFreightCostRule(order);
 		if (isCustomFreightCostRule)
 		{
-			logger.fine("Because '" + order + "' has not the standard freight cost rule,  consolidation into one shipment is not allowed");
+			logger.debug("Because '" + order + "' has not the standard freight cost rule,  consolidation into one shipment is not allowed");
 			return false;
 		}
 

@@ -25,7 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -37,7 +38,8 @@ import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
@@ -72,7 +74,7 @@ public class VTranslationDialog extends TranslationController
 	/**	FormFrame			*/
 	private FormFrame 		m_frame;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VTranslationDialog.class);
+	private static Logger log = LogManager.getLogger(VTranslationDialog.class);
 	//
 	private GridBagLayout mainLayout = new GridBagLayout();
 	private JComboBox cbLanguage = new JComboBox();
@@ -167,7 +169,7 @@ public class VTranslationDialog extends TranslationController
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	//	init
 

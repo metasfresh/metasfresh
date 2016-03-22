@@ -25,16 +25,16 @@ package org.adempiere.ad.security.impl;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.ISecurityRule;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 final class CompositeSecurityRule implements ISecurityRule
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final CopyOnWriteArrayList<ISecurityRule> rulesAll = new CopyOnWriteArrayList<ISecurityRule>();
 	private final CopyOnWriteArrayList<ISecurityRule> rulesActive = new CopyOnWriteArrayList<ISecurityRule>();
@@ -73,7 +73,7 @@ final class CompositeSecurityRule implements ISecurityRule
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "Error while initializing " + rule + ": " + e.getLocalizedMessage(), e);
+			logger.error("Error while initializing " + rule + ": " + e.getLocalizedMessage(), e);
 		}
 	}
 

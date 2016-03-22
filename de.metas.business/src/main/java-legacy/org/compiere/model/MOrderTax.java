@@ -20,11 +20,13 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -58,7 +60,7 @@ public class MOrderTax extends X_C_OrderTax
 	{
 		if (line == null || line.getC_Order_ID() == 0)
 		{
-			s_log.fine("No Order");
+			s_log.debug("No Order");
 			return null;
 		}
 		int C_Tax_ID = line.getC_Tax_ID();
@@ -68,14 +70,14 @@ public class MOrderTax extends X_C_OrderTax
 			Object old = line.get_ValueOld(MOrderTax.COLUMNNAME_C_Tax_ID);
 			if (old == null)
 			{
-				s_log.fine("No Old Tax");
+				s_log.debug("No Old Tax");
 				return null;
 			}
 			C_Tax_ID = ((Integer)old).intValue();
 		}
 		if (C_Tax_ID <= 0)
 		{
-			s_log.fine("No Tax");
+			s_log.debug("No Tax");
 			return null;
 		}
 
@@ -107,7 +109,7 @@ public class MOrderTax extends X_C_OrderTax
 		{
 			retValue.setPrecision(precision);
 			retValue.set_TrxName(trxName);
-			s_log.fine("(old=" + oldTax + ") " + retValue);
+			s_log.debug("(old=" + oldTax + ") " + retValue);
 			return retValue;
 		}
 		// If the old tax was required and there is no MOrderTax for that
@@ -131,12 +133,12 @@ public class MOrderTax extends X_C_OrderTax
 		retValue.setIsWholeTax(tax.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
-		s_log.fine("(new) " + retValue);
+		s_log.debug("(new) " + retValue);
 		return retValue;
 	}	// get
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MOrderTax.class);
+	private static Logger s_log = LogManager.getLogger(MOrderTax.class);
 
 	/**************************************************************************
 	 * Persistence Constructor
@@ -248,7 +250,7 @@ public class MOrderTax extends X_C_OrderTax
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, get_TrxName(), e);
+			log.error(get_TrxName(), e);
 			taxBaseAmt = null;
 		}
 		try

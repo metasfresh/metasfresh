@@ -27,7 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
@@ -38,7 +39,8 @@ import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -179,7 +181,7 @@ public final class MPayment extends X_C_Payment
 	/** Temporary Payment Processor */
 	private MPaymentProcessor m_mPaymentProcessor = null;
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger(MPayment.class);
+	private static Logger s_log = LogManager.getLogger(MPayment.class);
 	/** Error Message */
 	private String m_errorMessage = null;
 
@@ -404,7 +406,7 @@ public final class MPayment extends X_C_Payment
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -458,7 +460,7 @@ public final class MPayment extends X_C_Payment
 			setPaymentProcessor();
 		if (m_mPaymentProcessor == null)
 		{
-			log.log(Level.WARNING, "No Payment Processor Model");
+			log.warn("No Payment Processor Model");
 			setErrorMessage("No Payment Processor Model");
 			return false;
 		}
@@ -490,7 +492,7 @@ public final class MPayment extends X_C_Payment
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "processOnline", e);
+			log.error("processOnline", e);
 			setErrorMessage("Payment Processor Error: " + e.getMessage());
 		}
 		setIsOnlineApproved(approved); // metas: tsa: use IsOnlineApproved instead of IsApproved
@@ -513,7 +515,7 @@ public final class MPayment extends X_C_Payment
 		//
 		if (pi.getRecord_ID() != get_ID())
 		{
-			log.log(Level.SEVERE, "startProcess - Not same Payment - " + pi.getRecord_ID());
+			log.error("startProcess - Not same Payment - " + pi.getRecord_ID());
 			return false;
 		}
 		// Process it
@@ -690,7 +692,7 @@ public final class MPayment extends X_C_Payment
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -698,7 +700,7 @@ public final class MPayment extends X_C_Payment
 			rs = null;
 			pstmt = null;
 		}
-		s_log.config("#" + counter);
+		s_log.info("#" + counter);
 	}	// setIsAllocated
 
 	/**************************************************************************
@@ -809,7 +811,7 @@ public final class MPayment extends X_C_Payment
 				//
 			ValueNamePair[] retValue = new ValueNamePair[map.size()];
 			map.values().toArray(retValue);
-			log.fine("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
+			log.debug("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
 			return retValue;
 		}
 		catch (Exception ex)
@@ -1153,7 +1155,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	public void setBP_BankAccount(MBPBankAccount ba)
 	{
-		log.fine("" + ba);
+		log.debug("" + ba);
 		if (ba == null)
 			return;
 		setC_BPartner_ID(ba.getC_BPartner_ID());
@@ -1215,7 +1217,7 @@ public final class MPayment extends X_C_Payment
 		ba.setR_AvsZip(getR_AvsZip());
 		//
 		boolean ok = ba.save(get_TrxName());
-		log.fine("saveToBP_BankAccount - " + ba);
+		log.debug("saveToBP_BankAccount - " + ba);
 		return ok;
 	}	// setBP_BankAccount
 
@@ -1259,11 +1261,11 @@ public final class MPayment extends X_C_Payment
 			if (rs.next())
 				setC_DocType_ID(rs.getInt(1));
 			else
-				log.warning("setDocType - NOT found - isReceipt=" + isReceipt);
+				log.warn("setDocType - NOT found - isReceipt=" + isReceipt);
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1321,7 +1323,7 @@ public final class MPayment extends X_C_Payment
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -1348,7 +1350,7 @@ public final class MPayment extends X_C_Payment
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -1395,7 +1397,7 @@ public final class MPayment extends X_C_Payment
 					}
 					catch (Exception e)
 					{
-						log.log(Level.SEVERE, sql, e);
+						log.error(sql, e);
 					}
 					finally
 					{
@@ -1426,7 +1428,7 @@ public final class MPayment extends X_C_Payment
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1985,7 +1987,7 @@ public final class MPayment extends X_C_Payment
 		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
-			log.fine(counterDT.toString());
+			log.debug(counterDT.toString());
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
 				return null;
 			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
@@ -1994,7 +1996,7 @@ public final class MPayment extends X_C_Payment
 		// indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
+			log.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
 				return null;
 		}
@@ -2034,7 +2036,7 @@ public final class MPayment extends X_C_Payment
 		counter.setUser1_ID(getUser1_ID());
 		counter.setUser2_ID(getUser2_ID());
 		counter.saveEx(get_TrxName());
-		log.fine(counter.toString());
+		log.debug(counter.toString());
 		setRef_Payment_ID(counter.getC_Payment_ID());
 
 		// Document Action
@@ -2088,7 +2090,7 @@ public final class MPayment extends X_C_Payment
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 		{
-			log.severe("P.Allocations not created");
+			log.error("P.Allocations not created");
 			return false;
 		}
 		// Lines
@@ -2105,7 +2107,7 @@ public final class MPayment extends X_C_Payment
 			aLine.setDocInfo(pa.getC_BPartner_ID(), 0, pa.getC_Invoice_ID());
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
-				log.warning("P.Allocations - line not saved");
+				log.warn("P.Allocations - line not saved");
 			else
 			{
 				pa.setC_AllocationLine_ID(aLine.getC_AllocationLine_ID());
@@ -2223,7 +2225,7 @@ public final class MPayment extends X_C_Payment
 		if (C_Project_ID > 0 && getC_Project_ID() == 0)
 			setC_Project_ID(C_Project_ID);
 		else if (C_Project_ID > 0 && getC_Project_ID() > 0 && C_Project_ID != getC_Project_ID())
-			log.warning("Invoice C_Project_ID=" + C_Project_ID
+			log.warn("Invoice C_Project_ID=" + C_Project_ID
 					+ " <> Payment C_Project_ID=" + getC_Project_ID());
 		return true;
 	}	// allocateInvoice
@@ -2268,7 +2270,7 @@ public final class MPayment extends X_C_Payment
 				//
 				if (alloc.get_ID() == 0 && !alloc.save(get_TrxName()))
 				{
-					log.log(Level.SEVERE, "Could not create Allocation Hdr");
+					log.error("Could not create Allocation Hdr");
 					rs.close();
 					pstmt.close();
 					return false;
@@ -2283,12 +2285,12 @@ public final class MPayment extends X_C_Payment
 				aLine.setDocInfo(C_BPartner_ID, 0, C_Invoice_ID);
 				aLine.setC_Payment_ID(getC_Payment_ID());
 				if (!aLine.save(get_TrxName()))
-					log.log(Level.SEVERE, "Could not create Allocation Line");
+					log.error("Could not create Allocation Line");
 			}
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "allocatePaySelection", e);
+			log.error("allocatePaySelection", e);
 		}
 		finally
 		{
@@ -2301,7 +2303,7 @@ public final class MPayment extends X_C_Payment
 		boolean ok = true;
 		if (alloc.get_ID() == 0)
 		{
-			log.fine("No Allocation created - C_Payment_ID="
+			log.debug("No Allocation created - C_Payment_ID="
 					+ getC_Payment_ID());
 			ok = false;
 		}
@@ -2326,7 +2328,7 @@ public final class MPayment extends X_C_Payment
 		// De-Allocate all
 		MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
 				getC_Payment_ID(), get_TrxName());
-		log.fine("#" + allocations.length);
+		log.debug("#" + allocations.length);
 		for (int i = 0; i < allocations.length; i++)
 		{
 			final String docStatus = allocations[i].getDocStatus();
@@ -2355,7 +2357,7 @@ public final class MPayment extends X_C_Payment
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
 			int no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
-				log.fine("Unlink Invoice #" + no);
+				log.debug("Unlink Invoice #" + no);
 			// Order
 			sql = "UPDATE C_Order o "
 					+ "SET C_Payment_ID = NULL "
@@ -2364,7 +2366,7 @@ public final class MPayment extends X_C_Payment
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
 			no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
-				log.fine("Unlink Order #" + no);
+				log.debug("Unlink Order #" + no);
 		}
 		//
 		setC_Invoice_ID(0);
@@ -2551,7 +2553,7 @@ public final class MPayment extends X_C_Payment
 				Msg.translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
-			log.warning("Automatic allocation - hdr not saved");
+			log.warn("Automatic allocation - hdr not saved");
 		else
 		{
 			// Original Allocation
@@ -2560,14 +2562,14 @@ public final class MPayment extends X_C_Payment
 			aLine.setDocInfo(getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
-				log.warning("Automatic allocation - line not saved");
+				log.warn("Automatic allocation - line not saved");
 			// Reversal Allocation
 			aLine = new MAllocationLine(alloc, reversal.getPayAmt(true),
 					Env.ZERO, Env.ZERO, Env.ZERO);
 			aLine.setDocInfo(reversal.getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(reversal.getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
-				log.warning("Automatic allocation - reversal line not saved");
+				log.warn("Automatic allocation - reversal line not saved");
 		}
 		alloc.processIt(DocAction.ACTION_Complete);
 		alloc.save(get_TrxName());
@@ -2683,7 +2685,7 @@ public final class MPayment extends X_C_Payment
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF

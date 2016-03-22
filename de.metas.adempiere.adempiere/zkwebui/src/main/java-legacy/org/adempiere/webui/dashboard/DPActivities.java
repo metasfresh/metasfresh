@@ -18,17 +18,19 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.util.ServerPushTemplate;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -56,7 +58,7 @@ public class DPActivities extends DashboardPanel implements EventListener
 	
 	private static final long serialVersionUID = 8123912981765687655L;
 
-	private static final CLogger logger = CLogger.getCLogger(DPActivities.class);
+	private static final Logger logger = LogManager.getLogger(DPActivities.class);
 
 	private Vbox activityItemsPanel;
 	private Button btnNotice, btnWorkflow;
@@ -176,7 +178,7 @@ public class DPActivities extends DashboardPanel implements EventListener
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{

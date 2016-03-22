@@ -27,7 +27,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.ListModel;
@@ -37,7 +38,8 @@ import javax.swing.event.ListDataListener;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 import org.jdesktop.swingx.ScrollableSizeHint;
 
@@ -56,7 +58,7 @@ public class SideActionsGroupsListPanel extends CPanel
 	private static final long serialVersionUID = -1208213387721766864L;
 
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final JXTaskPaneContainer contentPanel;
 	private ISideActionsGroupsListModel model;
@@ -97,7 +99,7 @@ public class SideActionsGroupsListPanel extends CPanel
 		@Override
 		public void contentsChanged(final ListDataEvent e)
 		{
-			logger.log(Level.WARNING, "Changing the content is not synchronized: " + e);
+			logger.warn("Changing the content is not synchronized: " + e);
 		}
 	};
 

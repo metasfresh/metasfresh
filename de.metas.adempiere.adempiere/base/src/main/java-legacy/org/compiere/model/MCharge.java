@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -62,7 +63,7 @@ public class MCharge extends X_C_Charge
 		//	No account
 		if (Account_ID <= 0)
 		{
-			s_log.severe ("NO account for C_Charge_ID=" + C_Charge_ID);
+			s_log.error("NO account for C_Charge_ID=" + C_Charge_ID);
 			return null;
 		}
 
@@ -94,7 +95,7 @@ public class MCharge extends X_C_Charge
 		= new CCache<Integer, MCharge> ("C_Charge", 10);
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MCharge.class);
+	private static Logger	s_log	= LogManager.getLogger(MCharge.class);
 	
 	
 	/**************************************************************************

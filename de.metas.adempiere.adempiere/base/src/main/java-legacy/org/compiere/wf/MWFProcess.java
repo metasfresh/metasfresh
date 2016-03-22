@@ -20,8 +20,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MTable;
@@ -226,7 +224,7 @@ public class MWFProcess extends X_AD_WF_Process
 		//
 		if (m_state.isValidNewState(WFState))
 		{
-			log.fine(WFState); 
+			log.debug(WFState); 
 			super.setWFState (WFState);
 			m_state = new StateEngine (getWFState());
 			if (m_state.isClosed())
@@ -250,7 +248,7 @@ public class MWFProcess extends X_AD_WF_Process
 			}	//	closed
 		}
 		else	
-			log.log(Level.SEVERE, "Ignored Invalid Transformation - New=" + WFState 
+			log.error("Ignored Invalid Transformation - New=" + WFState 
 				+ ", Current=" + getWFState());
 	}	//	setWFState
 
@@ -345,7 +343,7 @@ public class MWFProcess extends X_AD_WF_Process
 	 */
 	private boolean startNext (MWFActivity last, MWFActivity[] activities, PO lastPO, String trxName)
 	{
-		log.fine("Last=" + last);
+		log.debug("Last=" + last);
 		//	transitions from the last processed node
 		MWFNodeNext[] transitions = getWorkflow().getNodeNexts(
 			last.getAD_WF_Node_ID(), last.getPO_AD_Client_ID());
@@ -469,11 +467,11 @@ public class MWFProcess extends X_AD_WF_Process
 	{
 		if (!m_state.isValidAction(action))
 		{
-			log.log(Level.SEVERE, "Ignored Invalid Transformation - Action=" + action 
+			log.error("Ignored Invalid Transformation - Action=" + action 
 				+ ", CurrentState=" + getWFState());
 			return false;
 		}
-		log.fine(action); 
+		log.debug(action); 
 		//	Action is Valid
 		if (StateEngine.ACTION_Start.equals(action))
 			return startWork();
@@ -490,11 +488,11 @@ public class MWFProcess extends X_AD_WF_Process
 	{
 		if (!m_state.isValidAction(StateEngine.ACTION_Start))
 		{
-			log.warning("State=" + getWFState() + " - cannot start");
+			log.warn("State=" + getWFState() + " - cannot start");
 			return false;
 		}
 		int AD_WF_Node_ID = getWorkflow().getAD_WF_Node_ID();
-		log.fine("AD_WF_Node_ID=" + AD_WF_Node_ID);
+		log.debug("AD_WF_Node_ID=" + AD_WF_Node_ID);
 		setWFState(WFSTATE_Running);
 		try
 		{
@@ -511,7 +509,7 @@ public class MWFProcess extends X_AD_WF_Process
 		}
 		catch (Throwable e)
 		{
-			log.log(Level.SEVERE, "AD_WF_Node_ID=" + AD_WF_Node_ID, e);
+			log.error("AD_WF_Node_ID=" + AD_WF_Node_ID, e);
 			setTextMsg(e.toString());
 			addTextMsg(e);
 			setWFState(StateEngine.STATE_Terminated);

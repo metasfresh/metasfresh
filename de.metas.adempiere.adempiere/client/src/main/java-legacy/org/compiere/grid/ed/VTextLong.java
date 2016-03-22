@@ -93,7 +93,7 @@ public class VTextLong extends CTextPane
 	private GridField m_mField;
 	
 //	/**	Logger			*/
-//	private static CLogger log = CLogger.getCLogger(VTextLong.class);
+//	private static Logger log = CLogMgt.getLogger(VTextLong.class);
 
 	/**
 	 *	Set Editor to value

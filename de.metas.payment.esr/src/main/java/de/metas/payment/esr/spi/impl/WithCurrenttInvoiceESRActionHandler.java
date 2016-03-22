@@ -23,14 +23,13 @@ package de.metas.payment.esr.spi.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.CLogger;
-
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -43,7 +42,7 @@ import de.metas.payment.esr.spi.IESRActionHandler;
 public class WithCurrenttInvoiceESRActionHandler implements IESRActionHandler
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(ESRImportBL.class);
+	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 
 	@Override
 	public boolean process(final I_ESR_ImportLine line, final String message)
@@ -60,7 +59,7 @@ public class WithCurrenttInvoiceESRActionHandler implements IESRActionHandler
 		}
 		else
 		{
-			logger.log(Level.WARNING, "No payment found for line : " + line.getESR_ImportLine_ID());
+			logger.warn("No payment found for line : " + line.getESR_ImportLine_ID());
 			return false;
 		}
 		return true;

@@ -25,7 +25,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -83,7 +84,7 @@ public class VPayPrint extends PayPrint implements FormPanel, ActionListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
@@ -242,7 +243,7 @@ public class VPayPrint extends PayPrint implements FormPanel, ActionListener
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-	//	log.config( "VPayPrint.actionPerformed" + e.toString());
+	//	log.info( "VPayPrint.actionPerformed" + e.toString());
 		if (e.getSource() == fPaySelect)
 			loadPaySelectInfo();
 		else if (e.getSource() == fPaymentRule)
@@ -450,7 +451,7 @@ public class VPayPrint extends PayPrint implements FormPanel, ActionListener
 		int C_PaySelection_ID = ((KeyNamePair)fPaySelect.getSelectedItem()).getKey();
 		int startDocumentNo = ((Number)fDocumentNo.getValue()).intValue();
 
-		log.config("C_PaySelection_ID=" + C_PaySelection_ID + ", PaymentRule=" +  PaymentRule + ", DocumentNo=" + startDocumentNo);
+		log.info("C_PaySelection_ID=" + C_PaySelection_ID + ", PaymentRule=" +  PaymentRule + ", DocumentNo=" + startDocumentNo);
 		//
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 

@@ -28,7 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
@@ -42,13 +43,12 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramaticCalloutProvider
 {
-	private static final transient CLogger logger = CLogger.getCLogger(ProgramaticCalloutProvider.class);
+	private static final transient Logger logger = LogManager.getLogger(ProgramaticCalloutProvider.class);
 
 	private final Map<ArrayKey, List<ICalloutInstance>> registeredCallouts = new HashMap<ArrayKey, List<ICalloutInstance>>();
 
@@ -103,12 +103,12 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 
 		if (isCalloutRegistered(callouts, callout))
 		{
-			logger.log(Level.CONFIG, "Callout {0} was already registered. Skip.", callout);
+			logger.info("Callout {} was already registered. Skip.", callout);
 			return false;
 		}
 
 		callouts.add(callout);
-		logger.log(Level.CONFIG, "Callout '{0}' registered on {1}.{2}", new Object[] { callout, tableName, columnName });
+		logger.info("Callout '{}' registered on {}.{}", new Object[] { callout, tableName, columnName });
 
 		// Make sure this provider is registered to ICalloutFactory
 		registerCalloutProviderToCalloutFactory();

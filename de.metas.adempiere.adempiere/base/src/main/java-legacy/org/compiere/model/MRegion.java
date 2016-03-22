@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -67,9 +67,9 @@ public final class MRegion extends X_C_Region
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
-		s_log.fine(s_regions.size() + " - default=" + s_default);
+		s_log.debug(s_regions.size() + " - default=" + s_default);
 	}	//	loadAllRegions
 
 	/**
@@ -152,7 +152,7 @@ public final class MRegion extends X_C_Region
 	/** Default Region				*/
 	private static MRegion		s_default = null;
 	/**	Static Logger				*/
-	private static CLogger		s_log = CLogger.getCLogger (MRegion.class);
+	private static Logger		s_log = LogManager.getLogger(MRegion.class);
 
 	
 	/**************************************************************************

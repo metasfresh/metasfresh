@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -50,7 +49,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -87,6 +85,10 @@ import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.IMutableMRPResult;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -131,7 +133,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 
 	//
 	// Services
-	private static final transient CLogger loggerDefault = CLogger.getCLogger(IMRPExecutor.class); // NOTE: keep that name because we want to access it from outside, using a standard name
+	private static final transient Logger loggerDefault = LogManager.getLogger(IMRPExecutor.class); // NOTE: keep that name because we want to access it from outside, using a standard name
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 	private final transient IMRPNoteDAO mrpNoteDAO = Services.get(IMRPNoteDAO.class);
 	private final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
@@ -151,7 +153,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 	//
 	// Common parameters
 	/** Current logger (never null) */
-	private CLogger logger = loggerDefault;
+	private Logger logger = loggerDefault;
 	private boolean _subsequentMRPExecutorCall;
 
 	// MRP Notes collector
@@ -271,7 +273,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 				// Make available MRP records which are not bounded to a plant (e.g. Sales Orders)
 				.setAcceptWithoutPlant(true)
 				.updateMRPRecordsAndMarkAvailable();
-		logger.log(Level.FINE, "Marked demands available for #{0} records\n{1}", new Object[] { mrpDemands_UpdateCount, mrpContext });
+		logger.debug("Marked demands available for #{} records\n{}", new Object[] { mrpDemands_UpdateCount, mrpContext });
 	}
 
 	private Iterator<I_PP_MRP> retrieveMRPDemands(final IMRPContext mrpContext, final int lowLevel)
@@ -370,12 +372,12 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 		final IMutableMRPContext mrpContextBase = createMRPContext(mrpContext0);
 		final int lowlevelMax = mrpDAO.getMaxLowLevel(mrpContextBase);
 
-		logger.log(Level.INFO, "Evaluating {0}", mrpContextBase);
-		logger.log(Level.INFO, "Low Level Max: {0}", lowlevelMax);
+		logger.info("Evaluating {}", mrpContextBase);
+		logger.info("Low Level Max: {}", lowlevelMax);
 		// Calculate MRP for all levels
 		for (int level = 0; level <= lowlevelMax; level++)
 		{
-			logger.log(Level.INFO, "Balancing Low Level: {0}/{1}", new Object[] { level, lowlevelMax });
+			logger.info("Balancing Low Level: {}/{}", new Object[] { level, lowlevelMax });
 
 			final Iterator<I_PP_MRP> mrpDemands = retrieveMRPDemands(mrpContextBase, level);
 			while (mrpDemands.hasNext())
@@ -391,10 +393,10 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 				//
 				// Get current Demand
 				final I_PP_MRP mrpDemand = mrpDemands.next();
-				if (logger.isLoggable(Level.CONFIG))
+				if (logger.isInfoEnabled())
 				{
-					logger.log(Level.CONFIG, "Evaluating MRP Demand: {0}", mrpDemand);
-					logger.log(Level.CONFIG, "Are there more MRP Demands after this one: {0}", mrpDemands.hasNext());
+					logger.info("Evaluating MRP Demand: {}", mrpDemand);
+					logger.info("Are there more MRP Demands after this one: {}", mrpDemands.hasNext());
 				}
 
 				//
@@ -421,7 +423,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 					// => calculate plan for them
 					if (mrpDemandAgg != null && mrpDemandAgg.hasDemands())
 					{
-						logger.log(Level.INFO, "Calculate plan for previous MRP aggregated demand: {0}", mrpDemandAgg);
+						logger.info("Calculate plan for previous MRP aggregated demand: {}", mrpDemandAgg);
 						calculatePlan(mrpContextPrev, mrpDemandAgg.createMRPDemand());
 
 						//
@@ -468,7 +470,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 					final LiberoException ex = new LiberoException("No product planning was set to context."
 							+ "\n @PP_MRP_ID@: " + mrpDemand
 							+ "\n MRP Context: " + mrpContextCurrent);
-					logger.log(Level.WARNING, ex.getLocalizedMessage() + " [SKIP]", ex);
+					logger.warn(ex.getLocalizedMessage() + " [SKIP]", ex);
 					continue;
 				}
 
@@ -498,7 +500,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 					}
 					else
 					{
-						logger.log(Level.INFO, "Calculate plan for current MRP demands: " + mrpDemandAgg);
+						logger.info("Calculate plan for current MRP demands: " + mrpDemandAgg);
 						calculatePlan(mrpContextCurrent, mrpDemandAgg.createMRPDemand());
 						mrpDemandAgg = null;
 					}
@@ -515,7 +517,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 			// => calculate plan for them
 			if (mrpDemandAgg != null && mrpDemandAgg.hasDemands())
 			{
-				logger.log(Level.INFO, "Calculate plan for previous MRP aggregated demand: {0}", mrpDemandAgg);
+				logger.info("Calculate plan for previous MRP aggregated demand: {}", mrpDemandAgg);
 				calculatePlan(mrpContextPrev, mrpDemandAgg.createMRPDemand());
 
 				//
@@ -696,14 +698,14 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 			qtyOnHand = qtyOnHand.subtract(qtySafetyStock);
 		}
 
-		logger.log(Level.INFO, "Warehouse: {0}", mrpContext.getM_Warehouse().getName()); // not null
-		logger.log(Level.INFO, "Product: {0}", product);
-		logger.log(Level.INFO, "Product Planning: {0}", productPlanning);
-		logger.log(Level.INFO, "QtyOnHand (-Safety stock): {0}", qtyOnHand);
-		logger.log(Level.INFO, "Safety Stock: {0}", qtySafetyStock);
-		if (logger.isLoggable(Level.CONFIG))
+		logger.info("Warehouse: {}", mrpContext.getM_Warehouse().getName()); // not null
+		logger.info("Product: {}", product);
+		logger.info("Product Planning: {}", productPlanning);
+		logger.info("QtyOnHand (-Safety stock): {}", qtyOnHand);
+		logger.info("Safety Stock: {}", qtySafetyStock);
+		if (logger.isInfoEnabled())
 		{
-			logger.config(MRPTracer.dumpMRPRecordsToString("MRP Records when setting current planning product"));
+			logger.info(MRPTracer.dumpMRPRecordsToString("MRP Records when setting current planning product"));
 		}
 
 		//
@@ -946,10 +948,10 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 		logger.info("   Projected QOH (reserved):" + mrpSupplyAllocationResult.getQtyOnHandReserved());
 		logger.info("               Qty Supplied:" + mrpSupplyAllocationResult.getQtySupplied());
 		logger.info("                QtyNetReqs:" + qtyNetReqs);
-		logger.log(Level.CONFIG, "Supply allocation result: {0}", mrpSupplyAllocationResult);
-		if (logger.isLoggable(Level.CONFIG))
+		logger.info("Supply allocation result: {}", mrpSupplyAllocationResult);
+		if (logger.isInfoEnabled())
 		{
-			logger.config(MRPTracer.dumpMRPRecordsToString("MRP records after supply allocations"));
+			logger.info(MRPTracer.dumpMRPRecordsToString("MRP records after supply allocations"));
 		}
 
 		//
@@ -1140,9 +1142,9 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 			{
 				final IMRPSupplyProducer producer = getMRPSupplyProducerFactory().getSupplyProducer(mrpContextLocal);
 
-				logger.log(Level.INFO, "Supply producer: " + producer);
-				logger.log(Level.INFO, "Qty To Supply: " + qtyToSupply);
-				logger.log(Level.INFO, "DemandDateStartSchedule: " + DemandDateStartSchedule);
+				logger.info("Supply producer: " + producer);
+				logger.info("Qty To Supply: " + qtyToSupply);
+				logger.info("DemandDateStartSchedule: " + DemandDateStartSchedule);
 
 				final IMRPCreateSupplyRequest request = new MRPCreateSupplyRequest(mrpContextLocal,
 						MRPExecutor.this,
@@ -1175,7 +1177,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 	@Override
 	public final void addGeneratedSupplyDocument(final Object document)
 	{
-		logger.log(Level.INFO, "MRP Document generated: {0}", document);
+		logger.info("MRP Document generated: {}", document);
 
 		mrpResult.addSupplyDocument(document);
 	}
@@ -1245,10 +1247,10 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 	@Override
 	public void addChangedMRPSegment(final IMRPSegment mrpSegment)
 	{
-		logger.log(Level.INFO, "MRP Segment changed notification: {0}", mrpSegment);
+		logger.info("MRP Segment changed notification: {}", mrpSegment);
 		if (!mrpChangedSegments_CollectEnabled)
 		{
-			logger.log(Level.INFO, "Skip collecting it because collecting is disabled");
+			logger.info("Skip collecting it because collecting is disabled");
 			return;
 		}
 

@@ -32,7 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -46,11 +47,10 @@ import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLogger;
 import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLoggerMBean;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.util.CLogger;
 
 public class QueryStatisticsLogger implements IQueryStatisticsLogger
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private boolean enabled = false;
 	private final Map<String, QueryStatistics> sql2statistics = new HashMap<String, QueryStatistics>();
@@ -78,7 +78,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger
 		}
 		catch (final MalformedObjectNameException e)
 		{
-			logger.log(Level.WARNING, "Unable to create ObjectName: " + jmxName, e);
+			logger.warn("Unable to create ObjectName: " + jmxName, e);
 			return;
 		}
 
@@ -91,17 +91,17 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger
 		}
 		catch (final InstanceAlreadyExistsException e)
 		{
-			logger.log(Level.WARNING, "Unable to register JMX Bean: " + jmxBean, e);
+			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
 			return;
 		}
 		catch (final MBeanRegistrationException e)
 		{
-			logger.log(Level.WARNING, "Unable to register JMX Bean: " + jmxBean, e);
+			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
 			return;
 		}
 		catch (final NotCompliantMBeanException e)
 		{
-			logger.log(Level.WARNING, "Unable to register JMX Bean: " + jmxBean, e);
+			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
 			return;
 		}
 	}

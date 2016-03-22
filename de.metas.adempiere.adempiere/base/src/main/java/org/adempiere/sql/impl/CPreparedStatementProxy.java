@@ -58,7 +58,7 @@ import org.compiere.util.DB;
 
 /* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement> implements CPreparedStatement
 {
-	// private static final transient CLogger log = CLogger.getCLogger(CPreparedStatementDelegate.class);
+	// private static final transient Logger log = CLogMgt.getLogger(CPreparedStatementDelegate.class);
 
 	public CPreparedStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
 	{

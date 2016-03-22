@@ -30,17 +30,18 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
 
 /**
  * Load & Save INI Settings from property file
@@ -60,7 +61,7 @@ public final class Ini implements Serializable
 	private static final long serialVersionUID = 3666529972922769528L;
 
 	/** Property file name */
-	public static final String ADEMPIERE_PROPERTY_FILE = "metasfresh.properties";
+	public static final String METASFRESH_PROPERTY_FILE = "metasfresh.properties";
 
 	/** Apps User ID */
 	public static final String P_UID = "ApplicationUserID";
@@ -256,7 +257,7 @@ public final class Ini implements Serializable
 	private static String s_propertyFileName = null;
 
 	/** Logger */
-	private static final transient Logger log = Logger.getLogger(Ini.class.getName());
+	private static final transient Logger log = LogManager.getLogger(Ini.class.getName());
 
 	private Ini()
 	{
@@ -264,20 +265,10 @@ public final class Ini implements Serializable
 	}
 
 	/**
-	 * Save INI parameters to disk. If running in client mode ({@link #isClient()}) user's home is tried first.
-	 */
-	public static void saveProperties()
-	{
-		final boolean tryUserHome = isClient();
-		saveProperties(tryUserHome);
-	}
-
-	/**
 	 * Save INI parameters to disk
 	 *
-	 * @param tryUserHome get user home first
 	 */
-	public static void saveProperties(boolean tryUserHome)
+	public static void saveProperties()
 	{
 		if (Ini.isClient() && DB.isConnected())
 		{
@@ -285,7 +276,7 @@ public final class Ini implements Serializable
 			ModelValidationEngine.get().beforeSaveProperties();
 		}
 
-		String fileName = getFileName(tryUserHome);
+		String fileName = getFileName();
 		FileOutputStream fos = null;
 		try
 		{
@@ -298,15 +289,15 @@ public final class Ini implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + e.toString());
+			log.error("Cannot save Properties to " + fileName + " - " + e.toString());
 			return;
 		}
 		catch (Throwable t)
 		{
-			log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + t.toString());
+			log.error("Cannot save Properties to " + fileName + " - " + t.toString());
 			return;
 		}
-		log.finer(fileName);
+		log.trace(fileName);
 
 	}	// save
 
@@ -317,7 +308,7 @@ public final class Ini implements Serializable
 	 */
 	public static void loadProperties(boolean reload)
 	{
-		loadProperties(getFileName(isClient()));
+		loadProperties(getFileName());
 	}	// loadProperties
 
 	/**
@@ -341,22 +332,22 @@ public final class Ini implements Serializable
 		}
 		catch (FileNotFoundException e)
 		{
-			log.warning(filename + " not found");
+			log.warn(filename + " not found");
 			loadOK = false;
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, filename + " - " + e.toString());
+			log.error(filename + " - " + e.toString());
 			loadOK = false;
 		}
 		catch (Throwable t)
 		{
-			log.log(Level.SEVERE, filename + " - " + t.toString());
+			log.error(filename + " - " + t.toString());
 			loadOK = false;
 		}
 		if (!loadOK || s_prop.getProperty(P_TODAY, "").equals(""))
 		{
-			log.config(filename);
+			log.info(filename);
 			firstTime = true;
 			if (isShowLicenseDialog())
 				if (!IniDialog.accept())
@@ -367,7 +358,9 @@ public final class Ini implements Serializable
 
 		// Save if not exist or could not be read
 		if (!loadOK || firstTime)
-			saveProperties(true);
+		{
+			saveProperties();
+		}
 		s_loaded = true;
 		log.info(filename + " #" + s_prop.size());
 		s_propertyFileName = filename;
@@ -408,7 +401,7 @@ public final class Ini implements Serializable
 	 */
 	public static void deletePropertyFile()
 	{
-		String fileName = getFileName(isClient());
+		String fileName = getFileName();
 		File file = new File(fileName);
 		if (file.exists())
 		{
@@ -417,11 +410,11 @@ public final class Ini implements Serializable
 				if (!file.delete())
 					file.deleteOnExit();
 				s_prop = new Properties();
-				log.config(fileName);
+				log.info(fileName);
 			}
 			catch (Exception e)
 			{
-				log.log(Level.WARNING, "Cannot delete Property file", e);
+				log.warn("Cannot delete Property file", e);
 			}
 		}
 	}	// deleteProperties
@@ -465,15 +458,20 @@ public final class Ini implements Serializable
 	 * Can be overwritten by -DPropertyFile=myFile allowing multiple
 	 * configurations / property files.
 	 *
-	 * @param tryUserHome get user home first
 	 * @return file name
 	 */
-	private static String getFileName(boolean tryUserHome)
+	private static String getFileName()
 	{
 		// Try explicitly configured "PropertyFile" property
-		if (System.getProperty("PropertyFile") != null)
+		if (!Check.isEmpty(System.getProperty("PropertyFile"), true))
 		{
 			return System.getProperty("PropertyFile");
+		}
+
+		// Try explicitly configured "PropertyFile" system environment variable
+		if (!Check.isEmpty(System.getenv("PropertyFile"), true))
+		{
+			return System.getenv("PropertyFile");
 		}
 
 		String propertyFileName = getAdempiereHome();
@@ -481,7 +479,7 @@ public final class Ini implements Serializable
 		{
 			propertyFileName += File.separator;
 		}
-		propertyFileName += ADEMPIERE_PROPERTY_FILE;
+		propertyFileName += METASFRESH_PROPERTY_FILE;
 
 		return propertyFileName;
 	}	// getFileName
@@ -501,7 +499,7 @@ public final class Ini implements Serializable
 			return;
 		}
 
-		// log.finer(key + "=" + value);
+		// log.trace(key + "=" + value);
 		if (s_prop == null)
 			s_prop = new Properties();
 		if (PROPERTIES_SKIP_ENCRYPTION.contains(key))
@@ -572,7 +570,7 @@ public final class Ini implements Serializable
 			return "";
 		//
 		String value = SecureEngine.decrypt(retStr);
-		// log.finer(key + "=" + value);
+		// log.trace(key + "=" + value);
 		if (value == null)
 			return "";
 		return value;
@@ -632,9 +630,11 @@ public final class Ini implements Serializable
 
 	/** System environment prefix */
 	public static final String ENV_PREFIX = "env.";
-	/** System Property Value of ADEMPIERE_HOME */
+
+	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
 
+	public static final String METASFRESH_HOME = "METASFRESH_HOME";
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -727,12 +727,18 @@ public final class Ini implements Serializable
 	 */
 	public static String getAdempiereHome()
 	{
-		// Try getting the ADEMPIERE_HOME from environment which was loaded into our properties
-		// NOTE: atm the environment variables are NOT loaded into our properties, but we are keeping this here for legacy purposes.
-		String env = System.getProperty(ENV_PREFIX + ADEMPIERE_HOME);
-		if (!Check.isEmpty(env))
+		// Try getting the METASFRESH_HOME from environment
+		String env = System.getenv(METASFRESH_HOME);
+		if (!Check.isEmpty(env, true))
 		{
-			return env;
+			return env.trim();
+		}
+
+		// Try getting the ADEMPIERE_HOME from environment
+		env = System.getenv(ADEMPIERE_HOME);
+		if (!Check.isEmpty(env, true))
+		{
+			return env.trim();
 		}
 
 		// Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
@@ -742,7 +748,7 @@ public final class Ini implements Serializable
 			return env;
 		}
 
-		// If running in client mode, use "USERHOME/.metas-fresh" folder.
+		// If running in client mode, use "USERHOME/.metasfresh" folder.
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
@@ -752,7 +758,7 @@ public final class Ini implements Serializable
 
 		// Fallback
 		if (env == null)
-			env = File.separator + "metas-fresh";
+			env = File.separator + "metasfresh";
 		return env;
 	}   // getAdempiereHome
 

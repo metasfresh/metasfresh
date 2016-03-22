@@ -30,7 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -55,7 +56,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
@@ -92,7 +92,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 
 public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -381,7 +381,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {0}. Returning the first one (out of {2}).",
 					new Object[] { shipmentSchedule, shipmentCount });
-			logger.warning(ex.getLocalizedMessage());
+			logger.warn(ex.getLocalizedMessage());
 		}
 
 		return shipments.iterator().next();
@@ -602,7 +602,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				// see de.metas.customer.picking.service.impl.PackingService.addProductQtyToHU(Properties, I_M_HU, Map<I_M_ShipmentSchedule, BigDecimal>)
 				final AdempiereException ex = new AdempiereException("More than one " + de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name + " record was found for: " + hu
 						+ ". Return null.");
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 
 				return null;
 			}

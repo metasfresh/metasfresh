@@ -115,7 +115,7 @@ public class InventoryValue extends SvrProcess
 			+ " INNER JOIN M_CostElement ce ON (c.M_CostElement_ID=ce.M_CostElement_ID AND ce.CostingMethod='S' AND ce.CostElementType='M') "
 			+ "WHERE w.M_Warehouse_ID=").append(p_M_Warehouse_ID);
 		int noInsertStd = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("Inserted Std=" + noInsertStd);
+		log.debug("Inserted Std=" + noInsertStd);
 		if (noInsertStd == 0)
 			return "No Standard Costs found";
 
@@ -141,7 +141,7 @@ public class InventoryValue extends SvrProcess
 					+ " AND iv.M_Product_ID=c.M_Product_ID"
 					+ " AND iv.M_AttributeSetInstance_ID=c.M_AttributeSetInstance_ID)");
 			noInsertCost = DB.executeUpdateEx(sql.toString(), get_TrxName());
-			log.fine("Inserted Cost=" + noInsertCost);
+			log.debug("Inserted Cost=" + noInsertCost);
 			//	Update Std Cost Records
 			sql = new StringBuffer ("UPDATE T_InventoryValue iv "
 				+ "SET (Cost, M_CostElement_ID)="
@@ -159,7 +159,7 @@ public class InventoryValue extends SvrProcess
 					+ "WHERE ivv.AD_PInstance_ID=" + getAD_PInstance_ID()
 					+ " AND ivv.M_CostElement_ID IS NULL)");
 			int noUpdatedCost = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), get_TrxName());
-			log.fine("Updated Cost=" + noUpdatedCost);
+			log.debug("Updated Cost=" + noUpdatedCost);
 		}		
 		if ((noInsertStd+noInsertCost) == 0)
 			return "No Costs found";
@@ -174,7 +174,7 @@ public class InventoryValue extends SvrProcess
 			.append("C_Currency_ID=").append(p_C_Currency_ID)
 			.append(" WHERE AD_PInstance_ID=" + getAD_PInstance_ID());
 		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("Constants=" + no);
+		log.debug("Constants=" + no);
 
 		//  Get current QtyOnHand with ASI
 		sql = new StringBuffer ("UPDATE T_InventoryValue iv SET QtyOnHand = "
@@ -186,7 +186,7 @@ public class InventoryValue extends SvrProcess
 			+ "WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
 			.append(" AND iv.M_AttributeSetInstance_ID<>0");
 		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("QtHand with ASI=" + no);
+		log.debug("QtHand with ASI=" + no);
 		//  Get current QtyOnHand without ASI
 		sql = new StringBuffer ("UPDATE T_InventoryValue iv SET QtyOnHand = "
 				+ "(SELECT SUM(QtyOnHand) FROM M_Storage s"
@@ -196,7 +196,7 @@ public class InventoryValue extends SvrProcess
 			+ "WHERE iv.AD_PInstance_ID=").append(getAD_PInstance_ID())
 			.append(" AND iv.M_AttributeSetInstance_ID=0");
 		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("QtHand w/o ASI=" + no);
+		log.debug("QtHand w/o ASI=" + no);
 		
 		//  Adjust for Valuation Date
 		sql = new StringBuffer("UPDATE T_InventoryValue iv "
@@ -211,7 +211,7 @@ public class InventoryValue extends SvrProcess
 			+ "WHERE iv.M_AttributeSetInstance_ID<>0" 
 			+ " AND iv.AD_PInstance_ID=").append(getAD_PInstance_ID());
 		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("Update with ASI=" + no);
+		log.debug("Update with ASI=" + no);
 		//
 		sql = new StringBuffer("UPDATE T_InventoryValue iv "
 			+ "SET QtyOnHand="
@@ -225,13 +225,13 @@ public class InventoryValue extends SvrProcess
 			+ "AND iv.AD_PInstance_ID=").append(getAD_PInstance_ID());
 
 		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.fine("Update w/o ASI=" + no);
+		log.debug("Update w/o ASI=" + no);
 		
 		//  Delete Records w/o OnHand Qty
 		sql = new StringBuffer("DELETE FROM T_InventoryValue "
 			+ "WHERE (QtyOnHand=0 OR QtyOnHand IS NULL) AND AD_PInstance_ID=").append(getAD_PInstance_ID());
 		int noQty = DB.executeUpdateEx (sql.toString(), get_TrxName());
-		log.fine("NoQty Deleted=" + noQty);
+		log.debug("NoQty Deleted=" + noQty);
 
 		//  Update Prices
 		sql = new StringBuffer("UPDATE T_InventoryValue iv "
@@ -276,7 +276,7 @@ public class InventoryValue extends SvrProcess
 					+ "FROM C_AcctSchema acs WHERE acs.C_AcctSchema_ID=" + as.getC_AcctSchema_ID() + ") "
 				+ "WHERE iv.AD_PInstance_ID=" + getAD_PInstance_ID());
 			no = DB.executeUpdateEx (sql.toString(), get_TrxName());
-			log.fine("Converted=" + no);
+			log.debug("Converted=" + no);
 		}
 		
 		//  Update Values
@@ -289,7 +289,7 @@ public class InventoryValue extends SvrProcess
 			+ "CostAmt = QtyOnHand * Cost "
 			+ "WHERE AD_PInstance_ID=" + getAD_PInstance_ID()
 			, get_TrxName());
-		log.fine("Calculation=" + no);
+		log.debug("Calculation=" + no);
 		//
 		return msg;
 	}   //  doIt

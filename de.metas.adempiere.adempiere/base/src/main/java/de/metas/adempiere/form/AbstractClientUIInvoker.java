@@ -28,12 +28,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 {
 	// Services
-	protected static final transient CLogger logger = CLogger.getCLogger(AbstractClientUIInvoker.class);
+	protected static final transient Logger logger = LogManager.getLogger(AbstractClientUIInvoker.class);
 	protected final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final transient IClientUIInstance clientUI;
 
@@ -138,7 +139,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		else if (OnFail.SilentlyIgnore == onFail)
 		{
 			// Ignore it silently. Don't do logging.
-			// logger.log(Level.WARNING, "Got error while running: " + runnable + ". Ignored.", e);
+			// logger.warn("Got error while running: " + runnable + ". Ignored.", e);
 			return;
 		}
 		// Fallback: throw the exception

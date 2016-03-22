@@ -18,10 +18,10 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 /**
  * PO Info Column Info Value Object
@@ -35,6 +35,8 @@ public final class POInfoColumn implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = 1667303121090497293L;
+
+	private static final transient Logger logger = LogManager.getLogger(POInfoColumn.class);
 
 	/**
 	 * Constructor
@@ -218,7 +220,7 @@ public final class POInfoColumn implements Serializable
 		}
 		catch (final Exception ex) // i.e. NumberFormatException
 		{
-			CLogger.get().log(Level.SEVERE, "Cannot parse " + name + "=" + valueStr, ex);
+			logger.error("Cannot parse " + name + "=" + valueStr, ex);
 		}
 
 		return null;

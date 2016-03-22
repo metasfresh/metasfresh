@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
@@ -77,7 +78,7 @@ public class RequestInvoice extends SvrProcess
 			else if (name.equals("M_Product_ID"))
 				p_M_Product_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 	
@@ -150,7 +151,7 @@ public class RequestInvoice extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

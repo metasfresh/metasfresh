@@ -40,7 +40,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -55,7 +56,7 @@ import org.compiere.util.Env;
  */
 public class Discount extends PricingRuleAdapter
 {
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)

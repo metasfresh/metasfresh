@@ -22,7 +22,8 @@ import java.awt.event.ActionEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,7 +40,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -78,7 +80,7 @@ public class RecordAccessDialog extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		AEnv.showCenterWindow(owner, this);
 	}	//	RecordAccessDialog
@@ -88,7 +90,7 @@ public class RecordAccessDialog extends CDialog
 	private ArrayList<MRecordAccess>	m_recordAccesss = new ArrayList<MRecordAccess>();
 	private int				m_currentRow = 0;
 	private MRecordAccess	m_currentData = null;
-	private CLogger			log = CLogger.getCLogger(getClass());
+	private Logger			log = LogManager.getLogger(getClass());
 
 	private CPanel centerPanel = new CPanel(new ALayout());
 	private BorderLayout mainLayout = new BorderLayout();
@@ -138,7 +140,7 @@ public class RecordAccessDialog extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -150,7 +152,7 @@ public class RecordAccessDialog extends CDialog
 		{
 			pstmt = null;
 		}
-		log.fine("#" + m_recordAccesss.size());
+		log.debug("#" + m_recordAccesss.size());
 		setLine(0, false);
 	}	//	dynInit
 
@@ -194,7 +196,7 @@ public class RecordAccessDialog extends CDialog
 	 */
 	private void setLine (int rowDelta, boolean newRecord)
 	{
-		log.fine("delta=" + rowDelta + ", new=" + newRecord
+		log.debug("delta=" + rowDelta + ", new=" + newRecord
 			+ " - currentRow=" + m_currentRow + ", size=" + m_recordAccesss.size());
 		int maxIndex = 0;
 		//	nothing defined
@@ -271,7 +273,7 @@ public class RecordAccessDialog extends CDialog
 		{
 			roleField.setSelectedItem(selection);
 			m_currentData = ra;
-			log.fine("" + ra);
+			log.debug("" + ra);
 		}
 		else
 			m_currentData = null;
@@ -332,7 +334,7 @@ public class RecordAccessDialog extends CDialog
 		m_currentData.setIsDependentEntities(isDependentEntities);
 		boolean success = m_currentData.save();
 		//
-		log.fine("Success=" + success);
+		log.debug("Success=" + success);
 		return success;
 	}	//	cmd_save
 
@@ -344,13 +346,13 @@ public class RecordAccessDialog extends CDialog
 	{
 		boolean success = false;
 		if (m_currentData == null)
-			log.log(Level.SEVERE, "No data");
+			log.error("No data");
 		else
 		{
 			success = m_currentData.delete(true);
 			m_currentData = null;
 			m_recordAccesss.remove(m_currentRow);
-			log.fine("Success=" + success);
+			log.debug("Success=" + success);
 		}
 		return success;
 	}	//	cmd_delete

@@ -23,7 +23,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	String Input Verification.
@@ -84,7 +85,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 	private static final char SPACE = ' ';
 	private static final char SPACE_IND = '_';
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(MDocString.class);
+	private static Logger log = LogManager.getLogger(MDocString.class);
 
 	/**
 	 *	Set Format
@@ -101,7 +102,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 		if (m_VFormat.length() == 0)
 			return;
 		//
-		log.fine(VFormat);
+		log.debug(VFormat);
 		if (m_maxLength > m_VFormat.length())
 			m_maxLength = m_VFormat.length();
 
@@ -156,13 +157,13 @@ public final class MDocString extends PlainDocument implements CaretListener
 		//	We have no Format or inserted not manually (assuming correct Format)
 		if (m_VFormat.length() == 0 || string.length() != 1)
 		{
-			log.finest("Offset=" + offset + " String=" + string);
+			log.trace("Offset=" + offset + " String=" + string);
 			super.insertString(offset, string, attr);
 			return;
 		}
 
 		/**	Formating required **/
-		log.finest("Offset=" + offset
+		log.trace("Offset=" + offset
 			+ ", String=" + string + ", MaxLength=" + m_maxLength 
 			+ ", Format=" + m_VFormat + ", Mask=" + m_mask
 			+ ", Text=" + getText() + ", Length=" + getText().length());
@@ -204,7 +205,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 		//	Conversion
 		char c = string.charAt(0);
 		char cmd = m_VFormat.charAt(offset);
-		log.fine( "char=" + c + ", cmd=" + cmd);
+		log.debug( "char=" + c + ", cmd=" + cmd);
 		switch (cmd)
 		{
 			case 'c':		//	c	any Letter or Digits or space
@@ -304,7 +305,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 		//	No format or non manual entry
 		if (m_VFormat.length() == 0 || length != 1)
 		{
-			log.finest("Offset=" + offset + " Length=" + length);
+			log.trace("Offset=" + offset + " Length=" + length);
 			super.remove(offset, length);
 			return;
 		}
@@ -368,7 +369,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 			return;
 		}
 		//
-	//	log.fine( "MDocString.caretUpdate -" + m_VFormat + "-" + m_mask + "- dot=" + e.getDot() + ", mark=" + e.getMark());
+	//	log.debug( "MDocString.caretUpdate -" + m_VFormat + "-" + m_mask + "- dot=" + e.getDot() + ", mark=" + e.getMark());
 
 		//	Is the current position a fixed character?
 		if (e.getDot()+1 > m_mask.length() || m_mask.charAt(e.getDot()) == SPACE)
@@ -389,7 +390,7 @@ public final class MDocString extends PlainDocument implements CaretListener
 		else if (e.getDot() == m_mask.length()-1)	//	last
 			newDot = e.getDot() - 1;
 		//
-	//	log.fine( "OnFixedChar=" + m_mask.charAt(e.getDot()) + ", newDot=" + newDot + ", last=" + m_lastDot);
+	//	log.debug( "OnFixedChar=" + m_mask.charAt(e.getDot()) + ", newDot=" + newDot + ", last=" + m_lastDot);
 
 		m_lastDot = e.getDot();
 		if (newDot >= 0 && newDot < getText().length())

@@ -28,7 +28,8 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
@@ -37,7 +38,7 @@ import de.metas.commission.util.CommissionTools;
 public class CheckTreeResetDepths extends SvrProcess
 {
 
-	final static CLogger logger = CLogger.getCLogger(CheckTreeResetDepths.class);
+	final static Logger logger = LogManager.getLogger(CheckTreeResetDepths.class);
 
 	@Override
 	protected String doIt() throws Exception

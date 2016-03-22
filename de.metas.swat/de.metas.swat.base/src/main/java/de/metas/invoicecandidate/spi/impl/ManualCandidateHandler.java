@@ -30,12 +30,10 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -56,7 +54,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 */
 	final public static String MANUAL = "ManualCandidateHandler";
 
-	private final static transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private final static transient Logger logger = InvoiceCandidate_Constants.getLogger(ManualCandidateHandler.class);
 	
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
@@ -130,7 +128,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		{
 			return; // the superclass already did the job
 		}
-		ManualCandidateHandler.logger.log(Level.FINE, "NetAmtToInvoice: {0}", netAmtToInvoice);
+		ManualCandidateHandler.logger.debug("NetAmtToInvoice: {}", netAmtToInvoice);
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -148,10 +146,10 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		// TODO: handle the case when everything is negative
 
 		final BigDecimal amtOthers = invoiceCandDAO.retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
-		ManualCandidateHandler.logger.log(Level.FINE, "Amt on other lines: {0}", amtOthers);
+		ManualCandidateHandler.logger.debug("Amt on other lines: {}", amtOthers);
 
 		final BigDecimal amtTotal = netAmtToInvoice.add(amtOthers);
-		ManualCandidateHandler.logger.log(Level.FINE, "Amt on all lines: {0}", amtTotal);
+		ManualCandidateHandler.logger.debug("Amt on all lines: {}", amtTotal);
 
 		final BigDecimal netAmtToInvoiceNew;
 		final BigDecimal splitAmt;
@@ -165,8 +163,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 			netAmtToInvoiceNew = amtOthers.negate();
 			splitAmt = netAmtToInvoice.subtract(netAmtToInvoiceNew);
 		}
-		ManualCandidateHandler.logger.log(Level.FINE, "NetAmtToInvoiceNew: {0}", netAmtToInvoiceNew);
-		ManualCandidateHandler.logger.log(Level.FINE, "SplitAmt: {0}", splitAmt);
+		ManualCandidateHandler.logger.debug("NetAmtToInvoiceNew: {}", netAmtToInvoiceNew);
+		ManualCandidateHandler.logger.debug("SplitAmt: {}", splitAmt);
 
 		//
 		// Validation: In case we need to change the NetAmtToInvoice then we need to enforce that QtyToInvoice=1

@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MOrder;
 
@@ -46,7 +47,7 @@ public class CopyFromOrder extends SvrProcess
 			else if (name.equals("C_Order_ID"))
 				p_C_Order_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

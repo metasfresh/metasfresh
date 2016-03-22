@@ -25,7 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -47,6 +47,7 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 
@@ -311,7 +312,7 @@ public class CalloutOrder extends CalloutEngine
 
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -588,7 +589,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -756,7 +757,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "bPartnerBill", e);
+			log.error("bPartnerBill", e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -813,7 +814,7 @@ public class CalloutOrder extends CalloutEngine
 		if (M_Product_ID == null || M_Product_ID == 0)
 			return "";
 		if (steps)
-			log.warning("init");
+			log.warn("init");
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 		//
@@ -909,7 +910,7 @@ public class CalloutOrder extends CalloutEngine
 		handleIndividualDescription(ctx, mTab);
 		//
 		if (steps)
-			log.warning("fini");
+			log.warn("fini");
 		return tax(ctx, WindowNo, mTab, mField, value);
 	} // product
 
@@ -964,7 +965,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -1009,7 +1010,7 @@ public class CalloutOrder extends CalloutEngine
 		if (value == null)
 			return "";
 		if (steps)
-			log.warning("init");
+			log.warn("init");
 
 		// Check Product
 		int M_Product_ID = 0;
@@ -1022,7 +1023,7 @@ public class CalloutOrder extends CalloutEngine
 			C_Charge_ID = ((Integer)value).intValue();
 		else
 			C_Charge_ID = Env.getContextAsInt(ctx, WindowNo, "C_Charge_ID");
-		log.fine("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
+		log.debug("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
 		if (M_Product_ID == 0 && C_Charge_ID == 0)
 			return amt(ctx, WindowNo, mTab, mField, value); //
 
@@ -1035,28 +1036,28 @@ public class CalloutOrder extends CalloutEngine
 					"C_BPartner_Location_ID");
 		if (shipC_BPartner_Location_ID == 0)
 			return amt(ctx, WindowNo, mTab, mField, value); //
-		log.fine("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
 
 		//
 		Timestamp billDate = Env.getContextAsDate(ctx, WindowNo, "DateOrdered");
-		log.fine("Bill Date=" + billDate);
+		log.debug("Bill Date=" + billDate);
 
 		Timestamp shipDate = Env
 				.getContextAsDate(ctx, WindowNo, "DatePromised");
-		log.fine("Ship Date=" + shipDate);
+		log.debug("Ship Date=" + shipDate);
 
 		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		log.fine("Org=" + AD_Org_ID);
+		log.debug("Org=" + AD_Org_ID);
 
 		int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
 				"M_Warehouse_ID");
-		log.fine("Warehouse=" + M_Warehouse_ID);
+		log.debug("Warehouse=" + M_Warehouse_ID);
 
 		int billC_BPartner_Location_ID = Env.getContextAsInt(ctx, WindowNo,
 				"Bill_Location_ID");
 		if (billC_BPartner_Location_ID == 0)
 			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
-		log.fine("Bill BP_Location=" + billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location=" + billC_BPartner_Location_ID);
 
 		//
 		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
@@ -1066,12 +1067,12 @@ public class CalloutOrder extends CalloutEngine
 		log.info("Tax ID=" + C_Tax_ID);
 		//
 		if (C_Tax_ID == 0)
-			mTab.fireDataStatusEEvent(CLogger.retrieveError());
+			mTab.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		else
 			mTab.setValue("C_Tax_ID", C_Tax_ID);
 		//
 		if (steps)
-			log.warning("fini");
+			log.warn("fini");
 
 		return amt(ctx, WindowNo, mTab, mField, value);
 	} // tax
@@ -1094,7 +1095,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		if (steps)
-			log.warning("init");
+			log.warn("init");
 
 		final String changedColumnName = gridField.getColumnName();
 
@@ -1110,15 +1111,15 @@ public class CalloutOrder extends CalloutEngine
 		// get values
 		final BigDecimal QtyEntered = orderLine.getQtyEntered();
 		final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-		log.fine("QtyEntered=" + QtyEntered + ", Ordered=" + QtyOrdered + ", UOM=" + C_UOM_To_ID);
+		log.debug("QtyEntered=" + QtyEntered + ", Ordered=" + QtyOrdered + ", UOM=" + C_UOM_To_ID);
 		//
 		BigDecimal PriceEntered = orderLine.getPriceEntered();
 		BigDecimal PriceActual = orderLine.getPriceActual();
 		BigDecimal Discount = orderLine.getDiscount();
 		BigDecimal PriceLimit = orderLine.getPriceLimit();
 		BigDecimal PriceList = orderLine.getPriceList();
-		log.fine("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
-		log.fine("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
+		log.debug("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
+		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName)
@@ -1191,7 +1192,7 @@ public class CalloutOrder extends CalloutEngine
 			// Discount = new BigDecimal(0);
 			// mTab.setValue("Discount", Discount);
 		}
-		log.fine("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
+		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
 		// Check Price Limit?
 		if (isEnforcePriceLimit(ctx, WindowNo)
@@ -1201,7 +1202,7 @@ public class CalloutOrder extends CalloutEngine
 			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceLimit);
 			if (PriceEntered == null)
 				PriceEntered = PriceLimit;
-			log.fine("(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
+			log.debug("(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
 			orderLine.setPriceActual(PriceActual);
 			// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
 			orderLine.setPriceEntered(PriceEntered);
@@ -1254,7 +1255,7 @@ public class CalloutOrder extends CalloutEngine
 			return "";
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
 		if (steps)
-			log.warning("init - M_Product_ID=" + M_Product_ID + " - ");
+			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
 		BigDecimal QtyOrdered = Env.ZERO;
 		BigDecimal QtyEntered;
 
@@ -1274,7 +1275,7 @@ public class CalloutOrder extends CalloutEngine
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
 			}
@@ -1290,7 +1291,7 @@ public class CalloutOrder extends CalloutEngine
 			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID, C_UOM_To_ID, PriceActual);
 			// if (PriceEntered == null)
 			// PriceEntered = PriceActual;
-			// log.fine("UOM=" + C_UOM_To_ID + ", QtyEntered/PriceActual="
+			// log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered/PriceActual="
 			// + QtyEntered + "/" + PriceActual + " -> " + conversion
 			// + " QtyOrdered/PriceEntered=" + QtyOrdered + "/"
 			// + PriceEntered);
@@ -1310,7 +1311,7 @@ public class CalloutOrder extends CalloutEngine
 					C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
 						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -1320,7 +1321,7 @@ public class CalloutOrder extends CalloutEngine
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
-			log.fine("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
 					+ " -> " + conversion + " QtyOrdered=" + QtyOrdered);
 			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
 			mTab.setValue("QtyOrdered", QtyOrdered);
@@ -1334,7 +1335,7 @@ public class CalloutOrder extends CalloutEngine
 			BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
-				log.fine("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);
+				log.debug("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);
 				QtyOrdered = QtyOrdered1;
 				mTab.setValue("QtyOrdered", QtyOrdered);
 			}
@@ -1343,7 +1344,7 @@ public class CalloutOrder extends CalloutEngine
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
-			log.fine("UOM=" + C_UOM_To_ID + ", QtyOrdered=" + QtyOrdered
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyOrdered=" + QtyOrdered
 					+ " -> " + conversion + " QtyEntered=" + QtyEntered);
 			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
 			mTab.setValue("QtyEntered", QtyEntered);
@@ -1427,7 +1428,7 @@ public class CalloutOrder extends CalloutEngine
 
 		if (!I_C_OrderLine.COLUMNNAME_IsIndividualDescription.equals(mField.getColumnName()))
 		{
-			log.warning("Callout method 'CalloutOrder.isIndiviualDescription' has been call with field " + mField.getColumnName());
+			log.warn("Callout method 'CalloutOrder.isIndiviualDescription' has been call with field " + mField.getColumnName());
 			return NO_ERROR;
 		}
 		handleIndividualDescription(ctx, mTab);
@@ -1562,7 +1563,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally

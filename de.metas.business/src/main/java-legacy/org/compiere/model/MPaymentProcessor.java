@@ -22,9 +22,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -106,15 +108,15 @@ public class MPaymentProcessor extends X_C_PaymentProcessor
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "find - " + sql, e);
+			s_log.error("find - " + sql, e);
 			return null;
 		}
 		//
 		if (list.size() == 0)
-			s_log.warning("find - not found - AD_Client_ID=" + AD_Client_ID
+			s_log.warn("find - not found - AD_Client_ID=" + AD_Client_ID
 				+ ", C_Currency_ID=" + C_Currency_ID + ", Amt=" + Amt);
 		else
-			s_log.fine("find - #" + list.size() + " - AD_Client_ID=" + AD_Client_ID
+			s_log.debug("find - #" + list.size() + " - AD_Client_ID=" + AD_Client_ID
 				+ ", C_Currency_ID=" + C_Currency_ID + ", Amt=" + Amt);
 		MPaymentProcessor[] retValue = new MPaymentProcessor[list.size()];
 		list.toArray(retValue);
@@ -122,7 +124,7 @@ public class MPaymentProcessor extends X_C_PaymentProcessor
 	}   //  find
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MPaymentProcessor.class);
+	private static Logger	s_log	= LogManager.getLogger(MPaymentProcessor.class);
 
 	
 	/**************************************************************************

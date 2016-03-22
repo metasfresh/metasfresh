@@ -37,7 +37,8 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MTax;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -53,7 +54,7 @@ import de.metas.product.IProductBL;
 public class DocLine
 {
 	// services
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Create Document Line
@@ -389,7 +390,7 @@ public class DocLine
 		m_DiscountAmt = m_ListAmt.subtract(m_LineNetAmt);
 		setAmount(m_ListAmt, m_DiscountAmt);
 		
-		log.warning("Diff=" + diff + " - LineNetAmt=" + lineNetAmtOld + " -> " + m_LineNetAmt + " - " + this);
+		log.warn("Diff=" + diff + " - LineNetAmt=" + lineNetAmtOld + " -> " + m_LineNetAmt + " - " + this);
 	}	// setLineNetAmtDifference
 
 	/**************************************************************************
@@ -1183,7 +1184,7 @@ public class DocLine
 				String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
 				m_C_SalesRegion_ID = DB.getSQLValue(null,
 						sql, getC_BPartner_Location_ID());
-				log.fine("C_SalesRegion_ID=" + m_C_SalesRegion_ID + " (from BPL)");
+				log.debug("C_SalesRegion_ID=" + m_C_SalesRegion_ID + " (from BPL)");
 				if (m_C_SalesRegion_ID == 0)
 					m_C_SalesRegion_ID = -2;	// don't try again
 			}

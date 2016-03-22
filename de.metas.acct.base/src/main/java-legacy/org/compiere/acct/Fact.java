@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,7 +34,8 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyConversionContext;
@@ -71,11 +73,11 @@ public final class Fact
 		// Fix [ 1884676 ] Fact not setting transaction
 		m_trxName = document.getTrxName();
 
-		log.log(Level.CONFIG, "Fact: {0}", this);
+		log.info("Fact: {}", this);
 	}	// Fact
 
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(Fact.class);
+	private static final transient Logger log = LogManager.getLogger(Fact.class);
 
 	/** Document */
 	private final Doc m_doc;
@@ -274,9 +276,9 @@ public final class Fact
 		BigDecimal balance = getSourceBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
-			log.finer(toString());
+			log.trace(toString());
 		else
-			log.warning("NO - Diff=" + balance + " - " + toString());
+			log.warn("NO - Diff=" + balance + " - " + toString());
 		return retValue;
 	}	// isSourceBalanced
 
@@ -293,7 +295,7 @@ public final class Fact
 			FactLine line = m_lines.get(i);
 			result = result.add(line.getSourceBalance());
 		}
-		// log.fine("getSourceBalance - " + result.toString());
+		// log.debug("getSourceBalance - " + result.toString());
 		return result;
 	}	// getSourceBalance
 
@@ -308,7 +310,7 @@ public final class Fact
 		if (!m_acctSchema.isSuspenseBalancing() || m_doc.isMultiCurrency())
 			return null;
 		BigDecimal diff = getSourceBalance();
-		log.finer("Diff=" + diff);
+		log.trace("Diff=" + diff);
 
 		// new line
 		FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
@@ -328,7 +330,7 @@ public final class Fact
 		// Convert
 		line.convert();
 		//
-		log.fine(line.toString());
+		log.debug(line.toString());
 		m_lines.add(line);
 		return line;
 	}   // balancingSource
@@ -388,15 +390,15 @@ public final class Fact
 				if (bal.signum() != 0)
 				{
 					map.clear();
-					log.warning("(" + segmentType + ") NO - " + toString() + ", Balance=" + bal);
+					log.warn("(" + segmentType + ") NO - " + toString() + ", Balance=" + bal);
 					return false;
 				}
 			}
 			map.clear();
-			log.finer("(" + segmentType + ") - " + toString());
+			log.trace("(" + segmentType + ") - " + toString());
 			return true;
 		}
-		log.finer("(" + segmentType + ") (not checked) - " + toString());
+		log.trace("(" + segmentType + ") (not checked) - " + toString());
 		return true;
 	}   // isSegmentBalanced
 
@@ -426,7 +428,7 @@ public final class Fact
 		if (m_lines.size() == 0)
 			return;
 
-		log.fine("(" + elementType + ") - " + toString());
+		log.debug("(" + elementType + ") - " + toString());
 
 		// Org
 		if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
@@ -446,7 +448,7 @@ public final class Fact
 				}
 				else
 					oldBalance.add(line.getAmtSourceDr(), line.getAmtSourceCr());
-				// log.info ("Key=" + key + ", Balance=" + balance + " - " + line);
+				// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
 			}
 
 			// Create entry for non-zero element
@@ -494,7 +496,7 @@ public final class Fact
 					line.setAD_Org_ID(key.intValue());
 					//
 					m_lines.add(line);
-					log.fine("(" + elementType + ") - " + line);
+					log.debug("(" + elementType + ") - " + line);
 				}
 			}
 			map.clear();
@@ -514,9 +516,9 @@ public final class Fact
 		BigDecimal balance = getAcctBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
-			log.finer(toString());
+			log.trace(toString());
 		else
-			log.warning("NO - Diff=" + balance + " - " + toString());
+			log.warn("NO - Diff=" + balance + " - " + toString());
 		return retValue;
 	}	// isAcctBalanced
 
@@ -533,7 +535,7 @@ public final class Fact
 			FactLine line = m_lines.get(i);
 			result = result.add(line.getAcctBalance());
 		}
-		// log.fine(result.toString());
+		// log.debug(result.toString());
 		return result;
 	}	// getAcctBalance
 
@@ -546,7 +548,7 @@ public final class Fact
 	public FactLine balanceAccounting()
 	{
 		BigDecimal diff = getAcctBalance();		// DR-CR
-		log.fine("Balance=" + diff
+		log.debug("Balance=" + diff
 				+ ", CurrBal=" + m_acctSchema.isCurrencyBalancing()
 				+ " - " + toString());
 		FactLine line = null;
@@ -614,7 +616,7 @@ public final class Fact
 					drAmt = difference.negate();
 			}
 			line.setAmtAcct(drAmt, crAmt);
-			log.fine(line.toString());
+			log.debug(line.toString());
 			m_lines.add(line);
 		}
 		else
@@ -625,12 +627,12 @@ public final class Fact
 			else
 				line = PLline;
 			if (line == null)
-				log.severe("No Line found");
+				log.error("No Line found");
 			else
 			{
-				log.fine("Adjusting Amt=" + diff + "; Line=" + line);
+				log.debug("Adjusting Amt=" + diff + "; Line=" + line);
 				line.currencyCorrect(diff);
-				log.fine(line.toString());
+				log.debug(line.toString());
 			}
 		}   // correct biggest amount
 
@@ -658,25 +660,25 @@ public final class Fact
 			final MAccount account = line.getAccount();
 			if (account == null)
 			{
-				log.warning("No Account for " + line);
+				log.warn("No Account for " + line);
 				return false;
 			}
 			
 			final I_C_ElementValue ev = account.getAccount();
 			if (ev == null)
 			{
-				log.warning("No Element Value for " + account + ": " + line);
+				log.warn("No Element Value for " + account + ": " + line);
 				return false;
 			}
 			if (ev.isSummary())
 			{
-				log.warning("Cannot post to Summary Account " + ev
+				log.warn("Cannot post to Summary Account " + ev
 						+ ": " + line);
 				return false;
 			}
 			if (!ev.isActive())
 			{
-				log.warning("Cannot post to Inactive Account " + ev
+				log.warn("Cannot post to Inactive Account " + ev
 						+ ": " + line);
 				return false;
 			}
@@ -905,7 +907,7 @@ public final class Fact
 			final MAccount account = getAccount();
 			if (account == null)
 			{
-				log.log(Level.INFO, "No account for {0}", this);
+				log.info("No account for {}", this);
 				return null;
 			}
 
@@ -948,12 +950,12 @@ public final class Fact
 			{
 				if (line.getQty().signum() == 0)
 				{
-					log.log(Level.FINE, "Both amounts & qty = 0/Null - {0}", this);
+					log.debug("Both amounts & qty = 0/Null - {}", this);
 					return null;
 				}
 
-				if (log.isLoggable(Level.FINE))
-					log.fine("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
+				if (log.isDebugEnabled())
+					log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
 			}
 
 			//
@@ -994,7 +996,7 @@ public final class Fact
 			}
 
 			//
-			log.log(Level.FINE, "Built: {0}", line);
+			log.debug("Built: {}", line);
 			return line;
 		}
 

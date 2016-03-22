@@ -29,14 +29,15 @@ import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.processor.api.IPOProcessorBL;
 import de.metas.processor.spi.IPOProcessor;
 
 public class POProcessorBase implements ModelValidator
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private int m_AD_Client_ID = -1;
 
@@ -84,7 +85,7 @@ public class POProcessorBase implements ModelValidator
 		{
 			final String msg =
 					"Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + MTable.getTableName(po.getCtx(), po.get_Table_ID()) + "'";
-			logger.warning(msg);
+			logger.warn(msg);
 			return msg;
 		}
 

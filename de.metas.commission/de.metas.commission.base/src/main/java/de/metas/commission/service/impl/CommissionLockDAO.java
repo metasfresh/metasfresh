@@ -28,14 +28,15 @@ import java.util.Date;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.model.I_C_AdvCommissionLock;
 import de.metas.commission.service.ICommissionLockDAO;
 
 public class CommissionLockDAO implements ICommissionLockDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CommissionLockDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(CommissionLockDAO.class);
 
 	@Override
 	public boolean isLocked(final org.compiere.model.I_C_BPartner bPartner, final Date date)
@@ -55,7 +56,7 @@ public class CommissionLockDAO implements ICommissionLockDAO
 			return false;
 		}
 
-		CommissionLockDAO.logger.config("BPartner " + bPartner + " is locked");
+		CommissionLockDAO.logger.info("BPartner " + bPartner + " is locked");
 		return true;
 	}
 

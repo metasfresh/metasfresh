@@ -38,7 +38,8 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Generic event handler for swing form views. Handles events of the confirm
@@ -49,7 +50,7 @@ import org.compiere.util.CLogger;
  */
 public class VGenericHandler {
 
-	private static final CLogger logger = CLogger.getCLogger(VGenericHandler.class);
+	private static final Logger logger = LogManager.getLogger(VGenericHandler.class);
 
 	private final MvcVGenPanel view;
 

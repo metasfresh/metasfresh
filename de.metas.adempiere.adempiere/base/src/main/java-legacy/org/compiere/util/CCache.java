@@ -163,7 +163,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		return tableName;
 	}
 
-	// private static final transient CLogger logger = CLogger.getCLogger(CCache.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(CCache.class);
 
 	private CacheMapType cacheMapType = null;
 	/** Internal map that is used as cache */

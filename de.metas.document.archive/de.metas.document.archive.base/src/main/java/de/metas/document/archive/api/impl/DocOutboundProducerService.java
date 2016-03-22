@@ -43,7 +43,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
  */
 public class DocOutboundProducerService implements IDocOutboundProducerService
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(DocOutboundProducerService.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(DocOutboundProducerService.class);
 
 	/**
 	 * Map of Doc Outbound Producers (C_Doc_Outbound_Config_ID -> DocOutboundProducerValidator)

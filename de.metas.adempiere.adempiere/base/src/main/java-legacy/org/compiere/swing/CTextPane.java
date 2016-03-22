@@ -23,7 +23,8 @@ import java.awt.event.InputMethodListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.im.InputMethodRequests;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.InputVerifier;
 import javax.swing.JScrollPane;
@@ -35,7 +36,6 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.JTextComponentCopyPasteSupportEditor;
-import org.compiere.util.CLogger;
 
 /**
  *	Adempiere TextPane - A ScrollPane with a JTextPane.
@@ -52,7 +52,7 @@ public class CTextPane extends JScrollPane
 	 */
 	private static final long serialVersionUID = -6702310899755509377L;
 	
-	private static final transient CLogger log = CLogger.getCLogger(CTextPane.class); // metas
+	private static final transient Logger log = LogManager.getLogger(CTextPane.class); // metas
 
 	/**
 	 *	Constructs a new TextPane (HTML)
@@ -421,7 +421,7 @@ public class CTextPane extends JScrollPane
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Cannot instantiate hyperlink listener - " + hyperlinkListenerClass, e);
+			log.warn("Cannot instantiate hyperlink listener - " + hyperlinkListenerClass, e);
 		}
 	}
 	
@@ -435,7 +435,7 @@ public class CTextPane extends JScrollPane
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Cannot instantiate hyperlink listener - " + hyperlinkListenerClassname, e);
+			log.warn("Cannot instantiate hyperlink listener - " + hyperlinkListenerClassname, e);
 		}
 	}
 	

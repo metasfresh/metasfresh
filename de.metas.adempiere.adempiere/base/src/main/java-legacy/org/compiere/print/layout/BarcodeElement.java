@@ -134,11 +134,11 @@ public class BarcodeElement extends PrintElement
 				m_barcode.setDrawingText(false);
 			}
 			else 
-				log.warning("Invalid Type" + type);
+				log.warn("Invalid Type" + type);
 		}
 		catch (Exception e)
 		{
-			log.warning(code + " - " + e.toString());
+			log.warn(code + " - " + e.toString());
 			m_valid = false;
 		}
 		

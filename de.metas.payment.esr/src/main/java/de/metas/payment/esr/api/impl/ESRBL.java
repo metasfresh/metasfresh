@@ -23,7 +23,8 @@ package de.metas.payment.esr.api.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,13 +32,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
-
 import de.metas.payment.esr.api.IESRBL;
 
 public class ESRBL implements IESRBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	
 	@Override
 	public boolean appliesForESRDocumentRefId(final PO source)
@@ -48,17 +47,17 @@ public class ESRBL implements IESRBL
 		
 		if (!invoice.isSOTrx())
 		{
-			logger.log(Level.FINE, "Skip generating because invoice is purchase invoice: {0}", invoice);
+			logger.debug("Skip generating because invoice is purchase invoice: {}", invoice);
 			return false;
 		}
 		if (invoice.getReversal_ID() > 0)
 		{
-			logger.log(Level.FINE, "Skip generating because invoice is a reversal: {0}", invoice);
+			logger.debug("Skip generating because invoice is a reversal: {}", invoice);
 			return false;
 		}
 		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
 		{
-			logger.log(Level.FINE, "Skip generating because invoice is a credit memo: {0}", invoice);
+			logger.debug("Skip generating because invoice is a credit memo: {}", invoice);
 			return false;
 		}
 		

@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -205,7 +206,7 @@ public class MRMA extends X_M_RMA implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -470,7 +471,7 @@ public class MRMA extends X_M_RMA implements DocAction
 		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
-			log.fine(counterDT.toString());
+			log.debug(counterDT.toString());
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
 				return null;
 			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
@@ -478,7 +479,7 @@ public class MRMA extends X_M_RMA implements DocAction
 		else	//	indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
+			log.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
 				return null;
 		}
@@ -501,7 +502,7 @@ public class MRMA extends X_M_RMA implements DocAction
 			counterLine.saveEx(get_TrxName());
 		}
 
-		log.fine(counter.toString());
+		log.debug(counter.toString());
 
 		//	Document Action
 		if (counterDT != null)
@@ -619,7 +620,7 @@ public class MRMA extends X_M_RMA implements DocAction
 			}
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
 		return count;
 	}	//	copyLinesFrom
 
@@ -752,7 +753,7 @@ public class MRMA extends X_M_RMA implements DocAction
         		new Object[]{processed, get_ID()},
         		get_TrxName());
         m_lines = null;
-        log.fine("setProcessed - " + processed + " - Lines=" + noLine);
+        log.debug("setProcessed - " + processed + " - Lines=" + noLine);
     }   //  setProcessed
 
     /**

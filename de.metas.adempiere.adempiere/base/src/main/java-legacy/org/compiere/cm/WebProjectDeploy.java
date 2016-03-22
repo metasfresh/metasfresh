@@ -18,8 +18,6 @@ package org.compiere.cm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-
 import org.compiere.model.MCStage;
 import org.compiere.model.MContainer;
 import org.compiere.model.MMedia;
@@ -66,7 +64,7 @@ public class WebProjectDeploy extends SvrProcess
 			else if (name.equals("CM_WebProject_ID"))
 				p_CM_WebProject_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -110,10 +108,10 @@ public class WebProjectDeploy extends SvrProcess
 			{
 				String name = container.getName();
 				if (container.delete(true))
-					log.fine("Deleted: " + name);
+					log.debug("Deleted: " + name);
 				else	//	e.g. was referenced
 				{
-					log.warning("Failed Delete: " + name);
+					log.warn("Failed Delete: " + name);
 					addLog(0,null,null, "@Error@ @Delete@: " + name);
 				}
 			}
@@ -167,7 +165,7 @@ public class WebProjectDeploy extends SvrProcess
 			stage = m_map.get(ID);
 			if (stage == null)
 			{
-				log.warning("Not Found ID=" + ID);
+				log.warn("Not Found ID=" + ID);
 				continue;
 			}
 			if (!stage.isActive())

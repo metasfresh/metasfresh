@@ -25,8 +25,6 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.model.MAttachment;
 import org.compiere.model.MImage;
 import org.compiere.print.MPrintFormatItem;
@@ -127,9 +125,9 @@ public class ImageElement extends PrintElement
 	{
 		m_image = image;
 		if (m_image != null)
-			log.fine("Image=" + image);
+			log.debug("Image=" + image);
 		else
-			log.log(Level.WARNING, "Image is NULL");
+			log.warn("Image is NULL");
 	}	//	ImageElement
 
 	/**
@@ -143,12 +141,12 @@ public class ImageElement extends PrintElement
 		{
 			m_image = Toolkit.getDefaultToolkit().createImage(imageURL);
 			if (m_image != null)
-				log.fine("URL=" + imageURL);
+				log.debug("URL=" + imageURL);
 			else
-				log.log(Level.WARNING, "Not loaded - URL=" + imageURL);
+				log.warn("Not loaded - URL=" + imageURL);
 		}
 		else
-			log.log(Level.WARNING, "Invalid URL=" + imageURLstring);
+			log.warn("Invalid URL=" + imageURLstring);
 	}	//	ImageElement
 
 	/**
@@ -161,12 +159,12 @@ public class ImageElement extends PrintElement
 		{
 			m_image = Toolkit.getDefaultToolkit().createImage(imageURL);
 			if (m_image != null)
-				log.fine("URL=" + imageURL);
+				log.debug("URL=" + imageURL);
 			else
-				log.log(Level.WARNING, "Not loaded - URL=" + imageURL);
+				log.warn("Not loaded - URL=" + imageURL);
 		}
 		else
-			log.severe ("ImageURL is NULL");
+			log.error("ImageURL is NULL");
 	}	//	ImageElement
 
 	/**
@@ -211,7 +209,7 @@ public class ImageElement extends PrintElement
 			url = cl.getResource(urlString);
 			if (url != null)
 				return url;
-			log.log(Level.WARNING, "Not found - " + urlString);
+			log.warn("Not found - " + urlString);
 			return null;
 		}
 		//	load URL
@@ -221,7 +219,7 @@ public class ImageElement extends PrintElement
 		}
 		catch (MalformedURLException ex)
 		{
-			log.log(Level.WARNING, urlString, ex);
+			log.warn(urlString, ex);
 		}
 		return url;
 	}	//	getURL;
@@ -235,7 +233,7 @@ public class ImageElement extends PrintElement
 		MImage mimage = MImage.get(Env.getCtx(), record_ID);
 		if (mimage == null)
 		{
-			log.log(Level.WARNING, "No Image - record_ID=" + record_ID);
+			log.warn("No Image - record_ID=" + record_ID);
 			return;
 		}
 
@@ -243,10 +241,10 @@ public class ImageElement extends PrintElement
 		if (imageData != null)
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 		if (m_image != null)
-			log.fine(mimage.toString() 
+			log.debug(mimage.toString() 
 				+ " - Size=" + imageData.length);
 		else
-			log.log(Level.WARNING, mimage.toString()
+			log.warn(mimage.toString()
 				+ " - not loaded (must be gif or jpg) - record_ID=" + record_ID);
 	}	//	loadFromDB
 
@@ -261,22 +259,22 @@ public class ImageElement extends PrintElement
 			MPrintFormatItem.Table_ID, AD_PrintFormatItem_ID);
 		if (attachment == null)
 		{
-			log.log(Level.WARNING, "No Attachment - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
+			log.warn("No Attachment - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
 			return;
 		}
 		if (attachment.getEntryCount() != 1)
 		{
-			log.log(Level.WARNING, "Need just 1 Attachment Entry = " + attachment.getEntryCount());
+			log.warn("Need just 1 Attachment Entry = " + attachment.getEntryCount());
 			return;
 		}
 		byte[] imageData = attachment.getEntryData(0);
 		if (imageData != null)
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 		if (m_image != null)
-			log.fine(attachment.getEntryName(0) 
+			log.debug(attachment.getEntryName(0) 
 				+ " - Size=" + imageData.length);
 		else
-			log.log(Level.WARNING, attachment.getEntryName(0)
+			log.warn(attachment.getEntryName(0)
 				+ " - not loaded (must be gif or jpg) - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
 	}	//	loadAttachment
 

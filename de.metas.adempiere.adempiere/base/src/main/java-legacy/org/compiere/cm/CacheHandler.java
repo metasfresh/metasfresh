@@ -24,7 +24,7 @@ import java.net.URLConnection;
 import java.util.Properties;
 
 import org.compiere.model.X_CM_BroadcastServer;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 /**
  * The CacheHandler handles deployment and clean of internal and external caches
@@ -34,7 +34,7 @@ import org.compiere.util.CLogger;
  */
 public class CacheHandler {
 	protected String[] cacheURLs;
-	protected CLogger log;
+	protected Logger log;
 	
 	/**
 	 * CacheHandler for single URL environment
@@ -43,7 +43,7 @@ public class CacheHandler {
 	 * @param ctx Propertie Context
 	 * @param trxName Transaction
 	 */
-	public CacheHandler(String thisURL, CLogger tLog, Properties ctx, String trxName) {
+	public CacheHandler(String thisURL, Logger tLog, Properties ctx, String trxName) {
 		int [] theseServers = X_CM_BroadcastServer.getAllIDs ("CM_BroadcastServer", "CM_WebProject_ID=0", trxName);
 		if (theseServers!=null && theseServers.length>0) {
 			String [] thisURLs = new String [theseServers.length];
@@ -66,7 +66,7 @@ public class CacheHandler {
 	 * @param thisURLs Array of Cache Server URLs
 	 * @param tLog Logger
 	 */
-	public CacheHandler(String [] thisURLs, CLogger tLog) {
+	public CacheHandler(String [] thisURLs, Logger tLog) {
 		log = tLog;
 		cacheURLs = thisURLs;
 	}
@@ -167,7 +167,7 @@ public class CacheHandler {
 			    	}				
 			} catch (IOException E) {
 				if (log!=null)
-					log.warning("Can't clean cache at:" + thisURL + " be carefull, your deployment server may use invalid or old cache data!");
+					log.warn("Can't clean cache at:" + thisURL + " be carefull, your deployment server may use invalid or old cache data!");
 			}
 		}
 	}

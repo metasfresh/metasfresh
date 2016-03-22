@@ -24,18 +24,20 @@ package org.adempiere.ad.housekeeping.impl;
 
 
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.CLoggerLoggable;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.compiere.util.CLogger;
+import org.adempiere.util.LoggerLoggable;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import ch.qos.logback.classic.Level;
 
 public class HouseKeepingBL implements IHouseKeepingBL
 {
-	private static final CLogger logger = CLogger.getCLogger(HouseKeepingBL.class);
+	private static final Logger logger = LogManager.getLogger(HouseKeepingBL.class);
 
 	final CopyOnWriteArrayList<IStartupHouseKeepingTask> startupTasks = new CopyOnWriteArrayList<>();
 
@@ -51,7 +53,7 @@ public class HouseKeepingBL implements IHouseKeepingBL
 	{
 		logger.info("Executing the registered house keeping tasks");
 
-		final ILoggable loggable = new CLoggerLoggable(logger, Level.INFO);
+		final ILoggable loggable = LoggerLoggable.of(logger, Level.INFO);
 		for (final IStartupHouseKeepingTask task : startupTasks)
 		{
 			logger.info("Executing task " + task.getClass().getName());
@@ -62,7 +64,7 @@ public class HouseKeepingBL implements IHouseKeepingBL
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed to execute task " + task + ". Skipped", e);
+				logger.warn("Failed to execute task " + task + ". Skipped", e);
 			}
 		}
 	}

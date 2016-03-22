@@ -62,7 +62,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationDocument;
 import org.compiere.model.X_AD_ReplicationTable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -78,7 +79,7 @@ public class ExportModelValidator implements ModelValidator
 {
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ExportModelValidator.class);
+	private static Logger log = LogManager.getLogger(ExportModelValidator.class);
 	
 	/** Client			*/
 	private int		m_AD_Client_ID = -1;
@@ -121,7 +122,7 @@ public class ExportModelValidator implements ModelValidator
 		}
 		else 
 		{
-			log.warning("Export Model Validator cannot be used as a global validator, it needs to be defined in a per-client (tenant) basis");
+			log.warn("Export Model Validator cannot be used as a global validator, it needs to be defined in a per-client (tenant) basis");
 			return;
 		}
 		

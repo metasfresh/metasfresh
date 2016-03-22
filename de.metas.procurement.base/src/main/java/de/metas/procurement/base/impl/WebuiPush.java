@@ -5,9 +5,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -41,7 +42,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
 public class WebuiPush implements IWebuiPush
 {
-	private static final CLogger logger = CLogger.getCLogger(WebuiPush.class);
+	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
 
 	/**
 	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
@@ -107,7 +108,7 @@ public class WebuiPush implements IWebuiPush
 		{
 			return;
 		}
-		
+
 		final int bpartnerId = contract.getDropShip_BPartner_ID();
 
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();

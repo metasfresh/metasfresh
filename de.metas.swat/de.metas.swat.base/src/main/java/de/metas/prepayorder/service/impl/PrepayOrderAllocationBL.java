@@ -55,7 +55,8 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 import de.metas.document.engine.IDocActionBL;
@@ -66,7 +67,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
 public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 {
 
-	private static CLogger logger = CLogger.getCLogger(PrepayOrderAllocationBL.class);
+	private static Logger logger = LogManager.getLogger(PrepayOrderAllocationBL.class);
 
 	@Override
 	public void paymentAfterAllocateIt(final I_C_Payment payment, final boolean allocationLineWasCreated)
@@ -76,7 +77,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 		// final MPayment payment = (MPayment)inv.getTargetObject();
 		if (!payment.isReceipt())
 		{
-			logger.fine(payment + " is no receipt, but we only deal with sales orders. Nothing to do");
+			logger.debug(payment + " is no receipt, but we only deal with sales orders. Nothing to do");
 			return;
 		}
 
@@ -99,7 +100,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 				final int orderId = pa.getC_PrepayOrder_ID();
 				if (orderId <= 0)
 				{
-					logger.fine(pa + " has no C_Order. Nothing to do.");
+					logger.debug(pa + " has no C_Order. Nothing to do.");
 					continue;
 				}
 				assert prepayOrderBL.isPrepayOrder(ctx, orderId, trxName) : "Has non-prepay-order: " + pa;
@@ -107,7 +108,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 				orderId2order.put(orderId, (MOrder)pa.getC_PrepayOrder());
 
 				final MAllocationLine allocLine = (MAllocationLine)pa.getC_AllocationLine();
-				logger.fine("Setting C_Order_ID of " + allocLine + "=" + orderId + " (C_PaymentAllocate_ID=" + pa.getC_PaymentAllocate_ID() + ")");
+				logger.debug("Setting C_Order_ID of " + allocLine + "=" + orderId + " (C_PaymentAllocate_ID=" + pa.getC_PaymentAllocate_ID() + ")");
 				allocLine.setC_Order_ID(orderId);
 				allocLine.saveEx();
 			}
@@ -147,13 +148,13 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			final int orderId = payment.getC_Order_ID();
 			if (orderId == 0)
 			{
-				logger.fine("MPayment.allocateIt() returned 'false' for " + payment + ", not because of C_Order_ID!=0, but for another reason. Nothing to do.");
+				logger.debug("MPayment.allocateIt() returned 'false' for " + payment + ", not because of C_Order_ID!=0, but for another reason. Nothing to do.");
 				return;
 			}
 
 			if (!prepayOrderBL.isPrepayOrder(ctx, orderId, trxName))
 			{
-				logger.fine("MPayment.allocateIt() returned 'false' for " + payment + " probably because the referenced order is not a prepay order. Nothing to do");
+				logger.debug("MPayment.allocateIt() returned 'false' for " + payment + " probably because the referenced order is not a prepay order. Nothing to do");
 				return;
 			}
 
@@ -277,7 +278,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 		}
 		else
 		{
-			logger.fine(invoice + " does not reference a prepay order. Nothing to do.");
+			logger.debug(invoice + " does not reference a prepay order. Nothing to do.");
 		}
 	}
 
@@ -292,21 +293,21 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 
 		if (invoice.isReversal())
 		{
-			logger.fine(invoice + " is a reversal. Nothing to do.");
+			logger.debug(invoice + " is a reversal. Nothing to do.");
 			return;
 		}
 
 		// start: metas: c.ghita@metas.ro : rma and order are on same level
 		if (invoice.getM_RMA_ID() > 0 && invoice.getC_Order_ID() <= 0)
 		{
-			logger.fine(invoice + " does not reference a prepay order. Is a RMA invoice. Nothing to do.");
+			logger.debug(invoice + " does not reference a prepay order. Is a RMA invoice. Nothing to do.");
 			return;
 		}
 		// end: metas: c.ghita@metas.ro
 
 		if (!prepayOrderBL.isPrepayOrder(ctx, invoice.getC_Order_ID(), trxName))
 		{
-			logger.fine(invoice + " does not reference a prepay order. Nothing to do.");
+			logger.debug(invoice + " does not reference a prepay order. Nothing to do.");
 			return;
 		}
 
@@ -324,7 +325,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 		// add the invoice's ID to those lines and collect the C_AllocationHdrs for reposting
 		for (final MAllocationLine allocLine : allocLines)
 		{
-			logger.fine("Setting C_Invoice_ID=" + invoice.get_ID() + " for " + allocLine);
+			logger.debug("Setting C_Invoice_ID=" + invoice.get_ID() + " for " + allocLine);
 
 			// Note: MAllocationLine.beforeSave() prohibits this operation.
 			// This is why we use this dirty direct update.
@@ -359,7 +360,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 		// metas: c.ghita@metas.ro : end: US025b
 		//
 
-		logger.fine("Checking if " + invoice + " is paid by order's allocation lines");
+		logger.debug("Checking if " + invoice + " is paid by order's allocation lines");
 		invoice.testAllocation();
 
 		return;
@@ -496,7 +497,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 
 		if (orderId <= 0 || !prepayOrderBL.isPrepayOrder(ctx, orderId, trxName))
 		{
-			logger.fine(allocLine + " does not reference a prepay order. Nothing to do");
+			logger.debug(allocLine + " does not reference a prepay order. Nothing to do");
 			return;
 		}
 
@@ -536,7 +537,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			}
 			else
 			{
-				logger.fine(order + " has docStatus=" + docStatus + ". Nothing to do");
+				logger.debug(order + " has docStatus=" + docStatus + ". Nothing to do");
 			}
 		}
 	}

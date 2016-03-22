@@ -28,7 +28,8 @@ package de.metas.commission.util;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
@@ -44,7 +45,8 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_SysConfig;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -66,7 +68,7 @@ public class MigrationHelper
 
 	public static final String DE_METAS_COMMISSION_VERSION = "de.metas.commission.Version";
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final Properties ctx;
 	private final String trxName;
@@ -131,7 +133,7 @@ public class MigrationHelper
 		}
 		catch (final NumberFormatException e)
 		{
-			log.log(Level.WARNING, "Cannot parse int for " + value + ". Considering zero", e);
+			log.warn("Cannot parse int for " + value + ". Considering zero", e);
 			version = 0;
 		}
 

@@ -14,7 +14,6 @@
 package org.adempiere.webui.install;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.Button;
@@ -74,7 +73,7 @@ public class WTranslationDialog extends TranslationController implements IFormCo
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}
 	

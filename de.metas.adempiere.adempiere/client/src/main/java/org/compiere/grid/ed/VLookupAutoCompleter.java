@@ -36,7 +36,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.text.JTextComponent;
 
@@ -213,7 +214,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 		else
 		{
-			// log.warning("No search columns found for " + lookup);
+			// log.warn("No search columns found for " + lookup);
 			sqlWhere.append(" AND 1=2 ");
 		}
 
@@ -284,7 +285,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		final String sqlSelect = lookupInfo.getSelectSqlPart();
 		if (Check.isEmpty(sqlSelect, true))
 		{
-			log.log(Level.WARNING, "Empty SELECT SQL found for: " + lookupInfo);
+			log.warn("Empty SELECT SQL found for: " + lookupInfo);
 			return null;
 		}
 
@@ -374,7 +375,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 		else
 		{
-			log.warning("Not supported - " + userObject + ", class=" + userObject.getClass());
+			log.warn("Not supported - " + userObject + ", class=" + userObject.getClass());
 			return;
 		}
 		editor.actionCombo(value);

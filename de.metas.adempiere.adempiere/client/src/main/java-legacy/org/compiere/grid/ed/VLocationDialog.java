@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
@@ -65,7 +66,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import com.akunagroup.uk.postcode.AddressInterface;
@@ -113,7 +115,7 @@ public class VLocationDialog extends CDialog
 		}
 		catch (final Exception ex)
 		{
-			log.log(Level.SEVERE, "init failed", ex);
+			log.error("init failed", ex);
 		}
 
 		//
@@ -155,7 +157,7 @@ public class VLocationDialog extends CDialog
 	}
 
 	// services
-	private final static transient CLogger log = CLogger.getCLogger(VLocationDialog.class);
+	private final static transient Logger log = LogManager.getLogger(VLocationDialog.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -282,7 +284,7 @@ public class VLocationDialog extends CDialog
 		final String captureSequenceStr = country == null ? null : country.getCaptureSequence();
 		if (Check.isEmpty(captureSequenceStr, true))
 		{
-			log.log(Level.SEVERE, "CaptureSequence empty for " + country + ". Using default: " + DEFAULT_CaptureSequence);
+			log.error("CaptureSequence empty for " + country + ". Using default: " + DEFAULT_CaptureSequence);
 			captureSequence = DEFAULT_CaptureSequence;
 		}
 		else
@@ -591,7 +593,7 @@ public class VLocationDialog extends CDialog
 
 		// remove any spaces from the postcode and convert to upper case
 		postcode = postcode.replaceAll(" ", "").toUpperCase();
-		log.fine("Looking up postcode: " + postcode);
+		log.debug("Looking up postcode: " + postcode);
 
 		// Lookup postcode on server.
 		pcLookup.setServerUrl(country.getLookupUrl());
@@ -691,7 +693,7 @@ public class VLocationDialog extends CDialog
 
 		if (values == null)
 		{
-			log.warning("Nothing selected");
+			log.warn("Nothing selected");
 			return;
 		}
 		// Overwrite the values in location field.
@@ -720,7 +722,7 @@ public class VLocationDialog extends CDialog
 					{
 						// found Region
 						fRegion.setSelectedItem(regions[i]);
-						log.fine("Found region: " + regions[i].getName());
+						log.debug("Found region: " + regions[i].getName());
 						found = true;
 					}
 				}
@@ -730,7 +732,7 @@ public class VLocationDialog extends CDialog
 					final MRegion region = new MRegion(country, values.getRegion());
 					if (region.save())
 					{
-						log.fine("Added new region from web service: " + values.getRegion());
+						log.debug("Added new region from web service: " + values.getRegion());
 
 						// clears cache
 						// Env.reset(false); // not needed; this shall be done automatically on save
@@ -742,13 +744,13 @@ public class VLocationDialog extends CDialog
 					}
 					else
 					{
-						log.severe("Error saving new region: " + region.getName());
+						log.error("Error saving new region: " + region.getName());
 					}
 				}
 			}
 			else
 			{
-				log.severe("Region lookup failed for Country: " + country.getName());
+				log.error("Region lookup failed for Country: " + country.getName());
 			}
 		}
 	}

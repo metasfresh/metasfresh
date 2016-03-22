@@ -63,7 +63,7 @@ public class RModel implements Serializable
 	private boolean         m_editable = false;
 
 //	/**	Logger			*/
-//	private static CLogger log = CLogger.getCLogger(RModel.class);
+//	private static Logger log = CLogMgt.getLogger(RModel.class);
 	
 	/**************************************************************************
 	 *  Get Column Display Name

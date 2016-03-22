@@ -25,11 +25,11 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 public final class MutableQtyAndQuality implements IQtyAndQuality
@@ -39,7 +39,7 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 	public static final RoundingMode QtyTotal_RoundingMode = RoundingMode.HALF_UP;
 	public static final RoundingMode QtyWithIssues_RoundingMode = RoundingMode.HALF_DOWN;
 
-	private static final transient CLogger logger = CLogger.getCLogger(MutableQtyAndQuality.class);
+	private static final transient Logger logger = LogManager.getLogger(MutableQtyAndQuality.class);
 
 	/** Precision used to store internal quantities */
 	/* package */static final int INTERNAL_PRECISION = 12;
@@ -185,7 +185,7 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 						+ "\nQtyAndQuality: " + this
 						);
 				// just log it for now
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				return BigDecimal.ZERO;
 			}
 		}

@@ -28,7 +28,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
@@ -45,7 +46,8 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MAccountLookup;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -139,7 +141,7 @@ public final class VAccount extends JComponent
 
 	private final String m_columnName;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VAccount.class);
+	private static Logger log = LogManager.getLogger(VAccount.class);
 
 	/**
 	 * Enable/disable
@@ -406,7 +408,7 @@ public final class VAccount extends JComponent
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

@@ -26,7 +26,8 @@ package de.metas.adempiere.util.cache;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,7 +38,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IInvocationContext;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Supplier;
@@ -55,7 +55,7 @@ class CacheInterceptor implements Serializable
 	private static final long serialVersionUID = -6740693287832574641L;
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(CacheInterceptor.class);
+	private static final transient Logger logger = LogManager.getLogger(CacheInterceptor.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final LoadingCache<Method, CachedMethodDescriptor> cachedMethodsDescriptor = CacheBuilder.newBuilder()
@@ -99,9 +99,9 @@ class CacheInterceptor implements Serializable
 	@AroundInvoke
 	public Object invokeCache(final IInvocationContext invCtx) throws Throwable
 	{
-		if (logger.isLoggable(Level.FINEST))
+		if (logger.isTraceEnabled())
 		{
-			logger.finest("Entering - invCtx: " + invCtx);
+			logger.trace("Entering - invCtx: " + invCtx);
 		}
 
 		//
@@ -121,7 +121,7 @@ class CacheInterceptor implements Serializable
 			}
 			else
 			{
-				logger.log(Level.WARNING, "Failed introspecting cached method: " + method, cacheEx);
+				logger.warn("Failed introspecting cached method: " + method, cacheEx);
 			}
 
 			// Invoke the cached method directly
@@ -151,7 +151,7 @@ class CacheInterceptor implements Serializable
 					+ "\n Method arguments: " + (invCtx == null ? "-" : Arrays.asList(invCtx.getParameters()))
 					+ "\n Target Object: " + invCtx.getTarget()
 					+ "\n Method descriptor: " + methodDescriptor);
-			logger.log(Level.WARNING, "No cache storage found. Invoking cached method directly.", ex);
+			logger.warn("No cache storage found. Invoking cached method directly.", ex);
 
 			// Invoke the cached method directly
 			final Object result = invCtx.proceed();

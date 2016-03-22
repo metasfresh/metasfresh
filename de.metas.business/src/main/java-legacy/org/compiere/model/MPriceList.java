@@ -239,9 +239,9 @@ public class MPriceList extends X_M_PriceList
 					.setOrderBy("ValidFrom DESC")
 					.first();
 		if (m_plv == null)
-			log.warning("None found M_PriceList_ID=" + getM_PriceList_ID() + " - " + valid);
+			log.warn("None found M_PriceList_ID=" + getM_PriceList_ID() + " - " + valid);
 		else
-			log.fine(m_plv.toString());
+			log.debug(m_plv.toString());
 		return m_plv;
 	}	//	getPriceListVersion
 

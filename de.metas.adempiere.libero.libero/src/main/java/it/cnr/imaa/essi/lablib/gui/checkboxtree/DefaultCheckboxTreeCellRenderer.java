@@ -13,6 +13,20 @@
  */
 package it.cnr.imaa.essi.lablib.gui.checkboxtree;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -36,20 +50,6 @@ package it.cnr.imaa.essi.lablib.gui.checkboxtree;
  */
 
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.QuadristateButtonModel.State;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.JTree;
-import javax.swing.UIManager;
-import javax.swing.plaf.ColorUIResource;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
 
 /**
  * A renderer for the CheckboxTree. This implementation decorates a

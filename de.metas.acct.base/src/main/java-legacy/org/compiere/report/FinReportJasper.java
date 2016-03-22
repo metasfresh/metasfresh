@@ -18,7 +18,8 @@ package org.compiere.report;
 
 import java.sql.CallableStatement;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.util.ProcessUtil;
@@ -98,7 +99,7 @@ public class FinReportJasper extends FinReport
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 				poInfo.setThrowable(e); // 03152
 				poInfo.setSummary (Msg.getMsg(Env.getCtx(), "ProcessRunError") + " " + e.getLocalizedMessage());
 			}

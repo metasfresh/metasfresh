@@ -19,7 +19,8 @@ package org.compiere.grid.ed;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  ComboBox Selection Manager for AuroReduction
@@ -37,7 +38,7 @@ public class ComboSelectionManager implements JComboBox.KeySelectionManager
 	}   //  ComboSelectionManager
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ComboSelectionManager.class);
+	private static Logger log = LogManager.getLogger(ComboSelectionManager.class);
 	
 	/**
 	 *  Given <code>aKey</code> and the model, returns the row
@@ -50,7 +51,7 @@ public class ComboSelectionManager implements JComboBox.KeySelectionManager
 	 */
 	public int selectionForKey (char key, ComboBoxModel model)
 	{
-		log.fine("Key=" + key);
+		log.debug("Key=" + key);
 		//
 		int currentSelection = -1;
 		Object selectedItem = model.getSelectedItem();

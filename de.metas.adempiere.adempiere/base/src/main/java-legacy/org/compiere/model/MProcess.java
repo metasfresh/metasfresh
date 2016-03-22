@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -187,7 +185,7 @@ public class MProcess extends X_AD_Process
 			{
 				String msg = "No Classname or ProcedureName for " + getName();
 				pi.setSummary(msg, ok);
-				log.warning(msg);
+				log.warn(msg);
 			}
 		}
 
@@ -334,7 +332,7 @@ public class MProcess extends X_AD_Process
 	public void copyFrom (MProcess source)
 	{
 
-		log.log(Level.FINE, "Copying from:" + source + ", to: " + this);
+		log.debug("Copying from:" + source + ", to: " + this);
 		setAccessLevel(source.getAccessLevel());
 		setAD_Form_ID(source.getAD_Form_ID());
 		setAD_PrintFormat_ID(source.getAD_PrintFormat_ID());
@@ -401,7 +399,7 @@ public class MProcess extends X_AD_Process
 			{
 				String msg = "No Classname or ProcedureName for " + getName();
 				pi.setSummary(msg, ok);
-				log.warning(msg);
+				log.warn(msg);
 			}
 		}
 

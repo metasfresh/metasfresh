@@ -43,7 +43,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResource;
@@ -101,7 +100,7 @@ public class CRP extends SvrProcess
 				p_ScheduleType = (String)para.getParameter();				 		
 			}
 			else {
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 		//

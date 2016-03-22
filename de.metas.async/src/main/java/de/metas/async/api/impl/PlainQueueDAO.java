@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
@@ -38,7 +37,8 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -50,7 +50,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
-	private static final transient CLogger slogger = CLogger.getCLogger(PlainQueueDAO.class);
+	private static final transient Logger slogger = LogManager.getLogger(PlainQueueDAO.class);
 	
 	private POJOLookupMap db = POJOLookupMap.get();
 
@@ -241,7 +241,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 			{
 				if (packageProcessorIds.isEmpty())
 				{
-					slogger.log(Level.WARNING, "There were no package processor Ids set in the package query. This could be a posible development error"
+					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
 							+"\n Package query: "+packageQuery);
 				}
 				final int packageProcessorId = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();

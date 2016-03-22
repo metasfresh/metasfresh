@@ -39,7 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -68,7 +69,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -102,8 +104,8 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 	private Calendar (final Frame frame, final String title, final Timestamp startTS, final int displayType)
 	{
 		super (frame, title, true);
-		log.log(Level.INFO, "startTS={0}", startTS);
-		log.log(Level.INFO, "displayType={0}", displayType);
+		log.info("startTS={}", startTS);
+		log.info("displayType={}", displayType);
 		
 		m_displayType = DisplayType.isDate(displayType) ? displayType : DisplayType.Date;
 		//
@@ -114,7 +116,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "Calendar", ex);
+			log.error("Calendar", ex);
 		}
 		
 		//
@@ -150,7 +152,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 	//
 	private static final Insets	ZERO_INSETS = new Insets(0,0,0,0);
 	/**	Logger			*/
-	private static final transient CLogger log = CLogger.getCLogger(Calendar.class);
+	private static final transient Logger log = LogManager.getLogger(Calendar.class);
 	//
 	private CPanel monthPanel = new CPanel();
 	private CComboBox<KeyNamePair> cMonth = new CComboBox<>();

@@ -39,7 +39,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 import org.eevolution.model.MHREmployee;
 
@@ -68,7 +69,7 @@ public final class SponsorValidator implements ModelValidator
 
 	public static final String SYSCONFIG_DEFAULT_PARENT_SPONSOR_NO = "de.metas.commission.DefaultParentSponsorNo";
 
-	private static final CLogger logger = CLogger.getCLogger(SponsorValidator.class);
+	private static final Logger logger = LogManager.getLogger(SponsorValidator.class);
 
 	public static final String MSG_INCONSISTENT_PARENT_SPONSOR_MISSING_1P = "SSR_InconsistentComSystem_Parent_Sponsor_Missing";
 

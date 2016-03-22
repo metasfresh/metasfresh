@@ -18,10 +18,8 @@ package org.compiere.model;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Parse FROM in SQL WHERE clause
@@ -61,7 +59,7 @@ public class AccessSqlParser
 	private static final String		ON = " ON ";
 
 	/**	Logger				*/
-	private CLogger	log = CLogger.getCLogger(getClass());
+	private Logger	log = LogManager.getLogger(getClass());
 	/**	Original SQL			*/
 	private String		m_sqlOriginal;
 	/**	SQL Selects			*/
@@ -108,7 +106,7 @@ public class AccessSqlParser
 			throw new IllegalArgumentException("No SQL");
 		//
 	//	if (CLogMgt.isLevelFinest())
-	//		log.fine(m_sqlOriginal);
+	//		log.debug(m_sqlOriginal);
 		getSelectStatements();
 		//	analyse each select	
 		for (int i = 0; i < m_sql.length; i++)
@@ -117,8 +115,8 @@ public class AccessSqlParser
 			m_tableInfo.add(info);
 		}
 		//
-		if (CLogMgt.isLevelFinest())
-			log.fine(toString());
+		if (LogManager.isLevelFinest())
+			log.debug(toString());
 		return m_tableInfo.size() > 0;
 	}	//	parse
 
@@ -135,7 +133,7 @@ public class AccessSqlParser
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, m_sqlOriginal, e);
+			log.error(m_sqlOriginal, e);
 			throw new IllegalArgumentException(m_sqlOriginal);
 		}
 		//	a sub-query was found
@@ -148,7 +146,7 @@ public class AccessSqlParser
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, m_sqlOriginal, e);
+				log.error(m_sqlOriginal, e);
 				throw new IllegalArgumentException(sqlOut.length + ": "+ m_sqlOriginal);
 			}
 		}
@@ -157,9 +155,9 @@ public class AccessSqlParser
 		for (int i = 0; i < m_sql.length; i++)
 		{
 			if (m_sql[i].indexOf("SELECT ",2) != -1)
-				log.log(Level.SEVERE, "#" + i + " Has embedded SQL - " + m_sql[i]);
+				log.error("#" + i + " Has embedded SQL - " + m_sql[i]);
 			else
-				log.fine("#" + i + " - " + m_sql[i]);
+				log.debug("#" + i + " - " + m_sql[i]);
 		}
 		/** **/
 	}	//	getSelectStatements
@@ -222,7 +220,7 @@ public class AccessSqlParser
 			
 		int fromIndex = sql.indexOf(FROM);
 		if (fromIndex != sql.lastIndexOf(FROM))
-			log.log(Level.WARNING, "More than one FROM clause - " + sql);
+			log.warn("More than one FROM clause - " + sql);
 		while (fromIndex != -1)
 		{
 			String from = sql.substring(fromIndex+FROM_LENGTH);
@@ -259,13 +257,13 @@ public class AccessSqlParser
 				}
 				else
 				{
-					log.log(Level.SEVERE, "Could not remove ON " + from);
+					log.error("Could not remove ON " + from);
 					break;
 				}			
 				index = from.indexOf(ON);
 			}
 			
-//			log.fine("getTableInfo - " + from);
+//			log.debug("getTableInfo - " + from);
 			StringTokenizer tableST = new StringTokenizer (from, ",");
 			while (tableST.hasMoreTokens())
 			{
@@ -276,7 +274,7 @@ public class AccessSqlParser
 					tableInfo = new TableInfo(synST.nextToken(), synST.nextToken());
 				else
 					tableInfo = new TableInfo(tableString);
-//				log.fine("getTableInfo -- " + tableInfo);
+//				log.debug("getTableInfo -- " + tableInfo);
 				list.add(tableInfo);
 			}
 			//

@@ -24,7 +24,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
@@ -41,7 +42,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -108,7 +110,7 @@ public class ProcessModalDialog extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	
 
@@ -135,7 +137,7 @@ public class ProcessModalDialog extends CDialog
 	private boolean m_valid = true;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ProcessDialog.class);
+	private static Logger log = LogManager.getLogger(ProcessDialog.class);
 	//
 
 	private CPanel dialog = new CPanel()
@@ -276,7 +278,7 @@ public class ProcessModalDialog extends CDialog
 	 */
 	public boolean init()
 	{
-		log.config("");
+		log.info("");
 		//
 		final boolean trl = !Env.isBaseLanguage(m_ctx, I_AD_Process.Table_Name);
 		String sql = "SELECT Name, Description, Help, IsReport, ShowHelp "

@@ -49,7 +49,8 @@ import org.compiere.model.I_AD_Ref_List;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -88,7 +89,7 @@ public class VDocAction extends CDialog
 	public VDocAction(final int WindowNo, final GridTab mTab, final VButton button, final int Record_ID)
 	{
 		super(Env.getWindow(WindowNo), Services.get(IMsgBL.class).translate(Env.getCtx(), "DocAction"), true);
-		log.config("");
+		log.info("");
 		m_WindowNo = WindowNo;
 		m_mTab = mTab;
 		//
@@ -123,7 +124,7 @@ public class VDocAction extends CDialog
 	private static String[] s_name;
 	private static String[] s_description;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VDocAction.class);
+	private static Logger log = LogManager.getLogger(VDocAction.class);
 	//
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -227,7 +228,7 @@ public class VDocAction extends CDialog
 			return;
 		}
 
-		log.fine("DocStatus=" + DocStatus
+		log.debug("DocStatus=" + DocStatus
 				+ ", DocAction=" + DocAction + ", OrderType=" + OrderType
 				+ ", IsSOTrx=" + IsSOTrx + ", Processing=" + Processing
 				+ ", AD_Table_ID=" + m_AD_Table_ID + ", Record_ID=" + Record_ID);
@@ -261,7 +262,7 @@ public class VDocAction extends CDialog
 			{
 				docTypeId = (Integer)m_mTab.getValue("C_DocTypeTarget_ID");
 			}
-			log.fine("get doctype: " + docTypeId);
+			log.debug("get doctype: " + docTypeId);
 
 			final Properties ctx = Env.getCtx();
 			final IDocActionOptionsContext optionsCtx = DefaultDocActionOptionsContext.builder(ctx)
@@ -428,7 +429,7 @@ public class VDocAction extends CDialog
 		if (index != -1)
 		{
 			message.setText(s_description[index]);
-			// log.finer("DocAction=" + s_name[index] + " - " + s_value[index]);
+			// log.trace("DocAction=" + s_name[index] + " - " + s_value[index]);
 		}
 	}	// actionPerformed
 
@@ -466,7 +467,7 @@ public class VDocAction extends CDialog
 			return false;
 
 		// Save Selection
-		log.config("DocAction=" + s_value[index]);
+		log.info("DocAction=" + s_value[index]);
 		m_mTab.setValue("DocAction", s_value[index]);
 		return true;
 	}	// save

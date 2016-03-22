@@ -25,11 +25,11 @@ package org.adempiere.tools;
 
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.event.EventBusConstants;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class used by tools build on top of ADempiere, which require only a minimal set of functionalities.
@@ -71,7 +71,7 @@ public final class AdempiereToolsHelper
 		
 		//
 		// Initialize logging
-		CLogMgt.initialize(true); // running it here to make sure we get the client side config
+		LogManager.initialize(true); // running it here to make sure we get the client side config
 
 		//
 		// Start Adempiere system

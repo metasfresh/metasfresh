@@ -31,7 +31,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
@@ -42,7 +43,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	protected final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 
 	private IHUCapacityDefinition _capacityTotal = null;

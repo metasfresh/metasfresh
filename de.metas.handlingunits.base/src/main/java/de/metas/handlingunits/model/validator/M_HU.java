@@ -26,7 +26,8 @@ package de.metas.handlingunits.model.validator;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -40,8 +41,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPickingSlotBL;
@@ -66,7 +65,7 @@ import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
 @Validator(I_M_HU.class)
 public class M_HU
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Checks if HU is valid.
@@ -104,7 +103,7 @@ public class M_HU
 				}
 				else
 				{
-					logger.log(Level.WARNING, ex.getLocalizedMessage() + " [ IGNORED ]", ex);
+					logger.warn(ex.getLocalizedMessage() + " [ IGNORED ]", ex);
 				}
 			}
 		}

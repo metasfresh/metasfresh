@@ -43,7 +43,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
 
@@ -84,7 +85,7 @@ public abstract class Convert
 	private boolean                 m_verbose = true;
 
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (Convert.class);
+	private static Logger	log	= LogManager.getLogger(Convert.class);
 	
     private static FileOutputStream tempFileOr = null;
     private static Writer writerOr;
@@ -133,7 +134,7 @@ public abstract class Convert
 				if (statement.length() == 0)
 				{
 					if (m_verbose)
-						log.finer("Skipping empty (" + i + ")");
+						log.trace("Skipping empty (" + i + ")");
 				}
 				else
 				{
@@ -157,7 +158,7 @@ public abstract class Convert
 							}
 						}
 						if (m_verbose)
-							log.fine("- ok " + no);
+							log.debug("- ok " + no);
 					}
 					catch (SQLException ex)
 					{
@@ -417,7 +418,7 @@ public abstract class Convert
 			sqlStatement = applyConvertMap(cleanUpStatement(sqlStatement));
 		}
 		catch (RuntimeException e) {
-			log.warning(e.getLocalizedMessage());
+			log.warn(e.getLocalizedMessage());
 			m_exception = e;
 		}
 		

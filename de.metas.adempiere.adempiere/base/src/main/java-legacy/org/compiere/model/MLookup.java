@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -183,7 +181,7 @@ public final class MLookup extends Lookup implements Serializable
 			}
 		};
 		m_evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(ctxDelegate, info.getWindowNo(), TabNo, info.getTableName()); // metas
-		log.fine(m_info.getKeyColumn());
+		log.debug(m_info.getKeyColumn());
 
 		// // load into local lookup, if already cached
 		// if (MLookupCache.loadFromCache(m_info, m_lookup))
@@ -243,7 +241,7 @@ public final class MLookup extends Lookup implements Serializable
 	public void dispose()
 	{
 		if (m_info != null)
-			log.log(Level.FINE, "Disposing: {0}", m_info.getKeyColumn());
+			log.debug("Disposing: {}", m_info.getKeyColumn());
 
 		interruptLoading();
 		//
@@ -393,11 +391,11 @@ public final class MLookup extends Lookup implements Serializable
 		}
 		catch (InterruptedException e)
 		{
-			log.log(Level.WARNING, "Interrupted while loading the lookup data: " + this, e);
+			log.warn("Interrupted while loading the lookup data: " + this, e);
 		}
 		catch (ExecutionException e)
 		{
-			log.log(Level.WARNING, "Failed loading the lookup data: " + this, e);
+			log.warn("Failed loading the lookup data: " + this, e);
 
 			// If our "future" is exactly the cached "future", get rid of it
 			// because else it will throw the same exception over and over again
@@ -845,11 +843,11 @@ public final class MLookup extends Lookup implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Error getting direct value for key=" + key + " on " + m_info, e);
+			log.error("Error getting direct value for key=" + key + " on " + m_info, e);
 			directValue = null;
 		}
 
-		log.log(Level.FINE, "{0} - Direct value: {1}", new Object[] { m_info, directValue });
+		log.debug("{} - Direct value: {}", new Object[] { m_info, directValue });
 
 		// Cache to R/W cache (m_lookup)
 		if (saveInCache && IValidationContext.DISABLED != evalCtx && directValue != null)

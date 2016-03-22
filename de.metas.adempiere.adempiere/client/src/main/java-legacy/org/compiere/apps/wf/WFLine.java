@@ -28,7 +28,8 @@ import java.awt.font.TextLayout;
 
 import javax.swing.SwingConstants;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.wf.MWFNodeNext;
 
 
@@ -73,7 +74,7 @@ public class WFLine extends Component
 	/** Visited value			*/
 	private boolean			m_visited = false;
 	/**	Logger					*/
-	private static CLogger	log = CLogger.getCLogger(WFLine.class);
+	private static Logger	log = LogManager.getLogger(WFLine.class);
 	
 	/**
 	 * 	Get From rectangle

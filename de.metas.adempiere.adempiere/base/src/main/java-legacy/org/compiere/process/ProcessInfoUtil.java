@@ -19,14 +19,14 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -39,7 +39,7 @@ import org.compiere.util.Env;
 public class ProcessInfoUtil
 {
 	/**	Logger							*/
-	private static CLogger		s_log = CLogger.getCLogger (ProcessInfoUtil.class);
+	private static Logger		s_log = LogManager.getLogger(ProcessInfoUtil.class);
 
 
 	/**************************************************************************
@@ -88,7 +88,7 @@ public class ProcessInfoUtil
 					//
 					if (Message != null)
 						pi.addSummary ("  (" +  msgBL.parseTranslation(Env.getCtx(), Message)  + ")");
-				//	s_log.fine("setSummaryFromDB - " + Message);
+				//	s_log.debug("setSummaryFromDB - " + Message);
 					return;
 				}
 
@@ -96,20 +96,26 @@ public class ProcessInfoUtil
 				//	sleep
 				try
 				{
-					final Level logLevel = noTry >= 3 ? Level.WARNING : Level.FINE;
-					s_log.log(logLevel, "Waiting for AD_PInstance_ID={0} to return a result", pi.getAD_PInstance_ID());
+					if (noTry >= 3)
+					{
+						s_log.warn("Waiting for AD_PInstance_ID={} to return a result", pi.getAD_PInstance_ID());
+					}
+					else
+					{
+						s_log.debug("Waiting for AD_PInstance_ID={} to return a result", pi.getAD_PInstance_ID());
+					}
 					Thread.sleep(sleepTime);
 				}
 				catch (InterruptedException ie)
 				{
-					s_log.log(Level.SEVERE, "Sleep Thread", ie);
+					s_log.error("Sleep Thread", ie);
 				}
 			}
 			pstmt.close();
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 			pi.setThrowable(e);  // 03152
 			pi.setSummary (e.getLocalizedMessage(), true);
 			return;
@@ -148,7 +154,7 @@ public class ProcessInfoUtil
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, "setLogFromDB", e);
+			s_log.error("setLogFromDB", e);
 		}
 		finally
 		{
@@ -167,12 +173,12 @@ public class ProcessInfoUtil
 		final ProcessInfoLog[] logs = pi.getLogs();
 		if (logs == null || logs.length == 0)
 		{
-	//		s_log.fine("saveLogToDB - No Log");
+	//		s_log.debug("saveLogToDB - No Log");
 			return;
 		}
 		if (pi.getAD_PInstance_ID() <= 0)
 		{
-	//		s_log.log(Level.WARNING,"saveLogToDB - not saved - AD_PInstance_ID==0");
+	//		s_log.warn("saveLogToDB - not saved - AD_PInstance_ID==0");
 			return;
 		}
 
@@ -211,7 +217,7 @@ public class ProcessInfoUtil
 		catch (SQLException e)
 		{
 			// log only, don't fail
-			s_log.log(Level.SEVERE, "Error while saving the process log lines", e);
+			s_log.error("Error while saving the process log lines", e);
 		}
 		finally
 		{

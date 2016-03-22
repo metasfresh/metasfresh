@@ -25,14 +25,13 @@ package de.metas.event.jms;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
@@ -50,7 +49,7 @@ import de.metas.event.IEventBus;
 class SysconfigBackedAllowRemoteBindingPredicate implements Predicate<IEventBus>
 {
 	// services
-	private static final transient CLogger logger = EventBusConstants.getLogger();
+	private static final transient Logger logger = EventBusConstants.getLogger(SysconfigBackedAllowRemoteBindingPredicate.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -89,7 +88,7 @@ class SysconfigBackedAllowRemoteBindingPredicate implements Predicate<IEventBus>
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Failed checking the rules table for " + eventBus + ". Returning DISALLOW", e);
+			logger.warn("Failed checking the rules table for " + eventBus + ". Returning DISALLOW", e);
 			return false; // disallow
 		}
 	}
@@ -167,7 +166,7 @@ class SysconfigBackedAllowRemoteBindingPredicate implements Predicate<IEventBus>
 		}
 
 		final boolean allowed = DisplayType.toBoolean(map.get(selector), false);
-		logger.log(Level.FINE, "Rule matched {0} => allow={1}", new Object[] { selector, allowed });
+		logger.debug("Rule matched {0} => allow={1}", new Object[] { selector, allowed });
 		return allowed;
 	}
 

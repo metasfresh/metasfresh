@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -119,7 +118,7 @@ public class CalloutBankStatement extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "BankStmt_Payment", e);
+			log.error("BankStmt_Payment", e);
 			return e.getLocalizedMessage();
 		}
 		finally

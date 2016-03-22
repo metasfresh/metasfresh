@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -56,12 +55,13 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -74,7 +74,7 @@ import de.metas.banking.payment.IPaySelectionUpdater;
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(PaySelectionUpdater.class);
+	private static final transient Logger log = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
@@ -283,7 +283,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		Check.assume(sqlParams != null && sqlParams.isEmpty(), "instantiated empty list");
 
-		if (log.isLoggable(Level.INFO))
+		if (log.isInfoEnabled())
 		{
 			log.info("C_PaySelection_ID=" + getC_PaySelection()
 					+ ", OnlyDiscount=" + isOnlyDiscount() + ", OnlyDue=" + isOnlyDue()
@@ -589,12 +589,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		if (isNewPaySelectionLine)
 		{
 			countCreated++;
-			log.log(Level.FINE, "Created {0}", paySelectionLine);
+			log.debug("Created {}", paySelectionLine);
 		}
 		else
 		{
 			countUpdated++;
-			log.log(Level.FINE, "Updated {0}", paySelectionLine);
+			log.debug("Updated {}", paySelectionLine);
 		}
 	}
 
@@ -612,7 +612,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// Actually delete the pay selection line & update statistics
 		InterfaceWrapperHelper.delete(paySelectionLine);
 		countDeleted++;
-		log.log(Level.FINE, "Deleted {0}", paySelectionLine);
+		log.debug("Deleted {}", paySelectionLine);
 	}
 
 	/** Updates {@link I_C_PaySelectionLine} from: given candidate and current pay selection header */

@@ -28,7 +28,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -62,7 +63,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
 import org.compiere.swing.ToStringListCellRenderer;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.jdesktop.swingx.JXTable;
@@ -129,7 +131,7 @@ public class VFileImport extends CPanel
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "init", e);
+			logger.error("init", e);
 		}
 	}	// init
 
@@ -141,7 +143,7 @@ public class VFileImport extends CPanel
 	/** Current selected file to import */
 	private File _file = null;
 	/** Logger */
-	private static final CLogger logger = CLogger.getCLogger(VFileImport.class);
+	private static final Logger logger = LogManager.getLogger(VFileImport.class);
 
 	//
 	private final CPanel northPanel = new CPanel();
@@ -258,7 +260,7 @@ public class VFileImport extends CPanel
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "Failed loading import formats", e);
+			logger.error("Failed loading import formats", e);
 		}
 		pickImpFormat.setSelectedIndex(0);
 		pickImpFormat.addActionListener(this);
@@ -347,7 +349,7 @@ public class VFileImport extends CPanel
 					+ File.separator + "import";
 			fileToSelect = null;
 		}
-		logger.config(directory);
+		logger.info(directory);
 
 		// File filter: only supported types
 		FileFilter filter = new FileNameExtensionFilter("Text (*.csv, *.txt)", new String[] {"txt", "csv"});
@@ -576,11 +578,11 @@ public class VFileImport extends CPanel
 				}
 				catch (InterruptedException e)
 				{
-					logger.log(Level.WARNING, "", e);
+					logger.warn("", e);
 				}
 				catch (ExecutionException e)
 				{
-					logger.log(Level.WARNING, "", e.getCause());
+					logger.warn("", e.getCause());
 				}
 			}
 		};

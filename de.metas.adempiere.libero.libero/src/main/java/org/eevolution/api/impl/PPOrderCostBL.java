@@ -36,7 +36,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderCostDAO;
@@ -46,10 +45,12 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.I_PP_Order_Node;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public void createStandardCosts(final I_PP_Order ppOrder)

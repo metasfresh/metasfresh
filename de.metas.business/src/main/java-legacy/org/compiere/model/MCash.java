@@ -27,7 +27,8 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -36,6 +37,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *	Cash Journal Model
@@ -93,7 +95,7 @@ public class MCash extends X_C_Cash implements DocAction
 		MCashBook cb = MCashBook.get (ctx, AD_Org_ID, C_Currency_ID);
 		if (cb == null)
 		{
-			s_log.warning("No CashBook for AD_Org_ID=" + AD_Org_ID + ", C_Currency_ID=" + C_Currency_ID);
+			s_log.warn("No CashBook for AD_Org_ID=" + AD_Org_ID + ", C_Currency_ID=" + C_Currency_ID);
 			return null;
 		}
 		
@@ -130,7 +132,7 @@ public class MCash extends X_C_Cash implements DocAction
 		MCashBook cb = new MCashBook (ctx, C_CashBook_ID, trxName);
 		if (cb.get_ID() ==0)
 		{
-			s_log.warning("Not found C_CashBook_ID=" + C_CashBook_ID);
+			s_log.warn("Not found C_CashBook_ID=" + C_CashBook_ID);
 			return null;
 		}
 		
@@ -141,7 +143,7 @@ public class MCash extends X_C_Cash implements DocAction
 	}	//	get
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MCash.class);
+	private static Logger	s_log	= LogManager.getLogger(MCash.class);
 
 	
 	/**************************************************************************
@@ -279,7 +281,7 @@ public class MCash extends X_C_Cash implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -493,7 +495,7 @@ public class MCash extends X_C_Cash implements DocAction
 				hdr.setAD_Org_ID(getAD_Org_ID());
 				if (!hdr.save())
 				{
-					m_processMsg = CLogger.retrieveErrorString("Could not create Allocation Hdr");
+					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Allocation Hdr");
 					return DocAction.STATUS_Invalid;
 				}
 				//	Allocation Line
@@ -503,16 +505,16 @@ public class MCash extends X_C_Cash implements DocAction
 				aLine.setC_CashLine_ID(line.getC_CashLine_ID());
 				if (!aLine.save())
 				{
-					m_processMsg = CLogger.retrieveErrorString("Could not create Allocation Line");
+					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Allocation Line");
 					return DocAction.STATUS_Invalid;
 				}
 				//	Should start WF
 				if(!hdr.processIt(DocAction.ACTION_Complete)) {
-					m_processMsg = CLogger.retrieveErrorString("Could not process Allocation");
+					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not process Allocation");
 					return DocAction.STATUS_Invalid;
 				}
 				if (!hdr.save()) {
-					m_processMsg = CLogger.retrieveErrorString("Could not save Allocation");
+					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not save Allocation");
 					return DocAction.STATUS_Invalid;
 				}
 			}
@@ -544,7 +546,7 @@ public class MCash extends X_C_Cash implements DocAction
 				pay.setProcessed(true);		
 				if (!pay.save())
 				{
-					m_processMsg = CLogger.retrieveErrorString("Could not create Payment");
+					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Payment");
 					return DocAction.STATUS_Invalid;
 				}
 				
@@ -785,7 +787,7 @@ public class MCash extends X_C_Cash implements DocAction
 			+ "' WHERE C_Cash_ID=" + getC_Cash_ID();
 		int noLine = DB.executeUpdate (sql, get_TrxName());
 		m_lines = null;
-		log.fine(processed + " - Lines=" + noLine);
+		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
 	
 	/**

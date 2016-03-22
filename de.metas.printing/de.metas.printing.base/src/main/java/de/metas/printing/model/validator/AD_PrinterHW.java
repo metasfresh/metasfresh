@@ -25,7 +25,8 @@ package de.metas.printing.model.validator;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -33,8 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
-
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
@@ -48,7 +47,7 @@ import de.metas.printing.model.I_AD_Printer_Config;
 @Validator(I_AD_PrinterHW.class)
 public class AD_PrinterHW
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setHostKey(final I_AD_PrinterHW printerHW)
@@ -64,7 +63,7 @@ public class AD_PrinterHW
 		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
 		if (Check.isEmpty(hostKey, true))
 		{
-			logger.log(Level.FINE, "HostKey not found in context");
+			logger.debug("HostKey not found in context");
 			return;
 		}
 

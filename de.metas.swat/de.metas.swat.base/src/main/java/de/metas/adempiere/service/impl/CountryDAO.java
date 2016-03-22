@@ -32,7 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
@@ -44,7 +45,6 @@ import org.compiere.model.MLanguage;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_User_SaveCustomInfo;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -63,7 +63,7 @@ public class CountryDAO implements ICountryDAO
 	/** Default Country */
 	private I_C_Country s_default = null;
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(CountryDAO.class);
+	private static Logger s_log = LogManager.getLogger(CountryDAO.class);
 
 	@Override
 	public ICountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName)
@@ -156,7 +156,7 @@ public class CountryDAO implements ICountryDAO
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -166,7 +166,7 @@ public class CountryDAO implements ICountryDAO
 		}
 		if (s_default == null)
 			s_default = usa;
-		s_log.fine("#" + s_countries.size()
+		s_log.debug("#" + s_countries.size()
 				+ " - Default=" + s_default);
 	} // loadAllCountries
 }

@@ -23,6 +23,8 @@ import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.jms.JMSConfigFeature;
 import org.apache.cxf.transport.jms.JMSConfiguration;
+import org.compiere.util.Env;
+import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.ImmutableList;
@@ -61,7 +63,7 @@ import de.metas.jms.IJMSService;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Configuration
 public class JaxRsBL implements IJaxRsBL
 {
 
@@ -73,7 +75,7 @@ public class JaxRsBL implements IJaxRsBL
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
 			+ "&replyToName=dynamicQueues/{1}"
 			+ "&jndiURL={2}"
-			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5, if you don't use this paramter, then, the default is 60.000 milliseconds.
+			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	/**
@@ -81,12 +83,26 @@ public class JaxRsBL implements IJaxRsBL
 	 */
 	private Server automaticEndpointsServer;
 
+	/**
+	 * Registers this instance in {@link Services}, to avoid Services from creating a new instance that was not configured using spring.
+	 *
+	 */
+	public JaxRsBL()
+	{
+		final boolean alreadyRegistered = Services.isAvailable(IJaxRsBL.class);
+		if (!alreadyRegistered)
+		{
+			Services.registerService(IJaxRsBL.class, this);
+		}
+	}
+
 	@Override
-	public void createServerEndPoints(final Properties ctx)
+	public void createServerEndPoints()
 	{
 		final IJaxRsDAO jaxRsDAO = Services.get(IJaxRsDAO.class);
 		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 
+		final Properties ctx = Env.createSysContext(Env.getCtx());
 		final List<I_AD_JAXRS_Endpoint> serverEndPoints = jaxRsDAO.retrieveServerEndPoints(ctx);
 
 		final Builder<Object> builder = CreateEndpointRequest.builder();
@@ -102,10 +118,11 @@ public class JaxRsBL implements IJaxRsBL
 		final CreateEndpointRequest<Object> request = builder.build();
 
 		final boolean stopAutomaticEndpointsfirst = true; // we are (re-)starting the automatic EPs, so we want to stop them first
-		startServerEndPoints(request, stopAutomaticEndpointsfirst);
+		createServerEndPoints(request, stopAutomaticEndpointsfirst);
+
 	}
 
-	private void startServerEndPoints(
+	private void createServerEndPoints(
 			final CreateEndpointRequest<?> request,
 			final boolean stopAutomaticEndpointsfirst)
 	{
@@ -117,9 +134,11 @@ public class JaxRsBL implements IJaxRsBL
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
 		final JAXRSServerFactoryBean svrFactory = new JAXRSServerFactoryBean();
+		// svrFactory.setBus(bus);
 
-		final List<Class<?>> endpointClasses = ImmutableList.<Class<?>> copyOf(request.getEndpointClasses());
+		final List<Class<?>> endpointClasses = ImmutableList.<Class<?>> copyOf(request.getEndpointClasses()).reverse();
 		svrFactory.setResourceClasses(endpointClasses);
+		// svrFactory.setBus(bus); see the commented out "spring" section below
 
 		svrFactory.setProvider(jacksonJaxbJsonProvider);
 		svrFactory.getFeatures().add(setupJMSConfiguration(
@@ -299,6 +318,92 @@ public class JaxRsBL implements IJaxRsBL
 	public <T extends ISingletonService> void createServerEndPointsProgramatically(final CreateEndpointRequest<T> request)
 	{
 		final boolean stopAutomaticEndpointsfirst = false; // don't touch any EPs that are currently running
-		startServerEndPoints(request, stopAutomaticEndpointsfirst);
+		createServerEndPoints(request, stopAutomaticEndpointsfirst);
 	}
+
+	//
+	// The following methods belong to spring.
+	// They are currently commented out, because currently the client startup procedure needs to be decomposed more
+	// See SwingUIApplication to know what I mean.
+	// Currently, if we change the appserver-settings in the login dialog, the system blocks, because it's trying to get the "adempiere" bean, whose @Bean method is actually the source of all this
+	//
+//formatter:off
+//
+//	@Autowired
+//	private ApplicationEventPublisher applicationEventPublisher;
+//
+//	@Autowired
+//	private SpringBus bus;
+//
+//	@EventListener
+//	public void onAppServerSettingsChange(final CConnection.AppServerSettingsChangedEvent event)
+//	{
+//		bus.shutdown();
+//		bus = bus();
+//
+//		applicationEventPublisher.publishEvent(new JaxRsWasResetEvent(JaxRsWasResetEvent.Advise.RESTART));
+//	}
+//
+//	@EventListener
+//	public void onJaxRsWasReset(final JaxRsWasResetEvent event)
+//	{
+//		if (automaticEndpointsServer != null && event.getAdvise() == JaxRsWasResetEvent.Advise.RESTART)
+//		{
+//			createServerEndPoints();
+//		}
+//	}
+//
+//	/**
+//	 * Creates a new cxf bus.
+//	 *
+//	 * @return
+//	 */
+//	@Bean
+//	public SpringBus bus()
+//	{
+//		return new SpringBus();
+//	}
+//
+//	/**
+//	 * Creates and configures an InstrumentationManager, see http://cxf.apache.org/docs/jmx-management.html.
+//	 *
+//	 * @param bus the cxf bus for the InstrumentationManager. Autowired by spring.
+//	 * @return
+//	 */
+//	@Bean
+//	public org.apache.cxf.management.InstrumentationManager instrumentationManager(final SpringBus bus)
+//	{
+//		final InstrumentationManagerImpl instrumentationManager = new InstrumentationManagerImpl();
+//		instrumentationManager.setEnabled(true);
+//		instrumentationManager.setBus(bus);
+//		instrumentationManager.setUsePlatformMBeanServer(true);
+//		return instrumentationManager;
+//	}
+//
+//	 /**
+//	 * Creates and configures an CounterRepository, see http://cxf.apache.org/docs/jmx-management.html.
+//	 *
+//	 * @param bus the cxf bus for the CounterRepository. Autowired by spring.
+//	 * @return
+//	 */
+//	 @Bean
+//	 public org.apache.cxf.management.counters.CounterRepository counterRepository(final SpringBus bus)
+//	 {
+//	 final CounterRepository counterRepository = new CounterRepository();
+//	 counterRepository.setBus(bus);
+//	 return counterRepository;
+//	 }
+//
+//	/**
+//	 * Called by spring to inject the cxf bus created by {@link #bus()} into this instance. This bus is used when creating new server (and client) endpoints.
+//	 *
+//	 * @param bus
+//	 */
+//	@Autowired
+//	public void setBus(SpringBus bus)
+//	{
+//		this.bus = bus;
+//	}
+	//formatter:off
+
 }

@@ -26,7 +26,8 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -37,7 +38,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -62,7 +62,7 @@ import de.metas.handlingunits.model.X_M_HU;
 public class HUPropertiesModel extends AbstractPropertiesPanelModel
 {
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(HUPropertiesModel.class);
+	private static final transient Logger logger = LogManager.getLogger(HUPropertiesModel.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final I_M_HU hu;
@@ -449,7 +449,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 		if (isDisposed())
 		{
 			final HUException ex = new HUException("Commiting the edit for a disposed model is not allowed: " + this);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return;
 		}
 

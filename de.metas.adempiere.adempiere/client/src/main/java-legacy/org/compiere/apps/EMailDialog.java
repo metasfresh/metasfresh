@@ -34,14 +34,14 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -64,12 +64,12 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
-import de.metas.letters.apps.IExternalEMail;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 
@@ -198,7 +198,7 @@ public class EMailDialog
 		}
 		catch (final Exception ex)
 		{
-			log.log(Level.SEVERE, "EMailDialog", ex);
+			log.error("EMailDialog", ex);
 		}
 		set(from, to, subject, message);
 		setAttachment(attachment);
@@ -227,7 +227,7 @@ public class EMailDialog
 	/** File to be optionally attached */
 	private File m_attachFile;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(EMailDialog.class);
+	private static Logger log = LogManager.getLogger(EMailDialog.class);
 
 	// metas: additional fields
 	private final CLabel lBoilerPlate = new CLabel();
@@ -783,17 +783,7 @@ public class EMailDialog
 
 	private String sendEMail(final EMail email)
 	{
-		final boolean useExternalEMail = isAlwaysUseExternalEMailClient();
-		// useExternalEMail = ADialog.ask(getWindowNo(), this, "de.metas.letters.SendExternalEMail"); // 06933: do not ask if we want to use external email service if not configured
-
-		if (!useExternalEMail)
-		{
-			return email.send();
-		}
-		else
-		{
-			return Services.get(IExternalEMail.class).send(email);
-		}
+		return email.send();
 	}
 
 	// Document Attachment:
@@ -859,13 +849,6 @@ public class EMailDialog
 		}
 		//
 		email.addAttachment(m_documentFile);
-	}
-
-	private static boolean isAlwaysUseExternalEMailClient()
-	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		final boolean defaultValue = false;
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.letters.AlwaysUseExternalEMailClient", defaultValue, adClientId);
 	}
 
 	int _windowNo = -1;

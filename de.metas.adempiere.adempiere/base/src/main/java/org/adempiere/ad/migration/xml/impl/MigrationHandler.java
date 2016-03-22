@@ -34,7 +34,8 @@ import org.adempiere.ad.migration.xml.IXMLHandlerFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,7 +44,7 @@ import org.w3c.dom.NodeList;
 
 class MigrationHandler implements IXMLHandler<I_AD_Migration>
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	public static final String NODENAME = "Migration";
 

@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
@@ -75,7 +76,7 @@ public class ExpenseSOrder extends SvrProcess
 				m_DateTo = (Timestamp)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -154,7 +155,7 @@ public class ExpenseSOrder extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -184,7 +185,7 @@ public class ExpenseSOrder extends SvrProcess
 			m_order.setBPartner(bp);
 			if (m_order.getC_BPartner_Location_ID() == 0)
 			{
-				log.log(Level.SEVERE, "No BP Location: " + bp);
+				log.error("No BP Location: " + bp);
 				addLog(0, te.getDateReport(), 
 					null, "No Location: " + te.getDocumentNo() + " " + bp.getName());
 				m_order = null;
@@ -259,9 +260,9 @@ public class ExpenseSOrder extends SvrProcess
 		//	Update TimeExpense Line
 		tel.setC_OrderLine_ID(ol.getC_OrderLine_ID());
 		if (tel.save())
-			log.fine("Updated " + tel + " with C_OrderLine_ID");
+			log.debug("Updated " + tel + " with C_OrderLine_ID");
 		else
-			log.log(Level.SEVERE, "Not Updated " + tel + " with C_OrderLine_ID");
+			log.error("Not Updated " + tel + " with C_OrderLine_ID");
 			
 	}	//	processLine
 	

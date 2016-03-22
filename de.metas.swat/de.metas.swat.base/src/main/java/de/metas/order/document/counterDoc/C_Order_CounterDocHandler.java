@@ -5,7 +5,6 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -16,7 +15,8 @@ import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
@@ -47,7 +47,7 @@ import de.metas.document.spi.ICounterDocHandler;
 @Immutable
 public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 {
-	private static final transient CLogger logger = CLogger.getCLogger(C_Order_CounterDocHandler.class);
+	private static final transient Logger logger = LogManager.getLogger(C_Order_CounterDocHandler.class);
 
 	public static final ICounterDocHandler instance = new C_Order_CounterDocHandler();
 
@@ -125,7 +125,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 			counterLine.setTax();
 			InterfaceWrapperHelper.save(counterLine);
 		}
-		logger.fine(counterOrder.toString());
+		logger.debug(counterOrder.toString());
 
 		// Document Action
 		final MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(document.getCtx(), order.getC_DocType_ID());

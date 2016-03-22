@@ -29,7 +29,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.model.I_C_AdvCommissionFactCand;
@@ -38,7 +39,7 @@ import de.metas.commission.service.ICommissionFactCandDAO;
 
 public class CommissionFactCandDAO implements ICommissionFactCandDAO
 {
-	private static final CLogger logger = CLogger.getCLogger(MCAdvCommissionFactCand.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvCommissionFactCand.class);
 
 	@Override
 	public MCAdvCommissionFactCand retrieveNext(final Properties ctx, final String trxName)

@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -33,7 +34,8 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -121,7 +123,7 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -134,14 +136,14 @@ public class MOrderLine extends X_C_OrderLine
 			pstmt = null;
 		}
 		if (retValue == null)
-			s_log.fine("-");
+			s_log.debug("-");
 		else
-			s_log.fine(retValue.toString());
+			s_log.debug(retValue.toString());
 		return retValue;
 	}	// getNotReserved
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger(MOrderLine.class);
+	private static Logger s_log = LogManager.getLogger(MOrderLine.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -394,7 +396,7 @@ public class MOrderLine extends X_C_OrderLine
 		final int taxCategoryId = Services.get(IOrderLineBL.class).getC_TaxCategory_ID(this);
 		if (taxCategoryId <= 0)
 		{
-			log.log(Level.SEVERE, "No Tax Category found");
+			log.error("No Tax Category found");
 			return false;
 		}
 
@@ -414,7 +416,7 @@ public class MOrderLine extends X_C_OrderLine
 
 		if (taxId <= 0)
 		{
-			log.log(Level.SEVERE, "No Tax found");
+			log.error("No Tax found");
 			return false;
 		}
 		setC_Tax_ID(taxId);
@@ -476,8 +478,8 @@ public class MOrderLine extends X_C_OrderLine
 
 			if (stdTax != null)
 			{
-				log.fine("stdTax rate is " + stdTax.getRate());
-				log.fine("orderTax rate is " + orderTax.getRate());
+				log.debug("stdTax rate is " + stdTax.getRate());
+				log.debug("orderTax rate is " + orderTax.getRate());
 
 				final ITaxBL taxBL = Services.get(ITaxBL.class);
 				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(orderTax, bd, isTaxIncluded, taxPrecision));
@@ -485,7 +487,7 @@ public class MOrderLine extends X_C_OrderLine
 
 				bd = bd.subtract(taxStdAmt).add(taxThisAmt);
 
-				log.fine("Price List includes Tax and Tax Changed on Order Line: New Tax Amt: "
+				log.debug("Price List includes Tax and Tax Changed on Order Line: New Tax Amt: "
 						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + bd);
 			}
 
@@ -640,7 +642,7 @@ public class MOrderLine extends X_C_OrderLine
 				&& !canChangeWarehouse(false) // trowEx=false for legacy purposes. We need to evaluate and consider to throw exception
 		)
 		{
-			log.severe("Ignored - Already Delivered/Invoiced/Reserved");
+			log.error("Ignored - Already Delivered/Invoiced/Reserved");
 		}
 		else
 		{
@@ -1044,8 +1046,8 @@ public class MOrderLine extends X_C_OrderLine
 		//
 		// if (getQtyOrdered().compareTo(qty) > 0)
 		// {
-		// log.warning("Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
-		// log.saveError("QtyInsufficient", "=" + qty);
+		// log.warn("Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
+		// log.error("QtyInsufficient", "=" + qty);
 		// return false;
 		// }
 		// }

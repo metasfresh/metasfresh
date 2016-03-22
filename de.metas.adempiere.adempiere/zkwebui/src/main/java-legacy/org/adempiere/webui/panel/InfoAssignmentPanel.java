@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -171,7 +170,7 @@ public class InfoAssignmentPanel extends InfoPanel implements EventListener, Val
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "InfoAssignment.initLookup");
+			log.error("InfoAssignment.initLookup");
 			return false;
 		}
 

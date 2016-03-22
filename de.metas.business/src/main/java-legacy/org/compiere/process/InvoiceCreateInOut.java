@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -61,7 +62,7 @@ public class InvoiceCreateInOut extends SvrProcess
 			else if (name.equals(PARAM_M_Warehouse_ID))
 				p_M_Warehouse_ID = para.getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_Invoice_ID = getRecord_ID();
 	}	//	prepare

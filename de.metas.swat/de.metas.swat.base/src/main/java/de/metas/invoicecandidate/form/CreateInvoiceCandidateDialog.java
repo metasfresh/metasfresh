@@ -42,11 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.JLabel;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -75,11 +72,10 @@ import org.compiere.model.Lookup;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
-
+import org.slf4j.Logger;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -90,6 +86,7 @@ import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import net.miginfocom.swing.MigLayout;
 
 public class CreateInvoiceCandidateDialog
 		extends CDialog
@@ -97,7 +94,7 @@ public class CreateInvoiceCandidateDialog
 {
 	private static final long serialVersionUID = 5069654601970071033L;
 
-	private static final CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(CreateInvoiceCandidateDialog.class);
 
 	private final int windowNo;
 
@@ -249,7 +246,7 @@ public class CreateInvoiceCandidateDialog
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "", e);
+			logger.error("", e);
 		}
 	}
 
@@ -350,7 +347,7 @@ public class CreateInvoiceCandidateDialog
 		final String name = e.getPropertyName();
 		final Object value = e.getNewValue();
 
-		logger.config(name + "=" + value);
+		logger.info(name + "=" + value);
 
 		if (value == null)
 		{

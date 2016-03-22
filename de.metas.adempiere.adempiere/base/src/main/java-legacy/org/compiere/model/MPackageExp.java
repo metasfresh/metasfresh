@@ -20,8 +20,6 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -119,7 +117,7 @@ public class MPackageExp extends X_AD_Package_Exp
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally {
 				DB.close(rs, pstmt);

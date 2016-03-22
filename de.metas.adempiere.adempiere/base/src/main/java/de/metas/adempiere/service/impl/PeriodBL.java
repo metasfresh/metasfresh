@@ -38,38 +38,39 @@ import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_PeriodControl;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IPeriodBL;
 
 public class PeriodBL implements IPeriodBL
 {
 
-	private static final CLogger s_log = CLogger.getCLogger(PeriodBL.class);
+	private static final Logger s_log = LogManager.getLogger(PeriodBL.class);
 
 	@Override
 	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
 	{
 		if (DateAcct == null)
 		{
-			s_log.warning("No DateAcct");
+			s_log.warn("No DateAcct");
 			return false;
 		}
 		if (DocBaseType == null)
 		{
-			s_log.warning("No DocBaseType");
+			s_log.warn("No DocBaseType");
 			return false;
 		}
 		MPeriod period = MPeriod.get(ctx, DateAcct, AD_Org_ID);
 		if (period == null)
 		{
-			s_log.warning("No Period for " + DateAcct + " (" + DocBaseType + ")");
+			s_log.warn("No Period for " + DateAcct + " (" + DocBaseType + ")");
 			return false;
 		}
 		boolean open = period.isOpen(DocBaseType, DateAcct, AD_Org_ID);
 		if (!open)
 		{
-			s_log.warning(period.getName() + ": Not open for " + DocBaseType + " (" + DateAcct + ")");
+			s_log.warn(period.getName() + ": Not open for " + DocBaseType + " (" + DateAcct + ")");
 		}
 		return open;
 	}

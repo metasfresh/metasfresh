@@ -32,8 +32,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.util.Check;
 import org.compiere.model.MImage;
 import org.zkoss.image.AImage;
@@ -111,7 +109,7 @@ public class ZKTerminalButtonWrapper
 		}
 		catch (final IOException e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 		// getComponent().setVerticalTextPosition(SwingConstants.BOTTOM);
 		// getComponent().setHorizontalTextPosition(SwingConstants.CENTER);

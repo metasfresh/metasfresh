@@ -27,7 +27,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.Random;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -42,7 +43,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MMailText;
 import org.compiere.model.X_AD_User;
-import org.compiere.util.CLogger;
 import org.compiere.util.EMail;
 import org.compiere.util.Util;
 
@@ -51,7 +51,7 @@ import de.metas.notification.IMailBL;
 
 public class UserBL implements IUserBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(UserBL.class);
+	private static final transient Logger logger = LogManager.getLogger(UserBL.class);
 
 	private final String passwordCharset = "0123456789";
 	private final int passwordLength = 6;
@@ -102,7 +102,7 @@ public class UserBL implements IUserBL
 				, I_AD_Client.class);
 		if (client.getPasswordReset_MailText_ID() <= 0)
 		{
-			logger.log(Level.SEVERE, "@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ")");
+			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ")");
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 

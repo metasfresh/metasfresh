@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
@@ -65,9 +64,12 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.MLookup;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuFocus;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -106,11 +108,11 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	 */
 	private static final long serialVersionUID = 6945934489328360251L;
 
-	private static final CLogger logger;
+	private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(ADTabpanel.class);
+        logger = LogManager.getLogger(ADTabpanel.class);
     }
 
     private GridTab           gridTab;
@@ -571,7 +573,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             GridField changedField = gridTab.getField(col);
             String columnName = changedField.getColumnName();
             ArrayList<?> dependants = gridTab.getDependantFields(columnName);
-            logger.config("(" + gridTab.toString() + ") "
+            logger.info("(" + gridTab.toString() + ") "
                 + columnName + " - Dependents=" + dependants.size());
             if (dependants.size() == 0 && !gridTab.getCalloutExecutor().hasCallouts(changedField))
             {
@@ -580,7 +582,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
         }
 
         boolean noData = gridTab.getRowCount() == 0;
-        logger.config(gridTab.toString() + " - Rows=" + gridTab.getRowCount());
+        logger.info(gridTab.toString() + " - Rows=" + gridTab.getRowCount());
         for (WEditor comp : editors)
         {
             GridField mField = comp.getGridField();
@@ -662,7 +664,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
         	}
         }
 
-        logger.config(gridTab.toString() + " - fini - " + (col<=0 ? "complete" : "seletive"));
+        logger.info(gridTab.toString() + " - fini - " + (col<=0 ? "complete" : "seletive"));
     }   //  dynamicDisplay
 
     /**
@@ -869,7 +871,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 		if (row == -1)
 		{
 			if (nodeID > 0)
-				logger.log(Level.WARNING, "Tab does not have ID with Node_ID=" + nodeID);
+				logger.warn("Tab does not have ID with Node_ID=" + nodeID);
 			return;
 		}
 
@@ -925,7 +927,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 		// metas: cg: task 03475 end 
     	
         int col = e.getChangedColumn();
-        logger.config("(" + gridTab + ") Col=" + col + ": " + e.toString());
+        logger.info("(" + gridTab + ") Col=" + col + ": " + e.toString());
 
         //  Process Callout
         final GridField mField = gridTab.getField(col);

@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -125,7 +126,7 @@ public class MProjectPhase extends X_C_ProjectPhase
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -188,7 +189,7 @@ public class MProjectPhase extends X_C_ProjectPhase
 			}
 		}
 		if (fromTasks.length != count)
-			log.warning("Count difference - ProjectPhase=" + fromTasks.length + " <> Saved=" + count);
+			log.warn("Count difference - ProjectPhase=" + fromTasks.length + " <> Saved=" + count);
 
 		return count;
 	}	//	copyTasksFrom
@@ -211,9 +212,9 @@ public class MProjectPhase extends X_C_ProjectPhase
 			if (toTask.save())
 				count++;
 		}
-		log.fine("#" + count + " - " + fromPhase);
+		log.debug("#" + count + " - " + fromPhase);
 		if (fromTasks.length != count)
-			log.log(Level.SEVERE, "Count difference - TypePhase=" + fromTasks.length + " <> Saved=" + count);
+			log.error("Count difference - TypePhase=" + fromTasks.length + " <> Saved=" + count);
 
 		return count;
 	}	//	copyTasksFrom

@@ -24,7 +24,8 @@ package de.metas.acct.process;
 
 
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -108,7 +109,7 @@ public class C_ValidCombination_UpdateDescriptionForAll extends SvrProcess
 		catch (Exception e)
 		{
 			addLog(account.getCombination() + ": " + e.getLocalizedMessage());
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 		finally
 		{

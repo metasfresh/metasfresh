@@ -24,6 +24,7 @@ package de.metas.adempiere.process;
 
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.model.MSession;
@@ -32,7 +33,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.service.ISweepTableBL;
 
@@ -67,7 +67,7 @@ public class SweepTable extends SvrProcess
 			}
 			else
 			{
-				log.fine("Unknown Parameter: " + name);
+				log.debug("Unknown Parameter: " + name);
 			}
 		}
 	}
@@ -75,7 +75,7 @@ public class SweepTable extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		Util.assume(p_WhereClause != null, "WhereClause is not null");
+		Check.assume(p_WhereClause != null, "WhereClause is not null");
 
 		final long startTime = System.currentTimeMillis();
 

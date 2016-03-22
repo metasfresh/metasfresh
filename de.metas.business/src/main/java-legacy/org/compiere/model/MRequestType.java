@@ -22,11 +22,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -64,7 +66,7 @@ public class MRequestType extends X_R_RequestType
 	}	//	get
 
 	/** Static Logger					*/
-	private static CLogger s_log = CLogger.getCLogger(MRequestType.class);
+	private static Logger s_log = LogManager.getLogger(MRequestType.class);
 	/**	Cache							*/
 	static private CCache<Integer,MRequestType> s_cache = new CCache<Integer,MRequestType>("R_RequestType", 10);
 
@@ -97,7 +99,7 @@ public class MRequestType extends X_R_RequestType
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		try
 		{
@@ -198,7 +200,7 @@ public class MRequestType extends X_R_RequestType
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -286,7 +288,7 @@ public class MRequestType extends X_R_RequestType
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -414,7 +416,7 @@ public class MRequestType extends X_R_RequestType
 				role,
 				"R_Request", orgColumn, bpColumn, pColumn);
 		
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSqlPI
 	
@@ -485,7 +487,7 @@ public class MRequestType extends X_R_RequestType
 		if (groupBy != null)
 			sql += " GROUP BY " + groupBy + " ORDER BY " + orderBy;
 		//
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSqlBarChart
 	

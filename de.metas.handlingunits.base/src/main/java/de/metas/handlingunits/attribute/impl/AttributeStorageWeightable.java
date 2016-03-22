@@ -24,14 +24,13 @@ package de.metas.handlingunits.attribute.impl;
 
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableBL;
@@ -47,7 +46,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 /* package */class AttributeStorageWeightable implements IWeightable
 {
 	// services
-	private final static transient CLogger logger = CLogger.getCLogger(AttributeStorageWeightable.class);
+	private final static transient Logger logger = LogManager.getLogger(AttributeStorageWeightable.class);
 	private final IWeightableBL weightableBL = Services.get(IWeightableBL.class);
 
 	private final I_M_Attribute attr_WeightGross;
@@ -154,7 +153,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 
 		if (attribute.getM_Attribute_ID() != expectedWeightAttribute.getM_Attribute_ID())
 		{
-			logger.log(Level.FINER, "Expected: {0}; Received: {1}", new Object[] { expectedWeightAttribute.getValue(), attribute.getValue() });
+			logger.trace("Expected: {}; Received: {}", new Object[] { expectedWeightAttribute.getValue(), attribute.getValue() });
 			return false;
 		}
 
@@ -314,7 +313,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
 
-		logger.log(Level.FINE, "Setting {0} attribute Value={1} on {2}", new Object[] { weightAttribute.getValue(), weight, attributeStorage });
+		logger.debug("Setting {} attribute Value={} on {}", new Object[] { weightAttribute.getValue(), weight, attributeStorage });
 		attributeStorage.setValue(weightAttribute, weight);
 	}
 
@@ -328,7 +327,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
 
-		logger.log(Level.FINE, "Setting {0} INTERNAL attribute Value={1} on {2}", new Object[] { weightAttribute.getValue(), weight, attributeStorage });
+		logger.debug("Setting {} INTERNAL attribute Value={} on {}", new Object[] { weightAttribute.getValue(), weight, attributeStorage });
 		attributeStorage.setValueNoPropagate(weightAttribute, weight); // directly set the correct value we're expecting
 
 	}

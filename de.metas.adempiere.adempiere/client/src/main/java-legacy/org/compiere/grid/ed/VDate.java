@@ -30,7 +30,8 @@ import java.beans.PropertyVetoException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -47,7 +48,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
@@ -198,7 +200,7 @@ public class VDate extends JComponent
 
 	private GridField m_mField = null;
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(VDate.class);
+	private static final transient Logger log = LogManager.getLogger(VDate.class);
 	
 	private final VEditorAction actionCancelEdit = new VEditorAction("cancelEdit", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))
 	{
@@ -336,7 +338,7 @@ public class VDate extends JComponent
 	@Override
 	public void setValue(final Object value)
 	{
-		log.log(Level.FINEST, "Value={0}", value);
+		log.trace("Value={}", value);
 		
 		final Timestamp valueAsTS = toTimestamp(value);
 		setValueOld(valueAsTS);
@@ -410,7 +412,7 @@ public class VDate extends JComponent
 		}
 		catch (ParseException pe)
 		{
-			log.log(Level.FINE, pe.getMessage(), pe);
+			log.debug(pe.getMessage(), pe);
 		}
 		
 		return null;
@@ -444,7 +446,7 @@ public class VDate extends JComponent
 				}
 				catch (ParseException pe1)
 				{
-					log.log(Level.SEVERE, "Failed to convert " + value + " to timestamp", pe1);
+					log.error("Failed to convert " + value + " to timestamp", pe1);
 					valueAsTS = null;
 				}
 			}

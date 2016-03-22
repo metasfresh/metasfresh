@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MLocator;
@@ -31,7 +32,6 @@ import org.compiere.model.X_M_Production;
 import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -39,6 +39,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 
+import de.metas.logging.MetasfreshLastError;
 import de.metas.product.IProductBL;
 
 /**
@@ -61,6 +62,7 @@ public class M_Production_Run extends SvrProcess {
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare() {
 		ProcessInfoParameter[] para = getParameter();
 		for (int i = 0; i < para.length; i++) {
@@ -70,7 +72,7 @@ public class M_Production_Run extends SvrProcess {
 			else if (name.equals("MustBeStocked"))
 				mustBeStocked = ((String) para[i].getParameter()).equals("Y");
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_Record_ID = getRecord_ID();
 	} //prepare
@@ -82,6 +84,7 @@ public class M_Production_Run extends SvrProcess {
 	 * @throws Exception
 	 */
 
+	@Override
 	protected String doIt() throws Exception 
 	{
 		log.info("Search fields in M_Production");
@@ -252,7 +255,7 @@ public class M_Production_Run extends SvrProcess {
 	
 	private void raiseError(String string, String sql) throws Exception {
 		String msg = string;
-		ValueNamePair pp = CLogger.retrieveError();
+		ValueNamePair pp = MetasfreshLastError.retrieveError();
 		if (pp != null)
 			msg = pp.getName() + " - ";
 		msg += sql;

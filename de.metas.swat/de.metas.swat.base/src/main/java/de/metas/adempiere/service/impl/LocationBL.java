@@ -26,7 +26,8 @@ package de.metas.adempiere.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +38,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import com.akunagroup.uk.postcode.AddressInterface;
@@ -50,7 +50,7 @@ import de.metas.dpd.model.I_DPD_Route;
 
 public class LocationBL implements ILocationBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private static final String SQL_WhereClause_C_Postal_Postal =
 			"LPAD(" + I_C_Postal.COLUMNNAME_Postal + ", 20, '0')=LPAD(?, 20, '0')";
@@ -87,7 +87,7 @@ public class LocationBL implements ILocationBL
 		}
 
 		String postal = address.getPostcode().trim();
-		log.fine("Checking: " + postal);
+		log.debug("Checking: " + postal);
 
 		if (checkOnCPostal(ctx, address.getCountryCode(), postal))
 		{
@@ -224,7 +224,7 @@ public class LocationBL implements ILocationBL
 
 	private boolean checkOnCPostal(Properties ctx, String countryCode, String postal)
 	{
-		log.fine("Checking: postal=" + postal + ", countryCode=" + countryCode);
+		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
 
 		I_C_Country country = getCountryByCode(ctx, countryCode);
 		if (country == null)
@@ -235,7 +235,7 @@ public class LocationBL implements ILocationBL
 				.setOnlyActiveRecords(true)
 				.setApplyAccessFilterRW(false) // rw=false
 				.match();
-		log.fine("Found: " + found);
+		log.debug("Found: " + found);
 		return found;
 	}
 
@@ -246,12 +246,12 @@ public class LocationBL implements ILocationBL
 			return false;
 
 		postal = postal.trim();
-		log.fine("Checking: postal=" + postal + ", countryCode=" + countryCode);
+		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
 
 		boolean found = new Query(Env.getCtx(), I_DPD_Route.Table_Name, SQL_WhereClause_DPD_Route_ByCountryAndPostal, null)
 				.setParameters(countryCode, postal)
 				.match();
-		log.fine("Found: " + found);
+		log.debug("Found: " + found);
 		return found;
 	}
 
@@ -296,7 +296,7 @@ public class LocationBL implements ILocationBL
 		postal.setPostal(address.getPostcode());
 		// postal.setPostal_Add(location.getPostal_Add());
 		POWrapper.save(postal);
-		log.fine("Created a new C_Postal record for " + address + ": " + postal);
+		log.debug("Created a new C_Postal record for " + address + ": " + postal);
 
 		if (location != null)
 		{
@@ -624,7 +624,7 @@ public class LocationBL implements ILocationBL
 		postal.setPostal(postcode);
 		postal.setIsManual(true);
 		POWrapper.save(postal);
-		log.fine("Registered manual C_Postal: " + postal);
+		log.debug("Registered manual C_Postal: " + postal);
 	}
 
 	@Override
@@ -647,7 +647,7 @@ public class LocationBL implements ILocationBL
 		}
 		else
 		{
-			log.log(Level.WARNING, "Cannot determine C_Postal from " + address);
+			log.warn("Cannot determine C_Postal from " + address);
 			return null;
 		}
 	}

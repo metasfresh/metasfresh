@@ -53,43 +53,5 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-
-		<plugins>
-			<!-- 
-			Note: as of now, we still need this jar to be in the lib folder to be in the classpath of (RUN_Post_Rollout_Processes.sh). 
-			However, it's only a tiny part that we actually need..
-			-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-
-				<executions>
-					<execution>
-						<id>shade-all</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<shadedArtifactAttached>true</shadedArtifactAttached> <!-- Make the shaded artifact not the main one -->
-							<shadedClassifierName>allInOne</shadedClassifierName> <!-- set the suffix to the shaded jar -->
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
-
-	<description>Creates one uber-jar:
-1. allInOne: an uber-jar with all dependencies: this uber jar is supposed to be used by the swing client</description>
 </project>

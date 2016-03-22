@@ -46,7 +46,8 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.eevolution.model.MHRMovement;
@@ -93,7 +94,7 @@ import de.metas.commission.util.SuccessiveFactsFinder;
  */
 public class CommissionFactBL implements ICommissionFactBL
 {
-	private static final CLogger logger = CLogger.getCLogger(CommissionFactBL.class);
+	private static final Logger logger = LogManager.getLogger(CommissionFactBL.class);
 
 	@Override
 	public Map<IAdvComInstance, MCAdvCommissionFact> createInstanceAndFact(
@@ -841,7 +842,7 @@ public class CommissionFactBL implements ICommissionFactBL
 				newCalcMinusFact.setDateFact(dateInvoiced);
 
 				newCalcMinusFact.saveEx();
-				CommissionFactBL.logger.fine("Created " + newCalcMinusFact);
+				CommissionFactBL.logger.debug("Created " + newCalcMinusFact);
 				newCalcFacts.add(newCalcMinusFact);
 
 				for (final I_C_AdvCommissionFact cplFact : cplFacts)
@@ -881,7 +882,7 @@ public class CommissionFactBL implements ICommissionFactBL
 				newCalcFact.addFollowUpInfo(newPayableFact);
 				newCalcFact.saveEx();
 			}
-			CommissionFactBL.logger.fine("Created " + newPayableFact);
+			CommissionFactBL.logger.debug("Created " + newPayableFact);
 
 		}
 	}
@@ -1309,11 +1310,11 @@ public class CommissionFactBL implements ICommissionFactBL
 			minusFact.setFactType(X_C_AdvCommissionFact.FACTTYPE_VorgangSchliessen);
 			minusFact.saveEx();
 
-			CommissionFactBL.logger.fine("Created minus fact " + minusFact);
+			CommissionFactBL.logger.debug("Created minus fact " + minusFact);
 		}
 		else
 		{
-			CommissionFactBL.logger.fine("No need to create minus fact for status='" + status + "' and " + instanceToClose);
+			CommissionFactBL.logger.debug("No need to create minus fact for status='" + status + "' and " + instanceToClose);
 		}
 	}
 

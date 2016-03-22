@@ -52,7 +52,7 @@ import de.metas.invoice.MatchInvException;
 /* package */class MatchInvBuilder implements IMatchInvBuilder
 {
 	// services
-	// private static final transient CLogger logger = CLogger.getCLogger(MatchInvBuilder.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(MatchInvBuilder.class);
 	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);

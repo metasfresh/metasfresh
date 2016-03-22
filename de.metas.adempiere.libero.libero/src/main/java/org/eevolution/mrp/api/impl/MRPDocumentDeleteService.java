@@ -26,7 +26,6 @@ package org.eevolution.mrp.api.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,7 +36,6 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPContext;
@@ -47,6 +45,10 @@ import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 {
@@ -54,8 +56,8 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 	private static final int DELETE_BufferSize = 50;
 
 	// Services
-	private final transient CLogger loggerDefault = CLogger.getCLogger(getClass());
-	private transient CLogger logger = loggerDefault;
+	private final transient Logger loggerDefault = LogManager.getLogger(getClass());
+	private transient Logger logger = loggerDefault;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
@@ -279,7 +281,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 
 		if (countDeleted != 0 || countErrors != 0)
 		{
-			logger.log(Level.INFO, "MRP documents deleted #{0} (with errors #{1})"
+			logger.info("MRP documents deleted #{} (with errors #{})"
 					+ "\nModelClass: {2}"
 					+ "\nQuery: {3}"
 					, new Object[] { countDeleted, countErrors, modelClass, modelsQuery });
@@ -383,7 +385,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 		final boolean interrupted = currentThread.isInterrupted();
 		if (interrupted)
 		{
-			logger.log(Level.INFO, "Thread " + currentThread.getName() + " has been interrupted.");
+			logger.info("Thread " + currentThread.getName() + " has been interrupted.");
 		}
 
 		return interrupted;

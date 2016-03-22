@@ -1,11 +1,12 @@
 package org.adempiere.facet;
 
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.facet.impl.CompositeFacetCollector;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -39,8 +40,8 @@ import org.compiere.util.CLogger;
 public class ClassBasedFacetCollectorFactory<ModelType>
 {
 	// services
-	private static final transient CLogger defaultLogger = CLogger.getCLogger(ClassBasedFacetCollectorFactory.class);
-	private transient CLogger logger = defaultLogger;
+	private static final transient Logger defaultLogger = LogManager.getLogger(ClassBasedFacetCollectorFactory.class);
+	private transient Logger logger = defaultLogger;
 
 	private final CopyOnWriteArrayList<Class<? extends IFacetCollector<ModelType>>> facetCollectorClasses = new CopyOnWriteArrayList<>();
 
@@ -49,7 +50,7 @@ public class ClassBasedFacetCollectorFactory<ModelType>
 		super();
 	}
 
-	public ClassBasedFacetCollectorFactory<ModelType> setLogger(final CLogger logger)
+	public ClassBasedFacetCollectorFactory<ModelType> setLogger(final Logger logger)
 	{
 		Check.assumeNotNull(logger, "logger not null");
 		this.logger = logger;
@@ -92,7 +93,7 @@ public class ClassBasedFacetCollectorFactory<ModelType>
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.WARNING, "Failed to instantiate collector " + collectorClass + ". Skip it.", e);
+				logger.warn("Failed to instantiate collector " + collectorClass + ". Skip it.", e);
 			}
 		}
 

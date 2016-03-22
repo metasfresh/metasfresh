@@ -49,7 +49,7 @@ public interface IJaxRsBL extends ISingletonService
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveServerEndPoints(Properties)} and put up a JAX-RS endpoint for each of them.<br>
 	 * Also, call {@link #destroyServerEndPoints()} to stop any running endpoints before doing this.
 	 */
-	void createServerEndPoints(Properties ctx);
+	void createServerEndPoints();
 
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveClientEndpoints(Properties)} create a JAX-RS <b>client</b> endpoint for each of them, <br>
@@ -94,5 +94,4 @@ public interface IJaxRsBL extends ISingletonService
 	 * @param alsoSyncClasses if <code>true</code>, then first invoke {@link de.metas.javaclasses.IJavaClassTypeBL#updateClassRecordsList(de.metas.javaclasses.model.I_AD_JavaClass_Type)}.
 	 */
 	void updateEndPointsList(Properties ctx, boolean alsoSyncClasses);
-
 }

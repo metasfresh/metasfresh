@@ -22,14 +22,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -136,7 +136,7 @@ public class MReportTree
 	/**	The Tree				*/
 	private MTree 		m_tree = null;
 	/**	Logger					*/
-	private CLogger		log = CLogger.getCLogger(getClass());
+	private Logger		log = LogManager.getLogger(getClass());
 
 	
 	/**
@@ -183,7 +183,7 @@ public class MReportTree
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		return AD_Tree_ID;
@@ -223,11 +223,11 @@ public class MReportTree
 	 */	
 	public String getWhereClause (int ID)
 	{
-		log.fine("(" + m_ElementType + ") ID=" + ID);
+		log.debug("(" + m_ElementType + ") ID=" + ID);
 		String ColumnName = MAcctSchemaElement.getColumnName(m_ElementType);
 		//
 		MTreeNode node = m_tree.getRoot().findNode(ID);
-		log.finest("Root=" + node);
+		log.trace("Root=" + node);
 		//
 		StringBuilder result = null;
 		if (node != null && node.isSummary ())
@@ -247,10 +247,10 @@ public class MReportTree
 					sb.append (ColumnName);
 					sb.append ('=');
 					sb.append (nn.getNode_ID ());
-					log.finest ("- " + nn);
+					log.trace("- " + nn);
 				}
 				else
-					log.finest ("- skipped parent (" + nn + ")");
+					log.trace("- skipped parent (" + nn + ")");
 			}
 			result = new StringBuilder (" ( ");
 			result.append (sb);
@@ -259,7 +259,7 @@ public class MReportTree
 		else	//	not found or not summary 
 			result = new StringBuilder (ColumnName).append("=").append(ID);
 		//
-		log.finest(result.toString());
+		log.trace(result.toString());
 		return result.toString();
 	}	//	getWhereClause
 
@@ -270,11 +270,11 @@ public class MReportTree
 	 */	
 	public Integer[] getChildIDs (int ID)
 	{
-		log.fine("(" + m_ElementType + ") ID=" + ID);
+		log.debug("(" + m_ElementType + ") ID=" + ID);
 		ArrayList<Integer> list = new ArrayList<Integer>(); 
 		//
 		MTreeNode node = m_tree.getRoot().findNode(ID);
-		log.finest("Root=" + node);
+		log.trace("Root=" + node);
 		//
 		if (node != null && node.isSummary())
 		{
@@ -285,10 +285,10 @@ public class MReportTree
 				if (!nn.isSummary())
 				{
 					list.add(new Integer(nn.getNode_ID()));
-					log.finest("- " + nn);
+					log.trace("- " + nn);
 				}
 				else
-					log.finest("- skipped parent (" + nn + ")");
+					log.trace("- skipped parent (" + nn + ")");
 			}
 		}
 		else	//	not found or not summary 

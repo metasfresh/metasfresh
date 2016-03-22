@@ -33,7 +33,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MOrg;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 
 import de.metas.document.refid.spi.IReferenceNoGenerator;
@@ -63,7 +64,7 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
  */
 public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public String generateReferenceNo(PO source)
@@ -72,13 +73,13 @@ public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 		final Properties ctx = source.getCtx();
 		if (!ESRConstants.isEnabled(ctx))
 		{
-			logger.fine("Skip generating because ESR not enabled");
+			logger.debug("Skip generating because ESR not enabled");
 			return REFERENCENO_None;
 		}
 		
 		if(!Services.get(IESRBL.class).appliesForESRDocumentRefId(source))
 		{
-			logger.fine("Skip generating because source does not apply: " + source);
+			logger.debug("Skip generating because source does not apply: " + source);
 			return REFERENCENO_None;
 		}
 

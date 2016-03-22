@@ -40,7 +40,8 @@ import java.util.Properties;
 import org.compiere.Adempiere;
 import org.compiere.model.MColumn;
 import org.compiere.model.X_AD_Table;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -58,7 +59,7 @@ public class InstallMain {
 	private static final String C_INCIDENT_LINE = "C_IncidentLine";
 	private static final String C_INCIDENT_LINE_FACT = "C_IncidentLineFact";
 
-	private static final CLogger logger = CLogger.getCLogger(InstallMain.class);
+	private static final Logger logger = LogManager.getLogger(InstallMain.class);
 
 	private static final String trxName = null;
 

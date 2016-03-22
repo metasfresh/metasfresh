@@ -24,17 +24,16 @@ package de.metas.hostkey.api.impl;
 
 
 import java.util.UUID;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.IHostKeyStorage;
 
 public class HostKeyBL implements IHostKeyBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HostKeyBL.class);
+	private static final transient Logger logger = LogManager.getLogger(HostKeyBL.class);
 
 	private IHostKeyStorage hostKeyStorage;
 
@@ -63,13 +62,13 @@ public class HostKeyBL implements IHostKeyBL
 		{
 			// generate hostkey if not found
 			hostkey = generateHostKey();
-			logger.log(Level.INFO, "HostKey generated: {0}", hostkey);
+			logger.info("HostKey generated: {}", hostkey);
 		}
 
 		// Always set back the cookie, because we want to renew the expire date
 		hostKeyStorage.setHostKey(hostkey);
 
-		logger.log(Level.FINE, "HostKey found: {0}", hostkey);
+		logger.debug("HostKey found: {}", hostkey);
 		return hostkey;
 	}
 

@@ -32,7 +32,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public abstract class PosQuery extends CDialog implements MouseListener, ListSelectionListener, ActionListener {
@@ -50,7 +51,7 @@ public abstract class PosQuery extends CDialog implements MouseListener, ListSel
 	protected CButton f_up;
 	protected CButton f_down;
 	/**	Logger			*/
-	protected static CLogger log = CLogger.getCLogger(QueryProduct.class);
+	protected static Logger log = LogManager.getLogger(QueryProduct.class);
 
 	public PosQuery() throws HeadlessException {
 		super();

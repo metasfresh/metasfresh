@@ -23,8 +23,6 @@ package de.metas.printing.adapter;
  */
 
 
-import java.util.logging.Level;
-
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JasperPrint;
 
@@ -99,7 +97,7 @@ public final class JasperServiceAdapter extends AbstractJasperService
 		//
 		// Save archive. This will trigger the printing...
 		InterfaceWrapperHelper.save(archive);
-		logger.log(Level.FINE, "Archive: {0}", archive);
+		logger.debug("Archive: {}", archive);
 	}
 
 	@Override

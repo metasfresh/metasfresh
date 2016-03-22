@@ -16,7 +16,8 @@
  *****************************************************************************/
 package org.adempiere.acct.process;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.impl.TaxDeclarationLinesBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,7 +53,7 @@ public class C_TaxDeclaration_CreateLines extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}	// prepare

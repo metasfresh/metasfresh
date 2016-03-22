@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
@@ -67,7 +65,7 @@ public class UserPassword extends SvrProcess
 			else if (name.equals("NewEMailUserPW"))
 				p_NewEMailUserPW = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	// prepare
 
@@ -87,7 +85,7 @@ public class UserPassword extends SvrProcess
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, p_AD_User_ID)
 				.create()
 				.firstOnly(I_AD_User.class);
-		log.fine("User=" + user);
+		log.debug("User=" + user);
 		
 		//	Do we need a password ?
 		if (Check.isEmpty(p_OldPassword) && isOldPasswordRequired(p_AD_User_ID))		//	Password required

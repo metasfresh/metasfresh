@@ -32,7 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
@@ -44,8 +45,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.MImage;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -58,7 +57,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		extends SwingTerminalComponentWrapper
 		implements ITerminalButton
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SwingTerminalButtonWrapper.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingTerminalButtonWrapper.class);
 	private final WeakPropertyChangeSupport listeners;
 
 	private AppsAction action;
@@ -85,7 +84,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 				terminalFactory.showWarning(SwingTerminalButtonWrapper.this, "Error", null, ex);
 
 				// NOTE: if we reached this point it means we got an unhandled exception which needs to be displayed in console too (for customer support purposes)
-				SwingTerminalButtonWrapper.logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				SwingTerminalButtonWrapper.logger.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 	};

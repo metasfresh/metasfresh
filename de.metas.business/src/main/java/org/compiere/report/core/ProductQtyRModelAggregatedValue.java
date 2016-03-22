@@ -25,7 +25,8 @@ package org.compiere.report.core;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,14 +36,15 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.product.IProductBL;
 
 public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedValue
 {
-	private static final transient Logger log = CLogger.getCLogger(ProductQtyRModelAggregatedValue.class);
+	private static final transient Logger log = LogManager.getLogger(ProductQtyRModelAggregatedValue.class);
 
 	private static final String COLUMNNAME_M_Product_ID = I_Fact_Acct.COLUMNNAME_M_Product_ID;
 	private static final String COLUMNNAME_C_UOM_ID = I_Fact_Acct.COLUMNNAME_C_UOM_ID;
@@ -121,7 +123,7 @@ public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedVal
 		}
 		catch (final Exception e)
 		{
-			log.warning(e.getLocalizedMessage());
+			log.warn(e.getLocalizedMessage());
 
 			valid = false;
 			return;

@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+
 import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for C_BankStatementMatcher

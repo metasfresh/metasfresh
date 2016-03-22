@@ -28,7 +28,7 @@ import java.util.Properties;
 
 public class MCAdvCommissionLock extends X_C_AdvCommissionLock
 {
-	// private static final CLogger logger = CLogger.getCLogger(MCAdvCommissionLock.class);
+	// private static final Logger logger = CLogMgt.getLogger(MCAdvCommissionLock.class);
 
 	/**
 	 * 

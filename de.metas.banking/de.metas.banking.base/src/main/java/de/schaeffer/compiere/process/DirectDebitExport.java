@@ -32,7 +32,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MDirectDebit;
@@ -83,7 +82,7 @@ public class DirectDebitExport extends SvrProcess {
 		
 		StringBuffer sql = new StringBuffer();
 
-		log.fine("Load Invoice data from: " + dateFrom + " till: "+dateTo);
+		log.debug("Load Invoice data from: " + dateFrom + " till: "+dateTo);
 				
 		sql = sql.append("SELECT b.c_bp_bankaccount_id, i.c_invoice_id " +
 				"FROM c_invoice i " + 
@@ -97,7 +96,7 @@ public class DirectDebitExport extends SvrProcess {
 		if (dateTo != null) {
 			sql = sql.append("AND i.created <= ? ");
 		}
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		
 		PreparedStatement pstmt = null;
 		try {
@@ -119,7 +118,7 @@ public class DirectDebitExport extends SvrProcess {
 	        
 	        success = directDebit.save(trxName);
 	        
-	        log.fine("MDirectDebit created (ID: " + directDebit.get_ID() + ")");
+	        log.debug("MDirectDebit created (ID: " + directDebit.get_ID() + ")");
 	        
 			while (rs.next() && success) {
 				
@@ -177,12 +176,12 @@ public class DirectDebitExport extends SvrProcess {
 	@Override
 	protected String doIt() throws Exception {
     
-		log.fine("Start DirectDebitExportProcess");
+		log.debug("Start DirectDebitExportProcess");
 		
     	trx = Trx.get(Trx.createTrxName("DTACreateProcess_"), true); 
     	trx.start();
     	trxName = trx.getTrxName();
-    	log.fine("New Transaction started: " + trxName);
+    	log.debug("New Transaction started: " + trxName);
     	
     	List<Transaction> transactionList = getTransactions();
     	
@@ -217,7 +216,7 @@ public class DirectDebitExport extends SvrProcess {
 			} else if (name.equals("DateTo")) {
 				dateTo = (Timestamp) para[i].getParameter();
 			} else {
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 		ctx = Env.getCtx();

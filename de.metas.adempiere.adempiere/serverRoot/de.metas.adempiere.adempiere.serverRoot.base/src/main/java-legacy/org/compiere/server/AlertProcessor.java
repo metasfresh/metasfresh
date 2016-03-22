@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
 
 import org.adempiere.impexp.ArrayExcelExporter;
 import org.adempiere.user.api.IUserBL;
@@ -38,7 +37,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -46,6 +44,8 @@ import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *	Alert Processor
@@ -143,7 +143,7 @@ public class AlertProcessor extends AdempiereServer
 			MAlertRule rule = rules[i];
 			if (!rule.isValid())
 				continue;
-			log.fine("" + rule);
+			log.debug("" + rule);
 
 			//	Pre
 			String sql = rule.getPreProcessing();
@@ -152,7 +152,7 @@ public class AlertProcessor extends AdempiereServer
 				int no = DB.executeUpdate(sql, false, trxName);
 				if (no == -1)
 				{
-					ValueNamePair error = CLogger.retrieveError();
+					ValueNamePair error = MetasfreshLastError.retrieveError();
 					rule.setErrorMsg("Pre=" + error.getName());
 					m_errors.append("Pre=" + error.getName());
 					rule.setIsValid(false);
@@ -194,7 +194,7 @@ public class AlertProcessor extends AdempiereServer
 				int no = DB.executeUpdate(sql, false, trxName);
 				if (no == -1)
 				{
-					ValueNamePair error = CLogger.retrieveError();
+					ValueNamePair error = MetasfreshLastError.retrieveError();
 					rule.setErrorMsg("Post=" + error.getName());
 					m_errors.append("Post=" + error.getName());
 					rule.setIsValid(false);
@@ -338,7 +338,7 @@ public class AlertProcessor extends AdempiereServer
 		}
 		catch (Throwable e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			if (e instanceof Exception)
 				error = (Exception)e;
 			else
@@ -392,11 +392,11 @@ public class AlertProcessor extends AdempiereServer
 				}	//	for all columns
 			}
 			if (result.length() == 0)
-				log.fine("No rows selected");
+				log.debug("No rows selected");
 		}
 		catch (Throwable e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			if (e instanceof Exception)
 				error = (Exception)e;
 			else

@@ -58,7 +58,8 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 import com.jgoodies.looks.Options;
@@ -81,7 +82,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 	public static final int DEFAULT_MaxItems = 7;
 	private int m_maxItems = DEFAULT_MaxItems;
 
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	@SuppressWarnings("rawtypes")
 	final JList listBox = new JList();
@@ -217,7 +218,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 		{
 			return;
 		}
-		log.finest("showPopupDelayed..");
+		log.trace("showPopupDelayed..");
 
 		// Popup only if we a minimum number of characters - 2009_0017_AP1_G42_CR048
 		final String search = textBox.getText();
@@ -237,7 +238,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 		{
 			return;
 		}
-		log.finest("showPopup");
+		log.trace("showPopup");
 
 		// task 07068: only invoke later if we are not in the EDT to start with
 		if (SwingUtilities.isEventDispatchThread())
@@ -512,7 +513,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 		if (!truncated && list.size() == 1 && userObject != null
 				&& list.get(0).equals(userObject))
 		{
-			log.finest("nothing to do 1");
+			log.trace("nothing to do 1");
 			return false;
 		}
 

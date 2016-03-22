@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
-
 import org.compiere.model.MChangeLog;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
@@ -97,7 +95,7 @@ public class ChangeLogProcess extends SvrProcess
 			else if (name.equals("SetCustomization"))
 				p_SetCustomization = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_ChangeLog_ID = getRecord_ID();
 	}	//	prepare
@@ -137,7 +135,7 @@ public class ChangeLogProcess extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -311,12 +309,12 @@ public class ChangeLogProcess extends SvrProcess
 			no = DB.executeUpdate(m_sqlInsert.toString(), get_TrxName());
 			if (no == -1)
 			{
-			//	log.warning("Insert failed - " + m_sqlInsert);
+			//	log.warn("Insert failed - " + m_sqlInsert);
 				m_errors++;
 			}
 			else if (no == 0)
 			{
-				log.warning("Insert failed - " + m_sqlInsert);
+				log.warn("Insert failed - " + m_sqlInsert);
 				m_checkFailed++;
 			}
 			else
@@ -330,12 +328,12 @@ public class ChangeLogProcess extends SvrProcess
 			no = DB.executeUpdate(m_sqlUpdate.toString(), get_TrxName());
 			if (no == -1)
 			{
-			//	log.warning("Failed - " + m_sqlUpdate);
+			//	log.warn("Failed - " + m_sqlUpdate);
 				m_errors++;
 			}
 			else if (no == 0)
 			{
-				log.warning("Failed - " + m_sqlUpdate);
+				log.warn("Failed - " + m_sqlUpdate);
 				m_checkFailed++;
 			}
 			else
@@ -391,14 +389,14 @@ public class ChangeLogProcess extends SvrProcess
 					.append (" FROM ").append(tableName)
 					.append (" WHERE EntityType IN ('D','C'))");
 				int no = DB.executeUpdate(update.toString(), get_TrxName());
-				log.config(table.getTableName() + " = " + no);
+				log.info(table.getTableName() + " = " + no);
 				updateNo += no;
 				
 			}
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql + " --- " + update, e);
+			log.error(sql + " --- " + update, e);
 		}
 		finally
 		{

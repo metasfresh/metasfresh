@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_M_Product;
@@ -81,7 +82,7 @@ public class CostUpdate extends SvrProcess
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
-		//	log.fine("prepare - " + para[i]);
+		//	log.debug("prepare - " + para[i]);
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("M_Product_Category_ID"))
@@ -93,7 +94,7 @@ public class CostUpdate extends SvrProcess
 			else if (name.equals("M_PriceList_Version_ID"))
 				p_M_PriceList_Version_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);		
+				log.error("Unknown Parameter: " + name);		
 		}
 	}	//	prepare	
 
@@ -133,7 +134,7 @@ public class CostUpdate extends SvrProcess
 		m_ce = MCostElement.getMaterialCostElement(client, MAcctSchema.COSTINGMETHOD_StandardCosting);
 		if (m_ce.get_ID() == 0)
 			throw new AdempiereUserError ("@NotFound@ @M_CostElement_ID@ (StdCost)");
-		log.config(m_ce.toString());
+		log.info(m_ce.toString());
 		m_ass = MAcctSchema.getClientAcctSchema(getCtx(), client.getAD_Client_ID());
 		for (int i = 0; i < m_ass.length; i++)
 			createNew(m_ass[i]);
@@ -184,7 +185,7 @@ public class CostUpdate extends SvrProcess
 		if (!as.getCostingLevel().equals(MAcctSchema.COSTINGLEVEL_Client))
 		{
 			String txt = "Costing Level prevents creating new Costing records for " + as.getName();
-			log.warning(txt);
+			log.warn(txt);
 			addLog(0, null, null, txt);
 			return;
 		}
@@ -216,7 +217,7 @@ public class CostUpdate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -280,7 +281,7 @@ public class CostUpdate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -525,7 +526,7 @@ public class CostUpdate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -568,7 +569,7 @@ public class CostUpdate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

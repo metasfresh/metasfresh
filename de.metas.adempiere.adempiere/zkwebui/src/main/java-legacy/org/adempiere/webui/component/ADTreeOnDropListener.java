@@ -14,7 +14,8 @@ package org.adempiere.webui.component;
 
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -37,7 +38,7 @@ public class ADTreeOnDropListener implements EventListener {
 	private int windowNo;
 	private Tree tree;
 	
-	private static final CLogger log = CLogger.getCLogger(ADTreeOnDropListener.class);
+	private static final Logger log = LogManager.getLogger(ADTreeOnDropListener.class);
 
 	/**
 	 * 
@@ -59,7 +60,7 @@ public class ADTreeOnDropListener implements EventListener {
 	public void onEvent(Event event) throws Exception {
 		if (event instanceof DropEvent) {
 			DropEvent de = (DropEvent) event;
-			log.fine("Source=" + de.getDragged() + " Target=" + de.getTarget());
+			log.debug("Source=" + de.getDragged() + " Target=" + de.getTarget());
 			if (de.getDragged() != de.getTarget()) {
 				Treeitem src = (Treeitem) ((Treerow) de.getDragged()).getParent();
 				Treeitem target = (Treeitem) ((Treerow) de.getTarget()).getParent();

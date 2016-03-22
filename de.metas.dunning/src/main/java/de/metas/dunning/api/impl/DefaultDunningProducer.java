@@ -28,12 +28,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -52,7 +52,7 @@ import de.metas.dunning.spi.IDunningAggregator;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
-	private final static transient CLogger logger = CLogger.getCLogger(DefaultDunningProducer.class);
+	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
 
 	private IDunningContext dunningContext;
 
@@ -124,7 +124,7 @@ public class DefaultDunningProducer implements IDunningProducer
 		{
 			if (contextDunningLevel.getC_DunningLevel_ID() != candidate.getC_DunningLevel_ID())
 			{
-				logger.log(Level.WARNING, "Candidate {0} has dunning level {1} but in context we have {2}. Using candidate's dunning level",
+				logger.warn("Candidate {} has dunning level {} but in context we have {}. Using candidate's dunning level",
 						new Object[] { candidate, candidate.getC_DunningLevel(), contextDunningLevel });
 			}
 

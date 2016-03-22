@@ -23,7 +23,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VText;
@@ -31,7 +32,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -67,7 +69,7 @@ public class VSQLProcess extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VSQLProcess.init", e);
+			log.error("VSQLProcess.init", e);
 		}
 	}	//	init
 
@@ -87,7 +89,7 @@ public class VSQLProcess extends CPanel
 	private FormFrame 		m_frame;
 
 	/**	Log					*/
-	private static CLogger	log = CLogger.getCLogger(VSQLProcess.class);
+	private static Logger	log = LogManager.getLogger(VSQLProcess.class);
 
 	/** DML Statement		*/
 	private static final String[] DML_KEYWORDS = new String[]{
@@ -227,7 +229,7 @@ public class VSQLProcess extends CPanel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "process statement: " + sql + " - " + e.toString());
+			log.error("process statement: " + sql + " - " + e.toString());
 			result.append("===> ").append(e.toString());
 		}
 		
@@ -238,7 +240,7 @@ public class VSQLProcess extends CPanel
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "processStatement - close statement", e1);
+			log.error("processStatement - close statement", e1);
 		}
 		stmt = null;
 		try
@@ -247,7 +249,7 @@ public class VSQLProcess extends CPanel
 		}
 		catch (SQLException e2)
 		{
-			log.log(Level.SEVERE, "processStatement - close connection", e2);
+			log.error("processStatement - close connection", e2);
 		}
 		conn = null;
 		//

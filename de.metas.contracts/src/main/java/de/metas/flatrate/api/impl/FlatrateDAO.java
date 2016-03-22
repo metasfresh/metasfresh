@@ -49,7 +49,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -73,7 +74,7 @@ public class FlatrateDAO implements IFlatrateDAO
 {
 
 	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
-	private static final CLogger logger = CLogger.getCLogger(FlatrateDAO.class);
+	private static final Logger logger = LogManager.getLogger(FlatrateDAO.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -648,7 +649,7 @@ public class FlatrateDAO implements IFlatrateDAO
 					pstmt.setInt(5, dataEntry.getC_UOM_ID());
 
 					final int count = pstmt.executeUpdate();
-					logger.fine("Updated " + count + " dataEntries for " + dataEntry);
+					logger.debug("Updated " + count + " dataEntries for " + dataEntry);
 				}
 				catch (final SQLException e)
 				{

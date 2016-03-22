@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartner;
@@ -74,7 +72,7 @@ public class BPartnerOrgLink extends SvrProcess
 			else if (name.equals("C_BPartner_Location_ID"))
 				p_C_BPartner_Location_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_C_BPartner_ID = getRecord_ID();
 	}	//	prepare

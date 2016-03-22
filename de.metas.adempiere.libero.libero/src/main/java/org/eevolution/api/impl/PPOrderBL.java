@@ -52,7 +52,7 @@ import de.metas.product.IStorageBL;
 
 public class PPOrderBL implements IPPOrderBL
 {
-	// private final transient CLogger log = CLogger.getCLogger(getClass());
+	// private final transient Logger log = CLogMgt.getLogger(getClass());
 	
 	/**
 	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM

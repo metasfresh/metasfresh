@@ -18,7 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MRfQ;
 import org.compiere.model.MRfQLine;
@@ -55,7 +56,7 @@ public class RfQResponseRank extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_RfQ_ID = getRecord_ID();
 	}	//	prepare
@@ -82,7 +83,7 @@ public class RfQResponseRank extends SvrProcess
 		
 		//	Get Completed, Active Responses
 		MRfQResponse[] responses = rfq.getResponses (true, true);
-		log.fine("doIt - #Responses=" + responses.length);
+		log.debug("doIt - #Responses=" + responses.length);
 		if (responses.length == 0)
 			throw new IllegalArgumentException("No completed RfQ Responses found");
 		if (responses.length == 1)
@@ -120,7 +121,7 @@ public class RfQResponseRank extends SvrProcess
 			MRfQLine rfqLine = rfqLines[i];
 			if (!rfqLine.isActive())
 				continue;
-			log.fine("rankLines - " + rfqLine);
+			log.debug("rankLines - " + rfqLine);
 			MRfQLineQty[] rfqQtys = rfqLine.getQtys();
 			for (int j = 0; j < rfqQtys.length; j++)
 			{
@@ -128,7 +129,7 @@ public class RfQResponseRank extends SvrProcess
 				MRfQLineQty rfqQty = rfqQtys[j];
 				if (!rfqQty.isActive() || !rfqQty.isRfQQty())
 					continue;
-				log.fine("rankLines Qty - " + rfqQty);
+				log.debug("rankLines Qty - " + rfqQty);
 				MRfQResponseLineQty[] respQtys = rfqQty.getResponseQtys(false);
 				for (int kk = 0; kk < respQtys.length; kk++)
 				{
@@ -138,14 +139,14 @@ public class RfQResponseRank extends SvrProcess
 					{
 						respQty.setRanking(999);
 						respQty.save();
-						log.fine("  - ignored: " + respQty);
+						log.debug("  - ignored: " + respQty);
 					}
 				}	//	for all respones line qtys
 				
 				//	Rank RfQ Line Qtys
 				respQtys = rfqQty.getResponseQtys(false);
 				if (respQtys.length == 0)
-					log.fine("  - No Qtys with valid Amounts");
+					log.debug("  - No Qtys with valid Amounts");
 				else
 				{
 					Arrays.sort(respQtys, respQtys[0]);
@@ -164,7 +165,7 @@ public class RfQResponseRank extends SvrProcess
 						{
 							qty.setRanking(999);
 							qty.saveEx();
-							log.fine("  - Rank 999: " + qty);
+							log.debug("  - Rank 999: " + qty);
 							continue;
 						}
 						
@@ -174,7 +175,7 @@ public class RfQResponseRank extends SvrProcess
 							lastAmt = qty.getNetAmt();
 						}
 						qty.setRanking(lastRank);
-						log.fine("  - Rank " + lastRank + ": " + qty);
+						log.debug("  - Rank " + lastRank + ": " + qty);
 						qty.save();
 						//	
 						if (rank == 0)	//	Update RfQ
@@ -224,7 +225,7 @@ public class RfQResponseRank extends SvrProcess
 			}
 			response.setRanking(ranking);
 			response.save();
-			log.fine("- Response Ranking " + ranking + ": " + response);
+			log.debug("- Response Ranking " + ranking + ": " + response);
 			if (!rfq.isQuoteSelectedLines())	//	no total selected winner if not all lines
 			{
 				if (winner == null && ranking > 0)
@@ -239,7 +240,7 @@ public class RfQResponseRank extends SvrProcess
 		{
 			winner.setIsSelectedWinner(true);
 			winner.save();
-			log.fine("- Response Winner: " + winner);
+			log.debug("- Response Winner: " + winner);
 		}
 	}	//	rankLines
 
@@ -272,7 +273,7 @@ public class RfQResponseRank extends SvrProcess
 					response.setIsSelectedWinner(false);
 			}
 			response.save();
-			log.fine("rankResponse - " + response);
+			log.debug("rankResponse - " + response);
 		}
 	}	//	rankResponses
 	

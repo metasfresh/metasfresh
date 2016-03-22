@@ -30,13 +30,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import com.google.common.io.Closeables;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
@@ -48,7 +47,7 @@ public class RemoteServletServer implements IJasperServer
 	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
 	public static final String SYSCONFIG_JRServerServlet_DEFAULT = "http://localhost:8080/adempiereJasper/ReportServlet";
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final String jrServlet;
 	private final String mgtServlet;
@@ -116,7 +115,7 @@ public class RemoteServletServer implements IJasperServer
 		catch (final IOException e)
 		{
 			final String msg = "Caught " + e.getClass() + " trying to invoke URL " + urlStr + "; message: " + e.getMessage();
-			logger.log(Level.SEVERE, msg);
+			logger.error(msg);
 			throw new AdempiereException(msg, e);
 		}
 		finally
@@ -184,7 +183,7 @@ public class RemoteServletServer implements IJasperServer
 				}
 				catch (Exception e)
 				{
-					logger.log(Level.WARNING, "Failed to disconnect from " + urlConnection + ". Ignored.", e);
+					logger.warn("Failed to disconnect from " + urlConnection + ". Ignored.", e);
 				}
 			}
 		}

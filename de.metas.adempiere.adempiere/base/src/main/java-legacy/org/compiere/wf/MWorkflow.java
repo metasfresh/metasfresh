@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
@@ -36,7 +37,6 @@ import org.compiere.model.X_AD_Workflow;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -127,7 +127,7 @@ public class MWorkflow extends X_AD_Workflow
 				// NOTE: if no workflows were found, mark it anyway as used to prevent forever loading
 				s_cacheDocValue.setUsed();
 			}
-			s_log.config("#" + s_cacheDocValue.size());
+			s_log.info("#" + s_cacheDocValue.size());
 		}
 		//	Look for Entry
 		MWorkflow[] retValue = s_cacheDocValue.get(key);
@@ -150,7 +150,7 @@ public class MWorkflow extends X_AD_Workflow
 	/**	Document Value Cache			*/
 	private static CCache<String,MWorkflow[]>	s_cacheDocValue = new CCache<String,MWorkflow[]> ("AD_Workflow", 5);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MWorkflow.class);
+	private static Logger	s_log	= LogManager.getLogger(MWorkflow.class);
 	
 	
 	/**************************************************************************
@@ -235,7 +235,7 @@ public class MWorkflow extends X_AD_Workflow
 		}
 		catch (SQLException e)
 		{
-			//log.log(Level.SEVERE, sql, e);
+			//log.error(sql, e);
 			throw new DBException(e, sql);
 		}
 		finally
@@ -243,7 +243,7 @@ public class MWorkflow extends X_AD_Workflow
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine("Translated=" + m_translated);
+		log.debug("Translated=" + m_translated);
 	}	//	loadTrl
 
 	/**
@@ -253,7 +253,7 @@ public class MWorkflow extends X_AD_Workflow
 	{
 		final List<I_AD_WF_Node> nodes = Services.get(IADWorkflowDAO.class).retrieveNodes(this);
 		m_nodes = LegacyAdapters.convertToPOList(nodes);
-		log.fine("#" + m_nodes.size());
+		log.debug("#" + m_nodes.size());
 	}	//	loadNodes
 
 	
@@ -375,7 +375,7 @@ public class MWorkflow extends X_AD_Workflow
 					}
 					if (!found)
 					{
-						log.log(Level.WARNING, "Added Node w/o transition: " + node);
+						log.warn("Added Node w/o transition: " + node);
 						list.add(node);
 					}
 				}
@@ -604,7 +604,7 @@ public class MWorkflow extends X_AD_Workflow
 	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
-		log.fine("Success=" + success);
+		log.debug("Success=" + success);
 		if (!success)
 		{
 			return false;
@@ -705,7 +705,7 @@ public class MWorkflow extends X_AD_Workflow
 		{
 			if (localTrx != null)
 				localTrx.rollback();
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			
 			pi.setThrowable(e); // 03152
 			pi.setSummary(e.getMessage(), true);
@@ -741,7 +741,7 @@ public class MWorkflow extends X_AD_Workflow
 		{
 			if (loops > MAXLOOPS)
 			{
-				log.warning("Timeout after sec " + ((SLEEP*MAXLOOPS)/1000));
+				log.warn("Timeout after sec " + ((SLEEP*MAXLOOPS)/1000));
 				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
 				pi.setIsTimeout(true);
 				return process;
@@ -754,7 +754,7 @@ public class MWorkflow extends X_AD_Workflow
 			}
 			catch (InterruptedException e)
 			{
-				log.log(Level.SEVERE, "startWait interrupted", e);
+				log.error("startWait interrupted", e);
 				pi.setThrowable(e); // 03152
 				pi.setSummary("Interrupted");
 				return process;
@@ -766,7 +766,7 @@ public class MWorkflow extends X_AD_Workflow
 		if (summary == null || summary.trim().length() == 0)
 			summary = state.toString();
 		pi.setSummary(summary, state.isTerminated() || state.isAborted());
-		log.fine(summary);
+		log.debug(summary);
 		return process;
 	}	//	startWait
 	

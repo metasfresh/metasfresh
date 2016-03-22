@@ -39,10 +39,11 @@ import org.compiere.model.Scriptlet;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * HR Process Model
@@ -72,7 +73,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	public MHRPayrollConcept[] linesConcept;
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MHREmployee.class);
+	private static Logger	s_log	= LogManager.getLogger(MHREmployee.class);
 	public static final String CONCEPT_PP_COST_COLLECTOR_LABOR = "PP_COST_COLLECTOR_LABOR"; // HARDCODED
 
 
@@ -145,7 +146,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 				throw new AdempiereException("@AD_Org_ID@ = *");
 			}
 			setAD_Org_ID(context_AD_Org_ID);
-			log.warning("Changed Org to Context=" + context_AD_Org_ID);
+			log.warn("Changed Org to Context=" + context_AD_Org_ID);
 		}
 		setC_DocType_ID(getC_DocTypeTarget_ID());
 
@@ -368,13 +369,13 @@ public class MHRProcess extends X_HR_Process implements DocAction
 			return false;
 		}
 		else {
-			log.fine("reActivateIt - Existing documents not modified - SubType=" + DocSubType);
+			log.debug("reActivateIt - Existing documents not modified - SubType=" + DocSubType);
 		}
 
 		//	Delete 
 		String sql = "DELETE FROM HR_Movement WHERE HR_Process_ID =" + this.getHR_Process_ID() + " AND IsRegistered = 'N'" ;
 		int no = DB.executeUpdate(sql, get_TrxName());
-		log.fine("HR_Process deleted #" + no);
+		log.debug("HR_Process deleted #" + no);
 
 		setDocAction(DOCACTION_Complete);
 		setProcessed(false);
@@ -431,7 +432,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -649,7 +650,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 			if(result == null)
 			{
 				// TODO: throw exception ???
-				log.warning("Variable (result) is null");
+				log.warn("Variable (result) is null");
 			}
 
 			//get employee
@@ -785,7 +786,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 					if(result == null)
 					{
 						// TODO: throw exception ???
-						log.warning("Variable (result) is null");
+						log.warn("Variable (result) is null");
 						continue;
 					}
 					movement.setColumnValue(result);
@@ -812,7 +813,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 				MHRConcept c = MHRConcept.get(getCtx(), pc.getHR_Concept_ID());
 				if(c.isRegistered() || m.isEmpty())
 				{	
-					log.fine("Skip saving "+m);
+					log.debug("Skip saving "+m);
 				}
 				else
 				{
@@ -894,7 +895,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		} 
 		catch(Exception e)
 		{
-			s_log.warning(e.getMessage());
+			s_log.warn(e.getMessage());
 		}
 	} // setConcept
 	
@@ -931,7 +932,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		} 
 		catch(Exception e)
 		{
-			s_log.warning(e.getMessage());
+			s_log.warn(e.getMessage());
 		}
 	} // setConcept
 
@@ -1358,7 +1359,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	public double getAttribute (Properties ctx, String vAttribute, Timestamp dateFrom, Timestamp dateTo)
 	{
 		// TODO ???
-		log.warning("not implemented yet -> getAttribute (Properties, String, Timestamp, Timestamp)");
+		log.warn("not implemented yet -> getAttribute (Properties, String, Timestamp, Timestamp)");
 		return 0;
 	} // getAttribute
 
@@ -1383,7 +1384,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 			String pFrom,String pTo)
 	{
 		// TODO ???
-		log.warning("not implemented yet -> getAttribute (Properties, String, int, int)");
+		log.warn("not implemented yet -> getAttribute (Properties, String, int, int)");
 		return 0;
 	} // getAttribute
 	

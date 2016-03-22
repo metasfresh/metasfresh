@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.print;
 
-//import java.util.logging.*;
-
 /**
  *	Print Data Column.
  * 	Optional Meta Data of Columns

@@ -32,7 +32,8 @@ package org.adempiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -108,7 +109,7 @@ public class ImmediateBankTransfer extends SvrProcess
 			else if (name.equals("DateAcct"))
 				p_DateAcct = (Timestamp)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -259,7 +260,7 @@ public class ImmediateBankTransfer extends SvrProcess
 		if (!cash.processIt(p_docAction))
 	    {
 	        processMsg.append(" (NOT Processed)");
-	        log.warning("Cash Processing failed: " + cash + " - " + cash.getProcessMsg());
+	        log.warn("Cash Processing failed: " + cash + " - " + cash.getProcessMsg());
 	        addLog(cash.getC_Cash_ID(), cash.getStatementDate(), null,
 					"Cash Processing failed: " + cash + " - "
 							+ cash.getProcessMsg()

@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
@@ -41,8 +42,6 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -58,7 +57,7 @@ import de.metas.document.engine.IDocActionBL;
 public class DefaultAllocationBuilder implements IAllocationBuilder
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(DefaultAllocationBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(DefaultAllocationBuilder.class);
 
 	// Parameters
 	@ToStringBuilder(skip = true)
@@ -197,7 +196,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		if (createdLinesCount <= 0)
 		{
 			final AdempiereException ex = new AdempiereException("No allocation lines were created even though the allocation header was saved. Deleting it: " + allocHdr);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			InterfaceWrapperHelper.delete(allocHdr);
 		}
 

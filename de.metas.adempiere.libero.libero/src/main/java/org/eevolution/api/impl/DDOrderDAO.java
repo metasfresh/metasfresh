@@ -24,7 +24,6 @@ package org.eevolution.api.impl;
 
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,7 +33,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
@@ -45,10 +43,14 @@ import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class DDOrderDAO implements IDDOrderDAO
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order ddOrder)
@@ -229,7 +231,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		if (mrpSupply == null)
 		{
 			final LiberoException ex = new LiberoException("No MRP supply record found for " + ppOrder);
-			logger.log(Level.WARNING, ex.getLocalizedMessage() + " [SKIPPED]", ex);
+			logger.warn(ex.getLocalizedMessage() + " [SKIPPED]", ex);
 			// NOTE: we are returing a query builder which actually does nothing
 			return Services.get(IQueryBL.class)
 					.createQueryBuilder(I_DD_OrderLine.class, ppOrder)

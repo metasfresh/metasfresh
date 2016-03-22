@@ -18,7 +18,6 @@ package org.adempiere.webui.apps.form;
 
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
@@ -112,7 +111,7 @@ public class WTrxMaterial extends TrxMaterial
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	//	init
 	

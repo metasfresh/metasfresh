@@ -18,13 +18,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
 
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MSystem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuScript;
 import org.zkoss.zk.ui.util.Clients;
 
@@ -37,7 +39,7 @@ import org.zkoss.zk.ui.util.Clients;
  */
 public final class BrowserToken {
 
-	private final static CLogger log = CLogger.getCLogger(BrowserToken.class);
+	private final static Logger log = LogManager.getLogger(BrowserToken.class);
 
 	private BrowserToken() {}
 
@@ -58,7 +60,7 @@ public final class BrowserToken {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -72,7 +74,7 @@ public final class BrowserToken {
 			AuScript aus = new AuScript(null, script);
 			Clients.response("removeUserToken", aus);
 		} catch (Exception e) {
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -91,7 +93,7 @@ public final class BrowserToken {
         }
         catch (Exception e)
         {
-        	log.log(Level.WARNING, e.getLocalizedMessage(), e);
+        	log.warn(e.getLocalizedMessage(), e);
         }
 	}
 
@@ -110,7 +112,7 @@ public final class BrowserToken {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 		return false;
 	}

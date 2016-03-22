@@ -31,7 +31,8 @@ import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 
@@ -126,7 +127,7 @@ public class CPaper extends Paper
 	/** Landscape flag					*/
 	private boolean		m_landscape = false;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(CPaper.class);
+	private static Logger log = LogManager.getLogger(CPaper.class);
 
 	/**
 	 * 	Set Media Size
@@ -145,7 +146,7 @@ public class CPaper extends Paper
 		double height = m_mediaSize.getY (MediaSize.INCH) * 72;
 		//	Set Size
 		setSize (width, height);
-		log.fine(mediaSize.getMediaSizeName() + ": " + m_mediaSize + " - Landscape=" + m_landscape);
+		log.debug(mediaSize.getMediaSizeName() + ": " + m_mediaSize + " - Landscape=" + m_landscape);
 	}	//	setMediaSize
 
 	/**
@@ -183,7 +184,7 @@ public class CPaper extends Paper
 		final double height = y * mult;
 		//	Set Size
 		setSize (width, height);
-		log.fine("Width & Height" + ": " + x + "/" + y  + " - Landscape=" + m_landscape);
+		log.debug("Width & Height" + ": " + x + "/" + y  + " - Landscape=" + m_landscape);
 	}	//	setMediaSize
 	//End Of AA Goodwill
 
@@ -217,7 +218,7 @@ public class CPaper extends Paper
 	{
 		MediaPrintableArea area = new MediaPrintableArea ((float)getImageableX()/72, (float)getImageableY()/72,
 			(float)getImageableWidth()/72, (float)getImageableHeight()/72, MediaPrintableArea.INCH);
-	//	log.fine( "CPaper.getMediaPrintableArea", area.toString(MediaPrintableArea.INCH, "\""));
+	//	log.debug( "CPaper.getMediaPrintableArea", area.toString(MediaPrintableArea.INCH, "\""));
 		return area;
 	}	//	getMediaPrintableArea
 
@@ -228,7 +229,7 @@ public class CPaper extends Paper
 	public void setMediaPrintableArea (MediaPrintableArea area)
 	{
 		int inch = MediaPrintableArea.INCH;
-		log.fine(area.toString(inch, "\""));
+		log.debug(area.toString(inch, "\""));
 		setImageableArea(area.getX(inch)*72, area.getY(inch)*72,
 			area.getWidth(inch)*72, area.getHeight(inch)*72);
 	}	//	setMediaPrintableArea

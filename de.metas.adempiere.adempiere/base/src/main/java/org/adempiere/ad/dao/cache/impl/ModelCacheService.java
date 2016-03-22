@@ -29,7 +29,8 @@ import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.IMutableTableCacheConfig;
@@ -45,7 +46,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.IDCache;
@@ -53,7 +53,7 @@ import org.compiere.util.Util;
 
 public class ModelCacheService implements IModelCacheService
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -224,7 +224,7 @@ public class ModelCacheService implements IModelCacheService
 							+ "\nActive transactions: " + trxManager.getActiveTransactionsList()
 							+ "\nClosed transactions: " + trxManager.getDebugClosedTransactions()
 							);
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 
 					// return null (not found)
 					return null;
@@ -297,7 +297,7 @@ public class ModelCacheService implements IModelCacheService
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot create a copy of " + originalPO + ". Returning null.", e);
+			logger.warn("Cannot create a copy of " + originalPO + ". Returning null.", e);
 			poToReturn = null;
 		}
 		return poToReturn;

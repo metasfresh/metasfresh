@@ -26,7 +26,8 @@ package de.metas.dunning.invoice.model.validator;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -35,8 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -47,7 +46,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 @Validator(I_C_Invoice.class)
 public class C_Invoice
 {
-	private static final CLogger logger = CLogger.getCLogger(C_Invoice.class);
+	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void setDunningGraceIfAutomatic(final I_C_Invoice invoice)
@@ -68,7 +67,7 @@ public class C_Invoice
 	public void validateCandidatesOnDunningGraceChange(final I_C_Invoice invoice)
 	{
 		final Timestamp dunningGraceDate = invoice.getDunningGrace();
-		logger.log(Level.FINE, "DunningGraceDate: {0}", dunningGraceDate);
+		logger.debug("DunningGraceDate: {}", dunningGraceDate);
 
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 		final IDunningBL dunningBL = Services.get(IDunningBL.class);
@@ -95,18 +94,18 @@ public class C_Invoice
 			
 			if (candidate.isProcessed())
 			{
-				logger.log(Level.FINE, "Skip processed candidate: {0}", candidate);
+				logger.debug("Skip processed candidate: {}", candidate);
 				continue;
 			}
 			
 			if (dunningBL.isExpired(candidate, dunningGraceDate))
 			{
-				logger.log(Level.FINE, "Deleting expired candidate: {0}", candidate);
+				logger.debug("Deleting expired candidate: {}", candidate);
 				InterfaceWrapperHelper.delete(candidate);
 			}
 			else
 			{
-				logger.log(Level.FINE, "Updating DunningGrace for candidate: {0}", candidate);
+				logger.debug("Updating DunningGrace for candidate: {}", candidate);
 				candidate.setDunningGrace(invoice.getDunningGrace());
 				InterfaceWrapperHelper.save(candidate);
 			}

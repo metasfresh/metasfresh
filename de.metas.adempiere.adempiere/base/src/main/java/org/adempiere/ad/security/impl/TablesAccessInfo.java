@@ -38,7 +38,7 @@ public class TablesAccessInfo
 {
 	public static final transient TablesAccessInfo instance = new TablesAccessInfo();
 
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	private TablesAccessInfo()
 	{

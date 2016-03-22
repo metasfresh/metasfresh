@@ -96,7 +96,7 @@ public class MPaySchedule extends X_C_PaySchedule
 	{
 		if (is_ValueChanged("Percentage") || is_ValueChanged("IsActive"))
 		{
-			log.fine("beforeSave");
+			log.debug("beforeSave");
 			setIsValid(false);
 		}
 		return true;
@@ -112,7 +112,7 @@ public class MPaySchedule extends X_C_PaySchedule
 	{
 		if (newRecord || is_ValueChanged("Percentage") || is_ValueChanged("IsActive"))
 		{
-			log.fine("afterSave");
+			log.debug("afterSave");
 			getParent();
 			m_parent.validate();
 			m_parent.save();

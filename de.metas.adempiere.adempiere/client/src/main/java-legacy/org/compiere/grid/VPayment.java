@@ -32,7 +32,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 
@@ -56,7 +57,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -122,7 +124,7 @@ public class VPayment extends CDialog
 	}
 
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(VPayment.class);
+	private static final Logger log = LogManager.getLogger(VPayment.class);
 
 	/**
 	 * Constructor
@@ -148,7 +150,7 @@ public class VPayment extends CDialog
 		}
 		catch (Throwable ex)
 		{
-			log.log(Level.SEVERE, "VPayment", ex);
+			log.error("VPayment", ex);
 			ADialog.error(m_WindowNo, this, "PaymentError", ex.getLocalizedMessage());
 			m_initOK = false;
 			dispose();
@@ -313,7 +315,7 @@ public class VPayment extends CDialog
 
 		// DocStatus
 		final String docStatus = doc.getDocStatus() == null ? "" : doc.getDocStatus();
-		log.config(docStatus);
+		log.info(docStatus);
 		// Is the Trx closed? Reversed / Voided / Closed
 		if (DocAction.STATUS_Reversed.equals(docStatus)
 				|| DocAction.STATUS_Voided.equals(docStatus)
@@ -430,7 +432,7 @@ public class VPayment extends CDialog
 			IVPaymentPanel panel = addPaymentRulePanel(paymentRule);
 			if (panel == null)
 			{
-				log.warning("No panel found for payment rule " + paymentRule + " [SKIP]");
+				log.warn("No panel found for payment rule " + paymentRule + " [SKIP]");
 				continue;
 			}
 			panel.setEnabled(!isOnlyRule());
@@ -514,7 +516,7 @@ public class VPayment extends CDialog
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		log.fine("VPayment.actionPerformed - " + e.getActionCommand());
+		log.debug("VPayment.actionPerformed - " + e.getActionCommand());
 
 		// Finish
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -581,7 +583,7 @@ public class VPayment extends CDialog
 		IVPaymentPanel panel = paymentRulePanels.get(PaymentRule);
 		if (panel == null)
 		{
-			log.log(Level.SEVERE, "Unknown PaymentRule " + PaymentRule);
+			log.error("Unknown PaymentRule " + PaymentRule);
 			ADialog.error(m_WindowNo, this, "Unknown PaymentRule " + PaymentRule);
 			return false;
 		}
@@ -724,7 +726,7 @@ public class VPayment extends CDialog
 
 			if (exception != null)
 			{
-				log.log(Level.INFO, exception.getLocalizedMessage(), exception);
+				log.info(exception.getLocalizedMessage(), exception);
 				ADialog.error(m_WindowNo, VPayment.this, "PaymentError", exception.getLocalizedMessage());
 				return;
 			}

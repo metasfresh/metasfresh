@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MInOutLineConfirm;
 import org.compiere.model.X_I_InOutLineConfirm;
@@ -57,7 +58,7 @@ public class ImportInOutConfirm extends SvrProcess
 			else if (name.equals("DeleteOldImported"))
 				p_DeleteOldImported = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_I_InOutLineConfirm_ID = getRecord_ID();
 	}	//	prepare
@@ -79,7 +80,7 @@ public class ImportInOutConfirm extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_InOutLineConfirm "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Deleted Old Imported =" + no);
+			log.debug("Deleted Old Imported =" + no);
 		}
 
 		//	Set IsActive, Created/Updated
@@ -93,7 +94,7 @@ public class ImportInOutConfirm extends SvrProcess
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.info ("Reset=" + no);
+		log.info("Reset=" + no);
 
 		//	Set Client from Name
 		sql = new StringBuffer ("UPDATE I_InOutLineConfirm i "
@@ -101,7 +102,7 @@ public class ImportInOutConfirm extends SvrProcess
 			+ "WHERE (AD_Client_ID IS NULL OR AD_Client_ID=0)"
 			+ " AND I_IsImported<>'Y'");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Client from Value=" + no);
+		log.debug("Set Client from Value=" + no);
 
 		//	Error Confirmation Line
 		sql = new StringBuffer ("UPDATE I_InOutLineConfirm i "
@@ -111,7 +112,7 @@ public class ImportInOutConfirm extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid InOutLineConfirm=" + no);
+			log.warn("Invalid InOutLineConfirm=" + no);
 
 		//	Error Confirmation No
 		sql = new StringBuffer ("UPDATE I_InOutLineConfirm i "
@@ -120,7 +121,7 @@ public class ImportInOutConfirm extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid ConfirmationNo=" + no);
+			log.warn("Invalid ConfirmationNo=" + no);
 		
 		//	Qty
 		sql = new StringBuffer ("UPDATE I_InOutLineConfirm i "
@@ -131,7 +132,7 @@ public class ImportInOutConfirm extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Qty=" + no);
+			log.warn("Invalid Qty=" + no);
 		
 		commitEx();
 		
@@ -181,7 +182,7 @@ public class ImportInOutConfirm extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		try
 		{

@@ -26,7 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComboBox;
 
@@ -47,7 +48,8 @@ import org.compiere.model.MRefList;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -174,7 +176,7 @@ class AcctViewerData
 	/** UserElement2 Reference */
 	private String m_ref2 = null;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(AcctViewerData.class);
+	private static Logger log = LogManager.getLogger(AcctViewerData.class);
 
 	/**
 	 * Dispose
@@ -261,7 +263,7 @@ class AcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -301,7 +303,7 @@ class AcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -341,7 +343,7 @@ class AcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

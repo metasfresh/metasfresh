@@ -21,7 +21,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -36,8 +37,6 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -114,7 +113,7 @@ public abstract class AbstractExcelExporter
 	public abstract boolean isPageBreak(int row, int col);
 
 	/** Logger */
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 	//
 	private HSSFWorkbook m_workbook;
 	private HSSFDataFormat m_dataFormat;
@@ -211,7 +210,7 @@ public abstract class AbstractExcelExporter
 			format = new StringBuffer(f).append(";[RED]-").append(f);
 		}
 		//
-		if (CLogMgt.isLevelFinest()) log.finest("NumberFormat: "+format);
+		if (LogManager.isLevelFinest()) log.trace("NumberFormat: "+format);
 		return format.toString();
 
 	}
@@ -285,7 +284,7 @@ public abstract class AbstractExcelExporter
 				m_workbook.setSheetName(prevSheetIndex, prevSheetName);
 			}
 			catch (Exception e) {
-				log.log(Level.WARNING, "Error setting sheet "+prevSheetIndex+" name to "+prevSheetName, e);
+				log.warn("Error setting sheet "+prevSheetIndex+" name to "+prevSheetName, e);
 			}
 		}
 	}
@@ -441,9 +440,9 @@ public abstract class AbstractExcelExporter
 		out.close();
 		//
 		// Workbook Info
-		if (CLogMgt.isLevelFine()) {
-			log.fine("Sheets #"+m_sheetCount);
-			log.fine("Styles used #"+m_styles.size());
+		if (LogManager.isLevelFine()) {
+			log.debug("Sheets #"+m_sheetCount);
+			log.debug("Styles used #"+m_styles.size());
 		}
 	}
 

@@ -21,7 +21,8 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -32,8 +33,6 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
-
-import org.compiere.util.CLogger;
 
 /**
  *	HTML Renderer View
@@ -60,7 +59,7 @@ public class HTMLRenderer extends View
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		//	Create Renderer
 		Element element = doc.getDefaultRootElement();
@@ -72,7 +71,7 @@ public class HTMLRenderer extends View
 	}	//	get
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(HTMLRenderer.class);
+	private static Logger log = LogManager.getLogger(HTMLRenderer.class);
 	
 	/**************************************************************************
 	 * 	Constructor

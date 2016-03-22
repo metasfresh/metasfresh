@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 /**
  *	Document Action Interface
@@ -274,7 +274,7 @@ public interface DocAction
 	 * 	Get Logger
 	 *	@return logger
 	 */
-	public CLogger get_Logger();
+	public Logger get_Logger();
 
 	/**
 	 * 	Get Transaction

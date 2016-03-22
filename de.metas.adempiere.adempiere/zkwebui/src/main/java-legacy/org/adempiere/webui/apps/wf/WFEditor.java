@@ -38,7 +38,6 @@ package org.adempiere.webui.apps.wf;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
@@ -165,7 +164,7 @@ public class WFEditor extends ADForm {
 			imageMap.setContent(imageContent);
 			
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 		}
 		
 	}

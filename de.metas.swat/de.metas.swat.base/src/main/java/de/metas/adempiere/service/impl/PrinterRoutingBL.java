@@ -37,8 +37,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -51,6 +51,7 @@ import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -58,7 +59,7 @@ import de.metas.document.engine.IDocActionBL;
  */
 public class PrinterRoutingBL implements IPrinterRoutingBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private static final String DEFAULT_PrinterType = PRINTERTYPE_General;
 
@@ -111,9 +112,9 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 			final IPrintingService printingService = getPrintingService(route);
 			if (printingService != null)
 			{
-				if (CLogMgt.isLevelFine())
+				if (LogManager.isLevelFine())
 				{
-					log.fine("Found: " + printingService);
+					log.debug("Found: " + printingService);
 				}
 				return printingService;
 			}
@@ -124,15 +125,15 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 	// set it protected to make it testable
 	private IPrintingService getPrintingService(final I_AD_PrinterRouting route)
 	{
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			log.fine("Checking route: " + route);
+			log.debug("Checking route: " + route);
 		}
 
 		final I_AD_Printer printer = route.getAD_Printer();
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			log.fine("Printer: " + printer.getPrinterName());
+			log.debug("Printer: " + printer.getPrinterName());
 		}
 
 		final PrintService systemPrintService = getSystemPrintService(printer.getPrinterName());
@@ -141,9 +142,9 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 			log.info("Printer not found in system: " + printer.getPrinterName());
 			return null;
 		}
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			log.fine("System Print Service: " + systemPrintService);
+			log.debug("System Print Service: " + systemPrintService);
 		}
 
 		final String printerName = systemPrintService.getName();
@@ -151,9 +152,9 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		if (isDirectPrint == null && route.getIsDirectPrint() != null)
 		{
 			isDirectPrint = X_AD_PrinterRouting.ISDIRECTPRINT_Yes.equals(route.getIsDirectPrint());
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 			{
-				log.fine("IsDirectPrint: " + isDirectPrint + " (From: " + route + ")");
+				log.debug("IsDirectPrint: " + isDirectPrint + " (From: " + route + ")");
 			}
 		}
 		if (isDirectPrint == null)
@@ -163,9 +164,9 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 
 		final PrintingServiceImpl printingService = new PrintingServiceImpl(printerName, printer.getPrinterType(), isDirectPrint);
 
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			log.fine("Printing Service: " + printingService);
+			log.debug("Printing Service: " + printingService);
 		}
 		return printingService;
 	}
@@ -194,17 +195,17 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		if (printer != null && printer.getIsDirectPrint() != null)
 		{
 			isDirectPrint = X_AD_Printer.ISDIRECTPRINT_Yes.equals(printer.getIsDirectPrint());
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 			{
-				log.fine("IsDirectPrint for: " + isDirectPrint + " (From: " + printer + ")");
+				log.debug("IsDirectPrint for: " + isDirectPrint + " (From: " + printer + ")");
 			}
 		}
 		if (isDirectPrint == null)
 		{
 			isDirectPrint = !Ini.isPropertyBool(Ini.P_PRINTPREVIEW);
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 			{
-				log.fine("IsDirectPrint: " + isDirectPrint + " (From: ini)");
+				log.debug("IsDirectPrint: " + isDirectPrint + " (From: ini)");
 			}
 		}
 		return isDirectPrint;
@@ -237,7 +238,7 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 	@Override
 	public String getDefaultPrinterName(String printerType)
 	{
-		log.fine("Looking for printerType=" + printerType);
+		log.debug("Looking for printerType=" + printerType);
 
 		if (printerType == null)
 		{
@@ -259,33 +260,33 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 			throw new AdempiereException("No default printer logic defined for PrinterType " + printerType);
 		}
 
-		log.fine("PrinterName: " + printerName);
+		log.debug("PrinterName: " + printerName);
 		return printerName;
 	}
 
 	private String getDefaultPrinterNameFromIni(final String propName)
 	{
-		log.fine("Looking for " + propName + " in ini file");
+		log.debug("Looking for " + propName + " in ini file");
 
 		String printerName = Ini.getProperty(propName);
 		if (!Check.isEmpty(printerName))
 		{
-			log.fine("Found printerName: " + printerName);
+			log.debug("Found printerName: " + printerName);
 			return printerName;
 		}
 
-		log.fine("Looking for machine's printers");
+		log.debug("Looking for machine's printers");
 		final PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
 		if (services == null || services.length == 0)
 		{
 			// t.schoeneberg@metas.de: so what? we don't need a printer to generate PDFs
-			// log.warning("No default printer found on this machine");
+			// log.warn("No default printer found on this machine");
 			return "";
 		}
 
 		printerName = services[0].getName();
 		Ini.setProperty(propName, printerName);
-		log.fine("Found printerName: " + printerName);
+		log.debug("Found printerName: " + printerName);
 		return printerName;
 	}
 

@@ -75,7 +75,7 @@ public class Doc_Inventory extends Doc
 		m_DocStatus = inventory.getDocStatus();
 		//	Contained Objects
 		p_lines = loadLines(inventory);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   //  loadDocumentDetails
 
@@ -108,7 +108,7 @@ public class Doc_Inventory extends Doc
 			}
 			docLine.setQty (Qty, false);		// -5 => -5
 			docLine.setReversalLine_ID(line.getReversalLine_ID());
-			log.fine(docLine.toString());
+			log.debug(docLine.toString());
 			list.add (docLine);
 		}
 

@@ -25,7 +25,8 @@ package de.metas.handlingunits.impl;
 
 import java.util.Date;
 import java.util.UUID;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,8 +34,6 @@ import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
@@ -43,7 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 public final class HUTransaction implements IHUTransaction
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HUTransaction.class);
+	private static final transient Logger logger = LogManager.getLogger(HUTransaction.class);
 
 	// Dimension
 	private Object model;
@@ -132,7 +131,7 @@ public final class HUTransaction implements IHUTransaction
 		{
 			// FIXME: workaround until we find out what else we need to fix
 			final AdempiereException ex = new AdempiereException("No model was specified and referencedModel is null. Assuming NULL");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 
 			this.huItem = null;
 
@@ -141,7 +140,7 @@ public final class HUTransaction implements IHUTransaction
 		{
 			// FIXME: workaround until we find out what else we need to fix
 			final AdempiereException ex = new AdempiereException("No HU Item was specified. Assuming referencedModel=" + model);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 
 			this.huItem = InterfaceWrapperHelper.create(model, I_M_HU_Item.class);
 		}

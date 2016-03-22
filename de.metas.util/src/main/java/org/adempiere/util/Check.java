@@ -27,8 +27,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 /**
  *
@@ -124,7 +123,7 @@ public final class Check
 		}
 		else
 		{
-			logger.log(Level.SEVERE, msg, ex);
+			logger.error(msg, ex);
 		}
 	}
 

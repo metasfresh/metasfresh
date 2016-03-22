@@ -12,9 +12,6 @@
 	<artifactId>de.metas.jax.rs</artifactId>
 
 	<properties>
-		<!-- these is also the spring version from the dependency tree of camel-2.16.1 -->
-		<spring.version>4.1.8.RELEASE</spring.version>
-
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
@@ -101,27 +98,22 @@
 			<artifactId>de.metas.util</artifactId>
 		</dependency>
 
-		<!-- We currently don't use spring in this module! There is just a test 
-			class which kind of demonstrates how a cxf endpoint would be used in string. 
-			I don't (yet?) want to let go of that test, because it might be useful in 
-			the future, so I'm leaving the test itself and theses dependencies, with 
-			scope=test -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<scope>test</scope>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<scope>test</scope>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<scope>test</scope>
+			<version>${spring.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>

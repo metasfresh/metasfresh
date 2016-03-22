@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ISystemBL;
@@ -40,23 +39,25 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.CLoggerLoggable;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.Services;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MSequence;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import ch.qos.logback.classic.Level;
 
 public class TableSequenceChecker implements ITableSequenceChecker
 {
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -93,7 +94,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	{
 		if (logger == null)
 		{
-			logger = new CLoggerLoggable(this.log, Level.INFO);
+			logger = LoggerLoggable.of(this.log, Level.INFO);
 		}
 
 		return logger;
@@ -302,7 +303,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		if (!sequence.isActive())
 		{
 			// we already logged in updateTableCurrentNext() that we skip the sequence, so no need to log to the loggable again
-			log.fine("Skip checking native sequence " + sequence + " because is not active.");
+			log.debug("Skip checking native sequence " + sequence + " because is not active.");
 			return;
 		}
 
@@ -364,7 +365,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 				+ " AND c.ColumnName='" + keyColumnName + "'");
 		if (keyColumnId <= 0)
 		{
-			log.fine("Skip checking sequence " + tableName + " because there is no key column name (" + keyColumnName + ")");
+			log.debug("Skip checking sequence " + tableName + " because there is no key column name (" + keyColumnName + ")");
 			return false;
 		}
 
@@ -429,9 +430,9 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 		//
 		// Log
-		if (info != null && log.isLoggable(Level.FINE))
+		if (info != null && log.isDebugEnabled())
 		{
-			log.fine(seq.getName() + " - " + info);
+			log.debug(seq.getName() + " - " + info);
 		}
 
 		return changed;
@@ -450,7 +451,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	private final void logError(final String tableName, final Throwable e)
 	{
 		getLogger().addLog("Sequence " + tableName + ": " + e.getLocalizedMessage());
-		log.log(Level.WARNING, e.getLocalizedMessage(), e);
+		log.warn(e.getLocalizedMessage(), e);
 	}
 
 	private static class SequenceChangeLog

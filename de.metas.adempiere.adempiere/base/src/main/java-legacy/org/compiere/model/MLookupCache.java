@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.NamePair;
 
 /**
@@ -36,7 +37,7 @@ import org.compiere.util.NamePair;
 public class MLookupCache
 {
 	/** Static Logger					*/
-	private static CLogger 		s_log = CLogger.getCLogger(MLookupCache.class);
+	private static Logger 		s_log = LogManager.getLogger(MLookupCache.class);
 	/** Static Lookup data with MLookupInfo -> HashMap  */
 	private static CCache<String,Map<String,NamePair>> s_loadedLookups = new CCache<String,Map<String,NamePair>>("MLookupCache", 50);
 	
@@ -118,7 +119,7 @@ public class MLookupCache
 			lookupTarget.put(cacheKey, cacheData);
 		}
 
-		s_log.fine("#" + lookupTarget.size());
+		s_log.debug("#" + lookupTarget.size());
 		return true;
 	}   //  loadFromCache
 
@@ -144,7 +145,7 @@ public class MLookupCache
 		for (int i = 0; i < toDelete.size(); i++)
 			s_loadedLookups.remove(toDelete.get(i));
 		int endNo = s_loadedLookups.size();
-		s_log.fine("WindowNo=" + WindowNo
+		s_log.debug("WindowNo=" + WindowNo
 			+ " - " + startNo + " -> " + endNo);
 	}	//	cacheReset
 

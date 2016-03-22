@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.component.Checkbox;
@@ -49,11 +48,14 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductBOM;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -86,7 +88,7 @@ public class WBOMDrop extends ADForm implements EventListener
 	private int m_bomLine = 0;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WBOMDrop.class);
+	private static Logger log = LogManager.getLogger(WBOMDrop.class);
 	
 	/**	List of all selectors		*/
 	private ArrayList<org.zkoss.zul.Checkbox> m_selectionList = new ArrayList<org.zkoss.zul.Checkbox>();
@@ -140,7 +142,7 @@ public class WBOMDrop extends ADForm implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		//sizeIt();
 	}	//	init
@@ -366,7 +368,7 @@ public class WBOMDrop extends ADForm implements EventListener
 	
 	private void createMainPanel ()
 	{
-		log.config(": " + m_product);
+		log.info(": " + m_product);
 		this.getChildren().clear();
 		//this.invalidate();
 		//this.setBorder(null);
@@ -420,7 +422,7 @@ public class WBOMDrop extends ADForm implements EventListener
 			grpSelectProd.appendChild(new Separator());
 		}
 		
-		log.fine("#" + bomLines.length);
+		log.debug("#" + bomLines.length);
 	}	//	addBOMLines
 
 	/**
@@ -432,7 +434,7 @@ public class WBOMDrop extends ADForm implements EventListener
 	
 	private void addBOMLine (MProductBOM line, BigDecimal qty)
 	{
-		log.fine(line.toString());
+		log.debug(line.toString());
 		String bomType = line.getBOMType();
 		
 		if (bomType == null)
@@ -463,7 +465,7 @@ public class WBOMDrop extends ADForm implements EventListener
 	private void addDisplay (int parentM_Product_ID,
 		int M_Product_ID, String bomType, String name, BigDecimal lineQty)
 	{
-		log.fine("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
+		log.debug("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
 		
 		boolean selected = true;
 		
@@ -504,7 +506,7 @@ public class WBOMDrop extends ADForm implements EventListener
 			
 			if (group == null)
 			{
-				log.fine("ButtonGroup=" + groupName);
+				log.debug("ButtonGroup=" + groupName);
 				group = new Radiogroup();
 				m_buttonGroups.put(groupName, group);
 				group.appendChild(b);
@@ -543,7 +545,7 @@ public class WBOMDrop extends ADForm implements EventListener
 	 */
 	public void onEvent (Event e) throws Exception
 	{
-		log.config(e.getName());
+		log.info(e.getName());
 		
 		Object source = e.getTarget();
 
@@ -711,7 +713,7 @@ public class WBOMDrop extends ADForm implements EventListener
 				return;
 			}
 		}
-		log.log(Level.SEVERE, "not found - " + source);
+		log.error("not found - " + source);
 	}	//	cmd_selection
 
 	/**
@@ -729,7 +731,7 @@ public class WBOMDrop extends ADForm implements EventListener
 		else if (source instanceof Radio)
 			retValue = ((Radio)source).isChecked();
 		else
-			log.log(Level.SEVERE, "Not valid - " + source);
+			log.error("Not valid - " + source);
 		
 		return retValue;
 	}	//	isSelected
@@ -771,7 +773,7 @@ public class WBOMDrop extends ADForm implements EventListener
 		if (pp != null && pp.getKey() > 0)
 			return cmd_saveProject (pp.getKey());
 		
-		log.log(Level.SEVERE, "Nothing selected");
+		log.error("Nothing selected");
 		return false;
 	}	//	cmd_save
 
@@ -783,12 +785,12 @@ public class WBOMDrop extends ADForm implements EventListener
 	
 	private boolean cmd_saveOrder (int C_Order_ID)
 	{
-		log.config("C_Order_ID=" + C_Order_ID);
+		log.info("C_Order_ID=" + C_Order_ID);
 		MOrder order = new MOrder (Env.getCtx(), C_Order_ID, null);
 		
 		if (order.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Order_ID=" + C_Order_ID);
+			log.error("Not found - C_Order_ID=" + C_Order_ID);
 			return false;
 		}
 		
@@ -810,12 +812,12 @@ public class WBOMDrop extends ADForm implements EventListener
 				if (ol.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
 		FDialog.info(-1, this, order.getDocumentInfo() + " " + Msg.translate(Env.getCtx(), "Inserted") + "=" + lineCount);
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveOrder
 
@@ -827,11 +829,11 @@ public class WBOMDrop extends ADForm implements EventListener
 	
 	private boolean cmd_saveInvoice (int C_Invoice_ID)
 	{
-		log.config("C_Invoice_ID=" + C_Invoice_ID);
+		log.info("C_Invoice_ID=" + C_Invoice_ID);
 		MInvoice invoice = new MInvoice (Env.getCtx(), C_Invoice_ID, null);
 		if (invoice.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Invoice_ID=" + C_Invoice_ID);
+			log.error("Not found - C_Invoice_ID=" + C_Invoice_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -852,12 +854,12 @@ public class WBOMDrop extends ADForm implements EventListener
 				if (il.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
 		FDialog.info(-1, this, invoice.getDocumentInfo() +  " " + Msg.translate(Env.getCtx(), "Inserted") + "=" + lineCount);
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveInvoice
 
@@ -868,11 +870,11 @@ public class WBOMDrop extends ADForm implements EventListener
 	 */
 	private boolean cmd_saveProject (int C_Project_ID)
 	{
-		log.config("C_Project_ID=" + C_Project_ID);
+		log.info("C_Project_ID=" + C_Project_ID);
 		MProject project = new MProject (Env.getCtx(), C_Project_ID, null);
 		if (project.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Project_ID=" + C_Project_ID);
+			log.error("Not found - C_Project_ID=" + C_Project_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -892,12 +894,12 @@ public class WBOMDrop extends ADForm implements EventListener
 				if (pl.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
 		FDialog.info(-1, this, project.getName() + " " + Msg.translate(Env.getCtx(), "Inserted") + "=" + lineCount);
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveProject
 }

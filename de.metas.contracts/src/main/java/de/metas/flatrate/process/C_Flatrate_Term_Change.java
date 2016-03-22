@@ -25,7 +25,6 @@ package de.metas.flatrate.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -99,7 +98,7 @@ public class C_Flatrate_Term_Change extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

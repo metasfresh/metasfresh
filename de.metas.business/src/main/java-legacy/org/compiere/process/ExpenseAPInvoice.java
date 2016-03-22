@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
@@ -64,7 +65,7 @@ public class ExpenseAPInvoice extends SvrProcess
 				m_DateTo = (Timestamp)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -128,7 +129,7 @@ public class ExpenseAPInvoice extends SvrProcess
 					invoice.setBPartner(bp);
 					if (invoice.getC_BPartner_Location_ID() == 0)
 					{
-						log.log(Level.SEVERE, "No BP Location: " + bp);
+						log.error("No BP Location: " + bp);
 						addLog(0, te.getDateReport(), 
 							null, "No Location: " + te.getDocumentNo() + " " + bp.getName());
 						invoice = null;
@@ -192,7 +193,7 @@ public class ExpenseAPInvoice extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

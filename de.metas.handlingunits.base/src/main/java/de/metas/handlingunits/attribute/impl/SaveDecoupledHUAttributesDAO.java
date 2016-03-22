@@ -1,29 +1,5 @@
 package de.metas.handlingunits.attribute.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import groovy.time.BaseDuration.From;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -47,7 +24,6 @@ import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -71,12 +47,12 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 {
 	/**
-	 * Set this to <code>true</code> in {@link ISysConfigBL} to avoid M_HU_Attributes {@link From} not beeing saved, depending on your trxactions and stuff.
+	 * Set this to <code>true</code> in {@link ISysConfigBL} to avoid M_HU_Attributes from not beeing saved, depending on your trxactions and stuff.
 	 */
 	public static final String SYSCONFIG_AutoFlushEnabledInitial = SaveDecoupledHUAttributesDAO.class.getName() + ".AutoflushEnabledInitial";
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(SaveDecoupledHUAttributesDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(SaveDecoupledHUAttributesDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
@@ -239,7 +215,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			{
 				throw ex;
 			}
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 
 		//
@@ -350,10 +326,10 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	 */
 	public synchronized final void flush()
 	{
-		logger.finest("Start flushing");
+		logger.trace("Start flushing");
 
 		final String trxName = trxManager.getThreadInheritedTrxName();
-		logger.log(Level.FINEST, "TrxName={0}", trxName);
+		logger.trace("TrxName={}", trxName);
 
 		// Remove queued attributes
 		for (final Iterator<I_M_HU_Attribute> it = _huAttributesToRemove.iterator(); it.hasNext();)
@@ -386,7 +362,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			// it.remove();
 		}
 
-		logger.log(Level.FINEST, "Flushing done");
+		logger.trace("Flushing done");
 	}
 
 	private final void saveToDatabase(final I_M_HU_Attribute model, final String trxName)
@@ -481,7 +457,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	 */
 	private final void trace(final String message, final I_M_HU_Attribute huAttribute)
 	{
-		if (!logger.isLoggable(Level.FINEST))
+		if (!logger.isTraceEnabled())
 		{
 			return;
 		}
@@ -500,7 +476,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		final String daoStatus = "IncrementalFlush=" + isIncrementalFlush() + ", IdsToSaveFromLastFlush=" + idsToSaveFromLastFlush;
 
-		logger.finest("" + message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
+		logger.trace("" + message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
 	}
 
 	@Override
@@ -510,6 +486,6 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		flush();
 
 		_hu2huAttributes.clear();
-		logger.finest("cached cleared");
+		logger.trace("cached cleared");
 	}
 }

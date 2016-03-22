@@ -16,6 +16,43 @@
 //RadioButtonTreeCellRenderer.java
 package org.eevolution.form.bom;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Vector;
+
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
+import org.compiere.model.MProduct;
+import org.compiere.model.MUOM;
+import org.compiere.model.Query;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.Msg;
+import org.eevolution.model.MPPProductBOM;
+import org.eevolution.model.MPPProductBOMLine;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -45,42 +82,6 @@ import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingEvent;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import org.compiere.model.MProduct;
-import org.compiere.model.MUOM;
-import org.compiere.model.Query;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
-import org.eevolution.model.MPPProductBOM;
-import org.eevolution.model.MPPProductBOMLine;
-
 
 
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
@@ -102,11 +103,11 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 	public HashSet<TreePath> disabledPathsSet =  new HashSet<TreePath>();
 
 	public HashSet<TreePath> checkBoxPathsSet =  new HashSet<TreePath>();
-	private static CLogger log = CLogger.getCLogger(RadioButtonTreeCellRenderer.class);
+	private static Logger log = LogManager.getLogger(RadioButtonTreeCellRenderer.class);
 
 
 	public DefaultMutableTreeNode getTreeNodeForNodeUserObject(nodeUserObject m_nodeUserObject) {
-		log.fine("In getTreeNodeForNodeUserObject");
+		log.debug("In getTreeNodeForNodeUserObject");
 		DefaultMutableTreeNode foundChild = null;
 
 		Enumeration<?> children = this.root.breadthFirstEnumeration();
@@ -115,7 +116,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 
 				DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
 				if(m_nodeUserObject == (nodeUserObject)child.getUserObject()) {
-					log.fine("nodeUserObjectFound");
+					log.debug("nodeUserObjectFound");
 					foundChild = child;
 				}
 			}
@@ -125,7 +126,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 
 
 	public static void printDescendents(TreeNode root) {
-		log.fine(root.toString());
+		log.debug(root.toString());
 		Enumeration<?> children = root.children();
 		if (children != null) {
 			while (children.hasMoreElements()) {
@@ -173,7 +174,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 			}
     
 		}
-		log.fine("root.getChildCount: " + root.getChildCount());
+		log.debug("root.getChildCount: " + root.getChildCount());
 		if(root.getChildCount() > 0) {
 			root = (DefaultMutableTreeNode)root.getFirstChild();
 		}
@@ -187,7 +188,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 
 	public DefaultMutableTreeNode  parent(MPPProductBOMLine bomline) 
 	{
-		log.fine("In parent with X_PP_Product_BOMLine");
+		log.debug("In parent with X_PP_Product_BOMLine");
 
 		MProduct M_Product = MProduct.get(Env.getCtx(), bomline.getM_Product_ID());
 		MUOM UOM = new MUOM(Env.getCtx() , M_Product.getC_UOM_ID(),null); 
@@ -234,7 +235,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 	public DefaultMutableTreeNode  parent(MPPProductBOM bom) 
 	{
 
-		log.fine("Parent:" + bom.getName());
+		log.debug("Parent:" + bom.getName());
 		MProduct product = MProduct.get(Env.getCtx(), bom.getM_Product_ID());
 
 		//vparent.setValue(m_product_id);
@@ -327,10 +328,10 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 
 
 	public void printTree(TreePath path, TreeModel model, TreeCheckingModel checkingModel ) {
-		log.fine("In printTree");
+		log.debug("In printTree");
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-		log.fine("Node: " + node);
-		log.fine("isPathCheckbox: " + checkingModel.isPathCheckBox(getPath(node)));
+		log.debug("Node: " + node);
+		log.debug("isPathCheckbox: " + checkingModel.isPathCheckBox(getPath(node)));
 		for (TreePath childPath : getChildrenPath(path, model)) {
 			printTree(childPath, model, checkingModel);
 		}
@@ -361,7 +362,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 			pstmt.close();
 
 		} catch (SQLException e) {
-			log.fine("Execption; sql = "+sql+"; e.getMessage() = " +e.getMessage());
+			log.debug("Execption; sql = "+sql+"; e.getMessage() = " +e.getMessage());
 		} 
 
 		return retVal;
@@ -370,14 +371,14 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 	public Component getTreeCellRendererComponent(JTree tree, Object  
 			value, boolean selected, boolean expanded, boolean leaf, int row,
 			boolean hasFocus) {
-		log.fine("row: " + row);
+		log.debug("row: " + row);
 		DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)value;
 
-		log.fine("treeNode.getLevel: " + treeNode.getLevel());
+		log.debug("treeNode.getLevel: " + treeNode.getLevel());
 		nodeUserObject m_nodeUserObject = (nodeUserObject)treeNode.getUserObject();
-		log.fine("m_nodeUserObject.toString: " + m_nodeUserObject.toString());
-		log.fine("m_nodeUserObject.M_Product.getName: " + m_nodeUserObject.M_Product.getName());
-		log.fine("value.toString: " + value.toString());
+		log.debug("m_nodeUserObject.toString: " + m_nodeUserObject.toString());
+		log.debug("m_nodeUserObject.M_Product.getName: " + m_nodeUserObject.M_Product.getName());
+		log.debug("value.toString: " + value.toString());
 		label.setText(value.toString());
 		TreeCheckingModel checkingModel = ((CheckboxTree)tree).getCheckingModel();
 		//printTree(new TreePath(tree.getModel().getRoot()), tree.getModel(), checkingModel);
@@ -393,13 +394,13 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 
 		button.setSelected(checked);
 		m_nodeUserObject.isChosen = checked;
-		log.fine("m_nodeUserObject.isChosen" + m_nodeUserObject.isChosen);
+		log.debug("m_nodeUserObject.isChosen" + m_nodeUserObject.isChosen);
 
 		if(m_nodeUserObject.isCheckbox || treeNode.isRoot() ) {
 			panel.add(checkBox);
 			panel.remove(button);
-			log.fine("checked: " + checked);
-			log.fine("enabled: " + enabled);
+			log.debug("checked: " + checked);
+			log.debug("enabled: " + enabled);
 			checkBox.setEnabled(enabled);
 			checkBox.setSelected(checked);
 			if(treeNode.isRoot()) {
@@ -420,12 +421,12 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		panel.add(label);
 
 		m_nodeUserObject.isChosen = checked;
-		log.fine("m_nodeUserObject.isChosen: " + m_nodeUserObject.isChosen);
+		log.debug("m_nodeUserObject.isChosen: " + m_nodeUserObject.isChosen);
 		if( m_nodeUserObject.bom!= null) { 
-			log.fine("m_nodeUserObject.bom not null");
-			log.fine("m_nodeUserObject.bom product_id: " + m_nodeUserObject.bom.getM_Product_ID());
+			log.debug("m_nodeUserObject.bom not null");
+			log.debug("m_nodeUserObject.bom product_id: " + m_nodeUserObject.bom.getM_Product_ID());
 			if( m_nodeUserObject.bomLine == null) {
-				log.fine("m_nodeUserObject.bomLine is null");
+				log.debug("m_nodeUserObject.bomLine is null");
 				DefaultMutableTreeNode m_treeNode = getTreeNodeForNodeUserObject(m_nodeUserObject);
 				if(!m_treeNode.isRoot()) {
 					DefaultMutableTreeNode m_treeNodeParent = (DefaultMutableTreeNode)m_treeNode.getParent();
@@ -434,12 +435,12 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 					}
 					nodeUserObject m_nodeUserObjectParent = (nodeUserObject)m_treeNodeParent.getUserObject();
 					if(m_nodeUserObjectParent.bom != null) {
-						log.fine("m_nodeUserObjectParent.bom is not null");
+						log.debug("m_nodeUserObjectParent.bom is not null");
 
-						log.fine("m_nodeUserObjectParent.bom.pp_product_bom_id: " + m_nodeUserObjectParent.bom.get_ID());
-						log.fine("m_nodeUserObject.M_Product.get_ID: " + m_nodeUserObject.M_Product.get_ID());
+						log.debug("m_nodeUserObjectParent.bom.pp_product_bom_id: " + m_nodeUserObjectParent.bom.get_ID());
+						log.debug("m_nodeUserObject.M_Product.get_ID: " + m_nodeUserObject.M_Product.get_ID());
 						if(getComponentTypeUsingBOMParent(m_nodeUserObjectParent.bom.get_ID(), m_nodeUserObject.M_Product.get_ID()).equals(MPPProductBOMLine.COMPONENTTYPE_Variant) || getComponentTypeUsingBOMParent(m_nodeUserObjectParent.bom.get_ID(), m_nodeUserObject.M_Product.get_ID()).equals(MPPProductBOMLine.COMPONENTTYPE_Component)) {
-							log.fine("Type is checkbox");
+							log.debug("Type is checkbox");
 							if(!m_nodeUserObject.isCheckbox) {
 								m_nodeUserObject.isCheckbox = true;
 								panel.remove(label);
@@ -460,7 +461,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 						}
 
 					} else {
-						log.fine("Type is checkbox");
+						log.debug("Type is checkbox");
 						if(!m_nodeUserObject.isCheckbox) {
 							panel.remove(label);
 							panel.add(checkBox);
@@ -473,15 +474,15 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 					}
 				}
 			} else {
-				log.fine("m_nodeUserObject.bomLine is not null");
-				log.fine("m_nodeUserObject.M_Product.get_ID: " + m_nodeUserObject.M_Product.get_ID());
-				log.fine("m_nodeUserObject.bomLine.getM_Product_ID: " + m_nodeUserObject.bomLine.getM_Product_ID());
-				log.fine("m_nodeUserObject.isCheckbox: " + m_nodeUserObject.isCheckbox);
+				log.debug("m_nodeUserObject.bomLine is not null");
+				log.debug("m_nodeUserObject.M_Product.get_ID: " + m_nodeUserObject.M_Product.get_ID());
+				log.debug("m_nodeUserObject.bomLine.getM_Product_ID: " + m_nodeUserObject.bomLine.getM_Product_ID());
+				log.debug("m_nodeUserObject.isCheckbox: " + m_nodeUserObject.isCheckbox);
 			}
 
 		}
 		panel.setBackground(Color.white);
-		log.fine("m_nodeUserObject.isChosen: " + m_nodeUserObject.isChosen);
+		log.debug("m_nodeUserObject.isChosen: " + m_nodeUserObject.isChosen);
 		return panel;
 	} 
 
@@ -503,7 +504,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		tree.setCellRenderer(m_RadioButtonTreeCellRenderer);
 		tree.addTreeCheckingListener(new TreeCheckingListener() {
 			public void valueChanged(TreeCheckingEvent e) {
-				log.fine("Checked paths changed: user clicked on " + (e.getLeadingPath().getLastPathComponent()));
+				log.debug("Checked paths changed: user clicked on " + (e.getLeadingPath().getLastPathComponent()));
 				//       		TreeModel tm = tree.getModel();
 				//          	TreePath selected = tree.getSelectionPath();
 				//       		TreeCheckingModel checkingModel = ((CheckboxTree)tree).getCheckingModel();

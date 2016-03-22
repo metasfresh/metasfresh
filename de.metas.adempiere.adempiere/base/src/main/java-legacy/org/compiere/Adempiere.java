@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 
@@ -48,8 +47,6 @@ import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -58,6 +55,8 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
 import org.compiere.util.Splash;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -65,6 +64,7 @@ import com.google.common.base.Suppliers;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.logging.LogManager;
 
 /**
  * Adempiere Control Class
@@ -81,6 +81,12 @@ public final class Adempiere
 	 * Client language to use. If set as a system property, then. no language combo box is show on startup and the given language is used instead. Task 06664.
 	 */
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
+
+	/**
+	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project pom.xml
+	 */
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
+
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -122,8 +128,40 @@ public final class Adempiere
 
 
 	/** Logging */
-	private static CLogger log = null;
+	private static Logger log = null;
 
+	private ApplicationContext applicationContext;
+
+	public static final ApplicationContext getContext()
+	{
+		return instance.applicationContext;
+	}
+
+	/**
+	 * Inject the application context from outside.
+	 * currently seems to be requried because currently the client startup procedure needs to be decomposed more.
+	 * See <code>SwingUIApplication</code> to know what I mean.
+	 *
+	 * @param applicationContext
+	 */
+	public void setApplicationContext(final ApplicationContext applicationContext)
+	{
+		this.applicationContext = applicationContext;
+	}
+
+	/**
+	 * Allows to "statically" autowire a bean that is somehow not wired by spring. Needs the applicationContext to be set.
+	 *
+	 * @param bean
+	 */
+	public static final void autowire(final Object bean)
+	{
+		if(getContext() == null)
+		{
+			return;
+		}
+		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
+	}
 
 	//
 	// Load product name, versions etc from resource file
@@ -563,11 +601,11 @@ public final class Adempiere
 		{
 			System.exit(1);
 		}
-		CLogMgt.initialize(runmodeClient);
+		LogManager.initialize(runmodeClient);
 		Ini.setRunMode(runMode);
 
 		// Init Log
-		log = CLogger.getCLogger(Adempiere.class);
+		log = LogManager.getLogger(Adempiere.class);
 		// Greeting
 		log.info(getSummaryAscii());
 
@@ -575,15 +613,14 @@ public final class Adempiere
 		Ini.loadProperties(false); // reload=false
 
 		// Set up Log
-		CLogMgt.setLevel(Ini.getProperty(Ini.P_TRACELEVEL));
-		CLogMgt.getFileLogger().updateConfigurationFromIni();
+		LogManager.updateConfigurationFromIni();
 
 		// Set UI
 		if (runmodeClient)
 		{
-			if (CLogMgt.isLevelAll())
+			if (log.isTraceEnabled())
 			{
-				log.log(Level.FINEST, "{0}", System.getProperties());
+				log.trace("{}", System.getProperties());
 			}
 
 			AdempierePLAF.setPLAF(); // metas: load plaf from last session
@@ -636,7 +673,7 @@ public final class Adempiere
 		// startup(runMode); // returns if already initiated
 		if (!DB.isConnected())
 		{
-			log.severe("No Database");
+			log.error("No Database");
 			return false;
 		}
 
@@ -644,7 +681,7 @@ public final class Adempiere
 
 		if (system == null)
 		{
-			log.severe("No AD_System record found");
+			log.error("No AD_System record found");
 			return false;
 		}
 
@@ -680,7 +717,7 @@ public final class Adempiere
 		}
 		catch (Exception e)
 		{
-			log.warning("Environment problems: " + e.toString());
+			log.warn("Environment problems: " + e.toString());
 		}
 
 		// Start Workflow Document Manager (in other package) for PO
@@ -695,7 +732,7 @@ public final class Adempiere
 		}
 		catch (Exception e)
 		{
-			log.warning("Not started: " + className + " - " + e.getMessage());
+			log.warn("Not started: " + className + " - " + e.getMessage());
 		}
 
 		// metas: begin
@@ -718,13 +755,40 @@ public final class Adempiere
 		return true;
 	}	// startupEnvironment
 
+
+
 	/**
 	 * Main Method
 	 *
 	 * @param args optional start class
+	 * @deprecated please start the client in the way the <code>SwingUIApplication</code> class does.
 	 */
+	@Deprecated
 	public static void main(String[] args)
 	{
+		main(null, args);
+	}
+
+	/**
+	 * Starts the metasfresh swing client with an empty set of command line parameters, but with a spring application context.
+	 *
+	 * @param applicationContext
+	 */
+	public static void main(ApplicationContext applicationContext)
+	{
+		main(applicationContext, new String[]{});
+	}
+
+	/**
+	 * Main Method
+	 *
+	 * @param applicationContext the pring application context. It is set to the instance that can be retrieved via {@link Env#getSingleAdempiereInstance()}.
+	 * @param args optional start class
+	 */
+	private static void main(ApplicationContext applicationContext, String[] args)
+	{
+		instance.setApplicationContext(applicationContext);
+
 		startAddOns();
 
 		//

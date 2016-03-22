@@ -43,10 +43,11 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.logging.MetasfreshLastError;
 
 public final class MiscUtils
 {
@@ -58,7 +59,7 @@ public final class MiscUtils
 	public static String loggerMsgs()
 	{
 
-		final ValueNamePair lastError = CLogger.retrieveError();
+		final ValueNamePair lastError = MetasfreshLastError.retrieveError();
 
 		final StringBuffer msg = new StringBuffer(" Infos from CLogger: ");
 		if (lastError != null)
@@ -67,7 +68,7 @@ public final class MiscUtils
 					.append("', name='").append(lastError.getName() + "']");
 		}
 
-		final ValueNamePair lastWarning = CLogger.retrieveWarning();
+		final ValueNamePair lastWarning = MetasfreshLastError.retrieveWarning();
 		if (lastWarning != null)
 		{
 			msg.append(" Last warning: [value='")
@@ -80,13 +81,13 @@ public final class MiscUtils
 	public static String loggerMsgsUser()
 	{
 
-		final ValueNamePair lastError = CLogger.retrieveError();
+		final ValueNamePair lastError = MetasfreshLastError.retrieveError();
 		if (lastError != null)
 		{
 			return lastError.getName();
 		}
 
-		final ValueNamePair lastWarning = CLogger.retrieveWarning();
+		final ValueNamePair lastWarning = MetasfreshLastError.retrieveWarning();
 		if (lastWarning != null)
 		{
 
@@ -215,7 +216,7 @@ public final class MiscUtils
 	public static Boolean getBoolean(final GridTab mTab, final String colName)
 	{
 
-		final Object isSOTrx = (Object)mTab.getValue(colName);
+		final Object isSOTrx = mTab.getValue(colName);
 		if (isSOTrx == null)
 		{
 			return false;

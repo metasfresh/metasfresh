@@ -25,13 +25,12 @@ package de.metas.adempiere.form.terminal;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class TerminalKeyTextAdapter implements ITerminalKeyListener
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	private final ITerminalTextField textField;
 	private final IKeyLayout keylayout;
 
@@ -152,7 +151,7 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 				}
 				catch (ParseException e)
 				{
-					log.log(Level.FINE, "JFormattedTextField commit failed", e);
+					log.debug("JFormattedTextField commit failed", e);
 				}
 			}
 		}

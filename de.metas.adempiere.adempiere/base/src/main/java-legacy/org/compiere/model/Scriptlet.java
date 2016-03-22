@@ -22,9 +22,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import bsh.EvalError;
@@ -69,7 +69,7 @@ public class Scriptlet
 	public static final String      VARIABLE = "result";
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Scriptlet.class);
+	private static Logger log = LogManager.getLogger(Scriptlet.class);
 
 	/**
 	 *  Full Constructor
@@ -123,29 +123,29 @@ public class Scriptlet
 		if (m_variable == null || m_variable.length() == 0 || m_script == null || m_script.length() == 0)
 		{
 			IllegalArgumentException e = new IllegalArgumentException("No variable/script");
-			log.warning(e.toString());
+			log.warn(e.toString());
 			return e;
 		}
 		Interpreter i = new Interpreter();
 		loadEnvironment(i);
 		try
 		{
-			log.config(m_script);
+			log.info(m_script);
 			i.eval(m_script);
 		}
 		catch (Exception e)
 		{
-			log.warning(e.toString());
+			log.warn(e.toString());
 			return e;
 		}
 		try
 		{
 			m_result = i.get (m_variable);
-			log.config("Result (" + m_result.getClass().getName() + ") " + m_result);
+			log.info("Result (" + m_result.getClass().getName() + ") " + m_result);
 		}
 		catch (Exception e)
 		{
-			log.warning("Result - " + e);
+			log.warn("Result - " + e);
 			if (e instanceof NullPointerException)
 				e = new IllegalArgumentException("Result Variable not found - " + m_variable);
 			return e;
@@ -193,7 +193,7 @@ public class Scriptlet
 			}
 			catch (EvalError ee)
 			{
-				log.log(Level.SEVERE, "", ee);
+				log.error("", ee);
 			}
 		}
 	}   //  setEnvironment
@@ -282,7 +282,7 @@ public class Scriptlet
 	{
 		if (key == null || key.length() == 0)
 			return;
-	//	log.fine( "Scriptlet.setEnvironment " + key, stringValue);
+	//	log.debug( "Scriptlet.setEnvironment " + key, stringValue);
 		if (stringValue == null)
 		{
 			m_ctx.remove(key);
@@ -353,7 +353,7 @@ public class Scriptlet
 	{
 		if (key != null && key.length() > 0)
 		{
-		//	log.fine( "Scriptlet.setEnvironment " + key, value);
+		//	log.debug( "Scriptlet.setEnvironment " + key, value);
 			if (value == null)
 				m_ctx.remove(key);
 			else

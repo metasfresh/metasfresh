@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -48,7 +49,7 @@ public class ProjectGenOrder extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		m_C_Project_ID = getRecord_ID();
 	}	//	prepare
@@ -102,7 +103,7 @@ public class ProjectGenOrder extends SvrProcess
 					count++;
 			}	//	for all lines
 			if (lines.length != count)
-				log.log(Level.SEVERE, "Lines difference - ProjectLines=" + lines.length + " <> Saved=" + count);
+				log.error("Lines difference - ProjectLines=" + lines.length + " <> Saved=" + count);
 		}	//	Order Lines
 
 		return "@C_Order_ID@ " + order.getDocumentNo() + " (" + count + ")";

@@ -26,7 +26,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -36,13 +37,11 @@ import javax.swing.JPasswordField;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.swing.CButton;
-import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 
 /**
@@ -78,7 +77,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		AdempierePLAF.showCenterScreen(this);
 	}   //  CConnection
@@ -93,7 +92,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 	// private boolean m_saved = false;
 
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (CConnectionDialog.class);
+	private static Logger	log	= LogManager.getLogger(CConnectionDialog.class);
 
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -457,7 +456,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			JOptionPane.showMessageDialog(this,
 					e,		// message
 					res.getString("ConnectionError") + ": " + m_cc.getConnectionURL(),

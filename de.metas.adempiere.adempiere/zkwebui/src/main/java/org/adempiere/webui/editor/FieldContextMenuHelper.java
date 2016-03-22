@@ -29,7 +29,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.util.Services;
 import org.adempiere.webui.ValuePreference;
-import org.adempiere.webui.editor.WEditorPopupMenu;
 import org.adempiere.webui.event.ContextMenuEvent;
 import org.adempiere.webui.event.ContextMenuListener;
 import org.compiere.model.PO;

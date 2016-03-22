@@ -19,7 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.apps.IStatusBar;
@@ -33,7 +34,8 @@ import org.compiere.model.MPrivateAccess;
 import org.compiere.model.MRMA;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -47,7 +49,7 @@ import org.compiere.util.Trx;
 public class InvoiceGen extends GenForm
 {
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InvoiceGen.class);
+	private static Logger log = LogManager.getLogger(InvoiceGen.class);
 	//
 	
 	public Object 			m_AD_Org_ID = null;
@@ -229,7 +231,7 @@ public class InvoiceGen extends GenForm
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		//
 		miniTable.autoSize();
@@ -253,14 +255,14 @@ public class InvoiceGen extends GenForm
 		for (int i = 0; i < rows; i++)
 		{
 			IDColumn id = (IDColumn)miniTable.getValueAt(i, 0);     //  ID in column 0
-		//	log.fine( "Row=" + i + " - " + id);
+		//	log.debug( "Row=" + i + " - " + id);
 			if (id != null && id.isSelected())
 				results.add(id.getRecord_ID());
 		}
 
 		if (results.size() == 0)
 			return;
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 		setSelection(results);
 	}	//	saveSelection
 
@@ -317,7 +319,7 @@ public class InvoiceGen extends GenForm
 				{
 					String msg = "No Invoices";     //  not translated!
 					info = msg;
-					log.config(msg);
+					log.info(msg);
 					trx.rollback();
 					return info;
 				}
@@ -332,7 +334,7 @@ public class InvoiceGen extends GenForm
 			{
 				String msg = "No Invoices";     //  not translated!
 				info = msg;
-				log.config(msg);
+				log.info(msg);
 				trx.rollback();
 				return info;
 			}
@@ -348,7 +350,7 @@ public class InvoiceGen extends GenForm
 		{
 			String msg = "No Selection Parameter added";  //  not translated
 			info = msg;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return info;
 		}
 		
@@ -359,7 +361,7 @@ public class InvoiceGen extends GenForm
 		{
 			String msg = "No DocAction Parameter added";  //  not translated
 			info = msg;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return info;
 		}
 		

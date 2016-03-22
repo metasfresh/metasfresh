@@ -29,7 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.component.Button;
@@ -44,11 +43,14 @@ import org.adempiere.webui.util.ReaderInputStream;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImpFormatRow;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -80,7 +82,7 @@ public class WFileImport extends ADForm implements EventListener
 	private static final int MAX_SHOWN_LINES = 10;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WFileImport.class);
+	private static Logger log = LogManager.getLogger(WFileImport.class);
 	
 	private int	m_record = -1;
 	
@@ -152,7 +154,7 @@ public class WFileImport extends ADForm implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "init", e);
+			log.error("init", e);
 		}
 	}	//	init
 
@@ -244,7 +246,7 @@ public class WFileImport extends ADForm implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		pickFormat.setSelectedIndex(0);
@@ -346,7 +348,7 @@ public class WFileImport extends ADForm implements EventListener
 			}
 		}
 		
-		log.config(media.getName());
+		log.info(media.getName());
 		bFile.setLabel(media.getName());
 	
 		cmd_reloadFile();
@@ -397,7 +399,7 @@ public class WFileImport extends ADForm implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			bFile.setLabel(Msg.getMsg(Env.getCtx(), "FileImportFile"));
 		}
 		
@@ -416,7 +418,7 @@ public class WFileImport extends ADForm implements EventListener
 		
 		//setCursor (Cursor.getDefaultCursor());
 		
-		log.config("Records=" + m_data.size() + ", Length=" + length);
+		log.info("Records=" + m_data.size() + ", Length=" + length);
 	}	//	cmd_loadFile
 
 	/**
@@ -511,7 +513,7 @@ public class WFileImport extends ADForm implements EventListener
 		int size = m_format.getRowCount();
 		
 		if (lInfo.length != size)
-			log.log(Level.SEVERE, "FormatElements=" + size + " != Fields=" + lInfo.length);
+			log.error("FormatElements=" + size + " != Fields=" + lInfo.length);
 		
 		for (int i = 0; i < size; i++)
 		{
@@ -532,7 +534,7 @@ public class WFileImport extends ADForm implements EventListener
 			return;
 		}
 		
-		log.config(m_format.getName());
+		log.info(m_format.getName());
 
 		//	For all rows - update/insert DB table
 		

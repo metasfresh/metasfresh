@@ -29,7 +29,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -40,7 +41,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 
 import com.google.common.base.Supplier;
@@ -54,7 +54,7 @@ import com.google.common.base.Supplier;
 public abstract class AbstractTrx implements ITrx
 {
 	/** Logger */
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final ITrxManager trxManager;
 	private final String m_trxName;
@@ -79,7 +79,7 @@ public abstract class AbstractTrx implements ITrx
 	public AbstractTrx(final ITrxManager trxManager, final String trxName)
 	{
 		super();
-		// log.info (trxName);
+		// log.info(trxName);
 
 		Check.assumeNotNull(trxManager, "trxManager not null");
 		this.trxManager = trxManager;
@@ -121,7 +121,7 @@ public abstract class AbstractTrx implements ITrx
 	{
 		if (m_active)
 		{
-			log.warning("Trx in progress " + m_trxName);
+			log.warn("Trx in progress " + m_trxName);
 			return false;
 		}
 		m_active = true;
@@ -352,7 +352,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			m_active = false;
 			Services.get(IOpenTrxBL.class).onClose(this); // metas 02367
-			log.log(Level.FINE, "{0} (direct)", getTrxName());
+			log.debug("{} (direct)", getTrxName());
 			return true;
 		}
 
@@ -377,7 +377,7 @@ public abstract class AbstractTrx implements ITrx
 			
 			getTrxListenerManager(false).fireAfterClose(this);
 
-			log.fine(getTrxName());
+			log.debug(getTrxName());
 		}
 	}
 

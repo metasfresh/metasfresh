@@ -22,7 +22,8 @@ package org.adempiere.pricing.spi.impl.rules;
  * #L%
  */
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -31,12 +32,13 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
 import org.adempiere.util.ILoggable;
 import org.compiere.model.MPriceList;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Trace;
 
 public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 {
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
@@ -44,13 +46,13 @@ public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 	{
 		if (result.isCalculated())
 		{
-			log.fine("Not applying because already calculated");
+			log.debug("Not applying because already calculated");
 			return false;
 		}
 
 		if (pricingCtx.getM_Product_ID() <= 0)
 		{
-			log.fine("Not applying because there is no M_Product_ID specified in context");
+			log.debug("Not applying because there is no M_Product_ID specified in context");
 			return false;
 		}
 
@@ -58,14 +60,14 @@ public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 		{
 			final String msg = "pricingCtx {0} contains no priceList";
 			ILoggable.THREADLOCAL.getLoggable().addLog(msg, pricingCtx);
-			log.log(Level.SEVERE, msg, pricingCtx);
+			log.error(msg, pricingCtx);
 			Trace.printStack();
 			return false; // false;
 		}
 
 		if (pricingCtx.getM_PriceList_ID() == MPriceList.M_PriceList_ID_None)
 		{
-			log.log(Level.INFO, "Not applying because PriceList is NoPriceList ({0})", pricingCtx);
+			log.info("Not applying because PriceList is NoPriceList ({})", pricingCtx);
 			return false;
 		}
 

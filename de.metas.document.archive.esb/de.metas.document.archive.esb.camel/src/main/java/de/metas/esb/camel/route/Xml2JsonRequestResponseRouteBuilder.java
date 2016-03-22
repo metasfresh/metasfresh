@@ -134,7 +134,7 @@ public abstract class Xml2JsonRequestResponseRouteBuilder<JIT, JOT, XOT> extends
 				.marshal(jaxbDataFormat)
 				//
 				// Request: Save current (original) request body (in case we need to restore)
-				.setProperty(PROPERTY_ORIGINAL_BODY, body(String.class))
+				.setProperty(PROPERTY_ORIGINAL_BODY, bodyAs(String.class))
 				//
 				// Request: Send XML object to endpoint and wait for response
 				.inOut(toXmlEndpoint)

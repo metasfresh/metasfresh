@@ -50,7 +50,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 
 public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 {
-	// private final static transient CLogger logger = CLogger.getCLogger(HUReceiptScheduleDAO.class);
+	// private final static transient Logger logger = CLogMgt.getLogger(HUReceiptScheduleDAO.class);
 
 	private final transient IQueryFilter<I_M_ReceiptSchedule_Alloc> isHandlingUnitAllocationFilter = Services.get(IQueryBL.class)
 			.createCompositeQueryFilter(I_M_ReceiptSchedule_Alloc.class)

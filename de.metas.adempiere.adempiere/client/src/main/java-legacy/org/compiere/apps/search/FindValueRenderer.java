@@ -18,7 +18,8 @@ package org.compiere.apps.search;
 
 import java.awt.Component;
 import java.awt.Insets;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
@@ -28,7 +29,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.model.Lookup;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 
 /**
@@ -61,7 +63,7 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 	/** CheckBox */
 	private JCheckBox m_checkbox = null;
 	/** Logger */
-	private static final transient CLogger log = CLogger.getCLogger(FindValueRenderer.class);
+	private static final transient Logger log = LogManager.getLogger(FindValueRenderer.class);
 
 	private final boolean isValueDisplayed()
 	{
@@ -157,7 +159,7 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 		}
 		else
 		{
-			log.log(Level.SEVERE, "FindValueRenderer.setValue (" + value + ") No search field selected");
+			log.error("FindValueRenderer.setValue (" + value + ") No search field selected");
 			displayType = 0;
 		}
 

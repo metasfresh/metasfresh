@@ -27,7 +27,8 @@ import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -39,12 +40,11 @@ import org.adempiere.ad.dao.cache.ITableCacheStatisticsCollector;
 import org.adempiere.ad.dao.cache.jmx.JMXCacheStatisticsManager;
 import org.adempiere.ad.dao.cache.jmx.JMXTableCacheStatistics;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 
 /* package */class TableCacheStatisticsCollector implements ITableCacheStatisticsCollector
 {
-	private static final transient CLogger logger = CLogger.getCLogger(TableCacheStatisticsCollector.class);
+	private static final transient Logger logger = LogManager.getLogger(TableCacheStatisticsCollector.class);
 
 	private final String collectorName;
 
@@ -291,7 +291,7 @@ import org.compiere.util.CacheMgt;
 		}
 		catch (MalformedObjectNameException e)
 		{
-			logger.log(Level.WARNING, "Cannot create JMX name: " + jmxName, e);
+			logger.warn("Cannot create JMX name: " + jmxName, e);
 			return;
 		}
 
@@ -304,7 +304,7 @@ import org.compiere.util.CacheMgt;
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot register MBean for " + jmxName, e);
+			logger.warn("Cannot register MBean for " + jmxName, e);
 			return;
 		}
 	}
@@ -321,7 +321,7 @@ import org.compiere.util.CacheMgt;
 		}
 		catch (MalformedObjectNameException e)
 		{
-			logger.log(Level.WARNING, "Cannot create JMX name: " + jmxName, e);
+			logger.warn("Cannot create JMX name: " + jmxName, e);
 			return;
 		}
 
@@ -331,7 +331,7 @@ import org.compiere.util.CacheMgt;
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot unregister MBean for " + jmxName, e);
+			logger.warn("Cannot unregister MBean for " + jmxName, e);
 			return;
 		}
 

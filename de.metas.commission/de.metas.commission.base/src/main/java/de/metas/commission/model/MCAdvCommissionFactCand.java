@@ -39,7 +39,8 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 
@@ -67,7 +68,7 @@ public class MCAdvCommissionFactCand extends X_C_AdvCommissionFactCand implement
 		return true;
 	}
 
-	private static final CLogger logger = CLogger.getCLogger(MCAdvCommissionFactCand.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvCommissionFactCand.class);
 
 	private MCAdvComRelevantPOType currentRelPOType;
 
@@ -140,7 +141,7 @@ public class MCAdvCommissionFactCand extends X_C_AdvCommissionFactCand implement
 
 		if (advCommissionRelevantPO.getBPartnerColumn_ID() <= 0)
 		{
-			MCAdvCommissionFactCand.logger.fine(advCommissionRelevantPO + " has no BPartnerColumn_ID");
+			MCAdvCommissionFactCand.logger.debug(advCommissionRelevantPO + " has no BPartnerColumn_ID");
 			return null;
 		}
 
@@ -149,7 +150,7 @@ public class MCAdvCommissionFactCand extends X_C_AdvCommissionFactCand implement
 
 		if (!bPartnerId.isPresent() || bPartnerId.get() <= 0)
 		{
-			MCAdvCommissionFactCand.logger.fine(bPartnerCol.getColumnName() + "=" + bPartnerId);
+			MCAdvCommissionFactCand.logger.debug(bPartnerCol.getColumnName() + "=" + bPartnerId);
 			return null;
 		}
 

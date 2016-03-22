@@ -41,7 +41,8 @@ import org.compiere.grid.ed.VAssignmentDialog;
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.plaf.CompiereUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
@@ -96,7 +97,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 	/** Text Margin				*/
 	private static final int	MARGIN = 2;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VSchedulePanel.class);
+	private static Logger log = LogManager.getLogger(VSchedulePanel.class);
 
 	/**
 	 * 	Set Type.
@@ -196,7 +197,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 	public void setAssignmentSlots (MAssignmentSlot[] mass, int S_Resource_ID,
 		Timestamp startDate, Timestamp endDate)
 	{
-		log.fine("S_Resource_ID=" + S_Resource_ID);
+		log.debug("S_Resource_ID=" + S_Resource_ID);
 		m_S_Resource_ID = S_Resource_ID;
 		m_noDays = TimeUtil.getDaysBetween (startDate, endDate);
 		m_startDate = startDate;
@@ -237,7 +238,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 	 */
 	public void paint (Graphics g)
 	{
-	//	log.fine( "VSchedulePanel.paint", g.getClip());
+	//	log.debug( "VSchedulePanel.paint", g.getClip());
 		Graphics2D g2D = (Graphics2D)g;
 		Dimension size = getPreferredSize();
 		Rectangle clipBounds = g2D.getClipBounds();
@@ -355,7 +356,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 		if (e.getClickCount() < 2)
 			return;
 
-		log.finer(e.toString());
+		log.trace(e.toString());
 		Rectangle hitRect = new Rectangle (e.getX()-1, e.getY()-1, 3, 3);
 
 		//	Day

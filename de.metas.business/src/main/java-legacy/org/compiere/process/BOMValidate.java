@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBOM;
 import org.compiere.model.MBOMProduct;
@@ -64,7 +65,7 @@ public class BOMValidate extends SvrProcess
 			else if (name.equals("IsReValidate"))
 				p_IsReValidate = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_M_Product_ID = getRecord_ID();
 	}	//	prepare
@@ -114,7 +115,7 @@ public class BOMValidate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -138,7 +139,7 @@ public class BOMValidate extends SvrProcess
 		m_product = product;
 	
 		//	Check Old Product BOM Structure
-		log.config(m_product.getName());
+		log.info(m_product.getName());
 		m_products = new ArrayList<MProduct>();
 		if (!validateOldProduct (m_product))
 		{
@@ -179,11 +180,11 @@ public class BOMValidate extends SvrProcess
 		//
 		if (m_products.contains(product))
 		{
-			log.warning (m_product.getName() + " recursively includes " + product.getName());
+			log.warn(m_product.getName() + " recursively includes " + product.getName());
 			return false;
 		}
 		m_products.add(product);
-		log.fine(product.getName());
+		log.debug(product.getName());
 		//
 		MProductBOM[] productsBOMs = MProductBOM.getBOMLines(product);
 		for (int i = 0; i < productsBOMs.length; i++)
@@ -191,7 +192,7 @@ public class BOMValidate extends SvrProcess
 			MProductBOM productsBOM = productsBOMs[i];
 			MProduct pp = new MProduct(getCtx(), productsBOM.getM_ProductBOM_ID(), get_TrxName());
 			if (!pp.isBOM())
-				log.finer(pp.getName());
+				log.trace(pp.getName());
 			else if (!validateOldProduct(pp))
 				return false;
 		}
@@ -233,16 +234,16 @@ public class BOMValidate extends SvrProcess
 			restriction);
 		if (boms.length != 1)
 		{
-			log.warning(restriction + " - Length=" + boms.length);
+			log.warn(restriction + " - Length=" + boms.length);
 			return false;
 		}
 		if (m_products.contains(product))
 		{
-			log.warning (m_product.getName() + " recursively includes " + product.getName());
+			log.warn(m_product.getName() + " recursively includes " + product.getName());
 			return false;
 		}
 		m_products.add(product);
-		log.fine(product.getName());
+		log.debug(product.getName());
 		//
 		MBOM bom = boms[0];
 		MBOMProduct[] BOMproducts = MBOMProduct.getOfBOM(bom);

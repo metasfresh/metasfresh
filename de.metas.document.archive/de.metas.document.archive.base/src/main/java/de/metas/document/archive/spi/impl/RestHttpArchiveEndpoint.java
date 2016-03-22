@@ -29,7 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -44,7 +45,6 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.document.archive.esb.api.ArchiveGetDataRequest;
@@ -61,7 +61,7 @@ import de.metas.document.archive.esb.api.IArchiveEndpoint;
  */
 public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 {
-	private static final transient CLogger logger = CLogger.getCLogger(RestHttpArchiveEndpoint.class);
+	private static final transient Logger logger = LogManager.getLogger(RestHttpArchiveEndpoint.class);
 
 	public static final String SYSCONFIG_ServerUrl = "de.metas.document.archive.spi.impl.RestHttpArchiveEndpoint.ServerUrl";
 	private String serverUrl;
@@ -204,7 +204,7 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 	private int executeHttpPost(final PostMethod httpPost) throws HttpException, IOException
 	{
 		final int result = httpclient.executeMethod(httpPost);
-		RestHttpArchiveEndpoint.logger.log(Level.FINEST, "Result code: {0}", result);
+		RestHttpArchiveEndpoint.logger.trace("Result code: {}", result);
 
 		// final DefaultMethodRetryHandler retryHandler = new DefaultMethodRetryHandler();
 		// retryHandler.setRetryCount(3);

@@ -28,7 +28,8 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.TransferHandler;
 
@@ -37,7 +38,8 @@ import org.compiere.apps.APanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
 import org.compiere.model.MAttachment;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -50,7 +52,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 	private static final long serialVersionUID = -4482233564492129396L;
 
 	/** Logger */
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	// private final GridTab gridTab;
 	private final APanel panel;
@@ -121,12 +123,12 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 					for (File f : l)
 					{
 						att.addEntry(f);
-						log.fine("file added: " + f.getAbsolutePath());
+						log.debug("file added: " + f.getAbsolutePath());
 					}
 					att.setTitle(att.getTitle() + " "); // otherwise it is not saved (nothing changed message..)
 					if (!att.save())
 					{
-						log.severe("Can't save attachment");
+						log.error("Can't save attachment");
 					}
 				}
 				else if (flavor.getMimeType().startsWith("text"))
@@ -144,7 +146,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 			}
 			catch (Exception ex)
 			{
-				log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+				log.error(ex.getLocalizedMessage(), ex);
 				ADialog.error(gridTab.getWindowNo(), null, "Error", ex.getLocalizedMessage());
 				return false;
 			}
@@ -166,7 +168,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		MAttachment att = MAttachment.get(Env.getCtx(), getTableId(), getRecordId());
 		if (att == null)
 		{
-			log.fine("new attachment created");
+			log.debug("new attachment created");
 			att = new MAttachment(Env.getCtx(), getTableId(), getRecordId(), null);
 		}
 		return att;

@@ -118,7 +118,7 @@ public class BasePriceList extends AbstractPriceListBasedRule
 					m_isTaxIncluded = "Y".equals(rs.getString(9));
 					m_C_TaxCategory_ID = rs.getInt("C_TaxCategory_ID");
 					//
-					log.fine("M_PriceList_ID=" + m_M_PriceList_ID
+					log.debug("M_PriceList_ID=" + m_M_PriceList_ID
 							+ "(" + plDate + ")" + " - " + m_PriceStd);
 					m_calculated = true;
 					break;
@@ -142,7 +142,7 @@ public class BasePriceList extends AbstractPriceListBasedRule
 
 		if (!m_calculated)
 		{
-			log.finer("Not found (BPL)");
+			log.trace("Not found (BPL)");
 			return;
 		}
 

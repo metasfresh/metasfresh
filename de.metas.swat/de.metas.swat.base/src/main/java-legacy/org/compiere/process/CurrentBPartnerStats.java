@@ -39,8 +39,6 @@ package org.compiere.process;
  */
 
 
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -60,7 +58,7 @@ public class CurrentBPartnerStats extends SvrProcess {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null) {
 			} else {
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 	} // prepare

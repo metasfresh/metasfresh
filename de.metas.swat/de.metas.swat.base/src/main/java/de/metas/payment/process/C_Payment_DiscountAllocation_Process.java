@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -158,7 +156,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 			{
 				final String errmsg = "@Error@: @C_Payment_ID@ " + payment.getDocumentNo() + ": " + e.getLocalizedMessage();
 				addLog(errmsg);
-				log.log(Level.SEVERE, errmsg, e);
+				log.error(errmsg, e);
 				return true; // rollback
 			}
 		});

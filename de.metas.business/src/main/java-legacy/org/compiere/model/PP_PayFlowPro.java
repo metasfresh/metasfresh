@@ -19,7 +19,8 @@ package org.compiere.model;
 import java.io.File;
 import java.io.Serializable;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.Ini;
 
@@ -51,7 +52,7 @@ public final class PP_PayFlowPro extends PaymentProcessor
 		//	Needs Certification File (not dustributed)
 		File file = new File (path, "f73e89fd.0");
 		if (!file.exists())
-			log.log(Level.SEVERE, "No cert file " + file.getAbsolutePath());
+			log.error("No cert file " + file.getAbsolutePath());
 		m_pp.SetCertPath (path);
 	}   //  PP_PayFowPro
 
@@ -83,7 +84,7 @@ public final class PP_PayFlowPro extends PaymentProcessor
 	 */
 	public boolean processCC () throws IllegalArgumentException
 	{
-		log.fine(p_mpp.getHostAddress() + " " + p_mpp.getHostPort() + ", Timeout=" + getTimeout()
+		log.debug(p_mpp.getHostAddress() + " " + p_mpp.getHostPort() + ", Timeout=" + getTimeout()
 			+ "; Proxy=" + p_mpp.getProxyAddress() + " " + p_mpp.getProxyPort() + " " + p_mpp.getProxyLogon() + " " + p_mpp.getProxyPassword());
 		//
 		StringBuffer param = new StringBuffer();
@@ -155,7 +156,7 @@ public final class PP_PayFlowPro extends PaymentProcessor
 			.append("&VENDOR=").append(p_mpp.getVendorID())
 			.append("&USER=").append(p_mpp.getUserID())
 			.append("&PWD=").append(p_mpp.getPassword());
-		log.fine("-> " + param.toString());
+		log.debug("-> " + param.toString());
 
 		// Call the PayFlowPro client.
 		int rc = m_pp.CreateContext (p_mpp.getHostAddress(), p_mpp.getHostPort(), getTimeout(),
@@ -164,7 +165,7 @@ public final class PP_PayFlowPro extends PaymentProcessor
 		m_pp.DestroyContext();
 		//
 		long ms = System.currentTimeMillis() - start;
-		log.fine("<- " + ms + "ms - " + rc + " - " + response);
+		log.debug("<- " + ms + "ms - " + rc + " - " + response);
 		p_mp.setR_Result("");
 		p_mp.setR_Info(response);		//	complete info
 
@@ -199,7 +200,7 @@ public final class PP_PayFlowPro extends PaymentProcessor
 			else if (name.equals("CVV2MATCH"))	//	Y/N X=not supported
 				;
 			else
-				log.log(Level.SEVERE, "Response unknown = " + token);
+				log.error("Response unknown = " + token);
 		}
 		//  Probelms with rc (e.g. 0 with Result=24)
 		return m_ok;

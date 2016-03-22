@@ -62,7 +62,8 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.I_HR_Process;
@@ -111,6 +112,7 @@ import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Commission Module Main Validator
@@ -129,7 +131,7 @@ public class CommissionValidator implements ModelValidator
 
 	public static final String SYSCONFIG_INVOICE_C_Charge_ID = "de.metas.commission.CommissionInvoice.C_Charge_ID";
 
-	private static final CLogger logger = CLogger.getCLogger(CommissionValidator.class);
+	private static final Logger logger = LogManager.getLogger(CommissionValidator.class);
 
 	private int ad_Client_ID = -1;
 
@@ -393,7 +395,7 @@ public class CommissionValidator implements ModelValidator
 					final String msg = Messages.INVOICE_COMPLETE_IT_FAILURE_2P;
 					final Object[] args = {
 							invoice.getDocumentNo(),
-							CLogger.retrieveError().getValue() };
+							MetasfreshLastError.retrieveError().getValue() };
 
 					return Services.get(IMsgBL.class).getMsg(process.getCtx(), msg, args);
 				}

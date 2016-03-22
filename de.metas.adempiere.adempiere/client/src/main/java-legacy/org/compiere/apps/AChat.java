@@ -21,7 +21,8 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JSplitPane;
 
@@ -31,7 +32,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -65,7 +67,7 @@ public class AChat extends CDialog
 	{
 		super (frame, Msg.getMsg(Env.getCtx(), "Chat") + " " + Description, true);
 		//	needs to be modal otherwise APanel does not recongize change.
-		log.config("ID=" + CM_Chat_ID
+		log.info("ID=" + CM_Chat_ID
 			+ ", Table=" + AD_Table_ID + ", Record=" + Record_ID);
 		//
 		m_WindowNo = WindowNo;
@@ -76,7 +78,7 @@ public class AChat extends CDialog
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		//	Create Model
 		if (CM_Chat_ID == 0)
@@ -102,7 +104,7 @@ public class AChat extends CDialog
 	/** Change					*/
 	private boolean			m_change = false;
 	/**	Logger					*/
-	private static CLogger log = CLogger.getCLogger(AChat.class);
+	private static Logger log = LogManager.getLogger(AChat.class);
 
 	private CPanel 			mainPanel = new CPanel(new BorderLayout(5,5));
 	private CTextPane		historyText = new CTextPane();
@@ -156,7 +158,7 @@ public class AChat extends CDialog
 			String data = newText.getText();
 			if (data != null && data.length() > 0)
 			{
-				log.config(data);
+				log.info(data);
 				if (m_chat.get_ID() == 0)
 					m_chat.save();
 				MChatEntry entry = new MChatEntry(m_chat, data);

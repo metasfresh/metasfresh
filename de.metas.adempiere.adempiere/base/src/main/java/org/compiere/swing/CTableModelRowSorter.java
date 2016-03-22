@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
@@ -51,7 +52,7 @@ import org.compiere.util.MSort;
 public class CTableModelRowSorter
 {
 	/** Logger */
-	private static final transient Logger log = Logger.getLogger(CTableModelRowSorter.class.getName());
+	private static final transient Logger log = LogManager.getLogger(CTableModelRowSorter.class.getName());
 
 	private final CTable table;
 
@@ -474,7 +475,7 @@ public class CTableModelRowSorter
 				final boolean sortAscending = addToSortColumnsAndRemoveOtherColumns(modelColumnIndexToUse);
 
 				//
-				log.config("#" + modelColumnIndexToUse + " - rows=" + rows + ", asc=" + sortAscending);
+				log.info("#" + modelColumnIndexToUse + " - rows=" + rows + ", asc=" + sortAscending);
 			}
 			else
 			{

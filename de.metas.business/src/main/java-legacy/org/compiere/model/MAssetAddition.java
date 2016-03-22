@@ -65,7 +65,7 @@ public class MAssetAddition extends X_A_Asset_Addition
 	 */
 	protected boolean beforeSave (boolean newRecord)
 	{
-		log.info ("beforeSave");
+		log.info("beforeSave");
 		int		p_A_Asset_ID = 0;
 		p_A_Asset_ID = getA_Asset_ID();		
 		String sql = "SELECT COUNT(*) FROM A_Depreciation_Workfile WHERE A_Asset_ID=?";		

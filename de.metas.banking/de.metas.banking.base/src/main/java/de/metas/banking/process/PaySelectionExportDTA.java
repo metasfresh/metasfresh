@@ -42,7 +42,6 @@ package de.metas.banking.process;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -85,7 +84,7 @@ public class PaySelectionExportDTA extends SvrProcess {
 				fileName = (String) para[i].getParameter();
 				
 			} else {
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

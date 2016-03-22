@@ -27,10 +27,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import org.adempiere.util.concurrent.BlockingThreadPoolExecutor;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -64,6 +65,15 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 		}
 
 		this.running = new AtomicBoolean(true);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("name", name)
+				.add("executor", executor)
+				.toString();
 	}
 
 	@Override
@@ -132,7 +142,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 			}
 			catch (InterruptedException e)
 			{
-				logger.log(Level.WARNING, "Failed shutdowning executor for " + name + ". Retry " + retryCount + " more times.");
+				logger.warn("Failed shutdowning executor for " + name + ". Retry " + retryCount + " more times.");
 				terminated = false;
 			}
 			retryCount--;

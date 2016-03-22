@@ -33,7 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -53,7 +54,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -77,7 +77,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
 	public static final int NO_HU_PI_ID = 100;
@@ -755,7 +755,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				return defaultLUPIItems.get(0);
 			}
 
-			logger.log(Level.WARNING, "More then one parent PI Item found. Returing the first one."
+			logger.warn("More then one parent PI Item found. Returing the first one."
 					+ "\n huPI={0}"
 					+ "\n huUnitType={1}"
 					+ "\n bpartner={2}"

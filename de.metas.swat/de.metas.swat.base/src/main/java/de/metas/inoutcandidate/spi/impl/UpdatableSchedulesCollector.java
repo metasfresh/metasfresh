@@ -35,7 +35,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -53,7 +54,7 @@ import de.metas.product.IProductBL;
  */
 public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 {
-	private static CLogger logger = CLogger.getCLogger(UpdatableSchedulesCollector.class);
+	private static Logger logger = LogManager.getLogger(UpdatableSchedulesCollector.class);
 
 	/**
 	 * Does nothing, just returns <code>seed</code>.
@@ -80,7 +81,7 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 //		while (inspectOlAndScheds(ctx, result, productsSeen, bPartnersExploded, coToUse, trxName) > 0)
 //		{
 //			level++;
-//			logger.fine("level=" + level);
+//			logger.debug("level=" + level);
 //		}
 //
 //		return result;

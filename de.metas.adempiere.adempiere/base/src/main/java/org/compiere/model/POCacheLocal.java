@@ -98,7 +98,7 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		final boolean ok = parentPO.set_ValueOfColumnReturningBoolean(parentColumnName, value);
 		if (!ok)
 		{
-			logger.warning("Cannot set " + parentColumnName + "=" + id + " to " + parentPO);
+			logger.warn("Cannot set " + parentColumnName + "=" + id + " to " + parentPO);
 		}
 		return ok;
 	}

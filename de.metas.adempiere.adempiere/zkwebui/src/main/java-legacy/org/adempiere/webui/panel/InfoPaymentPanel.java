@@ -344,7 +344,7 @@ public class InfoPaymentPanel extends InfoPanel implements ValueChangeListener, 
 		
 		sql.append(" AND p.IsReceipt=?");
 
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		return sql.toString();
 	} // getSQLWhere
 
@@ -367,7 +367,7 @@ public class InfoPaymentPanel extends InfoPanel implements ValueChangeListener, 
 		{
 			Integer bp = (Integer)fBPartner_ID.getValue();
 			pstmt.setInt(index++, bp.intValue());
-			log.fine("BPartner=" + bp);
+			log.debug("BPartner=" + bp);
 		}
 
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
@@ -378,7 +378,7 @@ public class InfoPaymentPanel extends InfoPanel implements ValueChangeListener, 
 			Date t = fDateTo.getValue();
 			Timestamp to = new Timestamp(t.getTime());
 			
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 		
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -395,7 +395,7 @@ public class InfoPaymentPanel extends InfoPanel implements ValueChangeListener, 
 		{
 			BigDecimal from = new BigDecimal(fAmtFrom.getValue());
 			BigDecimal to = new BigDecimal(fAmtTo.getValue());
-			log.fine("Amt From=" + from + ", To=" + to);
+			log.debug("Amt From=" + from + ", To=" + to);
 			
 			if (from == null && to != null)
 				pstmt.setBigDecimal(index++, to);
@@ -424,7 +424,7 @@ public class InfoPaymentPanel extends InfoPanel implements ValueChangeListener, 
 		if (!s.endsWith("%"))
 			s += "%";
 		
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		
 		return s;
 	} // getSQLText

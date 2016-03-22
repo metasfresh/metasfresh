@@ -53,7 +53,6 @@ package org.compiere.server;
 
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.IImportProcessor;
@@ -124,8 +123,8 @@ public class ReplicationProcessor extends AdempiereServer
 		m_summary = new StringBuffer();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(mImportProcessor);
 		final String trxName = InterfaceWrapperHelper.getTrxName(mImportProcessor);
-		log.fine("trxName = " + trxName);
-		log.fine("ImportProcessor = " + mImportProcessor);
+		log.debug("trxName = " + trxName);
+		log.debug("ImportProcessor = " + mImportProcessor);
 
 		try
 		{
@@ -160,7 +159,7 @@ public class ReplicationProcessor extends AdempiereServer
 		}
 		if (t != null)
 		{
-			log.log(Level.SEVERE, summary, t);
+			log.error(summary, t);
 		}
 		
 		final String reference = "#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork));

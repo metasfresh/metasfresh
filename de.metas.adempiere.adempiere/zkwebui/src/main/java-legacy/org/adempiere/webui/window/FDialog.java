@@ -19,15 +19,16 @@ package org.adempiere.webui.window;
 
 import java.util.Properties;
 
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.adempiere.webui.apps.AEnv;
+import org.adempiere.webui.component.Messagebox;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trace;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
-import org.adempiere.webui.apps.AEnv;
-import org.adempiere.webui.component.Messagebox;
+
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -39,7 +40,7 @@ import org.adempiere.webui.component.Messagebox;
 public class FDialog
 {
 	/**	Logger			*/
-    private static final CLogger logger = CLogger.getCLogger(FDialog.class);
+    private static final Logger logger = LogManager.getLogger(FDialog.class);
     
     /**
      * Construct a message from the AD_Message and the additional message
@@ -225,7 +226,7 @@ public class FDialog
 
 		logger.info(adMessage + " - " + message);
 
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 		{
 			Trace.printStack();
 		}
@@ -332,7 +333,7 @@ public class FDialog
 
         logger.info(adMessage + " - " + message);
 
-        if (CLogMgt.isLevelFinest())
+        if (LogManager.isLevelFinest())
         {
             Trace.printStack();
         }

@@ -24,7 +24,8 @@ package org.adempiere.process.rpl.requesthandler.spi.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
@@ -34,7 +35,6 @@ import org.adempiere.process.rpl.requesthandler.spi.ReplRequestHandlerAdapter;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -54,7 +54,7 @@ import org.compiere.util.Util;
  */
 public class LoadPORequestHandler extends ReplRequestHandlerAdapter
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Returns the given <code>po</code> and the <code>EXP_Format</code> specified by the <code>IMP_RequestHandler</code> that we are called with.
@@ -90,7 +90,7 @@ public class LoadPORequestHandler extends ReplRequestHandlerAdapter
 		
 		if (!allowResponse)
 		{
-			logger.log(Level.WARNING, "Response not allowed because there is no access to '{0}'", po);
+			logger.warn("Response not allowed because there is no access to '{}'", po);
 			return result;
 		}
 

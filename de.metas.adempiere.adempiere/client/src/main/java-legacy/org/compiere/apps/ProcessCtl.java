@@ -21,7 +21,8 @@ import java.io.InvalidClassException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -39,7 +40,8 @@ import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -83,7 +85,7 @@ public class ProcessCtl implements Runnable
 	@Deprecated
 	public static ProcessCtl process(ASyncProcess parent, int WindowNo, ProcessInfo pi, ITrx trx)
 	{
-		log.fine("WindowNo=" + WindowNo + " - " + pi);
+		log.debug("WindowNo=" + WindowNo + " - " + pi);
 
 		MPInstance instance = null;
 		try
@@ -95,7 +97,7 @@ public class ProcessCtl implements Runnable
 			pi.setThrowable(e); // 03152
 			pi.setSummary(e.getLocalizedMessage());
 			pi.setError(true);
-			log.warning(pi.toString());
+			log.warn(pi.toString());
 			return null;
 		}
 		catch (Error e)
@@ -103,7 +105,7 @@ public class ProcessCtl implements Runnable
 			pi.setThrowable(e); // 03152
 			pi.setSummary(e.getLocalizedMessage());
 			pi.setError(true);
-			log.warning(pi.toString());
+			log.warn(pi.toString());
 			return null;
 		}
 		if (!instance.save())
@@ -162,7 +164,7 @@ public class ProcessCtl implements Runnable
 	 */
 	public static ProcessCtl process(ASyncProcess parent, int WindowNo, IProcessParameter parameter, ProcessInfo pi, ITrx trx)
 	{
-		log.fine("WindowNo=" + WindowNo + " - " + pi);
+		log.debug("WindowNo=" + WindowNo + " - " + pi);
 
 		if (pi.getAD_PInstance_ID() <= 0)
 		{
@@ -182,7 +184,7 @@ public class ProcessCtl implements Runnable
 				pi.setThrowable(e); // 03152
 				pi.setSummary(e.getLocalizedMessage());
 				pi.setError(true);
-				log.warning(pi.toString());
+				log.warn(pi.toString());
 				return null;
 			}
 			catch (Error e)
@@ -191,7 +193,7 @@ public class ProcessCtl implements Runnable
 				pi.setThrowable(e); // 03152
 				pi.setSummary(e.getLocalizedMessage());
 				pi.setError(true);
-				log.warning(pi.toString());
+				log.warn(pi.toString());
 				return null;
 			}
 			if (!instance.save())
@@ -265,7 +267,7 @@ public class ProcessCtl implements Runnable
 	private Thread m_thread; // metas
 
 	/** Static Logger */
-	private static CLogger log = CLogger.getCLogger(ProcessCtl.class);
+	private static Logger log = LogManager.getLogger(ProcessCtl.class);
 
 	/**
 	 * Run this process in a new thread
@@ -295,7 +297,7 @@ public class ProcessCtl implements Runnable
 	@Override
 	public void run()
 	{
-		log.fine("AD_PInstance_ID=" + m_pi.getAD_PInstance_ID()
+		log.debug("AD_PInstance_ID=" + m_pi.getAD_PInstance_ID()
 				+ ", Record_ID=" + m_pi.getRecord_ID());
 
 		// Lock
@@ -371,14 +373,14 @@ public class ProcessCtl implements Runnable
 				JasperReport = rs.getString(11);
 			}
 			else
-				log.log(Level.SEVERE, "No AD_PInstance_ID=" + m_pi.getAD_PInstance_ID());
+				log.error("No AD_PInstance_ID=" + m_pi.getAD_PInstance_ID());
 		}
 		catch (Throwable e)
 		{
 			m_pi.setThrowable(e);  // 03152
 			m_pi.setSummary(Msg.getMsg(Env.getCtx(), "ProcessNoProcedure") + " " + e.getLocalizedMessage(), true);
 			unlock();
-			log.log(Level.SEVERE, "run", e);
+			log.error("run", e);
 			return;
 		}
 		finally
@@ -491,7 +493,7 @@ public class ProcessCtl implements Runnable
 			ProcessInfoUtil.setSummaryFromDB(m_pi);
 			unlock();
 		}			// *** Process submission ***
-		// log.fine(Log.l3_Util, "ProcessCtl.run - done");
+		// log.debug(Log.l3_Util, "ProcessCtl.run - done");
 	}   // run
 
 	/**
@@ -516,7 +518,7 @@ public class ProcessCtl implements Runnable
 					@Override
 					public void run()
 					{
-						log.finer("lock");
+						log.trace("lock");
 						m_parent.lockUI(m_pi);
 					}
 				});
@@ -529,7 +531,7 @@ public class ProcessCtl implements Runnable
 			else
 			{
 				// other client
-				log.finer("lock");
+				log.trace("lock");
 				m_parent.lockUI(m_pi);
 			}
 		}
@@ -555,7 +557,7 @@ public class ProcessCtl implements Runnable
 					public void run()
 					{
 						String summary = m_pi.getSummary();
-						log.finer("unlock - " + summary);
+						log.trace("unlock - " + summary);
 						if (summary != null && summary.indexOf('@') != -1)
 							m_pi.setSummary(Msg.parseTranslation(Env.getCtx(), summary));
 						m_parent.unlockUI(m_pi);
@@ -582,7 +584,7 @@ public class ProcessCtl implements Runnable
 	 */
 	private boolean startWorkflow(int AD_Workflow_ID)
 	{
-		log.fine(AD_Workflow_ID + " - " + m_pi);
+		log.debug(AD_Workflow_ID + " - " + m_pi);
 		boolean started = false;
 		if (m_IsServerProcess)
 		{
@@ -590,12 +592,12 @@ public class ProcessCtl implements Runnable
 			try
 			{
 				m_pi = server.workflow(Env.getRemoteCallCtx(Env.getCtx()), m_pi, AD_Workflow_ID);
-				log.finest("server => " + m_pi);
+				log.trace("server => " + m_pi);
 				started = true;
 			}
 			catch (Exception ex)
 			{
-				log.log(Level.SEVERE, "AppsServer error", ex);
+				log.error("AppsServer error", ex);
 				started = false;
 			}
 		}
@@ -621,7 +623,7 @@ public class ProcessCtl implements Runnable
 	 */
 	private boolean startProcess()
 	{
-		log.fine(m_pi.toString());
+		log.debug(m_pi.toString());
 		boolean started = false;
 
 		// hengsin, bug [ 1633995 ]
@@ -647,7 +649,7 @@ public class ProcessCtl implements Runnable
 
 				// See ServerBean
 				m_pi = server.process(Env.getRemoteCallCtx(Env.getCtx()), m_pi);
-				log.finest("server => " + m_pi);
+				log.trace("server => " + m_pi);
 				started = true;
 			}
 			catch (UndeclaredThrowableException ex)
@@ -656,14 +658,14 @@ public class ProcessCtl implements Runnable
 				if (cause != null)
 				{
 					if (cause instanceof InvalidClassException)
-						log.log(Level.SEVERE, "Version Server <> Client: "
+						log.error("Version Server <> Client: "
 								+ cause.toString() + " - " + m_pi, ex);
 					else
-						log.log(Level.SEVERE, "AppsServer error(1b): "
+						log.error("AppsServer error(1b): "
 								+ cause.toString() + " - " + m_pi, ex);
 				}
 				else
-					log.log(Level.SEVERE, " AppsServer error(1) - "
+					log.error(" AppsServer error(1) - "
 							+ m_pi, ex);
 				started = false;
 			}
@@ -672,7 +674,7 @@ public class ProcessCtl implements Runnable
 				Throwable cause = ex.getCause();
 				if (cause == null)
 					cause = ex;
-				log.log(Level.SEVERE, "AppsServer error - " + m_pi, cause);
+				log.error("AppsServer error - " + m_pi, cause);
 				started = false;
 			}
 		}
@@ -700,7 +702,7 @@ public class ProcessCtl implements Runnable
 	private boolean startDBProcess(String ProcedureName)
 	{
 		// execute on this thread/connection
-		log.fine(ProcedureName + "(" + m_pi.getAD_PInstance_ID() + ")");
+		log.debug(ProcedureName + "(" + m_pi.getAD_PInstance_ID() + ")");
 		boolean started = false;
 		String trxName = m_trx != null ? m_trx.getTrxName() : null;
 		if (m_IsServerProcess)
@@ -709,7 +711,7 @@ public class ProcessCtl implements Runnable
 			try
 			{
 				m_pi = server.dbProcess(m_pi, ProcedureName);
-				log.finest("server => " + m_pi);
+				log.trace("server => " + m_pi);
 				started = true;
 			}
 			catch (UndeclaredThrowableException ex)
@@ -718,15 +720,15 @@ public class ProcessCtl implements Runnable
 				if (cause != null)
 				{
 					if (cause instanceof InvalidClassException)
-						log.log(Level.SEVERE, "Version Server <> Client: "
+						log.error("Version Server <> Client: "
 								+ cause.toString() + " - " + m_pi, ex);
 					else
-						log.log(Level.SEVERE, "AppsServer error(1b): "
+						log.error("AppsServer error(1b): "
 								+ cause.toString() + " - " + m_pi, ex);
 				}
 				else
 				{
-					log.log(Level.SEVERE, " AppsServer error(1) - "
+					log.error(" AppsServer error(1) - "
 							+ m_pi, ex);
 					cause = ex;
 				}
@@ -740,7 +742,7 @@ public class ProcessCtl implements Runnable
 				Throwable cause = ex.getCause();
 				if (cause == null)
 					cause = ex;
-				log.log(Level.SEVERE, "AppsServer error - " + m_pi, cause);
+				log.error("AppsServer error - " + m_pi, cause);
 				m_pi.setThrowable(cause); // 03152
 				m_pi.setSummary(Msg.getMsg(Env.getCtx(), "ProcessRunError") + " " + cause.getLocalizedMessage());
 				m_pi.setError(true);
@@ -753,7 +755,7 @@ public class ProcessCtl implements Runnable
 		{
 			return ProcessUtil.startDatabaseProcedure(m_pi, ProcedureName, m_trx);
 		}
-		// log.fine(Log.l4_Data, "ProcessCtl.startProcess - done");
+		// log.debug(Log.l4_Data, "ProcessCtl.startProcess - done");
 		return true;
 	}   // startDBProcess
 
@@ -781,7 +783,7 @@ public class ProcessCtl implements Runnable
 			catch (InterruptedException e)
 			{
 				// somebody stopped the thread by sending an INTERRUPT signal
-				log.log(Level.INFO, e.getLocalizedMessage(), e);
+				log.info(e.getLocalizedMessage(), e);
 			}
 		}
 

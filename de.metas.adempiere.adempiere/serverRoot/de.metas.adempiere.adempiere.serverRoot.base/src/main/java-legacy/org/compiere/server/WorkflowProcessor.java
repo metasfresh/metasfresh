@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
@@ -123,7 +122,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "wakeup", e);
+			log.error("wakeup", e);
 		}
 		finally
 		{
@@ -169,7 +168,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -224,7 +223,7 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "(Priority) - " + sql, e);
+				log.error("(Priority) - " + sql, e);
 			}
 			finally
 			{
@@ -274,7 +273,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(EndWaitTime) - " + sql, e);
+			log.error("(EndWaitTime) - " + sql, e);
 		}
 		finally
 		{
@@ -325,7 +324,7 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "(Inactivity): " + sql, e);
+				log.error("(Inactivity): " + sql, e);
 			}
 			finally
 			{

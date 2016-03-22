@@ -114,7 +114,7 @@ public class ImportStatusData extends SvrProcess
 			}
 			else
 			{
-				log.severe("Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

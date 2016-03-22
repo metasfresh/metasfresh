@@ -83,7 +83,8 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -145,7 +146,7 @@ public class SwatValidator implements ModelValidator
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private int m_AD_Client_ID = -1;
 
@@ -247,8 +248,6 @@ public class SwatValidator implements ModelValidator
 
 		new de.metas.invoicecandidate.modelvalidator.ConfigValidator().initialize(engine, client);
 
-		de.metas.adempiere.util.jmx.Swat.register();
-
 		JRClient.get(); // make sure Jasper client is loaded and initialized
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.class);
@@ -311,7 +310,7 @@ public class SwatValidator implements ModelValidator
 			Check.setThrowException(throwException);
 			if (!throwException)
 			{
-				Check.setLogger(CLogger.getCLogger(Check.class));
+				Check.setLogger(LogManager.getLogger(Check.class));
 			}
 			else if (msgDAO.isMessageExists(MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE))
 			{
@@ -454,24 +453,24 @@ public class SwatValidator implements ModelValidator
 			{
 				final int old = cpds.getUnreturnedConnectionTimeout();
 				cpds.setUnreturnedConnectionTimeout(unreturnedConnectionTimeout);
-				log.config("Config " + SYSCONFIG_C3P0_UnreturnedConnectionTimeout + "=" + unreturnedConnectionTimeout + " (Old: " + old + ")");
+				log.info("Config " + SYSCONFIG_C3P0_UnreturnedConnectionTimeout + "=" + unreturnedConnectionTimeout + " (Old: " + old + ")");
 			}
 
 			{
 				final boolean old = cpds.isDebugUnreturnedConnectionStackTraces();
 				cpds.setDebugUnreturnedConnectionStackTraces(debugUnreturnedConnectionStackTraces);
-				log.config("Config " + SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces + "=" + debugUnreturnedConnectionStackTraces + " (Old: " + old + ")");
+				log.info("Config " + SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces + "=" + debugUnreturnedConnectionStackTraces + " (Old: " + old + ")");
 			}
 
 			{
 				final int old = cpds.getMaxStatements();
 				cpds.setMaxStatements(maxStatementsValue);
-				log.config("Config " + maxStatementsSysConfig + "=" + maxStatementsValue + " (Old: " + old + ")");
+				log.info("Config " + maxStatementsSysConfig + "=" + maxStatementsValue + " (Old: " + old + ")");
 			}
 		}
 		else
 		{
-			log.warning("Can not configure datasource because is not an instance of ComboPooledDataSource: " + ds);
+			log.warn("Can not configure datasource because is not an instance of ComboPooledDataSource: " + ds);
 		}
 	}
 }

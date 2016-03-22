@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -33,7 +34,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -59,7 +59,7 @@ public class MLanguage extends X_AD_Language
 	 */
 	private static final long serialVersionUID = 6415602943484245447L;
 
-	private static final CLogger s_log = CLogger.getCLogger(MLanguage.class);
+	private static final Logger s_log = LogManager.getLogger(MLanguage.class);
 
 	/**
 	 * Get Language Model from Language
@@ -122,7 +122,7 @@ public class MLanguage extends X_AD_Language
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.WARNING, "Cannot initialize base language. Skip.", e);
+			s_log.warn("Cannot initialize base language. Skip.", e);
 		}
 	}
 	// metas: end
@@ -149,7 +149,7 @@ public class MLanguage extends X_AD_Language
 				throw new AdempiereException("No org.compiere.util.Language defined for " + baseADLanguage);
 				// return;
 			}
-			s_log.log(Level.CONFIG, "Found base language: {0}", language);
+			s_log.info("Found base language: {}", language);
 
 			final Properties ctx = Env.getCtx();
 			if (Check.isEmpty(Env.getContext(ctx, Env.CTXNAME_AD_Language), true))
@@ -163,7 +163,7 @@ public class MLanguage extends X_AD_Language
 	};
 
 	// /** Logger */
-	// private static CLogger s_log = CLogger.getCLogger (MLanguage.class);
+	// private static Logger s_log = CLogMgt.getLogger(MLanguage.class);
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -267,7 +267,7 @@ public class MLanguage extends X_AD_Language
 			}
 			catch (final Exception e)
 			{
-				log.severe(getDatePattern() + " - " + e);
+				log.error(getDatePattern() + " - " + e);
 				m_dateFormat = null;
 			}
 		}
@@ -398,7 +398,7 @@ public class MLanguage extends X_AD_Language
 	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		final int no = TranslationTable.getActiveLanguages(true);
-		log.fine("Active Languages=" + no);
+		log.debug("Active Languages=" + no);
 		return true;
 	}	// afterSave
 
@@ -453,7 +453,7 @@ public class MLanguage extends X_AD_Language
 	{
 		final String sql = "DELETE FROM  " + tableName + " WHERE AD_Language=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { getAD_Language() }, get_TrxName());
-		log.fine(tableName + " #" + no);
+		log.debug(tableName + " #" + no);
 		return no;
 	}	// deleteTable
 
@@ -498,7 +498,7 @@ public class MLanguage extends X_AD_Language
 		// Columns
 		if (columns.size() == 0)
 		{
-			log.log(Level.SEVERE, "No Columns found for " + baseTable);
+			log.error("No Columns found for " + baseTable);
 			return 0;
 		}
 
@@ -549,7 +549,7 @@ public class MLanguage extends X_AD_Language
 		final int no = DB.executeUpdateEx(insertSql.toString(), null, get_TrxName());
 		if (no != 0)
 		{
-			log.log(Level.INFO, trlTableName + " #" + no);
+			log.info(trlTableName + " #" + no);
 		}
 		return no;
 	}	// addTable

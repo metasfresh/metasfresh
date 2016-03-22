@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.TableModelClassLoader;
@@ -38,7 +39,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -147,7 +147,7 @@ public class MTable extends X_AD_Table
 			}
 			catch (Exception e)
 			{
-				s_log.log(Level.SEVERE, sql, e);
+				s_log.error(sql, e);
 			}
 			finally
 			{
@@ -208,7 +208,7 @@ public class MTable extends X_AD_Table
 	private static final ReentrantLock s_cacheLock = new ReentrantLock();
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MTable.class);
+	private static Logger	s_log	= LogManager.getLogger(MTable.class);
 	
 	
 	/** EntityTypes */
@@ -526,7 +526,7 @@ public class MTable extends X_AD_Table
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, SQL, e);
+			s_log.error(SQL, e);
 			retValue = -1;
 		}
 		finally

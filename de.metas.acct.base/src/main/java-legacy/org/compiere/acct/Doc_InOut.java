@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
@@ -101,7 +102,7 @@ public class Doc_InOut extends Doc
 		m_DocStatus = inout.getDocStatus();
 		// Contained Objects
 		p_lines = loadLines(inout);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   // loadDocumentDetails
 
@@ -122,7 +123,7 @@ public class Doc_InOut extends Doc
 					|| line.getM_Product_ID() == 0
 					|| line.getMovementQty().signum() == 0)
 			{
-				log.finer("Ignored: " + line);
+				log.trace("Ignored: " + line);
 				continue;
 			}
 
@@ -143,7 +144,7 @@ public class Doc_InOut extends Doc
 			int PP_Cost_Collector_ID = DB.getSQLValueEx(getTrxName(), sql, new Object[] { line.getC_OrderLine_ID() });
 			docLine.setPP_Cost_Collector_ID(PP_Cost_Collector_ID);
 			//
-			log.fine(docLine.toString());
+			log.debug(docLine.toString());
 			list.add(docLine);
 		}
 
@@ -229,7 +230,7 @@ public class Doc_InOut extends Doc
 						// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 						p_Error = "No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
-						log.log(Level.WARNING, p_Error);
+						log.warn(p_Error);
 						return null;
 					}
 				}
@@ -238,7 +239,7 @@ public class Doc_InOut extends Doc
 				if (dr == null)
 				{
 					p_Error = "FactLine DR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				dr.setM_Locator_ID(line.getM_Locator_ID());
@@ -263,7 +264,7 @@ public class Doc_InOut extends Doc
 				if (cr == null)
 				{
 					p_Error = "FactLine CR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				cr.setM_Locator_ID(line.getM_Locator_ID());
@@ -335,7 +336,7 @@ public class Doc_InOut extends Doc
 						// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 						p_Error = "No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
-						log.log(Level.WARNING, p_Error);
+						log.warn(p_Error);
 						return null;
 					}
 				}
@@ -344,7 +345,7 @@ public class Doc_InOut extends Doc
 				if (dr == null)
 				{
 					p_Error = "FactLine DR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				dr.setM_Locator_ID(line.getM_Locator_ID());
@@ -377,7 +378,7 @@ public class Doc_InOut extends Doc
 				if (cr == null)
 				{
 					p_Error = "FactLine CR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				cr.setM_Locator_ID(line.getM_Locator_ID());
@@ -445,7 +446,7 @@ public class Doc_InOut extends Doc
 								{
 									int stdPrecision = Services.get(IOrderLineBL.class).getPrecision(orderLine);
 									BigDecimal costTax = Services.get(ITaxBL.class).calculateTax(tax, costs, true, stdPrecision);
-									log.fine("Costs=" + costs + " - Tax=" + costTax);
+									log.debug("Costs=" + costs + " - Tax=" + costTax);
 									costs = costs.subtract(costTax);
 								}
 							}	//	correct included Tax					    	
@@ -470,7 +471,7 @@ public class Doc_InOut extends Doc
 					{
 						p_Error = "Resubmit - No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
-						log.log(Level.WARNING, p_Error);
+						log.warn(p_Error);
 						return null;
 					}
 				}
@@ -497,7 +498,7 @@ public class Doc_InOut extends Doc
 				if (dr == null)
 				{
 					p_Error = "DR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				dr.setM_Locator_ID(line.getM_Locator_ID());
@@ -523,7 +524,7 @@ public class Doc_InOut extends Doc
 				if (cr == null)
 				{
 					p_Error = "CR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				cr.setM_Locator_ID(line.getM_Locator_ID());
@@ -591,7 +592,7 @@ public class Doc_InOut extends Doc
 					{
 						p_Error = "Resubmit - No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
-						log.log(Level.WARNING, p_Error);
+						log.warn(p_Error);
 						return null;
 					}
 				}
@@ -605,7 +606,7 @@ public class Doc_InOut extends Doc
 				if (dr == null)
 				{
 					p_Error = "CR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				dr.setM_Locator_ID(line.getM_Locator_ID());
@@ -637,7 +638,7 @@ public class Doc_InOut extends Doc
 				if (cr == null)
 				{
 					p_Error = "DR not created: " + line;
-					log.log(Level.WARNING, p_Error);
+					log.warn(p_Error);
 					return null;
 				}
 				cr.setM_Locator_ID(line.getM_Locator_ID());
@@ -658,7 +659,7 @@ public class Doc_InOut extends Doc
 		else
 		{
 			p_Error = "DocumentType unknown: " + getDocumentType();
-			log.log(Level.SEVERE, p_Error);
+			log.error(p_Error);
 			return null;
 		}
 		//
@@ -735,7 +736,7 @@ public class Doc_InOut extends Doc
 	@Deprecated
 	private void updateProductInfo(int C_AcctSchema_ID)
 	{
-		log.fine("M_InOut_ID=" + get_ID());
+		log.debug("M_InOut_ID=" + get_ID());
 		// Old Model
 		StringBuffer sql = new StringBuffer(
 				// FYRACLE add pc. everywhere
@@ -752,7 +753,7 @@ public class Doc_InOut extends Doc
 						+ " AND il.M_InOut_ID=").append(get_ID()).append(")");
 		final String sqlNative = DB.convertSqlToNative(sql.toString());
 		int no = DB.executeUpdate(sqlNative, getTrxName());
-		log.fine("M_Product_Costing - Updated=" + no);
+		log.debug("M_Product_Costing - Updated=" + no);
 		//
 	}   // updateProductInfo
 

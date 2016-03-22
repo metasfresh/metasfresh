@@ -43,7 +43,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
@@ -98,7 +99,7 @@ public class CreateFromShipment extends CreateFrom
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		setTitle(Msg.getElement(Env.getCtx(), "M_InOut_ID", false) + " .. " + Msg.translate(Env.getCtx(), "CreateFrom"));
 		
 		return true;
@@ -132,13 +133,13 @@ public class CreateFromShipment extends CreateFrom
 			}
 			rs.close();
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, sqlStmt.toString(), e);
+			log.error(sqlStmt.toString(), e);
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (Exception ex) {
-					log.severe("Could not close prepared statement");
+					log.error("Could not close prepared statement");
 				}
 			}
 		}
@@ -189,7 +190,7 @@ public class CreateFromShipment extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		return list;
 	}
@@ -212,7 +213,7 @@ public class CreateFromShipment extends CreateFrom
 		 *  ShipmentLine    - 7
 		 *  InvoiceLine     - 8
 		 */
-		log.config("C_Order_ID=" + C_Order_ID);
+		log.info("C_Order_ID=" + C_Order_ID);
 		p_order = new MOrder (Env.getCtx(), C_Order_ID, null);      //  save
 
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
@@ -244,7 +245,7 @@ public class CreateFromShipment extends CreateFrom
 				+ "l.M_Product_ID,COALESCE(p.Name,c.Name), l.Line,l.C_OrderLine_ID "
 				+ "ORDER BY l.Line");
 		//
-		log.finer(sql.toString());
+		log.trace(sql.toString());
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -277,7 +278,7 @@ public class CreateFromShipment extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			//throw new DBException(e, sql.toString());
 		}
 		finally
@@ -361,7 +362,7 @@ public class CreateFromShipment extends CreateFrom
 	    }
 	    catch (Exception ex)
 	    {
-	        log.log(Level.SEVERE, sqlStmt.toString(), ex);
+	        log.error(sqlStmt.toString(), ex);
 	    }
 	    finally
 	    {
@@ -443,7 +444,7 @@ public class CreateFromShipment extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			//throw new DBException(e, sql);
 		}
 	    finally
@@ -540,7 +541,7 @@ public class CreateFromShipment extends CreateFrom
 	{
 		/*
 		dataTable.stopEditor(true);
-		log.config("");
+		log.info("");
 		TableModel model = dataTable.getModel();
 		int rows = model.getRowCount();
 		if (rows == 0)
@@ -559,7 +560,7 @@ public class CreateFromShipment extends CreateFrom
 		// Get Shipment
 		int M_InOut_ID = ((Integer) getGridTab().getValue("M_InOut_ID")).intValue();
 		MInOut inout = new MInOut(Env.getCtx(), M_InOut_ID, trxName);
-		log.config(inout + ", C_Locator_ID=" + M_Locator_ID);
+		log.info(inout + ", C_Locator_ID=" + M_Locator_ID);
 
 		// Lines
 		for (int i = 0; i < miniTable.getRowCount(); i++)
@@ -601,7 +602,7 @@ public class CreateFromShipment extends CreateFrom
 				}
 				QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				//
-				log.fine("Line QtyEntered=" + QtyEntered
+				log.debug("Line QtyEntered=" + QtyEntered
 						+ ", Product=" + M_Product_ID 
 						+ ", OrderLine=" + C_OrderLine_ID + ", InvoiceLine=" + C_InvoiceLine_ID);
 
@@ -687,7 +688,7 @@ public class CreateFromShipment extends CreateFrom
 				// Set locator
 				iol.setM_Locator_ID(M_Locator_ID);
 				if (!iol.save())
-					log.log(Level.SEVERE, "Line NOT created #" + i);
+					log.error("Line NOT created #" + i);
 				//	Create Invoice Line Link
 				else if (il != null)
 				{

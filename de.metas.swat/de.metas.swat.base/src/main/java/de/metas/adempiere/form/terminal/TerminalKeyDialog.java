@@ -28,10 +28,10 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -41,7 +41,7 @@ public abstract class TerminalKeyDialog
 {
 	private static final String ERR_LOOKUP_FIELD_DOES_NOT_MATCH_TEXT_FIELD = "@LookupFieldDoesNotMatchTextField@";
 
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	public static final String ACTION_Reset = "Reset";
 	public static final String ACTION_Cancel = "Cancel";
@@ -113,7 +113,7 @@ public abstract class TerminalKeyDialog
 			}
 			catch (ParseException e1)
 			{
-				log.log(Level.FINE, "JFormattedTextField commit failed", e1);
+				log.debug("JFormattedTextField commit failed", e1);
 			}
 		}
 		else if (ACTION_Cancel.equals(action))
@@ -166,14 +166,14 @@ public abstract class TerminalKeyDialog
 						}
 						else
 						{
-							log.log(Level.INFO, "Invalid Format '{0}' to be used to convert text '{1}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
+							log.info("Invalid Format '{}' to be used to convert text '{}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
 							textField.setValue(BigDecimal.ZERO);
 						}
 					}
 				}
 				catch (Exception e)
 				{
-					log.log(Level.INFO, "Error parsing text: " + text, e);
+					log.info("Error parsing text: " + text, e);
 					textField.setValue(BigDecimal.ZERO);
 				}
 
@@ -183,7 +183,7 @@ public abstract class TerminalKeyDialog
 				}
 				catch (ParseException e1)
 				{
-					log.log(Level.FINE, "JFormattedTextField commit failed", e1);
+					log.debug("JFormattedTextField commit failed", e1);
 				}
 			}
 			dispose();

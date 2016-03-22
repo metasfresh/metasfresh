@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
@@ -151,7 +152,7 @@ public class TrialBalance extends SvrProcess
 			else if (name.equals("PostingType"))
 				p_PostingType = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		//	Mandatory C_AcctSchema_ID
 		m_parameterWhere.append("C_AcctSchema_ID=").append(p_C_AcctSchema_ID);
@@ -211,7 +212,7 @@ public class TrialBalance extends SvrProcess
 		setDateAcct();
 		sb.append(" - DateAcct ").append(p_DateAcct_From).append("-").append(p_DateAcct_To);
 		sb.append(" - Where=").append(m_parameterWhere);
-		log.fine(sb.toString());
+		log.debug(sb.toString());
 	}	//	prepare
 
 	/**
@@ -261,7 +262,7 @@ public class TrialBalance extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -289,7 +290,7 @@ public class TrialBalance extends SvrProcess
 	//	int AD_PrintFormat_ID = 134;
 	//	getProcessInfo().setTransientObject (MPrintFormat.get (getCtx(), AD_PrintFormat_ID, false));
 
-		log.fine((System.currentTimeMillis() - m_start) + " ms");
+		log.debug((System.currentTimeMillis() - m_start) + " ms");
 		return "";
 	}	//	doIt
 
@@ -410,14 +411,14 @@ public class TrialBalance extends SvrProcess
 				if (first != null)
 					sql.append(" AND DateAcct >= ").append(DB.TO_DATE(first.getStartDate(), true));
 				else
-					log.log(Level.SEVERE, "first period not found");
+					log.error("first period not found");
 			}
 		}
 		//
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no == 0)
-			log.fine(sql.toString());
-		log.fine("#" + no + " (Account_ID=" + p_Account_ID + ")");
+			log.debug(sql.toString());
+		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
 	}	//	createBalanceLine
 
 	/**
@@ -454,8 +455,8 @@ public class TrialBalance extends SvrProcess
 		//
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no == 0)
-			log.fine(sql.toString());
-		log.fine("#" + no + " (Account_ID=" + p_Account_ID + ")");
+			log.debug(sql.toString());
+		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
 		
 		//	Update AccountValue
 		String sql2 = "UPDATE T_TrialBalance tb SET AccountValue = "
@@ -463,7 +464,7 @@ public class TrialBalance extends SvrProcess
 			+ "WHERE tb.Account_ID IS NOT NULL";
 		no = DB.executeUpdate(sql2, get_TrxName());
 		if (no > 0)
-			log.fine("Set AccountValue #" + no);
+			log.debug("Set AccountValue #" + no);
 		
 	}	//	createDetailLines
 

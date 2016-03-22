@@ -26,7 +26,8 @@ package de.metas.inoutcandidate.process;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,8 +46,6 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -64,7 +63,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 public class M_ReceiptSchedule_Generate_M_InOuts extends SvrProcess
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(M_ReceiptSchedule_Generate_M_InOuts.class);
+	private static final transient Logger logger = LogManager.getLogger(M_ReceiptSchedule_Generate_M_InOuts.class);
 
 	private static final String PARA_IS_CREATE_MOVEMENT = "IsCreateMovement";
 	private static final String PARA_DATE_TO = "DateTo";
@@ -114,7 +113,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends SvrProcess
 						counter.setValue(counter.getValue() + 1);
 						if (counter.getValue() % 100 == 0)
 						{
-							logger.log(Level.WARNING, "Processed " + counter.getValue() + " M_ReceiptSchedules");
+							logger.warn("Processed " + counter.getValue() + " M_ReceiptSchedules");
 						}
 					}
 				}).process(receiptScheds);

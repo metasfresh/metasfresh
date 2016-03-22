@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -113,7 +112,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -128,6 +126,10 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.PPOrderBOMLineModel;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IProductBL;
 
@@ -154,7 +156,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	private FormFrame m_frame;
 	private StatusBar statusBar = new StatusBar();
 
-	private static CLogger log = CLogger.getCLogger(VOrderReceiptIssue.class);
+	private static Logger log = LogManager.getLogger(VOrderReceiptIssue.class);
 
 	// Variables declaration for visual elements - do not modify
 	private CPanel mainPanel = new CPanel();
@@ -232,7 +234,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "VOrderReceipIssue.init", e);
+			log.error("VOrderReceipIssue.init", e);
 		}
 	} // init
 
@@ -551,7 +553,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		log.fine("Event:" + e.getSource());
+		log.debug("Event:" + e.getSource());
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 		if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
@@ -973,7 +975,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	{
 		String name = e.getPropertyName();
 		Object value = e.getNewValue();
-		log.fine("VOrderReceip.vetoableChange - " + name + "=" + value);
+		log.debug("VOrderReceip.vetoableChange - " + name + "=" + value);
 		if (value == null)
 			return;
 
@@ -1071,7 +1073,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 			ADialog.error(m_WindowNo, this, "Error", e.getLocalizedMessage());
 			return false;
 		}

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -86,7 +85,7 @@ public class PayrollViaEMail extends SvrProcess
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
 			{
-				log.fine("Null paramater: " + name);
+				log.debug("Null paramater: " + name);
 			}
 			else if (name.equals("HR_Process_ID"))
 			{
@@ -110,7 +109,7 @@ public class PayrollViaEMail extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}	//	prepare
@@ -145,7 +144,7 @@ public class PayrollViaEMail extends SvrProcess
 				sendIndividualMail (m_from.getName(), tmpUser.getC_BPartner_ID(), null);
 		}else
 			sendBPGroup();
-		log.fine("From " + m_from);
+		log.debug("From " + m_from);
 			
 
 		return "@Created@=" + m_counter + ", @Errors@=" + m_errors + " - "
@@ -200,7 +199,7 @@ public class PayrollViaEMail extends SvrProcess
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		//	Clean Up
 		try
@@ -210,7 +209,7 @@ public class PayrollViaEMail extends SvrProcess
 		}
 		catch (SQLException ex1)
 		{
-			log.log(Level.SEVERE, sql, ex1);
+			log.error(sql, ex1);
 		}
 		pstmt = null;
 	}	//	sendBPGroup
@@ -254,7 +253,7 @@ public class PayrollViaEMail extends SvrProcess
 			email.addAttachment(CreatePDF(C_BPartner_ID));
 			if (!email.isValid() && !email.isValid(true))
 			{
-				log.warning("NOT VALID - " + email);
+				log.warn("NOT VALID - " + email);
 				to.setIsActive(false);
 				to.save();
 				return Boolean.FALSE;
@@ -265,9 +264,9 @@ public class PayrollViaEMail extends SvrProcess
 			//
 			
 			if (OK)
-				log.fine(to.getURL());
+				log.debug(to.getURL());
 			else
-				log.warning("FAILURE - " + to.getURL());
+				log.warn("FAILURE - " + to.getURL());
 			addLog(0, null, null, (OK ? "@OK@" : "@ERROR@") + " - " + to.getURL());
 			return OK;
 		}catch(Exception e)

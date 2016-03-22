@@ -273,7 +273,7 @@ public class ALayout implements LayoutManager2
 			colWidth[c] = (int) (colWidth[c] * multiplier);
 		int spaceV = (int)(m_spaceV * multiplier);
 		//
-//		log.fine( "ALayout.layoutContainer",
+//		log.debug( "ALayout.layoutContainer",
 //			"ParentWidth=" + parentWidth + ", ColumnWidth=" + columnWidth + ", SpaceV=" + spaceV + ",  Multiplier=" + multiplier);
 
 		//  --  Lay out components
@@ -298,7 +298,7 @@ public class ALayout implements LayoutManager2
 						topSpace = (rowHeight[r] - h) / 3;
 					height = Math.max(height, h);
 					component.setBounds(posV, posH+topSpace, w, h);
-//					log.fine( "ALayout.layoutContainer",
+//					log.debug( "ALayout.layoutContainer",
 //						"Row=" + r + ", Col=" + c + ",  PosV=" + posV + ", PosH=" + posH + "/" + topSpace + ",  width=" + w + ", height=" + h);
 				}
 				posV += colWidth[c] + spaceV;

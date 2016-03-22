@@ -24,7 +24,8 @@ import org.adempiere.images.Images;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CFrame;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.schaeffer.compiere.tools.AttachmentDnDTransferHandler;
@@ -65,7 +66,7 @@ public class AWindow extends CFrame
 	private APanel			m_APanel = new APanel(this);
 	
 	/**	Logger					*/
-	private static CLogger 	log = CLogger.getCLogger(AWindow.class);
+	private static Logger 	log = LogManager.getLogger(AWindow.class);
 
 	/**
 	 *  Dynamic Initialization Workbench
@@ -126,7 +127,7 @@ public class AWindow extends CFrame
 	{
 		if (busy == m_glassPane.isVisible())
 			return;
-		log.config(getName() + " - " + busy);
+		log.info(getName() + " - " + busy);
 		m_glassPane.setMessage(null);
 		m_glassPane.setVisible(busy);
 		if (busy)

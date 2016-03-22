@@ -14,7 +14,6 @@
 
 	<modules>
 	<module>de.metas.report.jasper.server.base</module>
-	<module>de.metas.report.jasper.server.war</module>
 	</modules>
 
 </project>

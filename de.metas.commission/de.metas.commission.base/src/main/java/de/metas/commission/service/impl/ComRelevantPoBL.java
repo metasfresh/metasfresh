@@ -53,8 +53,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.commission.custom.type.ICommissionType;
@@ -85,12 +86,12 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.Messages;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 public class ComRelevantPoBL implements IComRelevantPoBL
 {
-
-	private static final CLogger logger = CLogger.getCLogger(ComRelevantPoBL.class);
+	private static final Logger logger = LogManager.getLogger(ComRelevantPoBL.class);
 
 	public static final String MSG_INACTIVE_COMMISSION_TYPE_2P = "RelevantPODefRefsInactiveComType_2P";
 
@@ -311,7 +312,7 @@ public class ComRelevantPoBL implements IComRelevantPoBL
 
 		if (comSystem.getC_AdvComSystem_ID() != comSystemType.getC_AdvComSystem_ID())
 		{
-			ComRelevantPoBL.logger.fine("Customer sponsor  " + customerSponsor.getSponsorNo() + " belongs to " + comSystem + "; Nothing to do for " + comSystemType);
+			logger.debug("Customer sponsor  " + customerSponsor.getSponsorNo() + " belongs to " + comSystem + "; Nothing to do for " + comSystemType);
 			return false;
 		}
 		return true;
@@ -474,6 +475,7 @@ public class ComRelevantPoBL implements IComRelevantPoBL
 	// return X_C_DocType.DOCBASETYPE_ARReceipt.equals(payment.getC_DocType().getDocBaseType());
 	// }
 
+	@Override
 	public boolean validatePOAfterNewOrChange(final PO po)
 	{
 		final MCAdvCommissionRelevantPO relevantPODef = MCAdvCommissionRelevantPO.retrieveIfRelevant(po);
@@ -501,7 +503,7 @@ public class ComRelevantPoBL implements IComRelevantPoBL
 				}
 				catch (final RuntimeException e)
 				{
-					logger.saveError("Error processing " + po, e);
+					MetasfreshLastError.saveError(logger, "Error processing " + po, e);
 					return false;
 				}
 			}
@@ -536,6 +538,7 @@ public class ComRelevantPoBL implements IComRelevantPoBL
 		}
 	}
 
+	@Override
 	public void validatePOBeforeDelete(final PO po)
 	{
 		if (po == null)

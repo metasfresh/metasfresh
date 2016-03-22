@@ -23,7 +23,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -104,7 +105,7 @@ public class VTreeMaintenance extends TreeMaintenance
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "VTreeMaintenance.init", ex);
+			log.error("VTreeMaintenance.init", ex);
 		}
 	}	//	init
 	
@@ -218,7 +219,7 @@ public class VTreeMaintenance extends TreeMaintenance
 			model.addElement(item);
 		
 		//	List
-		log.config("#" + model.getSize());
+		log.info("#" + model.getSize());
 		centerList.setModel(model);
 		//	Tree
 		centerTree.initTree(m_tree.getAD_Tree_ID());

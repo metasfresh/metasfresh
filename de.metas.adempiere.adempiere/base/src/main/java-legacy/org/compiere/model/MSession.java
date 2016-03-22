@@ -20,8 +20,6 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -400,7 +398,7 @@ public class MSession extends X_AD_Session
 		else
 			return null;
 		//
-		log.finest("AD_ChangeLog_ID=" + AD_ChangeLog_ID
+		log.trace("AD_ChangeLog_ID=" + AD_ChangeLog_ID
 				+ ", AD_Session_ID=" + getAD_Session_ID()
 				+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID
 				+ ": " + OldValue + " -> " + NewValue);
@@ -415,12 +413,12 @@ public class MSession extends X_AD_Session
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "AD_ChangeLog_ID=" + AD_ChangeLog_ID
+			log.error("AD_ChangeLog_ID=" + AD_ChangeLog_ID
 				+ ", AD_Session_ID=" + getAD_Session_ID()
 				+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID, e);
 			return null;
 		}
-		log.log(Level.SEVERE, "AD_ChangeLog_ID=" + AD_ChangeLog_ID
+		log.error("AD_ChangeLog_ID=" + AD_ChangeLog_ID
 			+ ", AD_Session_ID=" + getAD_Session_ID()
 			+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID);
 		return null;
@@ -469,19 +467,19 @@ public class MSession extends X_AD_Session
 		final int sessionId = getAD_Session_ID();
 		if (sessionId <= 0)
 		{
-			log.log(Level.WARNING, "Cannot update context because session is not saved yet");
+			log.warn("Cannot update context because session is not saved yet");
 			return false;
 		}
 
 		if (!isActive())
 		{
-			log.log(Level.FINE, "Cannot update context because session is not active");
+			log.debug("Cannot update context because session is not active");
 			return false;
 		}
 
 		if (isProcessed())
 		{
-			log.log(Level.FINE, "Cannot update context because session is processed");
+			log.debug("Cannot update context because session is processed");
 			return false;
 		}
 
@@ -495,7 +493,7 @@ public class MSession extends X_AD_Session
 		final int ctxSessionId = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
 		if (ctxSessionId != sessionId && !force)
 		{
-			log.log(Level.FINE, "Different AD_Session_ID found in context and force=false. Skip updating.");
+			log.debug("Different AD_Session_ID found in context and force=false. Skip updating.");
 			return false;
 		}
 

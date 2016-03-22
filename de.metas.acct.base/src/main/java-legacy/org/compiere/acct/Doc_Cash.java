@@ -67,7 +67,7 @@ public class Doc_Cash extends Doc
 
 		//	Contained Objects
 		p_lines = loadLines(cash, cb);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   //  loadDocumentDetails
 
@@ -117,7 +117,7 @@ public class Doc_Cash extends Doc
 		}
 		sb.append("]");
 		//
-		log.fine(toString() + " Balance=" + retValue + sb.toString());
+		log.debug(toString() + " Balance=" + retValue + sb.toString());
 	//	return retValue;
 		return Env.ZERO;    //  Lines are balanced
 	}   //  getBalance
@@ -155,7 +155,7 @@ public class Doc_Cash extends Doc
 		if (getC_CashBook_ID() == 0)
 		{
 //			p_Error = "C_CashBook_ID not set";
-//			log.log(Level.SEVERE, p_Error);
+//			log.error(p_Error);
 //			return null;
 			throw newPostingException()
 					.setC_AcctSchema(as)

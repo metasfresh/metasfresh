@@ -42,13 +42,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
 import org.compiere.model.MOrder;
 import org.compiere.model.MRMA;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -57,7 +59,7 @@ import org.compiere.util.KeyNamePair;
 public abstract class CreateFrom implements ICreateFrom
 {
 	/**	Logger			*/
-	protected CLogger log = CLogger.getCLogger(getClass());
+	protected Logger log = LogManager.getLogger(getClass());
 
 	/** Loaded Order            */
 	protected MOrder p_order = null;
@@ -144,7 +146,7 @@ public abstract class CreateFrom implements ICreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -172,7 +174,7 @@ public abstract class CreateFrom implements ICreateFrom
 		 *  ShipmentLine    - 6
 		 *  InvoiceLine     - 7
 		 */
-		log.config("C_Order_ID=" + C_Order_ID);
+		log.info("C_Order_ID=" + C_Order_ID);
 		p_order = new MOrder (Env.getCtx(), C_Order_ID, null);
 
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
@@ -201,7 +203,7 @@ public abstract class CreateFrom implements ICreateFrom
 				+ "l.M_Product_ID,COALESCE(p.Name,c.Name), l.Line,l.C_OrderLine_ID "
 			+ "ORDER BY l.Line");
 		//
-		log.finer(sql.toString());
+		log.trace(sql.toString());
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -231,7 +233,7 @@ public abstract class CreateFrom implements ICreateFrom
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

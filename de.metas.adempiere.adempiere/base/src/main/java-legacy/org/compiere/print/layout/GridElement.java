@@ -99,7 +99,7 @@ public class GridElement extends PrintElement
 		if (stringData == null || stringData.length() == 0)
 			return;
 		//
-	//	log.fine("setData - " + row + "/" + col + " - " + stringData);
+	//	log.debug("setData - " + row + "/" + col + " - " + stringData);
 		AttributedString aString = new AttributedString(stringData);
 		aString.addAttribute(TextAttribute.FONT, font);
 		aString.addAttribute(TextAttribute.FOREGROUND, foreground);

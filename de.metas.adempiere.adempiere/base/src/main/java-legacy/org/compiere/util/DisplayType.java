@@ -25,7 +25,8 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 
@@ -135,7 +136,7 @@ public final class DisplayType
 	private static final int    AMOUNT_FRACTION = 2;
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (DisplayType.class);
+	private static Logger s_log = LogManager.getLogger(DisplayType.class);
 	
 	/**
 	 *	Returns true if (numeric) ID (Table, Search, Account, ..).
@@ -297,7 +298,7 @@ public final class DisplayType
 			return format;
 			}
 			catch (IllegalArgumentException e) {
-				s_log.log(Level.WARNING, "Invalid number format: " + pattern);
+				s_log.warn("Invalid number format: " + pattern);
 			}
 		}
 		else if (displayType == Integer)
@@ -429,7 +430,7 @@ public final class DisplayType
 			return format;
 			}
 			catch (IllegalArgumentException e) {
-				s_log.log(Level.WARNING, "Invalid date pattern: " + pattern);
+				s_log.warn("Invalid date pattern: " + pattern);
 			}
 		}
 		
@@ -657,7 +658,7 @@ public final class DisplayType
 					}
 					catch (Exception e)
 					{
-						s_log.log(Level.WARNING, "Cannot parse: " + value + " - ColumnName=" + columnName + ", DisplayType=" + displayType + ". Returning ZERO.", e);
+						s_log.warn("Cannot parse: " + value + " - ColumnName=" + columnName + ", DisplayType=" + displayType + ". Returning ZERO.", e);
 					}
 					return 0;
 				}
@@ -701,7 +702,7 @@ public final class DisplayType
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "Error while converting value '"+value+"', ColumnName="+columnName+", DisplayType="+displayType, e);
+			s_log.error("Error while converting value '"+value+"', ColumnName="+columnName+", DisplayType="+displayType, e);
 		}
 		return null;
 	}

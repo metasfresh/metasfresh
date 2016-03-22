@@ -20,7 +20,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * POS Keyboard Focus Manager
@@ -54,7 +55,7 @@ public class PosKeyboardFocusManager extends DefaultKeyboardFocusManager
 	/** Timer */
 	private javax.swing.Timer m_timer = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PosKeyboardFocusManager.class);
+	private static Logger log = LogManager.getLogger(PosKeyboardFocusManager.class);
 
 	/**
 	 * Dispose
@@ -74,7 +75,7 @@ public class PosKeyboardFocusManager extends DefaultKeyboardFocusManager
 	public void start() {
 		//	Unqueue time - 200 ms
 		int delay = 200;
-		log.fine("PosKeyboardFocusManager.start - " + delay); 
+		log.debug("PosKeyboardFocusManager.start - " + delay); 
 		if (m_timer == null)
 			m_timer = new javax.swing.Timer(delay, this);
 		if (!m_timer.isRunning())
@@ -85,7 +86,7 @@ public class PosKeyboardFocusManager extends DefaultKeyboardFocusManager
 	 * Stop Timer
 	 */
 	public void stop() {
-		log.fine("PosKeyboardFocusManager.stop - " + m_timer); 
+		log.debug("PosKeyboardFocusManager.stop - " + m_timer); 
 
 		if (m_timer != null)
 			m_timer.stop();
@@ -101,7 +102,7 @@ public class PosKeyboardFocusManager extends DefaultKeyboardFocusManager
 	public boolean dispatchKeyEvent(KeyEvent event) {
 		if (event.getID() == KeyEvent.KEY_PRESSED) {
 			//	Keyboard Repeat: 485 - then 31
-		//	log.fine( "PosKeyboardFocusManager.dispatchKeyEvent - " 
+		//	log.debug( "PosKeyboardFocusManager.dispatchKeyEvent - " 
 			// - "
 			//		+ event.getWhen() + " - " + (event.getWhen() - m_lastWhen));
 			m_lastWhen = event.getWhen();
@@ -122,7 +123,7 @@ public class PosKeyboardFocusManager extends DefaultKeyboardFocusManager
 	public void actionPerformed(ActionEvent e) {
 		if (m_timer == null)
 			return;
-	//	log.fine( "actionPerformed - " + m_fifo.size()); 
+	//	log.debug( "actionPerformed - " + m_fifo.size()); 
 		while (m_fifo.size() > 0) {
 			KeyEvent event = (KeyEvent) m_fifo.removeFirst();
 			super.dispatchKeyEvent(event);

@@ -26,7 +26,8 @@ import org.compiere.grid.ed.VNumber;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -73,7 +74,7 @@ public class SubCheckout extends PosSubPanel implements ActionListener
 	
 	private CButton f_cashRegisterFunctions;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(SubCheckout.class);
+	private static Logger log = LogManager.getLogger(SubCheckout.class);
 	
 	/**
 	 * 	Initialize

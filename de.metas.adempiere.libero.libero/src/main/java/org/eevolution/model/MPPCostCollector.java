@@ -344,7 +344,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 			return;
 		final String sql = "UPDATE PP_Cost_Collector SET Processed=? WHERE PP_Cost_Collector_ID=?";
 		int noLine = DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
-		log.fine("setProcessed - " + processed + " - Lines=" + noLine);
+		log.debug("setProcessed - " + processed + " - Lines=" + noLine);
 	}	// setProcessed
 
 	@Override
@@ -539,9 +539,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 				obomline.setQtyReject(obomline.getQtyReject().add(getQtyReject()));
 				obomline.setDateDelivered(getMovementDate());	// overwrite=last
 				obomline.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-				log.fine("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+				log.debug("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
 				InterfaceWrapperHelper.save(obomline);
-				log.fine("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+				log.debug("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
 			}
 			if (isReceipt())
 			{
@@ -641,9 +641,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 			obomline.setQtyReject(obomline.getQtyReject().add(getQtyReject()));
 			// obomline.setDateDelivered(getMovementDate()); // overwrite=last
 			obomline.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-			log.fine("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+			log.debug("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
 			InterfaceWrapperHelper.save(obomline);
-			log.fine("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+			log.debug("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
 			CostEngineFactory.getCostEngine(getAD_Client_ID()).createUsageVariances(this);
 		}
 		//
@@ -852,7 +852,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF

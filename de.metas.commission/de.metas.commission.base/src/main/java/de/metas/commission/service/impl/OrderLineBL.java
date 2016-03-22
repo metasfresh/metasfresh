@@ -44,7 +44,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MDiscountSchema;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.custom.type.ISalesRefFactCollector;
@@ -67,7 +68,7 @@ import de.metas.order.IOrderPA;
 public class OrderLineBL implements IOrderLineBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OrderLineBL.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
 	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
 
@@ -143,7 +144,7 @@ public class OrderLineBL implements IOrderLineBL
 		final I_C_BPartner customer = order.getBill_BPartner();
 		if (!customer.isSalesRep())
 		{
-			OrderLineBL.logger.fine(customer + " is not a sales rep and thus doesn't receive discount");
+			OrderLineBL.logger.debug(customer + " is not a sales rep and thus doesn't receive discount");
 			return nullIfOk ? null : "";
 		}
 

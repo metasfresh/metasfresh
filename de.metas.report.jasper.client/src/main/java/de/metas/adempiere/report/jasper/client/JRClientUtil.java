@@ -36,7 +36,7 @@ import de.metas.adempiere.report.jasper.OutputType;
 
 public final class JRClientUtil
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(JRClientUtil.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(JRClientUtil.class);
 
 	private JRClientUtil()
 	{

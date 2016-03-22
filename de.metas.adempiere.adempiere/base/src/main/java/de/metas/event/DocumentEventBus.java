@@ -1,13 +1,12 @@
 package de.metas.event;
 
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -48,8 +47,8 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 		return new Builder<>();
 	}
 
-	private static final CLogger loggerDefault = CLogger.getCLogger(DocumentEventBus.class);
-	private final CLogger logger;
+	private static final Logger loggerDefault = LogManager.getLogger(DocumentEventBus.class);
+	private final Logger logger;
 
 	private final String eventAD_Message;
 	private final Function<ModelType, Object[]> eventAD_MessageParamsExtractor;
@@ -111,7 +110,7 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Failed creating event for " + document + ". Ignored.", e);
+			logger.warn("Failed creating event for " + document + ". Ignored.", e);
 		}
 
 		return this;
@@ -165,7 +164,7 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 	public static final class Builder<ModelType>
 	{
 		private Topic topic;
-		private CLogger logger;
+		private Logger logger;
 		private String eventAD_Message;
 		private Function<ModelType, Object[]> eventAD_MessageParamsExtractor;
 		private boolean queueEventsUntilCurrentTrxCommit;
@@ -193,13 +192,13 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 			return eventBus;
 		}
 
-		public Builder<ModelType> setLogger(final CLogger logger)
+		public Builder<ModelType> setLogger(final Logger logger)
 		{
 			this.logger = logger;
 			return this;
 		}
 
-		private final CLogger getLogger(final CLogger defaultLogger)
+		private final Logger getLogger(final Logger defaultLogger)
 		{
 			return logger == null ? defaultLogger : logger;
 		}

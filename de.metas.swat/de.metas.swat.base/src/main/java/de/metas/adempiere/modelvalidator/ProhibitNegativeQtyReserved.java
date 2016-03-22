@@ -24,7 +24,8 @@ package de.metas.adempiere.modelvalidator;
 
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Storage;
@@ -33,8 +34,6 @@ import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
-
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
 import de.metas.order.model.validator.C_OrderLine;
@@ -50,7 +49,7 @@ import de.metas.order.model.validator.C_OrderLine;
  */
 public class ProhibitNegativeQtyReserved implements ModelValidator
 {
-	private static final CLogger logger = CLogger.getCLogger(ProhibitNegativeQtyReserved.class);
+	private static final Logger logger = LogManager.getLogger(ProhibitNegativeQtyReserved.class);
 
 	private int ad_Client_ID = -1;
 
@@ -109,7 +108,7 @@ public class ProhibitNegativeQtyReserved implements ModelValidator
 
 				final AdempiereException ex = new AdempiereException("@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
 						+ "\nStorage: " + st);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				return null;
 			}
 		}

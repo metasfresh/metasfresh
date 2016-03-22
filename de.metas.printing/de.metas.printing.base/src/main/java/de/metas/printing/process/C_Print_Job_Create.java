@@ -28,8 +28,6 @@ package de.metas.printing.process;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-
 import org.adempiere.util.Check;
 import org.compiere.model.Query;
 
@@ -75,8 +73,8 @@ public class C_Print_Job_Create extends AbstractPrintJobCreate
 				.setOnlyActiveRecords(true);
 		final int count = query.createSelection(getAD_PInstance_ID());
 
-		log.log(Level.INFO, "Query: {0}", query);
-		log.log(Level.INFO, "Count: {0}", count);
+		log.info("Query: {}", query);
+		log.info("Count: {}", count);
 
 		return count;
 	}

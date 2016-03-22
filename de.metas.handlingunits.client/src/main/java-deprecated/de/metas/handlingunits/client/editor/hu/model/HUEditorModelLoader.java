@@ -4,13 +4,15 @@ import java.math.BigDecimal;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.CLogMgt;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.CLogMgt;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.handlingunits.client.editor.allocation.model.HUDocumentsModel;
@@ -30,7 +32,7 @@ import de.metas.handlingunits.tree.node.hu.impl.HUItemMITreeNode;
  */
 public class HUEditorModelLoader
 {
-	private static final CLogger logger = CLogger.getCLogger(HUEditorModelLoader.class);
+	private static final Logger logger = CLogMgt.getLogger(HUEditorModelLoader.class);
 
 	private final HUEditorModel huEditorModel;
 
@@ -172,7 +174,7 @@ public class HUEditorModelLoader
 				// NOTE: not sure if we shall throw an exception this case, but at least we are logging it
 				final AdempiereException ex = new AdempiereException("Could not unlock all qty " + qtyMatched + " from " + matchedSourceLineNode + "."
 						+ "\nFallback: add it to not-matched qty");
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 

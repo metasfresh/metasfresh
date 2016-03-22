@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -68,7 +66,7 @@ public class MPInstance extends X_AD_PInstance
 		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		
 		//	New Process
@@ -226,7 +224,7 @@ public class MPInstance extends X_AD_PInstance
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -371,9 +369,9 @@ public class MPInstance extends X_AD_PInstance
 			MProcess prc = MProcess.get(getCtx(), getAD_Process_ID());
 			prc.addStatistics(seconds);
 			if (prc.get_ID() != 0 && prc.save())
-				log.fine("afterSave - Process Statistics updated Sec=" + seconds);
+				log.debug("afterSave - Process Statistics updated Sec=" + seconds);
 			else
-				log.warning("afterSave - Process Statistics not updated");
+				log.warn("afterSave - Process Statistics not updated");
 		}
 		return success;
 	}	//	afterSave

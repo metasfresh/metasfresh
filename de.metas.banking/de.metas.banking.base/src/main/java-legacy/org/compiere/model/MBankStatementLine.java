@@ -258,7 +258,7 @@ import org.compiere.util.Env;
 			+ "WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1) {
-			log.warning("StatementDifference #" + no);
+			log.warn("StatementDifference #" + no);
 			return false;
 		}
 		sql = "UPDATE C_BankStatement bs"
@@ -266,7 +266,7 @@ import org.compiere.util.Env;
 			+ "WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1) {
-			log.warning("Balance #" + no);
+			log.warn("Balance #" + no);
 			return false;
 		}
 		return true;

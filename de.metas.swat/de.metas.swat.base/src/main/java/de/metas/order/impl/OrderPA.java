@@ -48,13 +48,15 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.ICopyHandlerBL;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderPA;
 
 public class OrderPA implements IOrderPA
@@ -137,7 +139,7 @@ public class OrderPA implements IOrderPA
 			+ "    ol.C_Bpartner_Location_ID=? AND (?=0 OR ol.M_Shipper_ID=?) " //
 			+ EXISTS_SCHED;
 
-	private static final CLogger logger = CLogger.getCLogger(OrderPA.class);
+	private static final Logger logger = LogManager.getLogger(OrderPA.class);
 
 	@Override
 	public MOrder retrieveOrder(final String documentNo, final String trxName)
@@ -161,8 +163,7 @@ public class OrderPA implements IOrderPA
 				return new MOrder(Env.getCtx(), rs, trxName);
 			}
 
-			logger.fine("There is no order with documentNo '" + documentNo
-					+ "'. Returning null.");
+			logger.debug("There is no order with documentNo '" + documentNo + "'. Returning null.");
 			return null;
 
 		}
@@ -185,8 +186,7 @@ public class OrderPA implements IOrderPA
 		if (order.get_ID() == 0)
 		{
 
-			logger.fine("There is no order with id '" + orderId
-					+ "'. Returning null.");
+			logger.debug("There is no order with id '" + orderId + "'. Returning null.");
 			return null;
 		}
 		return order;
@@ -336,7 +336,7 @@ public class OrderPA implements IOrderPA
 		}
 		catch (SQLException e)
 		{
-			logger.saveError("Caught SQLException. Msg: " + e.getMessage(), e);
+			MetasfreshLastError.saveError(logger, "Caught SQLException. Msg: " + e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
 		finally
@@ -509,7 +509,7 @@ public class OrderPA implements IOrderPA
 		if (copyLines)
 		{
 			final int linesCopied = newOrder.copyLinesFrom((MOrder)MiscUtils.asPO(originalOrder), false, false);
-			logger.fine("Copied " + linesCopied + " form original order");
+			logger.debug("Copied " + linesCopied + " form original order");
 		}
 
 		Services.get(ICopyHandlerBL.class).copyValues(originalOrder, newOrder);

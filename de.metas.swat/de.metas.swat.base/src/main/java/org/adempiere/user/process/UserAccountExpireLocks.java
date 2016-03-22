@@ -26,8 +26,6 @@ package org.adempiere.user.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
-
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -54,7 +52,7 @@ public class UserAccountExpireLocks extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 	} // prepare
@@ -87,7 +85,7 @@ public class UserAccountExpireLocks extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

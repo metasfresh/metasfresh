@@ -42,7 +42,6 @@ package org.eevolution.process;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -122,7 +121,7 @@ public class CreateCostElement extends SvrProcess
 				p_M_AttributeSetInstance_ID = para[i].getParameterAsInt();
 			}
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	// prepare
 

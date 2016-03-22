@@ -182,7 +182,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		}
 		catch (final DBMoreThenOneRecordsFoundException e)
 		{
-			log.warning("More then one relation found for bpartnerId=" + bpartnerId + "bpLocationId=" + bpLocationId + ", bpRelationId=" + bpRelationId + ", locRelationId=" + locRelationId);
+			log.warn("More then one relation found for bpartnerId=" + bpartnerId + "bpLocationId=" + bpLocationId + ", bpRelationId=" + bpRelationId + ", locRelationId=" + locRelationId);
 			relation = null;
 		}
 

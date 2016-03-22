@@ -150,7 +150,7 @@ public class PosOrderModel extends MOrder {
 		}
 		catch (Exception e)
 		{
-			log.severe("Order lines cannot be created - " + e.getMessage());
+			log.error("Order lines cannot be created - " + e.getMessage());
 		}
 
         //create new line
@@ -252,7 +252,7 @@ public class PosOrderModel extends MOrder {
 			}
 			catch (Exception e)
 			{
-				log.severe("Order can not be completed - " + e.getMessage());
+				log.error("Order can not be completed - " + e.getMessage());
 			}
 			finally
 			{ // When order failed convert it back to draft so it can be processed
@@ -408,7 +408,7 @@ public class PosOrderModel extends MOrder {
 			//
 			ValueNamePair[] retValue = new ValueNamePair[map.size ()];
 			map.values ().toArray (retValue);
-			log.fine("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
+			log.debug("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
 			return retValue;
 		}
 		catch (Exception ex)

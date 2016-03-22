@@ -21,12 +21,11 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Title:	Create the (new) costing information
@@ -53,6 +52,7 @@ public class M_Product_CostingUpdate extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -72,7 +72,7 @@ public class M_Product_CostingUpdate extends SvrProcess
 			else if (name.equals("SetStandardCost"))
 				p_SetStandardCost = (String) para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_Record_ID = getRecord_ID();
 	}	//	prepare
@@ -82,6 +82,7 @@ public class M_Product_CostingUpdate extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
         StringBuffer sql = null;
@@ -283,7 +284,7 @@ public class M_Product_CostingUpdate extends SvrProcess
 	private void raiseError(String string, String sql) throws Exception {
 		DB.rollback(false, get_TrxName());
 		String msg = string;
-		ValueNamePair pp = CLogger.retrieveError();
+		ValueNamePair pp = MetasfreshLastError.retrieveError();
 		if (pp != null)
 			msg = pp.getName() + " - ";
 		msg += sql;

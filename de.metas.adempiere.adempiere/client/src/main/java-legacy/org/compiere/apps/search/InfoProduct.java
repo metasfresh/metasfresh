@@ -32,7 +32,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
@@ -62,7 +65,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -440,7 +442,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		String sql = m_sqlWarehouse;
 		// Add description to the query
 		sql = sql.replace(" FROM", ", DocumentNote FROM");
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -457,7 +459,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -477,7 +479,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -487,7 +489,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 
 		sql = m_sqlSubstitute;
-		log.finest(sql);
+		log.trace(sql);
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
@@ -499,7 +501,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -509,7 +511,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 
 		sql = m_sqlRelated;
-		log.finest(sql);
+		log.trace(sql);
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
@@ -521,7 +523,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{
@@ -659,7 +661,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 			setStatusLine(e.getLocalizedMessage(), true);
 		}
 		finally
@@ -697,7 +699,7 @@ public final class InfoProduct extends Info implements ActionListener,
 	 */
 	private void setPriceListVersion(int M_PriceList_Version_ID)
 	{
-		log.config("M_PriceList_Version_ID=" + M_PriceList_Version_ID);
+		log.info("M_PriceList_Version_ID=" + M_PriceList_Version_ID);
 		for (int i = 0; i < pickPriceList.getItemCount(); i++)
 		{
 			KeyNamePair kn = (KeyNamePair)pickPriceList.getItemAt(i);
@@ -707,7 +709,7 @@ public final class InfoProduct extends Info implements ActionListener,
 				return;
 			}
 		}
-		log.fine("NOT found");
+		log.debug("NOT found");
 	} // setPriceList
 
 	/**
@@ -737,7 +739,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (priceDate == null)
 			priceDate = new Timestamp(System.currentTimeMillis());
 		//
-		log.config("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
+		log.info("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
 		int retValue = 0;
 		String sql = "SELECT plv.M_PriceList_Version_ID, plv.ValidFrom "
 				+ "FROM M_PriceList pl, M_PriceList_Version plv "
@@ -761,7 +763,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -862,7 +864,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			}
 		}
 		log
-				.fine("M_Warehouse_ID=" + M_Warehouse_ID + " (" + (index - 1)
+				.debug("M_Warehouse_ID=" + M_Warehouse_ID + " (" + (index - 1)
 						+ "*)");
 
 		// => PriceList
@@ -873,14 +875,14 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (M_PriceList_Version_ID != 0)
 		{
 			pstmt.setInt(index++, M_PriceList_Version_ID);
-			log.fine("M_PriceList_Version_ID=" + M_PriceList_Version_ID);
+			log.debug("M_PriceList_Version_ID=" + M_PriceList_Version_ID);
 		}
 		// => Product Category
 		int M_Product_Category_ID = getM_Product_Category_ID();
 		if (M_Product_Category_ID > 0)
 		{
 			pstmt.setInt(index++, M_Product_Category_ID);
-			log.fine("M_Product_Category_ID=" + M_Product_Category_ID);
+			log.debug("M_Product_Category_ID=" + M_Product_Category_ID);
 		}
 		// Rest of Parameter in Query for Attribute Search
 		if (m_pAttributeWhere != null)
@@ -893,7 +895,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			if (!value.endsWith("%"))
 				value += "%";
 			pstmt.setString(index++, value);
-			log.fine("Value: " + value);
+			log.debug("Value: " + value);
 		}
 
 		// => Name
@@ -903,7 +905,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			if (!name.endsWith("%"))
 				name += "%";
 			pstmt.setString(index++, name);
-			log.fine("Name: " + name);
+			log.debug("Name: " + name);
 		}
 
 		// => UPC
@@ -913,7 +915,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			if (!upc.endsWith("%"))
 				upc += "%";
 			pstmt.setString(index++, upc);
-			log.fine("UPC: " + upc);
+			log.debug("UPC: " + upc);
 		}
 
 		// => SKU
@@ -923,7 +925,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			if (!sku.endsWith("%"))
 				sku += "%";
 			pstmt.setString(index++, sku);
-			log.fine("SKU: " + sku);
+			log.debug("SKU: " + sku);
 		}
 
 		// => Vendor
@@ -933,7 +935,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			if (!vendor.endsWith("%"))
 				vendor += "%";
 			pstmt.setString(index++, vendor);
-			log.fine("Vendor: " + vendor);
+			log.debug("Vendor: " + vendor);
 		}
 
 	} // setParameters
@@ -1325,7 +1327,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		columnNames.add(Msg.translate(Env.getCtx(), "M_Warehouse_ID"));
 
 		// Fill Storage Data
-		boolean showDetail = CLogMgt.isLevelFine();
+		boolean showDetail = LogManager.isLevelFine();
 		String sql = "SELECT s.QtyOnHand, s.QtyReserved, s.QtyOrdered,"
 				+ " productAttribute(s.M_AttributeSetInstance_ID), s.M_AttributeSetInstance_ID,";
 		if (!showDetail)
@@ -1380,7 +1382,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1448,7 +1450,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

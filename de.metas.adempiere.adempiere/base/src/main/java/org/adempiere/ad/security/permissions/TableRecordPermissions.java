@@ -30,13 +30,14 @@ import java.util.Set;
 import org.adempiere.ad.security.impl.TablesAccessInfo;
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
 import org.compiere.model.AccessSqlParser;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableSet;
 
 public class TableRecordPermissions extends AbstractPermissions<TableRecordPermission>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(TableRecordPermissions.class);
+	private static final transient Logger logger = LogManager.getLogger(TableRecordPermissions.class);
 
 	public static final Builder builder()
 	{
@@ -196,12 +197,12 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 			if (recordDependentAccess.isExclude())
 			{
 				excludes.add(recordDependentAccess.getRecord_ID());
-				logger.fine("Exclude " + columnName + " - " + recordDependentAccess);
+				logger.debug("Exclude " + columnName + " - " + recordDependentAccess);
 			}
 			else if (!rw || !recordDependentAccess.isReadOnly())
 			{
 				includes.add(recordDependentAccess.getRecord_ID());
-				logger.fine("Include " + columnName + " - " + recordDependentAccess);
+				logger.debug("Include " + columnName + " - " + recordDependentAccess);
 			}
 			whereColumnName = getDependentRecordWhereColumn(mainSql, columnName);
 		}	// for all dependent records
@@ -209,7 +210,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 
 		// //
 		// retSQL.append(orderBy);
-		// logger.finest(retSQL.toString());
+		// logger.trace(retSQL.toString());
 		// return retSQL.toString();
 	}	// addAccessSQL
 
@@ -229,7 +230,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 		}
 		if (includes.size() != 0 && excludes.size() != 0)
 		{
-			logger.warning("Mixing Include and Excluse rules - Will not return values");
+			logger.warn("Mixing Include and Excluse rules - Will not return values");
 		}
 
 		final StringBuilder where = new StringBuilder(" AND ");

@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -53,7 +52,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
@@ -78,6 +76,10 @@ import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.engine.IDocActionBL;
@@ -86,7 +88,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
 	private static final String MSG_OrderMRPNoBalanceDemand = "Order supply producer is never used to balance demand";
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	public OrderMRPSupplyProducer()
 	{
@@ -317,7 +319,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		{
 			// just ignore it
 			// NOTE: we are logging as FINE because it's a common case if u are not doing manufacturing to get this error
-			logger.log(Level.FINE, "No plant was found. Returning null.", e);
+			logger.debug("No plant was found. Returning null.", e);
 		}
 
 		BigDecimal qtyOrdered = orderLine.getQtyOrdered();

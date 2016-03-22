@@ -32,7 +32,8 @@ import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -51,7 +52,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 */
 	final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<Boolean>();
 
-	private static final CLogger logger = CLogger.getCLogger(ShipmentScheduleUpdater.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
 	@Override
 	public int updateShipmentSchedule(final Properties ctx, final int adClientId, final int adUserId, final int adPInstanceId, final String trxName)

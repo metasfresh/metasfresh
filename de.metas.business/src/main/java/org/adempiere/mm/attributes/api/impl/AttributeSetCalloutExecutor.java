@@ -25,18 +25,20 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class AttributeSetCalloutExecutor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(AttributeSetCalloutExecutor.class);
+	private static final transient Logger logger = LogManager.getLogger(AttributeSetCalloutExecutor.class);
 
 	/**
 	 * Execute the callout for the given <code>attribute</code> which was changed.
@@ -58,7 +60,7 @@ public class AttributeSetCalloutExecutor
 		final I_M_Attribute attributeCurrent = attributeSet.getAttributeByIdIfExists(attribute.getM_Attribute_ID());
 		if (attributeCurrent == null)
 		{
-			if (logger.isLoggable(Level.WARNING))
+			if (logger.isWarnEnabled())
 			{
 				final AdempiereException ex = new AdempiereException("Skip executing the callout because the attribute was not found in attributesSet."
 						+ "\n Attribute: " + attribute
@@ -66,7 +68,7 @@ public class AttributeSetCalloutExecutor
 						+ "\n Context: " + attributeValueContext
 						+ "\n Value Old:" + valueOld
 						+ "\n Value New:" + valueNew);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 			return;
 		}
@@ -95,9 +97,9 @@ public class AttributeSetCalloutExecutor
 		{
 			// Callout is already running, not finished yet.
 			// We shall skip executing it again because otherwise we will end up in infinite recursion
-			if (logger.isLoggable(Level.WARNING))
+			if (logger.isWarnEnabled())
 			{
-				logger.log(Level.WARNING, "Skip executing callout " + callout + " because it's already running: " + calloutsActive);
+				logger.warn("Skip executing callout " + callout + " because it's already running: " + calloutsActive);
 			}
 
 			return;

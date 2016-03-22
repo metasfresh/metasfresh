@@ -107,7 +107,7 @@ public class MRfQResponseLineQty extends X_C_RfQResponseLineQty
 		BigDecimal price = getPrice();
 		if (price == null || Env.ZERO.compareTo(price) == 0)
 		{
-			log.warning("No Price - " + price);
+			log.warn("No Price - " + price);
 			return false;
 		}
 		BigDecimal discount = getDiscount();
@@ -115,19 +115,19 @@ public class MRfQResponseLineQty extends X_C_RfQResponseLineQty
 		{
 			if (discount.abs().compareTo(ONEHUNDRED) > 0)
 			{
-				log.warning("Discount > 100 - " + discount);
+				log.warn("Discount > 100 - " + discount);
 				return false;
 			}
 		}
 		BigDecimal net = getNetAmt();
 		if (net == null)
 		{
-			log.warning("Net is null");
+			log.warn("Net is null");
 			return false;
 		}
 		if (net.compareTo(Env.ZERO) <= 0)
 		{
-			log.warning("Net <= 0 - " + net);
+			log.warn("Net <= 0 - " + net);
 			return false;
 		}
 		return true;

@@ -31,7 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
@@ -47,8 +48,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidator;
-//import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.reflections.ReflectionUtils;
 
 import com.google.common.base.Throwables;
@@ -61,7 +60,7 @@ import com.google.common.base.Throwables;
  */
 /* package */class AnnotatedModelInterceptor implements IModelInterceptor
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final transient Object annotatedObject;
 	private final transient Class<?> annotatedClass;
@@ -165,7 +164,7 @@ import com.google.common.base.Throwables;
 						, Throwables.getRootCause(e));
 			}
 
-			logger.config("Initializer " + init + " executed successfully.");
+			logger.info("Initializer " + init + " executed successfully.");
 		}
 	}
 
@@ -223,7 +222,7 @@ import com.google.common.base.Throwables;
 			}
 			else
 			{
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
 	}
@@ -389,7 +388,7 @@ import com.google.common.base.Throwables;
 		}
 		list.add(pointcut);
 
-		logger.config("Loaded " + pointcut);
+		logger.info("Loaded " + pointcut);
 	}
 
 	private void bindPointcuts(IModelValidationEngine engine)
@@ -399,7 +398,7 @@ import com.google.common.base.Throwables;
 			return;
 		}
 
-		logger.config("Binding pointcuts for " + annotatedClass);
+		logger.info("Binding pointcuts for " + annotatedClass);
 		for (Map.Entry<PointcutKey, List<Pointcut>> e : mapPointcuts.entrySet())
 		{
 			final List<Pointcut> list = e.getValue();
@@ -409,7 +408,7 @@ import com.google.common.base.Throwables;
 			}
 
 			final PointcutKey key = e.getKey();
-			logger.config("Binding pointcuts for " + annotatedClass + " on " + key);
+			logger.info("Binding pointcuts for " + annotatedClass + " on " + key);
 
 			switch (key.getType())
 			{
@@ -423,7 +422,7 @@ import com.google.common.base.Throwables;
 					throw new AdempiereException("Unknown PointcutType " + key.getType());
 			}
 		}
-		logger.config("Binding pointcuts for " + annotatedClass + " done.");
+		logger.info("Binding pointcuts for " + annotatedClass + " done.");
 	}
 
 	@Override
@@ -516,9 +515,9 @@ import com.google.common.base.Throwables;
 				method.setAccessible(true);
 			}
 
-			if (logger.isLoggable(Level.FINE))
+			if (logger.isDebugEnabled())
 			{
-				logger.fine("Executing: " + pointcut);
+				logger.debug("Executing: " + pointcut);
 			}
 			if (pointcut.isMethodRequiresTiming())
 			{

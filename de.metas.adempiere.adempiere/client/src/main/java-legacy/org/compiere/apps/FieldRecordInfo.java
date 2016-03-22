@@ -49,7 +49,8 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -70,7 +71,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -115,7 +117,7 @@ public class FieldRecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		AEnv.positionCenterWindow (owner, this);
 		AEnv.showCenterScreen(this);
@@ -130,7 +132,7 @@ public class FieldRecordInfo extends CDialog
 			.build();
 
 	/**	Logger			*/
-	protected CLogger		log = CLogger.getCLogger(getClass());
+	protected Logger		log = LogManager.getLogger(getClass());
 	/** The Data		*/
 	private Vector<Vector<String>>	m_data = new Vector<Vector<String>>();
 	
@@ -216,7 +218,7 @@ public class FieldRecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -338,7 +340,7 @@ public class FieldRecordInfo extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, OldValue + "->" + NewValue, e);
+			log.warn(OldValue + "->" + NewValue, e);
 		}
 		//
 		line.add(showNewValue);

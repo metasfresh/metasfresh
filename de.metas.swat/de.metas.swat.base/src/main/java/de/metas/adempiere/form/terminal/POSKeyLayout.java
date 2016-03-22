@@ -27,7 +27,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,7 +44,6 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.X_C_POSKeyLayout;
 import org.compiere.print.MPrintColor;
 import org.compiere.print.MPrintFont;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -57,7 +57,7 @@ public class POSKeyLayout extends KeyLayout
 	
 	public static final Color DEFAULT_Color = Color.lightGray;
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final I_C_POSKeyLayout keyLayout;
 
@@ -155,7 +155,7 @@ public class POSKeyLayout extends KeyLayout
 				}
 				catch (final Exception e)
 				{
-					log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+					log.error(e.getLocalizedMessage(), e);
 					continue;
 				}
 

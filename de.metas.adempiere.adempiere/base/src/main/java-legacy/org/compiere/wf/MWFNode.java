@@ -182,7 +182,7 @@ public class MWFNode extends X_AD_WF_Node
 		{
 			next.setFromSplitAnd(splitAnd);
 		}
-		log.fine("#" + m_next.size());
+		log.debug("#" + m_next.size());
 	}	//	loadNext
 
 	/**
@@ -212,7 +212,7 @@ public class MWFNode extends X_AD_WF_Node
 		}
 		catch (SQLException e)
 		{
-			//log.log(Level.SEVERE, sql, e);
+			//log.error(sql, e);
 			throw new DBException(e, sql);
 		}
 		finally
@@ -220,7 +220,7 @@ public class MWFNode extends X_AD_WF_Node
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine("Trl=" + m_translated);
+		log.debug("Trl=" + m_translated);
 	}	//	loadTrl
 
 	/**
@@ -625,7 +625,7 @@ public class MWFNode extends X_AD_WF_Node
 //		else if (action.equals(ACTION_UserWorkbench)) 
 //		{
 //		&& getAD_Workbench_ID() == 0)
-//			log.saveError("FillMandatory", Msg.getElement(getCtx(), "AD_Workbench_ID"));
+//			log.error("FillMandatory", Msg.getElement(getCtx(), "AD_Workbench_ID"));
 //			return false;
 //		}
 		

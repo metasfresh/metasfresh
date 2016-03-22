@@ -40,7 +40,8 @@ import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -62,7 +63,7 @@ import de.metas.interfaces.I_C_OrderLine;
 public class ShipmentFactory
 {
 
-	private static final CLogger logger = CLogger.getCLogger(ShipmentFactory.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentFactory.class);
 
 	// map ( I_M_InOut ) -> ( set of line numbers that are already used ).
 	// this map is only used with consolidated shipments.
@@ -256,7 +257,7 @@ public class ShipmentFactory
 	{
 		if (!shipmentParams.isConsolidateDocument())
 		{
-			logger.fine("According to shipment params '" + shipmentParams + "', consolidation into one shipment is not allowed");
+			logger.debug("According to shipment params '" + shipmentParams + "', consolidation into one shipment is not allowed");
 			return false;
 		}
 		return Services.get(IShipmentScheduleBL.class).isSchedAllowsConsolidate(olAndSched.getSched());

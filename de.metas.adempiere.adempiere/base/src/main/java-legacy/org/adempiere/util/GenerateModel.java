@@ -22,17 +22,18 @@ package org.adempiere.util;
 import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.ad.persistence.modelgen.ModelClassGenerator;
 import org.adempiere.ad.persistence.modelgen.ModelInterfaceGenerator;
 import org.adempiere.ad.persistence.modelgen.TableAndColumnInfoRepository;
 import org.adempiere.ad.persistence.modelgen.TableInfo;
 import org.adempiere.tools.AdempiereToolsHelper;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import ch.qos.logback.classic.Level;
 
 /**
  *  Generate Model Classes extending PO.
@@ -49,7 +50,7 @@ public class GenerateModel
 {
 	
 	/**	Logger			*/
-	private static CLogger	log	= CLogger.getCLogger (GenerateModel.class);
+	private static Logger log = LogManager.getLogger(GenerateModel.class);
 	
 	/**
 	 * 	String representation
@@ -118,7 +119,7 @@ public class GenerateModel
 	{		
 		AdempiereToolsHelper.getInstance().startupMinimal();
 		
-		CLogMgt.setLevel(Level.FINE);
+		LogManager.setLevel(Level.DEBUG);
 		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false); // metas: don't log migration scripts
 		log.info("Generate Model");
 		log.info("----------------------------------");
@@ -233,7 +234,7 @@ public class GenerateModel
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

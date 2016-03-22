@@ -19,12 +19,12 @@ package org.compiere.print;
 import java.awt.Color;
 import java.awt.SystemColor;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintColor;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -79,7 +79,7 @@ public class MPrintColor extends X_AD_PrintColor
 	/** Cached Colors						*/
 	static private CCache<Integer,MPrintColor> 	s_colors = new CCache<Integer,MPrintColor>("AD_PrintColor", 20);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MPrintColor.class);
+	private static Logger	s_log	= LogManager.getLogger(MPrintColor.class);
 
 	/**
 	 * 	Get Color.
@@ -119,7 +119,7 @@ public class MPrintColor extends X_AD_PrintColor
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "AD_PrintColor_ID=" + AD_PrintColor_ID
+			s_log.error("AD_PrintColor_ID=" + AD_PrintColor_ID
 				+ " - " + e.toString());
 		}
 		return null;
@@ -163,11 +163,11 @@ public class MPrintColor extends X_AD_PrintColor
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "MPrintColor.getColor", e);
+			log.error("MPrintColor.getColor", e);
 		}
 		if (code == null)
 			m_cacheColor = Color.black;
-	//	log.fine( "MPrintColor.getColor " + code, m_cacheColor);
+	//	log.debug( "MPrintColor.getColor " + code, m_cacheColor);
 		return m_cacheColor;
 	}	//	getColor
 

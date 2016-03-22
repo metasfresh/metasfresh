@@ -23,7 +23,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
@@ -43,7 +44,8 @@ import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -156,7 +158,7 @@ public class VLocation extends JComponent
 	private boolean mandatory = false;
 	private boolean readWrite = true;
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(VLocation.class);
+	private static final Logger log = LogManager.getLogger(VLocation.class);
 
 	//	Popup
 	private CMenuItem 			mDelete;
@@ -372,7 +374,7 @@ public class VLocation extends JComponent
 		}
 		catch (PropertyVetoException pve)
 		{
-			log.log(Level.SEVERE, "VLocation.actionPerformed", pve);
+			log.error("VLocation.actionPerformed", pve);
 		}
 
 	}	//	actionPerformed

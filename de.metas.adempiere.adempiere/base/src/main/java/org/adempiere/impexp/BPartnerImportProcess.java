@@ -71,7 +71,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		sql.append("WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		int no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Group Default=" + no);
+		log.debug("Set Group Default=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner i "
 				+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
@@ -79,20 +79,20 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_BP_Group_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Group=" + no);
+		log.debug("Set Group=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Group, ' "
 				+ "WHERE C_BP_Group_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.config("Invalid Group=" + no);
+		log.info("Invalid Group=" + no);
 
 		// Set Country
 		/**
 		 * sql = new StringBuffer ("UPDATE I_BPartner i " + "SET CountryCode=(SELECT CountryCode FROM C_Country c WHERE c.IsDefault='Y'" + " AND c.AD_Client_ID IN (0, i.AD_Client_ID) AND ROWNUM=1) " +
 		 * "WHERE CountryCode IS NULL AND C_Country_ID IS NULL" + " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause); no = DB.executeUpdateEx(sql.toString(), trxName);
-		 * log.fine("Set Country Default=" + no);
+		 * log.debug("Set Country Default=" + no);
 		 **/
 		//
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -101,14 +101,14 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_Country_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Country=" + no);
+		log.debug("Set Country=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' "
 				+ "WHERE C_Country_ID IS NULL AND (City IS NOT NULL OR Address1 IS NOT NULL)"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.config("Invalid Country=" + no);
+		log.info("Invalid Country=" + no);
 
 		// Set Region
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -118,7 +118,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		sql.append("WHERE RegionName IS NULL AND C_Region_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Region Default=" + no);
+		log.debug("Set Region Default=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner i "
 				+ "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
@@ -127,7 +127,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_Region_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Region=" + no);
+		log.debug("Set Region=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Region, ' "
@@ -137,7 +137,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 		.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.config("Invalid Region=" + no);
+		log.info("Invalid Region=" + no);
 
 		// Set Greeting
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -146,14 +146,14 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Greeting=" + no);
+		log.debug("Set Greeting=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_BPartner i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
 				+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.config("Invalid Greeting=" + no);
+		log.info("Invalid Greeting=" + no);
 
 		// Existing User ?
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -162,7 +162,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE i.EMail IS NOT NULL AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), trxName);
-		log.fine("Found EMail User=" + no);
+		log.debug("Found EMail User=" + no);
 
 		// Existing BPartner ? Match Value
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -171,7 +171,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_BPartner_ID IS NULL AND Value IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Found BPartner=" + no);
+		log.debug("Found BPartner=" + no);
 
 		// Existing Contact ? Match Name
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -180,7 +180,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_BPartner_ID IS NOT NULL AND AD_User_ID IS NULL AND ContactName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Found Contact=" + no);
+		log.debug("Found Contact=" + no);
 
 		// Existing Location ? Exact Match
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -193,7 +193,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Found Location=" + no);
+		log.debug("Found Location=" + no);
 
 		// Interest Area
 		sql = new StringBuffer("UPDATE I_BPartner i "
@@ -202,7 +202,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE R_InterestArea_ID IS NULL AND InterestAreaName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Interest Area=" + no);
+		log.debug("Set Interest Area=" + no);
 
 		// Value is mandatory error
 		sql = new StringBuffer("UPDATE I_BPartner "
@@ -210,7 +210,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				+ "WHERE Value IS NULL "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.config("Value is mandatory=" + no);
+		log.info("Value is mandatory=" + no);
 	}
 
 	private static final class BPartnerImportContext
@@ -405,7 +405,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpartnerLocation.setFax(importRecord.getFax());
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpartnerLocation);
-			log.finest("Insert BP Location - " + bpartnerLocation.getC_BPartner_Location_ID());
+			log.trace("Insert BP Location - " + bpartnerLocation.getC_BPartner_Location_ID());
 
 			importRecord.setC_BPartner_Location(bpartnerLocation);
 		}
@@ -486,7 +486,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(user);
-			log.finest("Insert BP Contact - " + user.getAD_User_ID());
+			log.trace("Insert BP Contact - " + user.getAD_User_ID());
 
 			importRecord.setAD_User(user);
 		}

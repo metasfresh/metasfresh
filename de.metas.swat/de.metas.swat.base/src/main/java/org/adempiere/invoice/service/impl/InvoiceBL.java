@@ -341,7 +341,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 				newCreditAmt = newCreditAmt.add(invAmt);
 			}
 			//
-			log.fine("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
+			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
 					+ ") BP Life=" + bpPO.getActualLifeTimeValue() + "->" + newLifeAmt
 					+ ", Credit=" + bpPO.getSO_CreditUsed() + "->" + newCreditAmt
 					+ ", Balance=" + bpPO.getTotalOpenBalance(false) + " -> " + newBalance);
@@ -351,7 +351,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		else
 		{
 			newBalance = newBalance.subtract(invAmt);
-			log.fine("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
+			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
 					+ ") Balance=" + bpPO.getTotalOpenBalance(false) + " -> " + newBalance);
 		}
 		bpPO.setTotalOpenBalance(newBalance);

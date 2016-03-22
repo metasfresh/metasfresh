@@ -20,14 +20,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Services;
 import org.compiere.impexp.BankStatementMatcherInterface;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Bank Statement Matcher Algorithm
@@ -68,7 +67,7 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -87,7 +86,7 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 	}	//	getMatchers
 
 	/** Static Logger					*/
-	private static CLogger 	s_log = CLogger.getCLogger(MBankStatementMatcher.class);
+	private static Logger 	s_log = LogManager.getLogger(MBankStatementMatcher.class);
 
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -147,7 +146,7 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, className, e);
+			log.error(className, e);
 			m_matcher = null;
 			m_matcherValid = Boolean.FALSE;
 		}

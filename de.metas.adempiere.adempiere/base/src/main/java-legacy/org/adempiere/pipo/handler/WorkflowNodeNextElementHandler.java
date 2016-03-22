@@ -139,9 +139,9 @@ public class WorkflowNodeNextElementHandler extends AbstractElementHandler {
 		atts.clear();
 		if (m_WF_NodeNext.getAD_WF_NodeNext_ID() <= PackOut.MAX_OFFICIAL_ID)
 	        atts.addAttribute("","","AD_WF_NodeNext_ID","CDATA",Integer.toString(m_WF_NodeNext.getAD_WF_NodeNext_ID()));
-		// log.log(Level.INFO,"m_WF_NodeNext.getAD_WF_Node_ID: ",
+		// log.info("m_WF_NodeNext.getAD_WF_Node_ID: ",
 		// m_WF_NodeNext.getAD_WF_Node_ID());
-		// log.log(Level.INFO,"m_WF_NodeNext.getAD_WF_Next_ID: ",
+		// log.info("m_WF_NodeNext.getAD_WF_Next_ID: ",
 		// m_WF_NodeNext.getAD_WF_Next_ID());
 
 		if (m_WF_NodeNext.getAD_WF_Node_ID() > 0) {
@@ -159,7 +159,7 @@ public class WorkflowNodeNextElementHandler extends AbstractElementHandler {
 			sql = "SELECT Name FROM AD_WF_Node WHERE AD_WF_Node_ID=?";
 			name = DB.getSQLValueString(null, sql, m_WF_NodeNext
 					.getAD_WF_Next_ID());
-			// log.log(Level.INFO,"node next name: ", name);
+			// log.info("node next name: ", name);
 			atts
 					.addAttribute("", "", "ADWorkflowNodeNextNameID", "CDATA",
 							name);
@@ -211,7 +211,7 @@ public class WorkflowNodeNextElementHandler extends AbstractElementHandler {
 			sql = "SELECT AD_WF_Node.Name FROM AD_WF_Node, AD_WF_NodeNext, AD_WF_NextCondition WHERE AD_WF_Node.AD_WF_Node_ID = AD_WF_NodeNext.AD_WF_Next_ID and AD_WF_NodeNext.AD_WF_NodeNext_ID =  ? group by AD_WF_Node.Name";
 			name = DB.getSQLValueString(null, sql, m_WF_NodeNextCondition
 					.getAD_WF_NodeNext_ID());
-			// log.log(Level.INFO,"node next name: ", name);
+			// log.info("node next name: ", name);
 			atts
 					.addAttribute("", "", "ADWorkflowNodeNextNameID", "CDATA",
 							name);

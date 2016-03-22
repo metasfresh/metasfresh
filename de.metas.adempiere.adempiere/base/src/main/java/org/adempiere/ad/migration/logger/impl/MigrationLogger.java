@@ -60,14 +60,15 @@ import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 public class MigrationLogger implements IMigrationLogger
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IDataConverter converter = new DefaultDataConverter();
 
@@ -513,7 +514,7 @@ public class MigrationLogger implements IMigrationLogger
 		final I_AD_Session session = MSession.get(ctx, false);
 		if (session == null)
 		{
-			logger.warning("AD_Session not found");
+			logger.warn("AD_Session not found");
 			return;
 		}
 		final IMigrationLoggerContext migrationCtx = getSessionMigrationLoggerContext(session);

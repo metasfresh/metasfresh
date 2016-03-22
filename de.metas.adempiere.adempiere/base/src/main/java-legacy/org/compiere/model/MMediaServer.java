@@ -20,9 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -64,7 +64,7 @@ public class MMediaServer extends X_CM_Media_Server
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -82,7 +82,7 @@ public class MMediaServer extends X_CM_Media_Server
 	}	//	getMediaServer
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MMediaServer.class);
+	private static Logger s_log = LogManager.getLogger(MMediaServer.class);
 
 
 	/**************************************************************************
@@ -119,7 +119,7 @@ public class MMediaServer extends X_CM_Media_Server
 // @formatter:off
 //		// Check whether the host is our example localhost, we will not deploy locally, but this is no error
 //		if (this.getIP_Address().equals("127.0.0.1") || this.getName().equals("localhost")) {
-//			log.warning("You have not defined your own server, we will not really deploy to localhost!");
+//			log.warn("You have not defined your own server, we will not really deploy to localhost!");
 //			return true;
 //		}
 //
@@ -131,13 +131,13 @@ public class MMediaServer extends X_CM_Media_Server
 //				log.info("Connected to " + getIP_Address() + " as " + getUserName());
 //			else
 //			{
-//				log.warning("Could NOT connect to " + getIP_Address() + " as " + getUserName());
+//				log.warn("Could NOT connect to " + getIP_Address() + " as " + getUserName());
 //				return false;
 //			}
 //		}
 //		catch (Exception e)
 //		{
-//			log.log(Level.WARNING, "Could NOT connect to " + getIP_Address()
+//			log.warn("Could NOT connect to " + getIP_Address()
 //				+ " as " + getUserName(), e);
 //			return false;
 //		}
@@ -152,13 +152,13 @@ public class MMediaServer extends X_CM_Media_Server
 //			//
 //			cmd = "list";
 //			String[] fileNames = ftp.listNames();
-//			log.log(Level.FINE, "Number of files in " + getFolder() + ": " + fileNames.length);
+//			log.debug("Number of files in " + getFolder() + ": " + fileNames.length);
 //
 //			/*
 //			FTPFile[] files = ftp.listFiles();
-//			log.config("Number of files in " + getFolder() + ": " + files.length);
+//			log.info("Number of files in " + getFolder() + ": " + files.length);
 //			for (int i = 0; i < files.length; i++)
-//				log.fine(files[i].getTimestamp() + " \t" + files[i].getName());*/
+//				log.debug(files[i].getTimestamp() + " \t" + files[i].getName());*/
 //			//
 //			cmd = "bin";
 //			ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
@@ -166,7 +166,7 @@ public class MMediaServer extends X_CM_Media_Server
 //			for (int i = 0; i < media.length; i++)
 //			{
 //				if (!media[i].isSummary()) {
-//					log.log(Level.INFO, " Deploying Media Item:" + media[i].get_ID() + media[i].getExtension());
+//					log.info(" Deploying Media Item:" + media[i].get_ID() + media[i].getExtension());
 //					MImage thisImage = media[i].getImage();
 //
 //					// Open the file and output streams
@@ -182,7 +182,7 @@ public class MMediaServer extends X_CM_Media_Server
 //		}
 //		catch (Exception e)
 //		{
-//			log.log(Level.WARNING, cmd, e);
+//			log.warn(cmd, e);
 //			success = false;
 //		}
 //		//	Logout from the FTP Server and disconnect
@@ -195,7 +195,7 @@ public class MMediaServer extends X_CM_Media_Server
 //		}
 //		catch (Exception e)
 //		{
-//			log.log(Level.WARNING, cmd, e);
+//			log.warn(cmd, e);
 //		}
 //		ftp = null;
 //		return success;

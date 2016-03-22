@@ -31,6 +31,7 @@ import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridFactory;
 import org.adempiere.webui.component.Label;
+import org.adempiere.webui.component.ListItem;
 import org.adempiere.webui.component.Listbox;
 import org.adempiere.webui.component.ListboxFactory;
 import org.adempiere.webui.component.Panel;
@@ -45,8 +46,6 @@ import org.compiere.model.MPayment;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-
-import org.adempiere.webui.component.ListItem;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Space;
 

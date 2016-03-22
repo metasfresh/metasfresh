@@ -25,7 +25,10 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -48,8 +51,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -165,7 +168,7 @@ public class ValuePreference extends CDialog
 	/** The Menu Icon               */
 	private static Icon             s_icon = Images.getImageIcon2("VPreference16");
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ValuePreference.class);
+	private static Logger log = LogManager.getLogger(ValuePreference.class);
 	
 	/**
 	 *  Constructor
@@ -189,7 +192,7 @@ public class ValuePreference extends CDialog
 		int displayType, int AD_Reference_ID)
 	{
 		super(frame, Msg.getMsg(Env.getCtx(), NAME) + " " + DisplayAttribute, true);
-		log.config("WindowNo=" + WindowNo
+		log.info("WindowNo=" + WindowNo
 			+ ", Client_ID=" + AD_Client_ID + ", Org_ID=" + AD_Org_ID + ", User_ID=" + AD_User_ID + ", Window_ID=" + AD_Window_ID
 			+ ",  Attribute=" + Attribute + "/" + DisplayAttribute + ",  Value=" + Value + "/" + DisplayValue
 			+ ",  DisplayType=" + displayType + ", Reference_ID=" + AD_Reference_ID);
@@ -213,7 +216,7 @@ public class ValuePreference extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		AEnv.showCenterScreen(this);
 	}   //  ValuePreference
@@ -322,7 +325,7 @@ public class ValuePreference extends CDialog
 		lAttributeValue.setText(m_Attribute);
 		fValue.setText(m_DisplayValue);
 		lValueValue.setText(m_Value);
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
 			lAttributeValue.setVisible(false);
 			lValueValue.setVisible(false);
@@ -451,7 +454,7 @@ public class ValuePreference extends CDialog
 			sql.append(" AND AD_Window_ID IS NULL");
 		sql.append(" AND Attribute='").append(m_Attribute).append("'");
 		//
-		log.fine( sql.toString());
+		log.debug( sql.toString());
 		int no = DB.executeUpdate(sql.toString(), null);
 		if (no > 0)
 			Env.setContext(m_ctx, getContextKey(), (String)null);
@@ -515,7 +518,7 @@ public class ValuePreference extends CDialog
 		//
 		sql.append(DB.TO_STRING(m_Attribute)).append(",").append(DB.TO_STRING(m_Value)).append(")");
 		//
-		log.fine( sql.toString());
+		log.debug( sql.toString());
 		no = DB.executeUpdate(sql.toString(), null);
 		if (no == 1)
 		{

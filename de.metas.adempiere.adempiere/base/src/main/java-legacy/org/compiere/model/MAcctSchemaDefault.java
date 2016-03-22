@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
 
 /**
@@ -53,7 +54,7 @@ public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 	}	//	get
 	
 	/**	Logger							*/
-	protected static CLogger			s_log = CLogger.getCLogger(MAcctSchemaDefault.class);
+	protected static Logger			s_log = LogManager.getLogger(MAcctSchemaDefault.class);
 
 	/**
 	 * 	Load Constructor

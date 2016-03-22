@@ -28,19 +28,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 public class InfoProductATP implements IInfoProductDetail
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private IMiniTable m_tableAtp = null;
 
@@ -71,7 +72,7 @@ public class InfoProductATP implements IInfoProductDetail
 		columnNames.add(Msg.translate(Env.getCtx(), "M_Warehouse_ID"));
 
 		// Fill Storage Data
-		boolean showDetail = CLogMgt.isLevelFine();
+		boolean showDetail = LogManager.isLevelFine();
 		String sql = "SELECT s.QtyOnHand, s.QtyReserved, s.QtyOrdered,"
 				+ " productAttribute(s.M_AttributeSetInstance_ID), s.M_AttributeSetInstance_ID,";
 		if (!showDetail)
@@ -126,7 +127,7 @@ public class InfoProductATP implements IInfoProductDetail
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -195,7 +196,7 @@ public class InfoProductATP implements IInfoProductDetail
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

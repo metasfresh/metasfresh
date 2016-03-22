@@ -39,7 +39,6 @@ package org.eevolution.process;
  */
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -78,7 +77,7 @@ public class CopyFromBOM extends SvrProcess {
 			else if (name.equals("PP_Product_BOM_ID"))
 				p_PP_Product_BOM_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_Record_ID = getRecord_ID();
 	} //	prepare

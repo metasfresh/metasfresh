@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Hashtable;
-import java.util.logging.Level;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -28,7 +27,8 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MLdapUser;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 	LDAP Connection Handler
@@ -77,7 +77,7 @@ public class LdapConnectionHandler extends Thread
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}	//	no timeout
 	}	//	LdapConnectionHandler
 	
@@ -86,7 +86,7 @@ public class LdapConnectionHandler extends Thread
 	/** Ldap Model			*/
 	private MLdapProcessor m_model = null;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (LdapConnectionHandler.class);
+	private static Logger log = LogManager.getLogger(LdapConnectionHandler.class);
 	
 	
 	/**
@@ -140,7 +140,7 @@ public class LdapConnectionHandler extends Thread
 		}
 		catch (IOException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		
 		try
@@ -149,7 +149,7 @@ public class LdapConnectionHandler extends Thread
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Socket", e);
+			log.warn("Socket", e);
 		}
 		m_socket = null;
 	}	//	run

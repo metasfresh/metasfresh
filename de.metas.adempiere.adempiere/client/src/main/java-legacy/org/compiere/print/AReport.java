@@ -22,7 +22,8 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
 import javax.swing.JComponent;
@@ -36,7 +37,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
@@ -94,7 +96,7 @@ public class AReport implements ActionListener
 	{
 		super();
 		
-		log.config("AD_Table_ID=" + AD_Table_ID + " " + query);
+		log.info("AD_Table_ID=" + AD_Table_ID + " " + query);
 		
 		this.m_query = query;
 		this.parent = parent;
@@ -122,7 +124,7 @@ public class AReport implements ActionListener
 	/**	The Option List					*/
 	private final List<KeyNamePair>	m_list = new ArrayList<KeyNamePair>();
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(AReport.class);
+	private static Logger log = LogManager.getLogger(AReport.class);
 	/** The parent window for locking/unlocking during process execution */
 	private final ASyncProcess parent;
 	/** The filter to apply to this report */
@@ -156,7 +158,7 @@ public class AReport implements ActionListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 
 		//	No Format exists - create it

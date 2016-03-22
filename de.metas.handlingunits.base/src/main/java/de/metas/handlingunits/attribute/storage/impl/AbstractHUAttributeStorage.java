@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -143,7 +141,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			return Collections.emptyList();
 		}
 
-		logger.log(Level.FINEST, "Loading attributes for {0}", this);
+		logger.trace("Loading attributes for {}", this);
 
 		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu);
 		return toAttributeValues(huAttributes);
@@ -234,7 +232,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			catch (final UnsupportedOperationException e)
 			{
 				// FIXME: don't control the flow by throwing exceptions
-				logger.log(Level.INFO, "Skip generating value because is not supported."
+				logger.info("Skip generating value because is not supported."
 						+ "\nM_HU_Attribute=" + huAttribute
 						+ "\nGenerator=" + generator
 						, e);

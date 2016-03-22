@@ -27,7 +27,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -40,7 +41,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionBL;
@@ -63,7 +63,7 @@ public class PPOrderQualityCalculator
 {
 	private List<Object> modelsToBeSaved = null;
 
-	private static final transient CLogger logger = CLogger.getCLogger(PPOrderQualityCalculator.class);
+	private static final transient Logger logger = LogManager.getLogger(PPOrderQualityCalculator.class);
 
 	public PPOrderQualityCalculator()
 	{
@@ -310,7 +310,7 @@ public class PPOrderQualityCalculator
 			final Quantity previousQtyDeliveredAvg;
 			if (previousProductionMaterial == null)
 			{
-				logger.log(Level.INFO, "The previous PP_Order {0} has no material that matches the material {1} of the current PP_Order {2}; was the BOM changed?",
+				logger.info("The previous PP_Order {} has no material that matches the material {} of the current PP_Order {}; was the BOM changed?",
 						new Object[] { qiOrderPrevious, productionMaterial, qiOrder });
 				previousQtyDeliveredAvg = qtyDelivered;
 			}

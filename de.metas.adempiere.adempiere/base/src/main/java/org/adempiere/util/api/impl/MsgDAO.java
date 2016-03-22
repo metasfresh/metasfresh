@@ -23,16 +23,16 @@ package org.adempiere.util.api.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.api.IMsgDAO;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 public class MsgDAO implements IMsgDAO
 {
 
-	private transient CLogger log = CLogger.getCLogger(getClass());
+	private transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean isMessageExists(final String adMessage)
@@ -49,7 +49,7 @@ public class MsgDAO implements IMsgDAO
 			return AD_Message_ID;
 		else
 		{
-			log.log(Level.SEVERE, "setAD_Message_ID - ID not found for '" + adMessage + "'");
+			log.error("setAD_Message_ID - ID not found for '" + adMessage + "'");
 			return 240;
 		}
 	}

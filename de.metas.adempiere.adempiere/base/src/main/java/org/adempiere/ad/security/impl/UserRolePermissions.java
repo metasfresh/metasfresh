@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -66,21 +65,23 @@ import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.MPrivateAccess;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.logging.MetasfreshLastError;
 
 @Immutable
 class UserRolePermissions implements IUserRolePermissions
 {
-	private static final transient CLogger logger = CLogger.getCLogger(UserRolePermissions.class);
+	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	/** Permissions name (i.e. role name) */
 	private final String name;
@@ -428,7 +429,7 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 			else
 			{
-				logger.log(Level.SEVERE, "No Access Org records");
+				logger.error("No Access Org records");
 				return "AD_Org_ID=-1";	// No Access Record
 			}
 		}
@@ -476,7 +477,7 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		if (!isCanReport())						// Role Level block
 		{
-			logger.warning("Role denied");
+			logger.warn("Role denied");
 			return false;
 		}
 		if (!isTableAccess(AD_Table_ID, true))
@@ -498,7 +499,7 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		if (!isCanExport())						// Role Level block
 		{
-			logger.warning("Role denied");
+			logger.warn("Role denied");
 			return false;
 		}
 		if (!isTableAccess(AD_Table_ID, true)) // ro=true
@@ -547,7 +548,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
 		if (roleAccessLevel == null)
 		{
-			logger.log(Level.FINE, "NO - No AccessLevel - AD_Table_ID={0}", AD_Table_ID);
+			logger.debug("NO - No AccessLevel - AD_Table_ID={0}", AD_Table_ID);
 			return false;
 		}
 
@@ -750,7 +751,7 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 			msg += "\n SQL=" + SQL;
 			final AdempiereException ex = new AdempiereException(msg);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			tableName = TableNameIn;
 		}
 
@@ -799,7 +800,7 @@ class UserRolePermissions implements IUserRolePermissions
 			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, !rw))
 			{
 				retSQL.append(" AND 1=3");	// prevent access at all
-				logger.log(Level.FINE, "No access to AD_Table_ID={0} - {1} - {2}", new Object[] { AD_Table_ID, TableName, retSQL });
+				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, retSQL);
 				break;	// no need to check further
 			}
 
@@ -824,12 +825,12 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 			keyColumnNameFQ += keyColumnName;
 
-			// log.fine("addAccessSQL - " + TableName + "(" + AD_Table_ID + ") " + keyColumnName);
+			// log.debug("addAccessSQL - " + TableName + "(" + AD_Table_ID + ") " + keyColumnName);
 			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, rw);
 			if (recordWhere.length() > 0)
 			{
 				retSQL.append(" AND ").append(recordWhere);
-				logger.log(Level.FINEST, "Record access: {0}", recordWhere);
+				logger.trace("Record access: {0}", recordWhere);
 			}
 		}	// for all table info
 
@@ -840,7 +841,7 @@ class UserRolePermissions implements IUserRolePermissions
 		// ORDER BY
 		retSQL.append(orderBy);
 
-		logger.log(Level.FINEST, "Final SQL: {0}", retSQL.toString());
+		logger.trace("Final SQL: {0}", retSQL.toString());
 		return retSQL.toString();
 	}	// addAccessSQL
 
@@ -873,8 +874,7 @@ class UserRolePermissions implements IUserRolePermissions
 		// Notification
 		final String tableAcessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), tableAcessLevel.getAD_Message());
 		final String userAccessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
-		logger.saveWarning("AccessTableNoView",
-				"Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
+		MetasfreshLastError.saveWarning(logger, "AccessTableNoView", "Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
 		return false;
 	}	// canView
 
@@ -960,11 +960,11 @@ class UserRolePermissions implements IUserRolePermissions
 
 		if (!retValue && createError)
 		{
-			logger.saveWarning("AccessTableNoUpdate",
+			MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate",
 					"AD_Client_ID=" + AD_Client_ID
 							+ ", AD_Org_ID=" + AD_Org_ID + ", UserLevel=" + userLevel
 							+ " => missing=" + whatMissing);
-			logger.warning(toString());
+			logger.warn(toString());
 		}
 		return retValue;
 	}	// canUpdate
@@ -1083,7 +1083,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		catch (final SQLException e)
 		{
-			logger.log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{

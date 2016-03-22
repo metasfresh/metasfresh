@@ -177,7 +177,7 @@ public class PrintDataGroup
 		char[] retValue = new char[list.size()];
 		for (int i = 0; i < retValue.length; i++)
 			retValue[i] = ((String)list.get(i)).charAt(0);
-	//	log.finest( "PrintDataGroup.getFunctions for " + columnName + "/" + retValue.length, new String(retValue));
+	//	log.trace( "PrintDataGroup.getFunctions for " + columnName + "/" + retValue.length, new String(retValue));
 		return retValue;
 	}	//	getFunctions
 

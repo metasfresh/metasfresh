@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.process.IProcessParameter;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
@@ -48,9 +47,12 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.MLookup;
 import org.compiere.model.MPInstancePara;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Label;
@@ -123,7 +125,7 @@ public class ProcessParameterPanel extends Panel
 	private final int adProcessId;
 //	private ProcessInfo m_processInfo;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ProcessParameterPanel.class);
+	private static Logger log = LogManager.getLogger(ProcessParameterPanel.class);
 
 	//
 	private ArrayList<WEditor> m_wEditors = new ArrayList<WEditor>();
@@ -153,7 +155,7 @@ public class ProcessParameterPanel extends Panel
 	 */
 	public boolean init()
 	{
-		log.config("");
+		log.info("");
 
 		// ASP
 		// NOTE: if you are going to change the "p." alias for AD_Process_Para, pls check the ASPFilters implementation.
@@ -215,7 +217,7 @@ public class ProcessParameterPanel extends Panel
 		catch (SQLException e)
 		{
 			// metas: just logging the error won't be sufficient because can not see the problem
-			// log.log(Level.SEVERE, sql, e);
+			// log.error(sql, e);
 			throw new DBException(e, sql);
 		}
 		finally
@@ -227,7 +229,7 @@ public class ProcessParameterPanel extends Panel
 		if (m_mFields.size() != m_mFields2.size()
 				|| m_mFields.size() != m_wEditors.size()
 				|| m_mFields2.size() != m_wEditors2.size())
-			log.log(Level.SEVERE, "View & Model vector size is different");
+			log.error("View & Model vector size is different");
 
 		// clean up
 		if (hasFields)
@@ -338,7 +340,7 @@ public class ProcessParameterPanel extends Panel
 	 */
 	public boolean validateParameters()
 	{
-		log.config("");
+		log.info("");
 
 		/**
 		 * Mandatory fields
@@ -400,7 +402,7 @@ public class ProcessParameterPanel extends Panel
 	@Override
 	public boolean saveParameters(final int adPInstanceId)
 	{
-		log.config("");
+		log.info("");
 
 		if (!validateParameters())
 			return false;
@@ -474,7 +476,7 @@ public class ProcessParameterPanel extends Panel
 				para.setInfo_To(editor2.getDisplay());
 			//
 			para.save();
-			log.fine(para.toString());
+			log.debug(para.toString());
 		}	// for every parameter
 
 		return true;
@@ -537,7 +539,7 @@ public class ProcessParameterPanel extends Panel
 				// if (CtxName.containsName(columnName, mLookup.getValidation()))
 				if (mLookup.getParameters().contains(columnName))
 				{
-					log.fine(columnName + " changed - "
+					log.debug(columnName + " changed - "
 							+ field.getColumnName() + " set to null");
 					// invalidate current selection
 					field.setValue(null, true);

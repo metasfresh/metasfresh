@@ -51,7 +51,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -95,7 +94,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -103,6 +101,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.eevolution.model.MDDOrder;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Create Movement from Distribution Order
@@ -139,7 +141,7 @@ public class VOrderDistribution extends CPanel
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	}	//	init
 
@@ -153,7 +155,7 @@ public class VOrderDistribution extends CPanel
 	private Object 			m_M_LocatorTo_ID = null;
 	private Object 			m_C_BPartner_ID = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VOrderDistribution.class);
+	private static Logger log = LogManager.getLogger(VOrderDistribution.class);
 	//
 	private CTabbedPane tabbedPane = new CTabbedPane();
 	private CPanel selPanel = new CPanel();
@@ -365,7 +367,7 @@ public class VOrderDistribution extends CPanel
 
 		sql = getOrderSQL();
 
-		log.fine(sql);
+		log.debug(sql);
 		//  reset table
 		int row = 0;
 		miniTable.setRowCount(row);
@@ -396,7 +398,7 @@ public class VOrderDistribution extends CPanel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		//
 		miniTable.autoSize();
@@ -514,14 +516,14 @@ public class VOrderDistribution extends CPanel
 		for (int i = 0; i < rows; i++)
 		{
 			IDColumn id = (IDColumn)miniTable.getValueAt(i, 0);     //  ID in column 0
-			//	log.fine( "Row=" + i + " - " + id);
+			//	log.debug( "Row=" + i + " - " + id);
 			if (id != null && id.isSelected())
 				results.add(id.getRecord_ID());
 		}
 
 		if (results.size() == 0)
 			return;
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 		selection = results;
 
 	}	//	saveSelection
@@ -574,7 +576,7 @@ public class VOrderDistribution extends CPanel
 				if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 				{
 					String msg = "No Shipments";     //  not translated!
-					log.config(msg);
+					log.info(msg);
 					info.setText(msg);
 					trx.rollback();
 					return;
@@ -589,7 +591,7 @@ public class VOrderDistribution extends CPanel
 			if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 			{
 				String msg = "No Movements";     //  not translated!
-				log.config(msg);
+				log.info(msg);
 				info.setText(msg);
 				trx.rollback();
 				return;
@@ -607,7 +609,7 @@ public class VOrderDistribution extends CPanel
 		{
 			String msg = "No Parameter added";  //  not translated
 			info.setText(msg);
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return;
 		}
 		MLocator locator = MLocator.get(Env.getCtx(), Integer.parseInt(m_M_Locator_ID.toString()));
@@ -618,7 +620,7 @@ public class VOrderDistribution extends CPanel
 		{
 			String msg = "No Parameter added";  //  not translated
 			info.setText(msg);
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return;
 		}
 
@@ -652,13 +654,13 @@ public class VOrderDistribution extends CPanel
 
 		//String sql = "UPDATE DD_Order SET IsSelected='N' WHERE " + m_whereClause;
 		//int no = DB.executeUpdate(sql, null);
-		//log.config("Reset=" + no);
+		//log.info("Reset=" + no);
 
 		//	Get results
 		int[] ids = pi.getIDs();
 		if (ids == null || ids.length == 0)
 			return;
-		log.config("PrintItems=" + ids.length);
+		log.info("PrintItems=" + ids.length);
 
 		confirmPanelGen.getOKButton().setEnabled(false);
 		//	OK to print shipments

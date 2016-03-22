@@ -24,7 +24,8 @@ import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -35,7 +36,8 @@ import org.compiere.apps.ADialog;
 import org.compiere.model.MPOS;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -73,7 +75,7 @@ public class PosBasePanel extends CPanel
 	/**	FormFrame			*/
 	private CFrame 		m_frame;
 	/**	Logger				*/
-	private CLogger			log = CLogger.getCLogger(getClass());
+	private Logger			log = LogManager.getLogger(getClass());
 	/** Context				*/
 	private Properties		m_ctx = Env.getCtx();
 	/** Sales Rep 			*/
@@ -139,9 +141,9 @@ public class PosBasePanel extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "init", e);
+			log.error("init", e);
 		}
-		log.config( "PosPanel.init - " + getPreferredSize());
+		log.info( "PosPanel.init - " + getPreferredSize());
 		
 		if ( p_pos.getAutoLogoutDelay() > 0 && logoutTimer == null )
 		{

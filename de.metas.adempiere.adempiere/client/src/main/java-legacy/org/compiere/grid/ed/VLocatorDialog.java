@@ -28,7 +28,8 @@ import java.awt.event.KeyListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -46,7 +47,8 @@ import org.compiere.model.MLocatorLookup;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -88,7 +90,7 @@ public class VLocatorDialog extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "VLocatorDialog", ex);
+			log.error("VLocatorDialog", ex);
 		}
 		//
 		m_mLocator = mLocator;
@@ -114,7 +116,7 @@ public class VLocatorDialog extends CDialog
 //	private int				m_AD_Client_ID;
 //	private int				m_AD_Org_ID;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VLocatorDialog.class);
+	private static Logger log = LogManager.getLogger(VLocatorDialog.class);
 	//
 	private CPanel panel = new CPanel();
 	private CPanel mainPanel = new CPanel();
@@ -217,7 +219,7 @@ public class VLocatorDialog extends CDialog
 	 */
 	private void initLocator()
 	{
-		log.fine("");
+		log.debug("");
 
 		//	Load Warehouse
 		String sql = "SELECT M_Warehouse_ID, Name FROM M_Warehouse";
@@ -237,13 +239,13 @@ public class VLocatorDialog extends CDialog
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 		}
-		log.fine("Warehouses=" + fWarehouse.getItemCount());
+		log.debug("Warehouses=" + fWarehouse.getItemCount());
 
 		//	Load existing Locators
 		m_mLocator.fillComboBox(m_mandatory, true, true, false);
-		log.fine(m_mLocator.toString());
+		log.debug(m_mLocator.toString());
 		fLocator.setModel(m_mLocator);
 		fLocator.setValue(m_M_Locator_ID);
 		fLocator.addActionListener(this);
@@ -420,7 +422,7 @@ public class VLocatorDialog extends CDialog
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, SQL, e);
+			log.error(SQL, e);
 		}
 		finally
 		{
@@ -483,7 +485,7 @@ public class VLocatorDialog extends CDialog
 			fLocator.setSelectedItem(loc);
 		}	//	createNew
 		//
-		log.config("M_Locator_ID=" + m_M_Locator_ID);
+		log.info("M_Locator_ID=" + m_M_Locator_ID);
 	}	//	actionOK
 
 	/**

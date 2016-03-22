@@ -34,7 +34,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -82,7 +83,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -108,7 +108,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	public static final String MSG_UNSELECT_ALL = "Button.UnselectAll";
 
-	private static final CLogger logger = CLogger.getCLogger(VInOutGen.class);
+	private static final Logger logger = LogManager.getLogger(VInOutGen.class);
 
 	private static final long serialVersionUID = 4788331195927773242L;
 
@@ -139,7 +139,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 			frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
 		} catch (Exception ex) {
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	} // init
 
@@ -152,7 +152,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	private transient Object m_M_Warehouse_ID = null;
 	private transient int selectedBPartner = 0;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VInOutGen.class);
+	private static Logger log = LogManager.getLogger(VInOutGen.class);
 	//
 	private CTabbedPane tabbedPane = new CTabbedPane();
 	private CPanel selPanel = new CPanel();
@@ -669,7 +669,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 		if (linetNetAmt == null) {
 			logger
-					.warning("LineNetAmt of the order line for m_ShipmentSchedule_ID "
+					.warn("LineNetAmt of the order line for m_ShipmentSchedule_ID "
 							+ schedId
 							+ " is null. Does the ol exist? Skipping schedule entry");
 			return;
@@ -824,7 +824,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		for (int i = 0; i < rows; i++)
 		{
 			final IDColumn id = (IDColumn) miniTable.getValueAt(i, 0); // ID in column 0
-			// log.fine( "Row=" + i + " - " + id);
+			// log.debug( "Row=" + i + " - " + id);
 			if (id != null && id.isSelected())
 			{
 				results.add(id.getRecord_ID());
@@ -836,7 +836,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			return;
 		}
 		
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 		selection = results;
 
 	} // saveSelection
@@ -921,7 +921,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		if (!ip.save()) {
 			String msg = "No Parameter added"; // not translated
 			info.setText(msg);
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return;
 		}
 	}
@@ -932,7 +932,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		if (!ip.save()) {
 			String msg = "No Parameter added"; // not translated
 			info.setText(msg);
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return;
 		}
 	}
@@ -961,7 +961,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		/*
 		 * String sql = "UPDATE C_Order SET IsSelected='N' WHERE " +
 		 * m_whereClause; int no = DB.executeUpdate(sql, null);
-		 * log.config("Reset=" + no);
+		 * log.info("Reset=" + no);
 		 */
 
 		// Get results
@@ -970,7 +970,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		{
 			return;
 		}
-		log.config("PrintItems=" + inoutIds.length);
+		log.info("PrintItems=" + inoutIds.length);
 
 		//
 		// OK to print shipments

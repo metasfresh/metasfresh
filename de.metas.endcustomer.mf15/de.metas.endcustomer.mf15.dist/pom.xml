@@ -24,12 +24,11 @@
 	</properties>
 
 	<dependencies>
-
+		<!-- metasfresh server -->
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.ear</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.serverRoot</artifactId>
 			<version>${project.version}</version>
-			<type>ear</type>
 		</dependency>
 
 		<dependency>
@@ -38,20 +37,29 @@
 			<version>${project.version}</version>
 			<type>tar.gz</type>
 			<classifier>dist</classifier>
+			<exclusions>
+				<exclusion>
+					<artifactId>logback-classic</artifactId>
+					<groupId>ch.qos.logback</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- we will roll this out to ${ADEMPIERE_HOME}/lib -->
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.base</artifactId>
 			<version>${project.version}</version>
-			<classifier>allInOne</classifier>
 			<type>jar</type>
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.swingui</artifactId>
 			<classifier>client</classifier>
 			<version>${project.version}</version>
 			<type>zip</type>
@@ -90,6 +98,12 @@ note: when adding new records, please roughly order them by alphabet.
 			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -216,6 +230,12 @@ note: when adding new records, please roughly order them by alphabet.
 			<artifactId>de.metas.fresh.base</artifactId>
 			<version>${project.version}</version>
 			<classifier>jasper</classifier>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
@@ -226,14 +246,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.base</artifactId>
 			<version>${project.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.base</artifactId>
 			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -297,40 +317,18 @@ note: when adding new records, please roughly order them by alphabet.
 
 	<build>
 		<plugins>
-<!-- 
 			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
-				<executions>
-					<execution>
-						<id>auto-clean</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-						<configuration>
-							<excludeDefaultDirectories>true</excludeDefaultDirectories>
-							<filesets>
-								<fileset>
-									<directory>${project.build.directory}/dist/deploy/reports.war</directory>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-	 -->
-			<plugin>
-				<!-- 
-					First we explicitly extract everything that is *not* the jasper files from 
-						de.metas.fresh.base or
-						de.metas.endcustomer.mf15.base.
-					Among these files, we don't expect any name collisions.
-				-->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
+					<!-- Build deploy/reports -->
 					<execution>
+						<!-- 
+						First we explicitly extract everything that is *not* the jasper files from 
+							de.metas.fresh.base or
+							de.metas.endcustomer.*.base.
+						Among these files, we don't expect any name collisions.
+						-->
 						<id>unpack-jasper-general</id>
 						<phase>prepare-package</phase>
 						<goals>
@@ -338,24 +336,24 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<excludeArtifactIds>de.metas.fresh.base, de.metas.endcustomer.mf15.base</excludeArtifactIds>
+							<excludeArtifactIds>de.metas.fresh.base, ${project.groupId}.base</excludeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
-							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
 						</configuration>
 					</execution>
-					<!-- 
-						Then we extract the first the fresh and finally the endcustomer specific jasper files, and we want them to overwrite the generic files if they have the same name.
-					-->
 					<execution>
+						<!-- 
+							Then we extract the first the fresh and finally the endcustomer specific jasper files, and we want them to overwrite the generic files if they have the same name.
+						-->
 						<id>unpack-jasper-fresh</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
 							<artifactItems>
 								<artifactItem>
 									<groupId>de.metas.fresh</groupId>
@@ -375,11 +373,11 @@ note: when adding new records, please roughly order them by alphabet.
 							<goal>unpack</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
 							<artifactItems>
 								<artifactItem>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.base</artifactId>
 									<version>${project.version}</version>
 									<classifier>jasper</classifier>
 								</artifactItem>
@@ -389,20 +387,22 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+
+					<!-- Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc -->
 					<execution>
-						<id>copy-adempiere-binaries</id>
+						<id>copy-metasfresh-download</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/binaries.war</outputDirectory>
+							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<overWrite>true</overWrite>
 							<artifactItems>
 								<artifactItem>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
@@ -410,8 +410,8 @@ note: when adding new records, please roughly order them by alphabet.
 								</artifactItem>
 								<!-- currently we don't have a standalone exe distributable; the exe is within the zip file
 								<artifactItem>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>exe</type>
@@ -443,6 +443,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- Build dist/sql: sql migration scripts -->
 					<execution>
 						<id>unpack-sql</id>
 						<phase>prepare-package</phase>
@@ -458,6 +459,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- Build dist/install: rollout helper scripts -->
 					<execution>
 						<id>unpack-rollout-scripts</id>
 						<phase>prepare-package</phase>
@@ -474,17 +476,25 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- Add dist/deploy/metasfresh-server: metasfresh server executable -->
 					<execution>
 						<id>copy-main-deployable</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
+							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<excludeTransitive>true</excludeTransitive>
-							<includeArtifactIds>de.metas.endcustomer.mf15.ear</includeArtifactIds>
 							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.serverRoot</artifactId>
+									<version>${project.version}</version>
+									<destFileName>metasfresh-server.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
 						</configuration>
 					</execution>
 
@@ -505,28 +515,8 @@ note: when adding new records, please roughly order them by alphabet.
 							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 						</configuration>
 					</execution>
-					<execution>
-						<id>copy-adempiere-client-lib</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
-									<version>${project.version}</version>
-									<classifier>allInOne</classifier>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/dist/adempiere_lib</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
-						</configuration>
-					</execution>
 
+					<!-- Build dist/sources: add sources of all of involved artifacts -->
 					<execution>
 						<id>copy-sources</id>
 						<phase>prepare-package</phase>
@@ -543,6 +533,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- Build dist/doc: Write the project dependency tree -->
 					<execution>
 						<id>write-dependency-tree</id>
 						<phase>prepare-package</phase>
@@ -558,6 +549,7 @@ note: when adding new records, please roughly order them by alphabet.
 				</executions>
 			</plugin>
 
+			<!-- Archive the whole dist/ folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -576,5 +568,4 @@ note: when adding new records, please roughly order them by alphabet.
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

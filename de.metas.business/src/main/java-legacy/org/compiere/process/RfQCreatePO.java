@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
@@ -59,7 +60,7 @@ public class RfQCreatePO extends SvrProcess
 			else if (name.equals("C_DocType_ID"))
 				p_C_DocType_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_C_RfQ_ID = getRecord_ID();
 	}	//	prepare
@@ -82,7 +83,7 @@ public class RfQCreatePO extends SvrProcess
 		
 		//	Complete 
 		MRfQResponse[] responses = rfq.getResponses(true, true);
-		log.config("#Responses=" + responses.length);
+		log.info("#Responses=" + responses.length);
 		if (responses.length == 0)
 			throw new IllegalArgumentException("No completed RfQ Responses found");
 		
@@ -94,7 +95,7 @@ public class RfQCreatePO extends SvrProcess
 				continue;
 			//
 			MBPartner bp = new MBPartner(getCtx(), response.getC_BPartner_ID(), get_TrxName());
-			log.config("Winner=" + bp);
+			log.info("Winner=" + bp);
 			MOrder order = new MOrder (getCtx(), 0, get_TrxName());
 			order.setIsSOTrx(false);
 			if (p_C_DocType_ID != 0)
@@ -163,7 +164,7 @@ public class RfQCreatePO extends SvrProcess
 					bp = new MBPartner(getCtx(), response.getC_BPartner_ID(), get_TrxName());
 					order = null;
 				}
-				log.config("Line=" + line + ", Winner=" + bp);
+				log.info("Line=" + line + ", Winner=" + bp);
 				//	New Order
 				if (order == null)
 				{

@@ -21,7 +21,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -30,8 +31,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.X_AD_Package_Imp_Proc;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 
 /**
  * IntPackIn Tool.
@@ -41,7 +40,7 @@ import org.compiere.util.DB;
 public class PackIn extends SvrProcess {
 
 	/** Logger */
-	private CLogger log = CLogger.getCLogger("PackIn");
+	private Logger log = LogManager.getLogger("PackIn");
 	//update system maintain dictionary, default to true
 	public static String m_UpdateMode = "true";
 	public static String m_Database = "Oracle";
@@ -134,7 +133,7 @@ public class PackIn extends SvrProcess {
 			log.info(msg);
 			return "OK.";
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "importXML:", e);
+			log.error("importXML:", e);
 			throw e;
 		}
 	}

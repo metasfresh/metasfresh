@@ -23,8 +23,6 @@ package de.metas.inout.process;
  */
 
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -52,7 +50,7 @@ public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProce
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_M_InOut_ID = getRecord_ID();
 

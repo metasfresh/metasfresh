@@ -20,12 +20,6 @@ package de.metas.banking.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_Persistent;
-import org.compiere.model.PO;
-import org.compiere.model.POInfo;
-
 /** Generated Model for C_RecurrentPayment
  *  @author Adempiere (generated) 
  */

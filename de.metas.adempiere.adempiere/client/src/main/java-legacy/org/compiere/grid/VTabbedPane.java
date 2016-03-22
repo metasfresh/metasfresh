@@ -32,7 +32,8 @@ import org.compiere.apps.APanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
@@ -62,7 +63,7 @@ public class VTabbedPane extends CTabbedPane
 	}   //  VTabbedPane
 
 	/**	Logger					*/
-	private static final CLogger log = CLogger.getCLogger (VTabbedPane.class);
+	private static final Logger log = LogManager.getLogger(VTabbedPane.class);
 	/** Workbench 				*/
 	private boolean			m_workbenchTab = false;
 	/** List of dependent Variables		*/
@@ -340,7 +341,7 @@ public class VTabbedPane extends CTabbedPane
 			
 		if (process)
 		{
-			log.config(columnName == null ? "" : columnName);
+			log.info(columnName == null ? "" : columnName);
 			for (int i = 0; i < components.size(); i++)
 			{
 				Component c = components.get(i);

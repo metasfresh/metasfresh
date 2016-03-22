@@ -23,9 +23,9 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -66,7 +66,7 @@ public class MMedia extends X_CM_Media
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -84,7 +84,7 @@ public class MMedia extends X_CM_Media
 	}	//	getMedia
 	
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MMedia.class);
+	private static Logger s_log = LogManager.getLogger(MMedia.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -171,9 +171,9 @@ public class MMedia extends X_CM_Media
 				.append(", 0, 999)");
 			int no = DB.executeUpdate(sb.toString(), get_TrxName());
 			if (no > 0)
-				log.fine("#" + no + " - TreeType=CMM");
+				log.debug("#" + no + " - TreeType=CMM");
 			else
-				log.warning("#" + no + " - TreeType=CMM");
+				log.warn("#" + no + " - TreeType=CMM");
 			return no > 0;
 		}
 		return success;
@@ -194,9 +194,9 @@ public class MMedia extends X_CM_Media
 			.append(" AND AD_Tree_ID=").append(getAD_Tree_ID());
 		int no = DB.executeUpdate(sb.toString(), get_TrxName());
 		if (no > 0)
-			log.fine("#" + no + " - TreeType=CMM");
+			log.debug("#" + no + " - TreeType=CMM");
 		else
-			log.warning("#" + no + " - TreeType=CMM");
+			log.warn("#" + no + " - TreeType=CMM");
 		return no > 0;
 	}	//	afterDelete
 
@@ -252,29 +252,29 @@ public class MMedia extends X_CM_Media
 		{
 			byte[] data = image.getData();
 			if (data == null || data.length == 0)
-				log.config("No Image Data");
+				log.info("No Image Data");
 		}
 		
 		//	Attachment
 		MAttachment att = getAttachment();
 		if (att == null || att.getEntryCount() == 0)
 		{
-			log.config("No Attachment");
+			log.info("No Attachment");
 			return null;
 		}
 		if (att.getEntryCount() > 1)
-			log.warning(getName() + " - more then one attachment - " + att.getEntryCount());
+			log.warn(getName() + " - more then one attachment - " + att.getEntryCount());
 		//
 		MAttachmentEntry entry = att.getEntry(0);
 		if (entry == null)
 		{
-			log.config("No Attachment Entry");
+			log.info("No Attachment Entry");
 			return null;
 		}
 		byte[] buffer = entry.getData();
 		if (buffer == null || buffer.length == 0)
 		{
-			log.config("No Attachment Entry Data");
+			log.info("No Attachment Entry Data");
 			return null;
 		}
 		return buffer;

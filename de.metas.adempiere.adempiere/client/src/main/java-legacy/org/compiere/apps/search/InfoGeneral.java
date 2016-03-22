@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 
@@ -311,7 +312,7 @@ public class InfoGeneral extends Info
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return false;
 		}
 		finally {
@@ -321,10 +322,10 @@ public class InfoGeneral extends Info
 		//	Miminum check
 		if (m_queryColumns.size() == 0)
 		{
-			log.log(Level.SEVERE, "No query columns found");
+			log.error("No query columns found");
 			return false;
 		}
-		log.finest("Table " + tableName + ", ID=" + AD_Table_ID 
+		log.trace("Table " + tableName + ", ID=" + AD_Table_ID 
 			+ ", QueryColumns #" + m_queryColumns.size());
 		//	Only 4 Query Columns
 		while (m_queryColumns.size() > 4) {
@@ -470,16 +471,16 @@ public class InfoGeneral extends Info
 					// also set the column name. will be useful as alias later
 					infoColumn.setColumnName(columnName);
 					list.add(infoColumn);
-					log.finest("Added Column=" + columnName);
+					log.trace("Added Column=" + columnName);
 				
 				}
 				else
-					log.finest("Not Added Column=" + columnName);
+					log.trace("Not Added Column=" + columnName);
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return false;
 		}
 		finally {
@@ -490,10 +491,10 @@ public class InfoGeneral extends Info
 		{
 			final int p_WindowNo = getWindowNo();
 			ADialog.error(p_WindowNo, getWindow(), "Error", "No Info Columns");
-			log.log(Level.SEVERE, "No Info for AD_Table_ID=" + AD_Table_ID + " - " + sql);
+			log.error("No Info for AD_Table_ID=" + AD_Table_ID + " - " + sql);
 			return false;
 		}
-		log.finest("InfoColumns #" + list.size()); 
+		log.trace("InfoColumns #" + list.size()); 
 
 		//  Convert ArrayList to Array
 		m_generalLayout = new Info_Column[list.size()];
@@ -544,7 +545,7 @@ public class InfoGeneral extends Info
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 

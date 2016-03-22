@@ -106,7 +106,7 @@ public class BuildDepForecastFile extends SvrProcess
 				  + "WHERE A_Entry_Type = 'FOR'" + clientCheck;
 			
 			no = DB.executeUpdate (sql,null);
-			log.info ("doIt - Delete old processed entries =" + no);
+			log.info("doIt - Delete old processed entries =" + no);
 		}
 		
 		

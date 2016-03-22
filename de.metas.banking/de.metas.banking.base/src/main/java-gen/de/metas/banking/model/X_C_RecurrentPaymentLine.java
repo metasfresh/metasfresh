@@ -20,6 +20,7 @@ package de.metas.banking.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_RecurrentPaymentLine

@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,8 +42,6 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
@@ -53,7 +52,7 @@ import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
 final class JasperClassLoader extends ClassLoader
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(JasperClassLoader.class);
+	private static final transient Logger logger = LogManager.getLogger(JasperClassLoader.class);
 
 	public static final String PLACEHOLDER = "@PREFIX@";
 
@@ -78,7 +77,7 @@ final class JasperClassLoader extends ClassLoader
 				.firstOnly(I_AD_OrgInfo.class);
 		final String reportPrefix = orgInfo.getReportPrefix();
 
-		logger.config("ReportPrefix: " + reportPrefix + " (AD_Org_ID=" + adOrgId + ")");
+		logger.info("ReportPrefix: " + reportPrefix + " (AD_Org_ID=" + adOrgId + ")");
 
 		return reportPrefix;
 	}
@@ -96,13 +95,13 @@ final class JasperClassLoader extends ClassLoader
 		try
 		{
 			final URL url = new URL(urlStr);
-			if (CLogMgt.isLevel(Level.FINE))
-				logger.fine("URL: " + url + " for " + name);
+			if (logger.isDebugEnabled())
+				logger.debug("URL: " + url + " for " + name);
 			return url;
 		}
 		catch (MalformedURLException e)
 		{
-			logger.log(Level.WARNING, "Got invalid URL '" + urlStr + "' for '" + name + "'. Returning null.", e);
+			logger.warn("Got invalid URL '" + urlStr + "' for '" + name + "'. Returning null.", e);
 		}
 		return null;
 	}
@@ -125,8 +124,8 @@ final class JasperClassLoader extends ClassLoader
 		//
 		// Get resource's URL
 		final URL url = getResource(name);
-		if (CLogMgt.isLevel(Level.FINE))
-			logger.fine("URL: " + url + " for " + name);
+		if (logger.isDebugEnabled())
+			logger.debug("URL: " + url + " for " + name);
 		if (url == null)
 		{
 			return null; // no resource URL found
@@ -156,12 +155,12 @@ final class JasperClassLoader extends ClassLoader
 		}
 		catch (org.apache.commons.vfs2.FileNotFoundException e)
 		{
-			logger.log(Level.INFO, "Resource not found. Skipping.", e);
+			logger.info("Resource not found. Skipping.", e);
 			return null;
 		}
 		catch (FileSystemException e)
 		{
-			logger.log(Level.WARNING, "Error while retrieving bytes for resource " + url + ". Skipping.", e);
+			logger.warn("Error while retrieving bytes for resource " + url + ". Skipping.", e);
 			return null;
 		}
 		catch (IOException e)

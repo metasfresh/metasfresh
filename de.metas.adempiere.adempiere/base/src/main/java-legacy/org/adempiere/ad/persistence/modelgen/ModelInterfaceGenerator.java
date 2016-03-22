@@ -39,7 +39,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.TableAccessLevel;
@@ -48,7 +49,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ClassnameScanner;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -83,7 +83,7 @@ public class ModelInterfaceGenerator
 	// NOTE: we are not appending ANY license to generated files because we assume this will be done automatically by a maven plugin.
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ModelInterfaceGenerator.class);
+	private static Logger log = LogManager.getLogger(ModelInterfaceGenerator.class);
 
 	// private final TableAndColumnInfoRepository repository;
 
@@ -401,7 +401,7 @@ public class ModelInterfaceGenerator
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, fileName, ex);
+			log.error(fileName, ex);
 			throw new RuntimeException(ex);
 		}
 	}
@@ -427,7 +427,7 @@ public class ModelInterfaceGenerator
 		}
 		if (className.equals("byte[]"))
 		{
-			log.warning("Invalid type - " + className);
+			log.warn("Invalid type - " + className);
 			return;
 		}
 		s_importClasses.add(className);
@@ -620,7 +620,7 @@ public class ModelInterfaceGenerator
 		}
 		else if (result.size() > 1)
 		{
-			log.warning("More then one classnames were found for " + referenceClassName + ": " + result);
+			log.warn("More then one classnames were found for " + referenceClassName + ": " + result);
 			return null;
 		}
 

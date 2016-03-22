@@ -42,7 +42,8 @@ import org.compiere.model.MRequisition;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IStoragePA;
 import de.metas.purchasing.model.MMPurchaseSchedule;
@@ -56,7 +57,7 @@ import de.metas.purchasing.service.IPurchaseScheduleBL;
 public final class PurchaseModelValidator implements ModelValidator
 {
 
-	private static final CLogger logger = CLogger.getCLogger(PurchaseModelValidator.class);
+	private static final Logger logger = LogManager.getLogger(PurchaseModelValidator.class);
 
 	private int ad_Client_ID = -1;
 
@@ -102,7 +103,7 @@ public final class PurchaseModelValidator implements ModelValidator
 				return null;
 			}
 
-			logger.config(po + "; QtyOnHand: " + po.get_ValueOld(I_M_Storage.COLUMNNAME_QtyOnHand) + " => " + po.get_Value(I_M_Storage.COLUMNNAME_QtyOnHand)
+			logger.info(po + "; QtyOnHand: " + po.get_ValueOld(I_M_Storage.COLUMNNAME_QtyOnHand) + " => " + po.get_Value(I_M_Storage.COLUMNNAME_QtyOnHand)
 					+ "; QtyReserved: " + po.get_ValueOld(I_M_Storage.COLUMNNAME_QtyReserved) + " => " + po.get_Value(I_M_Storage.COLUMNNAME_QtyReserved));
 			final IPurchaseScheduleBL purchaseScheduleBL = Services.get(IPurchaseScheduleBL.class);
 			final IStoragePA storagePA = Services.get(IStoragePA.class);

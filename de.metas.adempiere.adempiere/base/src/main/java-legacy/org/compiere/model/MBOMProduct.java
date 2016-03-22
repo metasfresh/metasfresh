@@ -20,10 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -63,7 +63,7 @@ public class MBOMProduct extends X_M_BOMProduct
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -82,7 +82,7 @@ public class MBOMProduct extends X_M_BOMProduct
 	}	//	getOfProduct
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MBOMProduct.class);
+	private static Logger s_log = LogManager.getLogger(MBOMProduct.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor

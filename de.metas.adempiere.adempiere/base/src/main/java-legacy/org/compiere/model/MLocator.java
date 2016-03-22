@@ -20,10 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -69,7 +69,7 @@ public class MLocator extends X_M_Locator
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -106,7 +106,7 @@ public class MLocator extends X_M_Locator
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -148,7 +148,7 @@ public class MLocator extends X_M_Locator
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, "get", ex);
+			s_log.error("get", ex);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -189,7 +189,7 @@ public class MLocator extends X_M_Locator
 	private static CCache<Integer,MLocator> s_cache; 
 	 
 	/**	Logger						*/
-	private static CLogger		s_log = CLogger.getCLogger (MLocator.class);
+	private static Logger		s_log = LogManager.getLogger(MLocator.class);
 	
 	
 	/**************************************************************************
@@ -313,7 +313,7 @@ public class MLocator extends X_M_Locator
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		//	Default Product Locator
 		if (count == 0)
@@ -333,7 +333,7 @@ public class MLocator extends X_M_Locator
 			}
 			catch (Exception e)
 			{
-				log.log (Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 		}
 		try

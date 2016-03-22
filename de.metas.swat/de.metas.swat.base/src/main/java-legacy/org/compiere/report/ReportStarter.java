@@ -14,7 +14,8 @@
 package org.compiere.report;
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import net.sf.jasperreports.engine.JasperPrint;
 
@@ -28,7 +29,6 @@ import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessInfo;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.form.IClientUI;
@@ -47,7 +47,7 @@ import de.metas.adempiere.report.jasper.client.JRClient;
 public class ReportStarter implements ProcessCall, ClientProcess
 {
 	// services
-	private static final CLogger log = CLogger.getCLogger(ReportStarter.class);
+	private static final Logger log = LogManager.getLogger(ReportStarter.class);
 	private static JRViewerProvider viewerProvider = new SwingJRViewerProvider();
 
 	/**
@@ -75,7 +75,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 					{
 						try
 						{
-							log.log(Level.INFO, "Doing direct print without preview; ProcessInfo={0}", pi);
+							log.info("Doing direct print without preview; ProcessInfo={}", pi);
 							startProcessDirectPrint(ctx, pi);
 						}
 						catch (final Exception e)
@@ -94,7 +94,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 				final String title = pi.getTitle();
 				final JRViewerProvider viewerLauncher = getReportViewerProvider();
 				final OutputType outputType = viewerLauncher.getDesiredOutputType();
-				log.log(Level.INFO, "ReportStarter.startProcess run report - {0}, outputType={1}", new Object[] { title, outputType });
+				log.info("ReportStarter.startProcess run report - {}, outputType={}", new Object[] { title, outputType });
 
 				final JRClient jrClient = JRClient.get();
 				final byte[] data = jrClient.report(ctx, pi, outputType);
@@ -104,7 +104,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 		catch (final Exception e)
 		{
 			errorMsg = e.getLocalizedMessage();
-			log.severe("ReportStarter.startProcess: Can not run report - " + errorMsg);
+			log.error("ReportStarter.startProcess: Can not run report - " + errorMsg);
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally
@@ -143,7 +143,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 	}
 

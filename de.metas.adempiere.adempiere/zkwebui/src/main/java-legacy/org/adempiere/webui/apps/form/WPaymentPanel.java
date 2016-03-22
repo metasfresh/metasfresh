@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,13 +44,16 @@ import org.compiere.model.MCashLine;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -136,7 +138,7 @@ public class WPaymentPanel extends Div
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "VPayment", ex);
+			log.error("VPayment", ex);
 			m_initOK = false;
 		}
 		//
@@ -165,7 +167,7 @@ public class WPaymentPanel extends Div
 
 	private boolean m_needSave = false;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(WPaymentPanel.class);
+	private static Logger log = LogManager.getLogger(WPaymentPanel.class);
 	
 	private final IPayableDocument doc;
 	
@@ -264,7 +266,7 @@ public class WPaymentPanel extends Div
 	private boolean dynInit(WButtonEditor button, boolean updateFields) throws Exception
 	{
 		m_DocStatus = (String)m_mTab.getValue("DocStatus");
-		log.config(m_DocStatus);
+		log.info(m_DocStatus);
 
 		if (m_mTab.getValue("C_BPartner_ID") == null)
 		{
@@ -328,7 +330,7 @@ public class WPaymentPanel extends Div
 	 */
 	public void onEvent(Event e)
 	{
-		log.fine("WPayment.actionPerformed - " + e.getTarget().getId());
+		log.debug("WPayment.actionPerformed - " + e.getTarget().getId());
 
 		// Finish
 		if (e.getTarget().getId().equals(ConfirmPanel.A_OK))
@@ -450,7 +452,7 @@ public class WPaymentPanel extends Div
 	{
 		if (m_isEmbedded)
 		{
-			log.warning("" + adMessage + " - " + message);
+			log.warn("" + adMessage + " - " + message);
 		}
 		else
 		{
@@ -492,7 +494,7 @@ public class WPaymentPanel extends Div
 		{
 			if (exception != null)
 			{
-				log.log(Level.INFO, exception.getLocalizedMessage(), exception);
+				log.info(exception.getLocalizedMessage(), exception);
 				FDialog.error(m_WindowNo, WPaymentPanel.this, "PaymentError", exception.getLocalizedMessage());
 				return;
 			}
@@ -521,7 +523,7 @@ public class WPaymentPanel extends Div
 		IVPaymentPanel panel = paymentRulePanels.get(PaymentRule);
 		if (panel == null)
 		{
-			log.log(Level.SEVERE, "Unknown PaymentRule " + PaymentRule);
+			log.error("Unknown PaymentRule " + PaymentRule);
 			return false;
 		}
 
@@ -567,7 +569,7 @@ public class WPaymentPanel extends Div
 		}
 		else
 		{
-			log.log(Level.WARNING, "Panel component not supported for "+paymentRule+" (panel="+panel+")");
+			log.warn("Panel component not supported for "+paymentRule+" (panel="+panel+")");
 			return ;
 		}
 		
@@ -650,7 +652,7 @@ public class WPaymentPanel extends Div
 			IVPaymentPanel panel = addPaymentRulePanel(paymentRule);
 			if (panel == null)
 			{
-				log.warning("No panel found for payment rule " + paymentRule + " [SKIP]");
+				log.warn("No panel found for payment rule " + paymentRule + " [SKIP]");
 				continue;
 			}
 			panel.setEnabled(!m_onlyRule);

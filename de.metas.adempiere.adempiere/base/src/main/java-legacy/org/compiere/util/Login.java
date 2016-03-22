@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IPostingService;
@@ -55,10 +54,13 @@ import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_AD_Role;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *	Login Manager
@@ -182,7 +184,7 @@ public class Login
 		// org.compiere.Adempiere.getName() + " - Java Version Check",
 		// ok ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE);
 		// else
-		// log.severe(msg.toString());
+		// log.error(msg.toString());
 		// return ok;
 	}   // isJavaOK
 
@@ -205,7 +207,7 @@ public class Login
 	}
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(Login.class);
+	private static final Logger log = LogManager.getLogger(Login.class);
 	/** Context */
 	private Properties m_ctx = null;
 	/** Connection Profile */
@@ -296,7 +298,7 @@ public class Login
 		long start = System.currentTimeMillis();
 		if (app_user == null)
 		{
-			log.warning("No Apps User");
+			log.warn("No Apps User");
 			return null;
 		}
 
@@ -306,7 +308,7 @@ public class Login
 
 		if (app_pwd == null || app_pwd.length() == 0)
 		{
-			log.warning("No Apps Password");
+			log.warn("No Apps Password");
 			return null;
 		}
 
@@ -393,7 +395,7 @@ public class Login
 				else
 				{
 					DB.close(rs, pstmt); // not really needed
-					log.saveError("UserPwdError", app_user, false);
+					MetasfreshLastError.saveError(log, "UserPwdError", app_user, false);
 					return null;
 				}
 			}
@@ -426,7 +428,7 @@ public class Login
 				}
 				else
 				{
-					log.saveError("UserAccountLockedError", app_user, false);
+					MetasfreshLastError.saveError(log, "UserAccountLockedError", app_user, false);
 					return null;
 				}
 			}
@@ -446,14 +448,14 @@ public class Login
 					session.setIsLoginIncorrect(true);
 					sessionPO.logout();
 					Env.setContext(getCtx(), Env.CTXNAME_AD_Session_ID, "");
-					log.saveError("UserAccountLockedError", app_user, false);
+					MetasfreshLastError.saveError(log, "UserAccountLockedError", app_user, false);
 					return null;
 				}
 				InterfaceWrapperHelper.save(user);
 				session.setIsLoginIncorrect(true);
 				sessionPO.logout();
 				Env.setContext(getCtx(), Env.CTXNAME_AD_Session_ID, "");
-				log.saveError("UserPwdError", app_user, false);
+				MetasfreshLastError.saveError(log, "UserPwdError", app_user, false);
 				return null;
 			}
 			else
@@ -493,12 +495,12 @@ public class Login
 			//
 			retValue = new KeyNamePair[list.size()];
 			list.toArray(retValue);
-			log.fine("User=" + app_user + " - roles #" + retValue.length);
+			log.debug("User=" + app_user + " - roles #" + retValue.length);
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, sql.toString(), ex);
-			log.saveError("DBLogin", ex);
+			log.error(sql.toString(), ex);
+			MetasfreshLastError.saveError(log, "DBLogin", ex);
 			retValue = null;
 		}
 		//
@@ -567,7 +569,7 @@ public class Login
 
 		if (clientsList.isEmpty())
 		{
-			log.log(Level.SEVERE, "No Clients for Role: " + role.toStringX());
+			log.error("No Clients for Role: " + role.toStringX());
 			return null;
 		}
 
@@ -634,7 +636,7 @@ public class Login
 		// No Orgs
 		if (orgsList.isEmpty())
 		{
-			log.log(Level.WARNING, "No Org for Client: " + client.toStringX()
+			log.warn("No Org for Client: " + client.toStringX()
 					+ ", AD_Role_ID=" + AD_Role_ID
 					+ ", AD_User_ID=" + AD_User_ID
 					+ "\n Permissions: " + role);
@@ -719,7 +721,7 @@ public class Login
 		else
 		{
 			// At this point, we definitely need to have a session created
-			log.severe("No session found");
+			log.error("No session found");
 		}
 		// metas: end
 
@@ -730,7 +732,7 @@ public class Login
 			final String error = ModelValidationEngine.get().loginComplete(AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID);
 			if (error != null && error.length() > 0)
 			{
-				log.severe("Refused: " + error);
+				log.error("Refused: " + error);
 				return error;
 			}
 		}
@@ -760,7 +762,7 @@ public class Login
 			final java.sql.Timestamp timestamp,
 			final String printerName)
 	{
-		if (log.isLoggable(Level.INFO))
+		if (log.isInfoEnabled())
 			log.info("Org: " + org.toStringX());
 
 		if (m_ctx == null || org == null)
@@ -928,7 +930,7 @@ public class Login
 			sqlWindowDefaults = Env.parseContext(m_ctx, 0, sqlWindowDefaults, false);
 			if (sqlWindowDefaults.length() == 0)
 			{
-				log.log(Level.SEVERE, "loadPreferences - Missing Environment");
+				log.error("loadPreferences - Missing Environment");
 			}
 			else
 			{
@@ -963,7 +965,7 @@ public class Login
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "loadPreferences", e);
+			log.error("loadPreferences", e);
 		}
 		finally
 		{
@@ -1038,7 +1040,7 @@ public class Login
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, TableName + " (" + sql + ")", e);
+			log.error(TableName + " (" + sql + ")", e);
 			return;
 		}
 		finally

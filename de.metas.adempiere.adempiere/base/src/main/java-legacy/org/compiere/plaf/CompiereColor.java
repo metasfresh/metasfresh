@@ -22,7 +22,8 @@ import java.awt.Window;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -142,7 +143,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("ClientProperty: " + e.getMessage());
+			log.error("ClientProperty: " + e.getMessage());
 		}
 		return bg;
 	}   //  getBackground
@@ -358,7 +359,7 @@ public class CompiereColor implements Serializable
 	/** Dirty marker for re-paining Background    */
 	private boolean m_dirty = true;
 	/**	Logger			*/
-	private static Logger 	log = Logger.getLogger(CompiereColor.class.getName());
+	private static Logger 	log = LogManager.getLogger(CompiereColor.class.getName());
 
 	/**************************************************************************
 	 *  Get BackgroundType (Flat, Gradient, Lines, Texture)
@@ -538,7 +539,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("Parsing="
+			log.error("Parsing="
 				+ repeatDistanceString  + " - " + e.getMessage());
 		}
 	}   //  setGradientRepeatDistance
@@ -583,7 +584,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("Parsing URL="
+			log.error("Parsing URL="
 				+ urlString + " - " + e.getMessage());
 		}
 	}   //  setTextureURL
@@ -648,7 +649,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("Parsing="
+			log.error("Parsing="
 				+ alphaString  + " - " + e.getMessage());
 		}
 	}   //  setTextureCompositeAlpha
@@ -737,7 +738,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("Parsing="
+			log.error("Parsing="
 				+ widthString  + " - " + e.getMessage());
 		}
 	}   //  setLineWidth
@@ -779,7 +780,7 @@ public class CompiereColor implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe("Parsing="
+			log.error("Parsing="
 				+ distanceString  + " - " + e.getMessage());
 		}
 	}   //  setLineDistance
@@ -827,7 +828,7 @@ public class CompiereColor implements Serializable
 			m_lineDistance = cc.getLineDistance();
 		}
 		else
-			log.severe("Invalid Color");
+			log.error("Invalid Color");
 		//
 		m_dirty = true;
 	}   //  setColor

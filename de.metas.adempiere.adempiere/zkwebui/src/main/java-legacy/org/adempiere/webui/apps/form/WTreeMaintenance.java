@@ -17,7 +17,6 @@
 package org.adempiere.webui.apps.form;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.Button;
@@ -93,7 +92,7 @@ public class WTreeMaintenance extends TreeMaintenance implements IFormController
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "VTreeMaintenance.init", ex);
+			log.error("VTreeMaintenance.init", ex);
 		}
 	}	//	init
 	
@@ -256,7 +255,7 @@ public class WTreeMaintenance extends TreeMaintenance implements IFormController
 		for(ListItem item : items)
 			model.addElement(item);
 		
-		log.config("#" + model.getSize());
+		log.info("#" + model.getSize());
 		centerList.setItemRenderer(model);
 		centerList.setModel(model);
 		

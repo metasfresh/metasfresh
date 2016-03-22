@@ -42,7 +42,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
@@ -89,7 +90,7 @@ public class CreateFromInvoice extends CreateFrom
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		setTitle(Msg.getElement(Env.getCtx(), "C_Invoice_ID", false) + " .. " + Msg.translate(Env.getCtx(), "CreateFrom"));
 
 		return true;
@@ -134,7 +135,7 @@ public class CreateFromInvoice extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 
 		return list;
@@ -163,13 +164,13 @@ public class CreateFromInvoice extends CreateFrom
 			}
 			rs.close();
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, sqlStmt.toString(), e);
+			log.error(sqlStmt.toString(), e);
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (Exception ex) {
-					log.severe("Could not close prepared statement");
+					log.error("Could not close prepared statement");
 				}
 			}
 		}
@@ -183,7 +184,7 @@ public class CreateFromInvoice extends CreateFrom
 	 */
 	protected Vector<Vector<Object>> getShipmentData(int M_InOut_ID)
 	{
-		log.config("M_InOut_ID=" + M_InOut_ID);
+		log.info("M_InOut_ID=" + M_InOut_ID);
 		MInOut inout = new MInOut(Env.getCtx(), M_InOut_ID, null);
 		p_order = null;
 		if (inout.getC_Order_ID() != 0)
@@ -252,7 +253,7 @@ public class CreateFromInvoice extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 
 		return data;
@@ -331,7 +332,7 @@ public class CreateFromInvoice extends CreateFrom
 	    }
 	    catch (Exception ex)
 	    {
-	        log.log(Level.SEVERE, sqlStmt.toString(), ex);
+	        log.error(sqlStmt.toString(), ex);
 	    }
 	    finally
 	    {
@@ -373,7 +374,7 @@ public class CreateFromInvoice extends CreateFrom
 		//  Invoice
 		int C_Invoice_ID = ((Integer)getGridTab().getValue("C_Invoice_ID")).intValue();
 		MInvoice invoice = new MInvoice (Env.getCtx(), C_Invoice_ID, trxName);
-		log.config(invoice.toString());
+		log.info(invoice.toString());
 
 		if (p_order != null)
 		{
@@ -438,7 +439,7 @@ public class CreateFromInvoice extends CreateFrom
 				}
 				QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				//
-				log.fine("Line QtyEntered=" + QtyEntered
+				log.debug("Line QtyEntered=" + QtyEntered
 					+ ", Product_ID=" + M_Product_ID
 					+ ", OrderLine_ID=" + C_OrderLine_ID + ", InOutLine_ID=" + M_InOutLine_ID);
 
@@ -471,7 +472,7 @@ public class CreateFromInvoice extends CreateFrom
 					String whereClause = "EXISTS (SELECT 1 FROM M_InOut io WHERE io.M_InOut_ID=M_InOutLine.M_InOut_ID AND io.DocStatus IN ('CO','CL'))";
 					MInOutLine[] lines = MInOutLine.getOfOrderLine(Env.getCtx(),
 						C_OrderLine_ID, whereClause, trxName);
-					log.fine ("Receipt Lines with OrderLine = #" + lines.length);
+					log.debug("Receipt Lines with OrderLine = #" + lines.length);
 					if (lines.length > 0)
 					{
 						for (int j = 0; j < lines.length; j++)
@@ -495,7 +496,7 @@ public class CreateFromInvoice extends CreateFrom
 				{
 					String whereClause = "EXISTS (SELECT 1 FROM M_InOut io WHERE io.M_InOut_ID=M_InOutLine.M_InOut_ID AND io.DocStatus IN ('CO','CL'))";
 					MInOutLine[] lines = MInOutLine.getOfRMALine(Env.getCtx(), M_RMALine_ID, whereClause, null);
-					log.fine ("Receipt Lines with RMALine = #" + lines.length);
+					log.debug("Receipt Lines with RMALine = #" + lines.length);
 					if (lines.length > 0)
 					{
 						for (int j = 0; j < lines.length; j++)
@@ -528,7 +529,7 @@ public class CreateFromInvoice extends CreateFrom
 						invoiceLine.setQtyInvoiced(inoutLine.getMovementQty());
 				}
 				else {
-					log.fine("No Receipt Line");
+					log.debug("No Receipt Line");
 					//	Order Info
 					if (orderLine != null)
 					{
@@ -540,7 +541,7 @@ public class CreateFromInvoice extends CreateFrom
 					}
 					else
 					{
-						log.fine("No Order Line");
+						log.debug("No Order Line");
 						invoiceLine.setPrice();
 						invoiceLine.setTax();
 					}
@@ -552,7 +553,7 @@ public class CreateFromInvoice extends CreateFrom
 						invoiceLine.setQty(QtyEntered);
 					}
 					else
-						log.fine("No RMA Line");
+						log.debug("No RMA Line");
 				}
 				invoiceLine.saveEx();
 			}   //   if selected

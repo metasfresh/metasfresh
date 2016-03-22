@@ -17,7 +17,6 @@
 package org.adempiere.webui.window;
 
 import java.io.InputStream;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -26,9 +25,12 @@ import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.Window;
 import org.compiere.model.MImage;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.image.AImage;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
@@ -73,7 +75,7 @@ public class WImageDialog extends Window implements EventListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		//  load data
 		if (m_mImage == null)
@@ -85,7 +87,7 @@ public class WImageDialog extends Window implements EventListener
 				
 				image.setContent(aImage);
 			} catch (Exception e) {
-				log.log(Level.WARNING, "load image", e);
+				log.warn("load image", e);
 			}
 		}
 		
@@ -96,7 +98,7 @@ public class WImageDialog extends Window implements EventListener
 	/**  Image Model            */
 	private MImage      m_mImage = null;
 	/**	Logger					*/
-	private static CLogger log = CLogger.getCLogger(WImageDialog.class);
+	private static Logger log = LogManager.getLogger(WImageDialog.class);
 
 	/** */
 	private Borderlayout mainLayout = new Borderlayout();
@@ -203,7 +205,7 @@ public class WImageDialog extends Window implements EventListener
 		}
 		catch (InterruptedException e) 
 		{
-			log.warning(e.getLocalizedMessage());
+			log.warn(e.getLocalizedMessage());
 			return;
 		}
 
@@ -221,7 +223,7 @@ public class WImageDialog extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "load image", e);
+			log.warn("load image", e);
 			return;
 		}
 

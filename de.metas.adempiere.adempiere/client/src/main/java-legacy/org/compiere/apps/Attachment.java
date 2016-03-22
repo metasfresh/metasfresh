@@ -28,7 +28,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -47,7 +48,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -82,7 +84,7 @@ public final class Attachment extends CDialog
 	{
 		super (frame, Msg.getMsg(Env.getCtx(), "Attachment"), true);
 		//	needs to be modal otherwise APanel does not recognize change.
-		log.config("ID=" + AD_Attachment_ID
+		log.info("ID=" + AD_Attachment_ID
 			+ ", Table=" + AD_Table_ID + ", Record=" + Record_ID);
 		//
 		m_WindowNo = WindowNo;
@@ -93,7 +95,7 @@ public final class Attachment extends CDialog
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		//	Create Model
 		if (AD_Attachment_ID == 0)
@@ -119,7 +121,7 @@ public final class Attachment extends CDialog
 	/** Change					*/
 	private boolean			m_change = false;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Attachment.class);
+	private static Logger log = LogManager.getLogger(Attachment.class);
 	
 	//
 	private CPanel mainPanel = new CPanel();
@@ -243,7 +245,7 @@ public final class Attachment extends CDialog
 	 */
 	private void loadAttachments()
 	{
-		log.config("");
+		log.info("");
 		//	Set Text/Description
 		String sText = m_attachment.getTextMsg();
 		if (sText == null)
@@ -268,7 +270,7 @@ public final class Attachment extends CDialog
 	private void displayData (int index)
 	{
 		MAttachmentEntry entry = m_attachment.getEntry(index); 
-		log.config("Index=" + index + " - " + entry);
+		log.info("Index=" + index + " - " + entry);
 		
 		//	Reset UI
 		gifPanel.setImage(null);
@@ -289,7 +291,7 @@ public final class Attachment extends CDialog
 			bOpen.setEnabled(true);
 			bSave.setEnabled(true);
 			bDelete.setEnabled(true);
-			log.config(entry.toStringX());
+			log.info(entry.toStringX());
 			//
 			info.setText(entry.toStringX());
 			if (entry.isPDF()) {
@@ -309,7 +311,7 @@ public final class Attachment extends CDialog
 						//
 						graphPanel.add(pdfViewer, BorderLayout.CENTER);
 					} catch (Exception e) {
-						log.log(Level.SEVERE, "(pdf)", e);
+						log.error("(pdf)", e);
 					}
 				}
 			}
@@ -323,7 +325,7 @@ public final class Attachment extends CDialog
 					size = gifPanel.getPreferredSize();
 					if (size.width == -1 && size.height == -1)
 					{
-						log.log(Level.SEVERE, "Invalid Image");
+						log.error("Invalid Image");
 					}
 					else
 					{
@@ -333,7 +335,7 @@ public final class Attachment extends CDialog
 					}
 				}
 				else
-					log.log(Level.SEVERE, "Could not create image");
+					log.error("Could not create image");
 			}
 		}
 		if (graphPanel.getComponentCount() == 0)
@@ -341,7 +343,7 @@ public final class Attachment extends CDialog
 			graphPanel.add(info, BorderLayout.CENTER);
 		}
 
-		log.config("Size=" + size);
+		log.info("Size=" + size);
 	//	graphPanel.setPreferredSize(size);
 	//	centerPane.setDividerLocation(size.width+30);
 	//	size.width += 100;
@@ -371,7 +373,7 @@ public final class Attachment extends CDialog
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-	//	log.config(e.getActionCommand());
+	//	log.info(e.getActionCommand());
 		//	Save and Close
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
@@ -522,7 +524,7 @@ public final class Attachment extends CDialog
 
 		String fileName = getFileName(index);
 		String ext = fileName.substring (fileName.lastIndexOf('.'));
-		log.config( "Ext=" + ext);
+		log.info( "Ext=" + ext);
 
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -537,7 +539,7 @@ public final class Attachment extends CDialog
 		if (saveFile == null)
 			return;
 
-		log.config("Save to " + saveFile.getAbsolutePath());
+		log.info("Save to " + saveFile.getAbsolutePath());
 		m_attachment.getEntryFile(index, saveFile);
 	}	//	saveAttachmentToFile
 
@@ -580,7 +582,7 @@ public final class Attachment extends CDialog
         } 
         catch (Exception e) 
         {
-        	log.log(Level.SEVERE, "", e);
+        	log.error("", e);
         }
         return false;
     }    //    openFile

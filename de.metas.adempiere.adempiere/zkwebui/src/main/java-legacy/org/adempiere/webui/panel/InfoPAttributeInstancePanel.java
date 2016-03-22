@@ -15,7 +15,6 @@ package org.adempiere.webui.panel;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Checkbox;
@@ -27,11 +26,14 @@ import org.adempiere.webui.event.WTableModelListener;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zkex.zul.Borderlayout;
@@ -94,7 +96,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	// init	
 
@@ -111,7 +113,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 	private String				m_M_AttributeSetInstanceName = null;
 	private String				m_sql;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PAttributeInstance.class);
+	private static Logger log = LogManager.getLogger(PAttributeInstance.class);
 
 	/**
 	 * 	Static Init
@@ -183,7 +185,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 	 */
 	private void dynInit(int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		if (C_BPartner_ID != 0)
 		{
 			int ShelfLifeMinPct = 0;
@@ -212,7 +214,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally {
 				DB.close(rs, pstmt);
@@ -221,12 +223,12 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 			if (ShelfLifeMinPct > 0)
 			{
 				m_sqlMinLife = " AND COALESCE(TRUNC(((daysbetween(asi.GuaranteeDate, now()))/p.GuaranteeDays)*100),0)>=" + ShelfLifeMinPct;
-				log.config( "PAttributeInstance.dynInit - ShelfLifeMinPct=" + ShelfLifeMinPct);
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinPct=" + ShelfLifeMinPct);
 			}
 			if (ShelfLifeMinDays > 0)
 			{
 				m_sqlMinLife += " AND COALESCE((daysbetween(asi.GuaranteeDate, now())),0)>=" + ShelfLifeMinDays;
-				log.config( "PAttributeInstance.dynInit - ShelfLifeMinDays=" + ShelfLifeMinDays);
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinDays=" + ShelfLifeMinDays);
 			}
 		}	//	BPartner != 0
 
@@ -256,7 +258,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 			sql += m_sql.substring(pos);
 		}
 		//
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -270,7 +272,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -339,7 +341,7 @@ public class InfoPAttributeInstancePanel extends Window implements EventListener
 			}
 		}
 		confirmPanel.getOKButton().setEnabled(enabled);
-		log.fine("M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID 
+		log.debug("M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID 
 			+ " - " + m_M_AttributeSetInstanceName
 			+ "; M_Locator_ID=" + m_M_Locator_ID);
 	}	//	enableButtons

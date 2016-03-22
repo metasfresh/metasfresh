@@ -1,7 +1,6 @@
 package de.metas.procurement.base;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -11,13 +10,14 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
-import de.metas.jax.rs.JaxRsConstants;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 
@@ -51,6 +51,8 @@ import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
  */
 public class Main extends AbstractModuleInterceptor
 {
+	private static final Logger logger = LogManager.getLogger(Main.class);
+
 	private static final String SYSCONFIG_JMS_QUEUE_RESPONSE = "de.metas.procurement.webui.jms.queue.response";
 	private static final String SYSCONFIG_JMS_QUEUE_REQUEST = "de.metas.procurement.webui.jms.queue.request";
 
@@ -115,11 +117,11 @@ public class Main extends AbstractModuleInterceptor
 
 		if (Check.isEmpty(requestQueueName, true) || Check.isEmpty(responseQueueName, true))
 		{
-			JaxRsConstants.getLogger().log(Level.SEVERE, "At least one one of requestQueueName={0} and responseQueueName={1} is not set. \n"
+			logger.error("At least one one of requestQueueName={} and responseQueueName={} is not set. \n"
 					+ "Therefore this instance won't be able to actively send data to the procurement UI. \n"
-					+ "To fix this, add AD_SysConfig records with AD_Client_ID={2} and AD_Org_ID=0 and with the following names:\n"
-					+ "{3} \n"
-					+ "{4}",
+					+ "To fix this, add AD_SysConfig records with AD_Client_ID={} and AD_Org_ID=0 and with the following names:\n"
+					+ "{} \n"
+					+ "{}",
 					new Object[] { requestQueueName, responseQueueName, Math.max(getAD_Client_ID(),0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE });
 			return;
 		}

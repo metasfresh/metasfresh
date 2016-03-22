@@ -30,7 +30,8 @@ import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
@@ -41,7 +42,6 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -56,7 +56,7 @@ public class MRPInfoWindowAttribGroups
 {
 	private static final String FUNCTION_NAME = "X_MRP_ProductInfo_AttributeVal_V";
 
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	private Properties _ctx;
 	private int _windowNo;
@@ -163,7 +163,7 @@ public class MRPInfoWindowAttribGroups
 			return;
 		}
 
-		log.finest(sql);
+		log.trace(sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -175,7 +175,7 @@ public class MRPInfoWindowAttribGroups
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.WARNING, sql, e);
+			log.warn(sql, e);
 		}
 		finally
 		{

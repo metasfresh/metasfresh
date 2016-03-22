@@ -28,7 +28,8 @@ import java.math.MathContext;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
@@ -43,7 +44,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -62,7 +62,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  */
 public abstract class AbstractAttributeValue implements IAttributeValue
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IAttributeStorage attributeStorage;
 	private final I_M_Attribute attribute;
@@ -626,7 +626,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed finding the M_AttributeValue for value=" + value, e);
+				logger.warn("Failed finding the M_AttributeValue for value=" + value, e);
 			}
 		}
 		

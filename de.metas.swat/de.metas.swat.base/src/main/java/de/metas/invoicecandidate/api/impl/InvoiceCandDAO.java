@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -66,11 +65,10 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MSequence;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
+import org.slf4j.Logger;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -93,7 +91,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
-	private final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 	= new ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -578,7 +576,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				.execute();
 
-		logger.log(Level.INFO, "Invalidated {0} invoice candidates for {1}", new Object[] { count, icQuery });
+		logger.info("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
 
 		//
 		// Schedule an update for invalidated invoice candidates
@@ -597,7 +595,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for HeaderAggregationKey={1}", new Object[] { count, headerAggregationKey });
+		// logger.info("Invalidated {} C_Invoice_Candidates for HeaderAggregationKey={}", new Object[] { count, headerAggregationKey });
 	}
 
 	@Override
@@ -616,7 +614,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				// Not already processed
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_Table_ID={1} and Record_ID={2}", new Object[] { count, adTableId, recordId });
+		// logger.info("Invalidated {} C_Invoice_Candidates for AD_Table_ID={} and Record_ID={}", new Object[] { count, adTableId, recordId });
 	}
 
 	@Override
@@ -627,7 +625,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bPartner={1}", new Object[] { count, bpartner });
+		// logger.info("Invalidated {} C_Invoice_Candidates for bPartner={}", new Object[] { count, bpartner });
 	}
 
 	@Override
@@ -675,7 +673,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		//
 		// Invalidate
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for aggregation={1}", new Object[] { count, aggregation });
+		// logger.info("Invalidated {} C_Invoice_Candidates for aggregation={}", new Object[] { count, aggregation });
 	}
 
 	@Override
@@ -689,7 +687,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bpartner={1}", new Object[] { count, bpartner });
+		// logger.info("Invalidated {} C_Invoice_Candidates for bpartner={}", new Object[] { count, bpartner });
 	}
 
 	@Override
@@ -709,7 +707,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addNotInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, alreadyInvalidatedICsQuery);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} records", count);
+		// logger.info("Invalidated {} records", count);
 	}
 
 	protected final void invalidateCandsForSelection(final int adPInstanceId, final String trxName)
@@ -723,7 +721,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		;
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_PInstance_ID={1}", new Object[] { count, adPInstanceId });
+		// logger.info("Invalidated {} C_Invoice_Candidates for AD_PInstance_ID={}", new Object[] { count, adPInstanceId });
 	}
 
 	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForRecordQuery(final Properties ctx, final int adTableId, final int recordId, final String trxName)
@@ -862,9 +860,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getAD_PInstance_ID())
 				.execute();
-		logger.log(Level.INFO, "Marked {0} {1} records with recompute tag={2}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
-		logger.log(Level.FINE, "Query: {0}", query);
-		logger.log(Level.FINE, "Tagger: {0}", tagRequest);
+		logger.info("Marked {} {} records with recompute tag={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
+		logger.debug("Query: {}", query);
+		logger.debug("Tagger: {}", tagRequest);
 
 		return count;
 	}
@@ -907,9 +905,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
-		logger.log(Level.INFO, "Deleted {0} {1} entries for tag={2}, onlyInvoiceCandidateIds={3}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag,
+		logger.info("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag,
 				onlyInvoiceCandidateIds });
-		logger.log(Level.FINE, "Query: {0}", query);
+		logger.debug("Query: {}", query);
 	}
 
 	protected final int untag(final InvoiceCandRecomputeTagger tagger)
@@ -928,9 +926,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.execute();
 
-		logger.log(Level.INFO, "Un-tag {0} {1} records with were tagged with recompute tag={2}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
-		logger.log(Level.FINE, "Query: {0}", query);
-		logger.log(Level.FINE, "Tagger: {0}", tagger);
+		logger.info("Un-tag {} {} records with were tagged with recompute tag={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
+		logger.debug("Query: {}", query);
+		logger.debug("Tagger: {}", tagger);
 
 		return count;
 	}
@@ -1290,7 +1288,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		;
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.log(Level.INFO, "Invalidated {0} invoice candidates for C_Invoice_Candidate_IDs={1}", new Object[] { count, icIds });
+		// logger.info("Invalidated {} invoice candidates for C_Invoice_Candidate_IDs={}", new Object[] { count, icIds });
 	}
 
 	@Override

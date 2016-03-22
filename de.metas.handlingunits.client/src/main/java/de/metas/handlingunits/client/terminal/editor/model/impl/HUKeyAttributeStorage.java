@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-
 import org.adempiere.util.Check;
 
 import de.metas.handlingunits.HUConstants;
@@ -240,7 +238,7 @@ import de.metas.handlingunits.model.I_M_HU;
 			}
 			else
 			{
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 
 			return false; // already disposed

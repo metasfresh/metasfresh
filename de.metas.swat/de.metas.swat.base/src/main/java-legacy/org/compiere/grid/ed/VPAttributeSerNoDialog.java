@@ -24,7 +24,8 @@ import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,7 +44,6 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -82,7 +82,7 @@ public class VPAttributeSerNoDialog extends CDialog
 		 int AD_Column_ID, int WindowNo)
 	{
 		super (frame, Msg.translate(Env.getCtx(), "M_AttributeSetInstance_ID") , true);
-		log.config("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID 
+		log.info("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID 
 			+ ", M_Product_ID=" + M_Product_ID
 			+ ", C_BPartner_ID=" + C_BPartner_ID
 			+ ", Column=" + AD_Column_ID);
@@ -99,7 +99,7 @@ public class VPAttributeSerNoDialog extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "VPAttributeDialog" + ex);
+			log.error("VPAttributeDialog" + ex);
 		}
 		//	Dynamic Init
 		if (!initAttributes ())
@@ -123,7 +123,7 @@ public class VPAttributeSerNoDialog extends CDialog
 	/**	Change							*/
 	private boolean					m_changed = false;
 	
-	private CLogger					log = CLogger.getCLogger(getClass());
+	private Logger					log = LogManager.getLogger(getClass());
 	/** Row Counter					*/
 	private int						m_row = 0;
 
@@ -173,7 +173,7 @@ public class VPAttributeSerNoDialog extends CDialog
 			m_masi = MAttributeSetInstance.get(Env.getCtx(), m_M_AttributeSetInstance_ID, m_M_Product_ID);
 			if (m_masi == null)
 			{
-				log.severe ("No Model for M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID + ", M_Product_ID=" + m_M_Product_ID);
+				log.error("No Model for M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID + ", M_Product_ID=" + m_M_Product_ID);
 				return false;
 			}
 			Env.setContext(Env.getCtx(), m_WindowNo, "M_AttributeSet_ID", m_masi.getM_AttributeSet_ID());
@@ -282,7 +282,7 @@ public class VPAttributeSerNoDialog extends CDialog
 			dispose();
 		}
 		else
-			log.log(Level.SEVERE, "not found - " + e);
+			log.error("not found - " + e);
 	}	//	actionPerformed
 
 	/**
@@ -291,7 +291,7 @@ public class VPAttributeSerNoDialog extends CDialog
 	 */
 	private boolean cmd_select()
 	{
-		log.config("");
+		log.info("");
 		
 		int M_Warehouse_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, "M_Warehouse_ID");
 		
@@ -329,7 +329,7 @@ public class VPAttributeSerNoDialog extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -362,7 +362,7 @@ public class VPAttributeSerNoDialog extends CDialog
 		//
 		String mandatory = "";
 
-		log.fine("SerNo=" + fieldSerNo.getText());
+		log.debug("SerNo=" + fieldSerNo.getText());
 		String enteredSerNo  = fieldSerNo.getText();
 		String oldSerNo= m_masi.getSerNo(); 
 		

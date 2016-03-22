@@ -18,12 +18,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.FilenameBox;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -38,7 +40,7 @@ public class WFilenameEditor extends WEditor
 {
 	private static final String[] LISTENER_EVENTS = {Events.ON_CLICK, Events.ON_CHANGE, Events.ON_OK};
 
-	private static final CLogger log = CLogger.getCLogger(WFilenameEditor.class);
+	private static final Logger log = LogManager.getLogger(WFilenameEditor.class);
 
 	private String oldValue;
 
@@ -129,7 +131,7 @@ public class WFilenameEditor extends WEditor
 		}
 		catch (InterruptedException e)
 		{
-			log.warning(e.getLocalizedMessage());
+			log.warn(e.getLocalizedMessage());
 			return;
 		}
 
@@ -161,7 +163,7 @@ public class WFilenameEditor extends WEditor
 			fos.flush();
 			fos.close();
 		} catch (IOException e) {
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return;
 		} finally {
 			if (fos != null)

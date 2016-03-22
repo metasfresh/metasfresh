@@ -25,9 +25,8 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -100,7 +99,7 @@ public final class IniDialog extends CDialog implements ActionListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 			cmd_reject();
 		}
 	}   // IniDialog
@@ -126,14 +125,14 @@ public final class IniDialog extends CDialog implements ActionListener
 		final String licenseOnlineURL = Adempiere.getProductLicenseURL();
 		if (!Check.isEmpty(licenseOnlineURL, true))
 		{
-			log.warning("No license in resource. Using online license.");
+			log.warn("No license in resource. Using online license.");
 			try
 			{
 				return new URL(licenseOnlineURL);
 			}
 			catch (MalformedURLException e)
 			{
-				log.log(Level.WARNING, "Invalid online license URL: " + licenseOnlineURL + ". Ignored.", e);
+				log.warn("Invalid online license URL: " + licenseOnlineURL + ". Ignored.", e);
 			}
 		}
 
@@ -145,7 +144,7 @@ public final class IniDialog extends CDialog implements ActionListener
 	static ResourceBundle s_res = ResourceBundle.getBundle("org.compiere.util.IniRes");
 	private boolean m_accept = false;
 	/** Logger */
-	private static final Logger log = Logger.getLogger(IniDialog.class.getName());
+	private static final Logger log = LogManager.getLogger(IniDialog.class.getName());
 
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -237,7 +236,7 @@ public final class IniDialog extends CDialog implements ActionListener
 		catch (Exception e)
 		{
 		}
-		log.severe(info);
+		log.error(info);
 		System.exit(10);
 	}   // cmd_reject
 }   // IniDialog

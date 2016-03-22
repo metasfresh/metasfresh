@@ -26,7 +26,8 @@ package org.adempiere.ui.spi.impl;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
@@ -39,7 +40,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_AD_Message;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 
 /**
@@ -54,7 +54,7 @@ import org.compiere.util.DisplayType;
  */
 public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoProvider
 {
-	protected CLogger logger = CLogger.getCLogger(getClass());
+	protected Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public IGridTabSummaryInfo getSummaryInfo(final GridTab gridTab)
@@ -90,7 +90,7 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 			int j = inStr.indexOf('@'); // get ending tag
 			if (j < 0) // if no ending tag is found:
 			{
-				logger.log(Level.SEVERE, "No second tag: " + inStr);
+				logger.error("No second tag: " + inStr);
 				return IGridTabSummaryInfo.NULL;
 			}
 			token = inStr.substring(0, j); // String between tags
@@ -139,7 +139,7 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 			else
 			// field not found
 			{
-				logger.config("No Field for token \"" + token + "\" found");
+				logger.info("No Field for token \"" + token + "\" found");
 				outStr.append("@" + token + "@");
 			}
 			inStr = inStr.substring(j + 1, inStr.length()); // inStr = inStr - token

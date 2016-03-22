@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,7 +40,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.handlingunits.IHUContext;
@@ -79,7 +79,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 {
 	//
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(HUReceiptScheduleWeightNetAdjuster.class);
+	private static final transient Logger logger = LogManager.getLogger(HUReceiptScheduleWeightNetAdjuster.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
@@ -132,14 +132,14 @@ public class HUReceiptScheduleWeightNetAdjuster
 	{
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
 		Check.assume(!receiptSchedule.isProcessed(), "receiptSchedule not processed: {0}", receiptSchedule);
-		logger.log(Level.FINE, "Adding {0}", receiptSchedule);
+		logger.debug("Adding {}", receiptSchedule);
 
 		//
 		// Skip receipt schedules which are not in Weight UOM
 		final I_C_UOM uom = receiptSchedule.getC_UOM();
 		if (!weightableBL.isWeightable(uom))
 		{
-			logger.log(Level.FINE, "Skip receipt schedule because its UOM is not weightable: {0}", uom);
+			logger.debug("Skip receipt schedule because its UOM is not weightable: {}", uom);
 			return;
 		}
 
@@ -149,7 +149,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		if (vhus.isEmpty())
 		{
 			// NOTE: we are logging this with WARNING because in most of the cases this is an issue
-			logger.log(Level.WARNING, "No VHUs found for {0}", receiptSchedule);
+			logger.warn("No VHUs found for {}", receiptSchedule);
 		}
 
 		//
@@ -159,7 +159,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			adjustHUStorageToWeightNet(vhu, receiptSchedule);
 		}
 		
-		logger.log(Level.FINE, "Done adjusting the receipt schedule: {0}", receiptSchedule);
+		logger.debug("Done adjusting the receipt schedule: {}", receiptSchedule);
 	}
 
 	/**
@@ -179,13 +179,13 @@ public class HUReceiptScheduleWeightNetAdjuster
 		final String trxName = getInitialTrxName();
 		
 		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, trxName);
-		logger.log(Level.FINE, "Found {0} receipt schedule allocations", allocsAll.size());
+		logger.debug("Found {} receipt schedule allocations", allocsAll.size());
 		
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocsAll)
 		{
 			if (!isEligible(rsa))
 			{
-				logger.log(Level.FINE, "Skip allocation because it's not eligible: {0}", rsa);
+				logger.debug("Skip allocation because it's not eligible: {}", rsa);
 				continue;
 			}
 
@@ -220,7 +220,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			}
 		}
 		
-		logger.log(Level.FINE, "Collected VHUs to be adjusted: {0}", huId2hu);
+		logger.debug("Collected VHUs to be adjusted: {}", huId2hu);
 		return huId2hu.values();
 	}
 
@@ -245,23 +245,23 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 		final IHUContext huContext = createHUContext(trxName);
 		
-		logger.log(Level.FINE, "HUContext: {0}", huContext);
-		logger.log(Level.FINE, "VHU: {0}", vhu);
-		logger.log(Level.FINE, "Receipt schedule: {0}", receiptSchedule);
+		logger.debug("HUContext: {}", huContext);
+		logger.debug("VHU: {}", vhu);
+		logger.debug("Receipt schedule: {}", receiptSchedule);
 
 		final IAttributeStorage vhuAttributeStorage = huContext.getHUAttributeStorageFactory()
 				.getAttributeStorage(vhu);
 		final IWeightable weightable = weightableFactory.createWeightableOrNull(vhuAttributeStorage);
 		if (!weightable.hasWeightNet())
 		{
-			logger.log(Level.FINE, "Skip weight adjusting because attribute storage has no WeightNet: {0}", vhuAttributeStorage);
+			logger.debug("Skip weight adjusting because attribute storage has no WeightNet: {}", vhuAttributeStorage);
 			return;
 		}
 
 		final BigDecimal weightNet = weightable.getWeightNetOrNull();
 		if (weightNet == null || weightNet.signum() <= 0)
 		{
-			logger.log(Level.FINE, "Skip weight adjusting because Net Weight is not valid: {0}", weightNet);
+			logger.debug("Skip weight adjusting because Net Weight is not valid: {}", weightNet);
 			return;
 		}
 		final I_C_UOM weightNetUOM = weightable.getWeightNetUOM();
@@ -273,23 +273,23 @@ public class HUReceiptScheduleWeightNetAdjuster
 		if (!vhuStorage.isSingleProductStorage())
 		{
 			// We are considering only those storages which have maximum one M_Product_ID
-			logger.log(Level.FINE, "Skip weight adjusting because HU Storage is not single product storage: {0}", vhuStorage);
+			logger.debug("Skip weight adjusting because HU Storage is not single product storage: {}", vhuStorage);
 			return;
 		}
 
 		final BigDecimal qtyHUStorage = vhuStorage.getQty(product, weightNetUOM);
 		final BigDecimal qtyAllocatedTarget = weightNet; // how much we really need to allocate to this receipt schedule
 		final BigDecimal qtyToAllocateAbs = qtyAllocatedTarget.subtract(qtyHUStorage);
-		logger.log(Level.FINE, "HU Storage Qty: {0}", qtyHUStorage);
-		logger.log(Level.FINE, "Target Qty(WeightNet): {0}", qtyAllocatedTarget);
-		logger.log(Level.FINE, "Qty To Allocate: {0}", qtyToAllocateAbs);
+		logger.debug("HU Storage Qty: {}", qtyHUStorage);
+		logger.debug("Target Qty(WeightNet): {}", qtyAllocatedTarget);
+		logger.debug("Qty To Allocate: {}", qtyToAllocateAbs);
 
 		//
 		// Case: WeightNet is same as HU Storage Qty
 		// => do thing, this is what we try to achieve
 		if (qtyToAllocateAbs.signum() == 0)
 		{
-			logger.log(Level.FINE, "HU Storage's Qty is same as WeightNet => nothing to do");
+			logger.debug("HU Storage's Qty is same as WeightNet => nothing to do");
 			return;
 		}
 
@@ -328,13 +328,13 @@ public class HUReceiptScheduleWeightNetAdjuster
 				true // forceAllocation => we want to transfer that quantity, no matter what
 				);
 		allocationRequest = huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, receiptSchedule);
-		logger.log(Level.FINE, "Allocation request: {0}", allocationRequest);
+		logger.debug("Allocation request: {}", allocationRequest);
 
 		final HULoader huloader = new HULoader(source, destination);
-		logger.log(Level.FINE, "HULoader: {0}", huloader);
+		logger.debug("HULoader: {}", huloader);
 		
 		final IAllocationResult allocationResult = huloader.load(allocationRequest);
-		logger.log(Level.FINE, "Allocation result: {0}", allocationRequest);
+		logger.debug("Allocation result: {}", allocationRequest);
 
 		if (!allocationResult.isCompleted())
 		{
@@ -367,7 +367,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 	{
 		if (!rsa.isActive())
 		{
-			logger.log(Level.FINE, "Allocation not eligible because it's not active: {0}", rsa);
+			logger.debug("Allocation not eligible because it's not active: {}", rsa);
 			return false;
 		}
 
@@ -375,7 +375,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		final int tuHU_ID = rsa.getM_TU_HU_ID();
 		if (tuHU_ID <= 0)
 		{
-			logger.log(Level.FINE, "Allocation not eligible because there is no M_TU_HU_ID: {0}", rsa);
+			logger.debug("Allocation not eligible because there is no M_TU_HU_ID: {}", rsa);
 			return false;
 		}
 
@@ -383,8 +383,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 		final int luTU_ID = rsa.getM_LU_HU_ID();
 		if (!isInScopeHU(tuHU_ID) && !isInScopeHU(luTU_ID))
 		{
-			logger.log(Level.FINE, "Allocation not eligible because the LU is not in scope: {0}", rsa);
-			logger.log(Level.FINE, "In Scope HUs are: {0}", inScopeHU_IDs);
+			logger.debug("Allocation not eligible because the LU is not in scope: {}", rsa);
+			logger.debug("In Scope HUs are: {}", inScopeHU_IDs);
 			return false;
 		}
 

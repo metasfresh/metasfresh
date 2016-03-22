@@ -26,7 +26,8 @@ package org.adempiere.facet.impl;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.facet.FacetCollectorRequestBuilder;
@@ -34,13 +35,11 @@ import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetCollectorResult;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import com.google.common.collect.ImmutableList;
 
 public class CompositeFacetCollector<ModelType> extends AbstractFacetCollector<ModelType>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CompositeFacetCollector.class);
+	private static final transient Logger logger = LogManager.getLogger(CompositeFacetCollector.class);
 
 	private final Set<IFacetCollector<ModelType>> facetCollectors = new LinkedHashSet<>();
 
@@ -74,7 +73,7 @@ public class CompositeFacetCollector<ModelType> extends AbstractFacetCollector<M
 						+ "\n Collector: " + facetCollector
 						+ "\n Request: " + request
 						, e);
-				logger.log(Level.WARNING, "Skip collector because it failed", ex);
+				logger.warn("Skip collector because it failed", ex);
 			}
 		}
 		return aggregatedResult.build();

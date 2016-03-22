@@ -28,7 +28,8 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -55,7 +56,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -69,7 +69,7 @@ import de.metas.tax.api.ITaxBL;
 public class OrderLineBL implements IOrderLineBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OrderLineBL.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
 	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
@@ -234,7 +234,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (!force && ol.getM_Shipper_ID() > 0)
 		{
-			logger.fine("Nothing to do: force=false and M_Shipper_ID=" + ol.getM_Shipper_ID());
+			logger.debug("Nothing to do: force=false and M_Shipper_ID=" + ol.getM_Shipper_ID());
 			return;
 		}
 
@@ -246,12 +246,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 		else
 		{
-			logger.fine("Looking for M_Shipper_ID via ship-to-bpartner of " + order);
+			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of " + order);
 
 			final int bPartnerID = order.getC_BPartner_ID();
 			if (bPartnerID <= 0)
 			{
-				logger.warning(order + " has no ship-to-bpartner");
+				logger.warn(order + " has no ship-to-bpartner");
 				return;
 			}
 
@@ -562,20 +562,20 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		if (orderLine == null)
 		{
-			logger.log(Level.FINE, "Given orderLine is NULL; returning");
+			logger.debug("Given orderLine is NULL; returning");
 			return; // not our business
 		}
 
 		// make two simple checks that work without loading additional stuff
 		if (orderLine.getM_Product_ID() <= 0)
 		{
-			logger.log(Level.FINE, "Given orderLine {0} has M_Product_ID<=0; setting QtyReserved=0.", orderLine);
+			logger.debug("Given orderLine {} has M_Product_ID<=0; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
 		if (orderLine.getQtyOrdered().signum() <= 0)
 		{
-			logger.log(Level.FINE, "Given orderLine {0} has QtyOrdered<=0; setting QtyReserved=0.", orderLine);
+			logger.debug("Given orderLine {} has QtyOrdered<=0; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -588,14 +588,14 @@ public class OrderLineBL implements IOrderLineBL
 		if (!docActionBL.isStatusOneOf(order,
 				DocAction.STATUS_InProgress, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 		{
-			logger.log(Level.FINE, "C_Order {0} of given orderLine {1} has DocStatus {2}; setting QtyReserved=0.",
+			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.",
 					new Object[] { order, orderLine, order.getDocStatus() });
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
 		if (order.getC_DocType_ID() > 0 && docTypeBL.isProposal(order.getC_DocType()))
 		{
-			logger.log(Level.FINE, "C_Order {0} of given orderLine {1} has C_DocType {2} which is a proposal; setting QtyReserved=0.",
+			logger.debug("C_Order {} of given orderLine {} has C_DocType {} which is a proposal; setting QtyReserved=0.",
 					new Object[] { order, orderLine, order.getC_DocType() });
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
@@ -603,7 +603,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (!orderLine.getM_Product().isStocked())
 		{
-			logger.log(Level.FINE, "Given orderLine {0} has M_Product {1} which is not stocked; setting QtyReserved=0.",
+			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.",
 					new Object[] { orderLine, orderLine.getM_Product() });
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
@@ -612,7 +612,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyReservedRaw = orderLine.getQtyOrdered().subtract(orderLine.getQtyDelivered());
 		final BigDecimal qtyReserved = BigDecimal.ZERO.max(qtyReservedRaw); // not less than zero
 
-		logger.log(Level.FINE, "Given orderLine {0} has QtyOrdered={1} and QtyDelivered={2}; setting QtyReserved={3}.",
+		logger.debug("Given orderLine {} has QtyOrdered={} and QtyDelivered={}; setting QtyReserved={}.",
 				new Object[] { orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved });
 		orderLine.setQtyReserved(qtyReserved);
 	}

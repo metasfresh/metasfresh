@@ -26,7 +26,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -37,11 +38,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 
 public class MigrationLoader
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	public void load(Properties ctx)
 	{
@@ -55,7 +55,7 @@ public class MigrationLoader
 		final InputStream inputStream = getClass().getResourceAsStream(resourceName);
 		if (inputStream == null)
 		{
-			logger.config("Resource name not found: " + resourceName + ". Skip migration.");
+			logger.info("Resource name not found: " + resourceName + ". Skip migration.");
 			return;
 		}
 
@@ -69,11 +69,11 @@ public class MigrationLoader
 		final File home = new File(Adempiere.getAdempiereHome() + File.separator + "migration");
 		if (!home.exists() && !home.isDirectory())
 		{
-			logger.log(Level.WARNING, "No migration directory found (" + home + ")");
+			logger.warn("No migration directory found (" + home + ")");
 			return;
 		}
 
-		logger.log(Level.CONFIG, "Processing migration files in directory: " + home.getAbsolutePath());
+		logger.info("Processing migration files in directory: " + home.getAbsolutePath());
 
 		final File[] migrationFiles = home.listFiles(new FilenameFilter()
 		{
@@ -104,7 +104,7 @@ public class MigrationLoader
 			}
 			else
 			{
-				logger.warning("Unhandled type " + o + " [SKIP]");
+				logger.warn("Unhandled type " + o + " [SKIP]");
 			}
 		}
 	}

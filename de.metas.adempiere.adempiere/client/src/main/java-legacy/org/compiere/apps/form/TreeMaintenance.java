@@ -17,7 +17,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -30,7 +31,8 @@ import org.compiere.model.MTree_Node;
 import org.compiere.model.MTree_NodeBP;
 import org.compiere.model.MTree_NodeMM;
 import org.compiere.model.MTree_NodePR;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -43,7 +45,7 @@ public class TreeMaintenance {
 	/**	Active Tree				*/
 	public MTree		 	m_tree;
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(TreeMaintenance.class);
+	public static Logger log = LogManager.getLogger(TreeMaintenance.class);
 	
 	public KeyNamePair[] getTreeData()
 	{
@@ -74,7 +76,7 @@ public class TreeMaintenance {
 		String sql = poTreeSupport.getNodeInfoSelectSQL(m_tree, sqlParams);
 		sql = Env.getUserRolePermissions().addAccessSQL(sql, sourceTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 		sql += " ORDER BY 2";
-		log.config(sql);
+		log.info(sql);
 		//	
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -101,7 +103,7 @@ public class TreeMaintenance {
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

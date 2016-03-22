@@ -34,7 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.SwingUtilities;
@@ -42,7 +43,6 @@ import javax.swing.SwingUtilities;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -55,7 +55,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 {
 	/** Logger */
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	private final ITerminalContext tc;
 
@@ -92,11 +92,11 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 				catch (final AdempiereException ex)
 				{
 					getTerminalFactory().showWarning(TerminalKeyPanel.this, ITerminalFactory.TITLE_ERROR, ex);
-					log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					log.warn(ex.getLocalizedMessage(), ex);
 				}
 				catch (final Exception ex)
 				{
-					log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					log.warn(ex.getLocalizedMessage(), ex);
 				}
 			}
 		}

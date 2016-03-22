@@ -49,7 +49,8 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
@@ -80,7 +81,6 @@ import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -99,7 +99,7 @@ public class CallCenterForm
 {
 	public static final String SYSCONFIG_CheckInterval = "de.metas.callcenter.CallCenterForm.CheckInterval";
 
-	private static final CLogger log = CLogger.getCLogger(CallCenterForm.class);
+	private static final Logger log = LogManager.getLogger(CallCenterForm.class);
 
 	private static CallCenterForm s_instance = null;
 
@@ -145,7 +145,7 @@ public class CallCenterForm
 				}
 				catch (Exception ex1)
 				{
-					log.log(Level.SEVERE, "Error", ex1);
+					log.error("Error", ex1);
 				}
 			}
 		});
@@ -473,11 +473,11 @@ public class CallCenterForm
 	{
 		if (!m_frame.isEnabled() && !force)
 		{
-			log.fine("Not refreshing since inactive");
+			log.debug("Not refreshing since inactive");
 			return;
 		}
 
-		log.fine("Refreshing");
+		log.debug("Refreshing");
 		try
 		{
 			m_frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -616,7 +616,7 @@ public class CallCenterForm
 		URL url = CallCenterForm.class.getResource("images/" + fileNameInImageDir);
 		if (url == null)
 		{
-			log.log(Level.SEVERE, "Not found: " + fileNameInImageDir);
+			log.error("Not found: " + fileNameInImageDir);
 			return null;
 		}
 		Toolkit tk = Toolkit.getDefaultToolkit();

@@ -40,7 +40,6 @@ package org.eevolution.process;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.logging.Level;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
@@ -106,7 +105,7 @@ public class CopyPriceToStandard extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 			}
 		}
 	}

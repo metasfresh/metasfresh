@@ -31,14 +31,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.search.FindHelper;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -61,7 +63,7 @@ import de.metas.payment.model.I_C_Payment_Request;
 
 public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 {
-	private static final transient CLogger logger = CLogger.getCLogger(PaymentAllocationFormDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(PaymentAllocationFormDAO.class);
 
 	@Override
 	public List<IPaymentRow> retrievePaymentRows(PaymentAllocationContext context)
@@ -135,7 +137,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 		catch (final SQLException e)
 		{
-			logger.log(Level.SEVERE, sql.toString(), e);
+			logger.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -244,7 +246,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.append(" WHERE i.AD_Client_ID = ?")
 				.append(" ORDER BY i.invoiceDate, i.DocNo ");
 		sqlParams.add(context.getAD_Client_ID());
-		logger.log(Level.FINE, "InvSQL={0}", sql);
+		logger.debug("InvSQL={}", sql);
 
 		// role security
 		// sql = new StringBuilder( MRole.getDefault(Env.getCtx(), false) .addAccessSQL( sql.toString(), "i", MRole.SQL_FULLYQUALIFIED, MRole.SQL_RO ) );
@@ -272,7 +274,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 		catch (final SQLException e)
 		{
-			logger.log(Level.SEVERE, sql.toString(), e);
+			logger.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -324,7 +326,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		{
 			// nothing - i.e. allow zero amount invoices to be visible for allocation
 			// see: http://dewiki908/mediawiki/index.php/01955:_Fenster_Zahlung-Zuordnung_zeigt_Gutschrift_nicht_an_%282011080910000037%29
-			logger.finest("allowing not paid zero amount invoice: " + documentNo);
+			logger.trace("allowing not paid zero amount invoice: " + documentNo);
 		}
 		else if (openAmt.signum() == 0)
 		{
@@ -351,7 +353,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				{
 					// NOTE: we are catching the exception, logging it and return ZERO,
 					// because there is a big chance this method will be invoked from UI and we don't want to fail there...
-					logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+					logger.warn(e.getLocalizedMessage(), e);
 					return BigDecimal.ZERO;
 				}
 			}
@@ -428,7 +430,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				"AND IsInDispute = 'N'" +
 				"ORDER BY ic.DateInvoiced, COALESCE(ic.DateToInvoice_Override, ic.DateToInvoice) "
 				);
-		logger.fine("InvSQL=" + sql.toString());
+		logger.debug("InvSQL=" + sql.toString());
 
 		// role security
 		/*
@@ -462,7 +464,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 		catch (final SQLException e)
 		{
-			logger.log(Level.SEVERE, sql.toString(), e);
+			logger.error(sql.toString(), e);
 		}
 		finally
 		{

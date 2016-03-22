@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.spi.impl.PasswordResetWorkpackageProcessor;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -103,7 +103,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends SvrProcess
 		whereClause.append(" AND ").append(I_AD_User.COLUMNNAME_IsSystemUser).append("=?");
 		params.add(true);
 
-		return new Query(getCtx(), I_AD_User.Table_Name, whereClause.toString(), Trx.TRXNAME_None)
+		return new Query(getCtx(), I_AD_User.Table_Name, whereClause.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setApplyAccessFilterRW(true)
 				.setOnlyActiveRecords(true)

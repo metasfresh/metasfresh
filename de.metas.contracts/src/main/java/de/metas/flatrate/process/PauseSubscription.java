@@ -28,7 +28,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.POWrapper;
@@ -132,7 +131,7 @@ public class PauseSubscription extends SvrProcess {
 			} else if (name.equals(DATE_TO)) {
 				dateTo = (Timestamp) para[i].getParameter();
 			} else {
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 

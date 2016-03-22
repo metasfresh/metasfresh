@@ -42,7 +42,8 @@ import org.compiere.print.MPrintFont;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -80,7 +81,7 @@ public class PosKeyPanel extends CPanel implements ActionListener {
 	/** Currently displayed layout	*/
 	int currentLayout;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PosKeyPanel.class);
+	private static Logger log = LogManager.getLogger(PosKeyPanel.class);
 	/** Caller			*/
 	private PosKeyListener caller;
 
@@ -130,7 +131,7 @@ public class PosKeyPanel extends CPanel implements ActionListener {
 		
 		int buttons = 0;
 		
-		log.fine( "PosSubFunctionKeys.init - NoKeys=" + noKeys 
+		log.debug( "PosSubFunctionKeys.init - NoKeys=" + noKeys 
 			+ ", Cols=" + cols);
 		//	Content
 		CPanel content = new CPanel (new MigLayout("fill, wrap " + Math.max(cols, 3)));
@@ -163,7 +164,7 @@ public class PosKeyPanel extends CPanel implements ActionListener {
 			
 			buttonHTML.append(key.getName());
 			buttonHTML.append("</p></html>");
-			log.fine( "#" + map.size() + " - " + keyColor); 
+			log.debug( "#" + map.size() + " - " + keyColor); 
 			CButton button = new CButton(buttonHTML.toString());
 			button.setBackground(keyColor);
 			button.setFont(keyFont);

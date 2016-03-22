@@ -74,7 +74,7 @@ public class Server_RunNow
 
 		//
 		// Start all servers
-		AdempiereServerMgr.get(true); // adempiereAlreadyStarted=true
+		AdempiereServerMgr.get(); // adempiereAlreadyStarted=true
 	}
 
 }

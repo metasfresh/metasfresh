@@ -93,7 +93,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	}	//	getNotReserved
 	
 //	/**	Logger	*/
-//	private static CLogger s_log = CLogger.getCLogger (MDDOrderLine.class);
+//	private static Logger s_log = CLogMgt.getLogger(MDDOrderLine.class);
 	
 	/**************************************************************************
 	 *  Default Constructor
@@ -288,7 +288,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (getM_Warehouse_ID() > 0
 			&& getM_Warehouse_ID() != M_Warehouse_ID
 			&& !canChangeWarehouse())
-			log.severe("Ignored - Already Delivered/Invoiced/Reserved");
+			log.error("Ignored - Already Delivered/Invoiced/Reserved");
 		else
 			super.setM_Warehouse_ID (M_Warehouse_ID);
 	}	//	setM_Warehouse_ID

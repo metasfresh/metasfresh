@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 
@@ -45,7 +46,6 @@ import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.th;
 import org.apache.ecs.xhtml.tr;
 import org.compiere.plaf.CompiereColor;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -86,7 +86,7 @@ public class GridWindow implements Serializable
 	 */
 	public static GridWindow get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
 	{
-		log.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
 		GridWindowVO mWindowVO = GridWindowVO.create (ctx, WindowNo, AD_Window_ID);
 		if (mWindowVO == null)
 			return null;
@@ -130,7 +130,7 @@ public class GridWindow implements Serializable
 	private Set<GridTab> initTabs = new IdentityHashSet<GridTab>();
 	
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(GridWindow.class);
+	private static final Logger log = LogManager.getLogger(GridWindow.class);
 	
 	/**************************************************************************
 	 *	Dispose
@@ -150,7 +150,7 @@ public class GridWindow implements Serializable
 	 */
 	private boolean loadTabData()
 	{
-		log.config("");
+		log.info("");
 
 		if (m_vo.Tabs == null)
 			return false;
@@ -267,7 +267,7 @@ public class GridWindow implements Serializable
 						+"\n Parent tab: "+mTab
 						+"\n Window: "+this
 						+"\n Window tabs: "+m_tabs);
-				log.log(Level.WARNING,  ex.getLocalizedMessage(), ex);
+				log.warn(ex.getLocalizedMessage(), ex);
 				continue;
 			}
 			
@@ -647,7 +647,7 @@ public class GridWindow implements Serializable
 			}
 			catch (Exception e)
 			{
-				log.log (Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{

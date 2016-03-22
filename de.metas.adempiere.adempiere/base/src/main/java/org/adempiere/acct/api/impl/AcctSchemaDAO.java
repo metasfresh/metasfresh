@@ -28,7 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -48,7 +49,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -59,7 +59,7 @@ import de.metas.adempiere.util.CacheTrx;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
-	private static final CLogger logger = CLogger.getCLogger(AcctSchemaDAO.class);
+	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
 	@Override
 	public I_C_AcctSchema retrieveAcctSchema(final Properties ctx)
@@ -158,7 +158,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		{
 			if (ase.isMandatory() && acctSchemaBL.getDefaultValue(ase) == 0)
 			{
-				logger.log(Level.SEVERE, "No default value for " + ase.getName());
+				logger.error("No default value for " + ase.getName());
 			}
 		}
 

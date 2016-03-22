@@ -40,7 +40,7 @@ public class HTMLElement extends PrintElement
 	{
 		if (html == null || html.equals(""))
 			throw new IllegalArgumentException("HTMLElement is null");
-		log.fine("Length=" + html.length()); 
+		log.debug("Length=" + html.length()); 
 		//	Create View
 		m_renderer = HTMLRenderer.get(html);
 	}	//	HTMLElement
@@ -94,14 +94,14 @@ public class HTMLElement extends PrintElement
 	public void paint (Graphics2D g2D, int pageNo, Point2D pageStart, Properties ctx, boolean isView)
 	{
 		//	36.0/137.015625, Clip=java.awt.Rectangle[x=0,y=0,width=639,height=804], Translate=1.0/56.0, Scale=1.0/1.0, Shear=0.0/0.0
-	//	log.finest( "HTMLElement.paint", p_pageLocation.x + "/" + p_pageLocation.y
+	//	log.trace( "HTMLElement.paint", p_pageLocation.x + "/" + p_pageLocation.y
 	//		+ ", Clip=" + g2D.getClip()
 	//		+ ", Translate=" + g2D.getTransform().getTranslateX() + "/" + g2D.getTransform().getTranslateY()
 	//		+ ", Scale=" + g2D.getTransform().getScaleX() + "/" + g2D.getTransform().getScaleY()
 	//		+ ", Shear=" + g2D.getTransform().getShearX() + "/" + g2D.getTransform().getShearY());
 		//
 		Point2D.Double location = getAbsoluteLocation(pageStart);
-	//	log.finest( "HTMLElement.paint - PageStart=" + pageStart + ", Location=" + location);
+	//	log.trace( "HTMLElement.paint - PageStart=" + pageStart + ", Location=" + location);
 		//
 		Rectangle allocation = m_renderer.getAllocation();
 		g2D.translate(location.x, location.y);

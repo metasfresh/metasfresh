@@ -23,17 +23,19 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -89,7 +91,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -99,12 +101,12 @@ public class MStorage extends X_M_Storage
 		}
 		if (retValue == null)
 		{
-			s_log.fine("Not Found - M_Locator_ID=" + M_Locator_ID
+			s_log.debug("Not Found - M_Locator_ID=" + M_Locator_ID
 					+ ", M_Product_ID=" + M_Product_ID + ", M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
 		}
 		else
 		{
-			s_log.fine("M_Locator_ID=" + M_Locator_ID
+			s_log.debug("M_Locator_ID=" + M_Locator_ID
 					+ ", M_Product_ID=" + M_Product_ID + ", M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
 		}
 		return retValue;
@@ -148,7 +150,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -193,7 +195,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -233,7 +235,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -404,7 +406,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -453,7 +455,7 @@ public class MStorage extends X_M_Storage
 		//
 		retValue = new MStorage(locator, M_Product_ID, M_AttributeSetInstance_ID);
 		retValue.save(trxName);
-		s_log.fine("New " + retValue);
+		s_log.debug("New " + retValue);
 		return retValue;
 	}	// getCreate
 
@@ -542,7 +544,7 @@ public class MStorage extends X_M_Storage
 		{
 			final String msg = "No Storage found - M_Locator_ID=" + M_Locator_ID
 					+ ",M_Product_ID=" + M_Product_ID + ",ASI=" + M_AttributeSetInstance_ID;
-			s_log.severe(msg);
+			s_log.error(msg);
 			loggable.addLog(msg);
 			return false;
 		}
@@ -607,7 +609,7 @@ public class MStorage extends X_M_Storage
 			diffText.append(") -> ").append(storage.toString());
 
 			final String logMsg = diffText.toString();
-			s_log.fine(logMsg);
+			s_log.debug(logMsg);
 			loggable.addLog(logMsg);
 
 			if (storage0 != null)
@@ -677,7 +679,7 @@ public class MStorage extends X_M_Storage
 		}
 		catch (final SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -751,9 +753,9 @@ public class MStorage extends X_M_Storage
 		}
 		//
 		final BigDecimal retValue = DB.getSQLValueBD(trxName, sql.toString(), params);
-		if (CLogMgt.isLevelFine())
+		if (LogManager.isLevelFine())
 		{
-			s_log.fine("M_Warehouse_ID=" + M_Warehouse_ID + ", M_Locator_ID=" + M_Locator_ID
+			s_log.debug("M_Warehouse_ID=" + M_Warehouse_ID + ", M_Locator_ID=" + M_Locator_ID
 					+ ",M_Product_ID=" + M_Product_ID + " = " + retValue);
 		}
 		return retValue;
@@ -808,7 +810,7 @@ public class MStorage extends X_M_Storage
 	}	// MStorage
 
 	/** Log */
-	private static CLogger s_log = CLogger.getCLogger(MStorage.class);
+	private static Logger s_log = LogManager.getLogger(MStorage.class);
 	/** Warehouse */
 	private int m_M_Warehouse_ID = 0;
 

@@ -47,7 +47,8 @@ import org.compiere.model.MRefList;
 import org.compiere.model.MTax;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Concept;
 import org.eevolution.model.I_HR_Employee;
@@ -85,7 +86,7 @@ public class PayrollProvider implements IPayrollProvider
 {
 	private static final String MSG_PARTNER_MISSING_COMMISSION_ADDRESS_1P = "BPartnerMissingCommissionAddress";
 
-	private static final CLogger logger = CLogger.getCLogger(PayrollProvider.class);
+	private static final Logger logger = LogManager.getLogger(PayrollProvider.class);
 
 	@Override
 	public Collection<I_HR_Movement> createMovements(

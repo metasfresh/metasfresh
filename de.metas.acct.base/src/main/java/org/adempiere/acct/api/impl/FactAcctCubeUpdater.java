@@ -26,7 +26,8 @@ package org.adempiere.acct.api.impl;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctCubeUpdater;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,7 +35,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.compiere.model.I_PA_ReportCube;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
@@ -42,7 +44,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 
 /*package*/class FactAcctCubeUpdater implements IFactAcctCubeUpdater
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	// Parameters
 	private IContextAware _context;
@@ -125,7 +127,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 
 		//
 		// Log (fine) the result of our updating
-		log.log(Level.FINE, "Result summary: {0}", _resultSummary);
+		log.debug("Result summary: {}", _resultSummary);
 	}
 
 	@Override
@@ -178,7 +180,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 				final int deleted = deleteFactAcctSummary(where);
 				final long elapsedSec = (System.currentTimeMillis() - startMillis) / 1000;
 				resultSummary.append("Deleted " + deleted + " in " + elapsedSec + " s; ");
-				log.log(Level.FINE, resultSummary.toString());
+				log.debug(resultSummary.toString());
 			}
 
 			//
@@ -220,7 +222,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 			}
 
 			final String sql = insert.append(select.toString()).append(from).append(groups.toString()).toString();
-			log.log(Level.FINE, sql);
+			log.debug(sql);
 			final Object[] sqlParams = new Object[] { paReportCubeId, paReportCube.getC_Calendar_ID() };
 
 			final long startMillis = System.currentTimeMillis();
@@ -228,14 +230,14 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 			final long seconds = (System.currentTimeMillis() - startMillis) / 1000;
 
 			final String insertResult = "Inserted " + rows + " in " + seconds + " s.";
-			log.log(Level.FINE, insertResult);
+			log.debug(insertResult);
 			resultSummary.append(insertResult);
 		}
 		catch (DBException e)
 		{
 			// failure results in null timestamp => rebuild on next run
 			// nothing else to do
-			log.log(Level.FINE, paReportCubeName + " update failed:" + e.getMessage());
+			log.debug(paReportCubeName + " update failed:" + e.getMessage());
 		}
 		finally
 		{
@@ -262,7 +264,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 				"AND fact.updated > c.LastRecalculated " +
 				"AND p.periodtype='S' " // standard period
 		;
-		log.log(Level.FINE, sql);
+		log.debug(sql);
 
 		final int paReportCubeId = getPA_ReportCube_ID();
 
@@ -270,7 +272,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 		final KeyNamePair[] changedPeriods = DB.getKeyNamePairs(sql, false, paReportCubeId);
 
 		final long elapsedSec = (System.currentTimeMillis() - startMillis) / 1000;
-		log.log(Level.FINE, "Selecting changed periods took:" + elapsedSec + "s");
+		log.debug("Selecting changed periods took:" + elapsedSec + "s");
 
 		return changedPeriods;
 	}
@@ -306,11 +308,11 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 
 		if (periodIds.isEmpty())
 		{
-			log.fine("No periods to update found");
+			log.debug("No periods to update found");
 		}
 		else
 		{
-			log.log(Level.FINE, "Periods to update: {0}", periodNames);
+			log.debug("Periods to update: {}", periodNames);
 		}
 
 		return periodIds;
@@ -380,7 +382,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 
 		// delete
 		final String sql = "DELETE FROM Fact_Acct_Summary fas " + where;
-		log.log(Level.FINE, "Delete sql: " + sql);
+		log.debug("Delete sql: " + sql);
 
 		final int deletedNo = DB.executeUpdateEx(sql, trxName);
 		return deletedNo;

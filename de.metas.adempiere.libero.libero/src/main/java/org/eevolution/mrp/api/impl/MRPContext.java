@@ -37,22 +37,23 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.compiere.util.TimeUtil;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.mrp.api.IMutableMRPContext;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /* package */final class MRPContext implements IMutableMRPContext
 {
 	// NOTE to developer: when adding a new field here, please also change into org.eevolution.mrp.api.impl.MRPContextFactory.createMRPContext(IMRPContext)
 
-	public static final transient CLogger loggerDefault = CLogger.getCLogger(LOGGERNAME);
+	public static final transient Logger loggerDefault = LogManager.getLogger(LOGGERNAME);
 
 	private Properties ctx;
 	private String trxName;
-	private CLogger mrpLogger = loggerDefault;
+	private Logger mrpLogger = loggerDefault;
 	private boolean subsequentMRPExecutorCall = false;
 	private boolean allowCleanup = true;
 	//
@@ -189,13 +190,13 @@ import org.eevolution.mrp.api.IMutableMRPContext;
 	}
 
 	@Override
-	public final CLogger getLogger()
+	public final Logger getLogger()
 	{
 		return mrpLogger;
 	}
 
 	@Override
-	public final void setLogger(final CLogger mrpLogger)
+	public final void setLogger(final Logger mrpLogger)
 	{
 		Check.assumeNotNull(mrpLogger, "mrpLogger not null");
 		this.mrpLogger = mrpLogger;

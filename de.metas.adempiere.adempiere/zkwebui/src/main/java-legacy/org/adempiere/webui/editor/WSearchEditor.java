@@ -21,7 +21,6 @@ import java.beans.PropertyChangeEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -41,11 +40,14 @@ import org.compiere.model.GridField;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -67,7 +69,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
     private Object              value;
     private IInfoPanel			infoPanel = null;
 
-	private static CLogger log = CLogger.getCLogger(WSearchEditor.class);
+	private static Logger log = LogManager.getLogger(WSearchEditor.class);
 
 	public WSearchEditor (GridField gridField)
 	{
@@ -320,7 +322,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 			return;
 		}
 		text = text.toUpperCase();
-		log.config(getColumnName() + " - " + text);
+		log.info(getColumnName() + " - " + text);
 
 		//	Exact first
 		PreparedStatement pstmt = null;
@@ -342,7 +344,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, finalSQL, e);
+			log.error(finalSQL, e);
 			id = -2;
 		}
 
@@ -367,7 +369,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, finalSQL, e);
+				log.error(finalSQL, e);
 				id = -2;
 			}
 		}
@@ -385,15 +387,15 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		if (id <= 0)
 		{
 			if (id == -3)
-				log.fine(getColumnName() + " - Not Found - " + finalSQL);
+				log.debug(getColumnName() + " - Not Found - " + finalSQL);
 			else
-				log.fine(getColumnName() + " - Not Unique - " + finalSQL);
+				log.debug(getColumnName() + " - Not Unique - " + finalSQL);
 
 			//m_value = null;	// force re-display
 			actionButton(getComponent().getText(), false);
 			return;
 		}
-		log.fine(getColumnName() + " - Unique ID=" + id);
+		log.debug(getColumnName() + " - Unique ID=" + id);
 
 		actionCombo(new Integer(id));          //  data binding
 		//m_text.requestFocus();
@@ -402,7 +404,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 
 	private void actionCombo (Object value)
 	{
-		log.fine("Value=" + value);
+		log.debug("Value=" + value);
 
 		ValueChangeEvent evt = new ValueChangeEvent(this, this.getColumnName(), getValue(), value);
 		// -> ADTabpanel - valuechange
@@ -479,7 +481,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		// When user clears the input text field, we shall set the value of this field to null
 		if (!userManualCmd && Check.isEmpty(queryValue, true))
 		{
-			log.fine(getColumnName() + " - Result = null (reset because queryValue was empty)");
+			log.debug(getColumnName() + " - Result = null (reset because queryValue was empty)");
 			actionCombo(null); // reset value and fire events
 			return;
 		}
@@ -503,7 +505,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		//  Zoom / Validation
 		String whereClause = getWhereClause();
 
-		log.fine(col + ", Zoom=" + lookup.getZoom() + " (" + whereClause + ")");
+		log.debug(col + ", Zoom=" + lookup.getZoom() + " (" + whereClause + ")");
 
 		// boolean resetValue = false;	// Reset value so that is always treated as new entry
 
@@ -600,12 +602,12 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		}
 		else if (cancelled)
 		{
-			log.config(getColumnName() + " - Result = null (cancelled)");
+			log.info(getColumnName() + " - Result = null (cancelled)");
 			actionCombo(null);
 		}
 		else
 		{
-			log.config(getColumnName() + " - Result = null (not cancelled)");
+			log.info(getColumnName() + " - Result = null (not cancelled)");
 		}
 		
 	}
@@ -691,7 +693,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 			sql.append(" AND IsActive='Y'");
 			//	***
 			
-			log.finest(m_columnName + " (predefined) " + sql.toString());
+			log.trace(m_columnName + " (predefined) " + sql.toString());
 			
 			return Env.getUserRolePermissions().addAccessSQL(sql.toString(),
 				m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
@@ -734,7 +736,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, query, e);
+					log.error(query, e);
 				}
 				finally
 				{
@@ -764,7 +766,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 					
 					//	***
 					
-					log.finest(m_columnName + " (Table) " + sql.toString());
+					log.trace(m_columnName + " (Table) " + sql.toString());
 					
 					return Env.getUserRolePermissions().addAccessSQL(sql.toString(),
 								m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
@@ -807,7 +809,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, query, ex);
+			log.error(query, ex);
 		}
 		
 		try
@@ -822,7 +824,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		//
 		if (sql.length() == 0)
 		{
-			log.log(Level.SEVERE, m_columnName + " (TableDir) - no standard/identifier columns");
+			log.error(m_columnName + " (TableDir) - no standard/identifier columns");
 			return "";
 		}
 		//
@@ -836,7 +838,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		if (wc != null && wc.length() > 0)
 			retValue.append(" AND ").append(wc);
 		//	***
-		log.finest(m_columnName + " (TableDir) " + sql.toString());
+		log.trace(m_columnName + " (TableDir) " + sql.toString());
 		return Env.getUserRolePermissions().addAccessSQL(retValue.toString(),
 					m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
 	}
@@ -861,7 +863,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		else if (validation.length() > 0)
 			whereClause += " AND (" + validation + ")";
 
-		//	log.finest("ZoomQuery=" + (lookup.getZoomQuery()==null ? "" : lookup.getZoomQuery().getWhereClause())
+		//	log.trace("ZoomQuery=" + (lookup.getZoomQuery()==null ? "" : lookup.getZoomQuery().getWhereClause())
 	//		+ ", Validation=" + lookup.getValidation());
 
 		if (whereClause.indexOf('@') != -1)
@@ -869,10 +871,10 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 			String validated = Env.parseContext(Env.getCtx(), lookup.getWindowNo(), whereClause, false);
 
 			if (validated.length() == 0)
-				log.severe(getColumnName() + " - Cannot Parse=" + whereClause);
+				log.error(getColumnName() + " - Cannot Parse=" + whereClause);
 			else
 			{
-				log.fine(getColumnName() + " - Parsed: " + validated);
+				log.debug(getColumnName() + " - Parsed: " + validated);
 				return validated;
 			}
 		}
@@ -915,7 +917,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return null;
 	}
@@ -934,7 +936,7 @@ public class WSearchEditor extends WEditor implements ContextMenuListener, Value
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return null;
 	}

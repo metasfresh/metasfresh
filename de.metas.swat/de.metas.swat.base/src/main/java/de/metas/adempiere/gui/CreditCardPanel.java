@@ -57,7 +57,8 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -67,7 +68,7 @@ import org.compiere.util.ValueNamePair;
 
 public class CreditCardPanel implements PropertyChangeListener, IVPaymentPanel
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	public static final String MODE_VALIDATE = CreditCardPanel.class.getName() + ".validate";
 	public static final String MODE_PAY = CreditCardPanel.class.getName() + ".pay";

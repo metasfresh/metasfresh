@@ -29,19 +29,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 
 public class TaskExecutorService implements ITaskExecutorService
 {
-	private static final transient CLogger logger = CLogger.getCLogger(TaskExecutorService.class);
+	private static final transient Logger logger = LogManager.getLogger(TaskExecutorService.class);
 
 	private static final String CONFIG_Server_MaxThreadPoolSize = "org.adempiere.ad.service.ITaskExecutorService.Server.MaxThreadPoolSize";
 	private static final String CONFIG_Client_MaxThreadPoolSize = "org.adempiere.ad.service.ITaskExecutorService.Client.MaxThreadPoolSize";
@@ -54,7 +54,7 @@ public class TaskExecutorService implements ITaskExecutorService
 		if (Check.isEmpty(threadNamePrefix, true))
 		{
 			threadNamePrefixToUse = TaskExecutorService.class.getName(); // using the full class name, because it is our responsibility to have a fallback that is reasonably unique.
-			logger.log(Level.INFO, "Param threadNamePrefix={0} is empty; falling back to {1}", threadNamePrefix, threadNamePrefixToUse);
+			logger.info("Param threadNamePrefix={} is empty; falling back to {}", threadNamePrefix, threadNamePrefixToUse);
 		}
 		else
 		{

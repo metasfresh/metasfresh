@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -37,10 +36,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceBL;
@@ -60,7 +60,7 @@ public class DeviceBL implements IDeviceBL
 
 	private Map<ArrayKey, IDevice> configuredDevices = new HashMap<ArrayKey, IDevice>();
 
-	private static final CLogger logger = CLogger.getCLogger(DeviceBL.class);
+	private static final Logger logger = LogManager.getLogger(DeviceBL.class);
 
 	@Override
 	public List<String> getAllDeviceNamesForAttrAndHost(final I_M_Attribute attribute, final IHostIdentifier host)
@@ -84,7 +84,7 @@ public class DeviceBL implements IDeviceBL
 
 			if (!attribsForCurrentDevice.containsValue(attribute.getValue()))
 			{
-				logger.log(Level.CONFIG,
+				logger.info(
 						String.format("Found no SysConfig value for attribute %s; SysConfig-prefix=%s; Found values: ", attribute.getValue(), attribSysConfigPrefix)
 								+ attribsForCurrentDevice);
 				continue;
@@ -113,7 +113,7 @@ public class DeviceBL implements IDeviceBL
 			}
 			if (!hostMatches)
 			{
-				logger.log(Level.CONFIG,
+				logger.info(
 						String.format("Found no SysConfig value for host %s; SysConfig-prefix=%s; Found values for: ", host, availableOnSysConfigPrefix)
 								+ availiabilitesForCurrentDevice);
 				continue;

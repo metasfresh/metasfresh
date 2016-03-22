@@ -25,7 +25,6 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -33,16 +32,19 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 @Validator(I_PP_MRP.class)
 public class PP_MRP
 {
-	private static final transient CLogger logger = CLogger.getCLogger(PP_MRP.class);
+	private static final transient Logger logger = LogManager.getLogger(PP_MRP.class);
 
 	/**
 	 * Validates mandatory fields
@@ -78,7 +80,7 @@ public class PP_MRP
 					+ "\n @QtyRequiered@: " + qtyRequired
 					+ "\n @TypeMRP@: " + mrp.getTypeMRP()
 					+ "\n @PP_MRP_ID@: " + mrp);
-			logger.log(Level.WARNING, ex.getLocalizedMessage() + " [ Set to ZERO ]", ex);
+			logger.warn(ex.getLocalizedMessage() + " [ Set to ZERO ]", ex);
 		}
 					
 
@@ -93,7 +95,7 @@ public class PP_MRP
 					+ "\n @Qty@: " + qty
 					+ "\n @TypeMRP@: " + mrp.getTypeMRP()
 					+ "\n @PP_MRP_ID@: " + mrp);
-			logger.log(Level.WARNING, ex.getLocalizedMessage() + " [ Set to ZERO ]", ex);
+			logger.warn(ex.getLocalizedMessage() + " [ Set to ZERO ]", ex);
 		}
 	}
 

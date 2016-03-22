@@ -24,7 +24,6 @@ package de.metas.async.processor.impl;
 
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -46,14 +45,17 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -78,7 +80,7 @@ import de.metas.notification.INotificationBL;
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(WorkpackageProcessorTask.class);
+	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
@@ -161,7 +163,7 @@ import de.metas.notification.INotificationBL;
 			else
 			{
 				final Result result = processWorkpackage(ITrx.TRXNAME_None);
-				logger.log(Level.FINE, "Processing result = {0} for work package {1}", new Object[] { result, workPackage });
+				logger.debug("Processing result = {} for work package {}", result, workPackage);
 				resultRef.setValue(result);
 			}
 
@@ -401,7 +403,7 @@ import de.metas.notification.INotificationBL;
 		queueDAO.saveInLocalTrx(workPackage);
 
 		// log error to console (for later audit):
-		logger.log(Level.INFO, "Skipped while processing workpackage: " + workPackage, skipException);
+		logger.info("Skipped while processing workpackage: " + workPackage, skipException);
 		loggable.addLog("Skipped while processing workpackage: {0}", workPackage);
 	}
 
@@ -434,8 +436,8 @@ import de.metas.notification.INotificationBL;
 		queueDAO.saveInLocalTrx(workPackage);
 
 		// log error to console (for later audit):
-		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARNING : Level.INFO;
-		logger.log(logLevel, "Error while processing workpackage: " + workPackage, ex);
+		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
+		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: " + workPackage, ex);
 		loggable.addLog("Error while processing workpackage: {0}", workPackage);
 
 		// 09700: notify the user in charge, if one was set

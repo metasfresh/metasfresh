@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -36,8 +35,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * This class loads {@link IWebUIServletListener}s and facilitate calling them.
@@ -58,7 +60,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 		return instance;
 	}
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private List<IWebUIServletListener> listeners = null;
 
 	private WebUIServletListeners()
@@ -131,12 +133,12 @@ public final class WebUIServletListeners implements IWebUIServletListener
 		try
 		{
 			final IWebUIServletListener listener = Util.getInstance(IWebUIServletListener.class, classname);
-			logger.config("Loaded " + listener + " (class=" + listener.getClass() + ", entityType=" + entityType + ")");
+			logger.info("Loaded " + listener + " (class=" + listener.getClass() + ", entityType=" + entityType + ")");
 			return listener;
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Error loading " + classname, e);
+			logger.error("Error loading " + classname, e);
 			return null;
 		}
 	}
@@ -152,7 +154,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				logger.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -168,7 +170,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				logger.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -184,7 +186,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				logger.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -200,7 +202,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				logger.error(e.getLocalizedMessage(), e);
 			}
 		}
 	}

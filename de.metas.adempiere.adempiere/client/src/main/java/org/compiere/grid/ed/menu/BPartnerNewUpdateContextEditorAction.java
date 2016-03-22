@@ -23,7 +23,8 @@ package org.compiere.grid.ed.menu;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ui.AbstractContextMenuAction;
@@ -76,7 +77,7 @@ abstract class BPartnerNewUpdateContextEditorAction extends AbstractContextMenuA
 		if (lookup == null)
 		{
 			// No Lookup???
-			log.log(Level.WARNING, "No lookup found for " + gridField + " even if is marked as Lookup");
+			log.warn("No lookup found for " + gridField + " even if is marked as Lookup");
 			return false;
 		}
 		

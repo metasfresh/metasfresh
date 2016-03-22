@@ -24,7 +24,8 @@ package de.metas.printing.model.validator;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -33,7 +34,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MSession;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -54,7 +54,7 @@ import de.metas.printing.model.I_AD_Printer_Config;
  */
 public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SwingPrintingClientValidator.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingPrintingClientValidator.class);
 
 	private Throwable clientStartupIssue = null;
 
@@ -126,7 +126,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 		{
 			clientStartupIssue = t;
 
-			logger.log(Level.WARNING, t.getLocalizedMessage(), t);
+			logger.warn(t.getLocalizedMessage(), t);
 			Services.get(IClientUI.class).error(0, "Printing client not available", t.getLocalizedMessage());
 		}
 	}

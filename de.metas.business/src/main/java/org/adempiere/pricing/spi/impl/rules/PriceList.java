@@ -131,7 +131,7 @@ public class PriceList extends AbstractPriceListBasedRule
 					ppUOMId = rs.getInt(11);
 
 					//
-					log.fine("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
+					log.debug("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
 					m_calculated = true;
 					break;
 				}
@@ -153,7 +153,7 @@ public class PriceList extends AbstractPriceListBasedRule
 
 		if (!m_calculated)
 		{
-			log.finer("Not found (PL)");
+			log.trace("Not found (PL)");
 			return;
 		}
 

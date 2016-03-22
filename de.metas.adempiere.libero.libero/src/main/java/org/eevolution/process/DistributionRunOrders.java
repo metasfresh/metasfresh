@@ -43,7 +43,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MDistributionRun;
@@ -61,7 +60,6 @@ import org.compiere.model.MWarehouse;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -69,6 +67,8 @@ import org.compiere.util.Trx;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * DistributionRun Orders 
@@ -103,6 +103,7 @@ public class DistributionRunOrders extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -131,7 +132,7 @@ public class DistributionRunOrders extends SvrProcess
 			else if (name.equals("IsTest"))
 				p_IsTest = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}            
               
 	}	//	prepare
@@ -146,16 +147,16 @@ public class DistributionRunOrders extends SvrProcess
     	if(p_BasedInDamnd.equals("Y"))
     	{
     		if(!generateDistributionDemand())
-				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),CLogger.retrieveException());
+				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),MetasfreshLastError.retrieveException());
     	}
     	else
     	{	
     		if(!generateDistribution())
-				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),CLogger.retrieveException());
+				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),MetasfreshLastError.retrieveException());
     	}
     	
     	 if(!executeDistribution())
-				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),CLogger.retrieveException());
+				throw new Exception(Msg.getMsg(getCtx(), "ProcessFailed"),MetasfreshLastError.retrieveException());
 
         return Msg.getMsg(getCtx(), "ProcessOK");
      } 
@@ -206,7 +207,7 @@ public class DistributionRunOrders extends SvrProcess
  		}
  	    catch (Exception e)
  		{
-        	log.log(Level.SEVERE,"doIt - " + sql, e);
+        	log.error("doIt - " + sql, e);
             return false;
  		}
  		finally
@@ -274,7 +275,7 @@ public class DistributionRunOrders extends SvrProcess
  		}
  	    catch (Exception e)
  		{
- 	            	log.log(Level.SEVERE,"doIt - " + sql, e);
+ 	            	log.error("doIt - " + sql, e);
  	                return false;
  		}
  		finally
@@ -316,8 +317,8 @@ public class DistributionRunOrders extends SvrProcess
 
  		if (doc==null || doc.length == 0) 
  		{
- 			log.severe ("Not found default document type for docbasetype " + MDocType.DOCBASETYPE_DistributionOrder);
- 			throw new Exception(Msg.getMsg(getCtx(), "SequenceDocNotFound"),CLogger.retrieveException());
+ 			log.error("Not found default document type for docbasetype " + MDocType.DOCBASETYPE_DistributionOrder);
+ 			throw new Exception(Msg.getMsg(getCtx(), "SequenceDocNotFound"),MetasfreshLastError.retrieveException());
  		}
  		else
  			M_DocType_ID  = doc[0].getC_DocType_ID();
@@ -332,7 +333,7 @@ public class DistributionRunOrders extends SvrProcess
 		MPInstance instance = new MPInstance(Env.getCtx(), AD_Process_ID, 0, 0);
 		if (!instance.save())
 		{
-			throw new Exception(Msg.getMsg(getCtx(), "ProcessNoInstance"),CLogger.retrieveException());
+			throw new Exception(Msg.getMsg(getCtx(), "ProcessNoInstance"),MetasfreshLastError.retrieveException());
 		}
 		
     	//call process
@@ -345,7 +346,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}	
 		//	Add Parameter - DatePromised
 		ip = new MPInstancePara(instance, 20);
@@ -355,7 +356,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}	
 		//	Add Parameter - M_Warehouse_ID
 		ip = new MPInstancePara(instance, 30);
@@ -363,7 +364,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}		
 		//	Add Parameter - CreateDO
 		ip = new MPInstancePara(instance, 40);
@@ -371,7 +372,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}		
 		//	Add Parameter - IsTest=Y
 		ip = new MPInstancePara(instance, 50);
@@ -379,7 +380,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}		
 		//Distribution List
 		ip = new MPInstancePara(instance, 60);
@@ -387,7 +388,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}		
 		//Based in DRP Demand
 		ip = new MPInstancePara(instance, 70);
@@ -395,7 +396,7 @@ public class DistributionRunOrders extends SvrProcess
 		if (!ip.save())
 		{
 			String msg = "No Parameter added";  //  not translated
-			throw new Exception(msg,CLogger.retrieveException()); 
+			throw new Exception(msg,MetasfreshLastError.retrieveException()); 
 		}
 		
 		//	Execute Process

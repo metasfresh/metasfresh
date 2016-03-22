@@ -59,7 +59,6 @@ import org.compiere.model.MTable;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_PaySelectionCheck;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.jdtaus.banking.Textschluessel;
 import org.jdtaus.banking.TextschluesselVerzeichnis;
@@ -70,6 +69,8 @@ import org.jdtaus.banking.dtaus.PhysicalFile;
 import org.jdtaus.banking.dtaus.PhysicalFileFactory;
 import org.jdtaus.banking.dtaus.Transaction;
 import org.jdtaus.core.container.ContainerFactory;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.exception.BankingException;
 import de.metas.banking.model.I_C_RecurrentPayment;
@@ -81,7 +82,7 @@ import de.schaeffer.compiere.tools.DtaHelper;
 
 public class BankingBL implements IBankingBL
 {
-	private static final CLogger logger = CLogger.getCLogger(BankingBL.class);
+	private static final Logger logger = LogManager.getLogger(BankingBL.class);
 
 	@Override
 	public Map<String, List<Transaction>> createOrders(final MPaySelection psel)
@@ -179,7 +180,7 @@ public class BankingBL implements IBankingBL
 				lastDate = line.getDateFrom();
 			}
 
-			logger.fine("lastDateInvoiced: " + lastDate.toString() + " line: " + line.get_ID());
+			logger.debug("lastDateInvoiced: " + lastDate.toString() + " line: " + line.get_ID());
 
 			final GregorianCalendar cal = new GregorianCalendar();
 			cal.setTimeInMillis(lastDate.getTime());
@@ -212,13 +213,13 @@ public class BankingBL implements IBankingBL
 		if (X_C_RecurrentPaymentLine.FREQUENCYTYPE_Month.equals(frequencyType))
 		{
 			cal.add(Calendar.MONTH, frequency);
-			logger.fine(frequency + " month added");
+			logger.debug(frequency + " month added");
 		}
 		else if (X_C_RecurrentPaymentLine.FREQUENCYTYPE_Day
 				.equals(frequencyType))
 		{
 			cal.add(Calendar.DAY_OF_MONTH, frequency);
-			logger.fine(frequency + " days added");
+			logger.debug(frequency + " days added");
 		}
 		else
 		{

@@ -21,9 +21,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -76,7 +76,7 @@ public class MChangeLog extends X_AD_ChangeLog
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -96,7 +96,7 @@ public class MChangeLog extends X_AD_ChangeLog
 	/**	Change Log				*/
 	private static int[]		s_changeLog = null;
 	/**	Logger					*/
-	private static CLogger		s_log = CLogger.getCLogger(MChangeLog.class);
+	private static Logger		s_log = LogManager.getLogger(MChangeLog.class);
 	/** NULL Value				*/
 	public static final String	NULL = "NULL";
 	
@@ -165,7 +165,7 @@ public class MChangeLog extends X_AD_ChangeLog
 		{
 			AD_ChangeLog_ID = DB.getNextID (AD_Client_ID, Table_Name, TrxName);
 			if (AD_ChangeLog_ID <= 0)
-				log.severe("No NextID (" + AD_ChangeLog_ID + ")");
+				log.error("No NextID (" + AD_ChangeLog_ID + ")");
 		}
 		if (AD_ChangeLog_ID > 0)
 		{

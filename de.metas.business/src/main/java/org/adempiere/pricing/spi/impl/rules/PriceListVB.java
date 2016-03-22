@@ -122,7 +122,7 @@ public class PriceListVB extends AbstractPriceListBasedRule
 					m_enforcePriceLimit = "Y".equals(rs.getString(8));
 					ppUOMId = rs.getInt(9); 
 					//
-					log.fine("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
+					log.debug("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
 					m_calculated = true;
 					break;
 				}
@@ -141,7 +141,7 @@ public class PriceListVB extends AbstractPriceListBasedRule
 
 		if (!m_calculated)
 		{
-			log.finer("Not found (PL_VB)");
+			log.trace("Not found (PL_VB)");
 			return;
 		}
 

@@ -24,7 +24,6 @@
 package org.adempiere.webui.window;
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,9 +33,11 @@ import org.adempiere.webui.component.FWindow;
 import org.adempiere.webui.panel.LoginPanel;
 import org.adempiere.webui.panel.ResetPasswordPanel;
 import org.adempiere.webui.panel.RolePanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-import org.compiere.util.Login;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -52,7 +53,7 @@ import org.zkoss.zk.ui.event.Events;
  */
 public class LoginWindow extends FWindow implements EventListener
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
     /**
 	 *
@@ -91,7 +92,7 @@ public class LoginWindow extends FWindow implements EventListener
         }
         catch (Exception e)
         {
-        	log.log(Level.INFO, e.getLocalizedMessage(), e);
+        	log.info(e.getLocalizedMessage(), e);
         	Executions.sendRedirect("index.zul");
         	return;
 //        	defaultAction = true;

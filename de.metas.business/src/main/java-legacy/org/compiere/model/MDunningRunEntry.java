@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.BPartnerNoAddressException;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -43,7 +44,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	private static final long serialVersionUID = -3838792682143065656L;
 
 	/** Logger								*/
-	private static CLogger		s_log = CLogger.getCLogger (MDunningRunEntry.class);
+	private static Logger		s_log = LogManager.getLogger(MDunningRunEntry.class);
 
 	/**
 	 * Standard Constructor

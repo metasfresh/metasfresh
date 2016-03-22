@@ -37,7 +37,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 
@@ -55,7 +56,7 @@ import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 @Interceptor(I_C_PaySelectionCheck.class)
 public class C_PaySelectionCheck
 {
-	private static final CLogger logger = CLogger.getCLogger(C_PaySelectionCheck.class);
+	private static final Logger logger = LogManager.getLogger(C_PaySelectionCheck.class);
 
 	public static final C_PaySelectionCheck instance = new C_PaySelectionCheck();
 

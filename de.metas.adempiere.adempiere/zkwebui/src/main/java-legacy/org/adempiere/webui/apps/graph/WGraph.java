@@ -41,7 +41,6 @@ import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import org.adempiere.apps.graph.GraphBuilder;
 import org.adempiere.apps.graph.GraphColumn;
@@ -54,7 +53,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.jfree.chart.ChartMouseEvent;
@@ -65,6 +63,10 @@ import org.jfree.chart.encoders.ImageFormat;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.PieSectionEntity;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.image.AImage;
 import org.zkoss.zhtml.A;
 import org.zkoss.zhtml.Br;
@@ -113,7 +115,7 @@ public class WGraph extends Div implements IdSpace {
 	private Point m_point0_0 = null;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(WGraph.class);
+	private static Logger log = LogManager.getLogger(WGraph.class);
 
 	/** Y Axis Target Line Label */
 	private String m_Y_TargetLabel = null;
@@ -349,7 +351,7 @@ public class WGraph extends Div implements IdSpace {
 				}
 			});
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}
 
@@ -469,7 +471,7 @@ public class WGraph extends Div implements IdSpace {
 		if (query != null)
 			AEnv.zoom(query);
 		else
-			log.warning("Nothing to zoom to - " + bgc);
+			log.warn("Nothing to zoom to - " + bgc);
 	}
 
 	public void chartMouseMoved(ChartMouseEvent event) {

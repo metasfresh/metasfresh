@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -60,11 +59,12 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -74,6 +74,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.MMShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
 
@@ -145,7 +146,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ " WHERE ol.M_Product_ID=? AND ol.AD_Client_ID=? "
 			+ WHERE_INCOMPLETE;
 
-	private final static CLogger logger = CLogger.getCLogger(ShipmentSchedulePA.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 
 	private static final String SQL_ALL = //
 	" SELECT * FROM " + I_M_ShipmentSchedule.Table_Name
@@ -349,7 +350,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				}
 				msg.append(params[i]);
 			}
-			logger.saveError(msg.toString(), e);
+			MetasfreshLastError.saveError(logger, msg.toString(), e);
 
 			throw new RuntimeException(e);
 		}
@@ -471,7 +472,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			;
 			final Object[] sqlUpdateParams = null;
 			final int countTagged = DB.executeUpdateEx(sqlUpdate, sqlUpdateParams, ITrx.TRXNAME_None);
-			logger.log(Level.INFO, "Marked {0} entries for AD_Pinstance_ID={1}",  new Object[]{countTagged, adPinstanceId});
+			logger.info("Marked {} entries for AD_Pinstance_ID={}", countTagged, adPinstanceId);
 
 			sqlSched = SQL_SCHED_INVALID_3P;
 			sqlOlSched = SQL_OL_SCHED_INVALID_3P;
@@ -662,7 +663,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		sqlParams.add(false); // Processed=false
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
-		logger.log(Level.INFO, "Invalidated {0} shipment schedules for headerAggregationKeys={1}", new Object[] { count, headerAggregationKeys });
+		logger.info("Invalidated {} shipment schedules for headerAggregationKeys={}", count, headerAggregationKeys);
 		// 
 		if (count > 0)
 		{
@@ -737,7 +738,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
-		logger.log(Level.INFO, "Invalidated {0} shipment schedules for M_ShipmentSchedule_IDs={1}", new Object[] { count, shipmentScheduleIds });
+		logger.info("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 		// 
 		if (count > 0)
 		{
@@ -754,7 +755,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { adPInstanceId }, trxName);
-		logger.log(Level.INFO, "Invalidated {0} M_ShipmentSchedules for AD_PInstance_ID={1}", new Object[] { count, adPInstanceId });
+		logger.info("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, adPInstanceId);
 		// 
 		if (count > 0)
 		{
@@ -829,7 +830,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// Execute
 		final String trxName = ITrx.TRXNAME_None;
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
-		logger.log(Level.INFO, "Invalidated {0} shipment schedules for segments={1}", new Object[] { count, storageSegments });
+		logger.info("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
 		// 
 		if (count > 0)
@@ -1047,7 +1048,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=" + adPInstanceId;
 
 		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.log(Level.INFO, "Deleted {0} {1} entries for AD_Pinstance_ID={2}", new Object[] { result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId });
+		logger.info("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
 	}
 
 	@Override
@@ -1056,7 +1057,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=" + adPInstanceId;
 
 		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.log(Level.INFO, "Updated {0} {1} entries for AD_Pinstance_ID={2} and released the marker.", new Object[] { result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId });
+		logger.info("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
 	}
 
 	@Override
@@ -1367,7 +1368,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		try
 		{
 			final int updateCnt = pstmt.executeUpdate();
-			logger.fine("SQL=" + sql + "; updateCnt=" + updateCnt);
+			logger.debug("SQL=" + sql + "; updateCnt=" + updateCnt);
 		}
 		catch (SQLException e)
 		{

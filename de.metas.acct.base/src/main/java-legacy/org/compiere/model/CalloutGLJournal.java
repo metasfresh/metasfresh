@@ -68,7 +68,7 @@ public class CalloutGLJournal extends CalloutEngine
 
 		BigDecimal CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_ID, as.getC_Currency_ID(), 
 			DateAcct, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
-		log.fine("rate = " + CurrencyRate);
+		log.debug("rate = " + CurrencyRate);
 		if (CurrencyRate == null)
 			CurrencyRate = Env.ZERO;
 		mTab.setValue("CurrencyRate", CurrencyRate);

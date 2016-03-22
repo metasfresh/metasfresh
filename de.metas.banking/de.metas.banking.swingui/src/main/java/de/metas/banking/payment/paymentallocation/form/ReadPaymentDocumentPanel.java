@@ -34,7 +34,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -65,7 +66,8 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -84,7 +86,7 @@ class ReadPaymentDocumentPanel
 		implements ActionListener
 {
 	// Services
-	private static final CLogger logger = CLogger.getCLogger(ReadPaymentDocumentDialog.class);
+	private static final Logger logger = LogManager.getLogger(ReadPaymentDocumentDialog.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -238,7 +240,7 @@ class ReadPaymentDocumentPanel
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "", e);
+			logger.error("", e);
 		}
 	}
 

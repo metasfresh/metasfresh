@@ -57,7 +57,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -129,7 +128,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -151,6 +149,10 @@ import org.eevolution.model.X_PP_Product_Planning;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPNoteBL;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Info MRP
@@ -237,7 +239,7 @@ public class VMRPDetailed
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, "VMRPDetailed.init", e);
+			log.error("VMRPDetailed.init", e);
 		}
 
 		// executeQuery();
@@ -258,7 +260,7 @@ public class VMRPDetailed
 	private final StatusBar statusBar = new StatusBar();
 	private final int AD_Client_ID = Env.getAD_Client_ID(getCtx());
 
-	private static CLogger log = CLogger.getCLogger(VMRPDetailed.class);
+	private static Logger log = LogManager.getLogger(VMRPDetailed.class);
 	/** Master (owning) Window */
 	protected int p_WindowNo;
 	/** Key Column Name */
@@ -1232,7 +1234,7 @@ public class VMRPDetailed
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, "Info.Worker.run - " + sqlFinal, e);
+			log.error("Info.Worker.run - " + sqlFinal, e);
 		}
 		finally
 		{
@@ -1396,7 +1398,7 @@ public class VMRPDetailed
 			sql.append(" AND (").append(mrpQueryFiltersSql).append(")");
 		}
 
-		log.log(Level.FINE, "MRP Info.setWhereClause={0}", sql);
+		log.debug("MRP Info.setWhereClause={}", sql);
 		return sql.toString();
 	}
 
@@ -1800,7 +1802,7 @@ public class VMRPDetailed
 
 		if (m_keyColumnIndex == -1)
 		{
-			log.log(Level.SEVERE, "No KeyColumn - " + sql);
+			log.error("No KeyColumn - " + sql);
 		}
 
 		// Table Selection

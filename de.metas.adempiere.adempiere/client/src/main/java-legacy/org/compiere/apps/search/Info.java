@@ -45,7 +45,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
@@ -101,7 +102,8 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -259,7 +261,7 @@ public abstract class Info extends Component
 			p_whereClause = Env.parseContext(ctx, p_WindowNo, whereClause, false, false);
 			if (p_whereClause.length() == 0)
 			{
-				log.log(Level.SEVERE, "Cannot parse context= " + whereClause);
+				log.error("Cannot parse context= " + whereClause);
 			}
 		}
 
@@ -269,7 +271,7 @@ public abstract class Info extends Component
 		}
 		catch (final Exception ex)
 		{
-			log.log(Level.SEVERE, "Info", ex);
+			log.error("Info", ex);
 		}
 	} // Info
 
@@ -322,7 +324,7 @@ public abstract class Info extends Component
 	private Worker m_worker = null;
 
 	/** Logger */
-	protected CLogger log = CLogger.getCLogger(getClass());
+	protected Logger log = LogManager.getLogger(getClass());
 
 	// Overrides isLoading().
 	private boolean ignoreLoading = false;
@@ -569,7 +571,7 @@ public abstract class Info extends Component
 
 		if (m_keyColumnIndex == -1)
 		{
-			log.log(Level.SEVERE, "No KeyColumn - " + sql);
+			log.error("No KeyColumn - " + sql);
 		}
 
 		// Window Sizing
@@ -759,7 +761,7 @@ public abstract class Info extends Component
 		String countSql = sqlExpression.evaluate(evalCtx, true); // ignoreUnparsable=true
 
 		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-		log.finer(countSql);
+		log.trace(countSql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		int no = -1;
@@ -775,7 +777,7 @@ public abstract class Info extends Component
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, countSql, e);
+			log.error(countSql, e);
 			no = -2;
 		}
 		finally
@@ -784,7 +786,7 @@ public abstract class Info extends Component
 			rs = null;
 			pstmt = null;
 		}
-		log.fine("#" + no + " - " + (System.currentTimeMillis() - start) + "ms");
+		log.debug("#" + no + " - " + (System.currentTimeMillis() - start) + "ms");
 		// Armen: add role checking (Patch #1694788 )
 
 		final GridTabMaxRowsRestrictionChecker maxRowsChecker = GridTabMaxRowsRestrictionChecker.builder()
@@ -813,7 +815,7 @@ public abstract class Info extends Component
 		// Stop editor if any and save the value
 		p_table.stopEditor(true);
 
-		log.config("OK=" + m_ok);
+		log.info("OK=" + m_ok);
 		if (!m_ok) // did not press OK
 		{
 			m_results.clear();
@@ -836,7 +838,7 @@ public abstract class Info extends Component
 				m_results.add(data);
 			}
 		}
-		log.config(getSelectedSQL());
+		log.info(getSelectedSQL());
 
 		//
 		// Call column controllers to save data
@@ -900,7 +902,7 @@ public abstract class Info extends Component
 		}
 		else
 		{
-			log.log(Level.SEVERE, "Cannot get Record_ID from: " + data);
+			log.error("Cannot get Record_ID from: " + data);
 			return -1;
 		}
 	}
@@ -947,7 +949,7 @@ public abstract class Info extends Component
 				}
 				else
 				{
-					log.severe("For multiple selection, IDColumn should be key column for selection");
+					log.error("For multiple selection, IDColumn should be key column for selection");
 				}
 			}
 		}
@@ -1027,7 +1029,7 @@ public abstract class Info extends Component
 		final Object[] keys = getSelectedKeys();
 		if (keys == null || keys.length == 0)
 		{
-			log.config("No Results - OK="
+			log.info("No Results - OK="
 					+ m_ok + ", Cancel=" + m_cancel);
 			return "";
 		}
@@ -1219,7 +1221,7 @@ public abstract class Info extends Component
 		disposing = true;
 		try
 		{
-			log.config("OK=" + ok);
+			log.info("OK=" + ok);
 			m_ok = ok;
 
 			// End Worker
@@ -1278,7 +1280,7 @@ public abstract class Info extends Component
 					// nothing
 				}
 			}
-			log.config("Worker alive=" + m_worker.isAlive());
+			log.info("Worker alive=" + m_worker.isAlive());
 		}
 		m_worker = null;
 	}
@@ -1474,7 +1476,7 @@ public abstract class Info extends Component
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1565,7 +1567,7 @@ public abstract class Info extends Component
 	@Override
 	public void mouseClicked(final MouseEvent e)
 	{
-		// log.fine( "Info.mouseClicked",
+		// log.debug( "Info.mouseClicked",
 		// "ClickCount=" + e.getClickCount() + ", Right=" + SwingUtilities.isRightMouseButton(e)
 		// + ", r=" + m_table.getSelectedRow() + ", c=" + m_table.getSelectedColumn());
 
@@ -1714,7 +1716,7 @@ public abstract class Info extends Component
 			dataSql = Env
 					.getUserRolePermissions()
 					.addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			log.finer(dataSql);
+			log.trace(dataSql);
 
 			//
 			// Make sure table is not editable while we are loading
@@ -1727,16 +1729,16 @@ public abstract class Info extends Component
 				this.m_pstmt = m_pstmt;
 				setParameters(m_pstmt, false); // no count
 
-				log.fine("Start query - " + (System.currentTimeMillis() - start) + "ms");
+				log.debug("Start query - " + (System.currentTimeMillis() - start) + "ms");
 				final ResultSet m_rs = m_pstmt.executeQuery();
 				this.m_rs = m_rs;
-				log.fine("End query - " + (System.currentTimeMillis() - start) + "ms");
+				log.debug("End query - " + (System.currentTimeMillis() - start) + "ms");
 
 				while (m_rs != null && m_rs.next())
 				{
 					if (isInterrupted())
 					{
-						log.finer("Interrupted");
+						log.trace("Interrupted");
 						close();
 						return;
 					}
@@ -1796,7 +1798,7 @@ public abstract class Info extends Component
 						// store
 						rowData[col] = data;
 						// p_table.setValueAt(data, row, col);
-						// log.fine( "r=" + row + ", c=" + col + " " + m_layout[col].getColHeader(),
+						// log.debug( "r=" + row + ", c=" + col + " " + m_layout[col].getColHeader(),
 						// "data=" + data.toString() + " " + data.getClass().getName() + " * " +
 						// m_table.getCellRenderer(row, col));
 					}
@@ -1837,7 +1839,7 @@ public abstract class Info extends Component
 			}
 			catch (final SQLException e)
 			{
-				log.log(Level.SEVERE, dataSql, e);
+				log.error(dataSql, e);
 			}
 			finally
 			{
@@ -1851,7 +1853,7 @@ public abstract class Info extends Component
 
 			//
 			final int no = p_table.getRowCount();
-			log.fine("#" + no + " - " + (System.currentTimeMillis() - start) + "ms");
+			log.debug("#" + no + " - " + (System.currentTimeMillis() - start) + "ms");
 			if (p_table.getShowTotals())
 			{
 				p_table.addTotals(p_layout);
@@ -1879,7 +1881,7 @@ public abstract class Info extends Component
 			setStatusDB(Integer.toString(no));
 			if (no == 0)
 			{
-				log.fine(dataSql);
+				log.debug(dataSql);
 			}
 			else
 			{
@@ -1915,7 +1917,7 @@ public abstract class Info extends Component
 				}
 				catch (final SQLException e)
 				{
-					log.log(Level.SEVERE, "Cannot cancel SQL statement", e);
+					log.error("Cannot cancel SQL statement", e);
 				}
 				finally
 				{
@@ -1980,7 +1982,7 @@ public abstract class Info extends Component
 				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1) // make sure index is right
 				{
 					final Exception ex = new AdempiereException("Model column out of bounds: {0}", new Object[] { columnName });
-					log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					log.warn(ex.getLocalizedMessage(), ex);
 					continue;
 				}
 			}

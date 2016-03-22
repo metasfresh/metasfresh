@@ -22,8 +22,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -135,7 +133,7 @@ public class MRegistration extends X_A_Registration
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -184,7 +182,7 @@ public class MRegistration extends X_A_Registration
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, null, e);
+			log.error(null, e);
 		}
 		try
 		{

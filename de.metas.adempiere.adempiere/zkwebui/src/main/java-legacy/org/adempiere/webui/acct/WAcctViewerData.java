@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Listbox;
 import org.compiere.model.MAcctSchema;
@@ -40,7 +39,6 @@ import org.compiere.model.MRefList;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -48,6 +46,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Account Viewer State - maintains State information for the Account Viewer
@@ -136,7 +138,7 @@ public class WAcctViewerData
 	private String m_ref2 = null;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WAcctViewerData.class);
+	private static Logger log = LogManager.getLogger(WAcctViewerData.class);
 
 	/**
 	 *  Constructor
@@ -249,7 +251,7 @@ public class WAcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		if (select != null)
@@ -285,7 +287,7 @@ public class WAcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	} // fillOrg
 	
@@ -321,7 +323,7 @@ public class WAcctViewerData
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		return retValue;
 	} // getButtonText

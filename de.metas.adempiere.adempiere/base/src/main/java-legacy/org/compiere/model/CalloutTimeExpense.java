@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -155,7 +153,7 @@ public class CalloutTimeExpense extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -192,7 +190,7 @@ public class CalloutTimeExpense extends CalloutEngine
 		int C_Currency_To_ID = Env.getContextAsInt(ctx, "$C_Currency_ID");
 		Timestamp DateExpense = Env.getContextAsDate(ctx, WindowNo, "DateExpense");
 		//
-		log.fine("Amt=" + ExpenseAmt + ", C_Currency_ID=" + C_Currency_From_ID);
+		log.debug("Amt=" + ExpenseAmt + ", C_Currency_ID=" + C_Currency_From_ID);
 		//	Converted Amount = Unit price
 		BigDecimal ConvertedAmt = ExpenseAmt;
 		//	convert if required
@@ -205,7 +203,7 @@ public class CalloutTimeExpense extends CalloutEngine
 				DateExpense, 0, AD_Client_ID, AD_Org_ID);
 		}
 		mTab.setValue("ConvertedAmt", ConvertedAmt);
-		log.fine("= ConvertedAmt=" + ConvertedAmt);
+		log.debug("= ConvertedAmt=" + ConvertedAmt);
 
 		return "";
 	}	//	Expense_Amount

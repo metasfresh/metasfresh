@@ -32,7 +32,8 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  Text Control (JTextArea embedded in JScrollPane)
@@ -108,7 +109,7 @@ public class VMemo extends CTextArea
 	private String		m_oldText = "";
 	private boolean		m_firstChange;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VMemo.class);
+	private static Logger log = LogManager.getLogger(VMemo.class);
 
 	/**
 	 *	Set Editor to value
@@ -163,14 +164,14 @@ public class VMemo extends CTextArea
 		//  ESC
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !getText().equals(m_oldText))
 		{
-			log.fine( "VMemo.keyReleased - ESC");
+			log.debug( "VMemo.keyReleased - ESC");
 			setText(m_oldText);
 			return;
 		}
 		//  Indicate Change
 		if (m_firstChange && !m_oldText.equals(getText()))
 		{
-			log.fine( "VMemo.keyReleased - firstChange");
+			log.debug( "VMemo.keyReleased - firstChange");
 			m_firstChange = false;
 			try
 			{
@@ -190,7 +191,7 @@ public class VMemo extends CTextArea
 	@Override
 	public void focusGained (FocusEvent e)
 	{
-		log.config(e.paramString());
+		log.info(e.paramString());
 		if (e.getSource() instanceof VMemo)
 			requestFocus();
 		else
@@ -204,7 +205,7 @@ public class VMemo extends CTextArea
 	@Override
 	public void focusLost (FocusEvent e)
 	{
-		//log.config( "VMemo.focusLost " + e.getSource(), e.paramString());
+		//log.info( "VMemo.focusLost " + e.getSource(), e.paramString());
 		//	something changed?
 		return;
 

@@ -14,7 +14,8 @@
 package org.compiere.apps.form;
 
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -29,7 +30,8 @@ import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -50,7 +52,7 @@ public class TrxMaterial
 
 	public MQuery          m_staticQuery = null;
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(TrxMaterial.class);
+	public static Logger log = LogManager.getLogger(TrxMaterial.class);
 	
 	protected final int getWindowNo()
 	{
@@ -176,7 +178,7 @@ public class TrxMaterial
 		int lineID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "M_InOutLine_ID");
 		if (lineID > 0)
 		{
-			log.fine("M_InOutLine_ID=" + lineID);
+			log.debug("M_InOutLine_ID=" + lineID);
 			if (Env.getContext(Env.getCtx(), m_WindowNo, "MovementType").startsWith("C"))
 				AD_Window_ID = 169;     //  Customer
 			else
@@ -189,7 +191,7 @@ public class TrxMaterial
 			lineID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "M_InventoryLine_ID");
 			if (lineID > 0)
 			{
-				log.fine("M_InventoryLine_ID=" + lineID);
+				log.debug("M_InventoryLine_ID=" + lineID);
 				AD_Window_ID = 168;
 				ColumnName = "M_Inventory_ID";
 				SQL = "SELECT M_Inventory_ID FROM M_InventoryLine WHERE M_InventoryLine_ID=?";
@@ -199,7 +201,7 @@ public class TrxMaterial
 				lineID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "M_MovementLine_ID");
 				if (lineID > 0)
 				{
-					log.fine("M_MovementLine_ID=" + lineID);
+					log.debug("M_MovementLine_ID=" + lineID);
 					AD_Window_ID = 170;
 					ColumnName = "M_Movement_ID";
 					SQL = "SELECT M_Movement_ID FROM M_MovementLine WHERE M_MovementLine_ID=?";
@@ -209,13 +211,13 @@ public class TrxMaterial
 					lineID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "M_ProductionLine_ID");
 					if (lineID > 0)
 					{
-						log.fine("M_ProductionLine_ID=" + lineID);
+						log.debug("M_ProductionLine_ID=" + lineID);
 						AD_Window_ID = 191;
 						ColumnName = "M_Production_ID";
 						SQL = "SELECT M_Production_ID FROM M_ProductionLine WHERE M_ProductionLine_ID=?";
 					}
 					else
-						log.fine("Not found WindowNo=" + m_WindowNo);
+						log.debug("Not found WindowNo=" + m_WindowNo);
 				}
 			}
 		}
@@ -225,9 +227,9 @@ public class TrxMaterial
 		//  Get Parent ID
 		final int parentID = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL, lineID);
 		query = MQuery.getEqualQuery(ColumnName, parentID);
-		log.config("AD_Window_ID=" + AD_Window_ID + " - " + query);
+		log.info("AD_Window_ID=" + AD_Window_ID + " - " + query);
 		if (parentID <= 0)
-			log.log(Level.SEVERE, "No ParentValue - " + SQL + " - " + lineID);
+			log.error("No ParentValue - " + SQL + " - " + lineID);
 	}   //  zoom
 	
 	protected final Lookup getLookup(final String columnName)

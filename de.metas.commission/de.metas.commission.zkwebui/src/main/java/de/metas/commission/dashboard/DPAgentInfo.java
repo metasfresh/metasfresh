@@ -39,7 +39,8 @@ import org.adempiere.util.Services;
 import org.adempiere.webui.dashboard.DashboardPanel;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -68,7 +69,7 @@ public class DPAgentInfo extends DashboardPanel
 
 	static final String MSG_DATE_NOT_APPLICABLE = "Date_Not_Applicable";
 	
-	private static final CLogger logger = CLogger.getCLogger(DPAgentInfo.class);
+	private static final Logger logger = LogManager.getLogger(DPAgentInfo.class);
 	
 	static final String ADV_COM_SALARY_GROUP_DATE_TO = "AdvComSalaryGroup_DateTo";
 
@@ -141,7 +142,7 @@ public class DPAgentInfo extends DashboardPanel
 			final I_C_AdvCommissionCondition contract = sponsorBL.retrieveContract(ctx, sponsor, loginDate, null);
 			if (contract == null)
 			{
-				logger.warning(sponsor + " has no commission contract at " + loginDate);
+				logger.warn(sponsor + " has no commission contract at " + loginDate);
 				return;
 			}
 

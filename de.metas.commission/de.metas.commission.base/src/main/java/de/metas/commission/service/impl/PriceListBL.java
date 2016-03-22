@@ -30,7 +30,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_M_PriceList;
@@ -39,7 +40,7 @@ import de.metas.commission.service.IPriceListBL;
 
 public class PriceListBL implements IPriceListBL
 {
-	private static final CLogger logger = CLogger.getCLogger(PriceListBL.class);
+	private static final Logger logger = LogManager.getLogger(PriceListBL.class);
 
 	@Override
 	public String updateCommissionPoints(

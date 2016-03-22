@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -131,7 +129,7 @@ public class MTableAccess extends X_AD_Table_Access
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "getTableName", e);
+				log.error("getTableName", e);
 			}
 			try
 			{

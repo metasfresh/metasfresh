@@ -21,7 +21,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -130,7 +131,7 @@ public class MMeasureCalc extends X_PA_MeasureCalc
 		}	//	date
 		String sql = addRestrictions(sb.toString(), restrictions, role);
 		
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSql
 	
@@ -196,7 +197,7 @@ public class MMeasureCalc extends X_PA_MeasureCalc
 			sql += " GROUP BY " + groupBy
 					+ " ORDER BY " + groupBy; // teo_sarca, [ 1665129 ] Bar Graph is not ordered
 		//
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSqlBarChart
 	
@@ -260,7 +261,7 @@ public class MMeasureCalc extends X_PA_MeasureCalc
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, finalSQL, e);
+			log.error(finalSQL, e);
 		}
 		try
 		{

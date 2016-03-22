@@ -1,5 +1,10 @@
 package de.metas.flatrate.pricing.spi.impl;
 
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.compiere.util.Env;
+
 /*
  * #%L
  * de.metas.contracts
@@ -23,13 +28,8 @@ package de.metas.flatrate.pricing.spi.impl;
  */
 
 
-import java.util.logging.Level;
-
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
-import org.compiere.util.CLogger;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 
@@ -49,7 +49,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 public class ContractDiscount extends PricingRuleAdapter
 {
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
@@ -68,14 +68,14 @@ public class ContractDiscount extends PricingRuleAdapter
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		if (referencedObject == null)
 		{
-			logger.fine("Not applying because pricingCtx has no referencedObject");
+			logger.debug("Not applying because pricingCtx has no referencedObject");
 			return false;
 		}
 
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		if (conditions == null)
 		{
-			logger.log(Level.FINE, "Not applying because referencedObject='{0}' has no C_Flatrate_Conditions", referencedObject);
+			logger.debug("Not applying because referencedObject='{}' has no C_Flatrate_Conditions", referencedObject);
 			return false;
 		}
 

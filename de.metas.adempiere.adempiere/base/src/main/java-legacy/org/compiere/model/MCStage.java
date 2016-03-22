@@ -20,10 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -65,7 +65,7 @@ public class MCStage extends X_CM_CStage
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -83,7 +83,7 @@ public class MCStage extends X_CM_CStage
 	}	//	getStages
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MCStage.class);
+	private static Logger s_log = LogManager.getLogger(MCStage.class);
 	
 	
 	/**************************************************************************
@@ -220,9 +220,9 @@ public class MCStage extends X_CM_CStage
 				.append(", 0, 999)");
 			int no = DB.executeUpdate(sb.toString(), get_TrxName());
 			if (no > 0)
-				log.fine("#" + no + " - TreeType=CMS");
+				log.debug("#" + no + " - TreeType=CMS");
 			else
-				log.warning("#" + no + " - TreeType=CMS");
+				log.warn("#" + no + " - TreeType=CMS");
 			return no > 0;
 		}
 		/*if (success) {
@@ -246,9 +246,9 @@ public class MCStage extends X_CM_CStage
 			.append(" AND AD_Tree_ID=").append(getAD_Tree_ID());
 		int no = DB.executeUpdate(sb.toString(), get_TrxName());
 		if (no > 0)
-			log.fine("#" + no + " - TreeType=CMS");
+			log.debug("#" + no + " - TreeType=CMS");
 		else
-			log.warning("#" + no + " - TreeType=CMS");
+			log.warn("#" + no + " - TreeType=CMS");
 		return no > 0;
 	}	//	afterDelete
 	

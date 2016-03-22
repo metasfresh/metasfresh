@@ -417,7 +417,7 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 			+ " WHERE " + element + " IS NULL AND C_AcctSchema_ID=" + getC_AcctSchema_ID();
 		int noF = DB.executeUpdate(sql, get_TrxName());
 		//
-		log.fine("ValidCombination=" + noC + ", Fact=" + noF);
+		log.debug("ValidCombination=" + noC + ", Fact=" + noF);
 	}	//	updateData
 	
 	@Override

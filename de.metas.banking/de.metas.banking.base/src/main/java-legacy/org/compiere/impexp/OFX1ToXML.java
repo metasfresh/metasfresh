@@ -23,9 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PipedReader;
 import java.io.PipedWriter;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Covert OFX 1XX (SQGML) into valid XML
@@ -47,7 +47,7 @@ public final class OFX1ToXML extends InputStream implements Runnable
 	private String m_ofx = "";
 
 	/**	Logger			*/
-	private CLogger	log = CLogger.getCLogger(getClass());
+	private Logger	log = LogManager.getLogger(getClass());
 	
 	/**
 	 * Constructor for OFX1ToXML
@@ -164,7 +164,7 @@ public final class OFX1ToXML extends InputStream implements Runnable
 		}
 		catch (IOException e)
 		{
-			log.log(Level.SEVERE, "Ofx1To2Convertor: IO Exception", e);
+			log.error("Ofx1To2Convertor: IO Exception", e);
 		}
 	}	//	run
 

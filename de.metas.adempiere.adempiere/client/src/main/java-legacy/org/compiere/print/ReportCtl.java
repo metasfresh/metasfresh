@@ -19,7 +19,8 @@ package org.compiere.print;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,7 +35,8 @@ import org.compiere.model.PrintInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -64,7 +66,7 @@ public final class ReportCtl
 	}	//	ReportCtrl
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (ReportCtl.class);
+	private static Logger	s_log	= LogManager.getLogger(ReportCtl.class);
 	
 	private static ReportViewerProvider viewerProvider = new SwingViewerProvider(); 
 	
@@ -236,7 +238,7 @@ public final class ReportCtl
 			format = (MPrintFormat)pi.getSerializableObject();
 		if (format == null)
 		{
-			s_log.log(Level.SEVERE, "startFinReport - No PrintFormat");
+			s_log.error("startFinReport - No PrintFormat");
 			return false;
 		}
 		PrintInfo info = new PrintInfo(pi);

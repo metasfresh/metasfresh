@@ -30,12 +30,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.webui.component.ToolBarButton;
 import org.adempiere.webui.dashboard.DashboardPanel;
 import org.compiere.model.MSysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.zkoss.util.media.AMedia;
 import org.zkoss.zk.ui.Component;
@@ -63,7 +63,7 @@ public class DPDownloads extends DashboardPanel implements EventListener
 	public static final String SYSCONFIG_DirPath = "de.metas.dashboard.DPDownloads.DirPath";
 	private static final String ATTR_File = "file";
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	private HtmlBasedComponent bxFileList;
 
 	public DPDownloads()
@@ -94,13 +94,13 @@ public class DPDownloads extends DashboardPanel implements EventListener
 		final String dirname = MSysConfig.getValue(DPDownloads.SYSCONFIG_DirPath, null, Env.getAD_Client_ID(Env.getCtx()));
 		if (dirname == null)
 		{
-			log.warning("No Download directory defined (see sysconfig var " + DPDownloads.SYSCONFIG_DirPath + ")");
+			log.warn("No Download directory defined (see sysconfig var " + DPDownloads.SYSCONFIG_DirPath + ")");
 			return;
 		}
 		final File dir = new File(dirname);
 		if (!dir.canRead())
 		{
-			log.warning("Directory does not exists or is not readable - " + dir);
+			log.warn("Directory does not exists or is not readable - " + dir);
 			return;
 		}
 
@@ -154,7 +154,7 @@ public class DPDownloads extends DashboardPanel implements EventListener
 		}
 		catch (final IOException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 		}
 		finally
 		{
@@ -189,7 +189,7 @@ public class DPDownloads extends DashboardPanel implements EventListener
 		final String iconFilepath = Executions.getCurrent().getDesktop().getWebApp().getRealPath(icon);
 		if (!new File(iconFilepath).exists())
 		{
-			// log.fine("Icon file not found - "+icon);
+			// log.debug("Icon file not found - "+icon);
 			icon = defaultIcon;
 		}
 		return icon;

@@ -23,7 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -32,11 +33,11 @@ import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.logging.MetasfreshLastError;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -115,7 +116,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -268,7 +269,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "bPartner", e);
+			log.error("bPartner", e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -441,7 +442,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql + e);
+			log.error(sql + e);
 			return e.getLocalizedMessage();
 		}
 		finally
@@ -484,7 +485,7 @@ public class CalloutInvoice extends CalloutEngine
 			C_Charge_ID = ((Integer)value).intValue();
 		else
 			C_Charge_ID = Env.getContextAsInt(ctx, WindowNo, "C_Charge_ID");
-		log.fine("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
+		log.debug("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
 		if (M_Product_ID == 0 && C_Charge_ID == 0)
 			return amt(ctx, WindowNo, mTab, mField, value);	//
 
@@ -492,21 +493,21 @@ public class CalloutInvoice extends CalloutEngine
 		int shipC_BPartner_Location_ID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_Location_ID");
 		if (shipC_BPartner_Location_ID == 0)
 			return amt(ctx, WindowNo, mTab, mField, value);	//
-		log.fine("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
 		int billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
-		log.fine("Bill BP_Location=" + billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location=" + billC_BPartner_Location_ID);
 
 		// Dates
 		Timestamp billDate = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
-		log.fine("Bill Date=" + billDate);
+		log.debug("Bill Date=" + billDate);
 		Timestamp shipDate = billDate;
-		log.fine("Ship Date=" + shipDate);
+		log.debug("Ship Date=" + shipDate);
 
 		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		log.fine("Org=" + AD_Org_ID);
+		log.debug("Org=" + AD_Org_ID);
 
 		int M_Warehouse_ID = Env.getContextAsInt(ctx, "#M_Warehouse_ID");
-		log.fine("Warehouse=" + M_Warehouse_ID);
+		log.debug("Warehouse=" + M_Warehouse_ID);
 
 		//
 		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate, shipDate,
@@ -515,7 +516,7 @@ public class CalloutInvoice extends CalloutEngine
 		log.info("Tax ID=" + C_Tax_ID);
 		//
 		if (C_Tax_ID == 0)
-			mTab.fireDataStatusEEvent(CLogger.retrieveError());
+			mTab.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		else
 			mTab.setValue("C_Tax_ID", new Integer(C_Tax_ID));
 		//
@@ -546,7 +547,7 @@ public class CalloutInvoice extends CalloutEngine
 		final de.metas.adempiere.model.I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final boolean isManualPrice = il.isManualPrice();
 		
-		// log.log(Level.WARNING,"amt - init");
+		// log.warn("amt - init");
 		int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "Price_UOM_ID"); // 07216 : We convert to the price UOM.
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
 		int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
@@ -556,15 +557,15 @@ public class CalloutInvoice extends CalloutEngine
 		// get values
 		QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
 		QtyInvoiced = (BigDecimal)mTab.getValue("QtyInvoiced");
-		log.fine("QtyEntered=" + QtyEntered + ", Invoiced=" + QtyInvoiced + ", UOM=" + C_UOM_To_ID);
+		log.debug("QtyEntered=" + QtyEntered + ", Invoiced=" + QtyInvoiced + ", UOM=" + C_UOM_To_ID);
 		//
 		PriceEntered = (BigDecimal)mTab.getValue("PriceEntered");
 		PriceActual = (BigDecimal)mTab.getValue("PriceActual");
 		// Discount = (BigDecimal)mTab.getValue("Discount");
 		PriceLimit = (BigDecimal)mTab.getValue("PriceLimit");
 		PriceList = (BigDecimal)mTab.getValue("PriceList");
-		log.fine("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
-		log.fine("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual);// + ", Discount=" + Discount);
+		log.debug("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
+		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual);// + ", Discount=" + Discount);
 		// metas: Gutschrift Grund
 		mTab.setValue("Line_CreditMemoReason", Env.getContext(ctx, WindowNo, "CreditMemoReason"));
 		// metas
@@ -599,7 +600,7 @@ public class CalloutInvoice extends CalloutEngine
 				// if (PriceEntered == null)
 				// PriceEntered = pp.getPriceStd();
 				// metas us1064
-				log.fine("amt - QtyChanged -> PriceActual=" + pp.mkPriceStdMinusDiscount()
+				log.debug("amt - QtyChanged -> PriceActual=" + pp.mkPriceStdMinusDiscount()
 						+ ", PriceEntered=" + PriceEntered + ", Discount=" + pp.getDiscount());
 
 				PriceActual = pp.mkPriceStdMinusDiscount();
@@ -618,7 +619,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (PriceEntered == null)
 				PriceEntered = PriceActual;
 			//
-			log.fine("amt - PriceActual=" + PriceActual
+			log.debug("amt - PriceActual=" + PriceActual
 					+ " -> PriceEntered=" + PriceEntered);
 			mTab.setValue("PriceEntered", PriceEntered);
 			
@@ -630,7 +631,7 @@ public class CalloutInvoice extends CalloutEngine
 			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
 			PriceActual = PriceEntered.setScale(StdPrecision, RoundingMode.HALF_UP);
 			//
-			log.fine("amt - PriceEntered=" + PriceEntered
+			log.debug("amt - PriceEntered=" + PriceEntered
 					+ " -> PriceActual=" + PriceActual);
 			mTab.setValue("PriceActual", PriceActual);
 		}
@@ -660,7 +661,7 @@ public class CalloutInvoice extends CalloutEngine
 		 * Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
 		 * mTab.setValue("Discount", Discount);
 		 * }
-		 * log.fine("amt = PriceEntered=" + PriceEntered + ", Actual" + PriceActual + ", Discount=" + Discount);
+		 * log.debug("amt = PriceEntered=" + PriceEntered + ", Actual" + PriceActual + ", Discount=" + Discount);
 		 * /*
 		 */
 
@@ -680,7 +681,7 @@ public class CalloutInvoice extends CalloutEngine
 					C_UOM_To_ID, PriceLimit);
 			if (PriceEntered == null)
 				PriceEntered = PriceLimit;
-			log.fine("amt =(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
+			log.debug("amt =(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
 			mTab.setValue("PriceActual", PriceLimit);
 			mTab.setValue("PriceEntered", PriceEntered);
 			mTab.fireDataStatusEEvent("UnderLimitPrice", "", false);
@@ -763,7 +764,7 @@ public class CalloutInvoice extends CalloutEngine
 		final boolean isManualPrice = il.isManualPrice();
 
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		// log.log(Level.WARNING,"qty - init - M_Product_ID=" + M_Product_ID);
+		// log.warn("qty - init - M_Product_ID=" + M_Product_ID);
 		BigDecimal QtyInvoiced, QtyEntered, PriceActual, PriceEntered;
 
 		// No Product
@@ -780,7 +781,7 @@ public class CalloutInvoice extends CalloutEngine
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
 						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -800,7 +801,7 @@ public class CalloutInvoice extends CalloutEngine
 				if (PriceEntered == null)
 					PriceEntered = PriceActual;
 
-				log.fine("qty - UOM=" + C_UOM_To_ID
+				log.debug("qty - UOM=" + C_UOM_To_ID
 						+ ", QtyEntered/PriceActual=" + QtyEntered + "/" + PriceActual
 						+ " -> " + conversion
 						+ " QtyInvoiced/PriceEntered=" + QtyInvoiced + "/" + PriceEntered);
@@ -818,7 +819,7 @@ public class CalloutInvoice extends CalloutEngine
 			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.fine("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
 						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
@@ -828,7 +829,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (QtyInvoiced == null)
 				QtyInvoiced = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyInvoiced) != 0;
-			log.fine("qty - UOM=" + C_UOM_To_ID
+			log.debug("qty - UOM=" + C_UOM_To_ID
 					+ ", QtyEntered=" + QtyEntered
 					+ " -> " + conversion
 					+ " QtyInvoiced=" + QtyInvoiced);
@@ -844,7 +845,7 @@ public class CalloutInvoice extends CalloutEngine
 			BigDecimal QtyInvoiced1 = QtyInvoiced.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (QtyInvoiced.compareTo(QtyInvoiced1) != 0)
 			{
-				log.fine("Corrected QtyInvoiced Scale "
+				log.debug("Corrected QtyInvoiced Scale "
 						+ QtyInvoiced + "->" + QtyInvoiced1);
 				QtyInvoiced = QtyInvoiced1;
 				mTab.setValue("QtyInvoiced", QtyInvoiced);
@@ -854,7 +855,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (QtyEntered == null)
 				QtyEntered = QtyInvoiced;
 			boolean conversion = QtyInvoiced.compareTo(QtyEntered) != 0;
-			log.fine("qty - UOM=" + C_UOM_To_ID
+			log.debug("qty - UOM=" + C_UOM_To_ID
 					+ ", QtyInvoiced=" + QtyInvoiced
 					+ " -> " + conversion
 					+ " QtyEntered=" + QtyEntered);

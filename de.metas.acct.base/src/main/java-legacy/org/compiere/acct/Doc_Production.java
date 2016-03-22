@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostDetail;
@@ -66,7 +67,7 @@ public class Doc_Production extends Doc
 		setDateAcct(prod.getMovementDate());
 		//	Contained Objects
 		p_lines = loadLines(prod);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   //  loadDocumentDetails
 
@@ -117,7 +118,7 @@ public class Doc_Production extends Doc
 						//	Identify finished BOM Product
 						docLine.setProductionBOM(line.getM_Product_ID() == M_Product_ID);
 						//
-						log.fine(docLine.toString());
+						log.debug(docLine.toString());
 						list.add (docLine);
 					}
 					rsPL.close();
@@ -125,7 +126,7 @@ public class Doc_Production extends Doc
 				}
 				catch (Exception ee)
 				{
-					log.log(Level.SEVERE, sqlPL, ee);
+					log.error(sqlPL, ee);
 				}
 			}
 			rsPP.close();
@@ -133,7 +134,7 @@ public class Doc_Production extends Doc
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sqlPP, e);
+			log.error(sqlPP, e);
 		}
 		//	Return Array
 		DocLine[] dl = new DocLine[list.size()];

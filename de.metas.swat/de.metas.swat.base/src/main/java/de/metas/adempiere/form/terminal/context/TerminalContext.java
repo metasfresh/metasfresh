@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,7 +38,6 @@ import org.adempiere.util.IService;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.proxy.WeakWrapper;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -47,6 +45,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.logging.LogManager;
 
 public final class TerminalContext implements ITerminalContext, ITerminalContextReferences
 {
@@ -254,7 +253,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public boolean isShowDebugInfo()
 	{
-		if (CLogMgt.isLevel(Level.FINEST))
+		if (LogManager.isLevelFinest())
 		{
 			return true;
 		}

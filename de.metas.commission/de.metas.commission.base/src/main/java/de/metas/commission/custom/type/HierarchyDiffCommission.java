@@ -33,7 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.IProductAware;
@@ -74,7 +75,7 @@ public class HierarchyDiffCommission extends HierarchyCommission
 
 	public static final String CTX_ALREADY_SEEN_SALESREP_C_SPONSOR_ID = "ALREADY_SEEN_SALESREP_C_SPONSOR_ID";
 
-	private static final CLogger logger = CLogger.getCLogger(HierarchyDiffCommission.class);
+	private static final Logger logger = LogManager.getLogger(HierarchyDiffCommission.class);
 
 	private boolean isMaxCommissionGranted(
 			final Properties ctx,

@@ -25,7 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
@@ -105,7 +106,7 @@ public class Doc_Invoice extends Doc
 		// Contained Objects
 		m_taxes = loadTaxes();
 		p_lines = loadLines(invoice);
-		log.fine("Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
+		log.debug("Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
 		return null;
 	}   // loadDocumentDetails
 
@@ -142,13 +143,13 @@ public class Doc_Invoice extends Doc
 				final DocTax taxLine = new DocTax(getCtx(),
 						C_Tax_ID, taxName, rate,
 						taxBaseAmt, taxAmt, salesTax, taxIncluded);
-				log.fine(taxLine.toString());
+				log.debug(taxLine.toString());
 				list.add(taxLine);
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return null;
 		}
 		finally
@@ -205,7 +206,7 @@ public class Doc_Invoice extends Doc
 				m_allLinesItem = false;
 
 			//
-			log.log(Level.FINE, "{0}", docLine);
+			log.debug("{}", docLine);
 			list.add(docLine);
 		}
 
@@ -277,7 +278,7 @@ public class Doc_Invoice extends Doc
 		}
 		sb.append("]");
 		//
-		log.fine(toString() + " Balance=" + retValue + sb.toString());
+		log.debug(toString() + " Balance=" + retValue + sb.toString());
 		return retValue;
 	}   // getBalance
 
@@ -986,7 +987,7 @@ public class Doc_Invoice extends Doc
 			// end AZ
 		}
 
-		log.config("Created #" + lcas.length);
+		log.info("Created #" + lcas.length);
 		return true;
 	}	// landedCosts
 
@@ -1026,7 +1027,7 @@ public class Doc_Invoice extends Doc
 						+ " AND i.C_Invoice_ID=")
 				.append(get_ID()).append(")");
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.fine("Updated=" + no);
+		log.debug("Updated=" + no);
 	}	// updateProductPO
 
 	/**
@@ -1039,7 +1040,7 @@ public class Doc_Invoice extends Doc
 	 */
 	private void updateProductInfo(int C_AcctSchema_ID)
 	{
-		log.fine("C_Invoice_ID=" + get_ID());
+		log.debug("C_Invoice_ID=" + get_ID());
 
 		/**
 		 * @todo Last.. would need to compare document/last updated date
@@ -1100,7 +1101,7 @@ public class Doc_Invoice extends Doc
 		// end globalqss 2005-10-19
 		final String sqlNative = DB.convertSqlToNative(sql.toString());
 		final int no = DB.executeUpdate(sqlNative, getTrxName());
-		log.fine("M_Product_Costing - Updated=" + no);
+		log.debug("M_Product_Costing - Updated=" + no);
 	}   // updateProductInfo
 
 	public static void unpost(final I_C_Invoice invoice)

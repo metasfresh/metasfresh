@@ -29,8 +29,9 @@ import org.adempiere.webui.part.AbstractUIPart;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -42,7 +43,7 @@ import org.compiere.util.Env;
 public abstract class AbstractADTab extends AbstractUIPart implements IADTab
 {
     /** Logger                  */
-    private static CLogger  log = CLogger.getCLogger (AbstractADTab.class);
+    private static Logger  log = LogManager.getLogger(AbstractADTab.class);
     /** List of dependent Variables     */
     private ArrayList<String>   m_dependents = new ArrayList<String>();
     

@@ -35,7 +35,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -57,7 +58,7 @@ import de.metas.handlingunits.storage.IHUStorageListener;
 
 	//
 	// Logger
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	// Services
 	private final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);

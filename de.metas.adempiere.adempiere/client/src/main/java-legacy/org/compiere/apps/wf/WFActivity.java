@@ -26,7 +26,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListSelectionEvent;
@@ -57,7 +58,8 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -91,7 +93,7 @@ public class WFActivity extends CPanel
 	public WFActivity()
 	{
 		super();
-		log.config("");
+		log.info("");
 		m_WindowNo = Env.createWindowNo(this);
 		try
 		{
@@ -100,7 +102,7 @@ public class WFActivity extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	// WFActivity
 
@@ -117,7 +119,7 @@ public class WFActivity extends CPanel
 	/** Set Column */
 	private MColumn m_column = null;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(WFActivity.class);
+	private static Logger log = LogManager.getLogger(WFActivity.class);
 
 	DefaultTableModel selTableModel = new DefaultTableModel(
 			new String[] { msgBL.translate(Env.getCtx(), "Priority"),
@@ -293,7 +295,7 @@ public class WFActivity extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	// init
 
@@ -347,7 +349,7 @@ public class WFActivity extends CPanel
 		selTable.autoSize(false);
 		m_activities = activities.toArray(new MWFActivity[activities.size()]);
 		//
-		log.fine("#" + m_activities.length + "(" + (System.currentTimeMillis() - start) + "ms)");
+		log.debug("#" + m_activities.length + "(" + (System.currentTimeMillis() - start) + "ms)");
 		return m_activities.length;
 	}	// loadActivities
 
@@ -358,7 +360,7 @@ public class WFActivity extends CPanel
 	 */
 	public void display(int index)
 	{
-		log.fine("Index=" + index);
+		log.debug("Index=" + index);
 		m_activity = resetDisplay(index);
 		//
 		if (m_activity == null)
@@ -409,10 +411,10 @@ public class WFActivity extends CPanel
 			fAnswerButton.setVisible(true);
 		}
 		/*
-		 * else if (MWFNode.ACTION_UserWorkbench.equals(node.getAction())) log.log(Level.SEVERE, "Workflow Action not implemented yet");
+		 * else if (MWFNode.ACTION_UserWorkbench.equals(node.getAction())) log.error("Workflow Action not implemented yet");
 		 */
 		else
-			log.log(Level.SEVERE, "Unknown Node Action: " + node.getAction());
+			log.error("Unknown Node Action: " + node.getAction());
 
 		statusBar.setStatusDB((index + 1) + "/" + m_activities.length);
 		statusBar.setStatusLine(msgBL.getMsg(Env.getCtx(), "WFActivities"));
@@ -493,7 +495,7 @@ public class WFActivity extends CPanel
 	 */
 	private void cmd_zoom()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 			return;
 		AEnv.zoom(m_activity.getAD_Table_ID(), m_activity.getRecord_ID());
@@ -504,7 +506,7 @@ public class WFActivity extends CPanel
 	 */
 	private void cmd_button()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 			return;
 		//
@@ -548,7 +550,7 @@ public class WFActivity extends CPanel
 		 * }
 		 */
 		else
-			log.log(Level.SEVERE, "No User Action:" + node.getAction());
+			log.error("No User Action:" + node.getAction());
 	}	// cmd_button
 
 	/**
@@ -556,7 +558,7 @@ public class WFActivity extends CPanel
 	 */
 	private void cmd_OK()
 	{
-		log.config("Activity=" + m_activity);
+		log.info("Activity=" + m_activity);
 		if (m_activity == null)
 			return;
 		int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
@@ -572,11 +574,11 @@ public class WFActivity extends CPanel
 
 		if (forward != null)
 		{
-			log.config("Forward to " + forward);
+			log.info("Forward to " + forward);
 			int fw = ((Integer)forward).intValue();
 			if (fw == AD_User_ID || fw == 0)
 			{
-				log.log(Level.SEVERE, "Forward User=" + fw);
+				log.error("Forward User=" + fw);
 				trx.rollback();
 				trx.close();
 				return;
@@ -610,14 +612,14 @@ public class WFActivity extends CPanel
 				return;
 			}
 			//
-			log.config("Answer=" + value + " - " + textMsg);
+			log.info("Answer=" + value + " - " + textMsg);
 			try
 			{
 				m_activity.setUserChoice(AD_User_ID, value, dt, textMsg);
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, node.getName(), e);
+				log.error(node.getName(), e);
 				ADialog.error(m_WindowNo, this, "Error", e.toString());
 				trx.rollback();
 				trx.close();
@@ -627,7 +629,7 @@ public class WFActivity extends CPanel
 		// User Action
 		else
 		{
-			log.config("Action=" + node.getAction() + " - " + textMsg);
+			log.info("Action=" + node.getAction() + " - " + textMsg);
 			try
 			{
 				// ensure activity is ran within a transaction
@@ -635,7 +637,7 @@ public class WFActivity extends CPanel
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, node.getName(), e);
+				log.error(node.getName(), e);
 				ADialog.error(m_WindowNo, this, "Error", e.toString());
 				trx.rollback();
 				trx.close();

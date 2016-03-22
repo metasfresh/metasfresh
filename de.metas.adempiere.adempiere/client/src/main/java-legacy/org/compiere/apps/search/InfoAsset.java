@@ -225,7 +225,7 @@ public class InfoAsset extends Info
 			if (!value.endsWith("%"))
 				value += "%";
 			pstmt.setString(index++, value);
-			log.fine("Value: " + value);
+			log.debug("Value: " + value);
 		}
 		//	=> Name
 		String name = fieldName.getText().toUpperCase();
@@ -234,7 +234,7 @@ public class InfoAsset extends Info
 			if (!name.endsWith("%"))
 				name += "%";
 			pstmt.setString(index++, name);
-			log.fine("Name: " + name);
+			log.debug("Name: " + name);
 		}
 	}	//	setParameters
 

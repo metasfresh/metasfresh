@@ -37,7 +37,7 @@ import de.metas.adempiere.service.ICalendarDAO;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
-	// private final transient CLogger logger = CLogger.getCLogger(getClass());
+	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
 	protected abstract List<I_C_Period> retrievePeriods(
 			final Properties ctx,

@@ -24,7 +24,8 @@ import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.panel.IADTabpanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Div;
@@ -40,7 +41,7 @@ public class CompositeADTab extends AbstractADTab
 {
     /** Logger                  */
     @SuppressWarnings("unused")
-	private static CLogger  log = CLogger.getCLogger (CompositeADTab.class);
+	private static Logger  log = LogManager.getLogger(CompositeADTab.class);
 
     private List<ADTabListModel.ADTabLabel> tabLabelList = new ArrayList<ADTabListModel.ADTabLabel>();
 

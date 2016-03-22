@@ -47,7 +47,8 @@ import org.compiere.model.MMeasureCalc;
 import org.compiere.model.MProjectType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRequestType;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -152,7 +153,7 @@ public class GraphColumn
 	private double	m_height = 0;
 
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (GraphColumn.class);
+	private static Logger log = LogManager.getLogger(GraphColumn.class);
 	/** Integer Number Format		*/
 	private static DecimalFormat	s_format = DisplayType.getNumberFormat(DisplayType.Integer);
 

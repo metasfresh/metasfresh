@@ -39,7 +39,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.MYear;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.custom.type.ISalesRefFactCollector;
@@ -68,7 +69,7 @@ import de.metas.commission.service.ISponsorBL;
 public class SalesRepFactBL implements ISalesRepFactBL
 {
 
-	private static final CLogger logger = CLogger.getCLogger(SalesRepFactBL.class);
+	private static final Logger logger = LogManager.getLogger(SalesRepFactBL.class);
 
 	@Override
 	public I_C_AdvCommissionSalaryGroup retrieveSalaryGroup(
@@ -140,7 +141,7 @@ public class SalesRepFactBL implements ISalesRepFactBL
 				I_C_AdvCommissionSalaryGroup.class,
 				trxName);
 
-		SalesRepFactBL.logger.fine("At " + date + " and with status " + status + ", " + sponsor + " is in SG: " + sg);
+		SalesRepFactBL.logger.debug("At " + date + " and with status " + status + ", " + sponsor + " is in SG: " + sg);
 
 		return new Tuple<I_C_AdvComSalesRepFact, I_C_AdvCommissionSalaryGroup>(rankFact, sg);
 	}
@@ -231,7 +232,7 @@ public class SalesRepFactBL implements ISalesRepFactBL
 			{
 				if (period.getEndDate().before(contractSSR.getValidFrom()))
 				{
-					SalesRepFactBL.logger.fine(period + " ends before " + contractSSR + " is valid");
+					SalesRepFactBL.logger.debug(period + " ends before " + contractSSR + " is valid");
 					beforeValidFrom = true;
 					break;
 				}
@@ -356,7 +357,7 @@ public class SalesRepFactBL implements ISalesRepFactBL
 
 		final boolean isInSG = isInSGToLookFor(sgsToLookfor, sg.getC_AdvCommissionSalaryGroup_ID());
 
-		SalesRepFactBL.logger.fine(
+		SalesRepFactBL.logger.debug(
 				"At date " + date + " BPartner is in SG " + rankValue + " or better with status " + status + ": " + isInSG);
 
 		return isInSG;
@@ -418,16 +419,16 @@ public class SalesRepFactBL implements ISalesRepFactBL
 			salesRepFact.setDateAcct(date);
 			InterfaceWrapperHelper.save(salesRepFact);
 
-			SalesRepFactBL.logger.fine("Created new srf " + salesRepFact);
+			SalesRepFactBL.logger.debug("Created new srf " + salesRepFact);
 		}
 		else
 		{
-			SalesRepFactBL.logger.fine("Using existing srf " + salesRepFact);
+			SalesRepFactBL.logger.debug("Using existing srf " + salesRepFact);
 
 			final MCAdvComFactSalesRepFact cf2srf = MCAdvComFactSalesRepFact.retrieve(volumeOfSalesFact, salesRepFact);
 			if (cf2srf != null)
 			{
-				SalesRepFactBL.logger.fine("Commission fact's amount has already been added");
+				SalesRepFactBL.logger.debug("Commission fact's amount has already been added");
 				return salesRepFact;
 			}
 
@@ -598,7 +599,7 @@ public class SalesRepFactBL implements ISalesRepFactBL
 
 			if (!sumMatches)
 			{
-				SalesRepFactBL.logger.warning(srf + ": ValuesNumber=" + valueOrNull + " != CommissionFactsSum= " + factSum);
+				SalesRepFactBL.logger.warn(srf + ": ValuesNumber=" + valueOrNull + " != CommissionFactsSum= " + factSum);
 			}
 			return sumMatches;
 		}

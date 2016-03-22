@@ -23,11 +23,13 @@ package org.adempiere.ui.notifications;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.text.MapFormat;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
@@ -48,7 +50,7 @@ class EventHtmlMessageFormat extends MapFormat
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final transient CLogger logger = CLogger.getCLogger(EventHtmlMessageFormat.class);
+	private static final transient Logger logger = LogManager.getLogger(EventHtmlMessageFormat.class);
 
 	@Override
 	protected String formatObject(final Object obj)
@@ -62,7 +64,7 @@ class EventHtmlMessageFormat extends MapFormat
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed building URL for " + modelRef, e);
+				logger.warn("Failed building URL for " + modelRef, e);
 				return "?";
 			}
 		}

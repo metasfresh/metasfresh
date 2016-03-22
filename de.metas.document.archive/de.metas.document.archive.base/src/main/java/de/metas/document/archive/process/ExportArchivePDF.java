@@ -23,8 +23,6 @@ package de.metas.document.archive.process;
  */
 
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,27 +47,27 @@ public class ExportArchivePDF extends SvrProcess implements ISvrProcessPrecondit
 		final GridField field = gridTab.getField(org.compiere.model.I_AD_Archive.COLUMNNAME_AD_Archive_ID);
 		if (field == null)
 		{
-			log.log(Level.FINE, "No AD_Archive field found for {0}", gridTab);
+			log.debug("No AD_Archive field found for {}", gridTab);
 			return false;
 		}
 
 		final Object value = field.getValue();
 		if (value == null)
 		{
-			log.log(Level.FINE, "Null value found for {0}", field);
+			log.debug("Null value found for {}", field);
 			return false;
 		}
 
 		if (!(value instanceof Number))
 		{
-			log.log(Level.FINE, "Invalid value {0} found for {1}", new Object[] { value, field });
+			log.debug("Invalid value {} found for {}", new Object[] { value, field });
 			return false;
 		}
 
 		final int archiveId = ((Number)value).intValue();
 		if (archiveId <= 0)
 		{
-			log.log(Level.FINE, "No value found for {1}", field);
+			log.debug("No value found for {}", field);
 			return false;
 		}
 

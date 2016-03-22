@@ -31,7 +31,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -70,7 +71,7 @@ public class QueryBPartner extends PosQuery
 	private CButton f_ok;
 	private CButton f_cancel;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(QueryBPartner.class);
+	private static Logger log = LogManager.getLogger(QueryBPartner.class);
 	
 	
 	/**	Table Column Layout Info			*/
@@ -259,7 +260,7 @@ public class QueryBPartner extends PosQuery
 			}
 		}
 		f_ok.setEnabled(enabled);
-		log.fine("C_BPartner_ID=" + m_C_BPartner_ID); 
+		log.debug("C_BPartner_ID=" + m_C_BPartner_ID); 
 	}	//	enableButtons
 
 	/**
@@ -268,7 +269,7 @@ public class QueryBPartner extends PosQuery
 	 */
 	protected void close()
 	{
-		log.fine("C_BPartner_ID=" + m_C_BPartner_ID); 
+		log.debug("C_BPartner_ID=" + m_C_BPartner_ID); 
 		
 		if (m_C_BPartner_ID > 0)
 		{

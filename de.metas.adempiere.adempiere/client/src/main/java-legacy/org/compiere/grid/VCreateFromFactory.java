@@ -37,19 +37,21 @@ package org.compiere.grid;
 
 
 import java.util.HashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_RMA;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public class VCreateFromFactory
 {
 	/**	Static Logger	*/
-	private static CLogger 	s_log = CLogger.getCLogger (VCreateFromFactory.class);
+	private static Logger 	s_log = LogManager.getLogger(VCreateFromFactory.class);
 
 	/** Registered classes map (AD_Table_ID -> Class) */
 	private static HashMap<Integer, Class<? extends ICreateFrom>> s_registeredClasses = null;
@@ -96,7 +98,7 @@ public class VCreateFromFactory
 			}
 			catch (Throwable e)
 			{
-				s_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				s_log.error(e.getLocalizedMessage(), e);
 				return null;
 			}
 		}

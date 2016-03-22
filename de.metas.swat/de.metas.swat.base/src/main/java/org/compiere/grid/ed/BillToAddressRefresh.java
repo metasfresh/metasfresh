@@ -23,8 +23,6 @@ package org.compiere.grid.ed;
  */
 
 
-import java.util.logging.Level;
-
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.util.Services;
@@ -54,7 +52,7 @@ public class BillToAddressRefresh extends AbstractContextMenuAction
 		final GridTab gridTab = getGridTab();
 		if (gridTab == null)
 		{
-			log.log(Level.SEVERE, "Couldn't get grid tab");
+			log.error("Couldn't get grid tab");
 			return false;
 		}
 		return true;

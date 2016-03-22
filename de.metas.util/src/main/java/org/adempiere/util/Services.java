@@ -26,8 +26,6 @@ package org.adempiere.util;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -40,6 +38,8 @@ import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.proxy.IServiceInterceptor;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -55,7 +55,7 @@ import com.google.common.cache.RemovalNotification;
  */
 public class Services
 {
-	private final static Logger logger = Logger.getLogger(Services.class.getName());
+	private final static Logger logger = LoggerFactory.getLogger(Services.class.getName());
 
 	/** Services interceptor */
 	private static IServiceInterceptor interceptor = new JavaAssistInterceptor();
@@ -208,8 +208,8 @@ public class Services
 			// Load service
 			loadService(serviceInterfaceClass, serviceImpl);
 
-			if (logger.isLoggable(Level.INFO))
-				logger.log(Level.INFO, "Loaded service for {0}: {1}", new Object[] { serviceInterfaceClass, serviceImpl.getClass() });
+			if (logger.isDebugEnabled())
+				logger.debug("Loaded service for {}: {}", new Object[] { serviceInterfaceClass, serviceImpl.getClass() });
 
 			return serviceImpl;
 		}
@@ -262,7 +262,7 @@ public class Services
 	 * Use this method to find out if a service is available.
 	 *
 	 * @param serviceInterfaceClass
-	 * @return <code>true</code> if the service was previously registered or could be auto-detected.
+	 * @return <code>true</code> if the service was previously registered or autodetected.
 	 */
 	public static <T extends ISingletonService> boolean isAvailable(final Class<T> serviceInterfaceClass)
 	{
@@ -351,7 +351,7 @@ public class Services
 				if (!ISingletonService.class.isAssignableFrom(serviceInterfaceClass))
 				{
 					final ServicesException ex = new ServicesException("Not registering MBean for service " + serviceImpl + " (" + serviceInterfaceClass + ") because it's a " + IMultitonService.class);
-					logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+					logger.error(ex.getLocalizedMessage(), ex);
 				}
 			}
 			else
@@ -399,7 +399,7 @@ public class Services
 		final Object mbean = service.getMBean();
 		if (mbean == null)
 		{
-			logger.log(Level.WARNING, "No MBean found for " + service + ". Skip registering MBean.");
+			logger.warn("No MBean found for " + service + ". Skip registering MBean.");
 			return;
 		}
 
@@ -411,7 +411,7 @@ public class Services
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot create JMX Name: " + jmxName + ". Skip registering MBean.", e);
+			logger.warn("Cannot create JMX Name: " + jmxName + ". Skip registering MBean.", e);
 			return;
 		}
 
@@ -425,19 +425,19 @@ public class Services
 		}
 		catch (InstanceAlreadyExistsException e)
 		{
-			logger.log(Level.WARNING, "Cannot register MBean Name: " + jmxName + ". (caught InstanceAlreadyExistsException)", e);
+			logger.warn("Cannot register MBean Name: " + jmxName + ". (caught InstanceAlreadyExistsException)", e);
 		}
 		catch (MBeanRegistrationException e)
 		{
-			logger.log(Level.WARNING, "Cannot register MBean Name: " + jmxName + ". (caught MBeanRegistrationException)", e);
+			logger.warn("Cannot register MBean Name: " + jmxName + ". (caught MBeanRegistrationException)", e);
 		}
 		catch (NotCompliantMBeanException e)
 		{
-			logger.log(Level.WARNING, "Cannot register MBean Name: " + jmxName + ". (caught NotCompliantMBeanException)", e);
+			logger.warn("Cannot register MBean Name: " + jmxName + ". (caught NotCompliantMBeanException)", e);
 		}
 		catch (NullPointerException e)
 		{
-			logger.log(Level.WARNING, "Cannot register MBean Name: " + jmxName + ". (caught NullPointerException)", e);
+			logger.warn("Cannot register MBean Name: " + jmxName + ". (caught NullPointerException)", e);
 		}
 	}
 
@@ -451,7 +451,7 @@ public class Services
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot create JMX Name: " + jmxName + ". Skip unregistering MBean.", e);
+			logger.warn("Cannot create JMX Name: " + jmxName + ". Skip unregistering MBean.", e);
 			return;
 		}
 
@@ -462,7 +462,7 @@ public class Services
 		}
 		catch (MBeanRegistrationException e)
 		{
-			logger.log(Level.WARNING, "Cannot unregister MBean Name: " + jmxName + ".", e);
+			logger.warn("Cannot unregister MBean Name: " + jmxName + ".", e);
 		}
 		catch (InstanceNotFoundException e)
 		{

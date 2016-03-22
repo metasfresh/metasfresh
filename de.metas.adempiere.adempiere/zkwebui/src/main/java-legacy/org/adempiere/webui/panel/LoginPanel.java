@@ -27,7 +27,6 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 
 import javax.servlet.http.HttpSession;
 
@@ -58,7 +57,6 @@ import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.MUser;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -66,6 +64,10 @@ import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.lang.Strings;
 import org.zkoss.util.Locales;
 import org.zkoss.zhtml.Div;
@@ -91,6 +93,7 @@ import org.zkoss.zul.mesg.MZul;
 
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.ui.web.base.session.UserPreference;
 
 /**
@@ -109,7 +112,7 @@ public class LoginPanel extends Window implements EventListener
 	private static final long serialVersionUID = 3992171368813030624L;
 	private static final String RESOURCE = ALoginRes.class.getName();
     private ResourceBundle res = ResourceBundle.getBundle(RESOURCE);
-    private static CLogger logger = CLogger.getCLogger(LoginPanel.class);
+    private static Logger logger = LogManager.getLogger(LoginPanel.class);
 
     private final Properties ctx;
     private final Label lblTitle = new Label(); // metas
@@ -286,7 +289,7 @@ public class LoginPanel extends Window implements EventListener
 					}
 				} catch (Exception e) {
 					//safe to ignore
-					logger.log(Level.INFO, e.getLocalizedMessage(), e);
+					logger.info(e.getLocalizedMessage(), e);
 				}
 			}
 		});
@@ -559,7 +562,7 @@ public class LoginPanel extends Window implements EventListener
 	private void closeSessionWithError(MSession session)
 	{
     	String errmsg = null;
-    	ValueNamePair vnp = CLogger.retrieveError();
+    	ValueNamePair vnp = MetasfreshLastError.retrieveError();
     	if (vnp != null)
     		errmsg = Msg.translate(Env.getCtx(), vnp.getValue());
     	if (errmsg == null)

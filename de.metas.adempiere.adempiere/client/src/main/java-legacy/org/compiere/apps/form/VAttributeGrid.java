@@ -31,7 +31,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -54,7 +55,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -132,7 +134,7 @@ public class VAttributeGrid extends CPanel
 	/** Setting Grid		*/
 	private boolean			m_setting = false;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (VAttributeGrid.class);
+	private static Logger log = LogManager.getLogger(VAttributeGrid.class);
 	
 	/**	Modes				*/
 	private static String[]	MODES = new String[]{
@@ -229,7 +231,7 @@ public class VAttributeGrid extends CPanel
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}	//	fillPicks
 
@@ -254,7 +256,7 @@ public class VAttributeGrid extends CPanel
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-	//	log.fine(e.toString());
+	//	log.debug(e.toString());
 		if (e.getSource() == modeCombo)
 			createGrid();
 		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -310,7 +312,7 @@ public class VAttributeGrid extends CPanel
 		int indexAttr2 = attributeCombo2.getSelectedIndex();
 		if (indexAttr1 == indexAttr2)
 		{
-			log.warning("Same Attribute Selected");
+			log.warn("Same Attribute Selected");
 			tabbedPane.setSelectedIndex(0);
 			return;
 		}
@@ -363,7 +365,7 @@ public class VAttributeGrid extends CPanel
 				I_M_AttributeValue yValue = null;
 				if (yValues != null)
 					yValue = yValues[row];
-			//	log.fine("Row=" + row + " - Col=" + col);
+			//	log.debug("Row=" + row + " - Col=" + col);
 				//
 				if (row == 0 && col == 0)
 				{
@@ -448,7 +450,7 @@ public class VAttributeGrid extends CPanel
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

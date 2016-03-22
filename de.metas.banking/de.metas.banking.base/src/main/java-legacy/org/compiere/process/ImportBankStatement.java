@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -71,7 +70,7 @@ public class ImportBankStatement extends SvrProcess
 			else if (name.equals("DeleteOldImported"))
 				p_deleteOldImported = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		m_ctx = Env.getCtx();
 	}	//	prepare
@@ -98,7 +97,7 @@ public class ImportBankStatement extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_BankStatement "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Deleted Old Imported =" + no);
+			log.debug("Deleted Old Imported =" + no);
 		}
 
 		//	Set Client, Org, IsActive, Created/Updated
@@ -114,7 +113,7 @@ public class ImportBankStatement extends SvrProcess
 			  + " I_IsImported = 'N' "
 			  + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL OR AD_Client_ID IS NULL OR AD_Org_ID IS NULL OR AD_Client_ID=0 OR AD_Org_ID=0");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.info ("Reset=" + no);
+		log.info("Reset=" + no);
 
 		sql = new StringBuffer ("UPDATE I_BankStatement o "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
@@ -123,7 +122,7 @@ public class ImportBankStatement extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Org=" + no);
+			log.warn("Invalid Org=" + no);
 			
 		//	Set Bank Account
 		sql = new StringBuffer("UPDATE I_BankStatement i "
@@ -180,7 +179,7 @@ public class ImportBankStatement extends SvrProcess
 			+ "OR I_isImported IS NULL").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid Bank Account=" + no);
+			log.warn("Invalid Bank Account=" + no);
 		 
 		//	Set Currency
 		sql = new StringBuffer ("UPDATE I_BankStatement i "
@@ -207,7 +206,7 @@ public class ImportBankStatement extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid Currency=" + no);
+			log.warn("Invalid Currency=" + no);
 		
 		 
 		//	Set Amount
@@ -355,7 +354,7 @@ public class ImportBankStatement extends SvrProcess
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "DetectDuplicates " + e.getMessage());
+			log.error("DetectDuplicates " + e.getMessage());
 		}
 		if (no != 0)
 			log.info("Duplicates=" + no);
@@ -512,7 +511,7 @@ public class ImportBankStatement extends SvrProcess
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		
 		//	Set Error to indicator to not imported

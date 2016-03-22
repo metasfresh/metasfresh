@@ -24,7 +24,8 @@ package org.compiere.grid;
 
 
 import java.awt.Component;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 
@@ -41,7 +42,8 @@ import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Use layout callback to implement size groups across panels and to shrink hidden components vertically.
@@ -49,7 +51,7 @@ import org.compiere.util.CLogger;
 class VPanelLayoutCallback extends LayoutCallback
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(VPanelLayoutCallback.class);
+	private static final transient Logger logger = LogManager.getLogger(VPanelLayoutCallback.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 
 	private static final String PROPERTYNAME_LayoutCallback = VPanelLayoutCallback.class.getName();
@@ -212,7 +214,7 @@ class VPanelLayoutCallback extends LayoutCallback
 		final int labelWidth = label.getPreferredSize().width;
 		labelMinWidth = labelWidth > labelMinWidth ? labelWidth : labelMinWidth;
 
-		logger.log(Level.FINEST, "LabelMinWidth={0} ({1})", new Object[] { labelMinWidth, label });
+		logger.trace("LabelMinWidth={} ({})", new Object[] { labelMinWidth, label });
 	}
 
 	public void updateMinWidthFrom(final VEditor editor)
@@ -224,6 +226,6 @@ class VPanelLayoutCallback extends LayoutCallback
 			fieldMinWidth = editorCompWidth;
 		}
 
-		logger.log(Level.FINEST, "FieldMinWidth={0} ({1})", new Object[] { fieldMinWidth, editorComp });
+		logger.trace("FieldMinWidth={} ({})", new Object[] { fieldMinWidth, editorComp });
 	}
 }

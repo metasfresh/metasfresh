@@ -1,7 +1,5 @@
 package de.metas.jms;
 
-import java.util.logging.Level;
-
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
@@ -9,6 +7,8 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -42,6 +42,9 @@ import org.compiere.util.Ini;
  */
 public class JmsInterceptor extends AbstractModuleInterceptor
 {
+	private static final Logger logger = LogManager.getLogger(JmsInterceptor.class);
+
+	
 	/**
 	 * Starts an embedded JMS broker if either
 	 * <ul>
@@ -61,13 +64,13 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 		if ((Ini.getRunMode() == RunMode.BACKEND && JmsConstants.isUseEmbeddedBroker())
 				|| CConnection.isServerEmbedded())
 		{
-			JmsConstants.getLogger().log(Level.WARNING,
+			logger.warn(
 					"RunMode={0}, IsUseEmbeddedBroker={1}, IsServerEmbedded={2}. Starting embedded JMS broker",
 					Ini.getRunMode(),
 					JmsConstants.isUseEmbeddedBroker(),
 					CConnection.isServerEmbedded());
 
-			Services.get(IJMSService.class).startEmbeddedBrocker();
+			Services.get(IJMSService.class).startEmbeddedBroker();
 		}
 	}
 

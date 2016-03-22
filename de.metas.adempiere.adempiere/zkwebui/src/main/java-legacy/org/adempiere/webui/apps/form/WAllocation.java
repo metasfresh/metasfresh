@@ -18,7 +18,6 @@ package org.adempiere.webui.apps.form;
 
 import java.math.BigDecimal;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Checkbox;
@@ -98,7 +97,7 @@ public class WAllocation extends Allocation
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 	
@@ -330,7 +329,7 @@ public class WAllocation extends Allocation
 	 */
 	public void onEvent(Event e)
 	{
-		log.config("");
+		log.info("");
 		if (e.getTarget().equals(multiCurrency))
 			loadBPartner();
 		//	Allocate
@@ -381,7 +380,7 @@ public class WAllocation extends Allocation
 	{
 		String name = e.getPropertyName();
 		Object value = e.getNewValue();
-		log.config(name + "=" + value);
+		log.info(name + "=" + value);
 		if (value == null)
 			return;
 		

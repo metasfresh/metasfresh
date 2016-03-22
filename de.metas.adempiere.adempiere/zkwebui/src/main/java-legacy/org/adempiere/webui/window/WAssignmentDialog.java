@@ -26,7 +26,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.LayoutUtils;
@@ -45,12 +44,15 @@ import org.adempiere.webui.component.Textbox;
 import org.adempiere.webui.component.Window;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.model.MUOMConversion;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -99,7 +101,7 @@ public class WAssignmentDialog extends Window implements EventListener
 		this.setAttribute("mode", "modal");
 		this.setBorder("normal");
 		
-		log.config(mAssignment.toString());
+		log.info(mAssignment.toString());
 		m_mAssignment = mAssignment;
 		try
 		{
@@ -110,7 +112,7 @@ public class WAssignmentDialog extends Window implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		setDisplay();	//	from mAssignment
 		//
@@ -122,7 +124,7 @@ public class WAssignmentDialog extends Window implements EventListener
 	/**	True if setting Value			*/
 	private boolean		m_setting = false;
 	/**	Logger							*/
-	private static CLogger log = CLogger.getCLogger(WAssignmentDialog.class);
+	private static Logger log = LogManager.getLogger(WAssignmentDialog.class);
 	/**	Lookup with Resource & UOM		*/
 	private HashMap<KeyNamePair,KeyNamePair>	m_lookup = new HashMap<KeyNamePair,KeyNamePair>();
 	
@@ -238,7 +240,7 @@ public class WAssignmentDialog extends Window implements EventListener
 			if (m_mAssignment.getS_ResourceAssignment_ID() == 0)	//	new record select first
 				fResource.setSelectedItem(fResource.getSelectedItem());		//	initiates UOM display
 			else
-				log.log(Level.SEVERE, "Resource not found ID=" + S_Resource_ID);
+				log.error("Resource not found ID=" + S_Resource_ID);
 		}
 
 		//	Set Date, Qty
@@ -278,7 +280,7 @@ public class WAssignmentDialog extends Window implements EventListener
 	 */
 	private boolean cmd_save()
 	{
-		log.config("");
+		log.info("");
 		//	Set AssignDateTo
 		Calendar date = new GregorianCalendar();
 		getDateAndTimeFrom(date);
@@ -329,7 +331,7 @@ public class WAssignmentDialog extends Window implements EventListener
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 		}
 		//	Convert to Array

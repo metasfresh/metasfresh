@@ -22,7 +22,8 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -33,7 +34,8 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridWindow;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.WebDoc;
 
 /**
@@ -69,7 +71,7 @@ public class Help extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		AEnv.positionCenterWindow(frame, this);
 	}	//	Help
@@ -91,7 +93,7 @@ public class Help extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		AEnv.positionCenterWindow(frame, this);
 	}	//	Help
@@ -113,7 +115,7 @@ public class Help extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		AEnv.positionCenterWindow(dialog, this);
 	}	//	Help
@@ -138,13 +140,13 @@ public class Help extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "Help", ex);
+			log.error("Help", ex);
 		}
 		AEnv.positionCenterWindow(frame, this);
 	}	//	Help
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Help.class);
+	private static Logger log = LogManager.getLogger(Help.class);
 	
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();

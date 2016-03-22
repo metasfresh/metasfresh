@@ -29,9 +29,10 @@ import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.component.Textbox;
 import org.adempiere.webui.panel.ADForm;
 import org.compiere.apps.form.VSQLProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -53,7 +54,7 @@ public class WSQLProcess extends ADForm implements EventListener
 	private static final long serialVersionUID = -2038792517003449189L;
 
 	/** Log. */
-    private static CLogger  log = CLogger.getCLogger(VSQLProcess.class);
+    private static Logger  log = LogManager.getLogger(VSQLProcess.class);
 
     /** Grid used to layout components. */
     private Grid m_grdMain = new Grid();

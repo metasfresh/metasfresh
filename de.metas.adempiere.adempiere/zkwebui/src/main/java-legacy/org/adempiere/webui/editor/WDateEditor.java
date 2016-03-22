@@ -27,9 +27,10 @@ import org.adempiere.webui.event.ContextMenuListener;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WFieldRecordInfo;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -43,11 +44,11 @@ public class WDateEditor extends WEditor implements ContextMenuListener
 {
 	private static final String[] LISTENER_EVENTS = {Events.ON_CHANGE, Events.ON_OK};
     @SuppressWarnings("unused")
-	private static final CLogger logger;
+	private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(WDateEditor.class);
+        logger = LogManager.getLogger(WDateEditor.class);
     }
 
     private Timestamp oldValue = new Timestamp(0);

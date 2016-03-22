@@ -16,21 +16,36 @@
  *****************************************************************************/
 package org.adempiere.webui.process;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.*;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.window.SimplePDFViewer;
-import org.compiere.model.*;
-import org.compiere.print.*;
+import org.compiere.model.MClient;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MMailText;
+import org.compiere.model.MQuery;
+import org.compiere.model.MUser;
+import org.compiere.model.MUserMail;
+import org.compiere.model.PrintInfo;
+import org.compiere.model.X_C_Invoice;
+import org.compiere.print.MPrintFormat;
+import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.*;
+import org.compiere.util.AdempiereUserError;
+import org.compiere.util.DB;
+import org.compiere.util.EMail;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.compiere.util.Language;
 import org.zkoss.zk.ui.util.Clients;
 
 /**
@@ -83,7 +98,7 @@ public class InvoicePrint extends SvrProcess
 				m_DocumentNo_To = (String)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		if (m_DocumentNo_From != null && m_DocumentNo_From.length() == 0)
 			m_DocumentNo_From = null;
@@ -101,7 +116,7 @@ public class InvoicePrint extends SvrProcess
 		//	Need to have Template
 		if (p_EMailPDF && p_R_MailText_ID == 0)
 			throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@");
-		log.info ("C_BPartner_ID=" + m_C_BPartner_ID
+		log.info("C_BPartner_ID=" + m_C_BPartner_ID
 			+ ", C_Invoice_ID=" + m_C_Invoice_ID
 			+ ", EmailPDF=" + p_EMailPDF + ",R_MailText_ID=" + p_R_MailText_ID
 			+ ", DateInvoiced=" + m_dateInvoiced_From + "-" + m_dateInvoiced_To
@@ -210,7 +225,7 @@ public class InvoicePrint extends SvrProcess
 			}
 		}
 		sql.append(" ORDER BY i.C_Invoice_ID, pf.AD_Org_ID DESC");	//	more than 1 PF record
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 
 		MPrintFormat format = null;
 		int old_AD_PrintFormat_ID = -1;
@@ -314,7 +329,7 @@ public class InvoicePrint extends SvrProcess
 					if (!Ini.isClient())
 						invoice = new File(MInvoice.getPDFFileName(documentDir, C_Invoice_ID));
 					File attachment = re.getPDF(invoice);
-					log.fine(to + " - " + attachment);
+					log.debug(to + " - " + attachment);
 					email.addAttachment(attachment);
 					//
 					String msg = email.send();
@@ -353,7 +368,7 @@ public class InvoicePrint extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "doIt - " + sql, e);
+			log.error("doIt - " + sql, e);
 			throw new Exception (e);
 		}
 		finally {
@@ -370,7 +385,7 @@ public class InvoicePrint extends SvrProcess
 				win.setAttribute(Window.MODE_KEY, Window.MODE_HIGHLIGHTED);
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		} else if (pdfList.size() > 0) {
 			Clients.showBusy(null, false);
@@ -380,7 +395,7 @@ public class InvoicePrint extends SvrProcess
 				SessionManager.getAppDesktop().showWindow(win, "center");
 			} catch (Exception e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 			}
 		}
 		

@@ -46,7 +46,8 @@ import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.component.ToolBarButton;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -68,7 +69,7 @@ public class GeneralInfoPanel extends Grid
 	 */
 	private static final long serialVersionUID = -6892484096399279457L;
 	
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
 	private final Rows rows;
 	private final org.zkoss.zul.Label lblSponsorNo = new org.zkoss.zul.Label();
@@ -161,13 +162,13 @@ public class GeneralInfoPanel extends Grid
 		resetFieldValues();
 		if (node.getBPartner_ID() <= 0)
 		{
-			log.warning("No C_BPartner_ID found - "+node);
+			log.warn("No C_BPartner_ID found - "+node);
 			return;
 		}
 		MBPartner bp = MBPartner.get(Env.getCtx(), node.getBPartner_ID());
 		if (bp == null)
 		{
-			log.warning("No C_BPartner record found - "+node);
+			log.warn("No C_BPartner record found - "+node);
 			return;
 		}
 		//
@@ -240,7 +241,7 @@ public class GeneralInfoPanel extends Grid
 				}
 				else
 				{
-					log.warning("Unknown status="+status+", C_Sponsor_ID="+node.getSponsor_ID()+", month="+month+", year="+year);
+					log.warn("Unknown status="+status+", C_Sponsor_ID="+node.getSponsor_ID()+", month="+month+", year="+year);
 				}
 			}
 		}

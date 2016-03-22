@@ -33,7 +33,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
@@ -75,7 +76,6 @@ import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -152,7 +152,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	}	//	ReportEngine
 
 	/**	Static Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (ReportEngine.class);
+	private static Logger	log	= LogManager.getLogger(ReportEngine.class);
 
 	/**	Context					*/
 	private Properties		m_ctx;
@@ -399,7 +399,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.WARNING, "Operating System Print Issue, check & try again", e);
+				log.warn("Operating System Print Issue, check & try again", e);
 				return;
 			}
 
@@ -422,7 +422,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	print
 
@@ -445,7 +445,7 @@ PrintEvent on Win32 Printer : \\MAIN\HP LaserJet 5L
 PrintServiceAttributeSet - length=1
 queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		**/
-		log.fine("attributeUpdate - " + psae);
+		log.debug("attributeUpdate - " + psae);
 	//	PrintUtil.dump (psae.getAttributes());
 	}	//	attributeUpdate
 
@@ -529,11 +529,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			log.log(Level.SEVERE, "(f) - " + fnfe.toString());
+			log.error("(f) - " + fnfe.toString());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(f)", e);
+			log.error("(f)", e);
 		}
 		return false;
 	}	//	createHTML
@@ -641,7 +641,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 								//	ignore contained Data
 							}
 							else
-								log.log(Level.SEVERE, "Element not PrintData(Element) " + obj.getClass());
+								log.error("Element not PrintData(Element) " + obj.getClass());
 						}
 					}	//	printed
 				}	//	for all columns
@@ -674,7 +674,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(w)", e);
+			log.error("(w)", e);
 		}
 		return false;
 	}	//	createHTML
@@ -696,11 +696,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			log.log(Level.SEVERE, "(f) - " + fnfe.toString());
+			log.error("(f) - " + fnfe.toString());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(f)", e);
+			log.error("(f)", e);
 		}
 		return false;
 	}	//	createCSV
@@ -761,7 +761,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 							{
 							}
 							else
-								log.log(Level.SEVERE, "Element not PrintData(Element) " + obj.getClass());
+								log.error("Element not PrintData(Element) " + obj.getClass());
 							createCSVvalue (sb, delimiter, data);
 						}
 					}	//	printed
@@ -775,7 +775,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(w)", e);
+			log.error("(w)", e);
 		}
 		return false;
 	}	//	createCSV
@@ -831,11 +831,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			log.log(Level.SEVERE, "(f) - " + fnfe.toString());
+			log.error("(f) - " + fnfe.toString());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(f)", e);
+			log.error("(f)", e);
 		}
 		return false;
 	}	//	createXML
@@ -858,7 +858,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(w)", e);
+			log.error("(w)", e);
 		}
 		return false;
 	}	//	createXML
@@ -888,7 +888,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (IOException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		if (createPDF (file))
 			return file;
@@ -917,11 +917,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "file", e);
+			log.error("file", e);
 			return false;
 		}
 
-		log.fine(uri.toString());
+		log.debug(uri.toString());
 
 		try
 		{
@@ -942,7 +942,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "PDF", e);
+			log.error("PDF", e);
 			return false;
 		}
 
@@ -976,7 +976,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		{
 			// metas: throw exception instead of logging the error
 			throw new AdempiereException(e);
-			// log.log(Level.SEVERE, "PDF", e);
+			// log.error("PDF", e);
 		}
 		// return null;
 	}	//	createPDFData
@@ -994,11 +994,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			log.log(Level.SEVERE, "(f) - " + fnfe.toString());
+			log.error("(f) - " + fnfe.toString());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(f)", e);
+			log.error("(f)", e);
 		}
 		return false;
 	}	//	createPS
@@ -1018,7 +1018,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				StreamPrintServiceFactory.lookupStreamPrintServiceFactories(docFlavor, outputMimeType);
 			if (spsfactories.length == 0)
 			{
-				log.log(Level.SEVERE, "(fos) - No StreamPrintService");
+				log.error("(fos) - No StreamPrintService");
 				return false;
 			}
 			//	just use first one - sun.print.PSStreamPrinterFactory
@@ -1038,7 +1038,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(fos)", e);
+			log.error("(fos)", e);
 		}
 		return false;
 	}	//	createPS
@@ -1109,7 +1109,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "(1) - " + sql, e1);
+			log.error("(1) - " + sql, e1);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -1142,7 +1142,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			}
 			catch (SQLException e1)
 			{
-				log.log(Level.SEVERE, "(2) - " + sql, e1);
+				log.error("(2) - " + sql, e1);
 			}
 			finally {
 				DB.close(rs, pstmt);
@@ -1150,7 +1150,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			}
 			if (AD_PrintFormat_ID == 0)
 			{
-				log.log(Level.SEVERE, "Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID()
+				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID()
 					+ ",AD_Client_ID=" + AD_Client_ID);
 				return null;
 			}
@@ -1293,7 +1293,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	{
 		if (Record_ID < 1)
 		{
-			log.log(Level.WARNING, "No PrintFormat for Record_ID=" + Record_ID
+			log.warn("No PrintFormat for Record_ID=" + Record_ID
 					+ ", Type=" + type);
 			return null;
 		}
@@ -1537,7 +1537,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Record_ID=" + Record_ID + ", SQL=" + sql, e);
+			log.error("Record_ID=" + Record_ID + ", SQL=" + sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -1547,14 +1547,14 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		// metas: begin: Use provided print format
 		if (adPrintFormatToUseId > 0)
 		{
-			log.log(Level.FINE, "Using AD_PrintFormat_ID={0}(provided) instead of {1}(detected)", new Object[] { adPrintFormatToUseId, AD_PrintFormat_ID });
+			log.debug("Using AD_PrintFormat_ID={}(provided) instead of {}(detected)", new Object[] { adPrintFormatToUseId, AD_PrintFormat_ID });
 			AD_PrintFormat_ID = adPrintFormatToUseId;
 		}
 		// metas: end
 
 		if (AD_PrintFormat_ID == 0)
 		{
-			log.log(Level.SEVERE, "No PrintFormat found for Type=" + type + ", Record_ID=" + Record_ID);
+			log.error("No PrintFormat found for Type=" + type + ", Record_ID=" + Record_ID);
 			return null;
 		}
 
@@ -1566,7 +1566,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		//	query
 		MQuery query = new MQuery(format.getAD_Table_ID());
 		query.addRestriction(DOC_IDS[type], MQuery.EQUAL, Record_ID);
-	//	log.config( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
+	//	log.info( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
 		//
 		if (DocumentNo == null || DocumentNo.length() == 0)
 			DocumentNo = "DocPrint";
@@ -1627,7 +1627,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "(1) - " + sql, e1);
+			log.error("(1) - " + sql, e1);
 			return null;		//	error
 		}
 		finally {
@@ -1668,14 +1668,14 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		catch (SQLException e2)
 		{
-			log.log(Level.SEVERE, "(2) - " + sql, e2);
+			log.error("(2) - " + sql, e2);
 			return null;
 		}
 		finally {
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine("Order => " + what[0] + " ID=" + what[1]);
+		log.debug("Order => " + what[0] + " ID=" + what[1]);
 		return what;
 	}	//	getDocumentWhat
 
@@ -1697,7 +1697,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		{
 			int no = DB.executeUpdate(sql.toString(), null);
 			if (no != 1)
-				log.log(Level.SEVERE, "Updated records=" + no + " - should be just one");
+				log.error("Updated records=" + no + " - should be just one");
 		}
 	}	//	printConfirm
 

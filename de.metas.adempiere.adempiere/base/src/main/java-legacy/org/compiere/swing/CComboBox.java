@@ -18,6 +18,7 @@ package org.compiere.swing;
 
 import java.awt.Color;
 import java.awt.event.MouseListener;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -140,6 +141,14 @@ public class CComboBox<E> extends JComboBox<E>
 	public CComboBox()
 	{
 		super();
+		init();
+	}   //  CComboBox
+	
+	public CComboBox(final List<E> items)
+	{
+		super();
+		setModel(new ListComboBoxModel<>(items));
+		
 		init();
 	}   //  CComboBox
 	

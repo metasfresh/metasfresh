@@ -23,7 +23,8 @@ package org.adempiere.ad.migration.executor.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -33,11 +34,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
-import org.compiere.util.CLogger;
 
 public class ColumnSyncDDLExecutable implements IPostponedExecutable
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IMigrationExecutorContext migrationCtx;
 	private final int adColumnId;
@@ -58,7 +58,7 @@ public class ColumnSyncDDLExecutable implements IPostponedExecutable
 		final I_AD_Column column = retrieveColumn();
 		if (column == null)
 		{
-			logger.log(Level.INFO, "No AD_Column found for " + adColumnId + ". Skip");
+			logger.info("No AD_Column found for " + adColumnId + ". Skip");
 			return;
 		}
 
@@ -66,7 +66,7 @@ public class ColumnSyncDDLExecutable implements IPostponedExecutable
 		if (drop)
 		{
 			// TODO unsync column?
-			logger.warning("Please manualy drop column " + column.getColumnName() + "(" + column.getAD_Table() + ")");
+			logger.warn("Please manualy drop column " + column.getColumnName() + "(" + column.getAD_Table() + ")");
 		}
 		else
 		{

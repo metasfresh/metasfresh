@@ -41,7 +41,8 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -67,7 +68,7 @@ public class WriteCommissionAccount extends SvrProcess
 {
 	private static final String ALSO_HANDLE_PROCESS_IMMEDIATELY = "AlsoHandleTypesWithProcessNow";
 
-	private static final CLogger logger = CLogger.getCLogger(WriteCommissionAccount.class);
+	private static final Logger logger = LogManager.getLogger(WriteCommissionAccount.class);
 
 	private boolean alsoHandleProcessNow = false;
 

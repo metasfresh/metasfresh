@@ -21,9 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -78,7 +78,7 @@ public class MMenu extends X_AD_Menu
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -90,7 +90,7 @@ public class MMenu extends X_AD_Menu
 	}	//	get
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MMenu.class);
+	private static Logger	s_log	= LogManager.getLogger(MMenu.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -199,7 +199,7 @@ public class MMenu extends X_AD_Menu
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, SQL, e);
+			s_log.error(SQL, e);
 			retValue = -1;
 		}
 		finally

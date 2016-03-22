@@ -101,7 +101,7 @@ public class MUOMConversion extends X_C_UOM_Conversion
 		endDate.add(Calendar.MINUTE, minutes);
 		//
 		Timestamp retValue = new Timestamp(endDate.getTimeInMillis());
-		// log.config( "TimeUtil.getEndDate", "Start=" + startDate
+		// log.info( "TimeUtil.getEndDate", "Start=" + startDate
 		// + ", Qty=" + qty + ", End=" + retValue);
 		return retValue;
 	}	// startDate

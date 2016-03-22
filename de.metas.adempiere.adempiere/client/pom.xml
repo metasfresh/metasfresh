@@ -58,19 +58,15 @@
 			<version>3.7.1</version>
 		</dependency>
 		
-		<!-- moved from adempiere-base 
-		required by /adempiereTrunkMvcForms/client/src/org/compiere/apps/GroovyEditor.java
-		-->
+		<!-- Groovy script support -->
+		<!-- FIXME: i think this shall go to base/ -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>1.5.1</version>
+			<artifactId>groovy</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-engine</artifactId>
-			<version>1.5.1</version>
+			<artifactId>groovy-console</artifactId>
 		</dependency>
 
 	</dependencies>

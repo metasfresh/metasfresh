@@ -15,7 +15,6 @@ package org.adempiere.webui.desktop;
 
 import org.adempiere.webui.ClientInfo;
 import org.adempiere.webui.apps.ProcessDialog;
-import org.zkoss.zul.api.Window;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.part.UIPart;
 import org.adempiere.webui.util.ServerPushTemplate;
@@ -24,6 +23,7 @@ import org.compiere.model.MQuery;
 import org.compiere.util.WebDoc;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Page;
+import org.zkoss.zul.api.Window;
 
 /**
  * Desktop interface

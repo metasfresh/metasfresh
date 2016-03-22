@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
@@ -283,7 +284,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 				count++;
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Line difference - JournalLines=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - JournalLines=" + fromLines.length + " <> Saved=" + count);
 
 		return count;
 	}	// copyLinesFrom
@@ -303,7 +304,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 				+ (processed ? "Y" : "N")
 				+ "' WHERE GL_Journal_ID=" + getGL_Journal_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
-		log.fine(processed + " - Lines=" + noLine);
+		log.debug(processed + " - Lines=" + noLine);
 	}	// setProcessed
 
 	/**************************************************************************
@@ -333,7 +334,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 					"UPDATE GL_JournalLine SET " + MJournalLine.COLUMNNAME_DateAcct + "=? WHERE GL_Journal_ID=?",
 					new Object[] { getDateAcct(), getGL_Journal_ID() },
 					false, get_TrxName());
-			log.finest("Updated GL_JournalLine.DateAcct #" + no);
+			log.trace("Updated GL_JournalLine.DateAcct #" + no);
 		}
 
 		setAmtPrecision(this); // metas: cg: 02476
@@ -383,7 +384,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 				+ "WHERE GL_JournalBatch_ID=" + getGL_JournalBatch_ID());
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
-			log.warning("afterSave - Update Batch #" + no);
+			log.warn("afterSave - Update Batch #" + no);
 		return no == 1;
 	}	// updateBatch
 
@@ -706,7 +707,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 */
 	MJournal reverseCorrectIt(int GL_JournalBatch_ID)
 	{
-		log.log(Level.INFO, "{0}", this);
+		log.info("{}", this);
 		
 		// Journal
 		final MJournal reverse = new MJournal(this);
@@ -900,7 +901,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF

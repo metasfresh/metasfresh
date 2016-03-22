@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.util.Trx;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -47,7 +47,7 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 	// @Cached(cacheName = I_C_ReferenceNo_Type.Table_Name + "_ForClient")
 	public List<I_C_ReferenceNo_Type> retrieveReferenceNoTypes(@CacheCtx Properties ctx)
 	{
-		final List<I_C_ReferenceNo_Type> result = new Query(ctx, I_C_ReferenceNo_Type.Table_Name, null, Trx.TRXNAME_None)
+		final List<I_C_ReferenceNo_Type> result = new Query(ctx, I_C_ReferenceNo_Type.Table_Name, null, ITrx.TRXNAME_None)
 				// .setApplyAccessFilterRW(false)
 				.setOnlyActiveRecords(true)
 				.setOrderBy(I_C_ReferenceNo_Type.COLUMNNAME_C_ReferenceNo_Type_ID)
@@ -208,6 +208,7 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 				.list(I_C_ReferenceNo.class);
 	}
 
+	@Override
 	protected List<I_C_ReferenceNo_Doc> retrieveRefNoDocByRefNoAndTableName(final I_C_ReferenceNo referenceNo, final String tableName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(referenceNo);

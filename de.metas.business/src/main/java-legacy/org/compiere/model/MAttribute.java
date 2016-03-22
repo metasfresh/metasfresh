@@ -23,7 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -32,7 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -83,7 +85,7 @@ public class MAttribute extends X_M_Attribute
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -98,12 +100,12 @@ public class MAttribute extends X_M_Attribute
 		
 		MAttribute[] retValue = new MAttribute[list.size ()];
 		list.toArray (retValue);
-		s_log.fine("AD_Client_ID=" + AD_Client_ID + " - #" + retValue.length);
+		s_log.debug("AD_Client_ID=" + AD_Client_ID + " - #" + retValue.length);
 		return retValue;
 	}	//	getOfClient
 	
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MAttribute.class);
+	private static Logger s_log = LogManager.getLogger(MAttribute.class);
 
 	
 	/**
@@ -364,7 +366,7 @@ public class MAttribute extends X_M_Attribute
 					+ "WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID"
 					+ " AND mau.M_Attribute_ID=" + getM_Attribute_ID() + ")";
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("AttributeSet Instance set #" + no);
+			log.debug("AttributeSet Instance set #" + no);
 		}
 		return success;
 	}	//	afterSave

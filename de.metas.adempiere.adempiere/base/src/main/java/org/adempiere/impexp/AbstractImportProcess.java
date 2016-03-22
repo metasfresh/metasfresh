@@ -30,28 +30,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.CLoggerLoggable;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.TrxRunnableAdapter;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import com.google.common.collect.ImmutableMap;
+
+import ch.qos.logback.classic.Level;
 
 /**
  * Base implementation of {@link IImportProcess}.
@@ -77,14 +78,14 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	protected static final String COLUMNNAME_Processing = "Processing";
 
 	// services
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 	protected final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
 	// Parameters
 	private Properties _ctx;
 	private IParams _parameters = IParams.NULL;
-	private ILoggable loggable = new CLoggerLoggable(log, Level.INFO);
+	private ILoggable loggable = LoggerLoggable.of(log, Level.INFO);
 
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setCtx(final Properties ctx)
@@ -257,7 +258,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
-		log.fine("Reset=" + no);
+		log.debug("Reset=" + no);
 
 	}
 

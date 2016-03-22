@@ -41,16 +41,16 @@ import org.compiere.model.MTable;
 import org.compiere.model.M_Element;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public final class ColumnInstaller extends Installer {
 
-	private static final CLogger logger = CLogger
-			.getCLogger(ColumnInstaller.class);
+	private static final Logger logger = LogManager.getLogger(ColumnInstaller.class);
 
 	private MColumn column;
 
@@ -70,7 +70,7 @@ public final class ColumnInstaller extends Installer {
 		M_Element element = M_Element.get(ctx, columnName, trxName);
 		if (element == null) {
 
-			logger.fine("Creating new AD_Element for column");
+			logger.debug("Creating new AD_Element for column");
 			element = new M_Element(ctx, 0, trxName);
 			element.setEntityType(entityType);
 			element.setColumnName(columnName);
@@ -208,7 +208,7 @@ public final class ColumnInstaller extends Installer {
 		if (oldCol != null) {
 			oldCol.set_TrxName(trxName);
 
-			logger.fine(table.get_TableName() + "." + oldCol
+			logger.debug(table.get_TableName() + "." + oldCol
 					+ " still existing in AD");
 
 			final List<MField> fields = new Query(ctx, I_AD_Field.Table_Name,
@@ -216,7 +216,7 @@ public final class ColumnInstaller extends Installer {
 					.setParameters(oldCol.get_ID()).list();
 
 			for (final MField field : fields) {
-				logger.fine(field + " still uses the old column. Updating it");
+				logger.debug(field + " still uses the old column. Updating it");
 				field.setAD_Column_ID(column.get_ID());
 				field.save();
 			}
@@ -249,7 +249,7 @@ public final class ColumnInstaller extends Installer {
 					tableNamePattern, colNamePattern);
 			if (rs.next()) {
 				logger
-						.fine(tableNamePattern
+						.debug(tableNamePattern
 								+ "."
 								+ colNamePattern
 								+ " still existing in DB. Copying data to new column and dropping it");
@@ -257,7 +257,7 @@ public final class ColumnInstaller extends Installer {
 				final int no = DB.executeUpdateEx("UPDATE "
 						+ table.getTableName() + " SET "
 						+ column.getColumnName() + "=" + oldColName, trxName);
-				logger.fine("updated " + no + " rows");
+				logger.debug("updated " + no + " rows");
 
 				DB.executeUpdateEx("ALTER TABLE " + table.getTableName()
 						+ " DROP COLUMN " + colNamePattern, trxName);

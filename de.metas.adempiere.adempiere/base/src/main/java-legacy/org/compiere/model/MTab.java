@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -113,7 +113,7 @@ public class MTab extends X_AD_Tab
 	private MField[]		m_fields	= null;
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MTab.class);
+	private static Logger	s_log	= LogManager.getLogger(MTab.class);
 	
 	/**	Packages for Model Classes	*/
 	/**
@@ -142,7 +142,7 @@ public class MTab extends X_AD_Tab
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -204,7 +204,7 @@ public class MTab extends X_AD_Tab
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, SQL, e);
+			s_log.error(SQL, e);
 			retValue = -1;
 		}
 		return retValue;

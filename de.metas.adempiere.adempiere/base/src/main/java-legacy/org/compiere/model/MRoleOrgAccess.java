@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -75,7 +75,7 @@ public class MRoleOrgAccess extends X_AD_Role_OrgAccess
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "get", e);
+			s_log.error("get", e);
 		}
 		finally
 		{
@@ -89,7 +89,7 @@ public class MRoleOrgAccess extends X_AD_Role_OrgAccess
 	}	// get
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MRoleOrgAccess.class);
+	private static Logger s_log = LogManager.getLogger(MRoleOrgAccess.class);
 
 	/**************************************************************************
 	 * Load Constructor

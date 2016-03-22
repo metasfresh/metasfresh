@@ -27,13 +27,15 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.plaf.CompiereUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -71,7 +73,7 @@ public class VScheduleTimePanel extends JComponent
 	/** Line Width					*/
 	private int					m_width = 120;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VScheduleTimePanel.class);
+	private static Logger log = LogManager.getLogger(VScheduleTimePanel.class);
 
 	/**
 	 * 	Set Time Slots and calculate width
@@ -79,7 +81,7 @@ public class VScheduleTimePanel extends JComponent
 	 */
 	public void setTimeSlots (MAssignmentSlot[] timeSlots)
 	{
-		log.fine( "VScheduleTimePanel.setTimeSlots");
+		log.debug( "VScheduleTimePanel.setTimeSlots");
 		m_timeSlots = timeSlots;
 		m_lines = new String[m_timeSlots.length];
 		//
@@ -91,7 +93,7 @@ public class VScheduleTimePanel extends JComponent
 			fm = g.getFontMetrics(m_font);		//	the "correct" way
 		else
 		{
-			log.log(Level.SEVERE, "No Graphics");
+			log.error("No Graphics");
 		//	fm = getToolkit().getFontMetrics(m_font);
 		}
 		m_width = 0;
@@ -204,7 +206,7 @@ public class VScheduleTimePanel extends JComponent
 			if (m_timeSlots[i].inSlot (time, endTime))
 				return i;
 		}
-		log.log(Level.SEVERE, "VScheduleTimePanel.getSlotIndex - did not find Slot for " + time + " end=" + endTime);
+		log.error("VScheduleTimePanel.getSlotIndex - did not find Slot for " + time + " end=" + endTime);
 		return 0;
 	}	//	getTimeSlotIndex
 
@@ -245,7 +247,7 @@ public class VScheduleTimePanel extends JComponent
 	@Override
 	public void paint (Graphics g)
 	{
-	//	log.fine( "VScheduleTimePanel.paint", g.getClip());
+	//	log.debug( "VScheduleTimePanel.paint", g.getClip());
 		Graphics2D g2D = (Graphics2D)g;
 		g2D.setFont(m_font);
 		Dimension size = getPreferredSize();

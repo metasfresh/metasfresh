@@ -25,7 +25,8 @@ package org.adempiere.ad.trx.processor.api.impl;
 
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -44,7 +45,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.util.CLogger;
 
 /**
  * Default executor for {@link ITrxItemChunkProcessor}.
@@ -61,7 +61,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ITrxConstraintsBL trxConstraintsBL = Services.get(ITrxConstraintsBL.class);
 
-	private static final transient CLogger logger = CLogger.getCLogger(TrxItemChunkProcessorExecutor.class);
+	private static final transient Logger logger = LogManager.getLogger(TrxItemChunkProcessorExecutor.class);
 
 	private static final String TRXNAME_PREFIX = "TrxItemChunkProcessorExecutor";
 
@@ -175,7 +175,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 				catch (Exception e)
 				{
 					// it's futile to log severe/throw any exception here but if we reach this point, another exception was already thrown
-					logger.log(Level.FINE, "Error while rolling back because the transaction was not already rolled back. Check console, you shall have other errors.", e);
+					logger.debug("Error while rolling back because the transaction was not already rolled back. Check console, you shall have other errors.", e);
 				}
 			}
 
@@ -303,14 +303,14 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// Completing chunk failed
 		if (!completed)
 		{
-			logger.log(Level.INFO, "Processor failed to complete current chunk => cancel chunk");
+			logger.info("Processor failed to complete current chunk => cancel chunk");
 			cancelChunk();
 			return;
 		}
 
 		//
 		//
-		logger.log(Level.INFO, "Processor succeeded to complete the chunk => commit transaction");
+		logger.info("Processor succeeded to complete the chunk => commit transaction");
 		try
 		{
 			commitChunkTrx();
@@ -327,7 +327,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			{
 				if (!rollbackOK)
 				{
-					logger.log(Level.SEVERE, "Got rollback failed and exception will be thrown, while handling a commit exception. Below see the commit exception.", commitEx);
+					logger.error("Got rollback failed and exception will be thrown, while handling a commit exception. Below see the commit exception.", commitEx);
 				}
 			}
 			

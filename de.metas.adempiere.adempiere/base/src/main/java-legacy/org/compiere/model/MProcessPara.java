@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -120,7 +118,7 @@ public class MProcessPara extends X_AD_Process_Para
 	public void copyFrom (final MProcessPara source)
 	{
 
-		log.log(Level.FINE, "Copying from:" + source + ", to: " + this);
+		log.debug("Copying from:" + source + ", to: " + this);
 		setAD_Element_ID(source.getAD_Element_ID());
 		setAD_Reference_ID(source.getAD_Reference_ID());
 		setAD_Reference_Value_ID(source.getAD_Reference_Value_ID());
@@ -151,7 +149,7 @@ public class MProcessPara extends X_AD_Process_Para
 			final int adProcessParaId = getAD_Process_Para_ID();
 			final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + adProcessParaId;
 			int count = DB.executeUpdateEx(sqlDelete, get_TrxName());
-			log.log(Level.FINE, "AD_Process_Para_Trl deleted: " + count);
+			log.debug("AD_Process_Para_Trl deleted: " + count);
 			
 			final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
 					" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
@@ -160,7 +158,7 @@ public class MProcessPara extends X_AD_Process_Para
 					" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 					" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = "+adProcessParaId;
 			count = DB.executeUpdateEx(sqlInsert, get_TrxName());
-			log.log(Level.FINE, "AD_Process_Para_Trl inserted: " + count);
+			log.debug("AD_Process_Para_Trl inserted: " + count);
 		}
 	}
 	

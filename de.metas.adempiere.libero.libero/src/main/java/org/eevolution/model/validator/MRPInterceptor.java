@@ -25,7 +25,6 @@ package org.eevolution.model.validator;
 
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
@@ -35,11 +34,14 @@ import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.mrp.process.PP_MRP_RecreateForDocument;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 
@@ -52,7 +54,7 @@ import de.metas.document.engine.IDocActionBL;
 public class MRPInterceptor extends AbstractModelInterceptor
 {
 	public static final transient MRPInterceptor instance = new MRPInterceptor();
-	private static final transient CLogger logger = CLogger.getCLogger(MRPInterceptor.class);
+	private static final transient Logger logger = LogManager.getLogger(MRPInterceptor.class);
 
 	private MRPInterceptor()
 	{
@@ -72,7 +74,7 @@ public class MRPInterceptor extends AbstractModelInterceptor
 		final int processId_PP_MRP_RecreateForDocument = adProcessDAO.retriveProcessIdByValue(ctx, PP_MRP_RecreateForDocument.PROCESSVALUE);
 		if (processId_PP_MRP_RecreateForDocument <= 0)
 		{
-			logger.log(Level.WARNING, "No process was found for '{0}'. Manually re-creating MRP records won't be available ", PP_MRP_RecreateForDocument.PROCESSVALUE);
+			logger.warn("No process was found for '{}'. Manually re-creating MRP records won't be available ", PP_MRP_RecreateForDocument.PROCESSVALUE);
 		}
 
 		//

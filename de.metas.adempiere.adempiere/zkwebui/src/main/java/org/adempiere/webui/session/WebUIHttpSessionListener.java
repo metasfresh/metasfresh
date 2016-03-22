@@ -24,15 +24,16 @@ package org.adempiere.webui.session;
 
 
 import java.util.Date;
-import java.util.logging.Level;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * ADempiere WebUI session configurator
@@ -42,7 +43,7 @@ import org.compiere.util.CLogger;
  */
 public class WebUIHttpSessionListener implements javax.servlet.http.HttpSessionListener
 {
-	private static final transient CLogger logger = CLogger.getCLogger(WebUIHttpSessionListener.class);
+	private static final transient Logger logger = LogManager.getLogger(WebUIHttpSessionListener.class);
 
 	public static final String SYSCONFIG_ZkSessionTimeout = "org.adempiere.webui.session.SessionTimeout";
 	public static final int DEFAULT_ZkSessionTimeout = 60 * 60; // 1hour
@@ -56,11 +57,11 @@ public class WebUIHttpSessionListener implements javax.servlet.http.HttpSessionL
 		// Config Session Timeout
 		final int sessionTimeoutSec = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ZkSessionTimeout, DEFAULT_ZkSessionTimeout);
 		session.setMaxInactiveInterval(sessionTimeoutSec);
-		logger.log(Level.CONFIG, "SysConfig {0}={1}", new Object[] { SYSCONFIG_ZkSessionTimeout, sessionTimeoutSec });
+		logger.info("SysConfig {}={}", new Object[] { SYSCONFIG_ZkSessionTimeout, sessionTimeoutSec });
 
-		if (CLogMgt.isLevel(Level.CONFIG))
+		if (logger.isInfoEnabled())
 		{
-			logger.log(Level.CONFIG, "Session created: ID={0}, CreationTime={1}, MaxInactiveInterval(sec)={2}",
+			logger.info("Session created: ID={}, CreationTime={}, MaxInactiveInterval(sec)={}",
 					new Object[] {
 							session.getId(),
 							new Date(session.getCreationTime()),
@@ -72,10 +73,10 @@ public class WebUIHttpSessionListener implements javax.servlet.http.HttpSessionL
 	@Override
 	public void sessionDestroyed(final HttpSessionEvent se)
 	{
-		if (CLogMgt.isLevel(Level.CONFIG))
+		if (logger.isInfoEnabled())
 		{
 			final HttpSession session = se.getSession();
-			logger.log(Level.CONFIG, "Session destroyed: ID={0}, CreationTime={1}, LastAccessedTime{2}=",
+			logger.info("Session destroyed: ID={}, CreationTime={}, LastAccessedTime{}=",
 					new Object[] {
 							session.getId(),
 							new Date(session.getCreationTime()),

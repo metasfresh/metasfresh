@@ -57,7 +57,7 @@ public class MAssetUse extends X_A_Asset_Use
  */
 protected boolean afterSave (boolean newRecord,boolean success)
 {
-	log.info ("afterSave");
+	log.info("afterSave");
 	
 	int		p_A_Asset_ID = 0;
 	int		total_unitsused = 0;	

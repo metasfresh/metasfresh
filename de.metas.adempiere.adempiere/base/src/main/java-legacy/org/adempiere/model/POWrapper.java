@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
@@ -37,7 +38,6 @@ import org.adempiere.util.proxy.ProxyMethodsCache;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
@@ -364,7 +364,7 @@ public class POWrapper implements InvocationHandler
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			final AdempiereException e = new AdempiereException("Cannot get context from model " + model + " because is not supported. Returning global context.");
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 
 		return Env.getCtx();
@@ -382,7 +382,7 @@ public class POWrapper implements InvocationHandler
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			final AdempiereException e = new AdempiereException("Cannot get trxName from model " + model + " because is not supported. Returning 'null'.");
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 
 		return null;
@@ -400,7 +400,7 @@ public class POWrapper implements InvocationHandler
 		return InterfaceWrapperHelper.getTableName(clazz);
 	}
 
-	private static final transient CLogger log = CLogger.getCLogger(POWrapper.class);
+	private static final transient Logger log = LogManager.getLogger(POWrapper.class);
 	private static final transient TableModelLoader tableModelLoader = TableModelLoader.instance;
 	private final Class<?> interfaceClass;
 	private final PO po;
@@ -739,7 +739,7 @@ public class POWrapper implements InvocationHandler
 		POWrapperCacheLocal poCache = poCacheLocals.get(columnName);
 		if (poCache != null && !refTableName.equals(poCache.getTableName()))
 		{
-			log.log(Level.WARNING, "POCache does not have tableName=" + refTableName + " -- " + poCache, new Exception());
+			log.warn("POCache does not have tableName=" + refTableName + " -- " + poCache, new Exception());
 			poCache = null;
 		}
 		if (poCache == null)
@@ -974,7 +974,7 @@ public class POWrapper implements InvocationHandler
 		final int idx = po.get_ColumnIndex(columnName);
 		if (idx < 0)
 		{
-			log.warning("Column " + columnName + " not found for " + po + ". Considering it as not changed");
+			log.warn("Column " + columnName + " not found for " + po + ". Considering it as not changed");
 			return false;
 		}
 

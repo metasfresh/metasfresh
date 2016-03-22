@@ -21,7 +21,8 @@ import java.awt.print.Pageable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.print.DocFlavor;
 import javax.print.PrintService;
@@ -39,8 +40,6 @@ import javax.print.attribute.standard.OrientationRequested;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -55,7 +54,7 @@ import org.compiere.util.Msg;
 public class PrintUtil
 {
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(PrintUtil.class);
+	private static Logger log = LogManager.getLogger(PrintUtil.class);
 	/** Default Print Request Attribute Set */
 	private static PrintRequestAttributeSet     s_prats = new HashPrintRequestAttributeSet();
 
@@ -168,19 +167,19 @@ public class PrintUtil
 			{
 				Attribute[] atts = prats.toArray();
 				for (int i = 0; i < atts.length; i++)
-					log.fine(atts[i].getName() + "=" + atts[i]);
+					log.debug(atts[i].getName() + "=" + atts[i]);
 			}
 			//
 			if (waitForIt)
 			{
-				log.fine("(wait) " + job.getPrintService());
+				log.debug("(wait) " + job.getPrintService());
 				try
 				{
 					job.print(prats);
 				}
 				catch (Exception ex)
 				{
-					log.log(Level.SEVERE, "(wait)", ex);
+					log.error("(wait)", ex);
 				}
 			}
 			else	//	Async
@@ -188,16 +187,17 @@ public class PrintUtil
 				//	Create Thread
 				Thread printThread = new Thread()
 				{
+					@Override
 					public void run()
 					{
-						log.fine("print: " + job.getPrintService());
+						log.debug("print: " + job.getPrintService());
 						try
 						{
 							job.print(prats);
 						}
 						catch (Exception ex)
 						{
-							log.log(Level.SEVERE, "print", ex);
+							log.error("print", ex);
 						}
 					}
 				};
@@ -337,7 +337,7 @@ public class PrintUtil
 			System.out.println("  - Supported Attribute Categories");
 			for (int j = 0; j < attCat.length; j++)
 				System.out.println("    -> " + attCat[j].getName() 
-					+ " = " + pss[i].getDefaultAttributeValue((Class<? extends Attribute>)attCat[j]));
+					+ " = " + pss[i].getDefaultAttributeValue(attCat[j]));
 			//
 		}
 	}	//	dump
@@ -461,9 +461,9 @@ public class PrintUtil
 	 */
 	public static void setupPrintForm (int AD_Client_ID)
 	{
-		log.config("AD_Client_ID=" + AD_Client_ID);
+		log.info("AD_Client_ID=" + AD_Client_ID);
 		Properties ctx = Env.getCtx();
-		CLogMgt.enable(false);
+		//CLogMgt.enable(false);
 		//
 		//	Order Template
 		int Order_PrintFormat_ID = MPrintFormat.copyToClient(ctx, 100, AD_Client_ID).get_ID();
@@ -497,9 +497,9 @@ public class PrintUtil
 			+ Remittance_PrintFormat_ID + "," + Shipment_PrintFormat_ID + ")";
 		int no = DB.executeUpdate(sql, null);
 		if (no != 1)
-			log.log(Level.SEVERE, "PrintForm NOT inserted");
+			log.error("PrintForm NOT inserted");
 		//
-		CLogMgt.enable(true);
+		//CLogMgt.enable(true);
 	}	//	createDocuments
 
 	/**

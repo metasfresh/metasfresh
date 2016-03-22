@@ -19,7 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
@@ -62,7 +63,7 @@ public class CreateFromStatement extends CreateFrom
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		setTitle(Msg.translate(Env.getCtx(), "C_BankStatement_ID") + " .. " + Msg.translate(Env.getCtx(), "CreateFrom"));
 		
 		return true;
@@ -122,7 +123,7 @@ public class CreateFromStatement extends CreateFrom
 		if(AuthCode.length() > 0 )
 			sql.append(" AND p.R_AuthCode LIKE ?");
 
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 		return sql.toString();
 	}	//	getSQLWhere
 	
@@ -149,14 +150,14 @@ public class CreateFromStatement extends CreateFrom
 		{
 			Integer bp = (Integer) BPartner;
 			pstmt.setInt(index++, bp.intValue());
-			log.fine("BPartner=" + bp);
+			log.debug("BPartner=" + bp);
 		}
 		//
 		if (DateFrom != null || DateTo != null)
 		{
 			Timestamp from = (Timestamp) DateFrom;
 			Timestamp to = (Timestamp) DateTo;
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
 			else if (from != null && to == null)
@@ -172,7 +173,7 @@ public class CreateFromStatement extends CreateFrom
 		{
 			BigDecimal from = (BigDecimal) AmtFrom;
 			BigDecimal to = (BigDecimal) AmtTo;
-			log.fine("Amt From=" + from + ", To=" + to);
+			log.debug("Amt From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setBigDecimal(index++, to);
 			else if (from != null && to == null)
@@ -202,7 +203,7 @@ public class CreateFromStatement extends CreateFrom
 		String s = text.toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 	
@@ -246,7 +247,7 @@ public class CreateFromStatement extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -284,7 +285,7 @@ public class CreateFromStatement extends CreateFrom
 		//  fixed values
 		int C_BankStatement_ID = ((Integer)getGridTab().getValue("C_BankStatement_ID")).intValue();
 		MBankStatement bs = new MBankStatement (Env.getCtx(), C_BankStatement_ID, trxName);
-		log.config(bs.toString());
+		log.info(bs.toString());
 
 		//  Lines
 		for (int i = 0; i < miniTable.getRowCount(); i++)
@@ -298,7 +299,7 @@ public class CreateFromStatement extends CreateFrom
 				int C_Currency_ID = pp.getKey();
 				BigDecimal TrxAmt = (BigDecimal)miniTable.getValueAt(i, 5); //  5- Conv Amt
 
-				log.fine("Line Date=" + trxDate
+				log.debug("Line Date=" + trxDate
 					+ ", Payment=" + C_Payment_ID + ", Currency=" + C_Currency_ID + ", Amt=" + TrxAmt);
 				//	
 				MBankStatementLine bsl = new MBankStatementLine (bs);
@@ -310,7 +311,7 @@ public class CreateFromStatement extends CreateFrom
 				bsl.setC_Currency_ID(bankAccount.getC_Currency_ID()); 
 				
 				if (!bsl.save())
-					log.log(Level.SEVERE, "Line not created #" + i);
+					log.error("Line not created #" + i);
 			}   //   if selected
 		}   //  for all rows
 		return true;

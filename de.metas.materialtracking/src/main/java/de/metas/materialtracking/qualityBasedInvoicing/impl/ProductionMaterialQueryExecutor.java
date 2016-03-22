@@ -25,13 +25,13 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -44,7 +44,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 /* package */class ProductionMaterialQueryExecutor
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(ProductionMaterialQueryExecutor.class);
+	private static final transient Logger logger = LogManager.getLogger(ProductionMaterialQueryExecutor.class);
 
 	// Services
 	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
@@ -152,7 +152,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 		final I_M_Product queryProduct = query.getM_Product();
 		if (queryProduct != null && queryProduct.getM_Product_ID() != ppOrderBOMLine.getM_Product_ID())
 		{
-			logger.log(Level.FINE, "Query Product {0} does not match BOM Line M_Product_ID {1}", new Object[] { queryProduct, ppOrderBOMLine.getM_Product_ID() });
+			logger.debug("Query Product {} does not match BOM Line M_Product_ID {}", new Object[] { queryProduct, ppOrderBOMLine.getM_Product_ID() });
 			return null;
 		}
 
@@ -178,7 +178,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 		// Check if Type is matching the query
 		if (!isTypeRequested(productionMaterial.getType()))
 		{
-			logger.log(Level.FINE, "IProductionMaterial {0} does not match the any of the requested types {1}", new Object[] { productionMaterial, types });
+			logger.debug("IProductionMaterial {} does not match the any of the requested types {}", new Object[] { productionMaterial, types });
 			return null;
 		}
 

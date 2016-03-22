@@ -25,7 +25,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,11 +43,11 @@ import org.compiere.model.MDiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaLine;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Create PriceList by copying purchase prices (M_Product_PO) and applying product category discounts (M_CategoryDiscount)
@@ -87,7 +88,7 @@ public class M_PriceList_Create extends SvrProcess
 			else if (name.equals("DeleteOld"))
 				p_DeleteOld = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_PriceList_Version_ID = getRecord_ID();
 		m_AD_PInstance_ID = getAD_PInstance_ID();
@@ -135,7 +136,7 @@ public class M_PriceList_Create extends SvrProcess
 				raiseError(" DELETE	M_ProductPrice ", sqldel);
 			totd += cntd;
 			final String Message = "@Deleted@=" + cntd + " - ";
-			log.fine("Deleted " + cntd);
+			log.debug("Deleted " + cntd);
 			addLog(Message);
 		}
 		//
@@ -230,13 +231,13 @@ public class M_PriceList_Create extends SvrProcess
 //				if (cntd == -1)
 //					raiseError(" DELETE	T_Selection ", sqldel);
 //				totd += cntd;
-//				log.fine("Deleted " + cntd);
+//				log.debug("Deleted " + cntd);
 				// @formatter:on
 
 				//
 				// commit;
 				//
-				// log.fine("Committing ...");
+				// log.debug("Committing ...");
 				// DB.commit(true, get_TrxName());
 
 			}
@@ -269,7 +270,7 @@ public class M_PriceList_Create extends SvrProcess
 					"Update The PriceList to zero of M_Product_PO WHERE	PriceList IS NULL",
 					sqlupd);
 		totu += cntu;
-		log.fine("Updated " + cntu);
+		log.debug("Updated " + cntu);
 
 		sqlupd = "UPDATE M_Product_PO " + " SET	PriceLastPO = 0  "
 				+ " WHERE	PriceLastPO IS NULL ";
@@ -280,7 +281,7 @@ public class M_PriceList_Create extends SvrProcess
 					"Update  The PriceListPO to zero of  M_Product_PO WHERE	PriceLastPO IS NULL",
 					sqlupd);
 		totu += cntu;
-		log.fine("Updated " + cntu);
+		log.debug("Updated " + cntu);
 
 		sqlupd = "UPDATE M_Product_PO "
 				+ " SET	    PricePO = PriceLastPO  "
@@ -292,7 +293,7 @@ public class M_PriceList_Create extends SvrProcess
 					"Update  The PricePO to PriceLastPO of  M_Product_PO WHERE	(PricePO IS NULL OR PricePO = 0) AND PriceLastPO <> 0 ",
 					sqlupd);
 		totu += cntu;
-		log.fine("Updated " + cntu);
+		log.debug("Updated " + cntu);
 
 		sqlupd = "UPDATE M_Product_PO " + " SET	    PricePO = 0  "
 				+ " WHERE	PricePO IS NULL ";
@@ -303,7 +304,7 @@ public class M_PriceList_Create extends SvrProcess
 					"Update  The PricePO to Zero of  M_Product_PO WHERE	PricePO IS NULL",
 					sqlupd);
 		totu += cntu;
-		log.fine("Updated " + cntu);
+		log.debug("Updated " + cntu);
 		//
 		// Set default current vendor
 		//
@@ -317,7 +318,7 @@ public class M_PriceList_Create extends SvrProcess
 		if (cntu == -1)
 			raiseError("Update  IsCurrentVendor to Y of  M_Product_PO ", sqlupd);
 		totu += cntu;
-		log.fine("Updated " + cntu);
+		log.debug("Updated " + cntu);
 
 		// let the commit for SvrProcess
 		// DB.commit(true, get_TrxName());
@@ -367,7 +368,7 @@ public class M_PriceList_Create extends SvrProcess
 							"Update  IsCurrentVendor to N of  M_Product_PO for a M_Product_ID and C_BPartner_ID ingresed",
 							sqlupd);
 				totu += cntu;
-				log.fine("Updated " + cntu);
+				log.debug("Updated " + cntu);
 
 			}
 			Vend.close();
@@ -417,7 +418,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cntd == -1)
 				raiseError(" DELETE	T_Selection ", sqldel);
 			countDeleted += cntd;
-			log.fine("Deleted " + cntd);
+			log.debug("Deleted " + cntd);
 		}
 
 		//
@@ -447,7 +448,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cnti == -1)
 				raiseError(" INSERT INTO T_Selection ", sqlins);
 			countInserted += cnti;
-			log.fine("Inserted " + cnti);
+			log.debug("Inserted " + cnti);
 
 		}
 		else
@@ -480,7 +481,7 @@ public class M_PriceList_Create extends SvrProcess
 				raiseError(" INSERT INTO T_Selection from existing PriceList", sqlins);
 			}
 			countInserted += cnti;
-			log.fine("Inserted " + cnti);
+			log.debug("Inserted " + cnti);
 
 		}
 
@@ -502,7 +503,7 @@ public class M_PriceList_Create extends SvrProcess
 				raiseError(" DELETE	M_ProductPrice ", sqldel);
 			countDeleted += cntd;
 			Message = Message + ", @Deleted@=" + cntd;
-			log.fine("Deleted " + cntd);
+			log.debug("Deleted " + cntd);
 		}
 
 		//
@@ -595,7 +596,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cnti == -1)
 				raiseError(" INSERT INTO T_Selection from existing PriceList", sqlins);
 			countInserted += cnti;
-			log.fine("Inserted " + cnti);
+			log.debug("Inserted " + cnti);
 		}
 		//
 		// Copy and Currency Convert from other PriceList_Version
@@ -673,7 +674,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cnti == -1)
 				raiseError(" INSERT INTO T_Selection from existing PriceList", sqlins);
 			countInserted += cnti;
-			log.fine("Inserted " + cnti);
+			log.debug("Inserted " + cnti);
 
 		}
 		Message = Message + ", @Inserted@=" + cnti;
@@ -712,7 +713,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cntu == -1)
 				raiseError("Update  M_ProductPrice ", sqlupd);
 			countUpdated += cntu;
-			log.fine("Updated " + cntu);
+			log.debug("Updated " + cntu);
 		}
 
 		//
@@ -771,7 +772,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cntu == -1)
 				raiseError("Update  M_ProductPrice ", sqlupd);
 			countUpdated += cntu;
-			log.fine("Updated " + cntu);
+			log.debug("Updated " + cntu);
 
 			Message = Message + ", @Updated@=" + cntu;
 		}
@@ -793,7 +794,7 @@ public class M_PriceList_Create extends SvrProcess
 			if (cntu == -1)
 				raiseError("Update  M_ProductPrice ", sqlupd);
 			countUpdated += cntu;
-			log.fine("Updated " + cntu);
+			log.debug("Updated " + cntu);
 		}
 
 		addLog(Message);
@@ -806,7 +807,7 @@ public class M_PriceList_Create extends SvrProcess
 
 		// DB.rollback(false, get_TrxName());
 		String msg = string;
-		ValueNamePair pp = CLogger.retrieveError();
+		ValueNamePair pp = MetasfreshLastError.retrieveError();
 		if (pp != null)
 			msg = pp.getName() + " - ";
 		msg += sql;
@@ -851,10 +852,10 @@ public class M_PriceList_Create extends SvrProcess
 				.filter(priceListDAO.createProductPriceQueryFilterForProductInSelection(m_AD_PInstance_ID))
 				.create();
 
-		if (log.isLoggable(Level.INFO))
+		if (log.isInfoEnabled())
 		{
-			log.log(Level.INFO, "Retrieving Source ProductPrices from T_Selection: {0}", query);
-			log.log(Level.INFO, "Found {0} record(s)", query.count());
+			log.info("Retrieving Source ProductPrices from T_Selection: {}", query);
+			log.info("Found {} record(s)", query.count());
 		}
 
 		return query.iterate(I_M_ProductPrice.class);
@@ -902,7 +903,7 @@ public class M_PriceList_Create extends SvrProcess
 				ret = ret + getSubCategoriesString(node.getNodeId(), categories, loopIndicatorId) + ",";
 			}
 		}
-		log.fine(ret);
+		log.debug(ret);
 		return ret + productCategoryId;
 	}
 

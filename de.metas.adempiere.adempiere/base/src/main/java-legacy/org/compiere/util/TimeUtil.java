@@ -259,16 +259,16 @@ public class TimeUtil
 		// case a
 		if (!end_2.after(start_1))		// end not including
 		{
-			// log.fine( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 			return false;
 		}
 		// case c
 		if (!start_2.before(end_1))		// end not including
 		{
-			// log.fine( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 			return false;
 		}
-		// log.fine( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 		return true;
 	}	// inRange
 
@@ -316,16 +316,16 @@ public class TimeUtil
 					|| (!OnThursday && dayStart == Calendar.THURSDAY)
 					|| (!OnFriday && dayStart == Calendar.FRIDAY))
 			{
-				// log.fine( "TimeUtil.InRange - SameDay - Yes", start + "->" + end + " - "
+				// log.debug( "TimeUtil.InRange - SameDay - Yes", start + "->" + end + " - "
 				// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
 				return true;
 			}
-			// log.fine( "TimeUtil.InRange - SameDay - No", start + "->" + end + " - "
+			// log.debug( "TimeUtil.InRange - SameDay - No", start + "->" + end + " - "
 			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
 			return false;
 		}
 		//
-		// log.fine( "TimeUtil.inRange - WeekDay Start=" + dayStart + ", Incl.End=" + dayEnd);
+		// log.debug( "TimeUtil.inRange - WeekDay Start=" + dayStart + ", Incl.End=" + dayEnd);
 
 		// Calendar.SUNDAY=1 ... SATURDAY=7
 		BitSet days = new BitSet(8);
@@ -353,12 +353,12 @@ public class TimeUtil
 				|| (!OnThursday && days.get(Calendar.THURSDAY))
 				|| (!OnFriday && days.get(Calendar.FRIDAY)))
 		{
-			// log.fine( "MAssignment.InRange - Yes", start + "->" + end + " - "
+			// log.debug( "MAssignment.InRange - Yes", start + "->" + end + " - "
 			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
 			return true;
 		}
 
-		// log.fine( "MAssignment.InRange - No", start + "->" + end + " - "
+		// log.debug( "MAssignment.InRange - No", start + "->" + end + " - "
 		// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
 		return false;
 	}	// isRange

@@ -1,14 +1,13 @@
 package de.metas.hostkey.spi.impl;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.ui.web.base.util.CookieUtil;
@@ -67,7 +66,7 @@ public class HttpCookieHostKeyStorage implements IHostKeyStorage
 		hostKeyBL.setHostKeyStorage(new HttpCookieHostKeyStorage());
 	}
 
-	private static final transient CLogger logger = CLogger.getCLogger(HttpCookieHostKeyStorage.class);
+	private static final transient Logger logger = LogManager.getLogger(HttpCookieHostKeyStorage.class);
 
 	private static final String COOKIE_Name = "adempiere.hostkey";
 	private static final String COOKIE_Description = "Used by ADempiere to identify if user logged in from same browser, no matter on which network he/she connects."
@@ -124,7 +123,7 @@ public class HttpCookieHostKeyStorage implements IHostKeyStorage
 		// Always set back the cookie, because we want to renew the expire date
 		if (!CookieUtil.setCookie(httpResponse, COOKIE_Name, hostkey, COOKIE_Description, COOKIE_MaxAge))
 		{
-			logger.log(Level.WARNING, "Cannot set cookie " + COOKIE_Name + ": " + hostkey);
+			logger.warn("Cannot set cookie " + COOKIE_Name + ": " + hostkey);
 		}
 	}
 
@@ -136,7 +135,7 @@ public class HttpCookieHostKeyStorage implements IHostKeyStorage
 
 		if (Check.isEmpty(hostkey, true))
 		{
-			logger.log(Level.INFO, "No host key found");
+			logger.info("No host key found");
 		}
 
 		return hostkey;

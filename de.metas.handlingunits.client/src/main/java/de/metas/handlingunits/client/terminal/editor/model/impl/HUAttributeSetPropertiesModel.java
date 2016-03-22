@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
@@ -47,7 +48,6 @@ import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.MSession;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
@@ -89,7 +89,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	private boolean readonly = false; // always readonly flag
 	private boolean attributesEditableOnlyIfVHU = false;
 
-	private static final transient CLogger logger = CLogger.getCLogger(HUAttributeSetPropertiesModel.class);
+	private static final transient Logger logger = LogManager.getLogger(HUAttributeSetPropertiesModel.class);
 
 	private final IAttributeStorageListener attributeStorageListener = new AttributeStorageListenerAdapter()
 	{
@@ -107,7 +107,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		@Override
 		public void onAttributeStorageDisposed(final IAttributeStorage storage)
 		{
-			logger.log(Level.FINE, "Reseting the properties model because attribute storage was disposed: {0}", HUAttributeSetPropertiesModel.this);
+			logger.debug("Reseting the properties model because attribute storage was disposed: {}", HUAttributeSetPropertiesModel.this);
 			
 			// Make sure it makes sense to reset current storage
 			final IAttributeStorage currentStorage = getIndexedAttributeStorage().getAttributeStorage();
@@ -121,7 +121,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 						+ "\n Expected storage: " + currentStorage
 						+ "\n Actual storage that we got: " + storage
 						+ "\n Properties model: " + HUAttributeSetPropertiesModel.this);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				return;
 			}
 
@@ -134,7 +134,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		super(terminalContext);
 		
-		logger.log(Level.FINE, "New instance: {0}", this);
+		logger.debug("New instance: {}", this);
 	}
 
 	@Override
@@ -162,8 +162,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			final IAttributeStorage attributeStorageOld = this._indexedAttributeStorage.getAttributeStorage();
 			this._indexedAttributeStorage = IndexedAttributeStorage.of(attributeStorage);
 			
-			logger.log(Level.FINE, "Attribute storage old: {0}", attributeStorageOld);
-			logger.log(Level.FINE, "Attribute storage new: {0}", attributeStorage);
+			logger.debug("Attribute storage old: {}", attributeStorageOld);
+			logger.debug("Attribute storage new: {}", attributeStorage);
 
 			//
 			// Remove listeners from old attribute storage
@@ -239,8 +239,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 				attribute,
 				myHost);
 
-		if (logger.isLoggable(Level.CONFIG))
-			logger.log(Level.CONFIG, String.format("Devices for host %s and attributte %s: ", myHost, attribute.getValue()) + devicesForThisAttribute);
+		if (logger.isInfoEnabled())
+			logger.info(String.format("Devices for host %s and attributte %s: ", myHost, attribute.getValue()) + devicesForThisAttribute);
 
 		// If there are more than one device for this attribute, we use the device names' first characters for the button texts.
 		// How many chars we need depends of how log the common prefix is.
@@ -264,7 +264,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			catch (final Exception e)
 			{
 				final String msg = String.format("Unable to access device %s from host %s. Details:\n%s", deviceName, myHost, e.getLocalizedMessage());
-				logger.log(Level.WARNING, msg, e);
+				logger.warn(msg, e);
 				Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, msg);
 				continue;
 			}
@@ -274,8 +274,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 			final List<IDeviceRequest<ISingleValueResponse>> allRequestsFor = deviceBL.getAllRequestsFor(deviceName, attribute, ISingleValueResponse.class);
 
-			if (logger.isLoggable(Level.CONFIG))
-				logger.log(Level.CONFIG, String.format("Found these requests for deviceName %s and attribute %s: ", deviceName, attribute.getValue()) + allRequestsFor);
+			if (logger.isInfoEnabled())
+				logger.info(String.format("Found these requests for deviceName %s and attribute %s: ", deviceName, attribute.getValue()) + allRequestsFor);
 
 			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
 			{
@@ -295,10 +295,10 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 					@Override
 					public Object invoke()
 					{
-						logger.log(Level.FINE, "Device: {0}; Request: {1}", new Object[] { deviceToAddInputMethodFor, request });
+						logger.debug("Device: {}; Request: {}", new Object[] { deviceToAddInputMethodFor, request });
 
 						final ISingleValueResponse response = deviceToAddInputMethodFor.accessDevice(request);
-						logger.log(Level.FINE, "Device {0}; Response: {1}", new Object[] { deviceToAddInputMethodFor, response });
+						logger.debug("Device {}; Response: {}", new Object[] { deviceToAddInputMethodFor, response });
 
 						return response.getSingleValue();
 					}
@@ -381,7 +381,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		// NOTE: if the model is disposed then the underlying indexedAttributeStorage would be "null", so it's safe to not check.
 		final IndexedAttributeStorage indexedAttributeStorage = getIndexedAttributeStorage();
 		
-		logger.log(Level.FINE, "Setting {0}={1} on {2} ({3})", propertyName, value, indexedAttributeStorage, this);
+		logger.debug("Setting {}={} on {} ({})", propertyName, value, indexedAttributeStorage, this);
 		indexedAttributeStorage.setPropertyValue(propertyName, value);
 	}
 

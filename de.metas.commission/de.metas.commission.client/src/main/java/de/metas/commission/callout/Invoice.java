@@ -41,7 +41,8 @@ package de.metas.commission.callout;
  */
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
@@ -146,7 +147,7 @@ public class Invoice extends CalloutEngine
 		}
 		catch (final ClassNotFoundException e)
 		{
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return e.getLocalizedMessage();
 		}
 		if (cl != null)
@@ -158,7 +159,7 @@ public class Invoice extends CalloutEngine
 			}
 			catch (Throwable e)
 			{
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 				return e.getLocalizedMessage();
 			}
 		}

@@ -23,9 +23,9 @@ import java.net.URI;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 
@@ -81,10 +81,10 @@ public class MProductDownload extends X_M_ProductDownload
 					String sqlUpdate = "UPDATE M_Product SET DownloadURL = NULL WHERE M_Product_ID=" + M_Product_ID;
 					int updated = DB.executeUpdate(sqlUpdate, null);
 					if (updated != 1)
-						s_log.warning("Product not updated");
+						s_log.warn("Product not updated");
 				}
 				else
-					s_log.warning("Product Download not created M_Product_ID=" + M_Product_ID);
+					s_log.warn("Product Download not created M_Product_ID=" + M_Product_ID);
 			}
 			rs.close ();
 			pstmt.close ();
@@ -92,7 +92,7 @@ public class MProductDownload extends X_M_ProductDownload
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -108,7 +108,7 @@ public class MProductDownload extends X_M_ProductDownload
 	}	//	migrateDownloads
 	
 	/**	Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MProductDownload.class);
+	private static Logger	s_log	= LogManager.getLogger(MProductDownload.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -195,7 +195,7 @@ public class MProductDownload extends X_M_ProductDownload
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, dl_url, ex);
+			log.error(dl_url, ex);
 			return null;
 		}
 		return url;
@@ -214,7 +214,7 @@ public class MProductDownload extends X_M_ProductDownload
 			return file;
 		if (directory == null || directory.length() == 0)
 		{
-			log.log(Level.SEVERE, "Not found " + getDownloadURL());
+			log.error("Not found " + getDownloadURL());
 			return null;
 		}
 		String downloadURL2 = directory;
@@ -225,7 +225,7 @@ public class MProductDownload extends X_M_ProductDownload
 		if (file.exists())
 			return file;
 
-		log.log(Level.SEVERE, "Not found " + getDownloadURL() + " + " + downloadURL2);
+		log.error("Not found " + getDownloadURL() + " + " + downloadURL2);
 		return null;
 	}	//	getDownloadFile
 
@@ -258,7 +258,7 @@ public class MProductDownload extends X_M_ProductDownload
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, dl_url, ex);
+			log.error(dl_url, ex);
 			return null;
 		}
 		return in;

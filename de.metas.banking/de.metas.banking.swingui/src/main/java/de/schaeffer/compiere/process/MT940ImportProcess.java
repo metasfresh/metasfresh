@@ -35,7 +35,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -45,12 +46,12 @@ import de.schaeffer.compiere.mt940.Parser;
 
 public class MT940ImportProcess extends SvrProcess {
 
-	private static CLogger log = CLogger.getCLogger(MT940ImportProcess.class);
+	private static Logger log = LogManager.getLogger(MT940ImportProcess.class);
 
 	@Override
 	protected String doIt() throws Exception {
 
-		log.fine("Start MT940ImportProcess");
+		log.debug("Start MT940ImportProcess");
 
 		FileDialog fc = new FileDialog(new Frame(), "�ffnen");
 		// default path for the statements
@@ -62,10 +63,10 @@ public class MT940ImportProcess extends SvrProcess {
 		String buf = "";
 
 		if (fc.getFile() != null) {
-			log.fine("returnVal == JFileChooser.APPROVE_OPTION");
+			log.debug("returnVal == JFileChooser.APPROVE_OPTION");
 			String filePath = fc.getDirectory();
 			String fileName = fc.getFile();
-			log.fine("Filestuff loaded");
+			log.debug("Filestuff loaded");
 			try {
 
 				FileInputStream fis = new FileInputStream(filePath + fileName);
@@ -83,11 +84,11 @@ public class MT940ImportProcess extends SvrProcess {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			log.fine("File loaded");
+			log.debug("File loaded");
 		}
 
 		final Bankstatement statement = Parser.parseMT940String(buf);
-		log.fine("file parsed");
+		log.debug("file parsed");
 
 		final String whereClauseInvoice = Env.getUserRolePermissions().getOrgWhere(false)
 				+ " AND ( paymentrule not in ('B','K','') AND ispaid = 'N' )";

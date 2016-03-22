@@ -20,10 +20,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 /**
@@ -64,7 +66,7 @@ public class MLandedCost extends X_C_LandedCost
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -83,7 +85,7 @@ public class MLandedCost extends X_C_LandedCost
 	}	// getLandedCosts
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MLandedCost.class);
+	private static Logger s_log = LogManager.getLogger(MLandedCost.class);
 
 	
 	/***************************************************************************

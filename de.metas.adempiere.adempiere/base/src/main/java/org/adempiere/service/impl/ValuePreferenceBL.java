@@ -31,7 +31,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IValuePreferenceBL;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -39,7 +40,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 {
 	public static final ValuePreferenceBL instance = new ValuePreferenceBL();
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private ValuePreferenceBL()
 	{

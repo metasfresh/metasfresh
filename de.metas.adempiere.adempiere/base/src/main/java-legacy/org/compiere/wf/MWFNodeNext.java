@@ -176,7 +176,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 					|| DocAction.ACTION_Unlock.equals(docAction)
 					|| DocAction.ACTION_Invalidate.equals(docAction)	) */
 				{
-					log.fine("isValidFor =NO= StdUserWF - Status=" + docStatus + " - Action=" + docAction);
+					log.debug("isValidFor =NO= StdUserWF - Status=" + docStatus + " - Action=" + docAction);
 					return false;
 				}
 			}
@@ -184,7 +184,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 		//	No Conditions
 		if (getConditions(false).length == 0)
 		{
-			log.fine("#0 " + toString());
+			log.debug("#0 " + toString());
 			return true;
 		}
 		//	First condition always AND
@@ -196,7 +196,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 			else
 				ok = ok && m_conditions[i].evaluate(activity);
 		}	//	for all conditions
-		log.fine("isValidFor (" + ok + ") " + toString());
+		log.debug("isValidFor (" + ok + ") " + toString());
 		return ok;
 	}	//	isValidFor
 	

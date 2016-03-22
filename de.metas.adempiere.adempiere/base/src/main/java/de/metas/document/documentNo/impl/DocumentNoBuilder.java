@@ -29,7 +29,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -40,7 +41,6 @@ import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.model.MDocType;
 import org.compiere.model.MSequence;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
@@ -63,7 +63,7 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(DocumentNoBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 
 	public static final String PREFIX_DOCSEQ = MSequence.PREFIX_DOCSEQ; // "public" ...to be used in tests
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
@@ -94,7 +94,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			final DocumentNoBuilderException docNoEx = DocumentNoBuilderException.wrapIfNeeded(e);
 			if (docNoEx.isSkipGenerateDocumentNo())
 			{
-				logger.log(Level.FINE, "Skip generating documentNo sequence. Returning NO_DOCUMENTNO.", e);
+				logger.debug("Skip generating documentNo sequence. Returning NO_DOCUMENTNO.", e);
 
 			}
 			else if (isFailOnError())
@@ -103,7 +103,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			}
 			else
 			{
-				logger.log(Level.WARNING, "Failed building the sequence. Returning NO_DOCUMENTNO", e);
+				logger.warn("Failed building the sequence. Returning NO_DOCUMENTNO", e);
 			}
 		}
 
@@ -211,7 +211,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
 		if (!docSeqInfo.isAutoSequence())
 		{
-			logger.log(Level.INFO, "Skip getting and incrementing the sequence because it's not an auto sequence: {0}", docSeqInfo);
+			logger.info("Skip getting and incrementing the sequence because it's not an auto sequence: {}", docSeqInfo);
 			return -1;
 		}
 

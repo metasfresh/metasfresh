@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -33,7 +34,6 @@ import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -60,7 +60,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	static GridTabVO create (GridWindowVO wVO, int TabNo, ResultSet rs, boolean isRO, boolean onlyCurrentRows)
 	{
-		logger.config("#" + TabNo);
+		logger.info("#" + TabNo);
 
 		GridTabVO vo = new GridTabVO (wVO.ctx, wVO.WindowNo, TabNo);
 		vo.AD_Window_ID = wVO.AD_Window_ID;
@@ -73,7 +73,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 		if (isRO)
 		{
-			logger.fine("Tab is ReadOnly");
+			logger.debug("Tab is ReadOnly");
 			vo.IsReadOnly = true;
 		}
 		vo.onlyCurrentRows = onlyCurrentRows;
@@ -89,7 +89,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			createFields (vo);
 			if (vo.Fields == null || vo.Fields.size() == 0)
 			{
-				logger.log(Level.SEVERE, "No Fields");
+				logger.error("No Fields");
 				return null;
 			}
 		}*/
@@ -132,7 +132,7 @@ public class GridTabVO implements Evaluatee, Serializable
 				if (!showTrl)
 				{
 					vo.addLoadErrorMessage("TrlTab Not displayed (BaseTrl=" + Env.isBaseTranslation(vo.TableName) + ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx)+")"); // metas: 01934
-					logger.config("TrlTab Not displayed - AD_Tab_ID=" 
+					logger.info("TrlTab Not displayed - AD_Tab_ID=" 
 							+ vo.AD_Tab_ID + "=" + vo.Name + ", Table=" + vo.TableName
 							+ ", BaseTrl=" + Env.isBaseTranslation(vo.TableName)
 							+ ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx));
@@ -144,7 +144,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAdvanced && "Y".equals(rs.getString("IsAdvancedTab")))
 			{
 				vo.addLoadErrorMessage("AdvancedTab Not displayed"); // metas: 1934
-				logger.config("AdvancedTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
+				logger.info("AdvancedTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
 				return false;
 			}
 			
@@ -152,7 +152,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAcct && "Y".equals(rs.getString("IsInfoTab")))
 			{
 				vo.addLoadErrorMessage("AcctTab Not displayed"); // metas: 1934
-				logger.fine("AcctTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
+				logger.debug("AcctTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
 				return false;
 			}
 			
@@ -175,7 +175,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!role.canView(vo.AccessLevel))	// No Access
 			{
 				vo.addLoadErrorMessage("No Role Access - AccessLevel="+vo.AccessLevel+", UserLevel="+role.getUserLevel()); // 01934
-				logger.fine("No Role Access - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo. Name);
+				logger.debug("No Role Access - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo. Name);
 				return false;
 			}	//	Used by MField.getDefault
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AccessLevel, vo.AccessLevel.getAccessLevelString());
@@ -186,7 +186,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!role.isTableAccess(vo.AD_Table_ID, true))
 			{
 				vo.addLoadErrorMessage("No Table Access (AD_Table_ID="+vo.AD_Table_ID+")"); // 01934
-				logger.config("No Table Access - AD_Tab_ID=" 
+				logger.info("No Table Access - AD_Tab_ID=" 
 					+ vo.AD_Tab_ID + " " + vo. Name);
 				return false;
 			}
@@ -233,7 +233,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			//jz col=null not good for Derby
 			if (vo.WhereClause.indexOf("=null") > 0)
 			{
-				logger.warning("Replaced '=null' with 'IS NULL' for " + vo);
+				logger.warn("Replaced '=null' with 'IS NULL' for " + vo);
 				vo.WhereClause.replaceAll("=null", " IS NULL ");
 			}
 			// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ] 
@@ -283,14 +283,14 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		catch (SQLException ex)
 		{
-			logger.log(Level.SEVERE, "", ex);
+			logger.error("", ex);
 			return false;
 		}
 		// Apply UserDef settings - teo_sarca [ 2726889 ] Finish User Window (AD_UserDef*) functionality
 		if (!MUserDefWin.apply(vo))
 		{
 			vo.addLoadErrorMessage("Hidden by UserDef"); // 01934
-			logger.fine("Hidden by UserDef - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
+			logger.debug("Hidden by UserDef - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
 			return false;
 		}
 		
@@ -330,7 +330,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "", e);
+			logger.error("", e);
 			return false;
 		}
 		finally
@@ -378,7 +378,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.TabNo = tabNo;
 	}
 
-	private static final transient CLogger logger = CLogger.getCLogger(GridTabVO.class);
+	private static final transient Logger logger = LogManager.getLogger(GridTabVO.class);
 
 	/** Context - replicated    */
 	private Properties ctx;

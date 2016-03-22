@@ -31,7 +31,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_Sponsor;
@@ -40,9 +41,7 @@ import de.metas.commission.service.ISponsorDAO;
 
 public class CreateSponsors extends SvrProcess
 {
-
-	private static final CLogger logger = CLogger
-			.getCLogger(CreateSponsors.class);
+	private static final Logger logger = LogManager.getLogger(CreateSponsors.class);
 
 	final static String WHERE_BPARTNERS = //
 	" not exists (select * from c_sponsor s where s.c_bpartner_id=C_BPartner.c_bpartner_id)";
@@ -69,7 +68,7 @@ public class CreateSponsors extends SvrProcess
 			{
 				final I_C_Sponsor newSponsor = Services.get(ISponsorDAO.class).createNewForCustomer(bPartner);
 				InterfaceWrapperHelper.save(newSponsor);
-				CreateSponsors.logger.fine("Created " + newSponsor + " for " + bPartner);
+				CreateSponsors.logger.debug("Created " + newSponsor + " for " + bPartner);
 				count++;
 				commitIf(count);
 
@@ -103,7 +102,7 @@ public class CreateSponsors extends SvrProcess
 				newSsr.setC_BPartner_ID(salesRep.getC_BPartner_ID());
 
 				InterfaceWrapperHelper.save(newSsr);
-				CreateSponsors.logger.fine("Created " + newSsr + " for " + sponsor);
+				CreateSponsors.logger.debug("Created " + newSsr + " for " + sponsor);
 				count++;
 				commitIf(count);
 

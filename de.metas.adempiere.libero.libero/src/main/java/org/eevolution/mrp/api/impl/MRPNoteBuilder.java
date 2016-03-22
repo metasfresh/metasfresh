@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,7 +44,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductPlanningBL;
 import org.eevolution.exceptions.LiberoException;
@@ -58,6 +56,10 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPNoteBuilder;
 import org.eevolution.mrp.api.IMRPNotesCollector;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /* package */class MRPNoteBuilder implements IMRPNoteBuilder
 {
@@ -67,7 +69,7 @@ import org.eevolution.mrp.api.IMRPNotesCollector;
 	}
 
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(MRPNoteBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(MRPNoteBuilder.class);
 	private final transient IMsgBL messagesBL = Services.get(IMsgBL.class);
 	private final transient IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
@@ -182,7 +184,7 @@ import org.eevolution.mrp.api.IMRPNotesCollector;
 
 			// NOTE: since the exception is not logged anywhere, we are printing here to console
 			// FIXME: create an AD_Issue and link it to create AD_Note.
-			logger.log(Level.WARNING, exception.getLocalizedMessage(), exception);
+			logger.warn(exception.getLocalizedMessage(), exception);
 		}
 
 		//

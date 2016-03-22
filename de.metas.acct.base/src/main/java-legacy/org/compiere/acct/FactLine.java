@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -372,7 +373,7 @@ final class FactLine extends X_Fact_Acct
 		final BigDecimal errorMarginTolerated = NumberUtils.getErrorMarginForScale(8); // use a reasonable tolerance
 		if (amtRoundingError.compareTo(errorMarginTolerated) > 0)
 		{
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
 				final PostingException ex = new PostingException("Precision fixed for " + amountName + ": " + amt + " -> " + amtRounded)
 						.setC_AcctSchema(m_acctSchema)
@@ -381,7 +382,7 @@ final class FactLine extends X_Fact_Acct
 						.setFactLine(this)
 						.setParameter("Rounding error", amtRoundingError)
 						.setParameter("Rounding error (tolerated)", errorMarginTolerated);
-				log.log(Level.FINE, ex.getLocalizedMessage(), ex);
+				log.debug(ex.getLocalizedMessage(), ex);
 			}
 		}
 		
@@ -609,7 +610,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return;
 		}
 		finally
@@ -646,7 +647,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return;
 		}
 		finally
@@ -686,7 +687,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return;
 		}
 		finally
@@ -860,7 +861,7 @@ final class FactLine extends X_Fact_Acct
 		boolean negative = deltaAmount.compareTo(Env.ZERO) < 0;
 		boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
-		log.fine(deltaAmount.toString()
+		log.debug(deltaAmount.toString()
 				+ "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
 				+ "; Negative=" + negative + "; AdjustDr=" + adjustDr);
 
@@ -874,7 +875,7 @@ final class FactLine extends X_Fact_Acct
 		else
 			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
 
-		log.fine("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
+		log.debug("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
 	}	// currencyCorrect
 
 	/**
@@ -998,14 +999,14 @@ final class FactLine extends X_Fact_Acct
 				if (rs.next())
 				{
 					setAD_Org_ID(rs.getInt(1));
-					log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (1 from M_Locator_ID=" + getM_Locator_ID() + ")");
+					log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (1 from M_Locator_ID=" + getM_Locator_ID() + ")");
 				}
 				else
-					log.log(Level.SEVERE, "AD_Org_ID - Did not find M_Locator_ID=" + getM_Locator_ID());
+					log.error("AD_Org_ID - Did not find M_Locator_ID=" + getM_Locator_ID());
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -1019,7 +1020,7 @@ final class FactLine extends X_Fact_Acct
 		if (m_docLine != null && super.getAD_Org_ID() == 0)
 		{
 			setAD_Org_ID(m_docLine.getAD_Org_ID());
-			log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (2 from DocumentLine)");
+			log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (2 from DocumentLine)");
 		}
 		// Prio 3 - get from doc - if not GL
 		if (m_doc != null && super.getAD_Org_ID() == 0)
@@ -1027,12 +1028,12 @@ final class FactLine extends X_Fact_Acct
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID()); // inter-company GL
-				log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Acct)");
+				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Acct)");
 			}
 			else
 			{
 				setAD_Org_ID(m_doc.getAD_Org_ID());
-				log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Document)");
+				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Document)");
 			}
 		}
 		// Prio 4 - get from account - if not GL
@@ -1041,12 +1042,12 @@ final class FactLine extends X_Fact_Acct
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
 				setAD_Org_ID(m_doc.getAD_Org_ID());
-				log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Document)");
+				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Document)");
 			}
 			else
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID());
-				log.finer("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Acct)");
+				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Acct)");
 			}
 		}
 		return super.getAD_Org_ID();
@@ -1083,7 +1084,7 @@ final class FactLine extends X_Fact_Acct
 				if (super.getC_SalesRegion_ID() != 0)		// save in VO
 				{
 					m_doc.setBP_C_SalesRegion_ID(super.getC_SalesRegion_ID());
-					log.fine("C_SalesRegion_ID=" + super.getC_SalesRegion_ID() + " (from BPL)");
+					log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID() + " (from BPL)");
 				}
 				else
 				// From Sales Rep of Document -> Sales Region
@@ -1094,7 +1095,7 @@ final class FactLine extends X_Fact_Acct
 					if (super.getC_SalesRegion_ID() != 0)		// save in VO
 					{
 						m_doc.setBP_C_SalesRegion_ID(super.getC_SalesRegion_ID());
-						log.fine("C_SalesRegion_ID=" + super.getC_SalesRegion_ID() + " (from SR)");
+						log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID() + " (from SR)");
 					}
 					else
 						m_doc.setBP_C_SalesRegion_ID(-2);	// don't try again
@@ -1104,7 +1105,7 @@ final class FactLine extends X_Fact_Acct
 				setC_SalesRegion_ID(m_acct.getC_SalesRegion_ID());
 		}
 		//
-		// log.fine("C_SalesRegion_ID=" + super.getC_SalesRegion_ID()
+		// log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID()
 		// + ", C_BPartner_Location_ID=" + m_docVO.C_BPartner_Location_ID
 		// + ", BP_C_SalesRegion_ID=" + m_docVO.BP_C_SalesRegion_ID
 		// + ", SR=" + m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion));
@@ -1122,7 +1123,7 @@ final class FactLine extends X_Fact_Acct
 	{
 		if (newRecord)
 		{
-			log.fine(toString());
+			log.debug(toString());
 			//
 			getAD_Org_ID();
 			getC_SalesRegion_ID();
@@ -1209,7 +1210,7 @@ final class FactLine extends X_Fact_Acct
 			int C_Campaign_ID, int C_Activity_ID,
 			int User1_ID, int User2_ID, int UserElement1_ID, int UserElement2_ID)
 	{
-		log.fine("From Accout_ID=" + Account_ID);
+		log.debug("From Accout_ID=" + Account_ID);
 		// get VC for P_Revenue (from Product)
 		MAccount revenue = MAccount.get(getCtx(),
 				AD_Client_ID, AD_Org_ID, getC_AcctSchema_ID(), Account_ID, C_SubAcct_ID,
@@ -1220,7 +1221,7 @@ final class FactLine extends X_Fact_Acct
 			revenue.save();
 		if (revenue == null || revenue.get_ID() == 0)
 		{
-			log.severe("Revenue_Acct not found");
+			log.error("Revenue_Acct not found");
 			return Account_ID;
 		}
 		int P_Revenue_Acct = revenue.get_ID();
@@ -1249,7 +1250,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1259,7 +1260,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		if (new_Account_ID == 0)
 		{
-			log.severe("UnearnedRevenue_Acct not found");
+			log.error("UnearnedRevenue_Acct not found");
 			return Account_ID;
 		}
 
@@ -1273,10 +1274,10 @@ final class FactLine extends X_Fact_Acct
 		plan.setTotalAmt(getAcctBalance());
 		if (!plan.save(get_TrxName()))
 		{
-			log.severe("Plan NOT created");
+			log.error("Plan NOT created");
 			return Account_ID;
 		}
-		log.fine("From Acctount_ID=" + Account_ID + " to " + new_Account_ID
+		log.debug("From Acctount_ID=" + Account_ID + " to " + new_Account_ID
 				+ " - Plan from UnearnedRevenue_Acct=" + UnearnedRevenue_Acct + " to Revenue_Acct=" + P_Revenue_Acct);
 		return new_Account_ID;
 	}   // createRevenueRecognition
@@ -1340,7 +1341,7 @@ final class FactLine extends X_Fact_Acct
 				// end Bayu Sistematika
 				//
 				success = true;
-				log.fine(new StringBuilder("(Table=").append(AD_Table_ID)
+				log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
 						.append(",Record_ID=").append(Record_ID)
 						.append(",Line=").append(Record_ID)
 						.append(", Account=").append(m_acct)
@@ -1372,7 +1373,7 @@ final class FactLine extends X_Fact_Acct
 				// NOTE: we changed the level from WARNING to INFO because it seems this turned to be a common case,
 				// since we are eagerly posting the MatchInv when Invoice/InOut was posted.
 				// (and MatchInv needs to have the Invoice and InOut posted before)
-				if (log.isLoggable(Level.INFO))
+				if (log.isInfoEnabled())
 				{
 					log.info(new StringBuilder("Not Found (try later) ")
 							.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
@@ -1385,7 +1386,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

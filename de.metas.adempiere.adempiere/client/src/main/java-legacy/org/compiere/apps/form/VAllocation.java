@@ -24,7 +24,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -86,7 +87,7 @@ public class VAllocation extends Allocation
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
@@ -282,7 +283,7 @@ public class VAllocation extends Allocation
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		log.config("");
+		log.info("");
 		if (e.getSource().equals(multiCurrency))
 			loadBPartner();
 		//	Allocate
@@ -333,7 +334,7 @@ public class VAllocation extends Allocation
 	{
 		String name = e.getPropertyName();
 		Object value = e.getNewValue();
-		log.config(name + "=" + value);
+		log.info(name + "=" + value);
 		
 		if (value == null)
 			return;

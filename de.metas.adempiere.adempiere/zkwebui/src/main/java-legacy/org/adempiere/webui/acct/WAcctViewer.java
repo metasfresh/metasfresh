@@ -43,7 +43,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -68,12 +67,15 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.report.core.RModel;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -191,7 +193,7 @@ public class WAcctViewer extends Window implements EventListener
 	private Borderlayout resultPanel;
 
 	/**	Logger				*/
-	private static CLogger log = CLogger.getCLogger(WAcctViewer.class);
+	private static Logger log = LogManager.getLogger(WAcctViewer.class);
 
 	/**
 	 *  Default constructor
@@ -228,7 +230,7 @@ public class WAcctViewer extends Window implements EventListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			//dispose();
 		}
 	} // AcctViewer
@@ -1010,7 +1012,7 @@ public class WAcctViewer extends Window implements EventListener
 		bQuery.setEnabled(false);
 		statusLine.setValue(" " + Msg.getMsg(Env.getCtx(), "Processing"));
 
-		log.config(para.toString());
+		log.info(para.toString());
 
 		//  Switch to Result pane
 
@@ -1119,7 +1121,7 @@ public class WAcctViewer extends Window implements EventListener
 			return;
 
 		m_data.AD_Table_ID = ((Integer)m_data.tableInfo.get(vp.getValue())).intValue();
-		log.config(vp.getValue() + " = " + m_data.AD_Table_ID);
+		log.info(vp.getValue() + " = " + m_data.AD_Table_ID);
 
 		//  Reset Record
 
@@ -1203,7 +1205,7 @@ public class WAcctViewer extends Window implements EventListener
 
 		//  Save for query
 
-		log.config(keyColumn + " - " + key);
+		log.info(keyColumn + " - " + key);
 		if (button == selRecord)                            //  Record_ID
 			m_data.Record_ID = key.intValue();
 		else

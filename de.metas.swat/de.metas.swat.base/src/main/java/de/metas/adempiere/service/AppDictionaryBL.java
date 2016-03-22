@@ -40,7 +40,7 @@ import org.compiere.util.DisplayType;
  */
 public class AppDictionaryBL implements IAppDictionaryBL
 {
-	//	private final CLogger log = CLogger.getCLogger(getClass());
+	//	private final Logger log = CLogMgt.getLogger(getClass());
 	
 	@Override
 	public MTable getReferencedTable(Properties ctx, String tableName, String columnName)

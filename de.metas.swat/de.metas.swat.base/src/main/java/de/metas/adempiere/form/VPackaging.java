@@ -23,14 +23,14 @@ package de.metas.adempiere.form;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 /**
@@ -43,7 +43,7 @@ import org.compiere.util.Env;
 public class VPackaging extends Packing implements FormPanel
 {
 
-	private static final CLogger logger = CLogger.getCLogger(VPackaging.class);
+	private static final Logger logger = LogManager.getLogger(VPackaging.class);
 
 	private FormFrame frame;
 
@@ -70,7 +70,7 @@ public class VPackaging extends Packing implements FormPanel
 		}
 		catch (Exception ex)
 		{
-			logger.log(Level.SEVERE, "init", ex);
+			logger.error("init", ex);
 		}
 	}
 

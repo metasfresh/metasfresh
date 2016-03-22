@@ -29,7 +29,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
@@ -67,7 +68,7 @@ public class ImportPriceList extends SvrProcess
 			else if (name.equals("DeleteOldImported"))
 				m_deleteOldImported = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -134,7 +135,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid BPartner=" + no);
+			log.warn("Invalid BPartner=" + no);
 
 		//	Product
 		sql = new StringBuffer ("UPDATE I_PriceList "
@@ -143,14 +144,14 @@ public class ImportPriceList extends SvrProcess
 			  + "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Product from Value=" + no);
+		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer ("UPDATE I_PriceList "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
 			  + "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL)"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Product=" + no);
+			log.warn("Invalid Product=" + no);
 
 		//	****	Find Price List
 		//	Name
@@ -180,7 +181,7 @@ public class ImportPriceList extends SvrProcess
 			+ "WHERE X12DE355 IS NULL AND C_UOM_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set UOM Default=" + no);
+		log.debug("Set UOM Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_PriceList "
 			+ "SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=I_PriceList.X12DE355 AND u.AD_Client_ID IN (0,I_PriceList.AD_Client_ID)) "
@@ -195,7 +196,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid UOM=" + no);
+			log.warn("Invalid UOM=" + no);
 		*/
 
 		//	Set Currency
@@ -207,7 +208,7 @@ public class ImportPriceList extends SvrProcess
 			+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Currency Default=" + no);
+		log.debug("Set Currency Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_PriceList "
 			+ "SET C_Currency_ID=(SELECT C_Currency_ID FROM C_Currency c"
@@ -223,7 +224,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("Invalid Currency=" + no);
+			log.warn("Invalid Currency=" + no);
 
 		//	Mandatory Name
 		sql = new StringBuffer ("UPDATE I_PriceList "
@@ -232,7 +233,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No Mandatory Name=" + no);
+			log.warn("No Mandatory Name=" + no);
 
 		//	Mandatory ValidFrom
 		sql = new StringBuffer ("UPDATE I_PriceList "
@@ -241,7 +242,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No Mandatory ValidFrom=" + no);
+			log.warn("No Mandatory ValidFrom=" + no);
 
 		//	Mandatory BreakValue if BPartner set
 		sql = new StringBuffer ("UPDATE I_PriceList "
@@ -250,7 +251,7 @@ public class ImportPriceList extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
-			log.warning("No Mandatory BreakValue=" + no);
+			log.warn("No Mandatory BreakValue=" + no);
 
 		commitEx();
 		
@@ -263,7 +264,7 @@ public class ImportPriceList extends SvrProcess
 		int noInsertplv = 0;
 
 		//	Go through Records
-		log.fine("start inserting/updating ...");
+		log.debug("start inserting/updating ...");
 		sql = new StringBuffer ("SELECT * FROM I_PriceList WHERE I_IsImported='N'")
 			.append(clientCheck);
 		PreparedStatement pstmt_setImported = null;
@@ -291,7 +292,7 @@ public class ImportPriceList extends SvrProcess
 						M_PriceList_ID = 0;
 				}
 				boolean newPriceList = M_PriceList_ID == 0;
-				log.fine("I_PriceList_ID=" + I_PriceList_ID + ", M_PriceList_ID=" + M_PriceList_ID);
+				log.debug("I_PriceList_ID=" + I_PriceList_ID + ", M_PriceList_ID=" + M_PriceList_ID);
 
 				MPriceList pricelist = null; 
 				//	PriceList
@@ -301,7 +302,7 @@ public class ImportPriceList extends SvrProcess
 					if (pricelist.save())
 					{
 						M_PriceList_ID = pricelist.getM_PriceList_ID();
-						log.finer("Insert Price List");
+						log.trace("Insert Price List");
 						noInsertpl++;
 					}
 					else
@@ -325,7 +326,7 @@ public class ImportPriceList extends SvrProcess
 						M_PriceList_Version_ID = 0;
 				}
 				boolean newPriceListVersion = M_PriceList_Version_ID == 0;
-				log.fine("I_PriceList_ID=" + I_PriceList_ID + ", M_PriceList_Version_ID=" + M_PriceList_Version_ID);
+				log.debug("I_PriceList_ID=" + I_PriceList_ID + ", M_PriceList_Version_ID=" + M_PriceList_Version_ID);
 
 				MPriceListVersion pricelistversion = null; 
 				//	PriceListVersion
@@ -338,7 +339,7 @@ public class ImportPriceList extends SvrProcess
 					if (pricelistversion.save())
 					{
 						M_PriceList_Version_ID = pricelistversion.getM_PriceList_Version_ID();
-						log.finer("Insert Price List Version");
+						log.trace("Insert Price List Version");
 						noInsertplv++;
 					}
 					else
@@ -387,7 +388,7 @@ public class ImportPriceList extends SvrProcess
 							noInsertppvb++;
 						else
 							noUpdateppvb++;
-						log.finer("Insert/Update Product Price Vendor Break");
+						log.trace("Insert/Update Product Price Vendor Break");
 					}
 					else
 					{
@@ -411,7 +412,7 @@ public class ImportPriceList extends SvrProcess
 					}
 					if (pp.save())
 					{
-						log.finer("Insert/Update Product Price");
+						log.trace("Insert/Update Product Price");
 						if (isInsert)
 							noInsertpp++;
 						else

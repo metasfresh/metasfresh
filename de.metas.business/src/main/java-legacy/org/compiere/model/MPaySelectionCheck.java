@@ -25,7 +25,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,7 +35,8 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
 import org.compiere.process.PaySelectionCreateCheck;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -89,7 +91,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -102,7 +104,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 			pstmt = null;
 		}
 		if (count > 1)
-			s_log.warning("More then one for C_Payment_ID=" + C_Payment_ID);
+			s_log.warn("More then one for C_Payment_ID=" + C_Payment_ID);
 		return retValue;
 	}	// getOfPayment
 
@@ -225,7 +227,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 	static public MPaySelectionCheck[] get(int C_PaySelection_ID,
 			String PaymentRule, int startDocumentNo, String trxName)
 	{
-		s_log.fine("C_PaySelection_ID=" + C_PaySelection_ID
+		s_log.debug("C_PaySelection_ID=" + C_PaySelection_ID
 				+ ", PaymentRule=" + PaymentRule + ", startDocumentNo=" + startDocumentNo);
 		ArrayList<MPaySelectionCheck> list = new ArrayList<MPaySelectionCheck>();
 
@@ -250,7 +252,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 
 		// convert to Array
@@ -273,7 +275,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		// Must be a file
 		if (file.isDirectory())
 		{
-			s_log.log(Level.WARNING, "File is directory - " + file.getAbsolutePath());
+			s_log.warn("File is directory - " + file.getAbsolutePath());
 			return 0;
 		}
 		// delete if exists
@@ -284,7 +286,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.WARNING, "Could not delete - " + file.getAbsolutePath(), e);
+			s_log.warn("Could not delete - " + file.getAbsolutePath(), e);
 		}
 
 		char x = '"';      // ease
@@ -360,7 +362,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "", e);
+			s_log.error("", e);
 		}
 
 		return noLines;
@@ -432,7 +434,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		return bp;
 	}   // getBPartnerInfo
@@ -460,7 +462,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 				{
 					payment.setCheckNo(check.getDocumentNo());
 					if (!payment.save())
-						s_log.log(Level.SEVERE, "Payment not saved: " + payment);
+						s_log.error("Payment not saved: " + payment);
 				}
 			}
 			else
@@ -478,7 +480,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 					payment.setBankACH(check);
 				else
 				{
-					s_log.log(Level.SEVERE, "Unsupported Payment Rule=" + check.getPaymentRule());
+					s_log.error("Unsupported Payment Rule=" + check.getPaymentRule());
 					continue;
 				}
 				payment.setTrxType(X_C_Payment.TRXTYPE_CreditPayment);
@@ -496,11 +498,11 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 				}
 				// Link to Invoice
 				MPaySelectionLine[] psls = check.getPaySelectionLines(false);
-				s_log.fine("confirmPrint - " + check + " (#SelectionLines=" + psls.length + ")");
+				s_log.debug("confirmPrint - " + check + " (#SelectionLines=" + psls.length + ")");
 				if (check.getQty() == 1 && psls != null && psls.length == 1)
 				{
 					MPaySelectionLine psl = psls[0];
-					s_log.fine("Map to Invoice " + psl);
+					s_log.debug("Map to Invoice " + psl);
 					//
 					payment.setC_Invoice_ID(psl.getC_Invoice_ID());
 					payment.setDiscountAmt(psl.getDiscountAmt());
@@ -513,11 +515,11 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 					payment.setDiscountAmt(Env.ZERO);
 				payment.setWriteOffAmt(Env.ZERO);
 				if (!payment.save())
-					s_log.log(Level.SEVERE, "Payment not saved: " + payment);
+					s_log.error("Payment not saved: " + payment);
 				//
 				int C_Payment_ID = payment.get_ID();
 				if (C_Payment_ID < 1)
-					s_log.log(Level.SEVERE, "Payment not created=" + check);
+					s_log.error("Payment not created=" + check);
 				else
 				{
 					check.setC_Payment_ID(C_Payment_ID);
@@ -525,7 +527,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 					// Should start WF
 					payment.processIt(DocAction.ACTION_Complete);
 					if (!payment.save())
-						s_log.log(Level.SEVERE, "Payment not saved: " + payment);
+						s_log.error("Payment not saved: " + payment);
 				}
 			}	// new Payment
 
@@ -538,20 +540,20 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 			}
 			catch (NumberFormatException ex)
 			{
-				s_log.log(Level.SEVERE, "DocumentNo=" + check.getDocumentNo(), ex);
+				s_log.error("DocumentNo=" + check.getDocumentNo(), ex);
 			}
 			check.setIsPrinted(true);
 			check.setProcessed(true);
 			if (!check.save())
-				s_log.log(Level.SEVERE, "Check not saved: " + check);
+				s_log.error("Check not saved: " + check);
 		}	// all checks
 
-		s_log.fine("Last Document No = " + lastDocumentNo);
+		s_log.debug("Last Document No = " + lastDocumentNo);
 		return lastDocumentNo;
 	}	// confirmPrint
 
 	/** Logger */
-	static private CLogger s_log = CLogger.getCLogger(MPaySelectionCheck.class);
+	static private Logger s_log = LogManager.getLogger(MPaySelectionCheck.class);
 
 	/** BPartner Info Index for Value */
 	private static final int BP_VALUE = 0;
@@ -823,7 +825,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

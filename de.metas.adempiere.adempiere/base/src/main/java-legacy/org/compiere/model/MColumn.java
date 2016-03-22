@@ -22,7 +22,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,7 +31,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -86,7 +86,7 @@ public class MColumn extends X_AD_Column
 	private static CCache<Integer, MColumn> s_cache = new CCache<Integer, MColumn>("AD_Column", 20);
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MColumn.class);;
+	private static Logger s_log = LogManager.getLogger(MColumn.class);;
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -270,7 +270,7 @@ public class MColumn extends X_AD_Column
 					|| "Value".equalsIgnoreCase(getColumnName())
 					|| "Name".equalsIgnoreCase(getColumnName()))
 			{
-				log.warning("Encryption not sensible - " + getColumnName());
+				log.warn("Encryption not sensible - " + getColumnName());
 				setIsEncrypted(false);
 			}
 		}
@@ -312,7 +312,7 @@ public class MColumn extends X_AD_Column
 						.append(" WHERE AD_Column_ID=").append(get_ID())
 						.append(" AND IsCentrallyMaintained='Y'");
 				int no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.fine("afterSave - Fields updated #" + no);
+				log.debug("afterSave - Fields updated #" + no);
 			}
 		}
 		return success;
@@ -548,7 +548,7 @@ public class MColumn extends X_AD_Column
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, SQL, e);
+			s_log.error(SQL, e);
 			retValue = -1;
 		}
 		return retValue;

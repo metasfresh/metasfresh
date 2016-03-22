@@ -28,7 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
@@ -37,7 +38,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import com.google.common.base.Optional;
@@ -55,7 +55,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		return new OrgLogoLocalFileLoader(adOrgId);
 	}
 
-	private static final transient CLogger logger = CLogger.getCLogger(OrgLogoLocalFileLoader.class);
+	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
 
 	private final int _adOrgId;
 
@@ -159,7 +159,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		}
 		catch (IOException e)
 		{
-			logger.log(Level.WARNING, "Failed creating the logo temporary file", e);
+			logger.warn("Failed creating the logo temporary file", e);
 		}
 
 		return null;

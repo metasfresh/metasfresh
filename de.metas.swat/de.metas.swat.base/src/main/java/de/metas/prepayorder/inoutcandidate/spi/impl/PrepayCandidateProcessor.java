@@ -31,7 +31,8 @@ import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -49,7 +50,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
 public class PrepayCandidateProcessor implements ICandidateProcessor
 {
 
-	private static final CLogger logger = CLogger.getCLogger(PrepayCandidateProcessor.class);
+	private static final Logger logger = LogManager.getLogger(PrepayCandidateProcessor.class);
 
 	private static final String MSG_ORDER_NOT_PAID_3P = null;
 
@@ -88,12 +89,12 @@ public class PrepayCandidateProcessor implements ICandidateProcessor
 					// discard the line if the qty has been set manually
 					if (candidates.getShipmentSchedule(ioLine).getQtyToDeliver_Override().signum() <= 0)
 					{
-						logger.fine("Discarding candidate for " + candidates.getShipmentSchedule(ioLine));
+						logger.debug("Discarding candidate for " + candidates.getShipmentSchedule(ioLine));
 						candidates.setOverallStatus(ioLine, OverallStatus.DISCARD);
 					}
 					else
 					{
-						logger.fine("Not discarding line despite insufficent allocation, because " + candidates.getShipmentSchedule(ioLine) + " has a qty override");
+						logger.debug("Not discarding line despite insufficent allocation, because " + candidates.getShipmentSchedule(ioLine) + " has a qty override");
 					}
 				}
 			}

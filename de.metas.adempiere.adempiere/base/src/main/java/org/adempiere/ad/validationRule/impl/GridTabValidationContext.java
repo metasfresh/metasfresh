@@ -24,7 +24,8 @@ package org.adempiere.ad.validationRule.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -32,13 +33,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 
 public class GridTabValidationContext implements IValidationContext
 {
-	private static final transient CLogger logger = CLogger.getCLogger(GridTabValidationContext.class);
+	private static final transient Logger logger = LogManager.getLogger(GridTabValidationContext.class);
 
 	private final Properties ctx;
 	private final int windowNo;
@@ -55,7 +55,7 @@ public class GridTabValidationContext implements IValidationContext
 		if (windowNo == Env.WINDOW_MAIN && tabNo <= 0)
 		{
 			final AdempiereException ex = new AdempiereException("Possible invalid definition of GridTabValidationContext: windowNo=" + windowNo + ", tabNo=" + tabNo + ", tableName=" + tableName);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 
 		this.ctx = ctx;

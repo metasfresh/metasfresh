@@ -31,7 +31,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -71,7 +72,7 @@ public class QueryProduct extends PosQuery
 	private CButton f_ok;
 	private CButton f_cancel;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(QueryProduct.class);
+	private static Logger log = LogManager.getLogger(QueryProduct.class);
 	
 	
 	/**	Table Column Layout Info			*/
@@ -272,7 +273,7 @@ public class QueryProduct extends PosQuery
 			}
 		}
 		f_ok.setEnabled(enabled);
-		log.fine("M_Product_ID=" + m_M_Product_ID + " - " + m_ProductName + " - " + m_Price); 
+		log.debug("M_Product_ID=" + m_M_Product_ID + " - " + m_ProductName + " - " + m_Price); 
 	}	//	enableButtons
 
 
@@ -283,7 +284,7 @@ public class QueryProduct extends PosQuery
 	 */
 	protected void close()
 	{
-		log.fine("M_Product_ID=" + m_M_Product_ID); 
+		log.debug("M_Product_ID=" + m_M_Product_ID); 
 		
 		if (m_M_Product_ID > 0)
 		{

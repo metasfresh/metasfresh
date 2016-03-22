@@ -23,7 +23,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -79,7 +80,7 @@ public class VCharge extends Charge
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
@@ -192,7 +193,7 @@ public class VCharge extends Charge
 	 */
 	private void createNew()
 	{
-		log.config("");
+		log.info("");
 		//  Get Input
 		String value = valueField.getText();
 		if (value.length() == 0)

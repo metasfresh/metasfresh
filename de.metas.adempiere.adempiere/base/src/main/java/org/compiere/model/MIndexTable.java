@@ -34,8 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
@@ -510,9 +508,9 @@ public class MIndexTable extends X_AD_Index_Table
 			final String columnName = field.getColumnName();
 			final Object value = field.getValue();
 
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
-				log.fine("column: " + columnName + "=" + value + ", index=" + i);
+				log.debug("column: " + columnName + "=" + value + ", index=" + i);
 			}
 
 			if (sql.length() > 0)

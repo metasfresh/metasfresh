@@ -18,7 +18,6 @@
 package org.adempiere.webui.editor;
 
 import java.beans.PropertyChangeEvent;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Checkbox;
 import org.adempiere.webui.event.ContextMenuEvent;
@@ -26,9 +25,12 @@ import org.adempiere.webui.event.ContextMenuListener;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WFieldRecordInfo;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -41,11 +43,11 @@ import org.zkoss.zk.ui.event.Events;
 public class WYesNoEditor extends WEditor implements ContextMenuListener
 {
     public static final String[] LISTENER_EVENTS = {Events.ON_CHECK};
-    private static final CLogger logger;
+    private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(WYesNoEditor.class);
+        logger = LogManager.getLogger(WYesNoEditor.class);
     }
 
     private boolean oldValue = false;
@@ -134,7 +136,7 @@ public class WYesNoEditor extends WEditor implements ContextMenuListener
         }
         else
         {
-            logger.log(Level.SEVERE,
+            logger.error(
                     "New field value of unknown type, Type: "
                     + value.getClass()
                     + ", Value: " + value);

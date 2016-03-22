@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ComboBoxModel;
 
 import org.compiere.model.MLocator;
 import org.compiere.swing.CComboBox;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -62,7 +64,7 @@ public class VComboBox extends CComboBox
 	}	//	VComboBox
 
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(VComboBox.class);
+	private static final Logger log = LogManager.getLogger(VComboBox.class);
 	
 	/**
 	 *  Common Setup
@@ -109,7 +111,7 @@ public class VComboBox extends CComboBox
 			else if (element instanceof MLocator)
 				ID = String.valueOf(((MLocator)element).getM_Locator_ID());
 			else
-				log.log(Level.SEVERE, "Element not NamePair - " + element.getClass().toString());
+				log.error("Element not NamePair - " + element.getClass().toString());
 
 			if (key == null || ID == null)
 			{

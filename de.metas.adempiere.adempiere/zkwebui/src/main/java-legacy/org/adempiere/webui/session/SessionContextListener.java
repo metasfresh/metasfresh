@@ -19,13 +19,15 @@ package org.adempiere.webui.session;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.servlet.http.HttpSession;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.Locales;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Execution;
@@ -48,7 +50,7 @@ import org.zkoss.zk.ui.util.ExecutionInit;
 public class SessionContextListener implements ExecutionInit,
 		ExecutionCleanup, EventThreadInit, EventThreadResume, EventThreadCleanup, EventThreadSuspend
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SessionContextListener.class);
+	private static final transient Logger logger = LogManager.getLogger(SessionContextListener.class);
 
 	private static final String SERVLET_SESSION_ID = "servlet.sessionId";
 	public static final String SESSION_CTX = "WebUISessionContext";
@@ -283,7 +285,7 @@ public class SessionContextListener implements ExecutionInit,
 		final String sessionId = httpSession.getId();
 		if (ctxSessionId == null || !ctxSessionId.equals(sessionId))
 		{
-			logger.log(Level.WARNING, SERVLET_SESSION_ID + " differs: expected={0} but it was {1};\nserverContext={2}", new Object[] { sessionId, ctxSessionId, serverCtx });
+			logger.warn(SERVLET_SESSION_ID + " differs: expected={} but it was {};\nserverContext={}", new Object[] { sessionId, ctxSessionId, serverCtx });
 			return false;
 		}
 
@@ -292,17 +294,17 @@ public class SessionContextListener implements ExecutionInit,
 		{
 			if (Env.getAD_Client_ID(sessionCtx) != Env.getAD_Client_ID(serverCtx))
 			{
-				logger.log(Level.WARNING, "AD_Client_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
+				logger.warn("AD_Client_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
 				return false;
 			}
 			if (Env.getAD_User_ID(sessionCtx) != Env.getAD_User_ID(serverCtx))
 			{
-				logger.log(Level.WARNING, "AD_User_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
+				logger.warn("AD_User_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
 				return false;
 			}
 			if (Env.getAD_Role_ID(sessionCtx) != Env.getAD_Role_ID(serverCtx))
 			{
-				logger.log(Level.WARNING, "AD_Role_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
+				logger.warn("AD_Role_ID differs;\nserverContext=" + serverCtx + "\nsessionCtx=" + sessionCtx);
 				return false;
 			}
 		}

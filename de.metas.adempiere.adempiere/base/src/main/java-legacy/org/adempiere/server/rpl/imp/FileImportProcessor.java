@@ -40,7 +40,8 @@ import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorParameter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.w3c.dom.Document;
 
 /**
@@ -51,7 +52,7 @@ import org.w3c.dom.Document;
 public class FileImportProcessor implements IImportProcessor {
 	
 	/**	Logger	*/
-	protected CLogger	log = CLogger.getCLogger (FileImportProcessor.class);
+	protected Logger	log = LogManager.getLogger(FileImportProcessor.class);
 	
 	public void start(Properties ctx, IReplicationProcessor replicationProcessor, String trxName)
 			throws Exception {

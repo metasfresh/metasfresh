@@ -35,7 +35,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.commission.interfaces.I_C_BPartner;
@@ -50,7 +51,7 @@ public class SponsorSalesRepValidator implements ModelValidator
 
 	private int ad_Client_ID = -1;
 
-	private final CLogger logger = CLogger.getCLogger(SponsorSalesRepValidator.class);
+	private final Logger logger = LogManager.getLogger(SponsorSalesRepValidator.class);
 
 	@Override
 	public int getAD_Client_ID()

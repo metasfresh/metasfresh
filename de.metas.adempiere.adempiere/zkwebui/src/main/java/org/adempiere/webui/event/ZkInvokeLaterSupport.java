@@ -26,11 +26,13 @@ package org.adempiere.webui.event;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.adempiere.webui.desktop.IDesktop;
 import org.adempiere.webui.session.SessionManager;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuEcho;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -44,7 +46,7 @@ import org.zkoss.zk.ui.util.Clients;
  */
 public class ZkInvokeLaterSupport
 {
-	private static final CLogger logger = CLogger.getCLogger(ZkInvokeLaterSupport.class);
+	private static final Logger logger = LogManager.getLogger(ZkInvokeLaterSupport.class);
 
 	private final ZkInvokeLaterComponent component;
 
@@ -76,8 +78,8 @@ public class ZkInvokeLaterSupport
 		}
 		else
 		{
-			if (logger.isLoggable(Level.FINE))
-				logger.fine("No invokeLater support for "+win+". Invoking it now");
+			if (logger.isDebugEnabled())
+				logger.debug("No invokeLater support for "+win+". Invoking it now");
 			runnable.run();
 		}
 	}
@@ -98,9 +100,9 @@ public class ZkInvokeLaterSupport
 
 		String runnableId = "invokeLater_" + UUID.randomUUID();
 		runnables.put(runnableId, runnable);
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("Enqueued " + runnableId + " for " + runnable);
+			logger.debug("Enqueued " + runnableId + " for " + runnable);
 		}
 		
 		// We need to use an unique ID for each AuResponse that we send, because else the ZK will get only the last event
@@ -126,14 +128,14 @@ public class ZkInvokeLaterSupport
 			Runnable runnable = runnables.remove(runnableId);
 			if (runnable == null)
 			{
-				logger.warning("No runnable found for " + runnableId);
+				logger.warn("No runnable found for " + runnableId);
 				return;
 			}
 			executeRunnable(runnable);
 		}
 		else
 		{
-			logger.warning("Not supported data: " + data);
+			logger.warn("Not supported data: " + data);
 		}
 	}
 

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -45,14 +44,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 class MigrationExecutor implements IMigrationExecutor
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final String LOCALTRXNAME_PREFIX = "MigrationExecutor";
 
@@ -296,7 +296,7 @@ class MigrationExecutor implements IMigrationExecutor
 		final String sql = "SET CONSTRAINTS ALL DEFERRED";
 		DB.executeUpdateEx(sql, trxName);
 
-		logger.log(Level.INFO, "Constraints deferred");
+		logger.info("Constraints deferred");
 	}
 
 	private void enableConstraints(final String trxName)
@@ -304,7 +304,7 @@ class MigrationExecutor implements IMigrationExecutor
 		final String sql = "SET CONSTRAINTS ALL IMMEDIATE";
 		DB.executeUpdateEx(sql, trxName);
 
-		logger.log(Level.INFO, "Constraints immediate");
+		logger.info("Constraints immediate");
 	}
 
 	private void updateMigrationStatus()
@@ -368,9 +368,11 @@ class MigrationExecutor implements IMigrationExecutor
 
 	private final void log(String msg, String resolution, boolean isError)
 	{
-		final Level level = isError ? Level.WARNING : Level.INFO;
-
-		if (!logger.isLoggable(level))
+		if (isError && !logger.isErrorEnabled())
+		{
+			return;
+		}
+		if (!isError && !logger.isInfoEnabled())
 		{
 			return;
 		}
@@ -388,6 +390,13 @@ class MigrationExecutor implements IMigrationExecutor
 			sb.append(" [").append(resolution).append("]");
 		}
 
-		logger.log(level, sb.toString());
+		if (isError)
+		{
+			logger.error(sb.toString());
+		}
+		else
+		{
+			logger.info(sb.toString());
+		}
 	}
 }

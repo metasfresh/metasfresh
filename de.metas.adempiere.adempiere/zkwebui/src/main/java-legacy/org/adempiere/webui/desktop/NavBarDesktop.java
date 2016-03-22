@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.ProcessDialog;
 import org.adempiere.webui.apps.graph.WGraph;
@@ -43,10 +42,13 @@ import org.compiere.model.MGoal;
 import org.compiere.model.MMenu;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.model.X_PA_DashboardContent;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuScript;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -86,7 +88,7 @@ public class NavBarDesktop extends TabbedDesktop implements MenuListener, Serial
 
 	private static final String VIEWS_PATH = "/zul/views.zul";
 
-	private static final CLogger logger = CLogger.getCLogger(DefaultDesktop.class);
+	private static final Logger logger = LogManager.getLogger(DefaultDesktop.class);
 
     private Center windowArea;
 
@@ -289,7 +291,7 @@ public class NavBarDesktop extends TabbedDesktop implements MenuListener, Serial
 						while ((cssLine = bufferedReader.readLine()) != null)
 							result.append(cssLine + "\n");
 					} catch (IOException e1) {
-						logger.log(Level.SEVERE, e1.getLocalizedMessage(), e1);
+						logger.error(e1.getLocalizedMessage(), e1);
 					}
 
 					result.append("</head><body><div class=\"content\">\n");
@@ -355,7 +357,7 @@ public class NavBarDesktop extends TabbedDesktop implements MenuListener, Serial
 		                	}
 		                }
 					} catch (Exception e) {
-						logger.log(Level.WARNING, "Failed to create components. zul="+url, e);
+						logger.warn("Failed to create components. zul="+url, e);
 					}
 	        	}
 
@@ -363,7 +365,7 @@ public class NavBarDesktop extends TabbedDesktop implements MenuListener, Serial
 	        		panel.detach();
 	        }
 		} catch(Exception e) {
-			logger.log(Level.WARNING, "Failed to create dashboard content", e);
+			logger.warn("Failed to create dashboard content", e);
 		} finally {
 			DB.close(rs, pstmt);
 		}

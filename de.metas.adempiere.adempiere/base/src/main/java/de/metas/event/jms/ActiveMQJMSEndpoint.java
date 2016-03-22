@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -49,7 +48,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.transport.TransportListener;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
@@ -67,7 +66,7 @@ import de.metas.jms.IJMSService;
 public class ActiveMQJMSEndpoint implements IJMSEndpoint
 {
 	// services
-	private static final transient CLogger logger = EventBusConstants.getLogger();
+	private static final transient Logger logger = EventBusConstants.getLogger(ActiveMQConnection.class);
 
 	private static final String MSG_Event_RemoteEndpointDisconnected = "Event.RemoteEndpointDisconnected";
 	private static final String MSG_Event_RemoteEndpointConnected = "Event.RemoteEndpointConnected";
@@ -92,20 +91,20 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		@Override
 		public void onCommand(Object command)
 		{
-			logger.log(Level.FINEST, "Transport command: {0}", command);
+			logger.trace("Transport command: {0}", command);
 		}
 
 		@Override
 		public void onException(IOException error)
 		{
-			logger.log(Level.INFO, "Transport exception", error);
+			logger.info("Transport exception", error);
 		}
 
 		@Override
 		public void transportInterupted()
 		{
 			connected.set(false);
-			logger.log(Level.INFO, "Transport interrupted");
+			logger.info("Transport interrupted");
 
 			postConnectionStatusEvent();
 		}
@@ -117,7 +116,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			// So we can rely on this logic.
 			connected.set(true);
 
-			logger.log(Level.INFO, "Transport resumed");
+			logger.info("Transport resumed");
 
 			postConnectionStatusEvent();
 		}
@@ -168,7 +167,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 		// JMS Client ID
 		_jmsClientID = EventBusConstants.getSenderId();
-		logger.log(Level.INFO, "JMS Client ID: {0}", _jmsClientID);
+		logger.info("JMS Client ID: {}", _jmsClientID);
 	}
 
 	@Override
@@ -235,7 +234,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		// Start the connection
 		conn.start();
 
-		logger.log(Level.INFO, "Connection created and started: {0}", conn);
+		logger.info("Connection created and started: {}", conn);
 		return conn;
 	}
 
@@ -255,7 +254,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 				false, // transacted
 				Session.AUTO_ACKNOWLEDGE // acknowledgeMode
 				);
-		logger.log(Level.INFO, "Session created: {0}", session);
+		logger.info("Session created: {}", session);
 		return session;
 	}
 
@@ -264,7 +263,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final Session session = getSession();
 		final Topic topic = session.createTopic(topicName);
 		final MessageConsumer consumer = session.createConsumer(topic);
-		logger.log(Level.FINE, "Message consumer for topic {0} created: {1}", new Object[] { topicName, consumer });
+		logger.debug("Message consumer for topic {0} created: {1}", new Object[] { topicName, consumer });
 		return consumer;
 	}
 
@@ -315,7 +314,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		}
 		catch (final JMSException e)
 		{
-			logger.log(Level.WARNING, "Failed binding JMS->EventBus for " + eventBus + ". Ignored.", e);
+			logger.warn("Failed binding JMS->EventBus for " + eventBus + ". Ignored.", e);
 		}
 	}
 
@@ -324,7 +323,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final Session session = getSession();
 		final Topic topic = session.createTopic(topicName);
 		final MessageProducer producer = session.createProducer(topic);
-		logger.log(Level.FINE, "Message producer created: {0}", producer);
+		logger.debug("Message producer created: {0}", producer);
 		return producer;
 	}
 
@@ -382,11 +381,11 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			final MessageProducer jmsProducer = getTopicProducer(topicName);
 			jmsProducer.send(jmsMessage);
 
-			logger.log(Level.FINE, "JMS: send event: {0}", event);
+			logger.debug("JMS: send event: {0}", event);
 		}
 		catch (final JMSException e)
 		{
-			logger.log(Level.WARNING, "Failed to send " + event + " to " + topicName + ". Ignored.", e);
+			logger.warn("Failed to send " + event + " to " + topicName + ". Ignored.", e);
 		}
 
 	}
@@ -394,7 +393,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	private final void onJMSException(final JMSException jmsException)
 	{
 		// TODO: close connections, sessions, topics cache etc
-		logger.log(Level.SEVERE, "JMS Error: " + jmsException.getLocalizedMessage(), jmsException);
+		logger.error("JMS Error: " + jmsException.getLocalizedMessage(), jmsException);
 	}
 
 	@Override
@@ -484,25 +483,25 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 				}
 
 				eventAsString = extractText(jmsMessage);
-				logger.log(Level.FINEST, "Received message(text): \n{0}", eventAsString);
+				logger.trace("Received message(text): \n{0}", eventAsString);
 
 				final Event event = eventSerializer.fromString(eventAsString);
-				logger.log(Level.FINEST, "Received event: {0}", event);
+				logger.trace("Received event: {0}", event);
 
 				// Flag the event that it was received by JMS
 				event.markReceivedByEventBusId(eventBusId);
-				logger.log(Level.FINE, "JMS: received event: {0}", event);
+				logger.debug("JMS: received event: {0}", event);
 
 				// Forward the event to bus
 				eventBus.postEvent(event);
 			}
 			catch (final RuntimeException e)
 			{
-				logger.log(Level.WARNING, "Failed receiving event", e);
+				logger.warn("Failed receiving event", e);
 			}
 			catch (final JMSException e)
 			{
-				logger.log(Level.WARNING, "Failed receiving event", e);
+				logger.warn("Failed receiving event", e);
 			}
 		}
 
@@ -518,7 +517,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			}
 			catch (JMSException e)
 			{
-				logger.log(Level.INFO, "Failed closing the JMS consumer. Ingnored.", e);
+				logger.info("Failed closing the JMS consumer. Ingnored.", e);
 			}
 
 			// Clear the EventBus reference

@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -74,7 +75,7 @@ public class ImportAccount extends SvrProcess
 			else if (name.equals("DeleteOldImported"))
 				m_deleteOldImported = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		if (m_DateValue == null)
 			m_DateValue = new Timestamp (System.currentTimeMillis());
@@ -100,7 +101,7 @@ public class ImportAccount extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_ElementValue "
 				+ "WHERE I_IsImported='Y'").append(clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Deleted Old Imported =" + no);
+			log.debug("Deleted Old Imported =" + no);
 		}
 
 		//	Set Client, Org, IsActive, Created/Updated
@@ -118,7 +119,7 @@ public class ImportAccount extends SvrProcess
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Reset=" + no);
+		log.debug("Reset=" + no);
 
 		//	****	Prepare	****
 
@@ -130,7 +131,7 @@ public class ImportAccount extends SvrProcess
 				+ "WHERE ElementName IS NULL AND C_Element_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Set Element Default=" + no);
+			log.debug("Set Element Default=" + no);
 		}
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue i "
@@ -139,14 +140,14 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE C_Element_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Element=" + no);
+		log.debug("Set Element=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Element, ' "
 			+ "WHERE C_Element_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid Element=" + no);
+		log.info("Invalid Element=" + no);
 
 		//	No Name, Value
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -154,7 +155,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE (Value IS NULL OR Name IS NULL)"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid Name=" + no);
+		log.info("Invalid Name=" + no);
 
 		
 		//	Set Column
@@ -165,7 +166,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE Default_Account IS NOT NULL AND AD_Column_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set Column=" + no);
+		log.debug("Set Column=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Column, ' "
@@ -173,7 +174,7 @@ public class ImportAccount extends SvrProcess
 			+ " AND UPPER(Default_Account)<>'DEFAULT_ACCT'"		//	ignore default account
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid Column=" + no);
+		log.info("Invalid Column=" + no);
 
 		//	Set Post* Defaults (ignore errors)
 		String[] yColumns = new String[] {"PostActual", "PostBudget", "PostStatistical", "PostEncumbrance"};
@@ -185,7 +186,7 @@ public class ImportAccount extends SvrProcess
 				.append(yColumns[i]).append(" NOT IN ('Y','N')"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
-			log.fine("Set " + yColumns[i] + " Default=" + no);
+			log.debug("Set " + yColumns[i] + " Default=" + no);
 		}
 		//	Summary
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -193,7 +194,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE IsSummary IS NULL OR IsSummary NOT IN ('Y','N')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set IsSummary Default=" + no);
+		log.debug("Set IsSummary Default=" + no);
 
 		//	Doc Controlled
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -201,7 +202,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE IsDocControlled IS NULL OR IsDocControlled NOT IN ('Y','N')"
 			+ " AND I_IsImported='N'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set IsDocumentControlled Default=" + no);
+		log.debug("Set IsDocumentControlled Default=" + no);
 
 		//	Check Account Type A (E) L M O R
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -209,14 +210,14 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE AccountType IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set AccountType Default=" + no);
+		log.debug("Set AccountType Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid AccountType, ' "
 			+ "WHERE AccountType NOT IN ('A','E','L','M','O','R')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid AccountType=" + no);
+		log.info("Invalid AccountType=" + no);
 
 		//	Check Account Sign (N) C B
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -224,14 +225,14 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE AccountSign IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Set AccountSign Default=" + no);
+		log.debug("Set AccountSign Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid AccountSign, ' "
 			+ "WHERE AccountSign NOT IN ('N','C','D')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid AccountSign=" + no);
+		log.info("Invalid AccountSign=" + no);
 
 		//	No Value
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -239,7 +240,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE (Value IS NULL OR Value='')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Invalid Key=" + no);
+		log.info("Invalid Key=" + no);
 
 		//	****	Update ElementValue from existing
 		sql = new StringBuffer ("UPDATE I_ElementValue i "
@@ -250,7 +251,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE C_ElementValue_ID IS NULL"
 			+ " AND I_IsImported='N'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Found ElementValue=" + no);
+		log.debug("Found ElementValue=" + no);
 
 		commitEx();
 
@@ -352,14 +353,14 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE ParentElementValue_ID IS NULL"
 			+ " AND I_IsImported='Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Found Parent ElementValue=" + no);
+		log.debug("Found Parent ElementValue=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_ErrorMsg=I_ErrorMsg||'Info=ParentNotFound, ' "
 			+ "WHERE ParentElementValue_ID IS NULL AND ParentValue IS NOT NULL"
 			+ " AND I_IsImported='Y' AND Processed='N'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.config("Not Found Parent ElementValue=" + no);
+		log.info("Not Found Parent ElementValue=" + no);
 		//
 		sql = new StringBuffer ("SELECT i.ParentElementValue_ID, i.I_ElementValue_ID,"
 			+ " e.AD_Tree_ID, i.C_ElementValue_ID, i.Value||'-'||i.Name AS Info "
@@ -394,7 +395,7 @@ public class ImportAccount extends SvrProcess
 				}
 				catch (SQLException ex)
 				{
-					log.log(Level.SEVERE, "(ParentUpdate)", ex);
+					log.error("(ParentUpdate)", ex);
 					no = 0;
 				}
 				if (no == 0)
@@ -405,7 +406,7 @@ public class ImportAccount extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "(ParentUpdateLoop) " + sql.toString(), e);
+			log.error("(ParentUpdateLoop) " + sql.toString(), e);
 		}
 		addLog (0, null, new BigDecimal (noParentUpdate), "@ParentElementValue_ID@: @Updated@");
 
@@ -420,7 +421,7 @@ public class ImportAccount extends SvrProcess
 		if (m_updateDefaultAccounts)
 			sql.append(" AND AD_Column_ID IS NULL");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Reset Processing Flag=" + no);
+		log.debug("Reset Processing Flag=" + no);
 
 		if (m_updateDefaultAccounts)
 			updateDefaults(clientCheck);
@@ -436,7 +437,7 @@ public class ImportAccount extends SvrProcess
 			+ "WHERE I_IsImported='Y'")
 			.append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.fine("Processed=" + no);
+		log.debug("Processed=" + no);
 
 		return "";
 	}	//	doIt
@@ -448,7 +449,7 @@ public class ImportAccount extends SvrProcess
 	 */
 	private void updateDefaults (String clientCheck)
 	{
-		log.config("CreateNewCombination=" + m_createNewCombination);
+		log.info("CreateNewCombination=" + m_createNewCombination);
 
 		//	****	Update Defaults
 		StringBuffer sql = new StringBuffer ("SELECT C_AcctSchema_ID FROM C_AcctSchema_Element "
@@ -465,7 +466,7 @@ public class ImportAccount extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 
 		//	Default Account		DEFAULT_ACCT
@@ -489,12 +490,12 @@ public class ImportAccount extends SvrProcess
 	 */
 	private void updateDefaultAccounts (int C_AcctSchema_ID)
 	{
-		log.config("C_AcctSchema_ID=" + C_AcctSchema_ID);
+		log.info("C_AcctSchema_ID=" + C_AcctSchema_ID);
 
 		MAcctSchema as = new MAcctSchema (getCtx(), C_AcctSchema_ID, get_TrxName());
 		if (as.getAcctSchemaElement("AC").getC_Element_ID() != m_C_Element_ID)
 		{
-			log.log(Level.SEVERE, "C_Element_ID=" + m_C_Element_ID + " not in AcctSchema=" + as);
+			log.error("C_Element_ID=" + m_C_Element_ID + " not in AcctSchema=" + as);
 			return;
 		}
 
@@ -526,7 +527,7 @@ public class ImportAccount extends SvrProcess
 						+ "WHERE I_ElementValue_ID=" + I_ElementValue_ID;
 					int no = DB.executeUpdate(sql.toString(), get_TrxName());
 					if (no != 1)
-						log.log(Level.SEVERE, "Updated=" + no);
+						log.error("Updated=" + no);
 				}
 			}
 			rs.close();
@@ -534,7 +535,7 @@ public class ImportAccount extends SvrProcess
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		addLog (0, null, new BigDecimal (counts[UPDATE_ERROR]), as.toString() + ": @Errors@");
 		addLog (0, null, new BigDecimal (counts[UPDATE_YES]), as.toString() + ": @Updated@");
@@ -562,7 +563,7 @@ public class ImportAccount extends SvrProcess
 	 */
 	private int updateDefaultAccount (String TableName, String ColumnName, int C_AcctSchema_ID, int C_ElementValue_ID)
 	{
-		log.fine(TableName + "." + ColumnName + " - " + C_ElementValue_ID);
+		log.debug(TableName + "." + ColumnName + " - " + C_ElementValue_ID);
 		int retValue = UPDATE_ERROR;
 		StringBuffer sql = new StringBuffer ("SELECT x.")
 			.append(ColumnName).append(",Account_ID FROM ")
@@ -581,7 +582,7 @@ public class ImportAccount extends SvrProcess
 				if (Account_ID == C_ElementValue_ID)
 				{
 					retValue = UPDATE_SAME;
-					log.fine("Account_ID same as new value");
+					log.debug("Account_ID same as new value");
 				}
 				//	We need to update the Account Value
 				else
@@ -601,7 +602,7 @@ public class ImportAccount extends SvrProcess
 									.append(" SET ").append(ColumnName).append("=").append(newC_ValidCombination_ID)
 									.append(" WHERE C_AcctSchema_ID=").append(C_AcctSchema_ID);
 								int no = DB.executeUpdate(sql.toString(), get_TrxName());
-								log.fine("New #" + no + " - "
+								log.debug("New #" + no + " - "
 									+ TableName + "." + ColumnName + " - " + C_ElementValue_ID
 									+ " -- " + C_ValidCombination_ID + " -> " + newC_ValidCombination_ID);
 								if (no == 1)
@@ -609,7 +610,7 @@ public class ImportAccount extends SvrProcess
 							}
 						}
 						else
-							log.log(Level.SEVERE, "Account not saved - " + acct);
+							log.error("Account not saved - " + acct);
 					}
 					else	//	Replace Combination
 					{
@@ -617,7 +618,7 @@ public class ImportAccount extends SvrProcess
 						sql = new StringBuffer ("UPDATE C_ValidCombination SET Account_ID=")
 							.append(C_ElementValue_ID).append(" WHERE C_ValidCombination_ID=").append(C_ValidCombination_ID);
 						int no = DB.executeUpdate(sql.toString(), get_TrxName());
-						log.fine("Replace #" + no + " - "
+						log.debug("Replace #" + no + " - "
 								+ "C_ValidCombination_ID=" + C_ValidCombination_ID + ", New Account_ID=" + C_ElementValue_ID);
 						if (no == 1)
 						{
@@ -626,25 +627,25 @@ public class ImportAccount extends SvrProcess
 							sql = new StringBuffer ("UPDATE C_ValidCombination SET Account_ID=")
 								.append(C_ElementValue_ID).append(" WHERE Account_ID=").append(Account_ID);
 							no = DB.executeUpdate(sql.toString(), get_TrxName());
-							log.fine("ImportAccount.updateDefaultAccount - Replace VC #" + no + " - "
+							log.debug("ImportAccount.updateDefaultAccount - Replace VC #" + no + " - "
 									+ "Account_ID=" + Account_ID + ", New Account_ID=" + C_ElementValue_ID);
 							sql = new StringBuffer ("UPDATE Fact_Acct SET Account_ID=")
 								.append(C_ElementValue_ID).append(" WHERE Account_ID=").append(Account_ID);
 							no = DB.executeUpdate(sql.toString(), get_TrxName());
-							log.fine("ImportAccount.updateDefaultAccount - Replace Fact #" + no + " - "
+							log.debug("ImportAccount.updateDefaultAccount - Replace Fact #" + no + " - "
 									+ "Account_ID=" + Account_ID + ", New Account_ID=" + C_ElementValue_ID);
 						}
 					}	//	replace combination
 				}	//	need to update
 			}	//	for all default accounts
 			else
-				log.log(Level.SEVERE, "Account not found " + sql);
+				log.error("Account not found " + sql);
 			rs.close();
 			pstmt.close();
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 
 		return retValue;

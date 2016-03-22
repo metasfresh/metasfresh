@@ -19,9 +19,9 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -65,7 +65,7 @@ public class MPrivateAccess extends X_AD_Private_Access
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "MPrivateAccess", e);
+			s_log.error("MPrivateAccess", e);
 		}
 		try
 		{
@@ -95,7 +95,7 @@ public class MPrivateAccess extends X_AD_Private_Access
 
 	
 	/**	Logger					*/
-	private static CLogger		s_log = CLogger.getCLogger(MPrivateAccess.class);
+	private static Logger		s_log = LogManager.getLogger(MPrivateAccess.class);
 	
 	/**
 	 * 	Persistency Constructor

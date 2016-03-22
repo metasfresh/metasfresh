@@ -18,7 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
@@ -66,7 +67,7 @@ public class ProductUOMConvert extends SvrProcess
 			else if (name.equals("Qty"))
 				p_Qty = (BigDecimal)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

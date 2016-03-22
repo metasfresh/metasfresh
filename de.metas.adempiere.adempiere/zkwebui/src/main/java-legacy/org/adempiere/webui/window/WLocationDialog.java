@@ -23,12 +23,8 @@ package org.adempiere.webui.window;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridFactory;
@@ -39,18 +35,18 @@ import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Textbox;
 import org.adempiere.webui.component.Window;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.MCountry;
 import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
-
-import de.metas.adempiere.service.ICountryDAO;
 
 /**
  * @author Sendy Yagambrum
@@ -74,7 +70,7 @@ public class WLocationDialog extends Window implements EventListener
 	private static final long serialVersionUID = 6892969005447776082L;
 	private static final String LABEL_STYLE = "white-space: nowrap;";
 	/** Logger          */
-	private static CLogger log = CLogger.getCLogger(WLocationDialog.class);
+	private static Logger log = LogManager.getLogger(WLocationDialog.class);
 	private Label lblAddress1;
 	private Label lblAddress2;
 	private Label lblAddress3;
@@ -301,7 +297,7 @@ public class WLocationDialog extends Window implements EventListener
 
 		MCountry country = m_location.getCountry();
 
-		log.fine(country.getName() + ", Region=" + country.isHasRegion() + " " + country.getCaptureSequence()
+		log.debug(country.getName() + ", Region=" + country.isHasRegion() + " " + country.getCaptureSequence()
 				+ ", C_Location_ID=" + m_location.getC_Location_ID());
 		//  new Country
 		if (m_location.getC_Country_ID() != s_oldCountry_ID)
@@ -345,7 +341,7 @@ public class WLocationDialog extends Window implements EventListener
 		String ds = country.getCaptureSequence();
 		if (ds == null || ds.length() == 0)
 		{
-			log.log(Level.SEVERE, "CaptureSequence empty - " + country);
+			log.error("CaptureSequence empty - " + country);
 			ds = "";    //  @C@,  @P@
 		}
 		isCityMandatory = false;

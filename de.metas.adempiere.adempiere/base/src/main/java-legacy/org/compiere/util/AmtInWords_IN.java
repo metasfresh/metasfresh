@@ -56,9 +56,6 @@ public class AmtInWords_IN implements AmtInWords
   private static final long POWER_NINE = 1000000000L;
   private static final long POWER_TWELVE = 1000000000000L;
   private static final long POWER_FIFTEEN = 1000000000000000L;
-  
-	/**	Static Logger				*/
-	private static CLogger	s_log	= CLogger.getCLogger (AmtInWords_IN.class);
 
 //-------------------------- STATIC METHODS --------------------------
 
@@ -92,7 +89,7 @@ public class AmtInWords_IN implements AmtInWords
 		  appendTo.append("Minus ");
 	  }
 	  double abs = Math.abs(number);
-	  // s_log.warning("Debug=" + abs);
+	  // s_log.warn("Debug=" + abs);
 	  if (abs < POWER_THREE) {
 		  saySimpleNumber(appendTo, (int) abs);
 	  } else if (abs < 2000) {
@@ -196,6 +193,7 @@ public class AmtInWords_IN implements AmtInWords
 	 * 	@param amount numeric amount (352.80)
 	 * 	@return amount in words (three*five*two 80/100)
 	 */
+	@Override
 	public String getAmtInWords (String amount) throws Exception
 	{
 		if (amount == null)

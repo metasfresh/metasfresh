@@ -23,8 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -176,14 +174,14 @@ public class CalloutPaySelection extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.fine(" - OpenAmt=" + OpenAmt + " (Invoice=" + C_Invoice_ID + ",BankAcct=" + C_BP_BankAccount_ID + ")");
+		log.debug(" - OpenAmt=" + OpenAmt + " (Invoice=" + C_Invoice_ID + ",BankAcct=" + C_BP_BankAccount_ID + ")");
 		mTab.setValue("OpenAmt", OpenAmt);
 		mTab.setValue("PayAmt", OpenAmt.subtract(DiscountAmt));
 		mTab.setValue("DiscountAmt", DiscountAmt);

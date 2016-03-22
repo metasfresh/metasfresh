@@ -25,7 +25,8 @@ package de.metas.fresh.freshQtyOnHand.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,8 +46,6 @@ import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.model.X_AD_User_SortPref_Hdr;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
-
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
@@ -57,7 +56,7 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref.class);
+	private static final transient Logger logger = LogManager.getLogger(Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref.class);
 
 	private static final int SEQNO_SPACING = 10;
 
@@ -138,7 +137,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 		final I_AD_InfoWindow mrpInfoWindow = adInfoWindowDAO.retrieveInfoWindowByTableName(getCtx(), I_X_MRP_ProductInfo_V.Table_Name);
 		if (mrpInfoWindow == null)
 		{
-			logger.log(Level.FINE, "Found no AD_InfoWindow for tableName {0}", I_X_MRP_ProductInfo_V.Table_Name);
+			logger.debug("Found no AD_InfoWindow for tableName {}", I_X_MRP_ProductInfo_V.Table_Name);
 			return null;
 		}
 		final I_AD_User_SortPref_Hdr mrpProductInfoSortPrefs = userSortPrefDAO.retrieveDefaultSortPreferenceHdrOrNull(getCtx(),
@@ -147,7 +146,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 
 		if (mrpProductInfoSortPrefs == null)
 		{
-			logger.log(Level.FINE, "Found no default AD_User_SortPref_Hdr for AD_InfoWindow_ID={0} (tableName {1})",
+			logger.debug("Found no default AD_User_SortPref_Hdr for AD_InfoWindow_ID={} (tableName {})",
 					new Object[] { mrpInfoWindow.getAD_InfoWindow_ID(), I_X_MRP_ProductInfo_V.Table_Name });
 			return null;
 		}
@@ -155,7 +154,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 		final I_AD_InfoColumn nameColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(mrpInfoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName);
 		if (nameColumn == null)
 		{
-			logger.log(Level.FINE, "Found no default AD_InfoColumn for AD_InfoWindow_ID={0} (tableName {1}) and columnName {2}",
+			logger.debug("Found no default AD_InfoColumn for AD_InfoWindow_ID={} (tableName {}) and columnName {}",
 					new Object[] { mrpInfoWindow.getAD_InfoWindow_ID(), I_X_MRP_ProductInfo_V.Table_Name, I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName });
 			return null;
 		}
@@ -170,7 +169,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 		newLine.setIsAscending(true);
 		newLine.setAD_InfoColumn_ID(nameColumn.getAD_InfoColumn_ID());
 		InterfaceWrapperHelper.save(newLine);
-		logger.log(Level.FINE, "Created new AD_User_SortPref_Line {0}", newLine);
+		logger.debug("Created new AD_User_SortPref_Line {}", newLine);
 
 		return newLine;
 	}

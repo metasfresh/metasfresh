@@ -16,7 +16,6 @@ package org.adempiere.webui.window;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.apps.AEnv;
@@ -31,10 +30,13 @@ import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.component.Window;
 import org.compiere.model.MRecordAccess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -78,7 +80,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		AEnv.showWindow(this);
 	}	//	RecordAccessDialog
@@ -88,7 +90,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 	private ArrayList<MRecordAccess>	m_recordAccesss = new ArrayList<MRecordAccess>();
 	private int				m_currentRow = 0;
 	private MRecordAccess	m_currentData = null;
-	private CLogger			log = CLogger.getCLogger(getClass());
+	private Logger			log = LogManager.getLogger(getClass());
 	
 	private Label roleLabel = new Label(Msg.translate(Env.getCtx(), "AD_Role_ID"));
 	private Listbox roleField = null;	
@@ -136,7 +138,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -148,7 +150,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 		{
 			pstmt = null;
 		}
-		log.fine("#" + m_recordAccesss.size());
+		log.debug("#" + m_recordAccesss.size());
 		setLine(0, false);
 	}	//	dynInit
 
@@ -230,7 +232,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 	 */
 	private void setLine (int rowDelta, boolean newRecord)
 	{
-		log.fine("delta=" + rowDelta + ", new=" + newRecord
+		log.debug("delta=" + rowDelta + ", new=" + newRecord
 			+ " - currentRow=" + m_currentRow + ", size=" + m_recordAccesss.size());
 		int maxIndex = 0;
 		//	nothing defined
@@ -310,7 +312,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 		{
 			roleField.setSelectedItem(selection);
 			m_currentData = ra;
-			log.fine("" + ra);
+			log.debug("" + ra);
 		}
 		else
 			m_currentData = null;
@@ -369,7 +371,7 @@ public class WRecordAccessDialog extends Window implements EventListener
 		m_currentData.setIsDependentEntities(isDependentEntities);
 		boolean success = m_currentData.save();
 		//
-		log.fine("Success=" + success);
+		log.debug("Success=" + success);
 		return success;
 	}	//	cmd_save
 
@@ -381,13 +383,13 @@ public class WRecordAccessDialog extends Window implements EventListener
 	{
 		boolean success = false;
 		if (m_currentData == null)
-			log.log(Level.SEVERE, "No data");
+			log.error("No data");
 		else
 		{
 			success = m_currentData.delete(true);
 			m_currentData = null;
 			m_recordAccesss.remove(m_currentRow);
-			log.fine("Success=" + success);
+			log.debug("Success=" + success);
 		}
 		return success;
 	}	//	cmd_delete

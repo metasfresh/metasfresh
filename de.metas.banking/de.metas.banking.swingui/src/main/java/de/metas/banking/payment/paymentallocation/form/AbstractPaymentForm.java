@@ -28,7 +28,8 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.JLabel;
@@ -46,7 +47,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -57,7 +59,7 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 /* package */abstract class AbstractPaymentForm
 {
 	/** Logger */
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	protected final DecimalFormat decimalFormat = DisplayType.getNumberFormat(DisplayType.Amount);
 
@@ -115,7 +117,7 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 	{
 		final int bpartnerId = getC_BPartner_ID();
 		final int currencyId = getC_Currency_ID();
-		logger.log(Level.CONFIG, "C_BPartner_ID={0}, C_Currency_ID=", new Object[] { bpartnerId, currencyId });
+		logger.info("C_BPartner_ID={}, C_Currency_ID=", new Object[] { bpartnerId, currencyId });
 		// Need to have both values
 		if (bpartnerId <= 0 || currencyId <= 0)
 		{

@@ -29,11 +29,11 @@ package de.metas.adempiere.form.terminal;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
@@ -47,7 +47,7 @@ public abstract class AbstractTerminalLookupField
 		extends AbstractTerminalField<KeyNamePair>
 		implements ITerminalLookupField
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = LogManager.getLogger(getClass());
 
 	public static enum Status
 	{
@@ -127,7 +127,7 @@ public abstract class AbstractTerminalLookupField
 
 		if (value != null && value.getName() != null && value.getName().equals(text))
 		{
-			logger.fine("Already validated: value=" + value + ", text=" + text);
+			logger.debug("Already validated: value=" + value + ", text=" + text);
 			return;
 		}
 
@@ -160,9 +160,9 @@ public abstract class AbstractTerminalLookupField
 	{
 		setStatus(Status.Error);
 		// getTerminalFactory().showWarning(this, ITerminalFactory.TITLE_WARN, e);
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.log(Level.FINE, e.getLocalizedMessage(), e);
+			logger.debug(e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -222,9 +222,9 @@ public abstract class AbstractTerminalLookupField
 
 	private void setFieldValue0(final KeyNamePair valueNew, final boolean resetTextOnNull, final boolean fireEvent)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("start: valueNew=" + valueNew + ", resetTextOnNull=" + resetTextOnNull + ", fireEvent=" + fireEvent);
+			logger.debug("start: valueNew=" + valueNew + ", resetTextOnNull=" + resetTextOnNull + ", fireEvent=" + fireEvent);
 		}
 
 		final KeyNamePair valueOld = value;
@@ -243,9 +243,9 @@ public abstract class AbstractTerminalLookupField
 		}
 
 		// Logging
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("value=" + (valueOld == null ? null : valueOld.toStringX()) + "->" + (valueNew == null ? null : valueNew.toStringX()) + ", text=" + textField.getText());
+			logger.debug("value=" + (valueOld == null ? null : valueOld.toStringX()) + "->" + (valueNew == null ? null : valueNew.toStringX()) + ", text=" + textField.getText());
 		}
 
 		//
@@ -330,9 +330,9 @@ public abstract class AbstractTerminalLookupField
 
 	private void setStatus(final Status statusNew)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("Status change: " + status + " -> " + statusNew);
+			logger.debug("Status change: " + status + " -> " + statusNew);
 		}
 
 		status = statusNew;

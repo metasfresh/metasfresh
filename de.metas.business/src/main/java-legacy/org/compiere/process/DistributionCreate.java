@@ -17,7 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionList;
@@ -71,7 +72,7 @@ public class DistributionCreate extends SvrProcess
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
-		//	log.fine("prepare - " + para[i]);
+		//	log.debug("prepare - " + para[i]);
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("M_Product_ID"))
@@ -87,7 +88,7 @@ public class DistributionCreate extends SvrProcess
 			else if (name.equals("IsTest"))
 				p_IsTest = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);		
+				log.error("Unknown Parameter: " + name);		
 		}
 		p_M_DistributionList_ID = getRecord_ID();
 	}	//	prepare
@@ -181,7 +182,7 @@ public class DistributionCreate extends SvrProcess
 				order.setC_BPartner_Location_ID(dll.getC_BPartner_Location_ID());
 			if (!order.save())
 			{
-				log.log(Level.SEVERE, "Order not saved");
+				log.error("Order not saved");
 				return false;
 			}
 		}
@@ -212,7 +213,7 @@ public class DistributionCreate extends SvrProcess
 		line.setPrice();
 		if (!line.save())
 		{
-			log.log(Level.SEVERE, "OrderLine not saved");
+			log.error("OrderLine not saved");
 			return false;
 		}
 		

@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,9 +43,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.CLogger;
 import org.compiere.util.Evaluatee2;
-
+import org.slf4j.Logger;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -68,7 +66,7 @@ public class AggregationEngine implements IAggregationEngine
 {
 	//
 	// services
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -126,7 +124,7 @@ public class AggregationEngine implements IAggregationEngine
 								+ "\n This case shall not happen because and IC-IOL association should be created by InOut handler."
 								+ "\n @C_Invoice_Candidate_ID@: " + ic
 								+ "\n @HeaderAggregationKey@: " + getHeaderAggregationKey(ic));
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 
 			final I_C_InvoiceCandidate_InOutLine iciol = null; // no IC-IOL association

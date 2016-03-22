@@ -23,7 +23,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -31,7 +32,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat_Row;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -123,7 +123,7 @@ public final class ImpFormatRow
 	private int m_maxLength = 0;
 
 	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Sequence No
@@ -348,11 +348,11 @@ public final class ImpFormatRow
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "MTab.setFormatInfo - " + e.toString());
+				log.error("MTab.setFormatInfo - " + e.toString());
 			}
 			if (m_callout == null || m_method == null || m_method.length() == 0)
 			{
-				log.log(Level.SEVERE, "MTab.setFormatInfo - Invalid Callout " + callout);
+				log.error("MTab.setFormatInfo - Invalid Callout " + callout);
 				m_callout = null;
 			}
 		}
@@ -390,7 +390,7 @@ public final class ImpFormatRow
 			catch (Exception e)
 			{
 				dateFormat = null;
-				log.log(Level.SEVERE, "ImpFormatRow.parseDate Format=" + dateFormatPattern, e);
+				log.error("ImpFormatRow.parseDate Format=" + dateFormatPattern, e);
 			}
 			if (dateFormat == null)
 				dateFormat = DateFormat.getDateInstance();
@@ -489,7 +489,7 @@ public final class ImpFormatRow
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "ImpFormatRow.parse - " + info + " (" + retValue + ")", e);
+				log.error("ImpFormatRow.parse - " + info + " (" + retValue + ")", e);
 			}
 		}
 

@@ -25,7 +25,8 @@ package org.adempiere.ad.dao.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
@@ -37,7 +38,6 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.CLogger;
 
 /**
  * Filters out only records which are present in sub-query.
@@ -60,7 +60,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private List<Object> sqlParams = null;
 	private List<Object> _subQueryValues = null;
 
-	private static final transient CLogger logger = CLogger.getCLogger(InSubQueryFilter.class);
+	private static final transient Logger logger = LogManager.getLogger(InSubQueryFilter.class);
 
 	/**
 	 * 
@@ -280,9 +280,9 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			final AdempiereException e = new AdempiereException(message +"\n Filter: "+this);
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 		}
-		logger.log(Level.FINE, message +"\n Filter: {0}", this);
+		logger.debug(message +"\n Filter: {}", this);
 	}
 
 	@Override

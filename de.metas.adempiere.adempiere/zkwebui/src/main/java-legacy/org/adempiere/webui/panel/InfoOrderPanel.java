@@ -354,7 +354,7 @@ public class InfoOrderPanel extends InfoPanel implements ValueChangeListener
         }
         sql.append(" AND o.IsSOTrx=?");
 
-        log.finer(sql.toString());
+        log.trace(sql.toString());
         return sql.toString();
     }
 
@@ -373,7 +373,7 @@ public class InfoOrderPanel extends InfoPanel implements ValueChangeListener
         {
             Integer bp = (Integer)editorBPartner.getValue();
             pstmt.setInt(index++, bp.intValue());
-            log.fine("BPartner=" + bp);
+            log.debug("BPartner=" + bp);
         }
         //
         
@@ -406,7 +406,7 @@ public class InfoOrderPanel extends InfoPanel implements ValueChangeListener
                 
             }
             
-            log.fine("Date From=" + from + ", To=" + to);
+            log.debug("Date From=" + from + ", To=" + to);
             if (from == null && to != null)
             {
                 pstmt.setTimestamp(index++, to);
@@ -481,7 +481,7 @@ public class InfoOrderPanel extends InfoPanel implements ValueChangeListener
         String s = f.getText().toUpperCase();
         if (!s.endsWith("%"))
             s += "%";
-        log.fine("String=" + s);
+        log.debug("String=" + s);
         return s;
     }   //  getSQLText
     

@@ -45,7 +45,8 @@ import org.compiere.model.MReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -58,7 +59,7 @@ public class MRelation extends X_AD_Relation
 	 */
 	private static final long serialVersionUID = 1702404196742737543L;
 
-	private static final CLogger logger = CLogger.getCLogger(MRelation.class);
+	private static final Logger logger = LogManager.getLogger(MRelation.class);
 
 	public MRelation(Properties ctx, int AD_Relation_ID, String trxName)
 	{
@@ -313,7 +314,7 @@ public class MRelation extends X_AD_Relation
 			}
 			if (destinationPO == null)
 			{
-				logger.warning("Destination PO with table=" + destTable
+				logger.warn("Destination PO with table=" + destTable
 						+ " and Record_ID=" + (useNormalDirection ? rel.getRecord_Target_ID() : rel.getRecord_Source_ID())
 						+ " doesn't exist; Deleting " + rel);
 				rel.deleteEx(false);

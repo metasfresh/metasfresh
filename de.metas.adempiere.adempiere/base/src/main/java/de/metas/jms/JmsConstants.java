@@ -4,7 +4,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -32,11 +33,9 @@ public final class JmsConstants
 {
 	public static final String TCP_HOSTNAME_PORT = "tcp://{0}:{1}";
 
-	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(JmsConstants.class.getPackage().getName() + ".Jms");
-
-	public static CLogger getLogger()
+	public static Logger getLogger(final Class<?> clazz)
 	{
-		return CLogger.getCLogger(LOGGER_NAME);
+		return LogManager.getLogger(clazz);
 	}
 
 	public static final String SYSCONFIG_JMS_URL = "de.metas.jms.URL";

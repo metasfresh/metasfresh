@@ -72,7 +72,7 @@ public class IDColumnEditor extends AbstractCellEditor
 	@Override
 	public Object getCellEditorValue()
 	{
-	//	log.fine( "IDColumnEditor.getCellEditorValue - " + m_check.isSelected());
+	//	log.debug( "IDColumnEditor.getCellEditorValue - " + m_check.isSelected());
 		if (m_value != null)
 			m_value.setSelected (m_check.isSelected());
 		return m_value;
@@ -90,7 +90,7 @@ public class IDColumnEditor extends AbstractCellEditor
 	@Override
 	public Component getTableCellEditorComponent (JTable table, Object value, boolean isSelected, int row, int column)
 	{
-	//	log.fine( "IDColumnEditor.getTableCellEditorComponent", value);
+	//	log.debug( "IDColumnEditor.getTableCellEditorComponent", value);
 		m_table = table;
 		//  set value
 		if (value != null && value instanceof IDColumn)

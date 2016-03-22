@@ -41,7 +41,8 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_AdvCommissionSalaryGroup;
@@ -57,7 +58,7 @@ public class DumpTree extends SvrProcess
 {
 	private final static String EOL = System.getProperty("line.separator");
 
-	final static CLogger logger = CLogger.getCLogger(DumpTree.class);
+	final static Logger logger = LogManager.getLogger(DumpTree.class);
 
 	private int orgId;
 	private MPeriod period;

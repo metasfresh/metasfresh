@@ -42,16 +42,18 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.logging.MetasfreshLastError;
 
 public abstract class AbstractDocActionBL implements IDocActionBL
 {
-	private static final CLogger logger = CLogger.getCLogger(AbstractDocActionBL.class);
+	private static final Logger logger = LogManager.getLogger(AbstractDocActionBL.class);
 
 	protected static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -101,7 +103,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 			{
 				processed[0] = false;
 				final DocumentProcessingException dpe = new DocumentProcessingException(document, action, e);
-				logger.saveError(dpe.getLocalizedMessage(), dpe);
+				MetasfreshLastError.saveError(logger, dpe.getLocalizedMessage(), dpe);
 				throw dpe;
 			}
 

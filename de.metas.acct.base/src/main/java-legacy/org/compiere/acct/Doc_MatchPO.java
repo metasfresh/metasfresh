@@ -19,7 +19,8 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -148,7 +149,7 @@ public class Doc_MatchPO extends Doc
 			|| getQty().signum() == 0
 			|| m_M_InOutLine_ID == 0)	//  No posting if not matched to Shipment
 		{
-			log.fine("No Product/Qty - M_Product_ID=" + getM_Product_ID()
+			log.debug("No Product/Qty - M_Product_ID=" + getM_Product_ID()
 				+ ",Qty=" + getQty());
 			return facts;
 		}
@@ -213,7 +214,7 @@ public class Doc_MatchPO extends Doc
 			//	Nothing to post
 			if (difference.signum() == 0)
 			{
-				log.log(Level.FINE, "No Cost Difference for M_Product_ID=" + getM_Product_ID());
+				log.debug("No Cost Difference for M_Product_ID=" + getM_Product_ID());
 				return facts;
 			}
 	

@@ -28,11 +28,11 @@ package de.metas.picking.terminal.form.swing;
 
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -42,7 +42,7 @@ import org.compiere.util.Util;
  */
 public class PickingTerminal implements FormPanel
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	
 	private SwingPickingTerminalPanel panel = null;
 	
@@ -70,7 +70,7 @@ public class PickingTerminal implements FormPanel
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 			panel = null;
 		}
 

@@ -25,7 +25,8 @@ package de.metas.product.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -46,14 +47,15 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 
 public final class ProductBL implements IProductBL
 {
-	private static final CLogger logger = CLogger.getCLogger(ProductBL.class);
+	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
 	@Override
 	public int getUOMPrecision(final I_M_Product product)
@@ -209,12 +211,12 @@ public final class ProductBL implements IProductBL
 		// Load Instance if not 0
 		if (M_AttributeSetInstance_ID > 0)
 		{
-			logger.log(Level.FINE, "From M_AttributeSetInstance_ID={0}", M_AttributeSetInstance_ID);
+			logger.debug("From M_AttributeSetInstance_ID={}", M_AttributeSetInstance_ID);
 			return InterfaceWrapperHelper.create(ctx, M_AttributeSetInstance_ID, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
 		}
 
 		// Get new from Product
-		logger.log(Level.FINE, "From M_Product_ID={0}", M_Product_ID);
+		logger.debug("From M_Product_ID={}", M_Product_ID);
 		if (M_Product_ID <= 0)
 		{
 			return null;

@@ -19,9 +19,9 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -62,7 +62,7 @@ public class MTree_NodeBP extends X_AD_TreeNodeBP
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, "get", e);
+			s_log.error("get", e);
 		}
 		try
 		{
@@ -78,7 +78,7 @@ public class MTree_NodeBP extends X_AD_TreeNodeBP
 	}	//	get
 
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MTree_NodeBP.class);
+	private static Logger	s_log	= LogManager.getLogger(MTree_NodeBP.class);
 
 	/**
 	 * 	Load Constructor

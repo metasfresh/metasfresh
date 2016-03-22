@@ -41,6 +41,6 @@ public class AddOn implements IAddOn
 		}
 
 		final IJMSService jmsService = Services.get(IJMSService.class);
-		jmsService.startEmbeddedBrocker();
+		jmsService.startEmbeddedBroker();
 	}
 }

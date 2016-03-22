@@ -25,7 +25,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -48,7 +49,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Process;
@@ -101,7 +103,7 @@ public class ProcessDialog extends CFrame
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	// ProcessDialog
 
@@ -120,7 +122,7 @@ public class ProcessDialog extends CFrame
 	 */
 	private String m_ShowHelp = null;
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(ProcessDialog.class);
+	private static final Logger log = LogManager.getLogger(ProcessDialog.class);
 	//
 
 	/** The main panel */
@@ -317,7 +319,7 @@ public class ProcessDialog extends CFrame
 	 */
 	public boolean init()
 	{
-		log.config("");
+		log.info("");
 
 		//
 		// Load process definition from database
@@ -423,7 +425,7 @@ public class ProcessDialog extends CFrame
 			}
 			else
 			{
-				log.log(Level.WARNING, "Unknown card: {0}", currentCardName);
+				log.warn("Unknown card: {}", currentCardName);
 			}
 		}
 		else if (e.getSource() == bBack)
@@ -529,7 +531,7 @@ public class ProcessDialog extends CFrame
 	@Override
 	public void executeASync(ProcessInfo pi)
 	{
-		log.config("-");
+		log.info("-");
 	}   // executeASync
 
 	/**************************************************************************
@@ -540,7 +542,7 @@ public class ProcessDialog extends CFrame
 		// something to do?
 		if (m_ids != null && m_ids.length > 0)
 		{
-			log.config("");
+			log.info("");
 			// Print invoices
 			if (m_AD_Process_ID == 119)
 				printInvoices();

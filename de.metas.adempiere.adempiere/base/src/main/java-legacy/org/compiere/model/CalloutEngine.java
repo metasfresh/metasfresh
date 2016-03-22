@@ -20,9 +20,9 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 /**
@@ -48,7 +48,7 @@ public class CalloutEngine implements Callout
 	}
 
 	/** Logger					*/
-	protected CLogger		log = CLogger.getCLogger(getClass());
+	protected Logger		log = LogManager.getLogger(getClass());
 	private GridTab m_mTab;
 	private GridField m_mField;
 
@@ -87,7 +87,7 @@ public class CalloutEngine implements Callout
 			.append(" (old=").append(oldValue)
 			.append(") {active=").append(isCalloutActive()).append("}");
 		if (!isCalloutActive())
-			log.info (msg.toString());
+			log.info(msg.toString());
 		
 		//	Find Method
 		Method method = getMethod(methodName);
@@ -113,7 +113,7 @@ public class CalloutEngine implements Callout
 			Throwable ex = e.getCause();	//	InvocationTargetException
 			if (ex == null)
 				ex = e;
-			log.log(Level.SEVERE, "start: " + methodName, ex);
+			log.error("start: " + methodName, ex);
 			retValue = ex.getLocalizedMessage();
 			if (retValue == null)
 			{
@@ -144,7 +144,7 @@ public class CalloutEngine implements Callout
 		//
 		String retValue = null;
 		StringBuffer msg = new StringBuffer(methodName).append(" - ").append(value);
-		log.info (msg.toString());
+		log.info(msg.toString());
 		//
 		//	Find Method
 		Method method = getMethod(methodName);
@@ -163,7 +163,7 @@ public class CalloutEngine implements Callout
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "convert: " + methodName, e);
+			log.error("convert: " + methodName, e);
 			e.printStackTrace(System.err);
 		}
 		return retValue;

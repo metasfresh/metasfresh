@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -43,8 +42,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -57,7 +57,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Filter used to skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued, even if in another working package
@@ -109,7 +109,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			if (packageProcessor == null)
 			{
 				AdempiereException ex = new AdempiereException("No package processor found for C_Queue_PackageProcessor_ID=" + packageProcessorId);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				continue;
 			}
 

@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -163,7 +163,7 @@ public final class POInfo implements Serializable
 		}).orNull();
 	}   // getPOInfo
 
-	private static final transient CLogger logger = CLogger.getCLogger(POInfo.class);
+	private static final transient Logger logger = LogManager.getLogger(POInfo.class);
 
 	/** Cache of POInfo */
 	private static final CCache<Integer, Optional<POInfo>> s_cache = new CCache<>("POInfo", 200);
@@ -362,7 +362,7 @@ public final class POInfo implements Serializable
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.SEVERE, sql.toString(), e);
+			logger.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -615,7 +615,7 @@ public final class POInfo implements Serializable
 		//
 		// Fallback: for some reason column index was not found
 		// => iterate columns and try to get it
-		logger.log(Level.WARNING, "ColumnIndex was not found for AD_Column_ID={0} on '{1}'. Searching one by one.", new Object[] { AD_Column_ID, this });
+		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", new Object[] { AD_Column_ID, this });
 		for (int i = 0; i < m_columns.length; i++)
 		{
 			if (AD_Column_ID == m_columns[i].AD_Column_ID)

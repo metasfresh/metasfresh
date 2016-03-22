@@ -1,5 +1,7 @@
 package de.metas.printing.client.impl;
 
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.printing.embedded-client
@@ -23,9 +25,7 @@ package de.metas.printing.client.impl;
  */
 
 
-import java.util.logging.Logger;
-
-import org.compiere.util.CLogger;
+import de.metas.logging.LogManager;
 
 import de.metas.printing.client.Context;
 import de.metas.printing.client.IPrintingClientDelegate;
@@ -40,7 +40,7 @@ import de.metas.printing.client.endpoint.LoopbackPrintConnectionEndpoint;
  */
 public class PrintingClientDelegate implements IPrintingClientDelegate
 {
-	private final transient Logger logger = CLogger.getCLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(PrintingClientDelegate.class);
 
 	/**
 	 * The actual printing client. Will be initialized in constructor
@@ -63,7 +63,7 @@ public class PrintingClientDelegate implements IPrintingClientDelegate
 		ctx.setProperty(Context.CTX_PrintConnectionEndpoint, LoopbackPrintConnectionEndpoint.class.getName());
 		
 		// ctx.setProperty(Context.CTX_UserInterface, new SwingUserInterface(this));
-		logger.config("Context: " + ctx);
+		logger.info("Context: " + ctx);
 
 		//
 		// Create printing client, but don't start it by default

@@ -120,7 +120,7 @@ public class MMShippingPackage extends X_M_ShippingPackage
 			+ "WHERE st.M_ShipperTransportation_ID=?");
 		int no = DB.executeUpdateEx(sql, new Object[]{getM_ShipperTransportation_ID()}, get_TrxName());
 		if (no != 1)
-			log.warning("(1) #" + no);
+			log.warn("(1) #" + no);
 
 		return no == 1;
 	}	//	updateHeader

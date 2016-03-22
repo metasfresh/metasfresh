@@ -19,8 +19,6 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
-
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
@@ -49,7 +47,7 @@ public class TranslationDocSync extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -81,7 +79,7 @@ public class TranslationDocSync extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -116,7 +114,7 @@ public class TranslationDocSync extends SvrProcess
 		String baseTable = table.getTableName();
 		baseTable = baseTable.substring(0, baseTable.length()-4);
 		
-		log.config(baseTable + ": " + sql);
+		log.info(baseTable + ": " + sql);
 		String columnNames = sql.toString();
 		
 		sql = new StringBuffer();

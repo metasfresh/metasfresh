@@ -32,7 +32,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IParameterizable;
 import de.metas.commission.custom.config.BaseConfig;
@@ -52,7 +53,7 @@ import de.metas.commission.util.HierarchyClimber.Result;
 public class VolumeOfSales extends HierarchyCommission
 {
 
-	private static CLogger logger = CLogger.getCLogger(VolumeOfSales.class);
+	private static Logger logger = LogManager.getLogger(VolumeOfSales.class);
 
 	@Override
 	IAdvComInstance createNewInstance(
@@ -79,7 +80,7 @@ public class VolumeOfSales extends HierarchyCommission
 
 		if (forecastLevel > maxLevel)
 		{
-			VolumeOfSales.logger.fine("forecastLevel=" + forecastLevel + " > " + maxLevel + "; returning");
+			VolumeOfSales.logger.debug("forecastLevel=" + forecastLevel + " > " + maxLevel + "; returning");
 			return null;
 		}
 
@@ -153,7 +154,7 @@ public class VolumeOfSales extends HierarchyCommission
 
 		if (inst.getLevelForecast() > maxLevel)
 		{
-			VolumeOfSales.logger.fine("forecastLevel=" + inst.getLevelForecast() + " > " + maxLevel + "; returning 0 ");
+			VolumeOfSales.logger.debug("forecastLevel=" + inst.getLevelForecast() + " > " + maxLevel + "; returning 0 ");
 			return BigDecimal.ZERO;
 		}
 
@@ -162,7 +163,7 @@ public class VolumeOfSales extends HierarchyCommission
 		final boolean hasMinimumRank = hasMinimumRank(date, sponsor);
 		if (!hasMinimumRank)
 		{
-			VolumeOfSales.logger.fine("Rank of " + salesRep + " is too low");
+			VolumeOfSales.logger.debug("Rank of " + salesRep + " is too low");
 			return BigDecimal.ZERO;
 		}
 

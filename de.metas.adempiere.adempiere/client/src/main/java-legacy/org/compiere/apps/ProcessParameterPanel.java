@@ -25,7 +25,8 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
@@ -41,7 +42,8 @@ import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -62,7 +64,7 @@ public class ProcessParameterPanel extends CPanel
 	 */
 	private static final long serialVersionUID = -4802635610434891695L;
 
-	private static final CLogger log = CLogger.getCLogger(ProcessParameterPanel.class);
+	private static final Logger log = LogManager.getLogger(ProcessParameterPanel.class);
 
 	// Services
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
@@ -149,7 +151,7 @@ public class ProcessParameterPanel extends CPanel
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			log.error(ex.getLocalizedMessage(), ex);
 			dispose();
 		}
 	}

@@ -37,7 +37,7 @@ import org.compiere.util.Util.ArrayKey;
  */
 public class ArrayKeyBuilder
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(ArrayKeyBuilder.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(ArrayKeyBuilder.class);
 
 	private final List<Object> keyParts = new ArrayList<>();
 

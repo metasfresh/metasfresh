@@ -33,7 +33,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -47,7 +46,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.concurrent.Threads;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -68,7 +68,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 @VisibleForTesting
 public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(QueueProcessorsExecutor.class);
+	private static final transient Logger logger = LogManager.getLogger(QueueProcessorsExecutor.class);
 
 	private final String threadNamePrefix = "QueueProcessorsExecutor";
 	private final ThreadPoolExecutor threadExecutor;
@@ -139,7 +139,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			final QueueProcessorDescriptor descriptor = new QueueProcessorDescriptor(queueProcessorId, processor, future);
 			queueProcessorDescriptors.put(queueProcessorId, descriptor);
 
-			logger.log(Level.INFO, "Registered " + descriptor);
+			logger.info("Registered " + descriptor);
 
 			//
 			// Register MBean
@@ -212,22 +212,22 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		final Future<?> future = descriptor.getFuture();
 		if (future.isDone())
 		{
-			logger.log(Level.INFO, "Unregistered " + descriptor + " (already done)");
+			logger.info("Unregistered " + descriptor + " (already done)");
 			return true;
 		}
 		if (future.isCancelled())
 		{
-			logger.log(Level.INFO, "Unregistered " + descriptor + " (already canceled)");
+			logger.info("Unregistered " + descriptor + " (already canceled)");
 			return true;
 		}
 
 		if (future.cancel(true))
 		{
-			logger.log(Level.INFO, "Unregistered " + descriptor + " (canceled now)");
+			logger.info("Unregistered " + descriptor + " (canceled now)");
 			return true;
 		}
 
-		logger.log(Level.WARNING, "Could not unregister " + descriptor + " (canceling failed)");
+		logger.warn("Could not unregister " + descriptor + " (canceling failed)");
 		return false;
 	}
 
@@ -257,7 +257,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		mainLock.lock();
 		try
 		{
-			logger.log(Level.INFO, "Shutdown started");
+			logger.info("Shutdown started");
 			threadExecutor.shutdown();
 
 			final List<QueueProcessorDescriptor> descriptors = new ArrayList<QueueProcessorDescriptor>(queueProcessorDescriptors.values());
@@ -267,7 +267,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			}
 
 			threadExecutor.shutdownNow();
-			logger.log(Level.INFO, "Shutdown finished");
+			logger.info("Shutdown finished");
 		}
 		finally
 		{

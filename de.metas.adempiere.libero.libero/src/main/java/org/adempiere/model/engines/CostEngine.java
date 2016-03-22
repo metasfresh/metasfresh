@@ -67,7 +67,6 @@ import org.compiere.model.MTransaction;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -79,6 +78,8 @@ import org.eevolution.model.MPPCostCollector;
 import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Cost_Collector;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
@@ -92,7 +93,7 @@ import de.metas.product.IProductBL;
 public class CostEngine
 {
 	/** Logger */
-	protected transient CLogger log = CLogger.getCLogger(getClass());
+	protected transient Logger log = LogManager.getLogger(getClass());
 
 	public String getCostingMethod()
 	{
@@ -350,7 +351,7 @@ public class CostEngine
 				}
 				cd.saveEx();
 				processCostDetail(cd);
-				log.config("" + cd);
+				log.info("" + cd);
 			} // for ELements
 		} // Account Schema
 	}
@@ -374,7 +375,7 @@ public class CostEngine
 
 		int no = DB.executeUpdateEx(sql, parameters, model.get_TrxName());
 		if (no != 0)
-			log.config("Deleted #" + no);
+			log.info("Deleted #" + no);
 		return no;
 	}
 

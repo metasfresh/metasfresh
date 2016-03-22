@@ -17,8 +17,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -49,7 +47,7 @@ public class AD_PrintPaper_Default extends SvrProcess
 			else if (name.equals("AD_Client_ID"))
 				p_AD_Client_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_Record_ID = getRecord_ID();
 	}	//	prepare
@@ -79,12 +77,12 @@ public class AD_PrintPaper_Default extends SvrProcess
 			}
 			cnt = DB.executeUpdate(sql.toString(), get_TrxName());
 			log.info("Updated " + cnt + " columns");
-			log.fine("Committing ...");
+			log.debug("Committing ...");
 			DB.commit(true, null);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "set print format", e);
+			log.error("set print format", e);
 		}
 
 		return "@Copied@=" + cnt;		

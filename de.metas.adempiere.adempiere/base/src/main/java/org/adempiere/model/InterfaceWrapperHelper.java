@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
@@ -51,7 +52,6 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
@@ -59,7 +59,7 @@ import com.google.common.base.Optional;
 
 public class InterfaceWrapperHelper
 {
-	private static final transient CLogger logger = CLogger.getCLogger(InterfaceWrapperHelper.class);
+	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
 	public static final String COLUMNNAME_SUFFIX_Override = "_Override";
 
@@ -525,7 +525,7 @@ public class InterfaceWrapperHelper
 		if (modelToSave == null)
 		{
 			final AdempiereException ex = new AdempiereException("Saving null model ignored. Possible development issue. Ignored.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 		else if (GridTabWrapper.isHandled(modelToSave))
 		{
@@ -542,7 +542,7 @@ public class InterfaceWrapperHelper
 		else
 		{
 			final AdempiereException ex = new AdempiereException("PO not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 		}
 	}
 
@@ -551,7 +551,7 @@ public class InterfaceWrapperHelper
 		if (model == null)
 		{
 			final AdempiereException ex = new AdempiereException("Saving null model ignored. Possible development issue. Ignored.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 
 		final String trxNameOld = getTrxName(model);
@@ -614,7 +614,7 @@ public class InterfaceWrapperHelper
 		else
 		{
 			final AdempiereException ex = new AdempiereException("Cannot get context from object: " + model + ". Returning global context.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return Env.getCtx();
 		}
 	}
@@ -661,7 +661,7 @@ public class InterfaceWrapperHelper
 		else if (!ignoreIfNotHandled)
 		{
 			final AdempiereException ex = new AdempiereException("Cannot get trxName from object: " + model + ". Returning null.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 		return ITrx.TRXNAME_None;
 	}
@@ -1350,7 +1350,7 @@ public class InterfaceWrapperHelper
 				}
 				else
 				{
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 					return false;
 				}
 			}
@@ -1370,7 +1370,7 @@ public class InterfaceWrapperHelper
 				}
 				else
 				{
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 					return false;
 				}
 			}
@@ -1389,7 +1389,7 @@ public class InterfaceWrapperHelper
 				}
 				else
 				{
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 					return false;
 				}
 			}

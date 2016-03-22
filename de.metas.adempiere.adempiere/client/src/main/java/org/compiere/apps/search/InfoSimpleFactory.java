@@ -32,14 +32,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_InfoWindow;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public class InfoSimpleFactory
 {
 	private static InfoSimpleFactory s_instance = new InfoSimpleFactory();
 
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	public static InfoSimpleFactory get()
 	{
@@ -60,12 +61,12 @@ public class InfoSimpleFactory
 		final I_AD_InfoWindow infoWindow = Services.get(IADInfoWindowDAO.class).retrieveInfoWindowByTableName(Env.getCtx(), tableName);
 		if (infoWindow == null)
 		{
-			log.warning("No info window found for " + tableName);
+			log.warn("No info window found for " + tableName);
 			return null;
 		}
 		if (!infoWindow.isActive())
 		{
-			log.warning("No ACTIVE info window found for " + tableName + " (" + infoWindow + ")");
+			log.warn("No ACTIVE info window found for " + tableName + " (" + infoWindow + ")");
 			return null;
 		}
 

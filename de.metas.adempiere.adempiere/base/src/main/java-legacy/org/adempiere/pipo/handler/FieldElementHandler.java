@@ -367,7 +367,7 @@ public class FieldElementHandler extends AbstractElementHandler
 		final int AD_Tab_ID = field.getAD_Tab_ID();
 		if (AD_Tab_ID <= 0)
 		{
-			log.warning("AD_Tab_ID=0 ("+field+")");
+			log.warn("AD_Tab_ID=0 ("+field+")");
 			return;
 		}
 		final int AD_Window_ID = DB.getSQLValueEx(trxName,

@@ -5,7 +5,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.CLogMgt;
 
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -13,7 +14,8 @@ import javax.swing.tree.TreeSelectionModel;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.CLogMgt;
 import org.compiere.util.EqualsBuilder;
 import org.compiere.util.HashcodeBuilder;
 import org.jdesktop.swingx.tree.TreeModelSupport;
@@ -25,7 +27,7 @@ import de.metas.handlingunits.tree.node.hu.IHUTreeNode;
 
 public abstract class AbstractHUTreeTableModel<T extends ITreeNode<T>> extends AbstractTreeTableModel
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = CLogMgt.getLogger(getClass());
 
 	private final List<ITreeTableColumn<T>> columns = new ArrayList<ITreeTableColumn<T>>();
 	private final List<ITreeTableColumn<T>> columnsRO = Collections.unmodifiableList(this.columns);
@@ -144,7 +146,7 @@ public abstract class AbstractHUTreeTableModel<T extends ITreeNode<T>> extends A
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Error while getting value for column=" + column + ", node=" + nodeObj + ". Assuming NULL.", e);
+			logger.warn("Error while getting value for column=" + column + ", node=" + nodeObj + ". Assuming NULL.", e);
 			return null;
 		}
 	}

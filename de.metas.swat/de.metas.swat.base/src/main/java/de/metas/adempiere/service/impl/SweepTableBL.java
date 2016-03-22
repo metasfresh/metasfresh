@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.MiscUtils;
@@ -48,9 +47,10 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.util.CacheIgnore;
@@ -58,8 +58,7 @@ import de.metas.adempiere.util.CacheIgnore;
 public class SweepTableBL implements ISweepTableBL
 {
 
-	private static final CLogger logger = CLogger
-			.getCLogger(SweepTableBL.class);
+	private static final Logger logger = LogManager.getLogger(SweepTableBL.class);
 
 	private static final String DELETED = "DELETED";
 
@@ -157,7 +156,7 @@ public class SweepTableBL implements ISweepTableBL
 		{
 			logMsg(sweepCtx, "Looking at " + path);
 		}
-		logger.config("Current path: " + path);
+		logger.info("Current path: " + path);
 
 		// ID from 'recordIds' -> ( Refering_Table -> Refering_IDs )
 		final Map<Integer, Map<String, List<Integer>>> referringRecords;
@@ -221,7 +220,7 @@ public class SweepTableBL implements ISweepTableBL
 					deleteSuccesses += 1;
 					sweepCtx.records.put(strRecord, DELETED);
 
-					logger.finer("Delete success for [Table=" + tableName
+					logger.trace("Delete success for [Table=" + tableName
 							+ ", RecordId=" + recordId + "]");
 				}
 				else
@@ -297,7 +296,7 @@ public class SweepTableBL implements ISweepTableBL
 			}
 			else
 			{
-				logger.warning("No records found for update (" + sql + ")");
+				logger.warn("No records found for update (" + sql + ")");
 				return false;
 			}
 		}
@@ -310,7 +309,7 @@ public class SweepTableBL implements ISweepTableBL
 		// no > 1
 		{
 			// shall not happen
-			logger.log(Level.WARNING,
+			logger.warn(
 					"Query deleted/updated more then one record (" + sql + ")");
 			return false;
 		}
@@ -392,7 +391,7 @@ public class SweepTableBL implements ISweepTableBL
 
 						retrievedCounter += retrievedIds.size();
 
-						logger.finer("Retrived "
+						logger.trace("Retrived "
 								+ retrievedIds.size()
 								+ " depending ids for "
 								+ getRefInfoString(referingTable,
@@ -467,7 +466,7 @@ public class SweepTableBL implements ISweepTableBL
 
 		if (keyColName == null)
 		{
-			logger.finer("Table " + referingTable
+			logger.trace("Table " + referingTable
 					+ " has no regular key column; Returning emtpy list");
 			return Collections.emptyList();
 		}
@@ -483,11 +482,11 @@ public class SweepTableBL implements ISweepTableBL
 
 			if (ids.length == 0)
 			{
-				logger.finer("Retrieved NO RecordIDs for " + refInfoStr);
+				logger.trace("Retrieved NO RecordIDs for " + refInfoStr);
 				return Collections.emptyList();
 			}
 
-			logger.fine("Retrieved " + ids.length + " RecordIDs for "
+			logger.debug("Retrieved " + ids.length + " RecordIDs for "
 					+ refInfoStr);
 			final List<Integer> result = new ArrayList<Integer>(ids.length);
 			for (final int id : ids)
@@ -513,9 +512,7 @@ public class SweepTableBL implements ISweepTableBL
 				if (updateCount != ids.length)
 				{
 					// shall not happen
-					logger.log(
-							Level.SEVERE,
-							"Query ["
+					logger.error("Query ["
 									+ updateSQL
 									+ "] updated "
 									+ updateCount
@@ -523,7 +520,7 @@ public class SweepTableBL implements ISweepTableBL
 									+ ids.length + " records");
 				}
 
-				logger.fine(referingTable + ": set " + referingTableCol
+				logger.debug(referingTable + ": set " + referingTableCol
 						+ " to NULL on " + updateCount + " records (" + wc
 						+ ")");
 			}
@@ -535,7 +532,7 @@ public class SweepTableBL implements ISweepTableBL
 			logMsg(sweepCtx, "DBException while trying to retrieve Ids for "
 					+ refInfoStr + ". \nMsg=[" + e.getMessage() + "] \nSQL=["
 					+ e.getSQL() + "]");
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 			throw e;
 		}
 	}
@@ -634,7 +631,7 @@ public class SweepTableBL implements ISweepTableBL
 						&& referingTableCol.equals(getKeyColName(sweepCtx.ctx,
 								tableName)))
 				{
-					logger.log(Level.WARNING,
+					logger.warn(
 							"Deletected a weird self reference: tableName="
 									+ referingTable + ", columnName="
 									+ referingTableCol + ". [IGNORED]");
@@ -765,7 +762,7 @@ public class SweepTableBL implements ISweepTableBL
 
 		if (keyColName == null)
 		{
-			logger.finer("Table " + referingTable
+			logger.trace("Table " + referingTable
 					+ " has no regular key column; Returning emtpy list");
 			return Collections.emptyList();
 		}
@@ -773,7 +770,7 @@ public class SweepTableBL implements ISweepTableBL
 		final MTable table = MTable.get(sweepCtx.ctx, tableName);
 		if (table == null || table.getAD_Table_ID() <= 0)
 		{
-			logger.warning("Table " + tableName + " not found");
+			logger.warn("Table " + tableName + " not found");
 			return Collections.emptyList();
 		}
 		final int adTableId = table.getAD_Table_ID();
@@ -791,11 +788,11 @@ public class SweepTableBL implements ISweepTableBL
 
 			if (ids.length == 0)
 			{
-				logger.finer("Retrieved NO RecordIDs for " + refInfoStr);
+				logger.trace("Retrieved NO RecordIDs for " + refInfoStr);
 				return Collections.emptyList();
 			}
 
-			logger.fine("Retrieved " + ids.length + " RecordIDs for "
+			logger.debug("Retrieved " + ids.length + " RecordIDs for "
 					+ refInfoStr);
 			final List<Integer> result = new ArrayList<Integer>(ids.length);
 			for (final int id : ids)
@@ -810,7 +807,7 @@ public class SweepTableBL implements ISweepTableBL
 			logMsg(sweepCtx, "DBException while trying to retrieve Ids for "
 					+ refInfoStr + ". \nMsg=[" + e.getMessage() + "] \nSQL=["
 					+ e.getSQL() + "]");
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 			throw e;
 		}
 	}

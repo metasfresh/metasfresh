@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -44,8 +43,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
@@ -73,7 +73,7 @@ import de.metas.lock.exceptions.UnlockFailedException;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
-	private static final transient CLogger logger = CLogger.getCLogger(WorkPackageQueue.class);
+	private static final transient Logger logger = LogManager.getLogger(WorkPackageQueue.class);
 
 	private final transient IQueueDAO dao;
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
@@ -224,7 +224,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				final long elapsedMillis = SystemTime.millis() - startTS;
 				if (elapsedMillis >= timeoutMillis)
 				{
-					logger.log(Level.INFO, "Poll waiting time exceeded. Returning null");
+					logger.info("Poll waiting time exceeded. Returning null");
 					return null;
 				}
 			}
@@ -236,12 +236,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			}
 			catch (InterruptedException e)
 			{
-				logger.log(Level.FINE, "Got interrupted signal. Returning null", e);
+				logger.debug("Got interrupted signal. Returning null", e);
 				return null;
 			}
 
 			// Try fetching the workpackage again
-			logger.log(Level.FINE, "Retry retrieving next workpackage");
+			logger.debug("Retry retrieving next workpackage");
 			workPackage = retrieveAndLock(query);
 		}
 
@@ -323,7 +323,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			workPackage = null;
 
 			final String threadName = Thread.currentThread().getName();
-			logger.log(Level.WARNING, "Aquired {0} on thread {1} but is not valid. Unlocking and returning null.", new Object[] { workpackageToUnlock, threadName });
+			logger.warn("Aquired {} on thread {} but is not valid. Unlocking and returning null.", new Object[] { workpackageToUnlock, threadName });
 
 		}
 		return workPackage;
@@ -390,7 +390,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		catch (Exception e)
 		{
 			success = false;
-			logger.log(Level.WARNING, "Got exception while unlocking " + workPackage, e);
+			logger.warn("Got exception while unlocking " + workPackage, e);
 		}
 		return success;
 	}

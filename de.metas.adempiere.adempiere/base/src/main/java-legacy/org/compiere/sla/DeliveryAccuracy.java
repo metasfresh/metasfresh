@@ -20,12 +20,12 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -52,7 +52,7 @@ public class DeliveryAccuracy extends SLACriteria
 	}	//	DeliveryAccuracy
 
 	/**	Logger			*/
-	protected CLogger	log = CLogger.getCLogger(getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 
 
 	/**
@@ -100,7 +100,7 @@ public class DeliveryAccuracy extends SLACriteria
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "createMeasures", e);
+			log.error("createMeasures", e);
 		}
 		finally
 		{

@@ -25,7 +25,8 @@ package de.metas.pricing.attributebased.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,8 +38,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.pricing.attributebased.IAttributePricingDAO;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
@@ -47,7 +46,7 @@ import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 public class AttributePricingDAO implements IAttributePricingDAO
 {
 
-	private final static transient CLogger logger = CLogger.getCLogger(AttributePricingDAO.class);
+	private final static transient Logger logger = LogManager.getLogger(AttributePricingDAO.class);
 
 	private final ICompositeQueryFilter<I_M_ProductPrice_Attribute> priceAttributeFilters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ProductPrice_Attribute.class);
 
@@ -132,7 +131,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 		final de.metas.pricing.attributebased.I_M_ProductPrice productPriceEx = InterfaceWrapperHelper.create(productPrice, de.metas.pricing.attributebased.I_M_ProductPrice.class);
 		if (!productPriceEx.isAttributeDependant())
 		{
-			logger.log(Level.FINE, "M_ProductPrice {0}  is not attribute dependant; returning null", productPriceEx);
+			logger.debug("M_ProductPrice {}  is not attribute dependant; returning null", productPriceEx);
 			return null;
 		}
 
@@ -159,7 +158,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 					.firstOnly(I_M_ProductPrice_Attribute.class);
 			if (strictDefaultFirstTry != null)
 			{
-				logger.log(Level.FINE,
+				logger.debug(
 						"Returning M_ProductPrice_Attribute {0} with IsDefault='Y' for M_ProductPrice {1} (param 'strictDefault'==true).",
 						new Object[] { strictDefaultFirstTry, productPriceEx });
 				return strictDefaultFirstTry;
@@ -171,7 +170,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 			final I_M_ProductPrice_Attribute nonStrictTry = queryBuilder
 					.create()
 					.first(I_M_ProductPrice_Attribute.class);
-			logger.log(Level.FINE,
+			logger.debug(
 					"Returning M_ProductPrice_Attribute {0} for M_ProductPrice {1} (param 'strictDefault'==false).",
 					new Object[] { nonStrictTry, productPriceEx });
 			return nonStrictTry;
@@ -186,7 +185,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 				.addEqualsFilter(I_M_ProductPrice_Attribute.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 				.create()
 				.firstOnlyOrNull(I_M_ProductPrice_Attribute.class);
-		logger.log(Level.FINE,
+		logger.debug(
 				"Returning *the only active* M_ProductPrice_Attribute {0} for M_ProductPrice {1} as default despite it has IsDefault='N' (param 'strictDefault'==true).",
 				new Object[] { strictDefaultSecondTry, productPriceEx });
 		return strictDefaultSecondTry;

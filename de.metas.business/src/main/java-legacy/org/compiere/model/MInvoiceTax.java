@@ -21,13 +21,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -78,7 +80,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		if (C_Tax_ID <= 0)
 		{
 			final AdempiereException e = new AdempiereException("@NotFound@ @C_Tax_ID@ ("+line+")");
-			s_log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			s_log.warn(e.getLocalizedMessage(), e);
 			return null;
 		}
 		
@@ -89,7 +91,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		{
 			retValue.set_TrxName(trxName);
 			retValue.setPrecision(precision);
-			s_log.fine("(old=" + oldTax + ") " + retValue);
+			s_log.debug("(old=" + oldTax + ") " + retValue);
 			return retValue;
 		}
 		// If the old tax was required and there is no MInvoiceTax for that
@@ -115,12 +117,12 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		retValue.setIsWholeTax(tax.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
-		s_log.fine("(new) " + retValue);
+		s_log.debug("(new) " + retValue);
 		return retValue;
 	}	//	get
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MInvoiceTax.class);
+	private static Logger	s_log	= LogManager.getLogger(MInvoiceTax.class);
 	
 	
 	/**************************************************************************

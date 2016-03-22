@@ -30,8 +30,9 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.Lookup;
 import org.compiere.model.MProduct;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -46,7 +47,7 @@ public class WPAttributeEditor extends WEditor implements ContextMenuListener
 {
 	private static final String[] LISTENER_EVENTS = {Events.ON_CLICK, Events.ON_CHANGE, Events.ON_OK};
 
-	private static final CLogger log = CLogger.getCLogger(WPAttributeEditor.class);
+	private static final Logger log = LogManager.getLogger(WPAttributeEditor.class);
 
 	private int m_WindowNo;
 
@@ -114,7 +115,7 @@ public class WPAttributeEditor extends WEditor implements ContextMenuListener
 		if (value.equals(m_value))
 			return;
 		//	new value
-		log.fine("Value=" + value);
+		log.debug("Value=" + value);
 		m_value = value;
 		getComponent().setText(m_mPAttribute.getDisplay(value));	//	loads value
 	}
@@ -170,7 +171,7 @@ public class WPAttributeEditor extends WEditor implements ContextMenuListener
 		int M_Product_ID = Env.getContextAsInt (Env.getCtx (), m_WindowNo, "M_Product_ID");
 		int M_ProductBOM_ID = Env.getContextAsInt (Env.getCtx (), m_WindowNo, "M_ProductBOM_ID");
 
-		log.config("M_Product_ID=" + M_Product_ID + "/" + M_ProductBOM_ID
+		log.info("M_Product_ID=" + M_Product_ID + "/" + M_ProductBOM_ID
 			+ ",M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
 			+ ", AD_Column_ID=" + gridField.getAD_Column_ID());
 
@@ -226,7 +227,7 @@ public class WPAttributeEditor extends WEditor implements ContextMenuListener
 			MAttributeSetInstance masi = MAttributeSetInstance.get(Env.getCtx(), M_AttributeSetInstance_ID, M_Product_ID);
 			if (masi == null)
 			{
-				log.log(Level.SEVERE, "No Model for M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID + ", M_Product_ID=" + M_Product_ID);
+				log.error("No Model for M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID + ", M_Product_ID=" + M_Product_ID);
 			}
 			else
 			{
@@ -261,7 +262,7 @@ public class WPAttributeEditor extends WEditor implements ContextMenuListener
 		//	Set Value
 		if (changed)
 		{
-			log.finest("Changed M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
+			log.trace("Changed M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
 			m_value = new Object();				//	force re-query display
 			if (M_AttributeSetInstance_ID == 0)
 				setValue(null);

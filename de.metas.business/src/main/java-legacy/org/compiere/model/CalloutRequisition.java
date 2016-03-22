@@ -83,7 +83,7 @@ public class CalloutRequisition extends CalloutEngine
 		int StdPrecision = Env.getContextAsInt(ctx, WindowNo, "StdPrecision");
 		BigDecimal Qty = line.getQty();
 		BigDecimal PriceActual = line.getPriceActual();
-		log.fine("amt - Qty=" + Qty + ", Price=" + PriceActual + ", Precision=" + StdPrecision);
+		log.debug("amt - Qty=" + Qty + ", Price=" + PriceActual + ", Precision=" + StdPrecision);
 
 		//	Multiply
 		BigDecimal LineNetAmt = Qty.multiply(PriceActual);

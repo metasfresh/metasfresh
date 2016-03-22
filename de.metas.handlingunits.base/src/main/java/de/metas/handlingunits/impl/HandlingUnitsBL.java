@@ -30,7 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,7 +46,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.CLogger;
 import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
@@ -80,7 +80,7 @@ import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 
@@ -702,7 +702,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			final AdempiereException ex = new AdempiereException("While searching for LU of " + hu + " we found an LU which is included in another handling unit."
 					+ "\nThis shall not happen."
 					+ "\nWe consider our LU to be NULL.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 
 			lastLU = null;
 		}

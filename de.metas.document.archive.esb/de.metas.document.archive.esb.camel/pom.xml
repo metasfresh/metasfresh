@@ -23,6 +23,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<!-- Apache CAMEL dependencies -->

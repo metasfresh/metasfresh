@@ -23,7 +23,8 @@ package org.adempiere.ad.migration.executor.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor.Action;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -34,12 +35,11 @@ import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable2;
 
 class MigrationStepExecutorRunnable implements TrxRunnable2
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IMigrationExecutorContext migrationCtx;
 	private final I_AD_MigrationStep step;
@@ -78,7 +78,7 @@ class MigrationStepExecutorRunnable implements TrxRunnable2
 					throw e;
 				}
 				executionResult = ExecutionResult.Skipped;
-				logger.log(Level.INFO, e.getLocalizedMessage(), e);
+				logger.info(e.getLocalizedMessage(), e);
 			}
 		}
 		else if (action == Action.Rollback)
@@ -149,7 +149,7 @@ class MigrationStepExecutorRunnable implements TrxRunnable2
 		// Error / Warning
 		else
 		{
-			logger.log(Level.SEVERE, "Action " + action + " of " + step + " failed.", exception);
+			logger.error("Action " + action + " of " + step + " failed.", exception);
 
 			step.setErrorMsg(exception.getLocalizedMessage());
 			if (action == Action.Apply)

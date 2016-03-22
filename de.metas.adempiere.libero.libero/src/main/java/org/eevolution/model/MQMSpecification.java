@@ -42,7 +42,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
@@ -115,7 +114,7 @@ public class MQMSpecification extends  X_QM_Specification
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getLines", e);
+			log.error("getLines", e);
 		}
 		try
 		{

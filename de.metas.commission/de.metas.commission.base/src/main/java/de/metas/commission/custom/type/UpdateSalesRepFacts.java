@@ -43,7 +43,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.IProductAware;
@@ -90,7 +91,7 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 {
 	public static final String MSG_DISCOUNT_SCHEMA_MISSING_1P = "DiscountSchemaMissing_1P";
 
-	private static final CLogger logger = CLogger.getCLogger(UpdateSalesRepFacts.class);
+	private static final Logger logger = LogManager.getLogger(UpdateSalesRepFacts.class);
 
 	private int typeId;
 
@@ -664,7 +665,7 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 
 		if (sg == null)
 		{
-			UpdateSalesRepFacts.logger.fine(sponsor + " has no SG -> compress=false");
+			UpdateSalesRepFacts.logger.debug(sponsor + " has no SG -> compress=false");
 			return false;
 		}
 
@@ -686,18 +687,18 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 
 		final BigDecimal minAPV = (BigDecimal)contractBL.retrieveSponsorParam(commissionCtx, name);
 
-		UpdateSalesRepFacts.logger.fine("Minimum APV for SG " + sg.getValue() + " is " + minAPV);
+		UpdateSalesRepFacts.logger.debug("Minimum APV for SG " + sg.getValue() + " is " + minAPV);
 
 		final boolean result;
 
 		if (apvActual.compareTo(minAPV) < 0)
 		{
-			UpdateSalesRepFacts.logger.fine(sponsor + " has APV=" + apvActual + " -> compress=true");
+			UpdateSalesRepFacts.logger.debug(sponsor + " has APV=" + apvActual + " -> compress=true");
 			result = true;
 		}
 		else
 		{
-			UpdateSalesRepFacts.logger.fine(sponsor + " has APV=" + apvActual + " -> compress=false");
+			UpdateSalesRepFacts.logger.debug(sponsor + " has APV=" + apvActual + " -> compress=false");
 			result = false;
 		}
 		return result;
@@ -720,7 +721,7 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 		final BigDecimal apvActual = Services.get(ICommissionSalesRepFactDAO.class).retrieveSumAt(sponsor, comSystem, X_C_AdvComSalesRepFact.NAME_APV, commissionPeriod.getC_Period_ID(),
 				X_C_AdvComSalesRepFact.STATUS_Prov_Relevant);
 
-		UpdateSalesRepFacts.logger.fine(sponsor + " has APV=" + apvActual + " at date " + date);
+		UpdateSalesRepFacts.logger.debug(sponsor + " has APV=" + apvActual + " at date " + date);
 
 		return apvActual;
 	}

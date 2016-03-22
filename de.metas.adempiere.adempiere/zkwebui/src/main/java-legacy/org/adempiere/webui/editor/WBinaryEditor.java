@@ -17,7 +17,8 @@ import org.adempiere.webui.component.Button;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WMediaDialog;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -29,7 +30,7 @@ public class WBinaryEditor extends WEditor
     private static final String[] LISTENER_EVENTS = {Events.ON_CLICK};
     
     /**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WBinaryEditor.class);
+	private static Logger log = LogManager.getLogger(WBinaryEditor.class);
     
     private boolean         m_mandatory;
     private Object          m_data;
@@ -90,7 +91,7 @@ public class WBinaryEditor extends WEditor
 	@Override
     public void setValue(Object value)
     {
-    	log.config("=" + value);
+    	log.info("=" + value);
 		m_data = value;
 		if (m_data == null)
 			getComponent().setLabel("-");

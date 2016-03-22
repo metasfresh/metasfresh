@@ -16,7 +16,7 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
-
+	
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
@@ -39,6 +39,11 @@
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 
 		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
@@ -97,9 +102,10 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.2-1003-jdbc4</version> <!-- 04750 the old version was buggy -->
+			<version>9.2-1003-jdbc4</version> 
+			<!-- 04750 the old version was buggy -->
 		</dependency>
-		
+
 		<!-- Scripting support -->
 
 		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->
@@ -129,17 +135,19 @@
 		</dependency>
 
 		<!-- Support libraries -->
-
-		<!-- unused according to maven dependency:analyze <dependency> <groupId>commons-logging</groupId> 
-			<artifactId>commons-logging-api</artifactId> <version>1.1</version> </dependency> 
-			<dependency> <groupId>commons-logging</groupId> <artifactId>commons-logging-adapters</artifactId> 
-			<version>1.1</version> </dependency> -->
-
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.14</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>it.sauronsoftware.cron4j</groupId>
@@ -239,7 +247,6 @@
 			<!-- Initially was needed for org.adempiere.plaf.UIDefaultsSerializer but in future we would use it for many other things -->
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.3.1</version>
 		</dependency>
 
 	</dependencies>

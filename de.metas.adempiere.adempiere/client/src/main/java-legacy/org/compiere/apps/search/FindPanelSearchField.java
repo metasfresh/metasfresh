@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -25,7 +26,8 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Lookup;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -74,7 +76,7 @@ final class FindPanelSearchField
 	static final int MAX_TEXT_FIELD_COLUMNS = 20;
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(FindPanelSearchField.class);
+	private static final transient Logger logger = LogManager.getLogger(FindPanelSearchField.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 
 	public static final Comparator<FindPanelSearchField> COMPARATOR_ByDisplayName = new Comparator<FindPanelSearchField>()
@@ -293,7 +295,7 @@ final class FindPanelSearchField
 				}
 				catch (final Exception e)
 				{
-					logger.log(Level.SEVERE, valueStr + "(" + valueStr.getClass() + ")" + e);
+					logger.error(valueStr + "(" + valueStr.getClass() + ")" + e);
 					time = DisplayType.getDateFormat(dt).parse(valueStr).getTime();
 				}
 				return new Timestamp(time);
@@ -309,7 +311,7 @@ final class FindPanelSearchField
 		}
 		catch (final Exception ex)
 		{
-			logger.log(Level.SEVERE, "Object=" + valueStr, ex);
+			logger.error("Object=" + valueStr, ex);
 			return null;
 		}
 
@@ -358,7 +360,7 @@ final class FindPanelSearchField
 				}
 				catch (final Exception e)
 				{
-					logger.log(Level.SEVERE, valueObj + "(" + valueObj.getClass() + ")" + e);
+					logger.error(valueObj + "(" + valueObj.getClass() + ")" + e);
 					time = DisplayType.getDateFormat(dt).parse(valueObj.toString()).getTime();
 				}
 				return new Timestamp(time);
@@ -379,7 +381,7 @@ final class FindPanelSearchField
 			final StringBuilder errMsg = new StringBuilder();
 			errMsg.append(gridField.getColumnName()).append(" = ").append(valueObj).append(" - ").append(error);
 			//
-			logger.log(Level.SEVERE, "ValidationError: " + errMsg, ex);
+			logger.error("ValidationError: " + errMsg, ex);
 			// ADialog.error(0, getFrame(), "ValidationError", errMsg.toString());
 			return null;
 		}
@@ -454,12 +456,12 @@ final class FindPanelSearchField
 		}
 		catch (final SQLException e)
 		{
-			logger.log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 			return "";
 		}
 		catch (final AdempiereException e)
 		{
-			logger.log(Level.SEVERE, sql, e);
+			logger.error(sql, e);
 			return "";
 		}
 		finally
@@ -496,7 +498,7 @@ final class FindPanelSearchField
 				ret = ret + getSubCategoriesString(node.getNodeId(), categories, loopIndicatorId) + ",";
 			}
 		}
-		logger.fine(ret);
+		logger.debug(ret);
 		return ret + productCategoryId;
 	}
 

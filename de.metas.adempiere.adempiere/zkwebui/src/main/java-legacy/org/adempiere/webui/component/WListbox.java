@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
@@ -40,10 +39,13 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zul.ListModel;
 
 /**
@@ -67,7 +69,7 @@ public class WListbox extends Listbox implements IMiniTable, TableValueChangeLis
 	private static final long serialVersionUID = 8717707799347994189L;
 
 	/**	Logger. */
-	private static CLogger logger = CLogger.getCLogger(MiniTable.class);
+	private static Logger logger = LogManager.getLogger(MiniTable.class);
 
 	/** Model Index of Key Column.   */
 	protected int m_keyColumnIndex = -1;
@@ -419,7 +421,7 @@ public class WListbox extends Listbox implements IMiniTable, TableValueChangeLis
                                                         IUserRolePermissions.SQL_FULLYQUALIFIED,
                                                         IUserRolePermissions.SQL_RO);
 
-            logger.finest(finalSQL);
+            logger.trace(finalSQL);
 
             return finalSQL;
         }
@@ -687,7 +689,7 @@ public class WListbox extends Listbox implements IMiniTable, TableValueChangeLis
 		}
 		catch (SQLException exception)
 		{
-			logger.log(Level.SEVERE, "", exception);
+			logger.error("", exception);
 		}
 		// TODO implement this
 		//autoSize();
@@ -695,7 +697,7 @@ public class WListbox extends Listbox implements IMiniTable, TableValueChangeLis
 		// repaint the table
 		this.repaint();
 
-		logger.config("Row(rs)=" + getRowCount());
+		logger.info("Row(rs)=" + getRowCount());
 
 		return;
 	}	//	loadTable
@@ -772,7 +774,7 @@ public class WListbox extends Listbox implements IMiniTable, TableValueChangeLis
 		// repaint the table
 		this.repaint();
 
-		logger.config("Row(array)=" + getRowCount());
+		logger.info("Row(array)=" + getRowCount());
 
 		return;
 	}	//	loadTable

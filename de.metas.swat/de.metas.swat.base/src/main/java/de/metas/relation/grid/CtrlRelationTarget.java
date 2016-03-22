@@ -44,7 +44,7 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 public class CtrlRelationTarget
 {
 
-	// private static final CLogger logger = CLogger.getCLogger(CtrlRelationTarget.class);
+	// private static final Logger logger = CLogMgt.getLogger(CtrlRelationTarget.class);
 
 	private final IViewRelationTarget view;
 

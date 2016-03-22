@@ -41,7 +41,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
@@ -97,7 +98,6 @@ import org.compiere.model.X_AD_ReplicationDocument;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -159,10 +159,10 @@ public class ImportHelper implements IImportHelper
 	private static final String MSG_InvalidArguments = "InvalidArguments";
 
 	/** Instance Logger */
-	private final CLogger log = CLogger.getCLogger(ImportHelper.class);
+	private final Logger log = LogManager.getLogger(ImportHelper.class);
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(ImportHelper.class);
+	private static Logger s_log = LogManager.getLogger(ImportHelper.class);
 
 	/** Set change PO */
 	boolean isChanged = false;
@@ -226,7 +226,7 @@ public class ImportHelper implements IImportHelper
 
 		// Find which Export format to Load...
 		final String version = rootElement.getAttribute(RPL_Constants.XML_ATTR_Version);
-		log.log(Level.INFO, "Version = {0}", version);
+		log.info("Version = {}", version);
 		if (Check.isEmpty(version, true))
 		{
 			throw new ReplicationException(MSG_XMLVersionAttributeMandatory);
@@ -239,7 +239,7 @@ public class ImportHelper implements IImportHelper
 
 		String EXP_Format_Value = null;
 		EXP_Format_Value = rootElement.getNodeName();
-		log.log(Level.INFO, "EXP_Format_Value = {0}", EXP_Format_Value);
+		log.info("EXP_Format_Value = {}", EXP_Format_Value);
 
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		MEXPFormat expFormatPO = null;
@@ -425,19 +425,19 @@ public class ImportHelper implements IImportHelper
 		// FIXME: we need to make an exception for AD_User_Login
 		// if (!rootElement.hasAttribute(RPL_Constants.XML_ATTR_AD_SESSION_ID))
 		// {
-		// s_log.log(Level.FINE, "Skip because XML attribute '{0}' is missing", RPL_Constants.XML_ATTR_AD_SESSION_ID);
+		// s_log.debug("Skip because XML attribute '{}' is missing", RPL_Constants.XML_ATTR_AD_SESSION_ID);
 		// return null;
 		// }
 
 		final I_IMP_RequestHandler requestHandlerPO = format.getIMP_RequestHandler();
 		if (requestHandlerPO == null)
 		{
-			s_log.log(Level.FINE, "Skipping because format '{0}' does not have a request handler set", format);
+			s_log.debug("Skipping because format '{}' does not have a request handler set", format);
 			return null;
 		}
 		if (!requestHandlerPO.isActive())
 		{
-			s_log.log(Level.FINE, "Skipping because request handler '{0}' is not active", requestHandlerPO);
+			s_log.debug("Skipping because request handler '{}' is not active", requestHandlerPO);
 			return null;
 		}
 
@@ -696,7 +696,7 @@ public class ImportHelper implements IImportHelper
 
 			// int refRecord_ID = 0;
 
-			log.fine("Seach for XML Element = " + valueXPath);
+			log.debug("Seach for XML Element = " + valueXPath);
 			final Element referencedNode;
 			try
 			{
@@ -772,7 +772,7 @@ public class ImportHelper implements IImportHelper
 
 				PO embeddedPo = null;
 				// Import embedded PO
-				log.fine("=== BEGIN RECURSION CALL ===");
+				log.debug("=== BEGIN RECURSION CALL ===");
 				try
 				{
 					// note that we call the method with parentXPath="", because we also call it with 'referencedElement', i.e. the current child node
@@ -788,7 +788,7 @@ public class ImportHelper implements IImportHelper
 							.addParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, referencedElement)
 							.addParameter(I_AD_Element.COLUMNNAME_PO_Name, po);
 				}
-				log.fine("embeddedPo = " + embeddedPo);
+				log.debug("embeddedPo = " + embeddedPo);
 				embeddedPo.saveExReplica(true);
 				result.append(" Embedded Save Successful ; ");
 			}
@@ -832,7 +832,7 @@ public class ImportHelper implements IImportHelper
 
 		if (adTableDAO.isVirtualColumn(column))
 		{
-			log.log(Level.INFO, "Skip importing value '{0}' ({1}) for {2} because it's a virtual column", new Object[] { value, line, po });
+			log.info("Skip importing value '{}' ({}) for {} because it's a virtual column", new Object[] { value, line, po });
 			return;
 		}
 
@@ -998,7 +998,7 @@ public class ImportHelper implements IImportHelper
 
 	private static int getADClientIdByValue(final Properties ctx, final String value, final String trxName)
 	{
-		s_log.log(Level.FINE, "AD_Client_Value = {0}", value);
+		s_log.debug("AD_Client_Value = {}", value);
 
 		final String whereClause = I_AD_Client.COLUMNNAME_Value + "= ? ";
 		final int adClientId = new Query(ctx, I_AD_Client.Table_Name, whereClause, trxName)
@@ -1006,7 +1006,7 @@ public class ImportHelper implements IImportHelper
 				.setParameters(value)
 				.firstIdOnly();
 
-		s_log.log(Level.FINE, "AD_Client_ID = {0}" + adClientId);
+		s_log.debug("AD_Client_ID = {}" + adClientId);
 		return adClientId;
 	}
 
@@ -1676,18 +1676,18 @@ public class ImportHelper implements IImportHelper
 	{
 		if (adSessionId <= 0)
 		{
-			s_log.log(Level.FINE, "Skip because there is not AD_Session_ID");
+			s_log.debug("Skip because there is not AD_Session_ID");
 			return;
 		}
 		final MSession session = MSession.get(ctx, adSessionId);
 		if (session == null)
 		{
-			s_log.log(Level.INFO, "Skip because no session found for ID: {0}", adSessionId);
+			s_log.info("Skip because no session found for ID: {}", adSessionId);
 			return;
 		}
 		if (session.isProcessed())
 		{
-			s_log.log(Level.INFO, "Skip because session is already processed: {0}", session);
+			s_log.info("Skip because session is already processed: {}", session);
 			return;
 		}
 

@@ -16,12 +16,6 @@
  *****************************************************************************/
 package de.metas.banking.model;
 
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MTable;
-
 
 /** Generated Interface for C_RecurrentPaymentHistory
  *  @author Adempiere (generated) 

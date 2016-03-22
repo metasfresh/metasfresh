@@ -32,7 +32,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.EventObject;
-import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -54,7 +53,6 @@ import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -65,6 +63,10 @@ import org.eevolution.model.MHREmployee;
 import org.eevolution.model.MHRMovement;
 import org.eevolution.model.MHRPeriod;
 import org.eevolution.model.MHRProcess;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  @author Oscar Gomez
@@ -110,7 +112,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	private Timestamp dateStart = null;
 	private Timestamp dateEnd   = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VHRActionNotice.class);
+	private static Logger log = LogManager.getLogger(VHRActionNotice.class);
 	//
 	private CPanel           mainPanel = new CPanel();
 	private BorderLayout    mainLayout = new BorderLayout();
@@ -302,9 +304,9 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException 
 	{
 		fieldConcept.setReadWrite(true);
-		log.fine("Event"+ e);
-		log.fine("Event Source "+ e.getSource());
-		log.fine("Event Property "+ e.getPropertyName());
+		log.debug("Event"+ e);
+		log.debug("Event Source "+ e.getSource());
+		log.debug("Event Property "+ e.getPropertyName());
 		processChangeEvent(e);
 		Integer   HR_Period_ID = new MHRProcess(Env.getCtx(),(Integer)fieldProcess.getValue(),null).getHR_Period_ID(); 
 		String date = DB.TO_DATE((Timestamp)fieldValidFrom.getValue());
@@ -326,8 +328,8 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		log.fine("Event "+ e);
-		log.fine("Event Source "+ e.getSource());
+		log.debug("Event "+ e);
+		log.debug("Event Source "+ e.getSource());
 
 		processChangeEvent(e);
 	}   //  actionPerformed
@@ -515,7 +517,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 			}
 		}
 		catch (SQLException e) {
-			log.log(Level.SEVERE, sqlQuery.toString(), e);
+			log.error(sqlQuery.toString(), e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -579,7 +581,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -634,7 +636,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

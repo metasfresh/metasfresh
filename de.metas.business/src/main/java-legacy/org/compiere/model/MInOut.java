@@ -30,7 +30,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -706,7 +707,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	} // getPDF
@@ -856,7 +857,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			}
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
 		return count;
 	} // copyLinesFrom
 
@@ -899,7 +900,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
 		m_lines = null;
-		log.fine(processed + " - Lines=" + noLine);
+		log.debug(processed + " - Lines=" + noLine);
 	} // setProcessed
 
 	/**
@@ -928,11 +929,11 @@ public class MInOut extends X_M_InOut implements DocAction
 				+ "ORDER BY IsDefault DESC";
 		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID(), DocBaseType);
 		if (C_DocType_ID <= 0)
-			log.log(Level.SEVERE, "Not found for AC_Client_ID="
+			log.error("Not found for AC_Client_ID="
 					+ getAD_Client_ID() + " - " + DocBaseType);
 		else
 		{
-			log.fine("DocBaseType=" + DocBaseType + " - C_DocType_ID=" + C_DocType_ID);
+			log.debug("DocBaseType=" + DocBaseType + " - C_DocType_ID=" + C_DocType_ID);
 			setC_DocType_ID(C_DocType_ID);
 			boolean isSOTrx = MDocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType);
 			setIsSOTrx(isSOTrx);
@@ -976,7 +977,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
 		}
 		if (getC_BPartner_Location_ID() == 0)
-			log.log(Level.SEVERE, "Has no To Address: " + bp);
+			log.error("Has no To Address: " + bp);
 
 		// Set Contact
 		MUser[] contacts = bp.getContacts(false);
@@ -995,7 +996,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		// Nothing to do
 		if (!pick && !ship)
 		{
-			log.fine("No need");
+			log.debug("No need");
 			return;
 		}
 
@@ -1012,7 +1013,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				{
 					if (!confirm.isProcessed()) // wait intil done
 					{
-						log.fine("Unprocessed: " + confirm);
+						log.debug("Unprocessed: " + confirm);
 						return;
 					}
 					havePick = true;
@@ -1051,7 +1052,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	{
 		if (M_Warehouse_ID == 0)
 		{
-			log.severe("Ignored - Cannot set AD_Warehouse_ID to 0");
+			log.error("Ignored - Cannot set AD_Warehouse_ID to 0");
 			return;
 		}
 		super.setM_Warehouse_ID(M_Warehouse_ID);
@@ -1060,7 +1061,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		// MWarehouse wh = MWarehouse.get(getCtx(), getM_Warehouse_ID());
 		// if (wh.getAD_Org_ID() != getAD_Org_ID())
 		// {
-		// log.warning("M_Warehouse_ID=" + M_Warehouse_ID
+		// log.warn("M_Warehouse_ID=" + M_Warehouse_ID
 		// + ", Overwritten AD_Org_ID=" + getAD_Org_ID() + "->" +
 		// wh.getAD_Org_ID());
 		// setAD_Org_ID(wh.getAD_Org_ID());
@@ -1095,7 +1096,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		// MWarehouse wh = MWarehouse.get(getCtx(), getM_Warehouse_ID());
 		// if (wh.getAD_Org_ID() != getAD_Org_ID())
 		// {
-		// log.saveError("WarehouseOrgConflict", "");
+		// log.error("WarehouseOrgConflict", "");
 		// return false;
 		// }
 		// metas end
@@ -1110,7 +1111,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		// // Shipment - Needs Order/RMA
 		// if (!getMovementType().contentEquals(MInOut.MOVEMENTTYPE_CustomerReturns) && isSOTrx() && getC_Order_ID() == 0 && getM_RMA_ID() == 0)
 		// {
-		// log.saveError("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
+		// log.error("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
 		// return false;
 		// }
 
@@ -1152,7 +1153,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("Lines -> #" + no);
+			log.debug("Lines -> #" + no);
 		}
 		return true;
 	} // afterSave
@@ -1405,7 +1406,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			if (sLine.getC_OrderLine_ID() != 0)
 			{
 				oLine = new MOrderLine(getCtx(), sLine.getC_OrderLine_ID(), get_TrxName());
-				log.fine("OrderLine - Reserved=" + oLine.getQtyReserved() + ", Delivered=" + oLine.getQtyDelivered());
+				log.debug("OrderLine - Reserved=" + oLine.getQtyReserved() + ", Delivered=" + oLine.getQtyDelivered());
 				if (isSOTrx())
 				{
 					QtySO = mkQtyReservedDiff(oLine, sLine); // metas us1251: omit negative qtyReserved
@@ -1436,7 +1437,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					checkMaterialPolicy(sLine);
 				}
 
-				log.fine("Material Transaction");
+				log.debug("Material Transaction");
 				MTransaction mtrx = null;
 				// same warehouse in order and receipt?
 				boolean sameWarehouse = true;
@@ -1591,7 +1592,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					&& sLine.getMovementQty().signum() > 0
 					&& !isReversal())
 			{
-				log.fine("Asset");
+				log.debug("Asset");
 				info.append("@A_Asset_ID@: ");
 				int noAssets = sLine.getMovementQty().intValue();
 				if (!product.isOneAssetPerUOM())
@@ -1631,7 +1632,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					// Link to Order
 					if (sLine.getC_OrderLine_ID() > 0)
 					{
-						log.fine("PO Matching");
+						log.debug("PO Matching");
 						// Ship - PO
 						final MMatchPO po = MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
 						InterfaceWrapperHelper.save(po, get_TrxName());
@@ -1652,7 +1653,7 @@ public class MInOut extends X_M_InOut implements DocAction
 						if (iLine != null && iLine.getC_OrderLine_ID() > 0)
 						{
 							// Invoice is created before Shipment
-							log.fine("PO(Inv) Matching");
+							log.debug("PO(Inv) Matching");
 							// Ship - Invoice
 							MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
 							InterfaceWrapperHelper.save(po, get_TrxName());
@@ -1941,7 +1942,7 @@ public class MInOut extends X_M_InOut implements DocAction
 //
 //			if (currentDropShipment != null)
 //			{
-//				log.fine("Completing " + currentDropShipment.toString());
+//				log.debug("Completing " + currentDropShipment.toString());
 //
 //				currentDropShipment.setDocAction(DocAction.ACTION_Complete);
 //				if (!currentDropShipment.processIt(DocAction.ACTION_Complete))
@@ -2023,7 +2024,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	{
 		int no = MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
 		if (no > 0)
-			log.config("Deleted old #" + no);
+			log.info("Deleted old #" + no);
 
 		// Incoming Trx
 		String MovementType = getMovementType();
@@ -2073,7 +2074,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
 				}
 				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-				log.config("New ASI=" + line);
+				log.info("New ASI=" + line);
 				needSave = true;
 			}
 			// Create consume the Attribute Set Instance using policy FIFO/LIFO
@@ -2102,7 +2103,7 @@ public class MInOut extends X_M_InOut implements DocAction
 								storage.getQtyOnHand());
 						ma.saveEx();
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-						log.fine(ma + ", QtyToDeliver=" + qtyToDeliver);
+						log.debug(ma + ", QtyToDeliver=" + qtyToDeliver);
 					}
 
 					if (qtyToDeliver.signum() == 0)
@@ -2116,7 +2117,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
 					MInOutLineMA ma = new MInOutLineMA(line, M_AttributeSetInstance_ID, qtyToDeliver);
 					ma.saveEx();
-					log.fine("##: " + ma);
+					log.debug("##: " + ma);
 				}
 			} // outgoing Trx
 		} // attributeSetInstance
@@ -2158,7 +2159,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
-			log.fine(counterDT.toString());
+			log.debug(counterDT.toString());
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
 				return null;
 			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
@@ -2167,7 +2168,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		// indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
+			log.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
 				return null;
 		}
@@ -2217,7 +2218,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			counterLine.save(get_TrxName());
 		}
 
-		log.fine(counter.toString());
+		log.debug(counter.toString());
 
 		// Document Action
 		if (counterDT != null)

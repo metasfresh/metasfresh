@@ -41,7 +41,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
@@ -69,7 +70,7 @@ public class CreateFromRMA extends CreateFrom {
 	@Override
 	public boolean dynInit() throws Exception 
 	{
-		log.config("");
+		log.info("");
         setTitle("Customer RMA - Create Lines From");
 
 		return true;
@@ -130,7 +131,7 @@ public class CreateFromRMA extends CreateFrom {
         }
         catch (SQLException e)
         {
-            log.log(Level.SEVERE, sqlStmt.toString(), e);
+            log.error(sqlStmt.toString(), e);
         }
         
         return data;
@@ -158,7 +159,7 @@ public class CreateFromRMA extends CreateFrom {
 	@Override
 	public boolean save(IMiniTable miniTable, String trxName) 
 	{
-		log.config("");
+		log.info("");
 		int M_RMA_ID = Env.getContextAsInt(Env.getCtx(), getGridTab().getWindowNo(), "M_RMA_ID");
         
 //        Integer bpId = (Integer)bPartnerField.getValue();

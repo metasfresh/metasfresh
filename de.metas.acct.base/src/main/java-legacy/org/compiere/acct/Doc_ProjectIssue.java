@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.ProductAcctType;
 import org.compiere.model.MAcctSchema;
@@ -76,8 +77,8 @@ public class Doc_ProjectIssue extends Doc
 		
 		//	Pseudo Line Check
 		if (m_line.getM_Product_ID() == 0)
-			log.warning(m_line.toString() + " - No Product");
-		log.fine(m_line.toString());
+			log.warn(m_line.toString() + " - No Product");
+		log.debug(m_line.toString());
 		return null;
 	}   //  loadDocumentDetails
 
@@ -196,14 +197,14 @@ public class Doc_ProjectIssue extends Doc
 			if (rs.next())
 			{
 				retValue = rs.getBigDecimal(1);
-				log.fine("POCost = " + retValue);
+				log.debug("POCost = " + retValue);
 			}
 			else
-				log.warning("Not found for M_InOutLine_ID=" + m_issue.getM_InOutLine_ID());
+				log.warn("Not found for M_InOutLine_ID=" + m_issue.getM_InOutLine_ID());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -239,14 +240,14 @@ public class Doc_ProjectIssue extends Doc
 				retValue = rs.getBigDecimal(1);
 				qty = rs.getBigDecimal(2);
 				retValue = retValue.multiply(qty); 
-				log.fine("ExpLineCost = " + retValue);
+				log.debug("ExpLineCost = " + retValue);
 			}
 			else
-				log.warning("Not found for S_TimeExpenseLine_ID=" + m_issue.getS_TimeExpenseLine_ID());
+				log.warn("Not found for S_TimeExpenseLine_ID=" + m_issue.getS_TimeExpenseLine_ID());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

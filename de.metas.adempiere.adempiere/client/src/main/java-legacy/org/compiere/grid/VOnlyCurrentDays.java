@@ -24,14 +24,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.WindowConstants;
 
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -67,7 +69,7 @@ public class VOnlyCurrentDays extends CDialog
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "VOnlyCurrentDays", e);
+			log.error("VOnlyCurrentDays", e);
 		}
 		this.pack();
 		buttonLocation.x -= (int)getPreferredSize().getWidth()/2;
@@ -89,7 +91,7 @@ public class VOnlyCurrentDays extends CDialog
 	/**	Margin					*/
 	private static Insets	s_margin = new Insets (2, 2, 2, 2);
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VOnlyCurrentDays.class);
+	private static Logger log = LogManager.getLogger(VOnlyCurrentDays.class);
 
 	/**
 	 * 	Static Initializer

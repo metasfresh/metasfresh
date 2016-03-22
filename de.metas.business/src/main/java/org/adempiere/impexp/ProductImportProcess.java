@@ -110,7 +110,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Invalid BPartner=" + no);
+			log.warn("Invalid BPartner=" + no);
 		}
 
 		// **** Find Product
@@ -150,7 +150,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 				+ " AND M_Product_ID IS NULL"	// set category only if product not found
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Category Default Value=" + no);
+		log.debug("Set Category Default Value=" + no);
 		//
 		sql = new StringBuilder("UPDATE I_Product i "
 				+ "SET M_Product_Category_ID=(SELECT M_Product_Category_ID FROM M_Product_Category c"
@@ -175,7 +175,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
-				log.fine(strFields[i] + " - default from existing Product=" + no);
+				log.debug(strFields[i] + " - default from existing Product=" + no);
 			}
 		}
 		final String[] numFields = new String[] { "C_UOM_ID", "M_Product_Category_ID",
@@ -191,7 +191,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
-				log.fine(numFields[i] + " default from existing Product=" + no);
+				log.debug(numFields[i] + " default from existing Product=" + no);
 			}
 		}
 
@@ -211,7 +211,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
-				log.fine(strFieldsPO[i] + " default from existing Product PO=" + no);
+				log.debug(strFieldsPO[i] + " default from existing Product PO=" + no);
 			}
 		}
 		final String[] numFieldsPO = new String[] { "C_UOM_ID", "C_Currency_ID",
@@ -229,7 +229,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
-				log.fine(numFieldsPO[i] + " default from existing Product PO=" + no);
+				log.debug(numFieldsPO[i] + " default from existing Product PO=" + no);
 			}
 		}
 
@@ -241,7 +241,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Invalid Category=" + no);
+			log.warn("Invalid Category=" + no);
 		}
 
 		// Set UOM (System/own)
@@ -251,7 +251,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 				+ "WHERE X12DE355 IS NULL AND C_UOM_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set UOM Default=" + no);
+		log.debug("Set UOM Default=" + no);
 		//
 		sql = new StringBuilder(
 				"UPDATE I_Product i "
@@ -268,7 +268,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Invalid UOM=" + no);
+			log.warn("Invalid UOM=" + no);
 		}
 
 		// Set Currency
@@ -280,7 +280,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 				+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
-		log.fine("Set Currency Default=" + no);
+		log.debug("Set Currency Default=" + no);
 		//
 		sql = new StringBuilder("UPDATE I_Product i "
 				+ "SET C_Currency_ID=(SELECT C_Currency_ID FROM C_Currency c"
@@ -297,7 +297,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Invalid Currency=" + no);
+			log.warn("Invalid Currency=" + no);
 		}
 
 		// Verify ProductType
@@ -308,7 +308,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Invalid ProductType=" + no);
+			log.warn("Invalid ProductType=" + no);
 		}
 
 		// Unique UPC/Value
@@ -319,7 +319,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Not Unique Value=" + no);
+			log.warn("Not Unique Value=" + no);
 		}
 		//
 		sql = new StringBuilder("UPDATE I_Product i "
@@ -329,7 +329,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Not Unique UPC=" + no);
+			log.warn("Not Unique UPC=" + no);
 		}
 
 		// Mandatory Value
@@ -340,7 +340,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("No Mandatory Value=" + no);
+			log.warn("No Mandatory Value=" + no);
 		}
 
 		// Vendor Product No
@@ -367,7 +367,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warning("Not Unique VendorProductNo=" + no);
+			log.warn("Not Unique VendorProductNo=" + no);
 		}
 
 		//
@@ -429,7 +429,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		final int I_Product_ID = importRecord.getI_Product_ID();
 		int M_Product_ID = importRecord.getM_Product_ID();
 		final boolean newProduct = M_Product_ID <= 0;
-		log.fine("I_Product_ID=" + I_Product_ID + ", M_Product_ID=" + M_Product_ID);
+		log.debug("I_Product_ID=" + I_Product_ID + ", M_Product_ID=" + M_Product_ID);
 
 		// Product
 		if (newProduct)			// Insert new Product
@@ -439,7 +439,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			InterfaceWrapperHelper.save(product);
 			M_Product_ID = product.getM_Product_ID();
 			importRecord.setM_Product_ID(M_Product_ID);
-			log.finer("Insert Product");
+			log.trace("Insert Product");
 		}
 		else
 		// Update Product
@@ -460,7 +460,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			{
 				pstmt_updateProduct = DB.prepareStatement(sqlt, trxName);
 				final int no = pstmt_updateProduct.executeUpdate();
-				log.finer("Update Product = " + no);
+				log.trace("Update Product = " + no);
 			}
 			catch (final SQLException ex)
 			{
@@ -519,7 +519,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 			{
 				pstmt_updateProductPO = DB.prepareStatement(sqlt, trxName);
 				updateCount_ProductPO = pstmt_updateProductPO.executeUpdate();
-				log.finer("Update Product_PO = " + updateCount_ProductPO);
+				log.trace("Update Product_PO = " + updateCount_ProductPO);
 			}
 			catch (final SQLException ex)
 			{
@@ -556,7 +556,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 				pstmt_insertProductPO.setInt(2, C_BPartner_ID);
 				pstmt_insertProductPO.setInt(3, I_Product_ID);
 				updateCount_ProductPO = pstmt_insertProductPO.executeUpdate();
-				log.finer("Insert Product_PO = " + updateCount_ProductPO);
+				log.trace("Insert Product_PO = " + updateCount_ProductPO);
 			}
 			catch (final SQLException ex)
 			{

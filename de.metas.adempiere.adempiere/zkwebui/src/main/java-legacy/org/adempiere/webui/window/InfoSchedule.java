@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.apps.AEnv;
@@ -44,12 +43,15 @@ import org.adempiere.webui.panel.WSchedule;
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.model.ScheduleUtil;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -113,7 +115,7 @@ public class InfoSchedule extends Window implements EventListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "InfoSchedule", ex);
+			log.error("InfoSchedule", ex);
 		}
 		AEnv.showWindow(this);
 	}	//	InfoSchedule
@@ -135,7 +137,7 @@ public class InfoSchedule extends Window implements EventListener
 	/**	 Ability to create new assignments	*/
 	private boolean			m_createNew;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InfoSchedule.class);
+	private static Logger log = LogManager.getLogger(InfoSchedule.class);
 
 	private Vbox mainLayout = new Vbox();
 	private Grid parameterPanel = GridFactory.newGridLayout();
@@ -268,7 +270,7 @@ public class InfoSchedule extends Window implements EventListener
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 		}
 
@@ -293,7 +295,7 @@ public class InfoSchedule extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		if (defaultValue != null) {
 			int cnt = fieldResourceType.getItemCount();
@@ -345,7 +347,7 @@ public class InfoSchedule extends Window implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		if (defaultValue != null) {
 			int cnt = fieldResource.getItemCount();

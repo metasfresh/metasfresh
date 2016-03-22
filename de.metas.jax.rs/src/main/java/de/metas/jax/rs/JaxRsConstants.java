@@ -1,6 +1,7 @@
 package de.metas.jax.rs;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -26,14 +27,12 @@ import org.compiere.util.CLogger;
 
 public class JaxRsConstants
 {
-	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(JaxRsConstants.class.getPackage().getName() + ".Jms");
-
 	/**
 	 * This logger can be used throughout the whole system when you want to log something that is related to this module.
 	 * @return
 	 */
-	public static CLogger getLogger()
+	public static Logger getLogger(final Class<?> clazz)
 	{
-		return CLogger.getCLogger(LOGGER_NAME);
+		return LogManager.getLogger(clazz);
 	}
 }

@@ -32,14 +32,14 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.JButton;
 import javax.swing.Timer;
 
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.ITerminalKeySuggestionsPanel;
@@ -55,7 +55,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private static final int PopupDelayMillis = 500;
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private SwingTerminalKeyDialog parent;
 	private ITerminalLookupField lookupField;
@@ -209,7 +209,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	public void updateSuggestions()
 	{
-		logger.fine("Loading suggestions (delayed)..");
+		logger.debug("Loading suggestions (delayed)..");
 		timer.setRepeats(false);
 		timer.start();
 	}
@@ -219,7 +219,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	 */
 	private void updateSuggestionsNow()
 	{
-		logger.fine("begin");
+		logger.debug("begin");
 
 		final ITerminalLookup lookup = lookupField.getLookup();
 		final String text = lookupField.getText();
@@ -231,8 +231,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		this.suggestions = suggestions;
 
-		if (logger.isLoggable(Level.FINE))
-			logger.fine("begin: suggestions=" + suggestions);
+		if (logger.isDebugEnabled())
+			logger.debug("begin: suggestions=" + suggestions);
 
 		int size = 0;
 		if (suggestions != null)
@@ -258,8 +258,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			buttons[i].setVisible(true);
 			buttons[i].setEnabled(true);
 
-			if (logger.isLoggable(Level.FINE))
-				logger.fine("suggestion " + i + ": " + suggestion.getID() + " - " + text);
+			if (logger.isDebugEnabled())
+				logger.debug("suggestion " + i + ": " + suggestion.getID() + " - " + text);
 		}
 
 		for (int i = size; i >= 0 && i < buttons.length; i++)

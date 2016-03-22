@@ -42,7 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.table.TableModel;
@@ -516,7 +517,7 @@ public class InfoSimple extends Info
 				final int dependsOnColumnIndex = getIndexByColumnName(displayedInfoColumns, dependsOnColumnName);
 				if (dependsOnColumnIndex < 0)
 				{
-					log.log(Level.WARNING, "Cannot find column name '" + dependsOnColumnName + "' required as dependency for " + columnController);
+					log.warn("Cannot find column name '" + dependsOnColumnName + "' required as dependency for " + columnController);
 					continue;
 				}
 
@@ -894,7 +895,7 @@ public class InfoSimple extends Info
 			}
 			catch (final Exception e)
 			{
-				log.log(Level.WARNING, "Cannot convert " + value + " to integer", e);
+				log.warn("Cannot convert " + value + " to integer", e);
 			}
 		}
 		return -1;
@@ -1096,7 +1097,7 @@ public class InfoSimple extends Info
 		}
 		else
 		{
-			log.warning("Cannot convert value " + value + " (" + value.getClass() + ") to int (row=" + row + ", columnName=" + columnName + ")");
+			log.warn("Cannot convert value " + value + " (" + value.getClass() + ") to int (row=" + row + ", columnName=" + columnName + ")");
 			return -1;
 		}
 	}
@@ -1111,7 +1112,7 @@ public class InfoSimple extends Info
 		final int column = getKeyColumnIndex();
 		if (column < 0)
 		{
-			log.warning("No key column index found");
+			log.warn("No key column index found");
 			return -1;
 		}
 		final Object data = getValue(row, column);
@@ -1122,7 +1123,7 @@ public class InfoSimple extends Info
 		}
 		else
 		{
-			log.severe("For multiple selection, IDColumn should be key column for selection");
+			log.error("For multiple selection, IDColumn should be key column for selection");
 			return -1;
 		}
 	}
@@ -1194,7 +1195,7 @@ public class InfoSimple extends Info
 		final int keyColumnIndex = getKeyColumnIndex();
 		if (keyColumnIndex < 0)
 		{
-			log.warning("No key column index found");
+			log.warn("No key column index found");
 			return false;
 		}
 		final Object value = getValue(row, keyColumnIndex);
@@ -1205,7 +1206,7 @@ public class InfoSimple extends Info
 		}
 		else
 		{
-			log.severe("For multiple selection, IDColumn should be key column for selection");
+			log.error("For multiple selection, IDColumn should be key column for selection");
 			return false;
 		}
 	}

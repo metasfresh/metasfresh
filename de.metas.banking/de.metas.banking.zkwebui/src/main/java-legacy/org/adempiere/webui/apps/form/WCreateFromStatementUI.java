@@ -17,7 +17,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.webui.apps.AEnv;
@@ -45,7 +46,8 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MPayment;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -80,7 +82,7 @@ public class WCreateFromStatementUI extends CreateFromStatement implements Event
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.showWindow(window);
@@ -90,7 +92,7 @@ public class WCreateFromStatementUI extends CreateFromStatement implements Event
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 	
 	protected Label bankAccountLabel = new Label();
 	protected WTableDirEditor bankAccountField;
@@ -128,7 +130,7 @@ public class WCreateFromStatementUI extends CreateFromStatement implements Event
 	@Override
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -248,7 +250,7 @@ public class WCreateFromStatementUI extends CreateFromStatement implements Event
 	@Override
 	public void onEvent(Event e) throws Exception
 	{
-		log.config("Action=" + e.getTarget().getId());
+		log.info("Action=" + e.getTarget().getId());
 		if(e.getTarget().equals(window.getConfirmPanel().getButton(ConfirmPanel.A_REFRESH)))
 		{
 			loadBankAccount();

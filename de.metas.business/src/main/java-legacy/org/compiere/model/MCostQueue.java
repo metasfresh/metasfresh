@@ -21,10 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -83,7 +85,7 @@ public class MCostQueue extends X_M_CostQueue
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -150,7 +152,7 @@ public class MCostQueue extends X_M_CostQueue
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -194,7 +196,7 @@ public class MCostQueue extends X_M_CostQueue
 				queue.setCurrentQty(newQty);
 				if (queue.save())
 				{
-					s_log.fine("Qty=" + remainingQty 
+					s_log.debug("Qty=" + remainingQty 
 						+ "(!), ASI=" + queue.getM_AttributeSetInstance_ID()
 						+ " - " + oldQty + " -> " + newQty);
 					return queue.getCurrentCostPrice();
@@ -214,7 +216,7 @@ public class MCostQueue extends X_M_CostQueue
 				queue.setCurrentQty(newQty);
 				if (queue.save())
 				{
-					s_log.fine("Qty=" + reduction 
+					s_log.debug("Qty=" + reduction 
 						+ ", ASI=" + queue.getM_AttributeSetInstance_ID()
 						+ " - " + oldQty + " -> " + newQty);
 					remainingQty = remainingQty.subtract(reduction);
@@ -229,7 +231,7 @@ public class MCostQueue extends X_M_CostQueue
 			}
 		}	//	for queue	
 
-		s_log.fine("RemainingQty=" + remainingQty);
+		s_log.debug("RemainingQty=" + remainingQty);
 		return null;
 	}	//	adjustQty
 
@@ -268,7 +270,7 @@ public class MCostQueue extends X_M_CostQueue
 				lastPrice = queue.getCurrentCostPrice();
 				BigDecimal costBatch = lastPrice.multiply(remainingQty);
 				cost = cost.add(costBatch);
-				s_log.config("ASI=" + queue.getM_AttributeSetInstance_ID()
+				s_log.info("ASI=" + queue.getM_AttributeSetInstance_ID()
 					+ " - Cost=" + lastPrice + " * Qty=" + remainingQty + "(!) = " + costBatch);
 				return cost;
 			}
@@ -283,13 +285,13 @@ public class MCostQueue extends X_M_CostQueue
 				lastPrice = queue.getCurrentCostPrice();
 				BigDecimal costBatch = lastPrice.multiply(reduction);
 				cost = cost.add(costBatch);
-				s_log.fine("ASI=" + queue.getM_AttributeSetInstance_ID()
+				s_log.debug("ASI=" + queue.getM_AttributeSetInstance_ID()
 					+ " - Cost=" + lastPrice + " * Qty=" + reduction + " = " + costBatch);
 				remainingQty = remainingQty.subtract(reduction);
 				//	Done
 				if (remainingQty.signum() == 0)
 				{
-					s_log.config("Cost=" + cost);
+					s_log.info("Cost=" + cost);
 					return cost;
 				}
 				if (firstPrice == null)
@@ -311,14 +313,14 @@ public class MCostQueue extends X_M_CostQueue
 			s_log.info("No Cost Queue");
 		}
 		BigDecimal costBatch = lastPrice.multiply(remainingQty);
-		s_log.fine("RemainingQty=" + remainingQty + " * LastPrice=" + lastPrice + " = " + costBatch);
+		s_log.debug("RemainingQty=" + remainingQty + " * LastPrice=" + lastPrice + " = " + costBatch);
 		cost = cost.add(costBatch);
-		s_log.config("Cost=" + cost);
+		s_log.info("Cost=" + cost);
 		return cost;
 	}	//	getCosts
 	
 	/**	Logger	*/
-	private static CLogger 	s_log = CLogger.getCLogger (MCostQueue.class);
+	private static Logger 	s_log = LogManager.getLogger(MCostQueue.class);
 	
 	
 	/**************************************************************************

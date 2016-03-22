@@ -33,7 +33,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Database archive storage
@@ -43,7 +44,7 @@ import org.compiere.util.CLogger;
  */
 public class DBArchiveStorage extends AbstractArchiveStorage
 {
-	private static final CLogger logger = CLogger.getCLogger(DBArchiveStorage.class);
+	private static final Logger logger = LogManager.getLogger(DBArchiveStorage.class);
 
 	@Override
 	public I_AD_Archive newArchive(final Properties ctx, final String trxName)
@@ -67,7 +68,7 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 		if (deflatedData == null)
 			return null;
 		//
-		logger.fine("ZipSize=" + deflatedData.length);
+		logger.debug("ZipSize=" + deflatedData.length);
 		// m_deflated = new Integer(deflatedData.length);
 		if (deflatedData.length == 0)
 			return null;
@@ -90,7 +91,7 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 				}
 				//
 				inflatedData = out.toByteArray();
-				logger.fine("Size=" + inflatedData.length + " - zip=" + entry.getCompressedSize()
+				logger.debug("Size=" + inflatedData.length + " - zip=" + entry.getCompressedSize()
 						+ "(" + entry.getSize() + ") "
 						+ (entry.getCompressedSize() * 100 / entry.getSize()) + "%");
 				// m_inflated = new Integer(inflatedData.length);
@@ -98,7 +99,7 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 		}
 		catch (Exception e)
 		{
-			// logger.log(Level.SEVERE, "", e);
+			// logger.error("", e);
 			inflatedData = null;
 			throw new AdempiereException(e);
 		}
@@ -126,18 +127,18 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 			zip.putNextEntry(entry);
 			zip.write(inflatedData, 0, inflatedData.length);
 			zip.closeEntry();
-			logger.fine(entry.getCompressedSize() + " (" + entry.getSize() + ") "
+			logger.debug(entry.getCompressedSize() + " (" + entry.getSize() + ") "
 					+ (entry.getCompressedSize() * 100 / entry.getSize()) + "%");
 			//
 			// zip.finish();
 			zip.close();
 			deflatedData = out.toByteArray();
-			logger.fine("Length=" + inflatedData.length);
+			logger.debug("Length=" + inflatedData.length);
 			// m_deflated = new Integer(deflatedData.length);
 		}
 		catch (Exception e)
 		{
-			// log.log(Level.SEVERE, "saveLOBData", e);
+			// log.error("saveLOBData", e);
 			// deflatedData = null;
 			// m_deflated = null;
 			throw new AdempiereException(e);

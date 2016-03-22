@@ -40,14 +40,15 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.X_AD_WF_Activity;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFActivity;
 
 public class WFActivityModel
 {
-	private static final transient CLogger logger = CLogger.getCLogger(WFActivityModel.class);
+	private static final transient Logger logger = LogManager.getLogger(WFActivityModel.class);
 
 	public static final String SYSCONFIG_MAX_ACTIVITIES_IN_LIST = "MAX_ACTIVITIES_IN_LIST";
 	public static final int SYSCONFIG_MAX_ACTIVITIES_IN_LIST_DEFAULT = 200;
@@ -203,7 +204,7 @@ public class WFActivityModel
 				.setLimit(maxActivities)
 				.list();
 
-		logger.fine("#" + activities.size() + "(" + (System.currentTimeMillis() - start) + "ms)");
+		logger.debug("#" + activities.size() + "(" + (System.currentTimeMillis() - start) + "ms)");
 
 		return activities;
 	}

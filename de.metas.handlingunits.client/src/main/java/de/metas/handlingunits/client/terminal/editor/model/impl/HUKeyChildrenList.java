@@ -31,12 +31,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.exceptions.HUException;
 
@@ -54,7 +53,7 @@ import de.metas.handlingunits.exceptions.HUException;
  */
 /* package */class HUKeyChildrenList
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HUKeyChildrenList.class);
+	private static final transient Logger logger = LogManager.getLogger(HUKeyChildrenList.class);
 
 	private final AbstractHUKey _huKey;
 
@@ -156,7 +155,7 @@ import de.metas.handlingunits.exceptions.HUException;
 			{
 				final Future<List<IHUKey>> futureChildren = retrieveFutureChildren();
 				loadedChildren = futureChildren.get();
-				logger.log(Level.FINEST, "Got future children for {0}: count={1}", new Object[] { _huKey, loadedChildren.size() });
+				logger.trace("Got future children for {}: count={}", new Object[] { _huKey, loadedChildren.size() });
 			}
 			catch (InterruptedException | ExecutionException e)
 			{
@@ -184,7 +183,7 @@ import de.metas.handlingunits.exceptions.HUException;
 		{
 			if (_futureChildren == null)
 			{
-				logger.log(Level.FINEST, "Asking the task executor to retrieve the children asynchronously for {0}", _huKey);
+				logger.trace("Asking the task executor to retrieve the children asynchronously for {}", _huKey);
 				final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class); // local service, used only here
 				_futureChildren = taskExecutorService.submit(new Callable<List<IHUKey>>()
 				{
@@ -245,9 +244,9 @@ import de.metas.handlingunits.exceptions.HUException;
 	 */
 	private final List<IHUKey> retrieveChildren()
 	{
-		logger.log(Level.FINEST, "Starting for {0}", _huKey);
+		logger.trace("Starting for {}", _huKey);
 		final List<IHUKey> children = _huKey.retrieveChildrenAndAddListeners();
-		logger.log(Level.FINEST, "Finished for {0} and got {1}", new Object[] { _huKey, children });
+		logger.trace("Finished for {} and got {}", new Object[] { _huKey, children });
 		return children;
 	}
 
@@ -357,6 +356,6 @@ import de.metas.handlingunits.exceptions.HUException;
 			childrenLock.unlock();
 		}
 
-		logger.log(Level.FINEST, "Cleared for {0}", _huKey);
+		logger.trace("Cleared for {}", _huKey);
 	}
 }

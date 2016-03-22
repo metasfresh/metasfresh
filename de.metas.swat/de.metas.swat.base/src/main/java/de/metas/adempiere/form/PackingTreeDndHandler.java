@@ -32,7 +32,8 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,7 +43,6 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -54,7 +54,7 @@ import org.compiere.util.Msg;
 final class PackingTreeDndHandler extends DropTargetAdapter
 {
 
-	private static final CLogger logger = CLogger.getCLogger(PackingTreeDndHandler.class);
+	private static final Logger logger = LogManager.getLogger(PackingTreeDndHandler.class);
 
 	private final JTree tree;
 
@@ -95,9 +95,9 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 
 		final Point position = dtde.getLocation();
 
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.fine("movingNode=" + movingNode + ", oldParent=" + oldParent + ", newParent=" + newParent);
+			logger.debug("movingNode=" + movingNode + ", oldParent=" + oldParent + ", newParent=" + newParent);
 		}
 
 		if (oldParent == treeModel.getAvailableBins())

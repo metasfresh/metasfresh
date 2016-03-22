@@ -22,10 +22,11 @@ import org.compiere.apps.ProcessCtl;
 import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Ported from org.compiere.apps.ProcessCtl
@@ -35,7 +36,7 @@ import org.compiere.util.Trx;
 public class WProcessCtl {
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WProcessCtl.class);
+	private static Logger log = LogManager.getLogger(WProcessCtl.class);
 	
 	/**
 	 *	Process Control
@@ -55,7 +56,7 @@ public class WProcessCtl {
 	 */
 	public static void process (ASyncProcess aProcess, int WindowNo, ProcessInfo pi, Trx trx)
 	{
-		log.fine("WindowNo=" + WindowNo + " - " + pi);
+		log.debug("WindowNo=" + WindowNo + " - " + pi);
 
 		MPInstance instance = null; 
 		try 
@@ -67,14 +68,14 @@ public class WProcessCtl {
 			pi.setThrowable(e); // 03152
 			pi.setSummary (e.getLocalizedMessage()); 
 			pi.setError (true); 
-			log.warning(pi.toString()); 
+			log.warn(pi.toString()); 
 		} 
 		catch (Error e) 
 		{ 
 			pi.setThrowable(e); // 03152
 			pi.setSummary (e.getLocalizedMessage()); 
 			pi.setError (true); 
-			log.warning(pi.toString()); 
+			log.warn(pi.toString()); 
 		}
 		if (!instance.save())
 		{

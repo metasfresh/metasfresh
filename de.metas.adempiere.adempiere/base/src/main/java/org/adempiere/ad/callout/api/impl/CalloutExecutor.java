@@ -29,7 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutFactory;
@@ -39,12 +40,11 @@ import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util.ArrayKey;
 
 public class CalloutExecutor implements ICalloutExecutor
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final Properties ctx;
 	private final int windowNo;
@@ -111,7 +111,7 @@ public class CalloutExecutor implements ICalloutExecutor
 			}
 			catch (CalloutInitException e)
 			{
-				logger.log(Level.SEVERE, "Callout " + fieldCalloutInstance + " failed with init error on execution. Discarding it.");
+				logger.error("Callout " + fieldCalloutInstance + " failed with init error on execution. Discarding it.");
 				it.remove();
 				throw e;
 			}
@@ -123,7 +123,7 @@ public class CalloutExecutor implements ICalloutExecutor
 		if (field == null)
 		{
 			// shall not happen
-			logger.log(Level.WARNING, "field is null", new Exception());
+			logger.warn("field is null", new Exception());
 			return false;
 		}
 
@@ -135,14 +135,14 @@ public class CalloutExecutor implements ICalloutExecutor
 		// detect infinite loop
 		if (activeCalloutInstances.contains(fieldCalloutInstance))
 		{
-			logger.log(Level.FINE, "Skip callout {0} because is already active", fieldCalloutInstance);
+			logger.debug("Skip callout {} because is already active", fieldCalloutInstance);
 			return;
 		}
 
 		final Object value = field.getValue();
 		final Object valueOld = field.getOldValue();
 
-		logger.log(Level.FINE, "{0}={1} - old={2}, callout={3}", new Object[] { field, value, valueOld, fieldCalloutInstance });
+		logger.debug("{}={} - old={}, callout={}", new Object[] { field, value, valueOld, fieldCalloutInstance });
 
 		try
 		{

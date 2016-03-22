@@ -54,7 +54,7 @@ import org.compiere.util.DisplayType;
  */
 public class VTableMouseListener extends MouseAdapter
 {
-	// final private CLogger log = CLogger.getCLogger(getClass());
+	// final private Logger log = CLogMgt.getLogger(getClass());
 
 	private EditorContextPopupMenu contextPopupMenu;
 

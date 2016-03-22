@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.logging.Level;
-
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
@@ -121,7 +119,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			}
 			else
 			{
-				logger.log(Level.SEVERE, "No Access Org records");
+				logger.error("No Access Org records");
 				return "AD_Client_ID=-1";	// No Access Record
 			}
 		}

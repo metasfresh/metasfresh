@@ -16,9 +16,9 @@ package org.compiere.dbPort;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 
 /***
@@ -29,7 +29,7 @@ import org.compiere.util.Util;
 public abstract class Convert_SQL92 extends Convert {
 	
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (Convert_SQL92.class);
+	private static Logger	log	= LogManager.getLogger(Convert_SQL92.class);
 	
 	/**************************************************************************
 	 *  Convert Outer Join.
@@ -99,7 +99,7 @@ public abstract class Convert_SQL92 extends Convert {
 			if (start == -1)
 			{
 				String error = "Start point not found in clause " + wherePart;
-				log.severe(error);
+				log.error(error);
 				m_conversionError = error;
 				return sqlStatement;
 			}
@@ -400,7 +400,7 @@ public abstract class Convert_SQL92 extends Convert {
 				error = true;
 			if (error)
 			{
-				log.log(Level.SEVERE, "SQL=(" + sqlStatement
+				log.error("SQL=(" + sqlStatement
 					+ ")\n====Result=(" + sb.toString()
 					+ ")\n====Statement=(" + statement
 					+ ")\n====First=(" + first

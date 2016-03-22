@@ -28,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,9 +35,10 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -57,7 +57,7 @@ import de.metas.handlingunits.model.I_M_HU;
  */
 public class DesadvLineSSCC18Generator
 {
-	private static final transient CLogger logger = CLogger.getCLogger(DesadvLineSSCC18Generator.class);
+	private static final transient Logger logger = LogManager.getLogger(DesadvLineSSCC18Generator.class);
 	
 	// services
 	private final transient ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
@@ -139,7 +139,7 @@ public class DesadvLineSSCC18Generator
 		// Do nothing if there is nothing to print
 		if (Check.isEmpty(desadvLineLabelsCollection))
 		{
-			logger.log(Level.INFO, "Parameter 'desadvLineLabelsCollection' is empty; returning");
+			logger.info("Parameter 'desadvLineLabelsCollection' is empty; returning");
 			return this;
 		}
 

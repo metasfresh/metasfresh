@@ -25,7 +25,6 @@ package de.metas.tourplanning.api.impl;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,8 +33,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 
@@ -43,7 +42,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
 	public static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
-	private static final transient CLogger logger = CLogger.getCLogger(OrderDeliveryDayBL.class);
+	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	@Override
 	public boolean setPreparationDate(final I_C_Order order, final boolean fallbackToDatePromised)
@@ -98,24 +97,22 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			// task 08931: only set the date if it has not yet passed.
 			// if it has, leave the field empty and let the user pick a new preparation date
 			order.setPreparationDate(preparationDate);
-			logger.log(Level.FINE, "Setting PreparationDate={0} for C_Order {1} (fallbackToDatePromised={2}, systemTime={3})",
+			logger.debug("Setting PreparationDate={} for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					new Object[] { preparationDate, order, isUseFallback, systemTime });
 		}
 		else if (isUseFallback)
 		{
 			order.setPreparationDate(order.getDatePromised());
-			logger.log(
-					Level.FINE,
-					"Setting PreparationDate={0} for C_Order {1} from order's DatePromised value, because the computed PreparationDate={2} is null or has already passed (fallbackToDatePromised={3}, systemTime={4}).",
-					new Object[] { order.getDatePromised(), order, preparationDate, isUseFallback, systemTime });
+			logger.debug(
+					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
+					order.getDatePromised(), order, preparationDate, isUseFallback, systemTime);
 		}
 		else
 		{
 			order.setPreparationDate(null);
-			logger.log(
-					Level.INFO,
-					"Setting PreparationDate={0} for C_Order {1}, because the computed PreparationDate={2} is null or has already passed (fallbackToDatePromised={3}, systemTime={4}). Leaving it to the user to set a date manually.",
-					new Object[] { preparationDate, order, preparationDate, isUseFallback, systemTime });
+			logger.info(
+					"Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
+					preparationDate, order, preparationDate, isUseFallback, systemTime);
 		}
 
 		return true; // value set

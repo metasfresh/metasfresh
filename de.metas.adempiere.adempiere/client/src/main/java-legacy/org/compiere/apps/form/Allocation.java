@@ -21,7 +21,8 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,7 +32,8 @@ import org.compiere.model.MAllocationLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -45,7 +47,7 @@ public class Allocation
 	public DecimalFormat format = DisplayType.getNumberFormat(DisplayType.Amount);
 
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(Allocation.class);
+	public static Logger log = LogManager.getLogger(Allocation.class);
 
 	private boolean     m_calculating = false;
 	public int         	m_C_Currency_ID = 0;
@@ -88,7 +90,7 @@ public class Allocation
 	 */
 	public void checkBPartner()
 	{		
-		log.config("BPartner=" + m_C_BPartner_ID + ", Cur=" + m_C_Currency_ID);
+		log.info("BPartner=" + m_C_BPartner_ID + ", Cur=" + m_C_Currency_ID);
 		//  Need to have both values
 		if (m_C_BPartner_ID == 0 || m_C_Currency_ID == 0)
 			return;
@@ -137,7 +139,7 @@ public class Allocation
 		// role security
 		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "p", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
 		
-		log.fine("PaySQL=" + sql.toString());
+		log.debug("PaySQL=" + sql.toString());
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), null);
@@ -176,7 +178,7 @@ public class Allocation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		
 		return data;
@@ -261,7 +263,7 @@ public class Allocation
 		if (m_AD_Org_ID != 0 ) 
 			sql.append(" AND i.AD_Org_ID=" + m_AD_Org_ID);
 		sql.append(" ORDER BY i.DateInvoiced, i.DocumentNo");
-		log.fine("InvSQL=" + sql.toString());
+		log.debug("InvSQL=" + sql.toString());
 		
 		// role security
 		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "i", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
@@ -314,7 +316,7 @@ public class Allocation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		
 		return data;
@@ -385,7 +387,7 @@ public class Allocation
 			return msg;
 		m_calculating = true;
 		
-		log.config("Row=" + row 
+		log.info("Row=" + row 
 			+ ", Col=" + col + ", InvoiceTable=" + isInvoice);
         
 		//  Payments
@@ -538,7 +540,7 @@ public class Allocation
 	 */
 	public String calculatePayment(IMiniTable payment, boolean isMultiCurrency)
 	{
-		log.config("");
+		log.info("");
 
 		//  Payment
 		totalPay = new BigDecimal(0.0);
@@ -554,7 +556,7 @@ public class Allocation
 				BigDecimal bd = (BigDecimal)payment.getValueAt(i, i_payment);
 				totalPay = totalPay.add(bd);  //  Applied Pay
 				m_noPayments++;
-				log.fine("Payment_" + i + " = " + bd + " - Total=" + totalPay);
+				log.debug("Payment_" + i + " = " + bd + " - Total=" + totalPay);
 			}
 		}
 		return String.valueOf(m_noPayments) + " - "
@@ -578,7 +580,7 @@ public class Allocation
 				BigDecimal bd = (BigDecimal)invoice.getValueAt(i, i_applied);
 				totalInv = totalInv.add(bd);  //  Applied Inv
 				m_noInvoices++;
-				log.fine("Invoice_" + i + " = " + bd + " - Total=" + totalPay);
+				log.debug("Invoice_" + i + " = " + bd + " - Total=" + totalPay);
 			}
 		}
 		return String.valueOf(m_noInvoices) + " - "
@@ -608,7 +610,7 @@ public class Allocation
 			new AdempiereException("@Org0NotAllowed@");
 		}
 		//
-		log.config("Client=" + AD_Client_ID + ", Org=" + AD_Org_ID
+		log.info("Client=" + AD_Client_ID + ", Org=" + AD_Org_ID
 			+ ", BPartner=" + C_BPartner_ID + ", Date=" + DateTrx);
 
 		//  Payment - Loop and add them to paymentList/amountList
@@ -631,11 +633,11 @@ public class Allocation
 				//
 				paymentAppliedAmt = paymentAppliedAmt.add(PaymentAmt);
 				//
-				log.fine("C_Payment_ID=" + C_Payment_ID 
+				log.debug("C_Payment_ID=" + C_Payment_ID 
 					+ " - PaymentAmt=" + PaymentAmt); // + " * " + Multiplier + " = " + PaymentAmtAbs);
 			}
 		}
-		log.config("Number of Payments=" + paymentList.size() + " - Total=" + paymentAppliedAmt);
+		log.info("Number of Payments=" + paymentList.size() + " - Total=" + paymentAppliedAmt);
 
 		//  Invoices - Loop and generate allocations
 		int iRows = invoice.getRowCount();
@@ -665,7 +667,7 @@ public class Allocation
 				BigDecimal OverUnderAmt = ((BigDecimal)invoice.getValueAt(i, i_open))
 					.subtract(AppliedAmt).subtract(DiscountAmt).subtract(WriteOffAmt);
 				
-				log.config("Invoice #" + i + " - AppliedAmt=" + AppliedAmt);// + " -> " + AppliedAbs);
+				log.info("Invoice #" + i + " - AppliedAmt=" + AppliedAmt);// + " -> " + AppliedAbs);
 				//  loop through all payments until invoice applied
 				
 				for (int j = 0; j < paymentList.size() && AppliedAmt.signum() != 0; j++)
@@ -674,7 +676,7 @@ public class Allocation
 					BigDecimal PaymentAmt = amountList.get(j);
 					if (PaymentAmt.signum() == AppliedAmt.signum())	// only match same sign (otherwise appliedAmt increases)
 					{												// and not zero (appliedAmt was checked earlier)
-						log.config(".. with payment #" + j + ", Amt=" + PaymentAmt);
+						log.info(".. with payment #" + j + ", Amt=" + PaymentAmt);
 						
 						BigDecimal amount = AppliedAmt;
 						if (amount.abs().compareTo(PaymentAmt.abs()) > 0)  // if there's more open on the invoice
@@ -693,7 +695,7 @@ public class Allocation
 						//  subtract amount from Payment/Invoice
 						AppliedAmt = AppliedAmt.subtract(amount);
 						PaymentAmt = PaymentAmt.subtract(amount);
-						log.fine("Allocation Amount=" + amount + " - Remaining  Applied=" + AppliedAmt + ", Payment=" + PaymentAmt);
+						log.debug("Allocation Amount=" + amount + " - Remaining  Applied=" + AppliedAmt + ", Payment=" + PaymentAmt);
 						amountList.set(j, PaymentAmt);  //  update
 					}	//	for all applied amounts
 				}	//	loop through payments for invoice
@@ -709,7 +711,7 @@ public class Allocation
 					aLine.setDocInfo(C_BPartner_ID, C_Order_ID, C_Invoice_ID);
 					aLine.setPaymentInfo(C_Payment_ID, C_CashLine_ID);
 					aLine.saveEx();
-					log.fine("Allocation Amount=" + AppliedAmt);
+					log.debug("Allocation Amount=" + AppliedAmt);
 					unmatchedApplied = unmatchedApplied.add(AppliedAmt);
 				}
 			}   //  invoice selected
@@ -721,7 +723,7 @@ public class Allocation
 			if ( payAmt.signum() == 0 )
 					continue;
 			int C_Payment_ID = paymentList.get(i).intValue();
-			log.fine("Payment=" + C_Payment_ID  
+			log.debug("Payment=" + C_Payment_ID  
 					+ ", Amount=" + payAmt);
 
 			//	Allocation Line
@@ -734,7 +736,7 @@ public class Allocation
 		}		
 		
 		if ( unmatchedApplied.signum() != 0 )
-			log.log(Level.SEVERE, "Allocation not balanced -- out by " + unmatchedApplied );
+			log.error("Allocation not balanced -- out by " + unmatchedApplied );
 
 		//	Should start WF
 		if (alloc.get_ID() != 0)
@@ -759,9 +761,9 @@ public class Allocation
 					sql = "UPDATE C_Invoice SET IsPaid='Y' "
 						+ "WHERE C_Invoice_ID=" + C_Invoice_ID;
 					int no = DB.executeUpdate(sql, trxName);
-					log.config("Invoice #" + i + " is paid - updated=" + no);
+					log.info("Invoice #" + i + " is paid - updated=" + no);
 				} else
-					log.config("Invoice #" + i + " is not paid - " + open);
+					log.info("Invoice #" + i + " is not paid - " + open);
 			}
 		}
 		//  Test/Set Payment is fully allocated
@@ -771,7 +773,7 @@ public class Allocation
 			MPayment pay = new MPayment (Env.getCtx(), C_Payment_ID, trxName);
 			if (pay.testAllocation())
 				pay.saveEx();
-			log.config("Payment #" + i + (pay.isAllocated() ? " not" : " is") 
+			log.info("Payment #" + i + (pay.isAllocated() ? " not" : " is") 
 					+ " fully allocated");
 		}
 		paymentList.clear();

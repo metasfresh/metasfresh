@@ -25,7 +25,8 @@ package org.adempiere.ad.service.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.service.IADMessageDAO;
@@ -41,7 +42,6 @@ import org.compiere.model.I_AD_Message;
 import org.compiere.model.M_Element;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Message;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -60,7 +60,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 
 	public static final String SYSCONFIG_DeveloperMode = "de.metas.adempiere.debug";
 	
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	protected DeveloperModeBL()
 	{
@@ -90,7 +90,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed retrieving the DeveloperMode sysconfig. Considering not enabled.", e);
+			logger.warn("Failed retrieving the DeveloperMode sysconfig. Considering not enabled.", e);
 			return false;
 		}
 	}
@@ -113,7 +113,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 			return false;
 		}
 
@@ -160,7 +160,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			messageNew.setEntityType(getEntityType(ctx));
 			// The save will trigger CCache reset for "AD_Message" which will clear message from Msg class
 			InterfaceWrapperHelper.save(messageNew);
-			logger.log(Level.WARNING, "Created: " + messageNew + ", Value=" + messageNew.getValue() + ", EntityType=" + messageNew.getEntityType(), new Exception());
+			logger.warn("Created: " + messageNew + ", Value=" + messageNew.getValue() + ", EntityType=" + messageNew.getEntityType(), new Exception());
 		}
 		if (createElement)
 		{
@@ -170,7 +170,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			elementNew.setPrintName(text);
 			elementNew.setEntityType(getEntityType(ctx));
 			elementNew.saveEx();
-			logger.log(Level.WARNING, "Created: " + element + ", ColumnName=" + elementNew.getColumnName() + ", EntityType=" + elementNew.getEntityType(), new Exception());
+			logger.warn("Created: " + element + ", ColumnName=" + elementNew.getColumnName() + ", EntityType=" + elementNew.getEntityType(), new Exception());
 		}
 		return createMessage || createElement;
 	}

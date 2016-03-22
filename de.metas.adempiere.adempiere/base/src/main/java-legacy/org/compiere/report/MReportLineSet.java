@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.model.X_PA_ReportLineSet;
 import org.compiere.util.DB;
 
@@ -85,7 +83,7 @@ public class MReportLineSet extends X_PA_ReportLineSet
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -101,7 +99,7 @@ public class MReportLineSet extends X_PA_ReportLineSet
 		//
 		m_lines = new MReportLine[list.size()];
 		list.toArray(m_lines);
-		log.finest("ID=" + getPA_ReportLineSet_ID()
+		log.trace("ID=" + getPA_ReportLineSet_ID()
 			+ " - Size=" + list.size());
 	}	//	loadColumns
 

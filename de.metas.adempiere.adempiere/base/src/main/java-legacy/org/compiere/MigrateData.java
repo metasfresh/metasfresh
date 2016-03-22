@@ -19,11 +19,11 @@ package org.compiere;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MProductDownload;
 import org.compiere.print.PrintFormatUtil;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -48,7 +48,7 @@ public class MigrateData
 	}	//	MigrateData
 	
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (MigrateData.class);
+	private static Logger	log	= LogManager.getLogger(MigrateData.class);
 	
 	/**
 	 * 	Release 252c
@@ -59,7 +59,7 @@ public class MigrateData
 		int no = DB.getSQLValue(null, sql);
 		if (no > 0)
 		{
-			log.finer("No Need - Downloads #" + no);
+			log.trace("No Need - Downloads #" + no);
 			return;
 		}
 		//
@@ -96,15 +96,15 @@ public class MigrateData
 					String sqlUpdate = "UPDATE M_Product SET DownloadURL = NULL WHERE M_Product_ID=" + M_Product_ID;
 					int updated = DB.executeUpdate(sqlUpdate, null);
 					if (updated != 1)
-						log.warning("Product not updated");
+						log.warn("Product not updated");
 				}
 				else
-					log.warning("Product Download not created M_Product_ID=" + M_Product_ID);
+					log.warn("Product Download not created M_Product_ID=" + M_Product_ID);
 			}
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

@@ -28,7 +28,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +39,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -56,7 +56,7 @@ import de.metas.data.export.api.IExporterMonitor;
  */
 public class ProcessLoggerExporterMonitor implements IExporterMonitor
 {
-	private static final CLogger logger = CLogger.getCLogger(ProcessLoggerExporterMonitor.class);
+	private static final Logger logger = LogManager.getLogger(ProcessLoggerExporterMonitor.class);
 
 	private final Properties ctx;
 	private final int adProcessId;
@@ -99,7 +99,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 		if (error != null)
 		{
 			// Log the error to console. This is useful if the exporter is running asynchronous and the threads executor service is not logging the exception
-			logger.log(Level.SEVERE, error.getLocalizedMessage(), error);
+			logger.error(error.getLocalizedMessage(), error);
 			
 			if (clientUIInstance != null)
 			{
@@ -148,7 +148,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.INFO, e.getLocalizedMessage(), e);
+				logger.info(e.getLocalizedMessage(), e);
 				continue;
 			}
 

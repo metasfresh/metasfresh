@@ -248,7 +248,7 @@ public class InfoInOut extends Info
 		}
 		sql.append(" AND i.IsSOTrx=?");
 
-	//	log.fine( "InfoInOut.setWhereClause", sql.toString());
+	//	log.debug( "InfoInOut.setWhereClause", sql.toString());
 		return sql.toString();
 	}	//	getSQLWhere
 
@@ -274,14 +274,14 @@ public class InfoInOut extends Info
 		{
 			Integer bp = (Integer)fBPartner_ID.getValue();
 			pstmt.setInt(index++, bp.intValue());
-			log.fine("BPartner=" + bp);
+			log.debug("BPartner=" + bp);
 		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
 			else if (from != null && to == null)
@@ -305,7 +305,7 @@ public class InfoInOut extends Info
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 

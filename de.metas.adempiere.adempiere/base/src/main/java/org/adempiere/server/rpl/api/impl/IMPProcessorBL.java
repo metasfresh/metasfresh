@@ -25,7 +25,8 @@ package org.adempiere.server.rpl.api.impl;
 
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -54,14 +55,13 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TrxRunnable;
 import org.w3c.dom.Document;
 
 public class IMPProcessorBL implements IIMPProcessorBL
 {
-	private static final CLogger log = CLogger.getCLogger(IMPProcessorBL.class);
+	private static final Logger log = LogManager.getLogger(IMPProcessorBL.class);
 
 	private Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
 
@@ -85,16 +85,16 @@ public class IMPProcessorBL implements IIMPProcessorBL
 				Check.assume(counter < 1000, "There is no loop in originalCause.getCause() with originalCause=" + originalCause);
 				counter++;
 			}
-			log.log(Level.SEVERE, error.getLocalizedMessage(), originalCause); // log the full error message, but only the original exception
+			log.error(error.getLocalizedMessage(), originalCause); // log the full error message, but only the original exception
 		}
 		else
 		{
-			log.finest(summary);
+			log.trace(summary);
 		}
 
 		if (error == null && InterfaceWrapperHelper.create(impProcessor, I_IMP_Processor.class).isLogOnlyImportErrors())
 		{
-			log.finest("There is no error and we only log errors; nothing to do");
+			log.trace("There is no error and we only log errors; nothing to do");
 			return null;
 		}
 
@@ -198,7 +198,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 						impHelper.importXMLDocument(result, document, localTrxName);
 						countSuccess[0]++;
 
-						log.log(Level.INFO, "" + plog + " - Result: " + result);
+						log.info("" + plog + " - Result: " + result);
 
 						InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
 						markResolved(plog);

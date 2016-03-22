@@ -25,7 +25,6 @@ package org.eevolution.mrp.api.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,7 +38,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -54,12 +52,16 @@ import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.MRPFirmType;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IProductBL;
 
 public class MRPBL implements IMRPBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(MRPBL.class);
+	private static final transient Logger logger = LogManager.getLogger(MRPBL.class);
 
 	@Override
 	public I_PP_MRP createMRP(final Object contextProvider)
@@ -191,7 +193,7 @@ public class MRPBL implements IMRPBL
 		else
 		{
 			final LiberoException ex = new LiberoException("No UOM specified when setting quantity.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage() + " [UOM Conversion skipped]", ex);
+			logger.warn(ex.getLocalizedMessage() + " [UOM Conversion skipped]", ex);
 			
 			qtyTargetInStockingUOM = qtyTarget;
 			qtyInStockingUOM = qty;

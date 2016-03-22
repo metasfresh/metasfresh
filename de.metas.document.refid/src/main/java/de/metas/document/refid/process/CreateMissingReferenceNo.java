@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -210,7 +209,7 @@ public class CreateMissingReferenceNo extends SvrProcess
 		catch (Exception e)
 		{
 			addLog("Cannot create reference no for " + po + " (generator=" + generatorInstance + "): " + e.getLocalizedMessage());
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 
 		return false;

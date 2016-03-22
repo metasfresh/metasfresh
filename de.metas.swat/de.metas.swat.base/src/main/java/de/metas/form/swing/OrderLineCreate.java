@@ -64,12 +64,13 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+
+import de.metas.logging.LogManager;
 
 /**
  * @author Teo Sarca, teo.sarca@gmail.com
@@ -110,7 +111,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 			dynInit();
 		} catch (Exception e) {
 			ADialog.error(windowNo, this, "Error", e.getLocalizedMessage());
-			if (CLogMgt.isLevelFine())
+			if (LogManager.isLevelFine())
 				e.printStackTrace();
 			dispose();
 			return;

@@ -38,7 +38,8 @@ import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.model.I_M_PackagingContainer;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.exception.NoContainerException;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -51,7 +52,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 public class BinPacker implements IBinPacker
 {
 
-	private static final CLogger logger = CLogger.getCLogger(BinPacker.class);
+	private static final Logger logger = LogManager.getLogger(BinPacker.class);
 
 	public void pack(final Properties ctx, final PackingTreeModel model, final String trxName)
 	{
@@ -93,7 +94,7 @@ public class BinPacker implements IBinPacker
 	{
 
 		logger
-				.fine("Computing the overall volume and weight we still need to cover");
+				.debug("Computing the overall volume and weight we still need to cover");
 
 		BigDecimal unallocVolumeSum = BigDecimal.ZERO;
 		BigDecimal unallocWeightSum = BigDecimal.ZERO;
@@ -120,7 +121,7 @@ public class BinPacker implements IBinPacker
 				unallocWeightMax = weightSingle;
 			}
 		}
-		logger.fine("Still required: volume-sum=" + unallocVolumeSum
+		logger.debug("Still required: volume-sum=" + unallocVolumeSum
 				+ "; volume-max=" + unallocVolumeMax + "; weight-sum:"
 				+ unallocWeightSum + "; weight-max=" + unallocWeightMax);
 

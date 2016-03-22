@@ -22,7 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -32,7 +33,8 @@ import org.compiere.model.X_AD_Process;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -70,7 +72,7 @@ public class ProcessParameter extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, ex.getMessage());
+			log.error(ex.getMessage());
 		}
 		//
 		m_WindowNo = WindowNo;
@@ -83,7 +85,7 @@ public class ProcessParameter extends CDialog
 	private ProcessInfo m_processInfo;
 	private boolean 	m_isOK = false;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ProcessParameter.class);
+	private static Logger log = LogManager.getLogger(ProcessParameter.class);
 	//
 	private final ProcessParameterPanel parametersPanel;
 
@@ -169,7 +171,7 @@ public class ProcessParameter extends CDialog
 	 */
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
 	{
-	//	log.fine( "ProcessParameter.vetoableChange");
+	//	log.debug( "ProcessParameter.vetoableChange");
 		String value = evt.getNewValue() == null ? "" : evt.getNewValue().toString();
 		Env.setContext(Env.getCtx(), m_WindowNo, evt.getPropertyName(), value);
 	}	//	vetoableChange

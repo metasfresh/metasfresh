@@ -18,7 +18,8 @@ package org.compiere.model;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -31,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -66,7 +66,7 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_EntityType = 5;
 	
 	/**	Logging								*/
-	private static CLogger		s_log = CLogger.getCLogger(MLookupFactory.class);
+	private static Logger		s_log = LogManager.getLogger(MLookupFactory.class);
 	/** Table Reference Cache				*/
 	private static CCache<ArrayKey,MLookupInfo> s_cacheRefTable = new CCache<ArrayKey,MLookupInfo>("AD_Ref_Table", 30, 60);	//	1h
 
@@ -204,7 +204,7 @@ public class MLookupFactory
 		//  do we have basic info?
 		if (info == null)
 		{
-			s_log.severe ("No SQL - " + ColumnName);
+			s_log.error("No SQL - " + ColumnName);
 			return null;
 		}
 		
@@ -230,11 +230,11 @@ public class MLookupFactory
 //					);
 //			if (newSQL.length() == 0)
 //			{
-//				s_log.severe ("SQL parse error: " + info.Query);
+//				s_log.error("SQL parse error: " + info.Query);
 //				return null;
 //			}
 //			info.Query = newSQL;
-//			s_log.fine("getLookupInfo, newSQL ="+newSQL); //jz
+//			s_log.debug("getLookupInfo, newSQL ="+newSQL); //jz
 //		}
 
 		//	Direct Query - NO Validation/Security
@@ -250,8 +250,8 @@ public class MLookupFactory
 		}
 		
 		//
-	//	s_log.finest("Query:  " + info.Query);
-	//	s_log.finest("Direct: " + info.QueryDirect);
+	//	s_log.trace("Query:  " + info.Query);
+	//	s_log.trace("Direct: " + info.QueryDirect);
 		return info;
 	}	//	createLookupInfo
 	
@@ -474,7 +474,7 @@ public class MLookupFactory
 		//  Do we have columns ?
 		if (displayColumns.isEmpty())
 		{
-			s_log.log(Level.SEVERE, "No Identifier records found: " + tableRefInfo);
+			s_log.error("No Identifier records found: " + tableRefInfo);
 			return null;
 		}
 
@@ -597,13 +597,13 @@ public class MLookupFactory
 			if (Check.isEmpty(whereClauseParsed, true))
 			{
 				sqlWhereClause = null;
-				s_log.severe ("Could not resolve: " + whereClauseInitial + ". WhereClause Ignored.");
+				s_log.error("Could not resolve: " + whereClauseInitial + ". WhereClause Ignored.");
 			}
 			else
 			{
 				if (whereClauseParsed.indexOf('.') == -1)
 				{
-					s_log.log(Level.SEVERE, "getLookup_Table - " + TableName + ": WHERE should be fully qualified: " + whereClauseInitial);
+					s_log.error("getLookup_Table - " + TableName + ": WHERE should be fully qualified: " + whereClauseInitial);
 				}
 				sqlWhereClause = whereClauseParsed;
 			}
@@ -637,7 +637,7 @@ public class MLookupFactory
 				sqlOrderBy = OrderByClause;
 				if (OrderByClause.indexOf('.') == -1)
 				{
-					s_log.log(Level.SEVERE, "getLookup_Table - " + TableName + ": ORDER BY must fully qualified: " + OrderByClause);
+					s_log.error("getLookup_Table - " + TableName + ": ORDER BY must fully qualified: " + OrderByClause);
 				}
 			}
 			else

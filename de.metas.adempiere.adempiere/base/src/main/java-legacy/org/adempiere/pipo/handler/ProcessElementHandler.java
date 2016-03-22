@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -96,7 +94,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 						element.unresolved = "AD_PrintFormat: " + name;
 						return;
 					} else {
-						log.warning("AD_PrintFormat: " + name + " not found for Process: " + m_Process.getName());
+						log.warn("AD_PrintFormat: " + name + " not found for Process: " + m_Process.getName());
 					}
 				}
 				if (id > 0)
@@ -112,7 +110,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 						element.unresolved = "AD_ReportView: " + name;
 						return;
 					} else {
-						log.warning("AD_ReportView: " + name + " not found for Process: " + m_Process.getName());
+						log.warn("AD_ReportView: " + name + " not found for Process: " + m_Process.getName());
 					}
 				}
 				if (id > 0)
@@ -180,7 +178,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 			while (rs1.next()) {
 				X_AD_Process m_Process = new X_AD_Process(ctx, rs1
 						.getInt("AD_Process_ID"), null);
-				log.log(Level.INFO, "AD_ReportView_ID: "
+				log.info("AD_ReportView_ID: "
 						+ m_Process.getAD_Process_ID());
 
 				if (m_Process.isReport() && m_Process.getAD_ReportView_ID() > 0) {
@@ -224,7 +222,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 					pstmtP.close();
 					pstmtP = null;
 				} catch (Exception e) {
-					log.log(Level.SEVERE, "getProcess_Para", e);
+					log.error("getProcess_Para", e);
 					if (e instanceof SAXException)
 						throw (SAXException) e;
 					else if (e instanceof SQLException)
@@ -247,7 +245,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 			pstmt1.close();
 			pstmt1 = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "getProcess", e);
+			log.error("getProcess", e);
 		} finally {
 			try {
 				if (pstmt1 != null)

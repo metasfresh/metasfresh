@@ -26,7 +26,6 @@ package org.eevolution.mrp.api.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -34,7 +33,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
@@ -48,6 +46,8 @@ import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
 import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.MRPFirmType;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 public class MRPSupplyReservator
 {
@@ -268,7 +268,7 @@ public class MRPSupplyReservator
 
 	public void cleanupQuantityOnHandReservations(final IMRPContext mrpContext)
 	{
-		final CLogger logger = mrpContext.getLogger();
+		final Logger logger = mrpContext.getLogger();
 		final int countDeleted = createSuppliesMRPQueryBuilder(mrpContext)
 				.setSkipIfMRPExcluded(false) // don't exclude them, we want to get rid of them!
 				.setTypeMRP(X_PP_MRP.TYPEMRP_Supply)
@@ -276,17 +276,17 @@ public class MRPSupplyReservator
 				.addOnlyOrderType(X_PP_MRP.ORDERTYPE_QuantityOnHandInTransit)
 				.deleteMRPRecords();
 
-		logger.log(Level.INFO, "Deleted QtyOnHand reservations: #{0}", countDeleted);
+		logger.info("Deleted QtyOnHand reservations: #{}", countDeleted);
 	}
 
 	public void markMRPSuppliesAvailable(final IMRPContext mrpContext)
 	{
-		final CLogger logger = mrpContext.getLogger();
+		final Logger logger = mrpContext.getLogger();
 
 		final int mrpSupplies_UpdateCount = createSuppliesMRPQueryBuilder(mrpContext)
 				.setMRPAvailable(null) // match all, available or not; we need to get all of them available
 				.updateMRPRecordsAndMarkAvailable();
-		logger.log(Level.FINE, "Marked supply available for #{0} records\n{1}", new Object[] { mrpSupplies_UpdateCount, mrpContext });
+		logger.debug("Marked supply available for #{} records\n{}", new Object[] { mrpSupplies_UpdateCount, mrpContext });
 
 	}
 }

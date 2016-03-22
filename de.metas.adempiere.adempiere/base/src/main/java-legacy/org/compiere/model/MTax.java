@@ -22,12 +22,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -106,7 +106,7 @@ public class MTax extends X_C_Tax
 	/**	Cache of Client						*/
 	private static CCache<Integer,MTax[]>	s_cacheAll = new CCache<Integer,MTax[]>(Table_Name, 5);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MTax.class);
+	private static Logger	s_log	= LogManager.getLogger(MTax.class);
 
 	
 	/**************************************************************************
@@ -320,12 +320,12 @@ public class MTax extends X_C_Tax
 			rs.close();
 			pstmt.close();
 		} catch (SQLException e) {
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 			return null;
 		}
 		// No account
 		if (Account_ID == 0) {
-			s_log.severe("NO account for C_Tax_ID=" + C_Tax_ID);
+			s_log.error("NO account for C_Tax_ID=" + C_Tax_ID);
 			return null;
 		}
 
@@ -348,7 +348,7 @@ public class MTax extends X_C_Tax
 		// No account
 		if (Account_ID <= 0)
 		{
-			s_log.severe("NO account for C_Tax_ID=" + C_Tax_ID);
+			s_log.error("NO account for C_Tax_ID=" + C_Tax_ID);
 			return null;
 		}
 

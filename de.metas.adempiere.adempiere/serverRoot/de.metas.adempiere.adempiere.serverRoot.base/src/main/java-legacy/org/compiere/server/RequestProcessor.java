@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import org.compiere.model.MChangeRequest;
 import org.compiere.model.MClient;
@@ -135,7 +134,7 @@ public class RequestProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -190,7 +189,7 @@ public class RequestProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -247,7 +246,7 @@ public class RequestProcessor extends AdempiereServer
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -291,7 +290,7 @@ public class RequestProcessor extends AdempiereServer
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -345,7 +344,7 @@ public class RequestProcessor extends AdempiereServer
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -393,7 +392,7 @@ public class RequestProcessor extends AdempiereServer
 			new String[] {request.getDocumentNo(), supervisor.getName()});
 		String to = request.getSalesRep().getEMail();
 		if (to == null || to.length() == 0)
-			log.warning("SalesRep has no EMail - " + request.getSalesRep());
+			log.warn("SalesRep has no EMail - " + request.getSalesRep());
 		else
 			m_client.sendEMail(request.getSalesRep_ID(), 
 				subject, request.getSummary(), request.createPDF());
@@ -403,7 +402,7 @@ public class RequestProcessor extends AdempiereServer
 		{
 			to = supervisor.getEMail();
 			if (to == null || to.length() == 0)
-				log.warning("Supervisor has no EMail - " + supervisor);
+				log.warn("Supervisor has no EMail - " + supervisor);
 			else
 				m_client.sendEMail(supervisor.getAD_User_ID(), 
 					subject, request.getSummary(), request.createPDF());
@@ -462,7 +461,7 @@ public class RequestProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -518,7 +517,7 @@ public class RequestProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -583,7 +582,7 @@ public class RequestProcessor extends AdempiereServer
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		finally
 		{

@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -92,7 +90,7 @@ public class MDistributionList extends X_M_DistributionList
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getLines", e);
+			log.error("getLines", e);
 		}
 		try
 		{

@@ -25,9 +25,9 @@ package de.metas.adempiere.util.cache;
 
 import java.lang.annotation.Annotation;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
@@ -41,7 +41,7 @@ import de.metas.adempiere.util.CacheCtx;
  */
 public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CacheCtxParamDescriptor.class);
+	private static final transient Logger logger = LogManager.getLogger(CacheCtxParamDescriptor.class);
 
 	private final int parameterIndex;
 
@@ -77,7 +77,7 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 					.setMethodArguments(params)
 					.setInvalidParameter(parameterIndex, ctxObj)
 					.setAnnotation(CacheCtx.class);
-			logger.log(Level.WARNING, "Got null context object. Skip caching", ex);
+			logger.warn("Got null context object. Skip caching", ex);
 			return;
 		}
 
@@ -91,7 +91,7 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 					.setMethodArguments(params)
 					.setInvalidParameter(parameterIndex, ctxObj)
 					.setAnnotation(CacheCtx.class);
-			logger.log(Level.WARNING, "Invalid parameter type for @CacheCtx annotation. Skip caching.", ex);
+			logger.warn("Invalid parameter type for @CacheCtx annotation. Skip caching.", ex);
 			return;
 		}
 

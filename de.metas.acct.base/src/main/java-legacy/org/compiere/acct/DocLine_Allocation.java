@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -481,7 +482,7 @@ class DocLine_Allocation extends DocLine
 		//
 		if (doc.getC_BP_BankAccount_ID() <= 0)
 		{
-			// log.log(Level.SEVERE, "NONE for C_Payment_ID=" + C_Payment_ID);
+			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setC_AcctSchema(as)
@@ -506,7 +507,7 @@ class DocLine_Allocation extends DocLine
 		doc.setC_CashBook_ID(DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID));
 		if (doc.getC_CashBook_ID() <= 0)
 		{
-			log.log(Level.SEVERE, "NONE for C_CashLine_ID=" + C_CashLine_ID);
+			log.error("NONE for C_CashLine_ID=" + C_CashLine_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setC_AcctSchema(as)

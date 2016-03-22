@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-
 import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.IStatusBar;
@@ -105,7 +103,7 @@ public class VInvoiceGenerateForm
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	} // init
 

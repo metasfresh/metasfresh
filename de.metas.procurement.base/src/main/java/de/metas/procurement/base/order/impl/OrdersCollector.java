@@ -55,7 +55,7 @@ public class OrdersCollector implements IOrdersCollector
 
 	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
 	private final DocumentEventBus<I_C_Order> orderGeneratedNotifier = DocumentEventBus.<I_C_Order> builder()
-			.setLogger(ProcurementConstants.getLogger())
+			.setLogger(ProcurementConstants.getLogger(OrdersCollector.class))
 			.setTopic(ProcurementConstants.EVENTBUS_TOPIC_PurchaseOrderGenerated)
 			.setEventAD_Message(MSG_Event_Generated)
 			.setEventAD_MessageParamsExtractor(new Function<I_C_Order, Object[]>()

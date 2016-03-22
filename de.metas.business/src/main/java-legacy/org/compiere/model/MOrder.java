@@ -24,7 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
@@ -440,10 +441,10 @@ public class MOrder extends X_C_Order implements DocAction
 				+ "ORDER BY AD_Org_ID DESC, IsDefault DESC";
 		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID(), DocSubType_x);
 		if (C_DocType_ID <= 0)
-			log.severe("Not found for AD_Client_ID=" + getAD_Client_ID() + ", SubType=" + DocSubType_x);
+			log.error("Not found for AD_Client_ID=" + getAD_Client_ID() + ", SubType=" + DocSubType_x);
 		else
 		{
-			log.fine("(SO) - " + DocSubType_x);
+			log.debug("(SO) - " + DocSubType_x);
 			setC_DocTypeTarget_ID(C_DocType_ID);
 			setIsSOTrx(true);
 		}
@@ -472,10 +473,10 @@ public class MOrder extends X_C_Order implements DocAction
 				+ "ORDER BY AD_Org_ID DESC, IsDefault DESC, DocSubType NULLS FIRST";
 		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID());
 		if (C_DocType_ID <= 0)
-			log.severe("No POO found for AD_Client_ID=" + getAD_Client_ID());
+			log.error("No POO found for AD_Client_ID=" + getAD_Client_ID());
 		else
 		{
-			log.fine("(PO) - " + C_DocType_ID);
+			log.debug("(PO) - " + C_DocType_ID);
 			setC_DocTypeTarget_ID(C_DocType_ID);
 		}
 	}	// setC_DocTypeTarget_ID
@@ -598,7 +599,7 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 		if (fromLines.length != count)
 		{
-			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
 		}
 		return count;
 	} // copyLinesFrom
@@ -737,7 +738,7 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF
@@ -1004,7 +1005,7 @@ public class MOrder extends X_C_Order implements DocAction
 		int noTax = DB.executeUpdateEx("UPDATE C_OrderTax " + set, get_TrxName());
 		m_lines = null;
 		m_taxes = null;
-		log.fine("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
+		log.debug("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
 	}	// setProcessed
 
 	/**************************************************************************
@@ -1023,7 +1024,7 @@ public class MOrder extends X_C_Order implements DocAction
 			if (context_AD_Org_ID != 0)
 			{
 				setAD_Org_ID(context_AD_Org_ID);
-				log.warning("Changed Org to Context=" + context_AD_Org_ID);
+				log.warn("Changed Org to Context=" + context_AD_Org_ID);
 			}
 		}
 		if (getAD_Client_ID() == 0)
@@ -1140,7 +1141,7 @@ public class MOrder extends X_C_Order implements DocAction
 					+ "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
 					+ "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			int no = DB.executeUpdateEx(sql, get_TrxName());
-			log.fine("Description -> #" + no);
+			log.debug("Description -> #" + no);
 		}
 
 		// Propagate Changes of Payment Info to existing (not reversed/closed) invoices
@@ -1155,7 +1156,7 @@ public class MOrder extends X_C_Order implements DocAction
 					+ "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			// Don't touch Closed/Reversed entries
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("Payment -> #" + no);
+			log.debug("Payment -> #" + no);
 		}
 
 		// Sync Lines
@@ -1320,7 +1321,7 @@ public class MOrder extends X_C_Order implements DocAction
 					{
 						if (lines[i].getM_Warehouse_ID() != getM_Warehouse_ID())
 						{
-							log.warning("different Warehouse " + lines[i]);
+							log.warn("different Warehouse " + lines[i]);
 							m_processMsg = "@CannotChangeDocType@";
 							return DocAction.STATUS_Invalid;
 						}
@@ -1462,7 +1463,7 @@ public class MOrder extends X_C_Order implements DocAction
 //			{
 //				MOrderLine line = lines[i];
 //				MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
-//				log.fine(product.getName());
+//				log.debug(product.getName());
 //				// New Lines
 //				int lineNo = line.getLine();
 //				// find default BOM with valid dates and to this product
@@ -1562,7 +1563,7 @@ public class MOrder extends X_C_Order implements DocAction
 				&& DOCACTION_Close.equals(getDocAction()))) // || isDropShip() )
 			binding = false;
 		boolean isSOTrx = isSOTrx();
-		log.fine("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
+		log.debug("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
 		if (MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())
@@ -1609,7 +1610,7 @@ public class MOrder extends X_C_Order implements DocAction
 				continue;
 			}
 
-			log.fine("Line=" + line.getLine()
+			log.debug("Line=" + line.getLine()
 					+ " - Target=" + target + ",Difference=" + difference
 					+ " - Ordered=" + line.getQtyOrdered()
 					+ ",Reserved=" + line.getQtyReserved() + ",Delivered=" + line.getQtyDelivered());
@@ -1692,7 +1693,7 @@ public class MOrder extends X_C_Order implements DocAction
 	{
 		final String trxName = get_TrxName();
 
-		log.fine("");
+		log.debug("");
 
 		// Delete Taxes
 		DB.executeUpdateEx("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
@@ -2064,7 +2065,7 @@ public class MOrder extends X_C_Order implements DocAction
 				sLine.setIsInvoiced(true);
 				if (!sLine.save(get_TrxName()))
 				{
-					log.warning("Could not update Shipment line: " + sLine);
+					log.warn("Could not update Shipment line: " + sLine);
 				}
 			}
 		}

@@ -30,7 +30,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
@@ -71,6 +72,7 @@ import de.metas.commission.service.ICommissionTypeBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.logging.MetasfreshLastError;
 
 public class CalculateCommission extends SvrProcess
 {
@@ -158,7 +160,7 @@ public class CalculateCommission extends SvrProcess
 					}
 					catch (final RuntimeException e)
 					{
-						log.saveError(e.getMessage(), e);
+						MetasfreshLastError.saveError(log, e.getMessage(), e);
 						addLog(e.getMessage());
 					}
 				}
@@ -264,7 +266,7 @@ public class CalculateCommission extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}

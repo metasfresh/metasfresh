@@ -39,7 +39,8 @@ import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -59,7 +60,7 @@ import de.metas.commission.util.HierarchyDescender;
 public class SponsorCondition implements ISponsorCondition
 {
 
-	private final CLogger logger = CLogger.getCLogger(SponsorCondition.class);
+	private final Logger logger = LogManager.getLogger(SponsorCondition.class);
 
 	@Override
 	public List<I_C_Sponsor_SalesRep> updateSSRs(final I_C_Sponsor_Cond condChange)
@@ -242,7 +243,7 @@ public class SponsorCondition implements ISponsorCondition
 					{
 						if (alreadyAdded.add(inst.getC_AdvCommissionInstance_ID()))
 						{
-							logger.fine("Adding instance " + inst + " that might be affected by ssr change");
+							logger.debug("Adding instance " + inst + " that might be affected by ssr change");
 							currentList.add(inst);
 						}
 					}
@@ -270,12 +271,12 @@ public class SponsorCondition implements ISponsorCondition
 
 		if (comSystem.getAD_User_Admin_ID() == Env.getAD_User_ID(ctx))
 		{
-			logger.fine("Login user " + Env.getAD_User_ID(ctx) + " is an admin for " + comSystem);
+			logger.debug("Login user " + Env.getAD_User_ID(ctx) + " is an admin for " + comSystem);
 			userIsAdmin = true;
 		}
 		if (comSystem.getAD_Role_Admin_ID() == Env.getAD_Role_ID(ctx))
 		{
-			logger.fine("Login role " + Env.getAD_Role_ID(ctx) + " is an admin for " + comSystem);
+			logger.debug("Login role " + Env.getAD_Role_ID(ctx) + " is an admin for " + comSystem);
 			userIsAdmin = true;
 		}
 

@@ -17,8 +17,6 @@
 package org.compiere.sla;
 
 import java.sql.Timestamp;
-import java.util.logging.Level;
-
 import org.compiere.model.MSLACriteria;
 import org.compiere.model.MSLAGoal;
 import org.compiere.process.ProcessInfoParameter;
@@ -50,7 +48,7 @@ public class SLAGoalProcess extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_PA_SLA_Goal_ID = getRecord_ID();
 	}	//	prepare
@@ -62,7 +60,7 @@ public class SLAGoalProcess extends SvrProcess
 	 */
 	protected String doIt () throws Exception
 	{
-		log.info ("PA_SLA_Goal_ID=" + p_PA_SLA_Goal_ID);
+		log.info("PA_SLA_Goal_ID=" + p_PA_SLA_Goal_ID);
 		MSLAGoal goal = new MSLAGoal(getCtx(), p_PA_SLA_Goal_ID, get_TrxName());
 		if (goal.get_ID() == 0)
 			throw new AdempiereUserError("@PA_SLA_Goal_ID@ " + p_PA_SLA_Goal_ID);

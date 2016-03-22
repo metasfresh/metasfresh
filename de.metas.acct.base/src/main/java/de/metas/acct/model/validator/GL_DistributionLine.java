@@ -1,6 +1,7 @@
 package de.metas.acct.model.validator;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.GLDistributionNotValidException;
 import org.adempiere.acct.api.IGLDistributionBL;
@@ -12,7 +13,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -39,7 +41,7 @@ import org.compiere.util.CLogger;
 @Interceptor(I_GL_DistributionLine.class)
 public class GL_DistributionLine
 {
-	private static final transient CLogger logger = CLogger.getCLogger(GL_DistributionLine.class);
+	private static final transient Logger logger = LogManager.getLogger(GL_DistributionLine.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateLine(final I_GL_DistributionLine line)
@@ -130,7 +132,7 @@ public class GL_DistributionLine
 		catch (final GLDistributionNotValidException e)
 		{
 			// NOTE: don't propagate the exception because we flagged the glDistribution as not valid, and we want to persist that.
-			logger.log(Level.INFO, "", e);
+			logger.info("", e);
 		}
 	}
 

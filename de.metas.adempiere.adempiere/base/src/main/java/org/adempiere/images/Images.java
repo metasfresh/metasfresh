@@ -27,11 +27,10 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
-
-import org.compiere.util.CLogger;
 
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
@@ -46,7 +45,7 @@ import com.google.common.cache.LoadingCache;
  */
 public final class Images
 {
-	private static final transient CLogger logger = CLogger.getCLogger(Images.class);
+	private static final transient Logger logger = LogManager.getLogger(Images.class);
 
 	public static final String RESOURCENAME_ImagesDir = "images/";
 	/** Class used for loading the image resources */
@@ -62,7 +61,7 @@ public final class Images
 					final URL url = RESOURCES_Loader.getResource(RESOURCENAME_ImagesDir + fileNameInImageDir);
 					if (url == null)
 					{
-						logger.log(Level.SEVERE, "Not found: " + fileNameInImageDir);
+						logger.error("Not found: " + fileNameInImageDir);
 						return Optional.absent();
 					}
 
@@ -102,7 +101,7 @@ public final class Images
 					}
 					if (url == null)
 					{
-						logger.log(Level.INFO, "GIF/PNG Not found: " + fileName);
+						logger.info("GIF/PNG Not found: " + fileName);
 						return Optional.absent();
 					}
 
@@ -140,7 +139,7 @@ public final class Images
 		}
 		catch (final ExecutionException e)
 		{
-			logger.log(Level.WARNING, "Failed loading image for " + fileNameInImageDir, e);
+			logger.warn("Failed loading image for " + fileNameInImageDir, e);
 		}
 		return null;
 	}
@@ -164,7 +163,7 @@ public final class Images
 		}
 		catch (final ExecutionException e)
 		{
-			logger.log(Level.WARNING, "Failed loading image for " + fileNameInImageDir, e);
+			logger.warn("Failed loading image for " + fileNameInImageDir, e);
 		}
 		return null;
 	}   // getImageIcon
@@ -191,7 +190,7 @@ public final class Images
 		}
 		catch (final ExecutionException e)
 		{
-			logger.log(Level.WARNING, "Failed loading image for " + fileNameWithoutExtension, e);
+			logger.warn("Failed loading image for " + fileNameWithoutExtension, e);
 		}
 		return null;
 	}   // getImageIcon2

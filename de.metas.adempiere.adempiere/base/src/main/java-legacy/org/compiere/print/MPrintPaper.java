@@ -28,7 +28,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintPaper;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
@@ -70,7 +71,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 			s_papers.put(key, pp);
 		}
 		else
-			s_log.config("AD_PrintPaper_ID=" + AD_PrintPaper_ID);
+			s_log.info("AD_PrintPaper_ID=" + AD_PrintPaper_ID);
 		return pp;
 	}	//	get
 
@@ -90,7 +91,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 	}	//	create
 
 	/**	Logger				*/
-	private static CLogger s_log = CLogger.getCLogger(MPrintPaper.class);
+	private static Logger s_log = LogManager.getLogger(MPrintPaper.class);
 	/** Cached Fonts						*/
 	static private CCache<Integer,MPrintPaper> s_papers 
 		= new CCache<Integer,MPrintPaper>("AD_PrintPaper", 5);
@@ -155,14 +156,14 @@ public class MPrintPaper extends X_AD_PrintPaper
 				if (name.equalsIgnoreCase(nameCode))
 				{
 					nameMedia = (MediaSizeName)msn.getEnumValueTable()[i];
-					log.finer("Name=" + nameMedia);
+					log.trace("Name=" + nameMedia);
 					break;
 				}
 			}
 			if (nameMedia != null)
 			{
 				m_mediaSize = MediaSize.getMediaSizeForName(nameMedia);
-				log.fine("Name->Size=" + m_mediaSize);
+				log.debug("Name->Size=" + m_mediaSize);
 			}
 		}
 		//	Create New Media Size
@@ -173,7 +174,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 			if (x > 0 && y > 0)
 			{
 				m_mediaSize = new MediaSize(x, y, getUnitsInt(), MediaSizeName.A);
-				log.fine("Size=" + m_mediaSize);
+				log.debug("Size=" + m_mediaSize);
 			}
 		}
 		//	Fallback
@@ -191,7 +192,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 		m_mediaSize = Language.getLoginLanguage().getMediaSize();
 		if (m_mediaSize == null)
 			m_mediaSize = MediaSize.ISO.A4;
-		log.fine("Size=" + m_mediaSize);
+		log.debug("Size=" + m_mediaSize);
 		return m_mediaSize;
 	}	//	getMediaSizeDefault
 

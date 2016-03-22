@@ -30,13 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.util.JRLoader;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -47,10 +42,15 @@ import org.adempiere.util.Services;
 import org.compiere.model.MProcess;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.util.JRLoader;
 
 public class JasperEngine
 {
@@ -70,7 +70,7 @@ public class JasperEngine
 	public static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Retrieves the server's direct database connection.
@@ -84,11 +84,15 @@ public class JasperEngine
 
 	public JasperPrint createJasperPrint(final Properties ctx, final ProcessInfo pi) throws JRException
 	{
-		log.log(Level.INFO, "{0}", pi);
+		log.info("{}", pi);
 
+		
+		//
+		// Get the classloader to be used when loading jasper resources
+		final ClassLoader jasperLoader = getJasperClassLoader(ctx);
+		
 		final Map<String, Object> jrParameters = createJRParameters(ctx, pi);
-
-		final JasperReport jasperReport = createJasperReport(ctx, pi.getAD_Process_ID(), jrParameters);
+		final JasperReport jasperReport = createJasperReport(ctx, pi.getAD_Process_ID(), jrParameters, jasperLoader);
 
 		Connection conn = null;
 		try
@@ -102,7 +106,7 @@ public class JasperEngine
 
 			//
 			// Fill the report
-			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn);
+			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn, jasperLoader);
 			return jasperPrint;
 		}
 		finally
@@ -112,21 +116,18 @@ public class JasperEngine
 		}
 	}
 
-	private final JasperReport createJasperReport(final Properties ctx, final int adProcessId, final Map<String, Object> jrParameters) throws JRException
+	private final JasperReport createJasperReport(final Properties ctx, final int adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
 	{
 		final String reportPath = getReportPath(adProcessId, jrParameters);
-
-		final ClassLoader jasperLoader = getJasperClassLoader(ctx);
-
 		final InputStream jasperInputStream;
 		if (reportPath.startsWith("resource:"))
 		{
 			// load the jasper file(s) using an ordinary class loader.
 			final String name = reportPath.substring("resource:".length()).trim();
 			log.info("reportPath = " + reportPath);
-			log.info("getting resource from = " + getClass().getClassLoader().getResource(name));
+			log.info("getting resource from = " + jasperLoader.getResource(name));
 
-			jasperInputStream = getClass().getClassLoader().getResourceAsStream(name);
+			jasperInputStream = jasperLoader.getResourceAsStream(name);
 		}
 		else
 		{
@@ -413,7 +414,7 @@ public class JasperEngine
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Failed loading resource bundle for base name: " + resourceBundleName + ", " + locale + ". Skipping", e);
+			log.warn("Failed loading resource bundle for base name: " + resourceBundleName + ", " + locale + ". Skipping", e);
 		}
 
 		return false; // not loaded

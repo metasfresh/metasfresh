@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -127,7 +128,7 @@ public class MMeasure extends X_PA_Measure
 			}
 			catch (Exception e)
 			{
-				log.log (Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -184,7 +185,7 @@ public class MMeasure extends X_PA_Measure
 				}
 				catch (Exception e)
 				{
-					log.log (Level.SEVERE, sql.toString(), e);
+					log.error(sql.toString(), e);
 				}
 				finally
 				{
@@ -228,7 +229,7 @@ public class MMeasure extends X_PA_Measure
 			}
 			catch (Exception e)
 			{
-				log.log (Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -263,7 +264,7 @@ public class MMeasure extends X_PA_Measure
 			}
 			catch (Exception e)
 			{
-				log.log (Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -364,7 +365,7 @@ public class MMeasure extends X_PA_Measure
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "MeasureType=" + mt, e);
+			log.error("MeasureType=" + mt, e);
 		}
 		return false;
 	}	//	updateGoals
@@ -448,7 +449,7 @@ public class MMeasure extends X_PA_Measure
 			MMeasureCalc mc = MMeasureCalc.get(getCtx(), getPA_MeasureCalc_ID());
 			if (mc == null || mc.get_ID() == 0 || mc.get_ID() != getPA_MeasureCalc_ID())
 			{
-				log.log(Level.SEVERE, "Not found PA_MeasureCalc_ID=" + getPA_MeasureCalc_ID());
+				log.error("Not found PA_MeasureCalc_ID=" + getPA_MeasureCalc_ID());
 				return false;
 			}
 			String sql = mc.getSqlPI(goal.getRestrictions(false), 
@@ -458,7 +459,7 @@ public class MMeasure extends X_PA_Measure
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
-				log.fine("No Value = " + sql);
+				log.debug("No Value = " + sql);
 			}
 			goal.setMeasureActual(ManualActual);
 			goal.save(get_TrxName());
@@ -501,7 +502,7 @@ public class MMeasure extends X_PA_Measure
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
-				log.fine("No Value = " + sql);
+				log.debug("No Value = " + sql);
 			}
 			goal.setMeasureActual(ManualActual);
 			goal.save(get_TrxName());
@@ -533,7 +534,7 @@ public class MMeasure extends X_PA_Measure
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
-				log.fine("No Value = " + sql);
+				log.debug("No Value = " + sql);
 			}
 			goal.setMeasureActual(ManualActual);
 			goal.save(get_TrxName());

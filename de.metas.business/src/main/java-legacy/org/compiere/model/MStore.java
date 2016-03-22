@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -101,7 +103,7 @@ public class MStore extends X_W_Store
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -125,7 +127,7 @@ public class MStore extends X_W_Store
 				if (rs.next())
 				{
 					wstore = new MStore(ctx, rs, null);
-					s_log.warning("Context " + contextPath
+					s_log.warn("Context " + contextPath
 							+ " Not found - Found via AD_Client_ID=" + Env.getAD_Client_ID(ctx));
 				}
 				rs.close();
@@ -134,7 +136,7 @@ public class MStore extends X_W_Store
 			}
 			catch (Exception e)
 			{
-				s_log.log(Level.SEVERE, sql, e);
+				s_log.error(sql, e);
 			}
 			try
 			{
@@ -181,7 +183,7 @@ public class MStore extends X_W_Store
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -220,7 +222,7 @@ public class MStore extends X_W_Store
 		}
 		catch (Exception e)
 		{
-			s_log.severe(e.toString());
+			s_log.error(e.toString());
 		}
 		return new MStore[] {};
 	}	// getActive
@@ -228,7 +230,7 @@ public class MStore extends X_W_Store
 	/** Cache */
 	private static CCache<Integer, MStore> s_cache = new CCache<Integer, MStore>("W_Store", 2);
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger(MStore.class);
+	private static Logger s_log = LogManager.getLogger(MStore.class);
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -356,7 +358,7 @@ public class MStore extends X_W_Store
 	{
 		if (to == null || to.length() == 0)
 		{
-			log.warning("No To");
+			log.warn("No To");
 			return null;
 		}
 		//
@@ -372,7 +374,7 @@ public class MStore extends X_W_Store
 			}
 			catch (Exception ex)
 			{
-				log.log(Level.SEVERE, getName() + " - AppsServer error", ex);
+				log.error(getName() + " - AppsServer error", ex);
 			}
 		}
 		String from = getWStoreEMail();
@@ -409,7 +411,7 @@ public class MStore extends X_W_Store
 	{
 		if (message == null || message.length() == 0)
 		{
-			log.warning("No Message");
+			log.warn("No Message");
 			return false;
 		}
 		StringBuffer msgText = new StringBuffer();
@@ -433,7 +435,7 @@ public class MStore extends X_W_Store
 			}
 			else
 			{
-				log.warning("Could NOT Send Email: " + subject
+				log.warn("Could NOT Send Email: " + subject
 						+ " to " + to + ": " + msg
 						+ " (" + getName() + ")");
 				return false;
@@ -441,7 +443,7 @@ public class MStore extends X_W_Store
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - " + ex.getLocalizedMessage());
+			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return false;
 		}
 	}	// sendEMail
@@ -471,14 +473,14 @@ public class MStore extends X_W_Store
 			}
 			else
 			{
-				log.warning("Could NOT send Test Email to "
+				log.warn("Could NOT send Test Email to "
 						+ getWStoreEMail() + ": " + msg);
 				return msg;
 			}
 		}
 		catch (Exception ex)
 		{
-			log.severe(getName() + " - " + ex.getLocalizedMessage());
+			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return ex.getLocalizedMessage();
 		}
 	}	// testEMail
@@ -510,7 +512,7 @@ public class MStore extends X_W_Store
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{
@@ -549,7 +551,7 @@ public class MStore extends X_W_Store
 		// create missing
 		if (createMessages() == 0)
 		{
-			log.severe("Not created/found: " + MailMsgType);
+			log.error("Not created/found: " + MailMsgType);
 			return null;
 		}
 		getMailMsgs(true);
@@ -561,7 +563,7 @@ public class MStore extends X_W_Store
 		}
 
 		// nothing found
-		log.severe("Not found: " + MailMsgType);
+		log.error("Not found: " + MailMsgType);
 		return null;
 	}	// getMailMsg
 
@@ -657,7 +659,7 @@ public class MStore extends X_W_Store
 			if (msg.save())
 				counter++;
 			else
-				log.severe("Not created MailMsgType=" + initMsgs[i][0]);
+				log.error("Not created MailMsgType=" + initMsgs[i][0]);
 		}	// for all initMsgs
 
 		log.info("#" + counter);

@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -53,8 +54,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.POResultSet;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
@@ -64,6 +63,7 @@ import de.metas.adempiere.model.I_AD_Table_MView;
 import de.metas.adempiere.service.ITableMViewBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -71,7 +71,7 @@ import de.metas.adempiere.util.CacheTrx;
  */
 public class TableMViewBL implements ITableMViewBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private static class MViewPartition
 	{
@@ -215,13 +215,13 @@ public class TableMViewBL implements ITableMViewBL
 	{
 		final Properties ctx = POWrapper.getCtx(mview);
 
-		if (CLogMgt.isLevelFine())
-			log.fine("Starting: " + getSummary(mview) + ", sources=" + sourcePOs + ", trxName=" + trxName);
+		if (LogManager.isLevelFine())
+			log.debug("Starting: " + getSummary(mview) + ", sources=" + sourcePOs + ", trxName=" + trxName);
 
 		final MViewMetadata mdata = getMetadata(mview);
 		if (mdata == null)
 		{
-			log.warning("No metadata found for " + getSummary(mview) + " [STOP]");
+			log.warn("No metadata found for " + getSummary(mview) + " [STOP]");
 			mview.setIsValid(false);
 			POWrapper.save(mview);
 			return;
@@ -234,11 +234,11 @@ public class TableMViewBL implements ITableMViewBL
 		List<MViewPartition> partitions = createMViewSegments(mdata, sourcePOs);
 		if (partitions.isEmpty())
 		{
-			log.fine("UpdateMode=complete");
+			log.debug("UpdateMode=complete");
 		}
 		else
 		{
-			log.fine("UpdateMode=partial - " + partitions);
+			log.debug("UpdateMode=partial - " + partitions);
 		}
 
 		//
@@ -280,8 +280,8 @@ public class TableMViewBL implements ITableMViewBL
 				if (!Check.isEmpty(where, true))
 					sql.append(" AND (").append(where).append(")");
 			}
-			if (CLogMgt.isLevelFine())
-				log.fine("Insert/Update SQL: " + sql);
+			if (LogManager.isLevelFine())
+				log.debug("Insert/Update SQL: " + sql);
 
 			try
 			{
@@ -291,8 +291,8 @@ public class TableMViewBL implements ITableMViewBL
 				{
 					final PO po = TableModelLoader.instance.getPO(ctx, targetTableName, rs, trxName);
 					int zz_mview_cnt = rs.getInt("zz_mview_cnt");
-					if (CLogMgt.isLevelFine())
-						log.fine("online PO=" + po + ", zz_mview_cnt=" + zz_mview_cnt);
+					if (LogManager.isLevelFine())
+						log.debug("online PO=" + po + ", zz_mview_cnt=" + zz_mview_cnt);
 
 					// new
 					if (zz_mview_cnt == 0)
@@ -301,8 +301,8 @@ public class TableMViewBL implements ITableMViewBL
 						copyValues(po, targetPO);
 						targetPO.saveEx();
 
-						if (CLogMgt.isLevelFine())
-							log.fine("saved new PO: " + targetPO);
+						if (LogManager.isLevelFine())
+							log.debug("saved new PO: " + targetPO);
 						stat_insertsNo++;
 					}
 					// update
@@ -315,13 +315,13 @@ public class TableMViewBL implements ITableMViewBL
 						{
 							throw new AdempiereException("Target po not found for update on " + getSummary(mview) + ", " + query);
 						}
-						if (CLogMgt.isLevelFine())
-							log.fine("updating PO: " + targetPO);
+						if (LogManager.isLevelFine())
+							log.debug("updating PO: " + targetPO);
 						copyValues(po, targetPO);
 						targetPO.saveEx();
 
-						if (CLogMgt.isLevelFine())
-							log.fine("updated PO: " + targetPO);
+						if (LogManager.isLevelFine())
+							log.debug("updated PO: " + targetPO);
 						stat_updatesNo++;
 					}
 					else
@@ -359,8 +359,8 @@ public class TableMViewBL implements ITableMViewBL
 					whereClause.append(" AND (").append(where).append(")");
 
 			}
-			if (CLogMgt.isLevelFine())
-				log.fine("Delete WHERE clause: " + whereClause);
+			if (LogManager.isLevelFine())
+				log.debug("Delete WHERE clause: " + whereClause);
 
 			try
 			{
@@ -369,8 +369,8 @@ public class TableMViewBL implements ITableMViewBL
 				while (rs.hasNext())
 				{
 					final PO po = rs.next();
-					if (CLogMgt.isLevelFine())
-						log.fine("deleting PO: " + po);
+					if (LogManager.isLevelFine())
+						log.debug("deleting PO: " + po);
 					po.deleteEx(true);
 
 					stat_deletesNo++;
@@ -392,7 +392,7 @@ public class TableMViewBL implements ITableMViewBL
 		tableMView.setStaledSinceDate(null);
 		tableMView.setLastRefreshDate(SystemTime.asTimestamp());
 		POWrapper.save(tableMView);
-		if (CLogMgt.isLevelInfo())
+		if (log.isInfoEnabled())
 			log.info("" + getSummary(mview) + ": Updated INSERT/UPDATE/DELETE=" + stat_insertsNo + "/" + stat_updatesNo + "/" + stat_deletesNo);
 	}
 
@@ -495,8 +495,8 @@ public class TableMViewBL implements ITableMViewBL
 		}
 		else
 		{
-			if (CLogMgt.isLevelFine())
-				log.fine("Already staled since " + mview.getStaledSinceDate());
+			if (LogManager.isLevelFine())
+				log.debug("Already staled since " + mview.getStaledSinceDate());
 		}
 	}
 
@@ -512,7 +512,7 @@ public class TableMViewBL implements ITableMViewBL
 			MViewMetadata mdata = getMetadata(mview);
 			if (mdata == null)
 			{
-				log.fine("No metadata found for " + mview + " => return false");
+				log.debug("No metadata found for " + mview + " => return false");
 				return false;
 			}
 			String relationWhereClause = mdata.getRelationWhereClause(sourcePO.get_TableName(), mdata.getTargetTableName());
@@ -527,7 +527,7 @@ public class TableMViewBL implements ITableMViewBL
 
 		}
 
-		log.warning("Unknown refreshMode=" + refreshMode + " => returning false");
+		log.warn("Unknown refreshMode=" + refreshMode + " => returning false");
 		return false;
 	}
 
@@ -575,7 +575,7 @@ public class TableMViewBL implements ITableMViewBL
 			public boolean doCatch(Throwable e) throws Exception
 			{
 				// log the error, return true to rollback the transaction but don't throw it forward
-				log.log(Level.SEVERE, e.getLocalizedMessage() + ", mview=" + mview + ", sourcePO=" + sourcePO + ", trxName=" + trxName, e);
+				log.error(e.getLocalizedMessage() + ", mview=" + mview + ", sourcePO=" + sourcePO + ", trxName=" + trxName, e);
 				ok[0] = false;
 				return true;
 			}

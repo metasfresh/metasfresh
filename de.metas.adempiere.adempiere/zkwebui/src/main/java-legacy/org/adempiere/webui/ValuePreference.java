@@ -17,7 +17,6 @@
 package org.adempiere.webui;
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
@@ -37,11 +36,13 @@ import org.adempiere.webui.component.Textbox;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -49,6 +50,8 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Space;
 import org.zkoss.zul.Vbox;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Maintain Value Preferences.
@@ -162,7 +165,7 @@ public class ValuePreference extends Window implements EventListener
 //	/** The Menu Icon               */
 //	private static String ICON_URL = "images/VPreference16.png";
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ValuePreference.class);
+	private static Logger log = LogManager.getLogger(ValuePreference.class);
 	
 	/**
 	 * Value used for AD_Window_ID to specify that we are setting a value preference for a custom form or other user interface.
@@ -194,7 +197,7 @@ public class ValuePreference extends Window implements EventListener
 		super();
 		this.setTitle(Msg.getMsg(Env.getCtx(), NAME) + " " + DisplayAttribute);
 		
-		log.config("WindowNo=" + WindowNo
+		log.info("WindowNo=" + WindowNo
 			+ ", Client_ID=" + AD_Client_ID + ", Org_ID=" + AD_Org_ID + ", User_ID=" + AD_User_ID + ", Window_ID=" + AD_Window_ID
 			+ ",  Attribute=" + Attribute + "/" + DisplayAttribute + ",  Value=" + Value + "/" + DisplayValue
 			+ ",  DisplayType=" + displayType + ", Reference_ID=" + AD_Reference_ID);
@@ -219,7 +222,7 @@ public class ValuePreference extends Window implements EventListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		} 
 		
 		this.setClosable(true);
@@ -350,7 +353,7 @@ public class ValuePreference extends Window implements EventListener
 		lAttributeValue.setValue(m_Attribute);
 		fValue.setText(m_DisplayValue);
 		lValueValue.setValue(m_Value);
-		if (!CLogMgt.isLevelFine()) // metas: 02704: typo bugfix: those fields shall be displayed when logging is FINE
+		if (!LogManager.isLevelFine()) // metas: 02704: typo bugfix: those fields shall be displayed when logging is FINE
 		{
 			lAttributeValue.setVisible(false);
 			lValueValue.setVisible(false);

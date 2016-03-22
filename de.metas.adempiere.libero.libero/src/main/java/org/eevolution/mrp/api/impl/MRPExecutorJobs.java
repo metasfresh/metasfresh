@@ -26,19 +26,21 @@ package org.eevolution.mrp.api.impl;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IReference;
-import org.compiere.util.CLogger;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPExecutorJobs;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class MRPExecutorJobs implements IMRPExecutorJobs
 {
 	// services
-	private static final transient CLogger loggerDefault = CLogger.getCLogger(MRPExecutorJobs.class);
-	private final transient CLogger logger = loggerDefault;
+	private static final transient Logger loggerDefault = LogManager.getLogger(MRPExecutorJobs.class);
+	private final transient Logger logger = loggerDefault;
 
 	/** Jobs which were submited but not yet executed */
 	private final LinkedHashMap<String, Runnable> jobs = new LinkedHashMap<>();
@@ -119,7 +121,7 @@ public class MRPExecutorJobs implements IMRPExecutorJobs
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Error while running the job: " + job + " [SKIPPED]", e);
+			logger.warn("Error while running the job: " + job + " [SKIPPED]", e);
 		}
 	}
 }

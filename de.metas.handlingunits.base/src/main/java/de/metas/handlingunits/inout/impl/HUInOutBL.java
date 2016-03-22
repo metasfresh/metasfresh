@@ -25,7 +25,8 @@ package de.metas.handlingunits.inout.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,8 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -53,7 +52,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 public class HUInOutBL implements IHUInOutBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HUInOutBL.class);
+	private static final transient Logger logger = LogManager.getLogger(HUInOutBL.class);
 
 	@Override
 	public void updatePackingMaterialInOutLine(final de.metas.inout.model.I_M_InOutLine inoutLine,
@@ -138,14 +137,14 @@ public class HUInOutBL implements IHUInOutBL
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
 			if (orderLine == null)
 			{
-				logger.log(Level.WARNING, "Cannot get orderline from inout line: {0}", inoutLine);
+				logger.warn("Cannot get orderline from inout line: {}", inoutLine);
 				return null;
 			}
 			piItemProduct = orderLine.getM_HU_PI_Item_Product();
 		}
 		if (piItemProduct == null)
 		{
-			logger.log(Level.WARNING, "Cannot get PI Item Product from inout line: {0}", inoutLine);
+			logger.warn("Cannot get PI Item Product from inout line: {}", inoutLine);
 			return null;
 		}
 

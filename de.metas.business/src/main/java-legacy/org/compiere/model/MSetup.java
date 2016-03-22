@@ -21,17 +21,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Initial Setup Model
@@ -57,7 +61,7 @@ public final class MSetup
 	}   //  MSetup
 
 	/**	Logger			*/
-	protected CLogger	log = CLogger.getCLogger(getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 
 	private Trx				m_trx = Trx.get(Trx.createTrxName("Setup"), true);
 	private Properties      m_ctx;
@@ -125,7 +129,7 @@ public final class MSetup
 		if (!m_client.save())
 		{
 			String err = "Client NOT created";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -144,7 +148,7 @@ public final class MSetup
 		if (!MSequence.checkClientSequences (m_ctx, AD_Client_ID, m_trx.getTrxName()))
 		{
 			String err = "Sequences NOT created";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -155,7 +159,7 @@ public final class MSetup
 		if (!m_client.setupClientInfo(m_lang))
 		{
 			String err = "Client Info NOT created";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -173,7 +177,7 @@ public final class MSetup
 		if (!m_org.save())
 		{
 			String err = "Organization NOT created";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -200,7 +204,7 @@ public final class MSetup
 		if (!admin.save())
 		{
 			String err = "Admin Role A NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -209,11 +213,11 @@ public final class MSetup
 		//	OrgAccess x, 0
 		MRoleOrgAccess adminClientAccess = new MRoleOrgAccess (admin, 0);
 		if (!adminClientAccess.save())
-			log.log(Level.SEVERE, "Admin Role_OrgAccess 0 NOT created");
+			log.error("Admin Role_OrgAccess 0 NOT created");
 		//  OrgAccess x,y
 		MRoleOrgAccess adminOrgAccess = new MRoleOrgAccess (admin, m_org.getAD_Org_ID());
 		if (!adminOrgAccess.save())
-			log.log(Level.SEVERE, "Admin Role_OrgAccess NOT created");
+			log.error("Admin Role_OrgAccess NOT created");
 		
 		//  Info - Admin Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");
@@ -226,7 +230,7 @@ public final class MSetup
 		if (!user.save())
 		{
 			String err = "User Role A NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -235,7 +239,7 @@ public final class MSetup
 		//  OrgAccess x,y
 		MRoleOrgAccess userOrgAccess = new MRoleOrgAccess (user, m_org.getAD_Org_ID());
 		if (!userOrgAccess.save())
-			log.log(Level.SEVERE, "User Role_OrgAccess NOT created");
+			log.error("User Role_OrgAccess NOT created");
 		
 		//  Info - Client Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");
@@ -259,7 +263,7 @@ public final class MSetup
 		if (no != 1)
 		{
 			String err = "Admin User NOT inserted - " + AD_User_Name;
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -282,7 +286,7 @@ public final class MSetup
 		if (no != 1)
 		{
 			String err = "Org User NOT inserted - " + AD_User_U_Name;
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -299,18 +303,18 @@ public final class MSetup
 			+ " VALUES (" + m_stdValues + "," + AD_User_ID + "," + admin.getAD_Role_ID() + ")";
 		no = DB.executeUpdate(sql, m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "UserRole ClientUser+Admin NOT inserted");
+			log.error("UserRole ClientUser+Admin NOT inserted");
 		sql = "INSERT INTO AD_User_Roles(" + m_stdColumns + ",AD_User_ID,AD_Role_ID)"
 			+ " VALUES (" + m_stdValues + "," + AD_User_ID + "," + user.getAD_Role_ID() + ")";
 		no = DB.executeUpdate(sql, m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "UserRole ClientUser+User NOT inserted");
+			log.error("UserRole ClientUser+User NOT inserted");
 		//  OrgUser             - User
 		sql = "INSERT INTO AD_User_Roles(" + m_stdColumns + ",AD_User_ID,AD_Role_ID)"
 			+ " VALUES (" + m_stdValues + "," + AD_User_U_ID + "," + user.getAD_Role_ID() + ")";
 		no = DB.executeUpdate(sql, m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "UserRole OrgUser+Org NOT inserted");
+			log.error("UserRole OrgUser+Org NOT inserted");
 
 		//	Processors
 		MAcctProcessor ap = new MAcctProcessor(m_client, AD_User_ID);
@@ -366,7 +370,7 @@ public final class MSetup
 		if (!m_calendar.save())
 		{
 			String err = "Calendar NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -376,7 +380,7 @@ public final class MSetup
 		m_info.append(Msg.translate(m_lang, "C_Calendar_ID")).append("=").append(m_calendar.getName()).append("\n");
 
 		if (m_calendar.createYear(m_client.getLocale()) == null)
-			log.log(Level.SEVERE, "Year NOT inserted");
+			log.error("Year NOT inserted");
 
 		//	Create Account Elements
 		name = m_clientName + " " + Msg.translate(m_lang, "Account_ID");
@@ -385,7 +389,7 @@ public final class MSetup
 		if (!element.save())
 		{
 			String err = "Acct Element NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -399,7 +403,7 @@ public final class MSetup
 		String errMsg = m_nap.parseFile(AccountingFile);
 		if (errMsg.length() != 0)
 		{
-			log.log(Level.SEVERE, errMsg);
+			log.error(errMsg);
 			m_info.append(errMsg);
 			m_trx.rollback();
 			m_trx.close();
@@ -410,7 +414,7 @@ public final class MSetup
 		else
 		{
 			String err = "Acct Element Values NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -418,7 +422,7 @@ public final class MSetup
 		}
 
 		int C_ElementValue_ID = m_nap.getC_ElementValue_ID("DEFAULT_ACCT");
-		log.fine("C_ElementValue_ID=" + C_ElementValue_ID);
+		log.debug("C_ElementValue_ID=" + C_ElementValue_ID);
 
 		/**
 		 *  Create AccountingSchema
@@ -427,7 +431,7 @@ public final class MSetup
 		if (!m_as.save())
 		{
 			String err = "AcctSchema NOT inserted";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -527,7 +531,7 @@ public final class MSetup
 						sqlCmd.append(getAD_Org_ID()).append(" WHERE C_AcctSchema_Element_ID=").append(C_AcctSchema_Element_ID);
 						no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 						if (no != 1)
-							log.log(Level.SEVERE, "Default Org in AcctSchamaElement NOT updated");
+							log.error("Default Org in AcctSchamaElement NOT updated");
 					}
 					if (ElementType.equals("AC"))
 					{
@@ -536,14 +540,14 @@ public final class MSetup
 						sqlCmd.append(" WHERE C_AcctSchema_Element_ID=").append(C_AcctSchema_Element_ID);
 						no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 						if (no != 1)
-							log.log(Level.SEVERE, "Default Account in AcctSchamaElement NOT updated");
+							log.error("Default Account in AcctSchamaElement NOT updated");
 					}
 				}
 			}
 		}
 		catch (SQLException e1)
 		{
-			log.log(Level.SEVERE, "Elements", e1);
+			log.error("Elements", e1);
 			m_info.append(e1.getMessage());
 			m_trx.rollback();
 			m_trx.close();
@@ -564,7 +568,7 @@ public final class MSetup
 		}
 		catch (Exception e) {
 			String err = e.getLocalizedMessage();
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -692,7 +696,7 @@ public final class MSetup
 		if (no != 1)
 		{
 			String err = "ClientInfo not updated";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
@@ -730,7 +734,7 @@ public final class MSetup
 		acct.set_Value(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID, m_as.getC_AcctSchema_ID());
 		//
 		if (!acct.save()) {
-			throw new AdempiereUserError(CLogger.retrieveErrorString(table.getName() + " not created"));
+			throw new AdempiereUserError(MetasfreshLastError.retrieveErrorString(table.getName() + " not created"));
 		}
 	}
 
@@ -743,7 +747,7 @@ public final class MSetup
 	 */
 	private Integer getAcct (String key) throws AdempiereUserError
 	{
-		log.fine(key);
+		log.debug(key);
 		//  Element
 		int C_ElementValue_ID = m_nap.getC_ElementValue_ID(key.toUpperCase());
 		if (C_ElementValue_ID == 0)
@@ -781,7 +785,7 @@ public final class MSetup
 		cat.setIsDefault(isDefault);
 		if (!cat.save())
 		{
-			log.log(Level.SEVERE, "GL Category NOT created - " + Name);
+			log.error("GL Category NOT created - " + Name);
 			return 0;
 		}
 		//
@@ -811,7 +815,7 @@ public final class MSetup
 			sequence = new MSequence(m_ctx, getAD_Client_ID(), Name, StartNo, m_trx.getTrxName());
 			if (!sequence.save())
 			{
-				log.log(Level.SEVERE, "Sequence NOT created - " + Name);
+				log.error("Sequence NOT created - " + Name);
 				return 0;
 			}
 		}
@@ -837,7 +841,7 @@ public final class MSetup
 		dt.setIsSOTrx();
 		if (!dt.save())
 		{
-			log.log(Level.SEVERE, "DocType NOT created - " + Name);
+			log.error("DocType NOT created - " + Name);
 			return 0;
 		}
 		//
@@ -861,7 +865,7 @@ public final class MSetup
 	{
 		if (m_as == null)
 		{
-			log.severe ("No AcctountingSChema");
+			log.error("No AcctountingSChema");
 			m_trx.rollback();
 			m_trx.close();
 			return false;
@@ -884,7 +888,7 @@ public final class MSetup
 		sqlCmd.append(m_stdValues).append(")");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "Channel NOT inserted");
+			log.error("Channel NOT inserted");
 		int C_Campaign_ID = getNextID(getAD_Client_ID(), "C_Campaign");
 		sqlCmd = new StringBuffer("INSERT INTO C_Campaign ");
 		sqlCmd.append("(C_Campaign_ID,C_Channel_ID,").append(m_stdColumns).append(",");
@@ -895,7 +899,7 @@ public final class MSetup
 		if (no == 1)
 			m_info.append(Msg.translate(m_lang, "C_Campaign_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "Campaign NOT inserted");
+			log.error("Campaign NOT inserted");
 		if (m_hasMCampaign)
 		{
 			//  Default
@@ -905,7 +909,7 @@ public final class MSetup
 			sqlCmd.append(" AND ElementType='MC'");
 			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 			if (no != 1)
-				log.log(Level.SEVERE, "AcctSchema ELement Campaign NOT updated");
+				log.error("AcctSchema ELement Campaign NOT updated");
 		}
 
 		//	Create Sales Region
@@ -919,7 +923,7 @@ public final class MSetup
 		if (no == 1)
 			m_info.append(Msg.translate(m_lang, "C_SalesRegion_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "SalesRegion NOT inserted");
+			log.error("SalesRegion NOT inserted");
 		if (m_hasSRegion)
 		{
 			//  Default
@@ -929,7 +933,7 @@ public final class MSetup
 			sqlCmd.append(" AND ElementType='SR'");
 			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 			if (no != 1)
-				log.log(Level.SEVERE, "AcctSchema ELement SalesRegion NOT updated");
+				log.error("AcctSchema ELement SalesRegion NOT updated");
 		}
 
 		/**
@@ -943,7 +947,7 @@ public final class MSetup
 		if (bpg.save())
 			m_info.append(Msg.translate(m_lang, "C_BP_Group_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "BP Group NOT inserted");
+			log.error("BP Group NOT inserted");
 
 		//	Create BPartner
 		MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
@@ -953,14 +957,14 @@ public final class MSetup
 		if (bp.save())
 			m_info.append(Msg.translate(m_lang, "C_BPartner_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "BPartner NOT inserted");
+			log.error("BPartner NOT inserted");
 		//  Location for Standard BP
 		MLocation bpLoc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLoc.save();
 		MBPartnerLocation bpl = new MBPartnerLocation(bp);
 		bpl.setC_Location_ID(bpLoc.getC_Location_ID());
 		if (!bpl.save())
-			log.log(Level.SEVERE, "BP_Location (Standard) NOT inserted");
+			log.error("BP_Location (Standard) NOT inserted");
 		//  Default
 		sqlCmd = new StringBuffer ("UPDATE C_AcctSchema_Element SET ");
 		sqlCmd.append("C_BPartner_ID=").append(bp.getC_BPartner_ID());
@@ -968,7 +972,7 @@ public final class MSetup
 		sqlCmd.append(" AND ElementType='BP'");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "AcctSchema Element BPartner NOT updated");
+			log.error("AcctSchema Element BPartner NOT updated");
 		createPreference("C_BPartner_ID", String.valueOf(bp.getC_BPartner_ID()), 143);
 
 		/**
@@ -982,7 +986,7 @@ public final class MSetup
 		if (pc.save())
 			m_info.append(Msg.translate(m_lang, "M_Product_Category_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "Product Category NOT inserted");
+			log.error("Product Category NOT inserted");
 
 		//  UOM (EA)
 		int C_UOM_ID = 100;
@@ -999,7 +1003,7 @@ public final class MSetup
 			sqlCmd.append(defaultEntry).append("'Y')");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "TaxCategory NOT inserted");
+			log.error("TaxCategory NOT inserted");
 
 		//  Tax - Zero Rate
 		MTax tax = new MTax (m_ctx, "Standard", Env.ZERO, C_TaxCategory_ID, m_trx.getTrxName());
@@ -1008,7 +1012,7 @@ public final class MSetup
 			m_info.append(Msg.translate(m_lang, "C_Tax_ID"))
 				.append("=").append(tax.getName()).append("\n");
 		else
-			log.log(Level.SEVERE, "Tax NOT inserted");
+			log.error("Tax NOT inserted");
 
 		//	Create Product
 		MProduct product = new MProduct (m_ctx, 0, m_trx.getTrxName());
@@ -1020,7 +1024,7 @@ public final class MSetup
 		if (product.save())
 			m_info.append(Msg.translate(m_lang, "M_Product_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "Product NOT inserted");
+			log.error("Product NOT inserted");
 		//  Default
 		sqlCmd = new StringBuffer ("UPDATE C_AcctSchema_Element SET ");
 		sqlCmd.append("M_Product_ID=").append(product.getM_Product_ID());
@@ -1028,7 +1032,7 @@ public final class MSetup
 		sqlCmd.append(" AND ElementType='PR'");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "AcctSchema Element Product NOT updated");
+			log.error("AcctSchema Element Product NOT updated");
 
 		/**
 		 *  Location, Warehouse, Locator
@@ -1040,7 +1044,7 @@ public final class MSetup
 		sqlCmd.append(loc.getC_Location_ID()).append(" WHERE AD_Org_ID=").append(getAD_Org_ID());
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "Location NOT inserted");
+			log.error("Location NOT inserted");
 		createPreference("C_Country_ID", String.valueOf(C_Country_ID), 0);
 
 		//  Default Warehouse
@@ -1049,13 +1053,13 @@ public final class MSetup
 		wh.setName(defaultName);
 		wh.setC_Location_ID(loc.getC_Location_ID());
 		if (!wh.save())
-			log.log(Level.SEVERE, "Warehouse NOT inserted");
+			log.error("Warehouse NOT inserted");
 
 		//   Locator
 		MLocator locator = new MLocator(wh, defaultName);
 		locator.setIsDefault(true);
 		if (!locator.save())
-			log.log(Level.SEVERE, "Locator NOT inserted");
+			log.error("Locator NOT inserted");
 
 		//  Update ClientInfo
 		sqlCmd = new StringBuffer ("UPDATE AD_ClientInfo SET ");
@@ -1070,7 +1074,7 @@ public final class MSetup
 		if (no != 1)
 		{
 			String err = "ClientInfo not updated";
-			log.log(Level.SEVERE, err);
+			log.error(err);
 			m_info.append(err);
 			return false;
 		}
@@ -1084,24 +1088,24 @@ public final class MSetup
 //		pl.setC_Currency_ID(C_Currency_ID);
 //		pl.setIsDefault(true);
 //		if (!pl.save())
-//			log.log(Level.SEVERE, "PriceList NOT inserted");
+//			log.error("PriceList NOT inserted");
 //		//  Price List
 //		MDiscountSchema ds = new MDiscountSchema(m_ctx, 0, m_trx.getTrxName());
 //		ds.setName(defaultName);
 //		ds.setDiscountType(MDiscountSchema.DISCOUNTTYPE_Pricelist);
 //		if (!ds.save())
-//			log.log(Level.SEVERE, "DiscountSchema NOT inserted");
+//			log.error("DiscountSchema NOT inserted");
 //		//  PriceList Version
 //		MPriceListVersion plv = new MPriceListVersion(pl);
 //		plv.setName();
 //		plv.setM_DiscountSchema_ID(ds.getM_DiscountSchema_ID());
 //		if (!plv.save())
-//			log.log(Level.SEVERE, "PriceList_Version NOT inserted");
+//			log.error("PriceList_Version NOT inserted");
 //		//  ProductPrice
 //		MProductPrice pp = new MProductPrice(plv, product.getM_Product_ID(), 
 //			Env.ONE, Env.ONE, Env.ONE);
 //		if (!pp.save())
-//			log.log(Level.SEVERE, "ProductPrice NOT inserted");
+//			log.error("ProductPrice NOT inserted");
 
 
 		//	Create Sales Rep for Client-User
@@ -1114,20 +1118,20 @@ public final class MSetup
 		if (bpCU.save())
 			m_info.append(Msg.translate(m_lang, "SalesRep_ID")).append("=").append(AD_User_U_Name).append("\n");
 		else
-			log.log(Level.SEVERE, "SalesRep (User) NOT inserted");
+			log.error("SalesRep (User) NOT inserted");
 		//  Location for Client-User
 		MLocation bpLocCU = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLocCU.save();
 		MBPartnerLocation bplCU = new MBPartnerLocation(bpCU);
 		bplCU.setC_Location_ID(bpLocCU.getC_Location_ID());
 		if (!bplCU.save())
-			log.log(Level.SEVERE, "BP_Location (User) NOT inserted");
+			log.error("BP_Location (User) NOT inserted");
 		//  Update User
 		sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
 		sqlCmd.append(bpCU.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_U_ID);
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "User of SalesRep (User) NOT updated");
+			log.error("User of SalesRep (User) NOT updated");
 
 
 		//	Create Sales Rep for Client-Admin
@@ -1140,20 +1144,20 @@ public final class MSetup
 		if (bpCA.save())
 			m_info.append(Msg.translate(m_lang, "SalesRep_ID")).append("=").append(AD_User_Name).append("\n");
 		else
-			log.log(Level.SEVERE, "SalesRep (Admin) NOT inserted");
+			log.error("SalesRep (Admin) NOT inserted");
 		//  Location for Client-Admin
 		MLocation bpLocCA = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLocCA.save();
 		MBPartnerLocation bplCA = new MBPartnerLocation(bpCA);
 		bplCA.setC_Location_ID(bpLocCA.getC_Location_ID());
 		if (!bplCA.save())
-			log.log(Level.SEVERE, "BP_Location (Admin) NOT inserted");
+			log.error("BP_Location (Admin) NOT inserted");
 		//  Update User
 		sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
 		sqlCmd.append(bpCA.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_ID);
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "User of SalesRep (Admin) NOT updated");
+			log.error("User of SalesRep (Admin) NOT updated");
 
 
 		//  Payment Term
@@ -1165,7 +1169,7 @@ public final class MSetup
 		sqlCmd.append("'Immediate','Immediate',0,0,0,0,0,0,'Y')");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "PaymentTerm NOT inserted");
+			log.error("PaymentTerm NOT inserted");
 
 		//  Project Cycle
 		C_Cycle_ID = getNextID(getAD_Client_ID(), "C_Cycle");
@@ -1176,7 +1180,7 @@ public final class MSetup
 		sqlCmd.append(defaultEntry).append(C_Currency_ID).append(")");
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "Cycle NOT inserted");
+			log.error("Cycle NOT inserted");
 
 		/**
 		 *  Organization level data	===========================================
@@ -1193,7 +1197,7 @@ public final class MSetup
 		if (no == 1)
 			m_info.append(Msg.translate(m_lang, "C_Project_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "Project NOT inserted");
+			log.error("Project NOT inserted");
 		//  Default Project
 		if (m_hasProject)
 		{
@@ -1203,7 +1207,7 @@ public final class MSetup
 			sqlCmd.append(" AND ElementType='PJ'");
 			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 			if (no != 1)
-				log.log(Level.SEVERE, "AcctSchema ELement Project NOT updated");
+				log.error("AcctSchema ELement Project NOT updated");
 		}
 
 		//  CashBook
@@ -1213,7 +1217,7 @@ public final class MSetup
 		if (cb.save())
 			m_info.append(Msg.translate(m_lang, "C_CashBook_ID")).append("=").append(defaultName).append("\n");
 		else
-			log.log(Level.SEVERE, "CashBook NOT inserted");
+			log.error("CashBook NOT inserted");
 		//
 		boolean success = m_trx.commit();
 		m_trx.close();
@@ -1241,7 +1245,7 @@ public final class MSetup
 			sqlCmd.append(AD_Window_ID).append(")");
 		int no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "Preference NOT inserted - " + Attribute);
+			log.error("Preference NOT inserted - " + Attribute);
 	}   //  createPreference
 
 	

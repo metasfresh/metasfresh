@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
@@ -29,7 +30,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionOptionsContext;
@@ -84,7 +86,7 @@ public class DocumentEngine implements DocAction
 	private String m_action = null;
 
 	/** Logger */
-	private static CLogger logger = CLogger.getCLogger(DocumentEngine.class);
+	private static Logger logger = LogManager.getLogger(DocumentEngine.class);
 
 	/**
 	 * Get Doc Status
@@ -264,7 +266,7 @@ public class DocumentEngine implements DocAction
 		final boolean success = processIt(m_action);
 		if (m_document != null)
 		{
-			m_document.get_Logger().fine("**** Action=" + m_action + " - Success=" + success);
+			m_document.get_Logger().debug("**** Action=" + m_action + " - Success=" + success);
 		}
 		return success;
 	}	// process
@@ -289,7 +291,7 @@ public class DocumentEngine implements DocAction
 				.setAutoCleanup(true) // remove possible stale locks, e.g. after a client crash
 				.addRecordByModel(m_document)
 				.acquire();
-		logger.log(Level.FINE, "Acquired Lock {0}", lock);
+		logger.debug("Acquired Lock {}", lock);
 
 		try (final ILockAutoCloseable autoCloseableLock = lock.asAutoCloseable())
 		{
@@ -992,7 +994,7 @@ public class DocumentEngine implements DocAction
 	 * @return logger
 	 */
 	@Override
-	public CLogger get_Logger()
+	public Logger get_Logger()
 	{
 		if (m_document != null)
 		{

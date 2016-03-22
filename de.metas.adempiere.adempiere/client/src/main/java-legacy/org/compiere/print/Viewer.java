@@ -43,7 +43,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -103,8 +104,8 @@ import org.compiere.swing.CFrame;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
@@ -114,6 +115,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  *	Print View Frame
@@ -160,12 +162,12 @@ public class Viewer extends CFrame
 			jbInit();
 			dynInit();
 			if (!m_viewPanel.isArchivable())
-				log.warning("Cannot archive Document");
+				log.warn("Cannot archive Document");
 			AEnv.showCenterScreen(this);
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			ADialog.error(m_WindowNo, this, "LoadError", e.getLocalizedMessage());
 			this.dispose();
 		}
@@ -202,7 +204,7 @@ public class Viewer extends CFrame
 	private CMenuItem 	m_daM = null;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Viewer.class);
+	private static Logger log = LogManager.getLogger(Viewer.class);
 
 	//
 	private JScrollPane centerScrollPane = new JScrollPane();
@@ -416,7 +418,7 @@ public class Viewer extends CFrame
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -471,7 +473,7 @@ public class Viewer extends CFrame
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -648,7 +650,7 @@ public class Viewer extends CFrame
 		if (m_pageNoSetting)
 			return;
 		String cmd = e.getActionCommand();
-		log.config(cmd);
+		log.info(cmd);
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
 //		if (e.getSource() == comboZoom)
@@ -691,7 +693,7 @@ public class Viewer extends CFrame
 			cmd_window(m_daQ);
 		//
 		else if (!AEnv.actionPerformed(e.getActionCommand(), m_WindowNo, this))
-			log.log(Level.SEVERE, "unknown action=" + e.getActionCommand());
+			log.error("unknown action=" + e.getActionCommand());
 		//
 		this.setCursor(Cursor.getDefaultCursor());
 	}	//	actionPerformed
@@ -750,7 +752,7 @@ public class Viewer extends CFrame
 			catch (NumberFormatException e)
 			{
 				UIManager.getLookAndFeel().provideErrorFeedback(fPageNo);
-				log.log(Level.INFO, "Invalid page number", e);
+				log.info("Invalid page number", e);
 				pageNo = m_pageNo;
 			}
 		}
@@ -901,7 +903,7 @@ public class Viewer extends CFrame
 		if (AD_Table_ID != 0)
 			new AReport (AD_Table_ID, null, query);
 		else
-			log.warning("No Table found for " + query.getWhereClause(true));
+			log.warn("No Table found for " + query.getWhereClause(true));
 	}	//	executeDrill
 
 	/**
@@ -944,7 +946,7 @@ public class Viewer extends CFrame
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 
 		//EMailDialog emd = 
@@ -978,7 +980,7 @@ public class Viewer extends CFrame
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 			Services.get(IClientUI.class).error(m_WindowNo, "ArchiveError", e.getLocalizedMessage());
 		}
 	}	//	cmd_archive
@@ -999,7 +1001,7 @@ public class Viewer extends CFrame
 	 */
 	private void cmd_export()
 	{
-		log.config("");
+		log.info("");
 		if (!m_isCanExport)
 		{
 			ADialog.error(m_WindowNo, this, "AccessCannotExport", getTitle());
@@ -1032,7 +1034,7 @@ public class Viewer extends CFrame
 		}
 		catch (IOException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			ADialog.error(m_WindowNo, this, "FileCannotCreate", e.getLocalizedMessage());
 			return;
 		}
@@ -1045,7 +1047,7 @@ public class Viewer extends CFrame
 			return;
 		}
 		ext = ext.substring(ext.lastIndexOf('.')+1).toLowerCase();
-		log.config( "File=" + outFile.getPath() + "; Type=" + ext);
+		log.info( "File=" + outFile.getPath() + "; Type=" + ext);
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
@@ -1070,7 +1072,7 @@ public class Viewer extends CFrame
 		}
 		catch (Exception e) {
 			ADialog.error(m_WindowNo, this, "Error", e.getLocalizedMessage());
-			if (CLogMgt.isLevelFinest())
+			if (LogManager.isLevelFinest())
 				e.printStackTrace();
 		}
 		cmd_drill();	//	setCursor
@@ -1182,7 +1184,7 @@ public class Viewer extends CFrame
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -1300,7 +1302,7 @@ public class Viewer extends CFrame
 		final ValueNamePair selectedLanguageVNP = availableLanguageNames.get(choice);
 		String AD_Language = selectedLanguageVNP.getValue();
 		int AD_PrintFormat_ID = m_reportEngine.getPrintFormat().get_ID();
-		log.config(AD_Language + " - AD_PrintFormat_ID=" + AD_PrintFormat_ID);
+		log.info(AD_Language + " - AD_PrintFormat_ID=" + AD_PrintFormat_ID);
 		StringBuilder sb = new StringBuilder();
 		//	English
 		if (Language.isBaseLanguage (AD_Language))
@@ -1330,7 +1332,7 @@ public class Viewer extends CFrame
 				  " AND e.AD_Element_ID=c.AD_Element_ID AND c.AD_Column_ID=pfi.AD_Column_ID)");
 		}
 		final int count = DB.executeUpdate(sb.toString(), ITrx.TRXNAME_None);
-		log.config("Count=" + count);
+		log.info("Count=" + count);
 		//
 		m_reportEngine.setPrintFormat(MPrintFormat.get (Env.getCtx(), AD_PrintFormat_ID, true));
 		revalidateViewer();

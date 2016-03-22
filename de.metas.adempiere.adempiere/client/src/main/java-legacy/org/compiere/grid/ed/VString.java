@@ -25,7 +25,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.event.CaretListener;
 
@@ -35,7 +36,8 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.model.Obscure;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	Data Binding:
@@ -161,7 +163,7 @@ public final class VString extends CTextField
 	private volatile boolean	m_infocus = false;
 
 	/**	Logger	*/
-	private static final CLogger log = CLogger.getCLogger (VString.class);
+	private static final Logger log = LogManager.getLogger(VString.class);
 
 	/**
 	 *	Set Editor to value
@@ -170,7 +172,7 @@ public final class VString extends CTextField
 	@Override
 	public void setValue(Object value)
 	{
-	//	log.config( "VString.setValue", value);
+	//	log.info( "VString.setValue", value);
 		if (value == null)
 			m_oldText = "";
 		else
@@ -229,9 +231,9 @@ public final class VString extends CTextField
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		if(log.isLoggable(Level.FINEST))
+		if(log.isTraceEnabled())
 		{
-			log.finest("Key=" + e.getKeyCode() + " - " + e.getKeyChar() + " -> " + getText());
+			log.trace("Key=" + e.getKeyCode() + " - " + e.getKeyChar() + " -> " + getText());
 		}
 		
 		//  ESC
@@ -312,7 +314,7 @@ public final class VString extends CTextField
 			CaretListener [] cl = this.getCaretListeners();
 			this.removeCaretListener(cl[0]);
 		} catch(ClassCastException ex ){
-			log.fine("VString.setVFormat - No caret Listeners");
+			log.debug("VString.setVFormat - No caret Listeners");
 		}
 		
 		//hengsin: [ adempiere-Bugs-1891037 ], preserve current data before change of format		

@@ -35,7 +35,8 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MTable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -45,7 +46,7 @@ import org.compiere.util.Util;
 
 public class MiniTableUtil
 {
-	private static final CLogger log = CLogger.getCLogger(MiniTableUtil.class);
+	private static final Logger log = LogManager.getLogger(MiniTableUtil.class);
 
 	public static ColumnInfo[] createColumnInfo(Class<?> cl, String... columnNames)
 	{
@@ -58,7 +59,7 @@ public class MiniTableUtil
 			MColumn column = table.getColumn(columnName);
 			if (column == null)
 			{
-				log.warning("Column not found: " + columnName);
+				log.warn("Column not found: " + columnName);
 				continue;
 			}
 

@@ -24,7 +24,8 @@ package org.compiere.apps;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -39,7 +40,8 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MTable;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
@@ -54,7 +56,7 @@ public class AWindowSaveStateModel
 {
 	private static final String ACTION_Name = "org.compiere.apps.AWindowSaveStateModel.action";
 
-	private static final transient CLogger logger = CLogger.getCLogger(AWindowSaveStateModel.class);
+	private static final transient Logger logger = LogManager.getLogger(AWindowSaveStateModel.class);
 	private static final transient CCache<Integer, Boolean> userId2enabled = new CCache<Integer, Boolean>(I_AD_Role.Table_Name, 5, 0);
 
 	public String getActionName()
@@ -79,7 +81,7 @@ public class AWindowSaveStateModel
 				}
 				catch (Exception e)
 				{
-					logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+					logger.error(e.getLocalizedMessage(), e);
 					enabled = false;
 				}
 			}

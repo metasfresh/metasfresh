@@ -19,9 +19,9 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -36,7 +36,7 @@ public class MContainerElement extends X_CM_Container_Element
 	private static final long serialVersionUID = 7230036377422361941L;
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger (MContainer.class);
+	private static Logger s_log = LogManager.getLogger(MContainer.class);
 
 	/**
 	 * 	get Container Element by ID
@@ -62,7 +62,7 @@ public class MContainerElement extends X_CM_Container_Element
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{

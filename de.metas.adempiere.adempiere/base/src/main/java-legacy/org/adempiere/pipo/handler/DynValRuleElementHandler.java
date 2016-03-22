@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -111,7 +109,7 @@ public class DynValRuleElementHandler extends AbstractElementHandler {
  		}
 
 		catch (Exception e){
-			log.log(Level.SEVERE,"getProcess", e);
+			log.error("getProcess", e);
 		}
 		finally
 		{

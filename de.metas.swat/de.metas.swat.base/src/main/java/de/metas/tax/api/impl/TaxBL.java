@@ -31,9 +31,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -53,7 +52,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -65,7 +63,7 @@ import de.metas.tax.api.ITaxDAO;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
-	private static final transient Logger log = CLogger.getCLogger(TaxBL.class);
+	private static final transient Logger log = LogManager.getLogger(TaxBL.class);
 
 	/**
 	 * Do not attempt to retrieve the C_Tax for an order (i.e invoicing is done at a different time - 1 year - from the order)<br>
@@ -146,7 +144,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 						shipC_BPartner_Location_ID,
 						isSOTrx,
 						trxName));
-		log.warning(ex.getLocalizedMessage());
+		log.warn(ex.getLocalizedMessage());
 
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
@@ -268,7 +266,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			{
 				throw ex;
 			}
-			log.log(Level.WARNING, "Tax not found. Return -1.", ex);
+			log.warn("Tax not found. Return -1.", ex);
 			return -1;
 		}
 
@@ -289,16 +287,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		//
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
 		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, org_ID, I_C_BPartner.class, ITrx.TRXNAME_None);
-		log.log(Level.FINE, "Org BP: {0}", orgBPartner);
+		log.debug("Org BP: {}", orgBPartner);
 		if (Services.get(ITaxDAO.class).retrieveIsTaxExempt(orgBPartner, billDate))
 		{
 			final int taxExemptId = getExemptTax(ctx, org_ID);
-			log.log(Level.FINE, "Org is tax exempted => C_Tax_ID=", taxExemptId);
+			log.debug("Org is tax exempted => C_Tax_ID=", taxExemptId);
 			return taxExemptId;
 		}
 
 		// Check Partner/Location
-		log.fine("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
 
 		int taxId = 0;
 
@@ -400,7 +398,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		sql += " ORDER BY t.AD_Org_ID DESC, t.To_Country_ID, t.validFrom DESC ";
-		log.fine(sql);
+		log.debug(sql);
 
 		// get tax id
 		PreparedStatement pstmt = null;
@@ -431,7 +429,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, "getGermanTax", e);
+			log.error("getGermanTax", e);
 			throw new DBException(e, sql, new Object[] { billDate, productId != 0 ? productId : chargeId });
 		}
 		finally
@@ -494,7 +492,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
 			+ "ORDER BY t.Rate DESC";
 		int C_Tax_ID = DB.getSQLValueEx(null, sql, AD_Org_ID);
-		log.fine("getExemptTax - TaxExempt=Y - C_Tax_ID=" + C_Tax_ID);
+		log.debug("getExemptTax - TaxExempt=Y - C_Tax_ID=" + C_Tax_ID);
 		if (C_Tax_ID <= 0)
 		{
 			throw new TaxNoExemptFoundException(AD_Org_ID);
@@ -536,7 +534,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, BigDecimal.ROUND_HALF_UP);
 
-		log.fine("calculateTax " + amount
+		log.debug("calculateTax " + amount
 				+ " (incl=" + taxIncluded + ",mult=" + multiplier + ",scale=" + scale
 				+ ") = " + taxAmtFinal + " [" + taxAmt + "]");
 

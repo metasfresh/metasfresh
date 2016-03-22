@@ -42,15 +42,15 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Issue;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class ProcessingService implements IProcessingService
 {
-
-	private static final CLogger logger = CLogger.getCLogger(ProcessingService.class);
+	private static final Logger logger = LogManager.getLogger(ProcessingService.class);
 
 	private static final ProcessingService instance = new ProcessingService();
 
@@ -90,8 +90,8 @@ public class ProcessingService implements IProcessingService
 		{
 			cause = e.getCause();
 		}
-		if (CLogMgt.isLevelFine())
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+		if (LogManager.isLevelFine())
+			logger.warn(e.getLocalizedMessage(), e);
 
 		final LogRecord logRecord = new LogRecord(Level.SEVERE, e.getMessage());
 		logRecord.setThrown(cause);

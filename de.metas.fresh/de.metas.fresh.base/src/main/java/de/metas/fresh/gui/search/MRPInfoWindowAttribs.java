@@ -26,7 +26,8 @@ package de.metas.fresh.gui.search;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -36,7 +37,6 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -54,7 +54,7 @@ public class MRPInfoWindowAttribs
 	 */
 	private static final String SQL_ORDER_BY = " ORDER BY ASIKeyName, M_HU_PI_Item_Product";
 
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	private Properties _ctx;
 	private int _windowNo;
@@ -165,7 +165,7 @@ public class MRPInfoWindowAttribs
 			return;
 		}
 
-		log.finest(sqlFinal);
+		log.trace(sqlFinal);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -183,7 +183,7 @@ public class MRPInfoWindowAttribs
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.WARNING, sqlFinal, e);
+			log.warn(sqlFinal, e);
 		}
 		finally
 		{

@@ -33,17 +33,18 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 
+@SuppressWarnings("serial")
 public class MRecurrentPaymentLine extends X_C_RecurrentPaymentLine {
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger
-			.getCLogger(MRecurrentPaymentLine.class);
+	private static final Logger logger = LogManager.getLogger(MRecurrentPaymentLine.class);
 
 	/**
 	 * Standard Constructor
@@ -101,7 +102,7 @@ public class MRecurrentPaymentLine extends X_C_RecurrentPaymentLine {
 			}
 		} catch (SQLException ex) {
 			ex.printStackTrace();
-			s_log.severe(ex.getLocalizedMessage());
+			logger.error(ex.getLocalizedMessage());
 		} finally {
 			DB.close(rs, pstmt);
 			rs = null;
@@ -129,7 +130,7 @@ public class MRecurrentPaymentLine extends X_C_RecurrentPaymentLine {
 								.equals(line.getFrequencyType())) {
 							cal.add(Calendar.DAY_OF_MONTH, frequency);
 						} else {
-							s_log.severe("Unimplemented frequency type!");
+							logger.error("Unimplemented frequency type!");
 						}
 
 						if (cal.getTimeInMillis() < actualTime) {
@@ -176,7 +177,7 @@ public class MRecurrentPaymentLine extends X_C_RecurrentPaymentLine {
 			}
 		} catch (SQLException ex) {
 			ex.printStackTrace();
-			s_log.severe(ex.getLocalizedMessage());
+			logger.error(ex.getLocalizedMessage());
 		} finally {
 			DB.close(rs, pstmt);
 			rs = null;

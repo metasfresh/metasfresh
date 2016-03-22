@@ -35,7 +35,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.AbstractPackingItem;
@@ -73,7 +74,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 {
 	private static final String ERR_SWING_PACKAGE_TERMINAL_PANEL_NO_CONTAINER = "de.metas.commission.picking.form.swing.SwingPackageTerminalPanel.noContainer";
 
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	private IKeyLayout deliveryKey;
 	private ITerminalKeyPanel deliveryPanel;

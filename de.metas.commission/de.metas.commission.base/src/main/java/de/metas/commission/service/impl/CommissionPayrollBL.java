@@ -38,7 +38,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.commission.custom.type.ICommissionType;
@@ -61,7 +62,7 @@ import de.metas.commission.service.impl.CPLData.AggregatedCPLDataItem;
 
 public class CommissionPayrollBL implements ICommissionPayrollBL
 {
-	final CLogger logger = CLogger.getCLogger(CommissionPayrollBL.class);
+	final Logger logger = LogManager.getLogger(CommissionPayrollBL.class);
 
 	@Override
 	public List<MCAdvCommissionPayrollLine> createPayrollLine(final IAdvComInstance instance, final I_C_Period period, final Timestamp date, final int adPInstanceId)

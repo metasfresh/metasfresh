@@ -14,15 +14,17 @@ package org.adempiere.webui.component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.model.tree.IADTreeBL;
 import org.adempiere.util.Colors;
 import org.adempiere.util.Services;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.lang.Objects;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -48,7 +50,7 @@ public class SimpleTreeModel extends org.zkoss.zul.AbstractTreeModel implements 
 	 */
 	private static final long serialVersionUID = -4649471521757131755L;
 
-	private static final CLogger logger = CLogger.getCLogger(SimpleTreeModel.class);
+	private static final Logger logger = LogManager.getLogger(SimpleTreeModel.class);
 	
 	private boolean itemDraggable;
 	private List<EventListener> onDropListners = new ArrayList<EventListener>();
@@ -92,7 +94,7 @@ public class SimpleTreeModel extends org.zkoss.zul.AbstractTreeModel implements 
 			tree.setTreeitemRenderer(treeModel);
 			tree.setModel(treeModel);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to setup tree");
+			logger.error("Failed to setup tree");
 		}
 		
 		return treeModel;

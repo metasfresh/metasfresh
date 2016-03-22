@@ -42,7 +42,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MUser;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Trx;
@@ -73,7 +74,7 @@ public class SponsorTreeModel extends AbstractTreeModel
 	 */
 	private static final long serialVersionUID = -6742795741646822834L;
 
-	private static final CLogger log = CLogger.getCLogger(SponsorTreeModel.class);
+	private static final Logger log = LogManager.getLogger(SponsorTreeModel.class);
 
 	private final int user_id;
 	private final int period_id;
@@ -140,7 +141,7 @@ public class SponsorTreeModel extends AbstractTreeModel
 	private List<SponsorTreeNode> getSponsorRoots(final int AD_User_ID, final Timestamp date)
 	{
 
-		log.fine("AD_User_ID=" + AD_User_ID + ", date=" + date);
+		log.debug("AD_User_ID=" + AD_User_ID + ", date=" + date);
 
 		final MUser user = MUser.get(Env.getCtx(), AD_User_ID);
 

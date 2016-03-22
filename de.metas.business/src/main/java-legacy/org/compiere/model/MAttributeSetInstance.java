@@ -59,7 +59,7 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 		return LegacyAdapters.convertToPO(asi);
 	}	// get
 
-//	private static CLogger s_log = CLogger.getCLogger(MAttributeSetInstance.class);
+//	private static Logger s_log = CLogMgt.getLogger(MAttributeSetInstance.class);
 
 	/**************************************************************************
 	 * Standard Constructor

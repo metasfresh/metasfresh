@@ -23,8 +23,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.ValueNamePair;
@@ -132,7 +130,7 @@ public class MClickCount extends X_W_ClickCount
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{

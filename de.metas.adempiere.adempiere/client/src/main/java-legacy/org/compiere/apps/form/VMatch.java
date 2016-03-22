@@ -27,7 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -51,7 +52,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -109,7 +111,7 @@ public class VMatch extends Match
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
@@ -118,7 +120,7 @@ public class VMatch extends Match
 	/**	FormFrame			*/
 	private FormFrame 		m_frame;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VMatch.class);
+	private static Logger log = LogManager.getLogger(VMatch.class);
 
 	private int     m_AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 	private int     m_AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
@@ -401,7 +403,7 @@ public class VMatch extends Match
 	 */
 	private void cmd_matchTo()
 	{
-	//	log.fine( "VMatch.cmd_matchTo");
+	//	log.debug( "VMatch.cmd_matchTo");
 		String selection = (String)matchTo.getSelectedItem();
 		xMatchedToBorder.setTitle(selection);
 		xMatchedToScrollPane.repaint();
@@ -418,7 +420,7 @@ public class VMatch extends Match
 	{
 		if (e.getValueIsAdjusting())
 			return;
-	//	log.config( "VMatch.valueChanged");
+	//	log.info( "VMatch.valueChanged");
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		cmd_searchTo();
 		panel.setCursor(Cursor.getDefaultCursor());
@@ -430,7 +432,7 @@ public class VMatch extends Match
 	private void cmd_searchTo()
 	{
 		int row = xMatchedTable.getSelectedRow();
-		log.config("Row=" + row);
+		log.info("Row=" + row);
 
 		double qty = 0.0;
 		if (row < 0)
@@ -470,7 +472,7 @@ public class VMatch extends Match
 	{
 		if (e.getColumn() != 0)
 			return;
-		log.config("Row=" + e.getFirstRow() + "-" + e.getLastRow() + ", Col=" + e.getColumn()
+		log.info("Row=" + e.getFirstRow() + "-" + e.getLastRow() + ", Col=" + e.getColumn()
 			+ ", Type=" + e.getType());
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 

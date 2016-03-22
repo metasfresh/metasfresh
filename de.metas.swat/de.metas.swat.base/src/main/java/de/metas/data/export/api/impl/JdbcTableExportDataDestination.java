@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
@@ -39,7 +39,7 @@ import de.metas.data.export.api.IExportDataDestination;
 
 public class JdbcTableExportDataDestination implements IExportDataDestination
 {
-	private static final CLogger logger = CLogger.getCLogger(JdbcTableExportDataDestination.class);
+	private static final Logger logger = LogManager.getLogger(JdbcTableExportDataDestination.class);
 
 	private static class Column
 	{
@@ -142,7 +142,7 @@ public class JdbcTableExportDataDestination implements IExportDataDestination
 
 		final String trxName = Trx.TRXNAME_None;
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
-		logger.log(Level.INFO, "Inserted {0} records into {1} from {2}", new Object[] { count, tableName, source });
+		logger.info("Inserted {} records into {} from {}", new Object[] { count, tableName, source });
 	}
 
 	public void addField(final String fieldName, final String sourceFieldName)

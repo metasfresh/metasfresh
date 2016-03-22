@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -35,15 +34,16 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.ArrayKeyBuilder;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.X_DD_Order;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import com.google.common.collect.ImmutableMap;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
@@ -101,7 +101,7 @@ public class HUs2DDOrderProducer
 	}
 
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(HUs2DDOrderProducer.class);
+	private static final transient Logger logger = LogManager.getLogger(HUs2DDOrderProducer.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
@@ -182,7 +182,7 @@ public class HUs2DDOrderProducer
 			catch (final Exception e)
 			{
 				final String errmsg = "@Error@ " + hu.getValue() + ": " + e.getLocalizedMessage();
-				logger.log(Level.SEVERE, errmsg, e);
+				logger.error(errmsg, e);
 				loggable.addLog(errmsg);
 			}
 		}

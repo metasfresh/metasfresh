@@ -20,7 +20,6 @@
 		<module>de.metas.endcustomer.mf15.zkwebui</module>
 		<module>de.metas.endcustomer.mf15.serverRoot</module>
 		<module>de.metas.endcustomer.mf15.swingui</module>
-		<module>de.metas.endcustomer.mf15.ear</module>
 		<module>de.metas.endcustomer.mf15.dist</module>
 	</modules>
 
@@ -52,6 +51,15 @@
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
+								
+								<dependency>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15*</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.springframework.boot.loader.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+								
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
 						</banDuplicateClasses>

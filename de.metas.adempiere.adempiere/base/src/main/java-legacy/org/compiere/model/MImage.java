@@ -29,8 +29,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
@@ -128,7 +126,7 @@ public class MImage extends X_AD_Image
 			}
 			catch (Exception e)
 			{
-				log.log(Level.WARNING, "(byteArray)", e);
+				log.warn("(byteArray)", e);
 				return null;
 			}
 		}
@@ -144,7 +142,7 @@ public class MImage extends X_AD_Image
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "(URL)", e);
+			log.warn("(URL)", e);
 		}
 		return null;
 	}   //  getImage
@@ -177,7 +175,7 @@ public class MImage extends X_AD_Image
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Failed creating the icon from image on {0}. Returning null.", this);
+			log.warn("Failed creating the icon from image on {}. Returning null.", this);
 			m_icon = null;
 		}
 		return m_icon;
@@ -283,11 +281,11 @@ public class MImage extends X_AD_Image
 				url = getClass().getResource(str);
 			//
 			if (url == null)
-				log.warning("Not found: " + str);
+				log.warn("Not found: " + str);
 		}
 		catch (Exception e)
 		{
-			log.warning("Not found: " + str + " - " + e.getMessage());
+			log.warn("Not found: " + str + " - " + e.getMessage());
 		}
 		return url;
 	}	//	getURL
@@ -329,14 +327,14 @@ public class MImage extends X_AD_Image
 		String str = getImageURL();
 		if (str == null || str.length() == 0)
 		{
-			log.config("No Image URL");
+			log.info("No Image URL");
 			return null;
 		}
 		//	Get from URL
 		URL url = getURL();
 		if (url == null)
 		{
-			log.config("No URL");
+			log.info("No URL");
 			return null;
 		}
 		try
@@ -356,7 +354,7 @@ public class MImage extends X_AD_Image
 		}
 		catch (Exception e)
 		{
-			log.config (e.toString());
+			log.info(e.toString());
 		}
 		return data;
 	}	//	getData

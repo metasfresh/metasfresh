@@ -123,12 +123,12 @@ public class MJournalLine extends X_GL_JournalLine
 	{
 		if (CurrencyRate == null)
 		{
-			log.warning("was NULL - set to 1");
+			log.warn("was NULL - set to 1");
 			super.setCurrencyRate(Env.ONE);
 		}
 		else if (CurrencyRate.signum() < 0)
 		{
-			log.warning("negative - " + CurrencyRate + " - set to 1");
+			log.warn("negative - " + CurrencyRate + " - set to 1");
 			super.setCurrencyRate(Env.ONE);
 		}
 		else
@@ -158,17 +158,17 @@ public class MJournalLine extends X_GL_JournalLine
 		}
 		if (rateDR != 0 && rateCR != 0 && rateDR != rateCR)
 		{
-			log.warning("Rates Different DR=" + rateDR + "(used) <> CR=" + rateCR + "(ignored)");
+			log.warn("Rates Different DR=" + rateDR + "(used) <> CR=" + rateCR + "(ignored)");
 			rateCR = 0;
 		}
 		if (rateDR < 0 || Double.isInfinite(rateDR) || Double.isNaN(rateDR))
 		{
-			log.warning("DR Rate ignored - " + rateDR);
+			log.warn("DR Rate ignored - " + rateDR);
 			return;
 		}
 		if (rateCR < 0 || Double.isInfinite(rateCR) || Double.isNaN(rateCR))
 		{
-			log.warning("CR Rate ignored - " + rateCR);
+			log.warn("CR Rate ignored - " + rateCR);
 			return;
 		}
 

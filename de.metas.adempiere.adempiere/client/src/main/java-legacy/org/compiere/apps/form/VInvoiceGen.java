@@ -18,7 +18,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
@@ -29,7 +30,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MRMA;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -49,7 +51,7 @@ public class VInvoiceGen extends InvoiceGen implements FormPanel, ActionListener
 	private FormFrame 		m_frame;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VInvoiceGen.class);
+	private static Logger log = LogManager.getLogger(VInvoiceGen.class);
 	//
 
 	private CLabel lOrg = new CLabel();
@@ -83,7 +85,7 @@ public class VInvoiceGen extends InvoiceGen implements FormPanel, ActionListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	}	//	init
 	

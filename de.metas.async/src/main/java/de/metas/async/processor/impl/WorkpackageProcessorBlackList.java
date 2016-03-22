@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.exceptions.ConfigurationException;
 
@@ -87,7 +87,7 @@ public class WorkpackageProcessorBlackList
 		}
 	}
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final Map<Integer, BlackListItem> blacklist = new ConcurrentHashMap<Integer, BlackListItem>();
 
 	public WorkpackageProcessorBlackList()
@@ -106,7 +106,7 @@ public class WorkpackageProcessorBlackList
 		final BlackListItem blacklistItemToAdd = new BlackListItem(packageProcessorId, packageProcessorClassname, exception);
 		blacklist.put(packageProcessorId, blacklistItemToAdd);
 
-		logger.log(Level.WARNING, "Processor blacklisted: " + blacklistItemToAdd, exception);
+		logger.warn("Processor blacklisted: " + blacklistItemToAdd, exception);
 	}
 
 	public void removeFromBlacklist(final int packageProcessorId)
@@ -114,7 +114,7 @@ public class WorkpackageProcessorBlackList
 		final BlackListItem blacklistItem = blacklist.remove(packageProcessorId);
 		if (blacklistItem != null)
 		{
-			logger.log(Level.INFO, "Processor removed from blacklist: " + blacklistItem);
+			logger.info("Processor removed from blacklist: " + blacklistItem);
 		}
 	}
 

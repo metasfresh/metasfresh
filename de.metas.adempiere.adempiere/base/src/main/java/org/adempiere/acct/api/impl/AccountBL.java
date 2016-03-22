@@ -48,14 +48,15 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_C_ElementValue;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class AccountBL implements IAccountBL
 {
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public IAccountDimensionValidator createAccountDimensionValidator(final I_C_AcctSchema acctSchema)
@@ -116,7 +117,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Account");
+					log.warn("Mandatory Element missing: Account");
 					fullyQualified = false;
 				}
 			}
@@ -139,7 +140,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Product");
+					log.warn("Mandatory Element missing: Product");
 					fullyQualified = false;
 				}
 			}
@@ -153,7 +154,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Business Partner");
+					log.warn("Mandatory Element missing: Business Partner");
 					fullyQualified = false;
 				}
 			}
@@ -167,7 +168,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Trx Org");
+					log.warn("Mandatory Element missing: Trx Org");
 					fullyQualified = false;
 				}
 			}
@@ -181,7 +182,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Location From");
+					log.warn("Mandatory Element missing: Location From");
 					fullyQualified = false;
 				}
 			}
@@ -195,7 +196,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Location To");
+					log.warn("Mandatory Element missing: Location To");
 					fullyQualified = false;
 				}
 			}
@@ -209,7 +210,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: SalesRegion");
+					log.warn("Mandatory Element missing: SalesRegion");
 					fullyQualified = false;
 				}
 			}
@@ -223,7 +224,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Project");
+					log.warn("Mandatory Element missing: Project");
 					fullyQualified = false;
 				}
 			}
@@ -237,7 +238,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Campaign");
+					log.warn("Mandatory Element missing: Campaign");
 					fullyQualified = false;
 				}
 			}
@@ -251,7 +252,7 @@ public class AccountBL implements IAccountBL
 				}
 				else if (element.isMandatory())
 				{
-					log.warning("Mandatory Element missing: Campaign");
+					log.warn("Mandatory Element missing: Campaign");
 					fullyQualified = false;
 				}
 			}

@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -33,7 +34,6 @@ import org.adempiere.exceptions.WindowLoadException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -45,6 +45,8 @@ import org.compiere.util.Env;
  */
 public class GridWindowVO implements Serializable
 {
+	private static final transient Logger logger = LogManager.getLogger(GridWindowVO.class);
+
 	/**
 	 *  Create Window Value Object
 	 *  @param ctx context
@@ -76,8 +78,7 @@ public class GridWindowVO implements Serializable
 		}
 		catch (Exception ex)
 		{
-			final CLogger logger = CLogger.get();
-			logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			logger.error(ex.getLocalizedMessage(), ex);
 			return null;
 		}
 	}
@@ -94,9 +95,7 @@ public class GridWindowVO implements Serializable
 	 */
 	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
 	{
-		final CLogger logger = CLogger.get();
-		
-		logger.config("#" + WindowNo + " - AD_Window_ID=" + AD_Window_ID + "; AD_Menu_ID=" + AD_Menu_ID);
+		logger.info("#" + WindowNo + " - AD_Window_ID=" + AD_Window_ID + "; AD_Menu_ID=" + AD_Menu_ID);
 		GridWindowVO vo = new GridWindowVO (ctx, WindowNo);
 		vo.AD_Window_ID = AD_Window_ID;
 
@@ -134,7 +133,7 @@ public class GridWindowVO implements Serializable
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-			logger.config("AD_Window_ID=" + vo.AD_Window_ID);
+			logger.info("AD_Window_ID=" + vo.AD_Window_ID);
 		}
 
 		//  --  Get Window
@@ -277,7 +276,7 @@ public class GridWindowVO implements Serializable
 		}
 		catch (SQLException e)
 		{
-			CLogger.get().log(Level.SEVERE, "createTabs", e);
+			logger.error("createTabs", e);
 			return false;
 		}
 		finally
@@ -290,8 +289,7 @@ public class GridWindowVO implements Serializable
 		if (TabNo == 0 || mWindowVO.Tabs.size() == 0)
 		{
 			mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + mWindowVO.AD_Window_ID + " - " + sql, true); // metas: 1934
-			CLogger.get().log(Level.SEVERE, "No Tabs - AD_Window_ID=" 
-				+ mWindowVO.AD_Window_ID + " - " + sql);
+			logger.error("No Tabs - AD_Window_ID=" + mWindowVO.AD_Window_ID + " - " + sql);
 			return false;
 		}
 

@@ -40,7 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -56,7 +55,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.CLoggerLoggable;
+import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -78,6 +77,7 @@ import org.jdesktop.swingx.JXTable;
 import com.google.common.collect.Lists;
 import com.jgoodies.looks.Options;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.payment.IPaymentRequestBL;
@@ -191,7 +191,7 @@ final class ReadPaymentForm
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			logger.error(e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -408,7 +408,7 @@ final class ReadPaymentForm
 
 	private final void actionPerformed0(final ActionEvent e) throws Exception
 	{
-		logger.config("");
+		logger.info("");
 
 		if (PROPERTY_RefreshButton.equals(e.getActionCommand()))
 		{
@@ -522,7 +522,7 @@ final class ReadPaymentForm
 
 				final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
 						.setContext(ctx, localTrxName)
-						.setLoggable(new CLoggerLoggable(logger, Level.INFO))
+						.setLoggable(LoggerLoggable.of(logger, Level.INFO))
 						.setIgnoreInvoiceSchedule(true) // ignoring the schedule because we assume that the iterator will only contain appropriate candidates.
 						.setCollector(existingResult)
 						.setInvoicingParams(invoicingParams)
@@ -648,7 +648,7 @@ final class ReadPaymentForm
 		final String name = e.getPropertyName();
 		final Object value = e.getNewValue();
 
-		logger.config(name + "=" + value);
+		logger.info(name + "=" + value);
 
 		if (value == null)
 		{

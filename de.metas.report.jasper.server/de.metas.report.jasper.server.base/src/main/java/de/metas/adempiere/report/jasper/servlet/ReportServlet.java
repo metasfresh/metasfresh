@@ -28,19 +28,18 @@ import java.io.OutputStream;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.jasperreports.engine.JRException;
-
-import org.compiere.Adempiere.RunMode;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.report.jasper.IJasperServer;
+import de.metas.adempiere.report.jasper.JasperServerConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.server.LocalJasperServer;
+import net.sf.jasperreports.engine.JRException;
 
+@WebServlet(value = JasperServerConstants.SERVLET_ROOT + "/ReportServlet", loadOnStartup = 1)
 public class ReportServlet extends HttpServlet
 {
 	/**
@@ -48,46 +47,13 @@ public class ReportServlet extends HttpServlet
 	 */
 	private static final long serialVersionUID = -331002076463543429L;
 
-//	private final CLogger logger = CLogger.getCLogger(getClass());
+//	private final Logger logger = CLogMgt.getLogger(getClass());
 
 	private LocalJasperServer server = null;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
-//		// 03301 explicitly registering the font
-//		// note that the TTF file is currently located in adempiereJAsper-commons
-//		try
-//		{
-//			final Font ocrb = Font.createFont(Font.TRUETYPE_FONT, ReportServlet.class.getResourceAsStream("/OCRB1_Demo.TTF"));
-//			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(ocrb);
-//			logger.info("Registered font " + ocrb);
-//		}
-//		catch (FontFormatException e1)
-//		{
-//			throw new AdempiereException(e1);
-//		}
-//		catch (IOException e1)
-//		{
-//			throw new AdempiereException(e1);
-//		}
-//		// 03301 end
-		
-		//
-		// we don't restrict set of entity types because this webapp is running in the same server as the rest of adempiere.
-		// and there are a lot of static variables we can't get easily rid of
-		// with this war happends to be started first, and it starts up with only this set of entity types, we are in trouble.
-//		//
-//		// 03023: Only following entity types are required for this module:
-//		Env.getCtx().put(ModelValidationEngine.CTX_InitEntityTypes, Arrays.asList(
-//				"D", // Dictionary
-//				"C", // Adempiere
-//				"U", // User maintained
-//				"A" // Applications
-//		));
-
-		// System.setProperty("PropertyFile", "d:/sources/workspace/ad_it/Adempiere_zk.properties");
-		Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
 		server = new LocalJasperServer();
 	}
 

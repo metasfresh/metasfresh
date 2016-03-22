@@ -30,7 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -41,8 +42,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
-import org.compiere.util.CLogger;
-
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
 import de.metas.dunning.api.IDunningBL;
@@ -65,7 +64,7 @@ import de.metas.dunning.spi.IDunningConfigurator;
 
 public class DunningBL implements IDunningBL
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private ReentrantLock configLock = new ReentrantLock();
 
@@ -118,7 +117,7 @@ public class DunningBL implements IDunningBL
 		{
 			if (_config != null)
 			{
-				// logger.log(Level.WARNING, "There is an already configured dunning config. Reseting it.");
+				// logger.warn("There is an already configured dunning config. Reseting it.");
 				throw new DunningException("Cannot set an configurator when there is an already configured dunning config: " + _config);
 			}
 
@@ -207,7 +206,7 @@ public class DunningBL implements IDunningBL
 			}
 		}
 
-		logger.log(Level.INFO, "Created {0} from {1} records evaluated", new Object[] { countCreated, countAll });
+		logger.info("Created {} from {} records evaluated", new Object[] { countCreated, countAll });
 
 		return countCreated;
 	}

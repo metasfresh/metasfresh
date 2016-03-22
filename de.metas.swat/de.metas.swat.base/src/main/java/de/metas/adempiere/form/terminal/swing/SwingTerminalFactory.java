@@ -33,7 +33,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.management.ObjectName;
 import javax.swing.AbstractButton;
@@ -51,7 +52,6 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.apps.AppsAction;
 import org.compiere.swing.CButton;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -101,7 +101,7 @@ import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
  */
 public class SwingTerminalFactory implements ITerminalFactory
 {
-	private static final transient CLogger logger = CLogger.getCLogger(SwingTerminalFactory.class);
+	private static final transient Logger logger = LogManager.getLogger(SwingTerminalFactory.class);
 
 	//
 	// Services
@@ -559,7 +559,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 				exceptionStr = e.toString();
 			}
 
-			SwingTerminalFactory.logger.log(Level.WARNING, exceptionStr, e);
+			SwingTerminalFactory.logger.warn(exceptionStr, e);
 			msg.append(exceptionStr);
 		}
 

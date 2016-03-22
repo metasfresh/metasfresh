@@ -9,7 +9,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrg;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 
@@ -38,7 +39,7 @@ import de.metas.document.engine.IDocActionBL;
 public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandler
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(CounterDocumentHandlerAdapter.class);
+	private static final transient Logger logger = LogManager.getLogger(CounterDocumentHandlerAdapter.class);
 
 	/**
 	 * @return <code>true</code> if
@@ -96,7 +97,7 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(document.getCtx(), docType.getC_DocType_ID());
 		if (counterDT != null)
 		{
-			logger.fine(counterDT.toString());
+			logger.debug(counterDT.toString());
 			if (counterDT.isCreateCounter() && counterDT.isValid())
 			{
 				return counterDT.getCounter_C_DocType();
@@ -106,7 +107,7 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 		// indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(document.getCtx(), docType.getC_DocType_ID());
-			logger.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
+			logger.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID > 0)
 			{
 				return InterfaceWrapperHelper.create(document.getCtx(), C_DocTypeTarget_ID, I_C_DocType.class, document.get_TrxName());

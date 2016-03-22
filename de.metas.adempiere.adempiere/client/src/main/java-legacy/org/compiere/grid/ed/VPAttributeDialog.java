@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -90,7 +91,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -115,7 +117,7 @@ public class VPAttributeDialog extends CDialog
 	private static final long serialVersionUID = -1062346984681892620L;
 
 	// services
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -179,7 +181,7 @@ public class VPAttributeDialog extends CDialog
 	{
 		super(frame, Services.get(IMsgBL.class).translate(Env.getCtx(), "M_AttributeSetInstance_ID"), true);
 
-		log.config("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
+		log.info("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
 				+ ", M_Product_ID=" + M_Product_ID
 				+ ", IsProductWindow=" + productWindow
 				+ ", Column=" + AD_Column_ID);
@@ -611,7 +613,7 @@ public class VPAttributeDialog extends CDialog
 		final boolean product = m_productWindow;
 		final boolean readOnly = false;
 
-		log.fine(attribute + ", Product=" + product + ", R/O=" + readOnly);
+		log.debug(attribute + ", Product=" + product + ", R/O=" + readOnly);
 		CLabel label = new CLabel(attribute.getName());
 		if (product)
 		{
@@ -647,13 +649,13 @@ public class VPAttributeDialog extends CDialog
 					}
 				}
 				if (found)
-					log.fine("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
+					log.debug("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
 				else
-					log.warning("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
+					log.warn("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
 			}	// setComboBox
 			else
 			{
-				log.fine("Attribute=" + attribute.getName() + " #" + values.length + " no instance");
+				log.debug("Attribute=" + attribute.getName() + " #" + values.length + " no instance");
 			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
@@ -869,7 +871,7 @@ public class VPAttributeDialog extends CDialog
 		}
 		else
 		{
-			log.log(Level.SEVERE, "Unknown event: {0}", e);
+			log.error("Unknown event: {}", e);
 		}
 	}	// actionPerformed
 
@@ -880,7 +882,7 @@ public class VPAttributeDialog extends CDialog
 	 */
 	private void cmd_select()
 	{
-		log.config("");
+		log.info("");
 
 		int M_Warehouse_ID = attributeContext.getM_Warehouse_ID();
 
@@ -921,7 +923,7 @@ public class VPAttributeDialog extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -950,7 +952,7 @@ public class VPAttributeDialog extends CDialog
 	private final void cmd_newEdit()
 	{
 		final boolean rw = cbNewEdit.isSelected();
-		log.config("R/W=" + rw + " " + asiTemplate);
+		log.info("R/W=" + rw + " " + asiTemplate);
 
 		// Lot
 		final boolean isNewLot = asiTemplate == null || asiTemplate.getM_Lot_ID() <= 0;

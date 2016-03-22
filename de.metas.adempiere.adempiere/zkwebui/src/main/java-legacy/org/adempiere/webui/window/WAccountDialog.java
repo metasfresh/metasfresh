@@ -19,7 +19,6 @@ package org.adempiere.webui.window;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.webui.apps.AEnv;
@@ -49,10 +48,13 @@ import org.compiere.model.MAccountLookup;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -92,7 +94,7 @@ public final class WAccountDialog extends Window
 		this.setHeight("500px");
 		this.setWidth("700px");
 
-		log.config("C_AcctSchema_ID=" + C_AcctSchema_ID
+		log.info("C_AcctSchema_ID=" + C_AcctSchema_ID
 			+ ", C_ValidCombination_ID=" + mAccount.getC_ValidCombination_ID());
 		m_mAccount = mAccount;
 		m_C_AcctSchema_ID = C_AcctSchema_ID;
@@ -103,7 +105,7 @@ public final class WAccountDialog extends Window
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, ex.toString());
+			log.error(ex.toString());
 		}
 		if (initAccount())
 			AEnv.showCenterScreen(this);
@@ -138,7 +140,7 @@ public final class WAccountDialog extends Window
 	/** Where clause for combination search */
 	private MQuery				m_query;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WAccountDialog.class);
+	private static Logger log = LogManager.getLogger(WAccountDialog.class);
 
 	//  Editors for Query
 	private WEditor 			f_Alias, f_Combination,
@@ -268,7 +270,7 @@ public final class WAccountDialog extends Window
 		//	Get AcctSchema Info
 		if (s_AcctSchema == null || s_AcctSchema.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
 			s_AcctSchema = new MAcctSchema (Env.getCtx(), m_C_AcctSchema_ID, null);
-		log.config(s_AcctSchema.toString()
+		log.info(s_AcctSchema.toString()
 			+ ", #" + s_AcctSchema.getAcctSchemaElements().length);
 		Env.setContext(Env.getCtx(), m_WindowNo, "C_AcctSchema_ID", m_C_AcctSchema_ID);
 
@@ -462,7 +464,7 @@ public final class WAccountDialog extends Window
 		if (m_mAccount.getC_ValidCombination_ID() != 0)
 			m_mTab.navigate(0);
 
-		log.config("fini");
+		log.info("fini");
 		return true;
 	}	//	initAccount
 
@@ -475,7 +477,7 @@ public final class WAccountDialog extends Window
 	 */
 	private void addLine (GridField field, WEditor editor, boolean mandatory)
 	{
-		log.fine("Field=" + field);
+		log.debug("Field=" + field);
 		Label label = editor.getLabel();
 		editor.setReadWrite(true);
 		editor.setMandatory(mandatory);
@@ -509,7 +511,7 @@ public final class WAccountDialog extends Window
 	 */
 	private void loadInfo (int C_ValidCombination_ID, int C_AcctSchema_ID)
 	{
-		log.fine("C_ValidCombination_ID=" + C_ValidCombination_ID);
+		log.debug("C_ValidCombination_ID=" + C_ValidCombination_ID);
 		String sql = "SELECT * FROM C_ValidCombination WHERE C_ValidCombination_ID=? AND C_AcctSchema_ID=?";
 		try
 		{
@@ -546,7 +548,7 @@ public final class WAccountDialog extends Window
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}	//	loadInfo
 
@@ -600,7 +602,7 @@ public final class WAccountDialog extends Window
 			int row = m_adTabPanel.getGridTab().getCurrentRow();
 			if (row >= 0)
 				m_C_ValidCombination_ID = ((Integer)m_mTab.getValue(row, "C_ValidCombination_ID")).intValue();
-			log.config("(" + row + ") - " + m_C_ValidCombination_ID);
+			log.info("(" + row + ") - " + m_C_ValidCombination_ID);
 		}
 	}	//	saveSelection
 
@@ -633,7 +635,7 @@ public final class WAccountDialog extends Window
 	@Override
 	public void dataStatusChanged (DataStatusEvent e)
 	{
-		log.config(e.toString());
+		log.info(e.toString());
 		String info = (String)m_mTab.getValue("Description");
 		if (Executions.getCurrent() != null)
 			f_Description.setValue (info);
@@ -898,7 +900,7 @@ public final class WAccountDialog extends Window
 		 *	Check if already exists
 		 */
 		sql.append("AD_Client_ID=? AND C_AcctSchema_ID=?");
-		log.fine("Check = " + sql.toString());
+		log.debug("Check = " + sql.toString());
 		int IDvalue = 0;
 		String Alias = null;
 		try
@@ -917,10 +919,10 @@ public final class WAccountDialog extends Window
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			IDvalue = 0;
 		}
-		log.fine("ID=" + IDvalue + ", Alias=" + Alias);
+		log.debug("ID=" + IDvalue + ", Alias=" + Alias);
 
 		if (Alias == null)
 			Alias = "";
@@ -945,7 +947,7 @@ public final class WAccountDialog extends Window
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql.toString(), e);
+				log.error(sql.toString(), e);
 			}
 			if (i == 0)
 				FDialog.error(m_WindowNo, this, "AccountNotUpdated");
@@ -959,7 +961,7 @@ public final class WAccountDialog extends Window
 			return;
 		}
 
-		log.config("New");
+		log.info("New");
 		Alias = null;
 		if (f_Alias != null)
 			Alias = f_Alias.getValue().toString();
@@ -1107,7 +1109,7 @@ public final class WAccountDialog extends Window
 	 */
 	public Integer getValue()
 	{
-		log.config("C_ValidCombination_ID=" + m_C_ValidCombination_ID + ", Changed=" + m_changed);
+		log.info("C_ValidCombination_ID=" + m_C_ValidCombination_ID + ", Changed=" + m_changed);
 		if (!m_changed || m_C_ValidCombination_ID == 0)
 			return null;
 		return new Integer(m_C_ValidCombination_ID);

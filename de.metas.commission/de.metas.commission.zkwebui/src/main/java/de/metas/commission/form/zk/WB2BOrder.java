@@ -38,7 +38,7 @@ public class WB2BOrder implements IFormController
 	private final WB2BOrderHistoryWizardPage orderHistoryPanel;
 
 //	/** Logger. */
-//	private static final CLogger log = CLogger.getCLogger(WB2BOrderProductWizardPage.class);
+//	private static final Logger log = CLogMgt.getLogger(WB2BOrderProductWizardPage.class);
 
 	public WB2BOrder()
 	{

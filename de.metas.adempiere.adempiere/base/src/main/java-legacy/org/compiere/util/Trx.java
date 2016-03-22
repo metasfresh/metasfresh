@@ -22,7 +22,8 @@ import java.beans.VetoableChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -127,9 +128,9 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	}	// Trx
 
 	/** Static Log */
-	// private static final CLogger s_log = CLogger.getCLogger(Trx.class);
+	// private static final Logger s_log = CLogMgt.getLogger(Trx.class);
 	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	private Connection m_connection = null;
 
@@ -140,7 +141,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	 */
 	public Connection getConnection()
 	{
-		log.log(Level.ALL, "Active={0}, Connection={1}", new Object[] { isActive(), m_connection });
+		log.trace("Active={}, Connection={}", new Object[] { isActive(), m_connection });
 
 		// metas: tsa: begin: Handle the case when the connection was already closed
 		// Example: one case when we can get this is when we start a process with a transaction
@@ -154,7 +155,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "Error checking if the connection is closed. Assume closed - " + e.getLocalizedMessage(), e);
+				log.error("Error checking if the connection is closed. Assume closed - " + e.getLocalizedMessage(), e);
 				isClosed = true;
 			}
 			if (isClosed)
@@ -188,7 +189,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 
 		m_connection = conn;
-		log.log(Level.FINEST, "Connection={0}", conn);
+		log.trace("Connection={}", conn);
 
 		//
 		// Configure the connection
@@ -209,7 +210,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "connection", e);
+			log.error("connection", e);
 		}
 	}	// setConnection
 
@@ -236,14 +237,14 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			if (m_connection != null)
 			{
 				m_connection.rollback();
-				log.log(Level.FINE, "**** {0}", m_trxName);
+				log.debug("**** {}", m_trxName);
 				// m_active = false;
 				return true;
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, m_trxName, e);
+			log.error(m_trxName, e);
 			if (throwException)
 			{
 				// m_active = false;
@@ -267,7 +268,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			if (m_connection != null)
 			{
 				m_connection.rollback(jdbcSavepoint);
-				log.log(Level.FINE, "**** {0}", trxName);
+				log.debug("**** {}", trxName);
 				return true;
 			}
 		}
@@ -275,7 +276,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		{
 			// Do nothing. The Savepoint might have been discarded because of an intermediate commit or rollback
 			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case. 
-			// log.log(Level.SEVERE, trxName, e);
+			// log.error(trxName, e);
 			// throw e;
 		}
 		return false;
@@ -293,14 +294,14 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			if (m_connection != null)
 			{
 				m_connection.commit();
-				log.log(Level.FINE, "**** {0}", m_trxName);
+				log.debug("**** {}", m_trxName);
 				// m_active = false;
 				return true;
 			}
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, m_trxName, e);
+			log.error(m_trxName, e);
 			if (throwException)
 			{
 				// m_active = false;
@@ -331,7 +332,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, getTrxName(), e);
+			log.error(getTrxName(), e);
 		}
 		m_connection = null;
 		// m_active = false;
@@ -385,12 +386,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 		if (m_connection == null)
 		{
-			log.log(Level.WARNING, "Cannot release savepoint " + savepoint + " because there is no active connection. Ignoring it.");
+			log.warn("Cannot release savepoint " + savepoint + " because there is no active connection. Ignoring it.");
 			return false;
 		}
 		if (m_connection.isClosed())
 		{
-			log.log(Level.WARNING, "Cannot release savepoint " + savepoint + " because the connection is closed. Ignoring it.");
+			log.warn("Cannot release savepoint " + savepoint + " because the connection is closed. Ignoring it.");
 			return false;
 		}
 
@@ -408,7 +409,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	public void vetoableChange(PropertyChangeEvent evt)
 			throws PropertyVetoException
 	{
-		log.fine(evt.toString());
+		log.debug(evt.toString());
 	}	// vetoableChange
 
 	/**

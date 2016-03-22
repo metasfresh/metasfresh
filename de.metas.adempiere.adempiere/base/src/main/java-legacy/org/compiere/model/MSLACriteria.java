@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.sla.SLACriteria;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.CCache;
@@ -109,7 +107,7 @@ public class MSLACriteria extends X_PA_SLA_Criteria
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		try
 		{

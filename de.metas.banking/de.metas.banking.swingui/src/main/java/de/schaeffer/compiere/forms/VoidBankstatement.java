@@ -59,7 +59,8 @@ import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MQuery;
 import org.compiere.process.DocAction;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -71,7 +72,7 @@ import de.schaeffer.compiere.tools.TableHelper;
 
 public class VoidBankstatement extends CPanel implements FormPanel, ActionListener {
 
-	private CLogger log = CLogger.getCLogger(VoidBankstatement.class);
+	private Logger log = LogManager.getLogger(VoidBankstatement.class);
 
 	/** Combo Boxes */
 	private JComboBox bankComboBox = null;

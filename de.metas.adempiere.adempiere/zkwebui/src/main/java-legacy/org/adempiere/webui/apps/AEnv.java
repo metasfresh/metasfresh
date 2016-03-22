@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.servlet.ServletRequest;
 
@@ -47,11 +46,14 @@ import org.compiere.model.GridWindowVO;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.web.servlet.Servlets;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Execution;
@@ -162,7 +164,7 @@ public final class AEnv
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		//  Nothing to Zoom to
 		if (TableName == null || AD_Window_ID == 0)
@@ -178,7 +180,7 @@ public final class AEnv
 				AD_Window_ID = PO_Window_ID;
 		}
 
-		log.config(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
+		log.info(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
 		// metas: begin: 01880
 		MQuery query = new MQuery(TableName);
 		query.addRestriction(TableName+"_ID", MQuery.EQUAL, Record_ID);
@@ -234,7 +236,7 @@ public final class AEnv
 	/** Workflow Window		*/
 	private static int		s_workflow_Window_ID = 0;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(AEnv.class);
+	private static Logger log = LogManager.getLogger(AEnv.class);
 
 	/**	Window Cache		*/
 	private static Map<String, CCache<Integer,GridWindowVO>> windowCache = new HashMap<String, CCache<Integer,GridWindowVO>>();
@@ -250,7 +252,7 @@ public final class AEnv
 	public static GridWindowVO getMWindowVO (int WindowNo, int AD_Window_ID, int AD_Menu_ID)
 	{
 
-		log.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
 		GridWindowVO mWindowVO = null;
 		String locale = Env.getLanguage(Env.getCtx()).getLocale().toString();
 		if (AD_Window_ID != 0 && Ini.isCacheWindow())	//	try cache
@@ -273,7 +275,7 @@ public final class AEnv
 		//  Create Window Model on Client
 		if (mWindowVO == null)
 		{
-			log.config("create local");
+			log.info("create local");
 			mWindowVO = GridWindowVO.create (Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID);
 			if (mWindowVO != null)
 			{
@@ -355,7 +357,7 @@ public final class AEnv
 		String sqlRolePermission="Select COUNT(AD_ROLE_ID) AS ROWCOUNT FROM AD_ROLE WHERE AD_ROLE_ID=" + roleid
 	                              + " AND ALLOW_INFO_" + infoWindowName + "='Y'";
 
-		log.config(sqlRolePermission);
+		log.info(sqlRolePermission);
 		PreparedStatement prolestmt = null;
 		ResultSet rs = null;
 		try
@@ -377,7 +379,7 @@ public final class AEnv
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "(1)", e);
+			log.error("(1)", e);
 		}
 		finally
 		{
@@ -472,7 +474,7 @@ public final class AEnv
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		//  Nothing to Zoom to
 		if (AD_Window_ID == 0)
@@ -487,7 +489,7 @@ public final class AEnv
 				AD_Window_ID = PO_Window_ID;
 		}
 
-		log.config(query + " (IsSOTrx=" + isSOTrx + ")");
+		log.info(query + " (IsSOTrx=" + isSOTrx + ")");
 
 		zoom(AD_Window_ID, query);
 	}
@@ -508,7 +510,7 @@ public final class AEnv
         }
         catch (URISyntaxException exception)
         {
-            log.log(Level.SEVERE, "Not found: " +  fileNameInImageDir);
+            log.error("Not found: " +  fileNameInImageDir);
             return null;
         }
         return uri;

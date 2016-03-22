@@ -43,7 +43,8 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
@@ -54,7 +55,8 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -84,7 +86,7 @@ public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeLis
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.positionCenterWindow(Env.getWindow(p_WindowNo), dialog);
@@ -94,7 +96,7 @@ public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeLis
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 	
 	//
 	private JLabel bPartnerLabel = new JLabel();
@@ -107,7 +109,7 @@ public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeLis
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -160,7 +162,7 @@ public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeLis
 	 */
 	public void vetoableChange (PropertyChangeEvent e)
 	{
-		log.config(e.getPropertyName() + "=" + e.getNewValue());
+		log.info(e.getPropertyName() + "=" + e.getNewValue());
 
 		//  BPartner - load Order/Invoice/Shipment
 		if (e.getPropertyName().equals("C_BPartner_ID"))

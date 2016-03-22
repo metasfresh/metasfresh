@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 
@@ -81,7 +79,7 @@ public class CalloutAssignment extends CalloutEngine
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "product", e);
+			log.error("product", e);
 		}
 		finally
 		{
@@ -89,7 +87,7 @@ public class CalloutAssignment extends CalloutEngine
 			rs = null; pstmt = null;
 		}
 
-		log.fine("S_ResourceAssignment_ID=" + S_ResourceAssignment_ID + " - M_Product_ID=" + M_Product_ID);
+		log.debug("S_ResourceAssignment_ID=" + S_ResourceAssignment_ID + " - M_Product_ID=" + M_Product_ID);
 		if (M_Product_ID != 0)
 		{
 			mTab.setValue ("M_Product_ID", new Integer (M_Product_ID));

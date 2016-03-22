@@ -18,7 +18,8 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -49,7 +50,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -72,7 +74,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	private FormFrame 		m_frame;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VInOutGen.class);
+	private static Logger log = LogManager.getLogger(VInOutGen.class);
 	//
 	
 	private CTabbedPane tabbedPane = new CTabbedPane();
@@ -108,7 +110,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "init", ex);
+			log.error("init", ex);
 		}
 	}	//	init
 	
@@ -277,13 +279,13 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		/*
 		String sql = "UPDATE C_Order SET IsSelected='N' WHERE " + m_whereClause;
 		int no = DB.executeUpdate(sql, null);
-		log.config("Reset=" + no);*/
+		log.info("Reset=" + no);*/
 
 		//	Get results
 		int[] ids = pi.getIDs();
 		if (ids == null || ids.length == 0)
 			return;
-		log.config("PrintItems=" + ids.length);
+		log.info("PrintItems=" + ids.length);
 
 		confirmPanelGen.getOKButton().setEnabled(false);
 		//	OK to print

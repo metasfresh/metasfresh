@@ -26,11 +26,11 @@ package org.adempiere.bpartner.service.impl;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.compiere.model.MBPartner;
-import org.compiere.util.CLogger;
 
 /**
  * Synchronous implementation; note that there is also an async implementation which sets up a work package to to the job later and in background. 
@@ -38,7 +38,7 @@ import org.compiere.util.CLogger;
  */
 public class BPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanceUpdater
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -57,9 +57,9 @@ public class BPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanc
 			bp.setTotalOpenBalance();		// recalculates from scratch
 			// bp.setSOCreditStatus(); // called automatically
 			if (bp.save())
-				logger.log(Level.FINE, "Updated: {0}", bp);
+				logger.debug("Updated: {}", bp);
 			else
-				logger.log(Level.SEVERE, "BP not updated - " + bp);
+				logger.error("BP not updated - " + bp);
 		}
 	}
 

@@ -28,14 +28,14 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 public class MCAdvComFactSalesRepFact extends X_C_AdvComFact_SalesRepFact
 {
+	private static final Logger logger = LogManager.getLogger(MCAdvComFactSalesRepFact.class);
 
-	private static final CLogger logger = CLogger
-			.getCLogger(MCAdvComFactSalesRepFact.class);
 
 	/**
 	 * 
@@ -116,7 +116,7 @@ public class MCAdvComFactSalesRepFact extends X_C_AdvComFact_SalesRepFact
 		final String trxName = InterfaceWrapperHelper.getTrxName(salesRepFact);
 		final int no = DB.executeUpdateEx(sql, param, trxName);
 
-		MCAdvComFactSalesRepFact.logger.info("Deleted " + no + " records for " + salesRepFact);
+		logger.info("Deleted " + no + " records for " + salesRepFact);
 	}
 
 }

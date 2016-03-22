@@ -19,8 +19,9 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import org.compiere.apps.wf.WFLine;
-import org.compiere.util.CLogger;
 import org.compiere.wf.MWorkflow;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -37,7 +38,7 @@ public class WFNodeContainer
 	}	//	WFContentPanel
 	
 	/**	Logger			*/
-	private static CLogger	log = CLogger.getCLogger(WFNodeContainer.class);
+	private static Logger	log = LogManager.getLogger(WFNodeContainer.class);
 	/** Node List		*/
 	private ArrayList<WFNode>	m_nodes = new ArrayList<WFNode>();
 	/** Line List		*/
@@ -91,7 +92,7 @@ public class WFNodeContainer
 	 */
 	protected void createLines()
 	{
-		log.fine("Lines #" + m_lines.size());
+		log.debug("Lines #" + m_lines.size());
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			WFLine line = (WFLine)m_lines.get(i);

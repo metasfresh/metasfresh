@@ -30,11 +30,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import de.metas.data.export.api.IExportDataSource;
@@ -47,7 +47,7 @@ import de.metas.data.export.api.IExportDataSource;
  */
 public class JdbcExporterBuilder
 {
-	private static final CLogger logger = CLogger.getCLogger(JdbcExporterBuilder.class);
+	private static final Logger logger = LogManager.getLogger(JdbcExporterBuilder.class);
 
 	private final String tableName;
 
@@ -76,7 +76,7 @@ public class JdbcExporterBuilder
 		{
 			if (!field.isExported())
 			{
-				logger.log(Level.FINE, "Skip field {0} from csv columns list because is not exported");
+				logger.debug("Skip field {} from csv columns list because is not exported");
 				continue;
 			}
 

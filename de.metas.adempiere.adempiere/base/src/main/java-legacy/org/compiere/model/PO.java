@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
@@ -70,8 +69,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -85,12 +82,15 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.MetasfreshLastError;
 
 /**
  *  Persistent Object.
@@ -143,7 +143,7 @@ public abstract class PO
 	public static void setDocWorkflowMgr (DocWorkflowMgr docWFMgr)
 	{
 		s_docWFMgr = docWFMgr;
-		s_log.config (s_docWFMgr.toString());
+		s_log.info(s_docWFMgr.toString());
 	}	//	setDocWorkflowMgr
 
 	/** Document Value Workflow Manager		*/
@@ -252,9 +252,9 @@ public abstract class PO
 
 
 	/**	Logger							*/
-	protected transient final CLogger log = CLogger.getCLogger (getClass());
+	protected transient final Logger log = LogManager.getLogger(getClass());
 	/** Static Logger					*/
-	private static final CLogger s_log = CLogger.getCLogger (PO.class);
+	private static final Logger s_log = LogManager.getLogger(PO.class);
 
 	/** Context                 */
 	private Properties		p_ctx;
@@ -540,7 +540,7 @@ public abstract class PO
 	 * 	Get Logger
 	 *	@return logger
 	 */
-	public final CLogger get_Logger()
+	public final Logger get_Logger()
 	{
 		return log;
 	}	//	getLogger
@@ -554,7 +554,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.log(Level.WARNING, "Index invalid - " + index, new Exception()); // metas: tsa: added exeption to trace it
+			log.warn("Index invalid - " + index, new Exception()); // metas: tsa: added exeption to trace it
 			return null;
 		}
 		if (m_newValues[index] != null)
@@ -591,7 +591,7 @@ public abstract class PO
 		}
 		catch (NumberFormatException ex)
 		{
-			log.warning(p_info.getColumnName(index) + " - " + ex.getMessage());
+			log.warn(p_info.getColumnName(index) + " - " + ex.getMessage());
 			return 0;
 		}
 	}   //  get_ValueAsInt
@@ -606,7 +606,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			Trace.printStack();
 			return null;
 		}
@@ -664,7 +664,7 @@ public abstract class PO
 		int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Not found - AD_Column_ID=" + AD_Column_ID);
+			log.warn("Not found - AD_Column_ID=" + AD_Column_ID);
 			return null;
 		}
 		return get_Value (index);
@@ -679,7 +679,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.log(Level.WARNING, "Index invalid - " + index);
+			log.warn("Index invalid - " + index);
 			return null;
 		}
 		loadIfStalled(index); // metas: 01537
@@ -696,7 +696,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			return null;
 		}
 		return get_ValueOld (index);
@@ -712,7 +712,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			return 0;
 		}
 		return get_ValueOldAsInt (index);
@@ -730,7 +730,7 @@ public abstract class PO
 		}
 		catch (NumberFormatException ex)
 		{
-			log.warning(get_ColumnName(index) + " - " + ex.getMessage());
+			log.warn(get_ColumnName(index) + " - " + ex.getMessage());
 			return 0;
 		}
 	}
@@ -744,7 +744,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.log(Level.WARNING, "Index invalid - " + index);
+			log.warn("Index invalid - " + index);
 			return false;
 		}
 
@@ -791,7 +791,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			return false;
 		}
 		return is_ValueChanged (index);
@@ -809,7 +809,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.log(Level.WARNING, "Index invalid - " + index);
+			log.warn("Index invalid - " + index);
 			return null;
 		}
 
@@ -842,7 +842,7 @@ public abstract class PO
 			return new Integer(result);
 		}
 		//
-		log.warning("Invalid type - New=" + nValue);
+		log.warn("Invalid type - New=" + nValue);
 		return null;
 	}   //  get_ValueDifference
 
@@ -859,7 +859,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			return null;
 		}
 		return get_ValueDifference (index);
@@ -876,12 +876,12 @@ public abstract class PO
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
 			&& value.toString().toUpperCase().indexOf("=NULL") != -1)
-			log.warning("Invalid Null Value - " + ColumnName + "=" + value);
+			log.warn("Invalid Null Value - " + ColumnName + "=" + value);
 
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.log(Level.SEVERE, "Column not found - " + ColumnName);
+			log.error("Column not found - " + ColumnName);
 			return false;
 		}
 		if (ColumnName.endsWith("_ID") && value instanceof String )
@@ -890,7 +890,7 @@ public abstract class PO
 			Class<?> clazz = p_info.getColumnClass(p_info.getColumnIndex(ColumnName));
 			if (Integer.class == clazz)
 			{
-				log.severe("Invalid Data Type for " + ColumnName + "=" + value);
+				log.error("Invalid Data Type for " + ColumnName + "=" + value);
 				value = Integer.parseInt((String)value);
 			}
 		}
@@ -920,7 +920,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.log(Level.WARNING, "Index invalid - " + index);
+			log.warn("Index invalid - " + index);
 			return false;
 		}
 		String ColumnName = p_info.getColumnName(index);
@@ -928,7 +928,7 @@ public abstract class PO
 		if (p_info.isVirtualColumn(index))
 		{
 			final AdempiereException ex = new AdempiereException("Setting a Virtual Column is not allowed: " + ColumnName);
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 			return false;
 		}
 
@@ -996,7 +996,7 @@ public abstract class PO
 				}
 			}
 			m_newValues[index] = Null.NULL;          //  correct
-			log.log(Level.FINER,  "{0} = null", ColumnName);
+			log.trace("{} = null", ColumnName);
 		}
 		else
 		{
@@ -1027,14 +1027,14 @@ public abstract class PO
 				}
 				catch (NumberFormatException e)
 				{
-					log.log(Level.SEVERE, ColumnName
+					log.error(ColumnName
 						+ " - Class invalid: " + value.getClass().toString()
 						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 					return false;
 				}
 			else
 			{
-				log.log(Level.SEVERE, ColumnName
+				log.error(ColumnName
 					+ " - Class invalid: " + value.getClass().toString()
 					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 				return false;
@@ -1043,7 +1043,7 @@ public abstract class PO
 			String error = p_info.validate(index, value);
 			if (error != null)
 			{
-				log.log(Level.WARNING, ColumnName + "=" + value + " - " + error);
+				log.warn(ColumnName + "=" + value + " - " + error);
 				return false;
 			}
 			//	Length for String
@@ -1053,7 +1053,7 @@ public abstract class PO
 				int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
-					log.warning(ColumnName + " - Value too long - truncated to length=" + length
+					log.warn(ColumnName + " - Value too long - truncated to length=" + length
 							+ ": " + (p_info.isEncrypted(index) ? "(encrypted)" : stringValue));
 					m_newValues[index] = stringValue.substring(0,length);
 				}
@@ -1073,8 +1073,8 @@ public abstract class PO
 							+ value + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
 				}
 			}
-			if (CLogMgt.isLevelFinest())
-				log.finest(ColumnName + " = " + m_newValues[index] + " (OldValue="+m_oldValues[index]+")");
+			if (LogManager.isLevelFinest())
+				log.trace(ColumnName + " = " + m_newValues[index] + " (OldValue="+m_oldValues[index]+")");
 		}
 		set_Keys (ColumnName, m_newValues[index]);
 		return true;
@@ -1094,7 +1094,7 @@ public abstract class PO
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.log(Level.SEVERE, "Column not found - " + ColumnName);
+			log.error("Column not found - " + ColumnName);
 			return false;
 		}
 		return set_ValueNoCheck(index, value);
@@ -1134,7 +1134,7 @@ public abstract class PO
 				}
 				catch (Exception e)
 				{
-					log.warning (get_ColumnName(index)
+					log.warn(get_ColumnName(index)
 							+ " - Class invalid: " + value.getClass().toString()
 							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 					m_newValues[index] = null;
@@ -1142,7 +1142,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.warning (get_ColumnName(index)
+				log.warn(get_ColumnName(index)
 					+ " - Class invalid: " + value.getClass().toString()
 					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 				m_newValues[index] = value;     //  correct
@@ -1152,7 +1152,7 @@ public abstract class PO
 			//	Validate (Min/Max)
 			String error = p_info.validate(index, value);
 			if (error != null)
-				log.warning(get_ColumnName(index) + "=" + value + " - " + error);
+				log.warn(get_ColumnName(index) + "=" + value + " - " + error);
 			//	length for String
 			if (p_info.getColumnClass(index) == String.class)
 			{
@@ -1160,12 +1160,12 @@ public abstract class PO
 				int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
-					log.warning(get_ColumnName(index) + " - Value too long - truncated to length=" + length);
+					log.warn(get_ColumnName(index) + " - Value too long - truncated to length=" + length);
 					m_newValues[index] = stringValue.substring(0,length);
 				}
 			}
 		}
-		log.finest(get_ColumnName(index) + " = " + m_newValues[index]
+		log.trace(get_ColumnName(index) + " = " + m_newValues[index]
 				+ " (" + (m_newValues[index]==null ? "-" : m_newValues[index].getClass().getName()) + ")");
 		set_Keys (get_ColumnName(index), m_newValues[index]);
 		return true;
@@ -1230,7 +1230,7 @@ public abstract class PO
 	{
 		int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
-			log.log(Level.SEVERE, "Not found - AD_Column_ID=" + AD_Column_ID);
+			log.error("Not found - AD_Column_ID=" + AD_Column_ID);
 		String ColumnName = p_info.getColumnName(index);
 		if (ColumnName.equals("IsApproved"))
 			return set_ValueNoCheck(ColumnName, value);
@@ -1279,7 +1279,7 @@ public abstract class PO
 		else //	if (value instanceof String)
 			valueString = DB.TO_STRING(value.toString());
 		//	Save it
-		log.log(Level.INFO, columnName + "=" + valueString);
+		log.info(columnName + "=" + valueString);
 		m_custom.put(columnName, valueString);
 		return true;
 	}	//	set_CustomColumn
@@ -1435,7 +1435,7 @@ public abstract class PO
 	public static void copyValues (PO from, PO to, final boolean honorIsCalculated)
 	{
 // metas: end
-		s_log.fine("From ID=" + from.get_ID() + " - To ID=" + to.get_ID());
+		s_log.debug("From ID=" + from.get_ID() + " - To ID=" + to.get_ID());
 
 		//
 		// Make sure "from" and "to" objects are not stale (01537)
@@ -1579,7 +1579,7 @@ public abstract class PO
 	 */
 	protected final void load (final int ID, final String trxName)
 	{
-		log.log(Level.FINEST, "ID={0}", ID);
+		log.trace("ID={}", ID);
 		if (ID > 0)
 		{
 			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {0} shall have one single primary key but it has: {1}", this, m_KeyColumns);
@@ -1624,9 +1624,9 @@ public abstract class PO
 		final int columnsCount = get_ColumnCount();
 
 		//
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 		{
-			log.finest(get_WhereClause(true));
+			log.trace(get_WhereClause(true));
 		}
 
 		PreparedStatement pstmt = null;
@@ -1642,7 +1642,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.log(Level.SEVERE, "NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
+				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
 				m_IDs = new Object[] {I_ZERO};
 				success = false;
 			//	throw new DBException("NO Data found for " + get_WhereClause(true));
@@ -1680,7 +1680,7 @@ public abstract class PO
 				+ ", SQL=" + sql.toString();
 			success = false;
 			m_IDs = new Object[] {I_ZERO};
-			log.log(Level.SEVERE, msg, e);
+			log.error(msg, e);
 		//	throw new DBException(e);
 		}
 		//	Finish
@@ -1706,7 +1706,7 @@ public abstract class PO
 		int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
-		log.finest("(rs)");
+		log.trace("(rs)");
 		//  load column values
 		for (index = 0; index < size; index++)
 		{
@@ -1755,17 +1755,17 @@ public abstract class PO
 			m_newValues[index] = null; // reset new value
 			m_valueLoaded[index] = true; // mark the column as loaded
 			//
-			if (CLogMgt.isLevelAll())
-				log.finest(String.valueOf(index) + ": " + p_info.getColumnName(index)
+			if (log.isTraceEnabled())
+				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index)
 					+ "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 		}
 		catch (SQLException e)
 		{
 			if (p_info.isVirtualColumn(index))	//	if rs constructor used
-				log.log(Level.FINER, "Virtual Column not loaded: " + columnName);
+				log.trace("Virtual Column not loaded: " + columnName);
 			else
 			{
-				log.log(Level.SEVERE, "(rs) - " + String.valueOf(index)
+				log.error("(rs) - " + String.valueOf(index)
 					+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 					+ " (" + p_info.getColumnClass(index) + ") - " + e);
 				success = false;
@@ -1819,7 +1819,7 @@ public abstract class PO
 		int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
-		log.finest("(hm)");
+		log.trace("(hm)");
 		//  load column values
 		for (index = 0; index < size; index++)
 		{
@@ -1846,17 +1846,17 @@ public abstract class PO
 				else
 					m_oldValues[index] = null;	// loadSpecial(rs, index);
 				//
-				if (CLogMgt.isLevelAll())
-					log.finest(String.valueOf(index) + ": " + p_info.getColumnName(index)
+				if (log.isTraceEnabled())
+					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index)
 						+ "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 			}
 			catch (Exception e)
 			{
 				if (p_info.isVirtualColumn(index))	//	if rs constructor used
-					log.log(Level.FINER, "Virtual Column not loaded: " + columnName);
+					log.trace("Virtual Column not loaded: " + columnName);
 				else
 				{
-					log.log(Level.SEVERE, "(ht) - " + String.valueOf(index)
+					log.error("(ht) - " + String.valueOf(index)
 						+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 						+ " (" + p_info.getColumnClass(index) + ") - " + e);
 					success = false;
@@ -1910,9 +1910,9 @@ public abstract class PO
 			}
 		}
 
-		if (CLogMgt.isLevel(Level.FINE))
+		if (log.isDebugEnabled())
 		{
-			log.log(Level.FINE, "Loading stalled object: {0}", this);
+			log.debug("Loading stalled object: {}", this);
 		}
 
 		if (p_info.hasStaleableColumns())
@@ -2005,7 +2005,7 @@ public abstract class PO
 	 */
 	protected Object loadSpecial (ResultSet rs, int index) throws SQLException
 	{
-		log.finest("(NOP) - " + p_info.getColumnName(index));
+		log.trace("(NOP) - " + p_info.getColumnName(index));
 		return null;
 	}   //  loadSpecial
 
@@ -2104,7 +2104,7 @@ public abstract class PO
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, "Failed to cast ID column to Integer: " + keyColumnName + ", value=" + valueObj, e);
+					log.error("Failed to cast ID column to Integer: " + keyColumnName + ", value=" + valueObj, e);
 					valueInt = null;
 				}
 
@@ -2595,11 +2595,11 @@ public abstract class PO
 		catch (Exception e)
 		{
 			success = false;
-			log.log(Level.SEVERE, "Error while saving " + this, e);
+			log.error("Error while saving " + this, e);
 
 			// task 08596: w need to save the error in case po.save() was called from the gridtab.
 			// It will want to show the result of CLogger.retrieveError() to the user.
-			log.saveError("", e);
+			MetasfreshLastError.saveError(log, "", e);
 		}
 
 		return success;
@@ -2659,11 +2659,11 @@ public abstract class PO
 	 */
 	private final boolean savePrepare()
 	{
-		CLogger.resetLast();
+		MetasfreshLastError.resetLast();
 		final boolean newRecord = is_new();	//	save locally as load resets
 		if (!newRecord && !is_Changed())
 		{
-			log.log(Level.FINE, "Nothing changed - {0}", this);
+			log.debug("Nothing changed - {}", this);
 			return false; // no save is needed
 		}
 
@@ -2686,7 +2686,7 @@ public abstract class PO
 			}
 			if (reset)
 			{
-				log.warning("Set Org to 0");
+				log.warn("Set Org to 0");
 				setAD_Org_ID(0);
 			}
 		}
@@ -2956,8 +2956,8 @@ public abstract class PO
 	protected boolean beforeSave(boolean newRecord)
 	{
 		/** Prevents saving
-		log.saveError("Error", Msg.parseTranslation(getCtx(), "@C_Currency_ID@ = @C_Currency_ID@"));
-		log.saveError("FillMandatory", Msg.getElement(getCtx(), "PriceEntered"));
+		log.error("Error", Msg.parseTranslation(getCtx(), "@C_Currency_ID@ = @C_Currency_ID@"));
+		log.error("FillMandatory", Msg.getElement(getCtx(), "PriceEntered"));
 		/** Issues message
 		log.saveWarning(AD_Message, message);
 		log.saveInfo (AD_Message, message);
@@ -3063,7 +3063,7 @@ public abstract class PO
 				}
 				else
 				{
-					log.warning("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
 				}
 			}
 
@@ -3120,8 +3120,8 @@ public abstract class PO
 		//	Something changed
 		if (changes)
 		{
-			if (log.isLoggable(Level.FINE))
-				log.fine("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+			if (log.isDebugEnabled())
+				log.debug("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
 
 			if (!updated)	//	Updated not explicitly set
 			{
@@ -3140,7 +3140,7 @@ public abstract class PO
 
 			//
 			// Execute UPDATE SQL
-			log.finest(sql.toString());
+			log.trace(sql.toString());
 			final int no;
 			if (isUseTimeoutForUpdate())
 				no = DB.executeUpdateEx(sql.toString(), m_trxName, QUERY_TIME_OUT);
@@ -3162,7 +3162,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.log(Level.WARNING, "#" + no + " - [" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+				log.warn("#" + no + " - [" + m_trxName + "] - " + p_info.getTableName() + "." + where);
 			}
 
 			return saveFinish (false, ok); //newRecord=false, success=ok
@@ -3232,7 +3232,7 @@ public abstract class PO
 			if (idNew <= 0)
 			{
 				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ")");
-				//log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+				//log.error(ex.getLocalizedMessage(), ex);
 				//return false;
 				throw ex;
 			}
@@ -3280,9 +3280,9 @@ public abstract class PO
 		POReturningAfterInsertLoader loadAfterInsertProcessor = new POReturningAfterInsertLoader();
 
 
-		if (log.isLoggable(Level.FINE))
+		if (log.isDebugEnabled())
 		{
-			log.fine("[" + m_trxName + "] - " + tableName + " - " + get_WhereClause(true));
+			log.debug("[" + m_trxName + "] - " + tableName + " - " + get_WhereClause(true));
 		}
 
 		//	Set new DocumentNo
@@ -3482,7 +3482,7 @@ public abstract class PO
 				msg += p_info.toString(i)
 					+ " - Value=" + value
 					+ "(" + (value==null ? "null" : value.getClass().getName()) + ")";
-				log.log(Level.SEVERE, msg, e);
+				log.error(msg, e);
 				throw new DBException(e);	//	fini
 			}
 		}
@@ -3565,21 +3565,21 @@ public abstract class PO
 			// Re-load this object right now
 			else if (!load(m_trxName))
 			{
-				log.log(Level.SEVERE, "[" + m_trxName + "] - reloading");
+				log.error("[" + m_trxName + "] - reloading");
 				ok = false;
 			}
 		}
 		else
 		{
 			String msg = "Not inserted - ";
-			if (CLogMgt.isLevelFiner())
+			if (LogManager.isLevelFiner())
 				msg += sqlInsert.toString();
 			else
 				msg += get_TableName();
 			if (m_trxName == null)
-				log.log(Level.WARNING, msg);
+				log.warn(msg);
 			else
-				log.log(Level.WARNING, "[" + m_trxName + "]" + msg);
+				log.warn("[" + m_trxName + "]" + msg);
 		}
 
 		return saveFinish (true, ok);
@@ -3639,7 +3639,7 @@ public abstract class PO
 		String colValue = value == null ? "null" : value.getClass().toString();
 //		int dt = p_info.getColumnDisplayType(index);
 
-		log.log(Level.SEVERE, "Unknown class for column " + colName
+		log.error("Unknown class for column " + colName
 			+ " (" + colClass + ") - Value=" + colValue);
 
 		if (value == null)
@@ -3701,7 +3701,7 @@ public abstract class PO
 		catch (Exception e)
 		{
 			success = false;
-			log.log(Level.SEVERE, "Error while deleting " + this, e);
+			log.error("Error while deleting " + this, e);
 		}
 
 		return success;
@@ -3759,7 +3759,7 @@ public abstract class PO
 	 */
 	private final boolean deletePrepare(final boolean force)
 	{
-		CLogger.resetLast();
+		MetasfreshLastError.resetLast();
 		if (is_new())
 		{
 			return false; // delete not needed because the record is new and never saved
@@ -3855,8 +3855,8 @@ public abstract class PO
 			m_IDs[0] = I_ZERO;
 			m_attachment = null;
 
-			if (log.isLoggable(Level.FINE))
-				log.fine("[" + m_trxName + "] - complete");
+			if (log.isDebugEnabled())
+				log.debug("[" + m_trxName + "] - complete");
 		}
 
 		success = afterDelete(success);
@@ -3914,7 +3914,7 @@ public abstract class PO
 	 */
 	protected boolean beforeDelete ()
 	{
-	//	log.saveError("Error", Msg.getMsg(getCtx(), "CannotDelete"));
+	//	log.error("Error", Msg.getMsg(getCtx(), "CannotDelete"));
 		return true;
 	} 	//	beforeDelete
 
@@ -3976,7 +3976,7 @@ public abstract class PO
 			.append("_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.")
 			.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		int no = DB.executeUpdateEx(sql.toString(), m_trxName);
-		log.fine("#" + no);
+		log.debug("#" + no);
 		m_translations = null; // metas
 		return no > 0;
 	}	//	insertTranslations
@@ -4044,7 +4044,7 @@ public abstract class PO
 		sql.append(" WHERE ")
 			.append(keyColumn).append("=").append(get_ID());
 		int no = DB.executeUpdate(sql.toString(), m_trxName);
-		log.fine("#" + no);
+		log.debug("#" + no);
 		m_translations = null; // metas
 		return no >= 0;
 	}	//	updateTranslations
@@ -4069,7 +4069,7 @@ public abstract class PO
 			.append(tableName).append("_Trl WHERE ")
 			.append(keyColumn).append("=").append(get_ID());
 		int no = DB.executeUpdate(sql.toString(), trxName);
-		log.fine("#" + no);
+		log.debug("#" + no);
 		m_translations = null; // metas
 		return no >= 0;
 	}	//	deleteTranslations
@@ -4108,7 +4108,7 @@ public abstract class PO
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, acctTable, e);
+				log.error(acctTable, e);
 			}
 			finally {
 				DB.close(rs, pstmt);
@@ -4116,7 +4116,7 @@ public abstract class PO
 			}
 			if (s_acctColumns.size() == 0)
 			{
-				log.severe ("No Columns for " + acctTable);
+				log.error("No Columns for " + acctTable);
 				return false;
 			}
 		}
@@ -4157,7 +4157,7 @@ public abstract class PO
 		final int no = DB.executeUpdate(sb.toString(), get_TrxName());
 		if (no > 0)
 		{
-			log.fine("#" + no);
+			log.debug("#" + no);
 		}
 		else
 		{
@@ -4168,7 +4168,7 @@ public abstract class PO
 					+ "\n PO: " + this
 					+ "\n TrxName: " + get_TrxName()
 					+ "\n Ctx: " + getCtx());
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		return no > 0;
 	}	//	insert_Accounting
@@ -4229,9 +4229,9 @@ public abstract class PO
 			else
 				success = DB.executeUpdate(sql, null) == 1;	//	outside trx
 			if (success)
-				log.fine("success");
+				log.debug("success");
 			else
-				log.log(Level.WARNING, "failed");
+				log.warn("failed");
 			return success;
 		}
 		return false;
@@ -4253,7 +4253,7 @@ public abstract class PO
 	 */
 	public final boolean unlock (String trxName)
 	{
-	//	log.warning(trxName);
+	//	log.warn(trxName);
 		int index = get_ProcessingIndex();
 		if (index != -1)
 		{
@@ -4266,9 +4266,9 @@ public abstract class PO
 			else
 				success = DB.executeUpdate(sql, trxName) == 1;
 			if (success)
-				log.fine("success" + (trxName == null ? "" : "[" + trxName + "]"));
+				log.debug("success" + (trxName == null ? "" : "[" + trxName + "]"));
 			else
-				log.log(Level.WARNING, "failed" + (trxName == null ? "" : " [" + trxName + "]"));
+				log.warn("failed" + (trxName == null ? "" : " [" + trxName + "]"));
 			return success;
 		}
 		return true;
@@ -4354,7 +4354,7 @@ public abstract class PO
 		{
 			if (m_attachment.getEntryName(i).endsWith(extension))
 			{
-				log.fine("#" + i + ": " + m_attachment.getEntryName(i));
+				log.debug("#" + i + ": " + m_attachment.getEntryName(i));
 				return true;
 			}
 		}
@@ -4375,7 +4375,7 @@ public abstract class PO
 		{
 			if (m_attachment.getEntryName(i).endsWith(extension))
 			{
-				log.fine("#" + i + ": " + m_attachment.getEntryName(i));
+				log.debug("#" + i + ": " + m_attachment.getEntryName(i));
 				return m_attachment.getEntryData(i);
 			}
 		}
@@ -4406,9 +4406,9 @@ public abstract class PO
 	 */
 	public void dump ()
 	{
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 		{
-			log.finer(get_WhereClause (true));
+			log.trace(get_WhereClause (true));
 			for (int i = 0; i < get_ColumnCount (); i++)
 				dump (i);
 		}
@@ -4423,13 +4423,13 @@ public abstract class PO
 		StringBuilder sb = new StringBuilder(" ").append(index);
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.finest(sb.append(": invalid").toString());
+			log.trace(sb.append(": invalid").toString());
 			return;
 		}
 		sb.append(": ").append(get_ColumnName(index))
 			.append(" = ").append(m_oldValues[index])
 			.append(" (").append(m_newValues[index]).append(")");
-		log.finest(sb.toString());
+		log.trace(sb.toString());
 	}   //  dump
 
 
@@ -4467,7 +4467,7 @@ public abstract class PO
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql.toString(), e);
+			s_log.error(sql.toString(), e);
 			return null;
 		}
 		finally {
@@ -4507,7 +4507,7 @@ public abstract class PO
 	 */
 	private Object get_LOB (Object value)
 	{
-		log.fine("Value=" + value);
+		log.debug("Value=" + value);
 		if (value == null)
 			return null;
 		//
@@ -4537,11 +4537,11 @@ public abstract class PO
 				retValue = blob.getBytes(index, (int)length);
 			}
 			else
-				log.log(Level.SEVERE, "Unknown: " + value);
+				log.error("Unknown: " + value);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Length=" + length, e);
+			log.error("Length=" + length, e);
 		}
 		return retValue;
 	}	//	getLOB
@@ -4565,7 +4565,7 @@ public abstract class PO
 	 */
 	private void lobAdd (Object value, int index, int displayType)
 	{
-		log.finest("Value=" + value);
+		log.trace("Value=" + value);
 		PO_LOB lob = new PO_LOB (p_info.getTableName(), get_ColumnName(index),
 			get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
@@ -4635,7 +4635,7 @@ public abstract class PO
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		return xml;
 	}	//	get_xmlString
@@ -4663,7 +4663,7 @@ public abstract class PO
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		//	Root
 		Element root = document.createElement(get_TableName());
@@ -4882,7 +4882,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.log(Level.WARNING, "Column not found - " + columnName);
+			log.warn("Column not found - " + columnName);
 			return "";
 		}
 		return get_ValueOldAsString (index);
@@ -4979,7 +4979,7 @@ public abstract class PO
 		POCacheLocal poCache = m_poCacheLocals.get(columnName);
 		if (poCache != null && !refTableName.equals(poCache.getTableName()))
 		{
-			log.log(Level.WARNING, "POCache does not have tableName="+refTableName+" -- "+poCache, new Exception());
+			log.warn("POCache does not have tableName="+refTableName+" -- "+poCache, new Exception());
 			poCache = null;
 		}
 		if (poCache == null)
@@ -5084,7 +5084,7 @@ public abstract class PO
 		final MSession session = MSession.get (getCtx(), false);
 		if (session == null)
 		{
-			log.fine("No Session found");
+			log.debug("No Session found");
 		}
 		return session;
 	}
@@ -5124,7 +5124,7 @@ public abstract class PO
 		final int columnIndex = get_ColumnIndex(columnName);
 		if (columnIndex < 0)
 		{
-			log.log(Level.WARNING, "No columnIndex found for column name '" + columnName + "'");
+			log.warn("No columnIndex found for column name '" + columnName + "'");
 			return;
 		}
 		if (markedChangedColumns == null)

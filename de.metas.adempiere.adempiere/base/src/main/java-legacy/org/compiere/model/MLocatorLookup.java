@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.compiere.util.DB;
@@ -86,7 +84,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 	@Override
 	public void dispose()
 	{
-		log.fine("C_Locator_ID=" + C_Locator_ID);
+		log.debug("C_Locator_ID=" + C_Locator_ID);
 		if (m_loader != null)
 		{
 			while (m_loader.isAlive())
@@ -150,7 +148,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 			}
 			catch (InterruptedException ie)
 			{
-				log.log(Level.SEVERE, "Join interrupted", ie);
+				log.error("Join interrupted", ie);
 			}
 		}
 	}   //  loadComplete
@@ -174,7 +172,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 		//	Not found and waiting for loader
 		if (m_loader.isAlive())
 		{
-			log.fine("Waiting for Loader");
+			log.debug("Waiting for Loader");
 			loadComplete();
 			//	is most current
 			loc = m_lookup.get(key);
@@ -242,7 +240,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 	 */
 	public MLocator getMLocator (Object keyValue, String trxName)
 	{
-	//	log.fine( "MLocatorLookup.getDirect " + keyValue.getClass() + "=" + keyValue);
+	//	log.debug( "MLocatorLookup.getDirect " + keyValue.getClass() + "=" + keyValue);
 		int M_Locator_ID = -1;
 		try
 		{
@@ -252,7 +250,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 		{}
 		if (M_Locator_ID == -1)
 		{
-			log.log(Level.SEVERE, "Invalid key=" + keyValue);
+			log.error("Invalid key=" + keyValue);
 			return null;
 		}
 		//
@@ -325,7 +323,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 		@Override
 		public void run()
 		{
-		//	log.config("MLocatorLookup Loader.run " + m_AD_Column_ID);
+		//	log.info("MLocatorLookup Loader.run " + m_AD_Column_ID);
 			//	Set Info	- see VLocator.actionText
 			int local_only_warehouse_id = getOnly_Warehouse_ID(); // [ 1674891 ] MLocatorLookup - weird error 
 			int local_only_product_id = getOnly_Product_ID();
@@ -348,7 +346,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 			String finalSql = Env.getUserRolePermissions(m_ctx).addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
 			if (isInterrupted())
 			{
-				log.log(Level.SEVERE, "Interrupted");
+				log.error("Interrupted");
 				return;
 			}
 
@@ -378,16 +376,16 @@ public final class MLocatorLookup extends Lookup implements Serializable
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, finalSql, e);
+				log.error(finalSql, e);
 			}
 			finally
 			{
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-			log.fine("Complete #" + m_lookup.size());
+			log.debug("Complete #" + m_lookup.size());
 			if (m_lookup.size() == 0)
-				log.finer(finalSql);
+				log.trace(finalSql);
 		}	//	run
 	}	//	Loader
 
@@ -399,14 +397,14 @@ public final class MLocatorLookup extends Lookup implements Serializable
 	{
 		if (m_loader.isAlive())
 		{
-			log.fine("Waiting for Loader");
+			log.debug("Waiting for Loader");
 			try
 			{
 				m_loader.join();
 			}
 			catch (InterruptedException ie)
 			{
-				log.severe ("Join interrupted - " + ie.getMessage());
+				log.error("Join interrupted - " + ie.getMessage());
 			}
 		}
 		return m_lookup.values();
@@ -456,7 +454,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 	@Override
 	public int refresh()
 	{
-		log.fine("start");
+		log.debug("start");
 		m_loader = new Loader();
 		m_loader.start();
 		try

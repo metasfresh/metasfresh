@@ -28,7 +28,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.archive.api.IArchiveBL;
@@ -39,7 +40,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
@@ -55,7 +55,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	// the encoding that we use when converting the path info to and from byte[]
 	private static final String UTF_8 = "UTF-8";
 
-	private static final CLogger logger = CLogger.getCLogger(FilesystemArchiveStorage.class);
+	private static final Logger logger = LogManager.getLogger(FilesystemArchiveStorage.class);
 
 	/**
 	 * string replaces the archive root in stored xml file to allow the changing of the attachment root.
@@ -74,7 +74,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
 		this.archivePathRoot = getArchivePath(client);
-		logger.log(Level.CONFIG, "Archive Path: {0}, Config={1}", new Object[] { archivePathRoot, client });
+		logger.info("Archive Path: {}, Config={}", new Object[] { archivePathRoot, client });
 	}
 	
 	private final void checkContext()
@@ -116,7 +116,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 
 		if (!archivePathRoot.endsWith(File.separator))
 		{
-			// log.warning("archive path doesn't end with " + File.separator);
+			// log.warn("archive path doesn't end with " + File.separator);
 			archivePathRoot += File.separator;
 		}
 
@@ -167,7 +167,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 			}
 			filePath = filePath.replaceAll("/", replaceSeparator);
 			filePath = filePath.replaceAll("\\\\", replaceSeparator);
-			logger.fine("FilePath: " + filePath);
+			logger.debug("FilePath: " + filePath);
 
 			final File file = new File(filePath);
 			if (!file.exists())
@@ -181,7 +181,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 		catch (IOException ioe)
 		{
 			// I/O error
-			// logger.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+			// logger.error(ioe.getLocalizedMessage(), ioe);
 			throw new AdempiereException(ioe.getLocalizedMessage(), ioe);
 		}
 		// return null;
@@ -219,7 +219,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 			{
 				if (!destFolder.mkdirs())
 				{
-					logger.log(Level.WARNING, "Unable to create folder: " + destFolder.getPath());
+					logger.warn("Unable to create folder: " + destFolder.getPath());
 				}
 			}
 			// write to pdf

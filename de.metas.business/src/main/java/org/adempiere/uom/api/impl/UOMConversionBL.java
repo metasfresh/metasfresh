@@ -29,7 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,7 +45,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
@@ -53,7 +55,7 @@ import de.metas.product.IProductBL;
 
 public class UOMConversionBL implements IUOMConversionBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public IUOMConversionContext createConversionContext(final I_M_Product product)
@@ -467,7 +469,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final List<I_C_UOM_Conversion> rates = getProductConversions(ctx, product);
 		if (rates.isEmpty())
 		{
-			logger.fine("None found");
+			logger.debug("None found");
 			return null;
 		}
 
@@ -501,7 +503,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return rateReversed.getDivideRate();
 		}
 
-		logger.fine("None applied");
+		logger.debug("None applied");
 		return null;
 	}	// getProductRateTo
 
@@ -522,7 +524,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final List<I_C_UOM_Conversion> rates = getProductConversions(ctx, product);
 		if (rates.isEmpty())
 		{
-			logger.fine("getProductRateFrom - none found");
+			logger.debug("getProductRateFrom - none found");
 			return null;
 		}
 
@@ -555,7 +557,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return rateReversed.getMultiplyRate();
 		}
 
-		logger.fine("None applied");
+		logger.debug("None applied");
 		return null;
 	}	// getProductRateFrom
 
@@ -570,7 +572,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// No conversion
 		if (qtyToConvert == null || qtyToConvert.signum() == 0 || uomSource == null || product == null)
 		{
-			logger.log(Level.FINE, "No Conversion - QtyPrice={0}", qtyToConvert);
+			logger.debug("No Conversion - QtyPrice={}", qtyToConvert);
 			return qtyToConvert;
 		}
 
@@ -603,7 +605,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 		// metas: tsa: end: 01428
 
-		logger.log(Level.FINE, "No Rate found for product: {0}", product);
+		logger.debug("No Rate found for product: {}", product);
 		return null;
 	}	// convertProductFrom
 

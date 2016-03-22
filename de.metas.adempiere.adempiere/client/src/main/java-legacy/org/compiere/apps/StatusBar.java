@@ -193,7 +193,7 @@ public class StatusBar extends CPanel implements IStatusBar
 	@Override
 	public void setStatusDB (String text, DataStatusEvent dse)
 	{
-	//	log.config( "StatusBar.setStatusDB - " + text + " - " + created + "/" + createdBy);
+	//	log.info( "StatusBar.setStatusDB - " + text + " - " + created + "/" + createdBy);
 		if (text == null || text.length() == 0)
 		{
 			statusDB.setText("");

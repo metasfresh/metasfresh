@@ -41,7 +41,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -59,7 +60,7 @@ import de.metas.interfaces.I_C_OrderLine;
 
 public class ShipmentBL implements IShipmentBL
 {
-	private static final CLogger logger = CLogger.getCLogger(ShipmentBL.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentBL.class);
 
 	@Override
 	public void addShipments(
@@ -549,7 +550,7 @@ public class ShipmentBL implements IShipmentBL
 
 			if (!docActionBL.processIt(currentShipment, docAction))
 			{
-				logger.warning("Failed: " + currentShipment);
+				logger.warn("Failed: " + currentShipment);
 			}
 			InterfaceWrapperHelper.save(currentShipment);
 		}

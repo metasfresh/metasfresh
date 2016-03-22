@@ -1,20 +1,20 @@
 package de.metas.jms.impl;
 
 import java.net.URI;
-import java.util.logging.Level;
+import java.net.URISyntaxException;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
 import de.metas.jms.IJMSService;
 import de.metas.jms.JmsConstants;
 
@@ -41,6 +41,8 @@ import de.metas.jms.JmsConstants;
  */
 public class JMSService implements IJMSService
 {
+	private static final transient Logger logger = JmsConstants.getLogger(JMSService.class);
+
 	private BrokerService embeddedBroker = null;
 
 	@Override
@@ -79,7 +81,7 @@ public class JMSService implements IJMSService
 	}
 
 	@Override
-	public void startEmbeddedBrocker()
+	public void startEmbeddedBroker()
 	{
 		synchronized (JMSService.class)
 		{
@@ -93,8 +95,6 @@ public class JMSService implements IJMSService
 
 	private void startEmbeddedBroker0()
 	{
-		final CLogger logger = JmsConstants.getLogger();
-
 		// try if there is already a broker running, by making a "fail-fast" attempt to connect to it.
 		final boolean createFailoverURL = false;
 		final ConnectionFactory connectionFactory = createConnectionFactory(createFailoverURL);
@@ -102,7 +102,7 @@ public class JMSService implements IJMSService
 		{
 			final Connection conn = connectionFactory.createConnection();
 			conn.close();
-			JmsConstants.getLogger().log(Level.WARNING, "Found an embedded JMS broker to which we can connect. Assuming that attempting to create another one would not work. Returning.");
+			logger.warn("Found an embedded JMS broker to which we can connect. Assuming that attempting to create another one would not work. Returning.");
 			return;
 		}
 		catch (JMSException e)
@@ -114,20 +114,88 @@ public class JMSService implements IJMSService
 		try
 		{
 			embeddedBroker = new BrokerService();
-
-			final String urlStr = getJmsURL(null);
-			final TransportConnector connector = new TransportConnector();
-
-			connector.setUri(new URI(urlStr));
-			embeddedBroker.addConnector(connector);
-
+			createEmbeddedBrokerConnector();
 			embeddedBroker.start();
-			logger.log(Level.CONFIG, "Embedded JMS broker started on URL " + urlStr);
+			logger.info("Embedded JMS broker started");
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "Failed starting JMS broker", e);
+			logger.error("Failed starting JMS broker", e);
 		}
+	}
+
+	private void createEmbeddedBrokerConnector() throws Exception
+	{
+		final URI uri = getJmsURI();
+
+		//
+		// Remove the old connector if exists and if is not up2date
+		final TransportConnector connectorOld = embeddedBroker.getConnectorByName(connectorName);
+		if (connectorOld == null)
+		{
+			// nothing
+		}
+		else if (Check.equals(connectorOld.getUri(), uri))
+		{
+			logger.info("JMS connector has not changed. Skip updating.");
+			return;
+		}
+		else
+		{
+			logger.info("JMS connector URL has changed. Removing old connector: {}", connectorOld);
+			embeddedBroker.removeConnector(connectorOld);
+		}
+
+		//
+		// Adding the new connector
+		final TransportConnector connector = new TransportConnector();
+		connector.setName(connectorName);
+		connector.setUri(uri);
+		embeddedBroker.addConnector(connector);
+		logger.info("JMS connector mapped to URL: " + uri);
+	}
+
+	private static final String connectorName = "appsServer";
+
+	@Override
+	public void updateConfiguration()
+	{
+		synchronized (JMSService.class)
+		{
+			updateConfiguration_EmbeddedBroker();
+			updateConfiguration_JMSConnectionFactory();
+		}
+	}
+	
+	/** Updates the embedded broker configuration */
+	private final void updateConfiguration_EmbeddedBroker()
+	{
+		if (embeddedBroker == null)
+		{
+			logger.info("JMS borker not started yet. Doing nothing.");
+			return;
+		}
+		
+		try
+		{
+			createEmbeddedBrokerConnector();
+		}
+		catch (Exception e)
+		{
+			logger.error("Failed updating the JMS connector", e);
+		}
+	}
+	
+	/** Updates configuration of released connection factories */
+	private final void updateConfiguration_JMSConnectionFactory()
+	{
+		// TODO: implement
+	}
+
+	private final URI getJmsURI() throws URISyntaxException
+	{
+		final String urlStr = getJmsURL(null);
+		return new URI(urlStr);
 	}
 
 	@Override
@@ -147,14 +215,13 @@ public class JMSService implements IJMSService
 		}
 		else
 		{
-			final CConnection cConnectionToUse =
-					cConnection == null ? CConnection.get() : cConnection;
+			final CConnection cConnectionToUse = cConnection == null ? CConnection.get() : cConnection;
 			appsHost = cConnectionToUse.getAppsHost();
 			appsPort = cConnectionToUse.getAppsPort();
 		}
 
 		final String jmsUrl = StringUtils.formatMessage(JmsConstants.TCP_HOSTNAME_PORT, appsHost, Integer.toString(appsPort));
-		JmsConstants.getLogger().log(Level.INFO, "Assuming JMS-broker runs on appsHost => returning JmsURL={0}", jmsUrl);
+		logger.info("Assuming JMS-broker runs on appsHost => returning JmsURL={}", jmsUrl);
 		return jmsUrl;
 
 		// final String jmsURL = Services.get(ISysConfigBL.class).getValue(JmsConstants.SYSCONFIG_JMS_URL, ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL);

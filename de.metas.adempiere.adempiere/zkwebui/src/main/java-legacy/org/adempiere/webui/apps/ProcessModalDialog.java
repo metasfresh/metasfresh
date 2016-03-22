@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,9 +35,12 @@ import org.compiere.apps.ProcessCtl;
 import org.compiere.apps.ProcessDialog;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.au.out.AuEcho;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -113,7 +115,7 @@ public class ProcessModalDialog extends Window implements EventListener
 			// metas: 03577: Just logging the error is not sufficient.
 			// Dispose the window, because is not usable/available anyway and throw the exception up 
 			dispose();
-			log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			log.error(ex.getLocalizedMessage(), ex);
 			throw new AdempiereException(ex.getLocalizedMessage(), ex);
 		}
 	}
@@ -192,7 +194,7 @@ public class ProcessModalDialog extends Window implements EventListener
 	private Html message = null;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ProcessDialog.class);
+	private static Logger log = LogManager.getLogger(ProcessDialog.class);
 	//
 	private ProcessParameterPanel parameterPanel = null;
 	
@@ -239,7 +241,7 @@ public class ProcessModalDialog extends Window implements EventListener
 	 */
 	public boolean init()
 	{
-		log.config("");
+		log.info("");
 		//
 		boolean trl = !Env.isBaseLanguage(m_ctx, "AD_Process");
 		String sql = "SELECT Name, Description, Help, IsReport, ShowHelp "
@@ -283,7 +285,7 @@ public class ProcessModalDialog extends Window implements EventListener
 		catch (SQLException e)
 		{
 			// metas: 03577: Just logging the error is not sufficient.
-			//log.log(Level.SEVERE, sql, e);
+			//log.error(sql, e);
 			//return false;
 			throw new DBException(e, sql);
 		}

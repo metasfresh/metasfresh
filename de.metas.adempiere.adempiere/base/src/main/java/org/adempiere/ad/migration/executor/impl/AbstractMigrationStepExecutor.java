@@ -24,13 +24,13 @@ package org.adempiere.ad.migration.executor.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IMigrationStepExecutor;
 import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 public abstract class AbstractMigrationStepExecutor implements IMigrationStepExecutor
 {
@@ -53,7 +53,7 @@ public abstract class AbstractMigrationStepExecutor implements IMigrationStepExe
 		Ignored,
 	};
 
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IMigrationExecutorContext migrationExecutorContext;
 	private final I_AD_MigrationStep step;
@@ -104,14 +104,7 @@ public abstract class AbstractMigrationStepExecutor implements IMigrationStepExe
 	 */
 	protected final void log(final String msg, final String resolution, final boolean isError)
 	{
-		final Level level = isError ? Level.WARNING : Level.INFO;
-
-		if (!logger.isLoggable(level))
-		{
-			return;
-		}
-
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("Step ").append(step.getSeqNo());
 
 		if (!Check.isEmpty(msg, true))
@@ -124,6 +117,13 @@ public abstract class AbstractMigrationStepExecutor implements IMigrationStepExe
 			sb.append(" [").append(resolution).append("]");
 		}
 
-		logger.log(level, sb.toString());
+		if(isError)
+		{
+			logger.error(sb.toString());
+		}
+		else
+		{
+			logger.info(sb.toString());
+		}
 	}
 }

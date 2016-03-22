@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.model.MBankStatementLoader;
 import org.compiere.util.Env;
@@ -73,7 +72,7 @@ public class LoadBankStatement extends SvrProcess
 			else if (name.equals("FileName"))
 				fileName = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		m_AD_Client_ID = Env.getAD_Client_ID(m_ctx);
 		log.info("AD_Client_ID=" + m_AD_Client_ID);
@@ -97,11 +96,11 @@ public class LoadBankStatement extends SvrProcess
 		log.info(m_controller.toString());
 		
 		if (m_controller == null || m_controller.get_ID() == 0)
-			log.log(Level.SEVERE, "Invalid Loader");
+			log.error("Invalid Loader");
 
 		// Start loading bank statement lines
 		else if (!m_controller.loadLines())
-			log.log(Level.SEVERE, m_controller.getErrorMessage() + " - " + m_controller.getErrorDescription());
+			log.error(m_controller.getErrorMessage() + " - " + m_controller.getErrorDescription());
 		
 		else
 		{

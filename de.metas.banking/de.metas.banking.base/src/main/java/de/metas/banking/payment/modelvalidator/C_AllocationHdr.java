@@ -24,7 +24,6 @@ package de.metas.banking.payment.modelvalidator;
 
 
 import java.util.Collection;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -37,7 +36,8 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -46,7 +46,7 @@ import de.metas.banking.payment.IPaySelectionUpdater;
 public class C_AllocationHdr
 {
 	public static final transient C_AllocationHdr instance = new C_AllocationHdr();
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private C_AllocationHdr()
 	{
@@ -123,12 +123,12 @@ public class C_AllocationHdr
 		final I_C_PaySelection paySelection = paySelectionLines.iterator().next().getC_PaySelection();
 		if (paySelection.isProcessed())
 		{
-			logger.log(Level.INFO, "Skip updating lines because pay selection was already processed: {0}", paySelection);
+			logger.info("Skip updating lines because pay selection was already processed: {}", paySelection);
 			return;
 		}
 		if (paySelection.isProcessing())
 		{
-			logger.log(Level.INFO, "Skip updating lines because pay selection was locked: {0}", paySelection);
+			logger.info("Skip updating lines because pay selection was locked: {}", paySelection);
 		}
 
 		//
@@ -141,6 +141,6 @@ public class C_AllocationHdr
 				.addPaySelectionLinesToUpdate(paySelectionLines)
 				.update();
 
-		logger.log(Level.INFO, "Updated {0}", paySelectionUpdater.getSummary());
+		logger.info("Updated {}", paySelectionUpdater.getSummary());
 	}
 }

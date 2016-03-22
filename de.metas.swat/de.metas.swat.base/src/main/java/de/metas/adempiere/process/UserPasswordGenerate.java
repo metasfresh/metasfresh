@@ -29,8 +29,6 @@ package de.metas.adempiere.process;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.user.api.IUserBL;
@@ -67,7 +65,7 @@ public class UserPasswordGenerate extends SvrProcess
 			else if (name.equals("IsOverridePassword"))
 				p_IsOverridePassword = para.getParameterAsBoolean();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}
 

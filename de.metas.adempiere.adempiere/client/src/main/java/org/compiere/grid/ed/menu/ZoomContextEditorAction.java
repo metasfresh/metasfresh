@@ -35,11 +35,12 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.logging.MetasfreshLastError;
 
 public class ZoomContextEditorAction extends AbstractContextMenuAction
 {
@@ -195,7 +196,7 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 		if (!frame.initWindow(AD_Window_ID, zoomQuery))
 		{
 			// setCursor(Cursor.getDefaultCursor());
-			ValueNamePair pp = CLogger.retrieveError();
+			ValueNamePair pp = MetasfreshLastError.retrieveError();
 			String msg = pp == null ? "AccessTableNoView" : pp.getValue();
 
 			// Services.get(IClientUI.class).error(parentWindowNo, this, msg, pp==null ? "" : pp.getName()); // TODO

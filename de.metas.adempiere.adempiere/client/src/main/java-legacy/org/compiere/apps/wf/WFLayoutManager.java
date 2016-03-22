@@ -23,7 +23,8 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *	WorkFlow Layout Manager
@@ -41,7 +42,7 @@ public class WFLayoutManager implements LayoutManager
 	}	//	WFLayoutManager
 
 	/**	Logger			*/
-	private static CLogger	log = CLogger.getCLogger(WFLayoutManager.class);
+	private static Logger	log = LogManager.getLogger(WFLayoutManager.class);
 	/**	Cached Size			*/
 	private Dimension	m_size = null;
 
@@ -173,7 +174,7 @@ public class WFLayoutManager implements LayoutManager
 
 		//	return size
 		m_size = new Dimension(width, height);
-		log.finer("Size=" + m_size);
+		log.trace("Size=" + m_size);
 	}	//	layoutContainer
 
 	/**
@@ -190,7 +191,7 @@ public class WFLayoutManager implements LayoutManager
 			Component comp = parent.getComponent(i);
 			if (comp instanceof WFNode && comp.getLocation().equals(p00))
 			{
-				log.fine(comp.toString());
+				log.debug(comp.toString());
 				return true;
 			}
 		}

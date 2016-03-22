@@ -41,9 +41,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -70,7 +69,7 @@ import org.w3c.dom.NodeList;
 public class Util
 {
 	/** Logger */
-	private static Logger log = Logger.getLogger(Util.class.getName());
+	private static Logger log = LogManager.getLogger(Util.class.getName());
 
 	/**
 	 * Replace String values.
@@ -99,7 +98,7 @@ public class Util
 			pos = oldValue.indexOf(oldPart);
 		}
 		retValue.append(oldValue);
-		// log.fine( "Env.replace - " + value + " - Old=" + oldPart + ", New=" + newPart + ", Result=" + retValue.toString());
+		// log.debug( "Env.replace - " + value + " - Old=" + oldPart + ", New=" + newPart + ", Result=" + retValue.toString());
 		return retValue.toString();
 	}	// replace
 
@@ -737,7 +736,7 @@ public class Util
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			log.log(Level.SEVERE, str, e);
+			log.error(str, e);
 		}
 		return size;
 	}	// size
@@ -771,7 +770,7 @@ public class Util
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			log.log(Level.SEVERE, str, e);
+			log.error(str, e);
 		}
 		return str;
 	}	// trimSize
@@ -1200,7 +1199,7 @@ public class Util
 
 		if (results.size() == 0)
 			return;
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 
 		// insert selection
 		// use the same pinstance id as the process

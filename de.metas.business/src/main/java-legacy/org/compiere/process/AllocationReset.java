@@ -19,7 +19,8 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAllocationHdr;
 import org.compiere.util.DB;
@@ -55,7 +56,7 @@ public class AllocationReset extends SvrProcess
 		ProcessInfoParameter[] para = getParameter();
 		for (int i = 0; i < para.length; i++)
 		{
-			log.fine("prepare - " + para[i]);
+			log.debug("prepare - " + para[i]);
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
 				;
@@ -71,7 +72,7 @@ public class AllocationReset extends SvrProcess
 				p_DateAcct_To = (Timestamp)para[i].getParameter_To();
 			}
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 	
@@ -82,7 +83,7 @@ public class AllocationReset extends SvrProcess
 	 */
 	protected String doIt() throws Exception
 	{
-		log.info ("C_BP_Group_ID=" + p_C_BP_Group_ID + ", C_BPartner_ID=" + p_C_BPartner_ID
+		log.info("C_BP_Group_ID=" + p_C_BP_Group_ID + ", C_BPartner_ID=" + p_C_BPartner_ID
 			+ ", DateAcct= " + p_DateAcct_From + " - " + p_DateAcct_To
 			+ ", C_AllocationHdr_ID=" + p_C_AllocationHdr_ID);
 
@@ -146,7 +147,7 @@ public class AllocationReset extends SvrProcess
  		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			m_trx.rollback();
 		}
 		finally
@@ -165,7 +166,7 @@ public class AllocationReset extends SvrProcess
 		boolean success = false;
 		if (hdr.delete(true, m_trx.getTrxName()))
 		{
-			log.fine(hdr.toString());
+			log.debug(hdr.toString());
 			success = true;
 		}
 		if (success)

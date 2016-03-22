@@ -33,7 +33,8 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -57,7 +58,8 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CEditor;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
@@ -70,7 +72,7 @@ import org.jdesktop.swingx.JXPanel;
  */
 public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 {
-	private static final transient CLogger logger = CLogger.getCLogger(InfoQueryCriteriaDateModifier.class);
+	private static final transient Logger logger = LogManager.getLogger(InfoQueryCriteriaDateModifier.class);
 
 	private IInfoSimple _parent;
 	private I_AD_InfoColumn _infoColumnDef;
@@ -203,7 +205,7 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 		{
 			// Exception was thrown mainly because DefaultValue expression could not be evaluated.
 			// It's not such a big deal, so a lower logging level shall be fine
-			logger.log(Level.INFO, e.getLocalizedMessage(), e);
+			logger.info(e.getLocalizedMessage(), e);
 		}
 	}
 

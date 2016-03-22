@@ -44,7 +44,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Ini;
 
 /**
@@ -52,7 +53,7 @@ import org.compiere.util.Ini;
  */
 public class ApplicationDictionary implements ModelValidator
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private int m_AD_Client_ID = -1;
 
@@ -114,7 +115,7 @@ public class ApplicationDictionary implements ModelValidator
 		String whereClause = refTable.getWhereClause();
 		if (!Check.isEmpty(whereClause, true) && whereClause.indexOf("@") >= 0)
 		{
-			log.warning("Using context variables in table reference where clause is not adviced");
+			log.warn("Using context variables in table reference where clause is not adviced");
 		}
 	}
 

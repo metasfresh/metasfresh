@@ -2,7 +2,7 @@ package de.metas.adempiere.form.impl;
 
 import java.io.InputStream;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -14,12 +14,12 @@ import org.compiere.util.CLogger;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,11 +31,12 @@ import de.metas.adempiere.form.AbstractClientUIInstance;
 import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.logging.LogManager;
 
 /**
  * Providing a simple IClientUI implementation that can be automatically loaded by {@link org.adempiere.util.Services#get(Class)} in the early stages of Adempiere startup.<br>
  * This client implementation is supposed to be replaced with a "real" client implementation during adempiere-startup.
- * 
+ *
  * Also, this implementation is used on server side.
  *
  * @author ts
@@ -59,7 +60,7 @@ public class ClientUI extends AbstractClientUI
 
 	private static final class PlainClientUIInstance extends AbstractClientUIInstance
 	{
-		private static final transient CLogger logger = CLogger.getCLogger(ClientUI.PlainClientUIInstance.class);
+		private static final Logger logger = LogManager.getLogger(ClientUI.PlainClientUIInstance.class);
 
 		@Override
 		public void info(int WindowNo, String AD_Message)
@@ -94,25 +95,25 @@ public class ClientUI extends AbstractClientUI
 		@Override
 		public void warn(int WindowNo, String AD_Message)
 		{
-			logger.warning(AD_Message);
+			logger.warn(AD_Message);
 		}
 
 		@Override
 		public void warn(int WindowNo, String AD_Message, String message)
 		{
-			logger.warning("" + AD_Message + ": " + message);
+			logger.warn("" + AD_Message + ": " + message);
 		}
 
 		@Override
 		public void error(int WIndowNo, String AD_Message)
 		{
-			logger.severe("" + AD_Message);
+			logger.warn("" + AD_Message);
 		}
 
 		@Override
 		public void error(int WIndowNo, String AD_Message, String message)
 		{
-			logger.severe("" + AD_Message + ": " + message);
+			logger.error("" + AD_Message + ": " + message);
 		}
 
 		@Override

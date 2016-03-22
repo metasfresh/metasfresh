@@ -30,9 +30,10 @@ import org.adempiere.webui.window.WLocationDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -47,7 +48,7 @@ public class WLocationEditor extends WEditor implements EventListener, PropertyC
 {
     private static final String[] LISTENER_EVENTS = {Events.ON_CLICK};
     
-    private static CLogger log = CLogger.getCLogger(WLocationEditor.class);
+    private static Logger log = LogManager.getLogger(WLocationEditor.class);
     private MLocationLookup     m_Location;
     private MLocation           m_value;
 
@@ -166,7 +167,7 @@ public class WLocationEditor extends WEditor implements EventListener, PropertyC
         //
         if ("onClick".equals(event.getName()))
         {
-            log.config( "actionPerformed - " + m_value);
+            log.info( "actionPerformed - " + m_value);
             WLocationDialog ld = new WLocationDialog(Msg.getMsg(Env.getCtx(), "Location"), m_value);
             ld.setVisible(true);
             AEnv.showWindow(ld);

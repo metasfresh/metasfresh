@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -143,7 +144,7 @@ public class MProjectIssue extends X_C_ProjectIssue
 			return false;
 		if (getM_Product_ID() == 0)
 		{
-			log.log(Level.SEVERE, "No Product");
+			log.error("No Product");
 			return false;
 		}
 
@@ -176,13 +177,13 @@ public class MProjectIssue extends X_C_ProjectIssue
 				if (save())
 					return true;
 				else
-					log.log(Level.SEVERE, "Issue not saved");		//	requires trx !!
+					log.error("Issue not saved");		//	requires trx !!
 			}
 			else
-				log.log(Level.SEVERE, "Transaction not saved");	//	requires trx !!
+				log.error("Transaction not saved");	//	requires trx !!
 		}
 		else
-			log.log(Level.SEVERE, "Storage not updated");			//	OK
+			log.error("Storage not updated");			//	OK
 		//
 		return false;
 	}	//	process

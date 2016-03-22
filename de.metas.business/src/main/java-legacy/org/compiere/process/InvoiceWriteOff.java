@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
@@ -111,7 +112,7 @@ public class InvoiceWriteOff extends SvrProcess
 			else if (name.equals("IsSimulation"))
 				p_IsSimulation = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -168,7 +169,7 @@ public class InvoiceWriteOff extends SvrProcess
 					.append(DB.TO_DATE(p_DateInvoiced_To, true));
 		}
 		sql.append(" AND IsPaid='N' ORDER BY C_Currency_ID, C_BPartner_ID, DateInvoiced");
-		log.finer(sql.toString());
+		log.trace(sql.toString());
 		//
 		int counter = 0;
 		PreparedStatement pstmt = null;
@@ -188,7 +189,7 @@ public class InvoiceWriteOff extends SvrProcess
 		} 
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		try
 		{
@@ -245,7 +246,7 @@ public class InvoiceWriteOff extends SvrProcess
 			m_alloc.setAD_Org_ID(invoice.getAD_Org_ID());
 			if (!m_alloc.save())
 			{
-				log.log(Level.SEVERE, "Cannot create allocation header");
+				log.error("Cannot create allocation header");
 				return false;
 			}
 		}
@@ -268,7 +269,7 @@ public class InvoiceWriteOff extends SvrProcess
 			m_payment.setC_Currency_ID(C_Currency_ID);
 			if (!m_payment.save())
 			{
-				log.log(Level.SEVERE, "Cannot create payment");
+				log.error("Cannot create payment");
 				return false;
 			}
 		}
@@ -292,7 +293,7 @@ public class InvoiceWriteOff extends SvrProcess
 			return true;
 		}
 		//	Error
-		log.log(Level.SEVERE, "Cannot create allocation line for C_Invoice_ID=" + C_Invoice_ID);
+		log.error("Cannot create allocation line for C_Invoice_ID=" + C_Invoice_ID);
 		return false;
 	}	//	writeOff
 	

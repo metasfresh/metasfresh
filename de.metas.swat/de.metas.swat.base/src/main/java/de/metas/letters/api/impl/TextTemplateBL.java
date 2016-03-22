@@ -27,7 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -42,7 +43,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -62,7 +62,7 @@ import de.metas.letters.spi.ILetterProducer;
 public final class TextTemplateBL implements ITextTemplateBL
 {
 	private static final TextTemplateBL instance = new TextTemplateBL();
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private static final int AD_Process_ID_T_Letter_Spool_Print = 540278; // TODO: HARDCODED
 
@@ -327,7 +327,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 			if (boilerPlateID <= 0)
 			{
-				logger.log(Level.WARNING, "No default text template for org {0}", letter.getAD_Org_ID());
+				logger.warn("No default text template for org {}", letter.getAD_Org_ID());
 				return null;
 			}
 

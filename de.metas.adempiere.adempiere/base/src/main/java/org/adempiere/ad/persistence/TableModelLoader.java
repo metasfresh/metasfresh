@@ -27,7 +27,6 @@ import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,8 +35,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * Class responsible for loading {@link PO}.
@@ -49,7 +51,7 @@ public final class TableModelLoader
 {
 	public static final transient TableModelLoader instance = new TableModelLoader();
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private static final Logger log = LogManager.getLogger(TableModelLoader.class);
 	private final TableModelClassLoader tableModelClassLoader = TableModelClassLoader.instance;
 
 	private TableModelLoader()
@@ -110,14 +112,14 @@ public final class TableModelLoader
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if (Record_ID > 0 && poInfo.getKeyColumnName() == null)
 		{
-			log.log(Level.WARNING, "(id) - Multi-Key " + tableName);
+			log.warn("(id) - Multi-Key " + tableName);
 			return null;
 		}
 
 		final Class<?> clazz = tableModelClassLoader.getClass(tableName);
 		if (clazz == null)
 		{
-			log.log(Level.INFO, "Using GenericPO for {0}", tableName);
+			log.info("Using GenericPO for {}", tableName);
 			final GenericPO po = new GenericPO(tableName, ctx, Record_ID, trxName);
 			return po;
 		}
@@ -136,14 +138,14 @@ public final class TableModelLoader
 		catch (Exception e)
 		{
 			final Throwable cause = e.getCause() == null ? e : e.getCause();
-			log.log(Level.SEVERE, "(id) - Table=" + tableName + ",Class=" + clazz, cause);
-			log.saveError("Error", cause);
+			log.error("(id) - Table=" + tableName + ",Class=" + clazz, cause);
+			MetasfreshLastError.saveError(log, "Error", cause);
 			errorLogged = true;
 		}
 
 		if (!errorLogged)
 		{
-			log.log(Level.SEVERE, "(id) - Not found - Table=" + tableName + ", Record_ID=" + Record_ID);
+			log.error("(id) - Not found - Table=" + tableName + ", Record_ID=" + Record_ID);
 		}
 
 		return null;
@@ -182,7 +184,7 @@ public final class TableModelLoader
 		final Class<?> clazz = tableModelClassLoader.getClass(tableName);
 		if (clazz == null)
 		{
-			log.log(Level.INFO, "Using GenericPO for {0}", tableName);
+			log.info("Using GenericPO for {}", tableName);
 			final GenericPO po = new GenericPO(tableName, ctx, rs, trxName);
 			return po;
 		}
@@ -270,8 +272,8 @@ public final class TableModelLoader
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
-			log.saveError("Error", e);
+			log.error(sql, e);
+			MetasfreshLastError.saveError(log, "Error", e);
 		}
 		finally
 		{
@@ -307,13 +309,13 @@ public final class TableModelLoader
 		// Case: no "clazz" and no "modelClass"
 		else
 		{
-			if (log.isLoggable(Level.FINE))
+			if (log.isDebugEnabled())
 			{
 				final AdempiereException ex = new AdempiereException("Query does not have a modelClass defined and no 'clazz' was specified as parameter."
 						+ "We need to avoid this case, but for now we are trying to do a force casting"
 						+ "\nQuery: " + this
 						+ "\nPO: " + po);
-				log.log(Level.FINE, ex.getLocalizedMessage(), ex);
+				log.debug(ex.getLocalizedMessage(), ex);
 			}
 
 			@SuppressWarnings("unchecked")

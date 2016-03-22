@@ -24,8 +24,6 @@ package de.metas.printing.rpl.requesthandler;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
@@ -113,7 +111,7 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 			}
 			else
 			{
-				logger.fine("There was no update on print package. Deleting it");
+				logger.debug("There was no update on print package. Deleting it");
 				InterfaceWrapperHelper.delete(printPackage);
 				responsePrintPackage = null;
 			}
@@ -128,7 +126,7 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 
 		if (Check.isEmpty(printPackage.getTransactionID()))
 		{
-			logger.log(Level.FINE, "Skip package {0} because transactionId is not set");
+			logger.debug("Skip package {} because transactionId is not set");
 			return false;
 		}
 
@@ -166,14 +164,14 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 				printJobInstructions = dao.retrieveAndLockNextPrintJobInstructions(ctx, trxName);
 				if (printJobInstructions == null)
 				{
-					logger.log(Level.FINE, "No next print jobs found");
+					logger.debug("No next print jobs found");
 					return false;
 				}
-				logger.log(Level.FINE, "Considering {0}", printJobInstructions);
+				logger.debug("Considering {}", printJobInstructions);
 
 				// Try creating the print package. Make sure the printjob instructions are unlocked at the end
 				packageCreated = printPackageBL.createPrintPackage(printPackage, printJobInstructions, printPackageCtx);
-				logger.log(Level.FINE, "PackageCreated:{0} - {1}", new Object[] { packageCreated, printPackage });
+				logger.debug("PackageCreated:{} - {}", new Object[] { packageCreated, printPackage });
 			}
 			finally
 			{

@@ -21,12 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.X_AD_PrintFormatItem;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -120,7 +120,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 	/** Locally cached suffix translations			*/
 	private HashMap<String,String>	m_translationSuffix;
 
-	private static CLogger		s_log = CLogger.getCLogger (MPrintFormatItem.class);
+	private static Logger		s_log = LogManager.getLogger(MPrintFormatItem.class);
 
 	
 	/**************************************************************************
@@ -180,7 +180,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, "loadTrl", e);
+				log.error("loadTrl", e);
 			}
 			finally {
 				DB.close(rs, pstmt);
@@ -500,12 +500,12 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 				}
 			}
 			else
-				s_log.log(Level.SEVERE, "Not Found AD_Column_ID=" + AD_Column_ID
+				s_log.error("Not Found AD_Column_ID=" + AD_Column_ID
 					+ " Trl=" + trl + " " + language.getAD_Language());
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -599,7 +599,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 				+ " AND EXISTS (SELECT * FROM AD_Client "
 					+ "WHERE AD_Client_ID=trl.AD_Client_ID AND IsMultiLingualDocument='Y')";
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("translations updated #" + no);
+			log.debug("translations updated #" + no);
 		}
 		
 		// metas-tsa: we need to reset the cache if an item value is changed

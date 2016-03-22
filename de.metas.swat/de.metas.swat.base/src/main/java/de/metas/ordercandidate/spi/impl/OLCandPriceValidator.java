@@ -26,7 +26,8 @@ package de.metas.ordercandidate.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -36,8 +37,6 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MUOM;
-import org.compiere.util.CLogger;
-
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -49,7 +48,7 @@ import de.metas.ordercandidate.spi.IOLCandValdiator;
  */
 public class OLCandPriceValidator implements IOLCandValdiator
 {
-	private static final transient CLogger logger = CLogger.getCLogger(OLCandPriceValidator.class);
+	private static final transient Logger logger = LogManager.getLogger(OLCandPriceValidator.class);
 
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
@@ -176,7 +175,7 @@ public class OLCandPriceValidator implements IOLCandValdiator
 				// In this way he/she can early see the issue and where it happend.
 				if (Services.get(IDeveloperModeBL.class).isEnabled())
 				{
-					logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+					logger.warn(e.getLocalizedMessage(), e);
 				}
 			}
 		}

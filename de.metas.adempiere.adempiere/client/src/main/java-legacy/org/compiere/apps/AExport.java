@@ -17,14 +17,17 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 
 import org.adempiere.impexp.GridTabExcelExporter;
 import org.compiere.model.GridTab;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.Msg;
@@ -36,7 +39,7 @@ import org.compiere.util.Msg;
  */
 public class AExport
 {
-	private CLogger log = CLogger.getCLogger(getClass());	
+	private Logger log = LogManager.getLogger(getClass());	
 	private Properties m_ctx = null;
 	private int m_WindowNo = 0;
 	
@@ -58,7 +61,7 @@ public class AExport
 		}
 		catch (IOException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			ADialog.error(m_WindowNo, parent, "FileCannotCreate", e.getLocalizedMessage());
 			return;
 		}
@@ -71,7 +74,7 @@ public class AExport
 			return;
 		}
 		ext = ext.substring(ext.lastIndexOf('.')+1).toLowerCase();
-		log.config( "File=" + outFile.getPath() + "; Type=" + ext);
+		log.info( "File=" + outFile.getPath() + "; Type=" + ext);
 
 		parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try
@@ -88,7 +91,7 @@ public class AExport
 		catch (Exception e)
 		{
 			ADialog.error(m_WindowNo, parent, "Error", e.getLocalizedMessage());
-			if (CLogMgt.isLevelFinest())
+			if (LogManager.isLevelFinest())
 				e.printStackTrace();
 		}
 		finally

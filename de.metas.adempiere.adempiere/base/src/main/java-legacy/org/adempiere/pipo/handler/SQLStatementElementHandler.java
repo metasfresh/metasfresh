@@ -20,8 +20,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -78,7 +76,7 @@ public class SQLStatementElementHandler extends AbstractElementHandler {
 			}
 			pstmt.close();
 		} catch (Exception e)	{
-			log.log(Level.SEVERE,"SQLSatement", e);
+			log.error("SQLSatement", e);
 		}
 	}
 

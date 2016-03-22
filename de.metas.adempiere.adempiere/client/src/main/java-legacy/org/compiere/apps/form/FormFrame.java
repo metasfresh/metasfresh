@@ -23,7 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -46,7 +47,8 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.MTreeNode;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CFrame;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -97,7 +99,7 @@ public class FormFrame extends CFrame
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "Failed to initialize the form frame", e);
+			log.error("Failed to initialize the form frame", e);
 			
 			// Dispose this FormFrame (to make sure the status is cleared)
 			dispose();
@@ -121,7 +123,7 @@ public class FormFrame extends CFrame
 	/** Maximize Window				*/
 	public boolean 		m_maximize = false;
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(FormFrame.class);
+	private static final Logger log = LogManager.getLogger(FormFrame.class);
 	
 	/** Form ID			*/
 	private int		p_AD_Form_ID = -1;
@@ -212,7 +214,7 @@ public class FormFrame extends CFrame
 	@Override
 	public final void dispose()
 	{
-		log.config("");
+		log.info("");
 
 		//
 		// Don't call dispose() again if the form was already disposed or is currently disposing
@@ -314,7 +316,7 @@ public class FormFrame extends CFrame
 		final String className = form.getClassname();
 		if (Check.isEmpty(className, true))
 		{
-			log.log(Level.INFO, "No className found for {0}", form);
+			log.info("No className found for {}", form);
 			return false;
 		}
 		log.info("AD_Form_ID=" + form + " - Class=" + className);
@@ -378,7 +380,7 @@ public class FormFrame extends CFrame
 		else if (cmd.equals("Help"))
 			actionHelp();
 		else if (!AEnv.actionPerformed(cmd, m_WindowNo, this))
-			log.log(Level.SEVERE, "Not handeled=" + cmd);
+			log.error("Not handeled=" + cmd);
 	}   //  actionPerformed
 
 	/**

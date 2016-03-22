@@ -37,20 +37,22 @@ package org.adempiere.webui.apps.form;
 
 
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import org.compiere.grid.ICreateFrom;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_RMA;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class WCreateFromFactory
 {
 	/**	Static Logger	*/
-	private static CLogger 	s_log = CLogger.getCLogger (WCreateFromFactory.class);
+	private static Logger 	s_log = LogManager.getLogger(WCreateFromFactory.class);
 
 	/** Registered classes map (AD_Table_ID -> Class) */
 	private static HashMap<Integer, Class<? extends ICreateFrom>> s_registeredClasses = null;
@@ -97,7 +99,7 @@ public class WCreateFromFactory
 			}
 			catch (Throwable e)
 			{
-				s_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				s_log.error(e.getLocalizedMessage(), e);
 				return null;
 			}
 		}

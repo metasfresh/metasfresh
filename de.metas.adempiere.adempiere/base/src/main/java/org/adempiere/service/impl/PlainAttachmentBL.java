@@ -23,19 +23,19 @@ package org.adempiere.service.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.I_AD_Attachment;
-import org.compiere.util.CLogger;
 
 public class PlainAttachmentBL extends AttachmentBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(PlainAttachmentBL.class);
+	private static final transient Logger logger = LogManager.getLogger(PlainAttachmentBL.class);
 
 	@Override
 	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
 	{
-		logger.log(Level.WARNING, "NOTE: adding entries to attachments is not supported in test mode");
+		logger.warn("NOTE: adding entries to attachments is not supported in test mode");
 	}
 
 }

@@ -19,7 +19,10 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -33,7 +36,6 @@ import org.compiere.model.MJournalLine;
 import org.compiere.model.MOrg;
 import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -91,7 +93,7 @@ public class InvoiceNGL extends SvrProcess
 			else if (name.equals("C_DocTypeReval_ID"))
 				p_C_DocTypeReval_ID = para[i].getParameterAsInt();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -161,10 +163,10 @@ public class InvoiceNGL extends SvrProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.info("Inserted #" + no);
-		else if (CLogMgt.isLevelFiner())
-			log.warning("Inserted #" + no + " - " + sql);
+		else if (LogManager.isLevelFiner())
+			log.warn("Inserted #" + no + " - " + sql);
 		else 
-			log.warning("Inserted #" + no);
+			log.warn("Inserted #" + no);
 
 		//	Calculate Difference
 		sql = DB.convertSqlToNative("UPDATE T_InvoiceGL gl "
@@ -175,7 +177,7 @@ public class InvoiceNGL extends SvrProcess
 			+ "WHERE AD_PInstance_ID=" + getAD_PInstance_ID());
 		int noT = DB.executeUpdate(sql, get_TrxName());
 		if (noT > 0)
-			log.config("Difference #" + noT);
+			log.info("Difference #" + noT);
 		
 		//	Percentage
 		sql = "UPDATE T_InvoiceGL SET Percent = 100 "
@@ -197,14 +199,14 @@ public class InvoiceNGL extends SvrProcess
 			+ "WHERE Percent <> 100 AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no > 0)
-			log.config("Partial Calc #" + no);
+			log.info("Partial Calc #" + no);
 		
 		//	Create Document
 		String info = "";
 		if (p_C_DocTypeReval_ID != 0)
 		{
 			if (p_C_Currency_ID != 0)
-				log.warning("Can create Journal only for all currencies");
+				log.warn("Can create Journal only for all currencies");
 			else
 				info = createGLJournal();
 		}

@@ -26,13 +26,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.UIResource;
-
-import org.compiere.util.CLogger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,7 +53,7 @@ import com.google.gson.JsonSerializer;
  */
 class UIDefaultsSerializer
 {
-	private static final transient CLogger logger = CLogger.getCLogger(UIDefaultsSerializer.class);
+	private static final transient Logger logger = LogManager.getLogger(UIDefaultsSerializer.class);
 
 	private final JsonParser parser = new JsonParser();
 	private final Gson gson;
@@ -229,7 +228,7 @@ class UIDefaultsSerializer
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.WARNING, "Failed parsing value {0}. Using default", value);
+				logger.warn("Failed parsing value {}. Using default", value);
 			}
 
 			return VEditorDialogButtonAlign.DEFAULT_Value;

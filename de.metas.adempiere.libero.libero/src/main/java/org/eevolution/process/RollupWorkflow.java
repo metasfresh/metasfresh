@@ -44,7 +44,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
@@ -120,7 +119,7 @@ public class RollupWorkflow extends SvrProcess
 			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID)) 
 				p_M_Product_Category_ID = para.getParameterAsInt();  
 			else
-				log.log(Level.SEVERE,"prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

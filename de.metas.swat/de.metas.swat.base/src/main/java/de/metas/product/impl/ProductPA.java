@@ -30,7 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.db.IDatabaseBL;
@@ -68,7 +69,6 @@ import org.compiere.model.MRequisitionLine;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -91,7 +91,7 @@ public class ProductPA implements IProductPA
 	public static final String WHERE_PRODUCT_SCALE_PRICE =
 			I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
 
-	private static final CLogger logger = CLogger.getCLogger(ProductPA.class);
+	private static final Logger logger = LogManager.getLogger(ProductPA.class);
 
 	public static final String SQL_PRODUCT =
 			"SELECT * FROM "
@@ -302,8 +302,8 @@ public class ProductPA implements IProductPA
 				return new MProductPO(Env.getCtx(), rs, trxName);
 			}
 
-			if (logger.isLoggable(Level.FINE))
-				logger.fine("There is no M_ProductPO entry for productId "
+			if (logger.isDebugEnabled())
+				logger.debug("There is no M_ProductPO entry for productId "
 						+ productId + " and bPartnerId " + bPartnerId
 						+ ". Returning null");
 			return null;
@@ -641,14 +641,14 @@ public class ProductPA implements IProductPA
 			if (rs.next())
 			{
 
-				logger.fine("Returning existing instance for M_ProductPrice "
+				logger.debug("Returning existing instance for M_ProductPrice "
 						+ productPriceId + " and quantity " + qty);
 				return new MProductScalePrice(Env.getCtx(), rs, trxName);
 			}
 			if (createNew)
 			{
 
-				logger.fine("Returning new instance for M_ProductPrice "
+				logger.debug("Returning new instance for M_ProductPrice "
 						+ productPriceId + " and quantity " + qty);
 				final MProductScalePrice newInstance = new MProductScalePrice(
 						Env.getCtx(), 0, trxName);

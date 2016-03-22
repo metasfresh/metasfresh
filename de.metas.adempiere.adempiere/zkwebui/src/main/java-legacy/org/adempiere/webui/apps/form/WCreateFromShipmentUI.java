@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Checkbox;
@@ -68,11 +67,14 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MProduct;
 import org.compiere.model.MRMA;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -106,7 +108,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.showWindow(window);
@@ -116,7 +118,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 		
 	protected Label bPartnerLabel = new Label();
 	protected WEditor bPartnerField;
@@ -148,7 +150,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -395,7 +397,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 	 */
 	public void valueChange (ValueChangeEvent e)
 	{
-		log.config(e.getPropertyName() + "=" + e.getNewValue());
+		log.info(e.getPropertyName() + "=" + e.getNewValue());
 
 		//  BPartner - load Order/Invoice/Shipment
 		if (e.getPropertyName().equals("C_BPartner_ID"))
@@ -431,7 +433,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 	 */
 	private void initBPInvoiceDetails(int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID" + C_BPartner_ID);
+		log.info("C_BPartner_ID" + C_BPartner_ID);
 
 		//  load Shipments (Receipts) - Completed, Closed
 		invoiceField.removeActionListener(this);
@@ -456,7 +458,7 @@ public class WCreateFromShipmentUI extends CreateFromShipment implements EventLi
 	 */
 	protected void initBPOrderDetails (int C_BPartner_ID, boolean forInvoice)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		KeyNamePair pp = new KeyNamePair(0,"");
 		//  load PO Orders - Closed, Completed
 		orderField.removeActionListener(this);

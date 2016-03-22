@@ -15,9 +15,11 @@ package org.adempiere.webui.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Execute OS Task
@@ -49,14 +51,14 @@ public class OSTask extends Thread
 	private OutputStream    m_inStream;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(OSTask.class);
+	private static Logger log = LogManager.getLogger(OSTask.class);
 
 	/** Read Out                            */
 	private Thread          m_outReader = new Thread()
 	{
 		public void run()
 		{
-			log.fine("outReader");
+			log.debug("outReader");
 			try
 			{
 				int c;
@@ -68,9 +70,9 @@ public class OSTask extends Thread
 			}
 			catch (IOException ioe)
 			{
-				log.log(Level.SEVERE, "outReader", ioe);
+				log.error("outReader", ioe);
 			}
-			log.fine("outReader - done");
+			log.debug("outReader - done");
 		}   //  run
 	};   //  m_outReader
 
@@ -79,7 +81,7 @@ public class OSTask extends Thread
 	{
 		public void run()
 		{
-			log.fine("errReader");
+			log.debug("errReader");
 			try
 			{
 				int c;
@@ -91,9 +93,9 @@ public class OSTask extends Thread
 			}
 			catch (IOException ioe)
 			{
-				log.log(Level.SEVERE, "errReader", ioe);
+				log.error("errReader", ioe);
 			}
-			log.fine("errReader - done");
+			log.debug("errReader - done");
 		}   //  run
 	};   //  m_errReader
 
@@ -131,15 +133,15 @@ public class OSTask extends Thread
 				}
 				catch (Exception ie)
 				{
-					log.log(Level.INFO, "(ie) - " + ie);
+					log.info("(ie) - " + ie);
 				}
 				//  ExitValue
-				log.config("done");
+				log.info("done");
 			}
 		}
 		catch (IOException ioe)
 		{
-			log.log(Level.SEVERE, "(ioe)", ioe);
+			log.error("(ioe)", ioe);
 			m_err.append(ioe.getLocalizedMessage());
 		}
 	}   //  run
@@ -152,7 +154,7 @@ public class OSTask extends Thread
 	{
 		if (isInterrupted())
 		{
-			log.config("interrupted");
+			log.info("interrupted");
 			//  interrupt child processes
 			if (m_child != null)
 				m_child.destroy();

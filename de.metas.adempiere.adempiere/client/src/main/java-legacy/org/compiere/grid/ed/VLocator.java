@@ -27,7 +27,8 @@ import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
@@ -52,7 +53,8 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -157,7 +159,7 @@ public class VLocator extends JComponent
 	private boolean mandatory = false;
 	private boolean readWrite = true;
 	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(VLocator.class);
+	private static final Logger log = LogManager.getLogger(VLocator.class);
 	private GridField m_mField;
 
 	/**
@@ -364,7 +366,7 @@ public class VLocator extends JComponent
 		//	Warehouse/Product
 		int only_Warehouse_ID = getOnly_Warehouse_ID();
 		int only_Product_ID = getOnly_Product_ID();
-		log.config("Only Warehouse_ID=" + only_Warehouse_ID
+		log.info("Only Warehouse_ID=" + only_Warehouse_ID
 			+ ", Product_ID=" + only_Product_ID);
 
 		//	Text Entry ok
@@ -401,7 +403,7 @@ public class VLocator extends JComponent
 	private boolean actionText (int only_Warehouse_ID, int only_Product_ID)
 	{
 		String text = m_text.getText();
-		log.fine(text);
+		log.debug(text);
 		//	Null
 		if (text == null || text.length() == 0)
 		{
@@ -458,7 +460,7 @@ public class VLocator extends JComponent
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, finalSql, ex);
+			log.error(finalSql, ex);
 		}
 		try
 		{

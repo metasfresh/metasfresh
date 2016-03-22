@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -60,7 +61,6 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
@@ -76,7 +76,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class AbstractTrxManager implements ITrxManager
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Active Transactions Map: trxName to {@link ITrx}
@@ -153,7 +153,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					throw ex;
 				}
-				logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+				logger.error(ex.getLocalizedMessage(), ex);
 
 				// Try closing the old transaction
 				try
@@ -709,7 +709,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 						final TrxException rollbackEx = new TrxException("Failed to rollback to savepoint"
 								+ "\nSavepoint: " + savepoint
 								+ "\nTrx: " + trx);
-						logger.log(Level.WARNING, "Failed to rollback to savepoint. Going forward...", rollbackEx);
+						logger.warn("Failed to rollback to savepoint. Going forward...", rollbackEx);
 					}
 
 					// metas-ts: setting 'trx' to null only if we have a non-local trx.
@@ -775,7 +775,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 						final String errmsg = "There was an exception while rolling back to savepoint. Going forward."
 								+ "\n Trx: " + trx
 								+ "\n Savepoint: " + savepoint;
-						logger.log(Level.WARNING, errmsg, e);
+						logger.warn(errmsg, e);
 					}
 				}
 				savepoint = null;
@@ -820,7 +820,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// NOTE: we don't care about the rollback flag because there is nothing we can do about it
 			if (rollback && exceptionToThrow == null)
 			{
-				logger.log(Level.WARNING, "Possible issue: running out of transaction, rollback was asked, there is no exception to throw => data created by runnable {0} will not be actually rolled back", runnable);
+				logger.warn("Possible issue: running out of transaction, rollback was asked, there is no exception to throw => data created by runnable {} will not be actually rolled back", runnable);
 			}
 
 			//

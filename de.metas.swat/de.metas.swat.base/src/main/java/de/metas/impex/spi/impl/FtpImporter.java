@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 import org.ftp4che.FTPConnection;
@@ -66,7 +67,7 @@ public class FtpImporter extends BaseConnector implements IImportConnector
 
 	public final static String REMOTE_FOLDER = "RemoteFolder";
 
-	private static final CLogger logger = CLogger.getCLogger(FtpImporter.class);
+	private static final Logger logger = LogManager.getLogger(FtpImporter.class);
 
 	private final FileImporter fileImporter = new FileImporter();
 

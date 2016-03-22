@@ -40,7 +40,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -53,7 +54,7 @@ import org.compiere.util.Env;
 public class MRelationType extends X_AD_RelationType implements IZoomProvider
 {
 
-	private static final CLogger logger = CLogger.getCLogger(MRelationType.class);
+	private static final Logger logger = LogManager.getLogger(MRelationType.class);
 
 	/**
 	 * Selection for those relation types whose AD_Reference(s) might match a given PO. Only evaluates the table and key
@@ -122,7 +123,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		if (po.get_KeyColumns().length != 1)
 		{
 
-			logger.severe(po + " has " + po.get_KeyColumns().length + " key column(s). Should have one.");
+			logger.error(po + " has " + po.get_KeyColumns().length + " key column(s). Should have one.");
 			PORelationException.throwWrongKeyColumnCount(po);
 		}
 
@@ -149,7 +150,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 		catch (SQLException e)
 		{
-			logger.severe(e.getMessage());
+			logger.error(e.getMessage());
 			throw new AdempiereException(e);
 		}
 		finally
@@ -322,7 +323,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 		if (Check.isEmpty(where, true))
 		{
-			logger.fine("whereClause is empty. Returning true");
+			logger.debug("whereClause is empty. Returning true");
 			return true;
 		}
 
@@ -344,13 +345,13 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			.first();
 		final boolean match = result != null;
 
-		logger.fine("whereClause='" + parsedWhere + "' matches po='" + po + "':" + match);
+		logger.debug("whereClause='" + parsedWhere + "' matches po='" + po + "':" + match);
 		return match;
 	}
 
 	public static String parseWhereClause(final PO po, final String where, final boolean throwEx)
 	{
-		logger.fine("building private ctx instance containing the PO's String and int values");
+		logger.debug("building private ctx instance containing the PO's String and int values");
 
 		final POInfo poInfo = POInfo.getPOInfo(po.get_Table_ID());
 
@@ -389,7 +390,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		{
 			throw new AdempiereException("parsedWhere is empty; where='" + where + "'; ctx=" + Env.getEntireContext(privateCtx));
 		}
-		logger.fine("whereClause='" + where + "'; parsedWhere='" + parsedWhere + "'");
+		logger.debug("whereClause='" + where + "'; parsedWhere='" + parsedWhere + "'");
 
 		return parsedWhere;
 	}

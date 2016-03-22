@@ -25,7 +25,6 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -33,18 +32,21 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderLineBL;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 @Validator(I_DD_OrderLine.class)
 public class DD_OrderLine
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void setIsDelivered(final I_DD_OrderLine ddOrderLine)
@@ -86,7 +88,7 @@ public class DD_OrderLine
 					+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product().getName()
 					+ "\n @DD_OrderLine_ID@: " + ddOrderLine
 					);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 		ddOrderLine.setPP_Plant_From(plantFrom);
 	}

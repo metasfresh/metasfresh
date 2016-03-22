@@ -38,7 +38,8 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -53,7 +54,8 @@ import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -118,7 +120,7 @@ public final class Calculator extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "Calculator" + ex);
+			log.error("Calculator" + ex);
 		}
 	}	//	Calculator
 
@@ -153,7 +155,7 @@ public final class Calculator extends CDialog
 	private final static String OPERANDS = "/*-+%";
 	private char			m_decimal = '.';
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Calculator.class);
+	private static Logger log = LogManager.getLogger(Calculator.class);
 	//
 	private CPanel mainPanel = new CPanel();
 	private CPanel displayPanel = new CPanel();
@@ -510,7 +512,7 @@ public final class Calculator extends CDialog
 		}
 		catch (ParseException pe1)
 		{
-			log.log(Level.SEVERE, "Calculator.evaluate - token: " + token, pe1);
+			log.error("Calculator.evaluate - token: " + token, pe1);
 			m_number = new BigDecimal(0.0);
 			return  m_number;
 		}
@@ -527,7 +529,7 @@ public final class Calculator extends CDialog
 		token = st.nextToken();
 		if (OPERANDS.indexOf(token) == -1)
 		{
-			log.log(Level.SEVERE, "Calculator.evaluate - Unknown token: " + token);
+			log.error("Calculator.evaluate - Unknown token: " + token);
 			return m_number;
 		}
 		//	get operand
@@ -545,7 +547,7 @@ public final class Calculator extends CDialog
 		}
 		catch (ParseException pe2)
 		{
-			log.log(Level.SEVERE, "Calculator.evaluate - token: " + token, pe2);
+			log.error("Calculator.evaluate - token: " + token, pe2);
 			m_number = new BigDecimal(0.0);
 			return m_number;
 		}
@@ -558,7 +560,7 @@ public final class Calculator extends CDialog
 			token = st.nextToken();
 			if (OPERANDS.indexOf(token) == -1)
 			{
-				log.log(Level.SEVERE, "Calculator.evaluate - Unknown token: " + token);
+				log.error("Calculator.evaluate - Unknown token: " + token);
 				return m_number;
 			}
 			//	get operand
@@ -641,7 +643,7 @@ public final class Calculator extends CDialog
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "Calculator.loadCurrency", e);
+			log.error("Calculator.loadCurrency", e);
 		}
 
 		//	Set Defaults

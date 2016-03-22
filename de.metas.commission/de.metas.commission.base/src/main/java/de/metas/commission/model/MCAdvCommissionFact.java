@@ -39,7 +39,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.commission.service.ICommissionFactBL;
@@ -54,7 +55,7 @@ import de.metas.commission.service.IFieldAccessBL;
 public class MCAdvCommissionFact extends X_C_AdvCommissionFact
 {
 
-	private static final CLogger logger = CLogger.getCLogger(MCAdvCommissionFact.class);
+	private static final Logger logger = LogManager.getLogger(MCAdvCommissionFact.class);
 
 	public static final String MSG_COMMISISON_CALCULATION = "CommissionCalculation";
 
@@ -303,7 +304,7 @@ public class MCAdvCommissionFact extends X_C_AdvCommissionFact
 
 		if (period != null)
 		{
-			MCAdvCommissionFact.logger.fine("Filtering by " + period);
+			MCAdvCommissionFact.logger.debug("Filtering by " + period);
 
 			wc.append(I_C_AdvCommissionFact.COLUMNNAME_DateFact).append("<=? AND ");
 			params.add(period.getEndDate());
@@ -311,7 +312,7 @@ public class MCAdvCommissionFact extends X_C_AdvCommissionFact
 		}
 		else
 		{
-			MCAdvCommissionFact.logger.fine("Not filtering by period");
+			MCAdvCommissionFact.logger.debug("Not filtering by period");
 		}
 
 		wc.append(I_C_AdvCommissionFact.COLUMNNAME_Status).append("=? ");

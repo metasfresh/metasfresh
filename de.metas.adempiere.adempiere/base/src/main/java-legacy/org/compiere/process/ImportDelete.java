@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
@@ -46,7 +44,7 @@ public class ImportDelete extends SvrProcess
 			if (name.equals("AD_Table_ID"))
 				p_AD_Table_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

@@ -17,7 +17,8 @@
 package org.compiere.grid.tree;
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.tree.DefaultTreeModel;
 
@@ -27,7 +28,8 @@ import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  AdempiereTreeModel provides a persistable tree model based on an MTree.
@@ -43,7 +45,7 @@ class AdempiereTreeModel extends DefaultTreeModel {
 	private static final long serialVersionUID = 8503954687681402088L;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(AdempiereTreeModel.class);
+	private static Logger log = LogManager.getLogger(AdempiereTreeModel.class);
 	
 	private MTree m_MTree;
 	
@@ -81,7 +83,7 @@ class AdempiereTreeModel extends DefaultTreeModel {
 		catch (Exception e)
 		{
 			ADialog.error(0, null, "Error", e.getLocalizedMessage());
-			log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			return false;
 		}
 		return true;

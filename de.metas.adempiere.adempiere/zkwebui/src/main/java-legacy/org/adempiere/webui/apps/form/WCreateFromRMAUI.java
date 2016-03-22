@@ -37,7 +37,6 @@ package org.adempiere.webui.apps.form;
 
 
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Grid;
@@ -55,10 +54,13 @@ import org.compiere.grid.CreateFromRMA;
 import org.compiere.model.GridTab;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zkex.zul.Borderlayout;
 import org.zkoss.zkex.zul.Center;
 
@@ -86,7 +88,7 @@ public class WCreateFromRMAUI extends CreateFromRMA implements ValueChangeListen
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.showWindow(window);
@@ -96,7 +98,7 @@ public class WCreateFromRMAUI extends CreateFromRMA implements ValueChangeListen
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 		
 	protected Label bPartnerLabel = new Label();
 	protected WEditor bPartnerField;
@@ -108,7 +110,7 @@ public class WCreateFromRMAUI extends CreateFromRMA implements ValueChangeListen
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -153,7 +155,7 @@ public class WCreateFromRMAUI extends CreateFromRMA implements ValueChangeListen
 	 */
 	public void valueChange (ValueChangeEvent e)
 	{
-		log.config(e.getPropertyName() + "=" + e.getNewValue());
+		log.info(e.getPropertyName() + "=" + e.getNewValue());
 
 		//  BPartner - load Order/Invoice/Shipment
 		if (e.getPropertyName().equals("C_BPartner_ID"))

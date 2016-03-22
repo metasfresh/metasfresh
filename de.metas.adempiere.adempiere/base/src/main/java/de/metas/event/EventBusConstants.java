@@ -29,7 +29,8 @@ import java.util.UUID;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -39,13 +40,11 @@ import org.compiere.util.CLogger;
  */
 public final class EventBusConstants
 {
-	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(EventBusConstants.class.getPackage().getName() + ".EventBus");
-
-	public static CLogger getLogger()
+	public static Logger getLogger(final Class<?> clazz)
 	{
-		return CLogger.getCLogger(LOGGER_NAME);
+		return LogManager.getLogger(clazz);
 	}
-
+	
 	public static final String SYSCONFIG_Enabled = "de.metas.event.Enabled";
 	private static boolean distributedEventsEnabled = true;
 
@@ -77,7 +76,7 @@ public final class EventBusConstants
 		}
 
 		distributedEventsEnabled = false;
-		getLogger().info("Distributed events broadcasting disabled");
+		getLogger(EventBusConstants.class).info("Distributed events broadcasting disabled");
 	}
 
 

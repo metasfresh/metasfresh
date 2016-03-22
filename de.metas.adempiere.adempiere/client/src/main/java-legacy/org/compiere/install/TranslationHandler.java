@@ -18,13 +18,15 @@ package org.compiere.install;
 
 import java.sql.Timestamp;
 
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Language;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import de.metas.logging.LogManager;
 
 /**
  *	SAX Handler for parsing Translation
@@ -67,7 +69,7 @@ public class TranslationHandler extends DefaultHandler
 	private Timestamp		m_time = new Timestamp(System.currentTimeMillis());
 	private int				m_updateCount = 0;
 
-	private static CLogger	log = CLogger.getCLogger(TranslationHandler.class);
+	private static Logger	log = LogManager.getLogger(TranslationHandler.class);
 
 	
 	/**************************************************************************
@@ -82,7 +84,7 @@ public class TranslationHandler extends DefaultHandler
 	public void startElement (String uri, String localName, String qName, Attributes attributes)
 		throws org.xml.sax.SAXException
 	{
-	//	log.fine( "TranslationHandler.startElement", qName);	// + " - " + uri + " - " + localName);
+	//	log.debug( "TranslationHandler.startElement", qName);	// + " - " + uri + " - " + localName);
 		if (qName.equals(Translation.XML_TAG) || qName.equals(Translation.XML_TAG2))
 		{
 			m_AD_Language = attributes.getValue(Translation.XML_ATTRIBUTE_LANGUAGE);
@@ -92,22 +94,22 @@ public class TranslationHandler extends DefaultHandler
 			if (!m_isBaseLanguage)
 				m_updateSQL += "_Trl";
 			m_updateSQL += " SET ";
-			log.fine("AD_Language=" + m_AD_Language + ", Base=" + m_isBaseLanguage + ", TableName=" + m_TableName);
+			log.debug("AD_Language=" + m_AD_Language + ", Base=" + m_isBaseLanguage + ", TableName=" + m_TableName);
 		}
 		else if (qName.equals(Translation.XML_ROW_TAG))
 		{
 			m_curID = attributes.getValue(Translation.XML_ROW_ATTRIBUTE_ID);
 			m_trl = attributes.getValue(Translation.XML_ROW_ATTRIBUTE_TRANSLATED);
-		//	log.finest( "ID=" + m_curID);
+		//	log.trace( "ID=" + m_curID);
 			m_sql = new StringBuffer();
 		}
 		else if (qName.equals(Translation.XML_VALUE_TAG))
 		{
 			m_curColumnName = attributes.getValue(Translation.XML_VALUE_ATTRIBUTE_COLUMN);
-		//	log.finest( "ColumnName=" + m_curColName);
+		//	log.trace( "ColumnName=" + m_curColName);
 		}
 		else
-			log.severe ("UNKNOWN TAG: " + qName);
+			log.error("UNKNOWN TAG: " + qName);
 		m_curValue = new StringBuffer();
 	}	//	startElement
 
@@ -167,14 +169,14 @@ public class TranslationHandler extends DefaultHandler
 			int no = DB.executeUpdate(m_sql.toString(), null);
 			if (no == 1)
 			{
-				if (CLogMgt.isLevelFinest())
-					log.fine(m_sql.toString());
+				if (LogManager.isLevelFinest())
+					log.debug(m_sql.toString());
 				m_updateCount++;
 			}
 			else if (no == 0)
-				log.warning ("Not Found - " + m_sql.toString());
+				log.warn("Not Found - " + m_sql.toString());
 			else
-				log.severe ("Update Rows=" + no + " (Should be 1) - " + m_sql.toString());
+				log.error("Update Rows=" + no + " (Should be 1) - " + m_sql.toString());
 		}
 		else if (qName.equals(Translation.XML_VALUE_TAG))
 		{

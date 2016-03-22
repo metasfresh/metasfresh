@@ -40,7 +40,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -61,7 +62,7 @@ import de.metas.product.IProductBL;
 public class OrderLineInOutCandHandler implements IInOutCandHandler
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OrderLineInOutCandHandler.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineInOutCandHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(final Object model)

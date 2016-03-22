@@ -15,15 +15,17 @@ package org.adempiere.webui.editor;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.adempiere.webui.event.ContextMenuEvent;
 import org.adempiere.webui.event.ContextMenuListener;
 import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WFieldRecordInfo;
 import org.compiere.model.GridField;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Timebox;
@@ -35,11 +37,11 @@ import org.zkoss.zul.Timebox;
 public class WTimeEditor extends WEditor implements ContextMenuListener
 {
 	private static final String[] LISTENER_EVENTS = {Events.ON_CHANGE, Events.ON_OK};
-    private static final CLogger logger;
+    private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(WDateEditor.class);
+        logger = LogManager.getLogger(WDateEditor.class);
     }
 
     private Timestamp oldValue = new Timestamp(0);
@@ -164,7 +166,7 @@ public class WTimeEditor extends WEditor implements ContextMenuListener
         }
         else
         {
-            logger.log(Level.SEVERE, "New field value is not of type timestamp");
+            logger.error("New field value is not of type timestamp");
         }
     }
 

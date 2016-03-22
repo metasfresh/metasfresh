@@ -27,13 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.async.api.IQueueDAO;
@@ -55,7 +54,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 {
 	public static final CreateShipmentLatch INSTANCE = new CreateShipmentLatch();
 
-	private static final transient CLogger logger = CLogger.getCLogger(CreateShipmentLatch.class);
+	private static final transient Logger logger = LogManager.getLogger(CreateShipmentLatch.class);
 
 	private CreateShipmentLatch()
 	{
@@ -94,7 +93,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 		{
 			// as of now, this shall not happen (at least currentWorkPackage should be included),
 			// but *if* the framework implementation is changed, that shall not be this implementors bother.
-			logger.log(Level.FINE, "no locked C_Queue_WorkPackages; returning (currentWorkPackage={0})", currentWorkPackage);
+			logger.debug("no locked C_Queue_WorkPackages; returning (currentWorkPackage={})", currentWorkPackage);
 			return; // nothing to do
 		}
 		final boolean currentWpIsHighestPrio = lockedWPs.get(0).getC_Queue_WorkPackage_ID() == currentWorkPackage.getC_Queue_WorkPackage_ID();
@@ -102,7 +101,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 		{
 			// we only want to look for work packages that shall be processed *before* the current one (higher prio or same prio and lower/earlier ID).
 			// that way, if two WPs' latches are validated at the same time (and there is not a 3rd one already in processing), not both of them are postponed.
-			logger.log(Level.FINE, "none of the locked C_Queue_WorkPackages' prio is higher than that of the current WP; returning (currentWorkPackage={0})", currentWorkPackage);
+			logger.debug("none of the locked C_Queue_WorkPackages' prio is higher than that of the current WP; returning (currentWorkPackage={})", currentWorkPackage);
 			return; // nothing to do
 		}
 
@@ -121,7 +120,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 			{
 				distinctAggregationKeys.add(record.get(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey));
 			}
-			logger.log(Level.FINE, "currentWorkPackage={0} has M_ShipmentSchedules with these header aggregation keys: {1})",
+			logger.debug("currentWorkPackage={} has M_ShipmentSchedules with these header aggregation keys: {})",
 					new Object[] { currentWorkPackage, distinctAggregationKeys });
 		}
 
@@ -131,14 +130,14 @@ public final class CreateShipmentLatch implements ILatchStragegy
 			if (lockedWP.getC_Queue_WorkPackage_ID() == currentWorkPackage.getC_Queue_WorkPackage_ID())
 			{
 				// we checked all WPs whose prio is higher than that of 'currentWorkPackage'
-				logger.log(Level.FINE, "All WPs with a prio higher than currentWorkPackage={0} were checked; returning", currentWorkPackage);
+				logger.debug("All WPs with a prio higher than currentWorkPackage={} were checked; returning", currentWorkPackage);
 				break;
 			}
 
 			final String lockedWpClassname = lockedWP.getC_Queue_Block().getC_Queue_PackageProcessor().getClassname();
 			if (!CLASSNAMES.contains(lockedWpClassname))
 			{
-				logger.log(Level.FINE, "currently-locked WP {0} belongs to the WP-processor {1}; continuing.", new Object[] { lockedWP, lockedWpClassname });
+				logger.debug("currently-locked WP {} belongs to the WP-processor {}; continuing.", new Object[] { lockedWP, lockedWpClassname });
 				continue; // this latch only cares for packages that belong to one of the inout-generating processors.
 			}
 
@@ -157,7 +156,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 
 				final WorkpackageSkipRequestException skipRequestException = WorkpackageSkipRequestException.createWithRandomTimeout(message);
 
-				logger.log(Level.FINE, message + "; throwing {0}", skipRequestException);
+				logger.debug(message + "; throwing {}", skipRequestException);
 				throw skipRequestException;
 			}
 		}

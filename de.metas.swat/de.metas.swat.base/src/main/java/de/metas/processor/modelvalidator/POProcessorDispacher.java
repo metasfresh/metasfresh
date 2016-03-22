@@ -37,7 +37,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_POProcessor;
@@ -47,7 +48,7 @@ import de.metas.processor.spi.IPOProcessor;
 
 public class POProcessorDispacher implements ModelValidator
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private int m_AD_Client_ID = -1;
 

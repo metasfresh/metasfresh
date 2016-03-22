@@ -18,11 +18,11 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.sql.PreparedStatement;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TrxRunnable;
@@ -61,7 +61,7 @@ public class PO_LOB implements Serializable
 	}	//	PO_LOB
 
 	/**	Logger					*/
-	protected CLogger	log = CLogger.getCLogger (getClass());
+	protected Logger	log = LogManager.getLogger(getClass());
 	/**	Table Name				*/
 	private String 		m_tableName;
 	/** Column Name				*/
@@ -121,9 +121,9 @@ public class PO_LOB implements Serializable
 				.append(" SET ").append(m_columnName)
 				.append("=null WHERE ").append(m_whereClause);
 			int no = DB.executeUpdate(sql.toString(), trxName);
-			log.fine("save [" + trxName + "] #" + no + " - no data - set to null - " + m_value);
+			log.debug("save [" + trxName + "] #" + no + " - no data - set to null - " + m_value);
 			if (no == 0)
-				log.warning("[" + trxName + "] - not updated - " + sql);
+				log.warn("[" + trxName + "] - not updated - " + sql);
 			return true;
 		}
 		
@@ -133,7 +133,7 @@ public class PO_LOB implements Serializable
 			.append("=? WHERE ").append(m_whereClause);
 		//
 		
-		log.fine("[" + trxName + "] - Local - " + m_value);
+		log.debug("[" + trxName + "] - Local - " + m_value);
 		
 		PreparedStatement pstmt = null;
 		boolean success = true;
@@ -151,13 +151,13 @@ public class PO_LOB implements Serializable
 			final int no = pstmt.executeUpdate();
 			if (no != 1)
 			{
-				log.warning("[" + trxName + "] - Not updated #" + no + " - " + sql);
+				log.warn("[" + trxName + "] - Not updated #" + no + " - " + sql);
 				success = false;
 			}
 		}
 		catch (Throwable e)
 		{
-			log.log(Level.SEVERE, "[" + trxName + "] - " + sql, e);
+			log.error("[" + trxName + "] - " + sql, e);
 			success = false;
 		}
 		finally

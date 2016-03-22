@@ -23,20 +23,20 @@ package de.metas.adempiere.service.impl;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.TableColumnPathException;
 import de.metas.adempiere.service.ITableColumnPathBL;
 import de.metas.adempiere.service.IVariableParserBL;
+import de.metas.logging.LogManager;
 
 public class VariableParserBL implements IVariableParserBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	public VariableParserBL()
 	{
@@ -59,8 +59,8 @@ public class VariableParserBL implements IVariableParserBL
 		catch (TableColumnPathException e)
 		{
 			// it's not a table column path, just log the error
-			if (CLogMgt.isLevelFine())
-				log.log(Level.FINE, e.getLocalizedMessage(), e);
+			if (LogManager.isLevelFine())
+				log.debug(e.getLocalizedMessage(), e);
 		}
 
 		return defaultValue;

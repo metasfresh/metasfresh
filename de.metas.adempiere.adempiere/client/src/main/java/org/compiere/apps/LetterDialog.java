@@ -66,7 +66,7 @@ public class LetterDialog
 	 */
 	private static final long serialVersionUID = 5185869427506396349L;
 
-	// private static final transient CLogger log = CLogger.getCLogger(LetterDialog.class);
+	// private static final transient Logger log = CLogMgt.getLogger(LetterDialog.class);
 
 	public LetterDialog(final Frame owner, final String title, final Map<String, Object> attributes)
 	{

@@ -29,9 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.webui.window.ZkReportViewerProvider;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.print.ReportCtl;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.http.DHtmlLayoutServlet;
 
 /**
@@ -48,11 +49,11 @@ public class WebUIServlet extends DHtmlLayoutServlet
 	private static final long serialVersionUID = 261899419681731L;
 	
 	/** Logger for the class * */
-    private static final CLogger logger;
+    private static final Logger logger;
 
     static
     {
-        logger = CLogger.getCLogger(WebUIServlet.class); 
+        logger = LogManager.getLogger(WebUIServlet.class); 
     }
 
 	/**

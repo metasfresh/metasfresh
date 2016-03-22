@@ -32,7 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
@@ -97,7 +98,7 @@ public class ExpenseTypesFromAccounts extends SvrProcess {
             } else if (name.equals("EndElement")) {
                 m_endElement = para[i].getParameter().toString();
             } else {
-                log.log(Level.SEVERE, "Unknown Parameter: " + name);
+                log.error("Unknown Parameter: " + name);
             }
         }
 

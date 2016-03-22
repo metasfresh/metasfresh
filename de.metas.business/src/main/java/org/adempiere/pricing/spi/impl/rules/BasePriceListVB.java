@@ -123,7 +123,7 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 					m_isTaxIncluded = "Y".equals(rs.getString(9));
 					//
 					ppUOMId = rs.getInt(10);
-					log.fine("M_PriceList_ID=" + m_M_PriceList_ID
+					log.debug("M_PriceList_ID=" + m_M_PriceList_ID
 							+ "(" + plDate + ")" + " - " + m_PriceStd);
 					m_calculated = true;
 					break;
@@ -147,7 +147,7 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 
 		if (!m_calculated)
 		{
-			log.finer("Not found (BPL)");
+			log.trace("Not found (BPL)");
 			return;
 		}
 

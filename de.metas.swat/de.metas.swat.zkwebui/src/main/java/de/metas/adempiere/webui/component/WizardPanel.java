@@ -31,11 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.webui.window.FDialog;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.zkoss.zk.ui.Component;
@@ -61,7 +61,7 @@ public class WizardPanel extends Div
 	 */
 	private static final long serialVersionUID = -6517423360806410380L;
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	public static final String ACTION_Cancel = "Cancel";
 	public static final String ACTION_Back = "back";
@@ -194,7 +194,7 @@ public class WizardPanel extends Div
 					catch (final Exception e)
 					{
 						FDialog.error(0, WizardPanel.this, "Error", e.getLocalizedMessage());
-						logger.log(Level.INFO, e.getLocalizedMessage(), e);
+						logger.info(e.getLocalizedMessage(), e);
 					}
 				}
 			});

@@ -20,7 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -43,7 +44,8 @@ import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -72,7 +74,7 @@ public class ARequest implements ActionListener
 		int C_BPartner_ID)
 	{
 		super ();
-		log.config("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
+		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
 		m_C_BPartner_ID = C_BPartner_ID;
@@ -95,7 +97,7 @@ public class ARequest implements ActionListener
 	StringBuffer 		m_where = null;
 	
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (ARequest.class);
+	private static Logger	log	= LogManager.getLogger(ARequest.class);
 	
 	/**
 	 * 	Display Request Options - New/Existing.
@@ -154,7 +156,7 @@ public class ARequest implements ActionListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

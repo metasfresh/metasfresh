@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -45,7 +46,8 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Field_ContextMenu;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
@@ -55,7 +57,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class ContextMenuProvider implements IContextMenuProvider
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	/** Cache: AD_Client_ID to ContextMenuKey to {@link IContextMenuAction} list */
 	private final CCache<Integer, Map<ArrayKey, List<Class<? extends IContextMenuAction>>>> actionClassesForClient = new CCache<>(I_AD_Field_ContextMenu.Table_Name + "#Classes", 2);
@@ -211,7 +213,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 			}
 			catch (final Exception e)
 			{
-				logger.log(Level.WARNING, "Could not load class for " + item + " (Classname:" + className + ")", e);
+				logger.warn("Could not load class for " + item + " (Classname:" + className + ")", e);
 			}
 		}
 		return loadActionClasses;
@@ -289,7 +291,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Cannot create action for " + actionClass + ": " + e.getLocalizedMessage() + " [SKIP]", e);
+			logger.warn("Cannot create action for " + actionClass + ": " + e.getLocalizedMessage() + " [SKIP]", e);
 			return null;
 		}
 	}

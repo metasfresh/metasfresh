@@ -18,13 +18,15 @@ package org.eevolution.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MResource;
 import org.compiere.model.Query;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflow;
@@ -43,7 +45,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	private static final long serialVersionUID = -3061309620804116277L;
 	
 	/** Log									*/
-	private static CLogger log = CLogger.getCLogger(MPPProductPlanning.class); 
+	private static Logger log = LogManager.getLogger(MPPProductPlanning.class); 
 
 
 	/**************************************************************************
@@ -258,7 +260,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	@Override
 	public void dump()
 	{
-		if (!CLogMgt.isLevelInfo())
+		if (!log.isInfoEnabled())
 			return;
 		log.info("------------ Planning Data --------------");
 		log.info("           Create Plan: " + isCreatePlan());

@@ -70,7 +70,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	// private static final transient CLogger logger = CLogger.getCLogger(AggregateHUEditorModel.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(AggregateHUEditorModel.class);
 
 	public AggregateHUEditorModel(final ITerminalContext terminalContext)
 	{

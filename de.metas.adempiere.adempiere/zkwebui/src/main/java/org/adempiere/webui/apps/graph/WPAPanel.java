@@ -28,8 +28,9 @@ import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
 import org.compiere.model.MGoal;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -69,7 +70,7 @@ public class WPAPanel extends Panel implements EventListener
 	private MGoal[] 	m_goals = null;
 	
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (WPAPanel.class);
+	private static Logger log = LogManager.getLogger(WPAPanel.class);
 	
 	/**
 	 * 	Static/Dynamic Init

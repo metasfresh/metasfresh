@@ -25,7 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,7 +40,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.compiere.Adempiere;
 import org.compiere.model.MLanguage;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -93,7 +95,7 @@ public class Translation
 	/**	Table is centrally maintained	*/
 	private boolean			m_IsCentrallyMaintained = false;
 	/**	Logger						*/
-	private CLogger			log = CLogger.getCLogger(getClass());
+	private Logger			log = LogManager.getLogger(getClass());
 	/** Properties					*/
 	private Properties		m_ctx = null;
 
@@ -115,7 +117,7 @@ public class Translation
 		if (!in.exists())
 		{
 			String msg = "File does not exist: " + fileName;
-			log.log(Level.SEVERE, msg);
+			log.error(msg);
 			return msg;
 		}
 
@@ -131,7 +133,7 @@ public class Translation
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "importTrl", e);
+			log.error("importTrl", e);
 			return e.toString();
 		}
 	}	//	importTrl
@@ -260,12 +262,12 @@ public class Translation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			return e.toString();
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			return e.toString();
 		}
 
@@ -296,7 +298,7 @@ public class Translation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		sql = "SELECT ColumnName "
@@ -322,7 +324,7 @@ public class Translation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		//	Convert to Array
@@ -357,14 +359,14 @@ public class Translation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return e.toString();
 		}
 
 		//	No AD_Language Record
 		if (language == null)
 		{
-			log.log(Level.SEVERE, "Language does not exist: " + AD_Language);
+			log.error("Language does not exist: " + AD_Language);
 			return "Language does not exist: " + AD_Language;
 		}
 		//	Language exists
@@ -375,7 +377,7 @@ public class Translation
 		}
 		else
 		{
-			log.log(Level.SEVERE, "Language not active or not system language: " + AD_Language);
+			log.error("Language not active or not system language: " + AD_Language);
 			return "Language not active or not system language: " + AD_Language;
 		}
 		
@@ -420,7 +422,7 @@ public class Translation
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		for (int i = 0; i < trlTables.size(); i++)

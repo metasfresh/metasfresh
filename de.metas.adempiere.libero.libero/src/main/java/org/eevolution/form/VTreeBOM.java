@@ -51,7 +51,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -80,7 +79,6 @@ import org.compiere.model.Query;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -88,6 +86,10 @@ import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * BOM Tree Maintenance
@@ -122,7 +124,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	/**	Active Tree				*/
 	private JTree		 	m_tree;
 
-	private static CLogger log = CLogger.getCLogger(VTreeBOM.class);
+	private static Logger log = LogManager.getLogger(VTreeBOM.class);
 
 	private BorderLayout	mainLayout	= new BorderLayout ();
 	private CPanel 			northPanel	= new CPanel ();
@@ -191,7 +193,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE,"VTreeMaintenance.init", ex);
+			log.error("VTreeMaintenance.init", ex);
 		}
 	}	//	init
 

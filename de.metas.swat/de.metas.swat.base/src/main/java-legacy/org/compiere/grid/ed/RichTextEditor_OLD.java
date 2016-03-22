@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.JComboBox;
@@ -66,9 +65,12 @@ import org.compiere.Adempiere;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * metas: Rich Text Editor, base on jj's HTML editor. <br>
@@ -130,14 +132,14 @@ public class RichTextEditor_OLD extends CDialog {
 		try {
 			jbInit();
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "HTMLEditor", e);
+			log.error("HTMLEditor", e);
 		}
 		setHtmlText(htmlText);
 		editorPane.setEditable(editable);
 	} // init
 
 	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
+	private static final Logger log = LogManager.getLogger(RichTextEditor_OLD.class);
 	/** The HTML Text */
 	private String m_text;
 
@@ -243,7 +245,7 @@ public class RichTextEditor_OLD extends CDialog {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		log.fine("actionPerformed - Text:" + getHtmlText());
+		log.debug("actionPerformed - Text:" + getHtmlText());
 
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK)) {
 			m_text = editorPane.getText();
@@ -330,7 +332,7 @@ public class RichTextEditor_OLD extends CDialog {
 
 				} catch (BadLocationException e1) {
 
-					log.saveError("BadlocationException: " + e1.getMessage()
+					MetasfreshLastError.saveError(log, "BadlocationException: " + e1.getMessage()
 							+ "; Illegal offset: " + e1.offsetRequested(), e1);
 				}
 

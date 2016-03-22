@@ -29,12 +29,11 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import de.metas.data.export.api.IExportDataDestination;
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
@@ -50,7 +49,7 @@ import de.metas.data.export.api.IExporterMonitor;
  */
 public abstract class AbstractExporter implements IExporter
 {
-	private static final CLogger logger = CLogger.getCLogger(AbstractExporter.class);
+	private static final Logger logger = LogManager.getLogger(AbstractExporter.class);
 
 	private IExportDataSource dataSource;
 	private Properties config = new Properties();
@@ -173,7 +172,7 @@ public abstract class AbstractExporter implements IExporter
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.SEVERE, "Error while invoking monitor(finish): " + e.getLocalizedMessage(), e);
+				logger.error("Error while invoking monitor(finish): " + e.getLocalizedMessage(), e);
 			}
 		}
 

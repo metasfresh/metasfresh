@@ -55,7 +55,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
@@ -198,7 +199,7 @@ public class PaymentAllocationForm
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.SEVERE, "", e);
+			logger.error("", e);
 		}
 	}
 
@@ -647,7 +648,7 @@ public class PaymentAllocationForm
 
 	private void actionPerformed0(final ActionEvent e)
 	{
-		logger.config("");
+		logger.info("");
 
 		if (e.getActionCommand().equals(addForeignInvoice.getColumnName()))
 		{

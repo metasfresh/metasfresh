@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 /**
  *	Model for Commission.
@@ -121,7 +120,7 @@ public class MCommission extends X_C_Commission
 				count++;
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "copyLinesFrom - Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("copyLinesFrom - Line difference - From=" + fromLines.length + " <> Saved=" + count);
 		return count;
 	}	//	copyLinesFrom
 

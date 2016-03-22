@@ -26,11 +26,13 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  *  Payment Processor Abstract Class
@@ -48,9 +50,9 @@ public abstract class PaymentProcessor
 	}   //  PaymentProcessor
 
 	/**	Logger							*/
-	protected CLogger			log = CLogger.getCLogger (getClass());
+	protected Logger			log = LogManager.getLogger(getClass());
 	/** Payment Processor Logger		*/
-	static private CLogger		s_log = CLogger.getCLogger (PaymentProcessor.class);
+	static private Logger		s_log = LogManager.getLogger(PaymentProcessor.class);
 	/** Encoding (ISO-8859-1 - UTF-8) 		*/
 	public static final String	ENCODING = "UTF-8";
 	/** Encode Parameters		*/
@@ -72,7 +74,7 @@ public abstract class PaymentProcessor
 		String className = mpp.getPayProcessorClass();
 		if (className == null || className.length() == 0)
 		{
-			s_log.log(Level.SEVERE, "No PaymentProcessor class name in " + mpp);
+			s_log.error("No PaymentProcessor class name in " + mpp);
 			return null;
 		}
 		//
@@ -85,17 +87,17 @@ public abstract class PaymentProcessor
 		}
 		catch (Error e1)    //  NoClassDefFound
 		{
-			s_log.log(Level.SEVERE, className + " - Error=" + e1.getMessage());
+			s_log.error(className + " - Error=" + e1.getMessage());
 			return null;
 		}
 		catch (Exception e2)
 		{
-			s_log.log(Level.SEVERE, className, e2);
+			s_log.error(className, e2);
 			return null;
 		}
 		if (myProcessor == null)
 		{
-			s_log.log(Level.SEVERE, "no class");
+			s_log.error("no class");
 			return null;
 		}
 
@@ -206,7 +208,7 @@ public abstract class PaymentProcessor
 			}
 			catch (UnsupportedEncodingException e)
 			{
-				log.log(Level.SEVERE, value + " - " + e.toString());
+				log.error(value + " - " + e.toString());
 			}
 		else if (value.indexOf(AMP) != -1 || value.indexOf(EQ) != -1)
 			retValue.append("[").append(value.length()).append("]");
@@ -266,10 +268,10 @@ public abstract class PaymentProcessor
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, result, e);
+			log.error(result, e);
 		}
 		long ms = System.currentTimeMillis() - start;
-		log.fine(ms + "ms - " + prop.toString());
+		log.debug(ms + "ms - " + prop.toString());
 		return prop;
 	}	//	connectPost
 	
@@ -291,7 +293,7 @@ public abstract class PaymentProcessor
 			connection.setDoOutput(true);
 			connection.setUseCaches(false);
 			connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-			log.fine(connection.getURL().toString());
+			log.debug(connection.getURL().toString());
 
 			// POST the parameter
 			DataOutputStream out = new DataOutputStream (connection.getOutputStream());
@@ -303,11 +305,11 @@ public abstract class PaymentProcessor
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			response = in.readLine();
 			in.close();	                     // no more data
-			log.finest(response);
+			log.trace(response);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, urlString, e);
+			log.error(urlString, e);
 		}
 		//
 	    return response;

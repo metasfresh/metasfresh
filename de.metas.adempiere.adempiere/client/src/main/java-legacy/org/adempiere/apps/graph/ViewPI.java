@@ -19,7 +19,8 @@ package org.adempiere.apps.graph;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BoxLayout;
 
@@ -29,7 +30,8 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.model.MGoal;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 /**
@@ -55,7 +57,7 @@ implements FormPanel, ActionListener
 	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
-		log.fine("");
+		log.debug("");
 		m_WindowNo = WindowNo;
 		m_frame = frame;
 		try
@@ -72,7 +74,7 @@ implements FormPanel, ActionListener
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		sizeIt();
 	}	//	init
@@ -106,7 +108,7 @@ implements FormPanel, ActionListener
 	/**	FormFrame					*/
 	private FormFrame 	m_frame;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (ViewPI.class);
+	private static Logger log = LogManager.getLogger(ViewPI.class);
 	/** Confirmation Panel			*/
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 

@@ -24,7 +24,8 @@ package org.adempiere.acct.api.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IDocFactory;
@@ -47,7 +48,8 @@ import org.compiere.acct.PostingExecutionException;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -60,7 +62,7 @@ import de.metas.session.jaxrs.IServerService;
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(PostingRequestBuilder.class);
+	private static final transient Logger log = LogManager.getLogger(PostingRequestBuilder.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -177,14 +179,14 @@ import de.metas.session.jaxrs.IServerService;
 				@Override
 				public void run()
 				{
-					log.log(Level.FINE, "Posting on server: {0}", PostingRequestBuilder.this);
+					log.debug("Posting on server: {}", PostingRequestBuilder.this);
 					final String error = server.postImmediate(ctxReduced,
 							AD_Client_ID,
 							AD_Table_ID, Record_ID,
 							force
 							);
 					setPostedError(error);
-					log.log(Level.CONFIG, "from Server: {0}", error == null ? "OK" : error);
+					log.info("from Server: {}", error == null ? "OK" : error);
 				}
 			});
 		}
@@ -222,7 +224,7 @@ import de.metas.session.jaxrs.IServerService;
 	 */
 	private final void postIt_Directly(final String trxName)
 	{
-		log.log(Level.FINE, "Posting directly: {0}", this);
+		log.debug("Posting directly: {}", this);
 
 		final IDocFactory docFactory = Services.get(IDocFactory.class);
 

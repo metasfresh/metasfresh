@@ -2,7 +2,7 @@ package de.metas.procurement.base.order.facet.impl;
 
 import org.adempiere.facet.ClassBasedFacetCollectorFactory;
 import org.adempiere.facet.IFacetCollector;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import de.metas.procurement.base.ProcurementConstants;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -33,7 +33,7 @@ import de.metas.procurement.base.order.facet.IPurchaseCandidateFacetCollectorFac
 public class PurchaseCandidateFacetCollectorFactory implements IPurchaseCandidateFacetCollectorFactory
 {
 	// services
-	private static final transient CLogger logger = ProcurementConstants.getLogger();
+	private static final transient Logger logger = ProcurementConstants.getLogger(PurchaseCandidateFacetCollectorFactory.class);
 
 	private final ClassBasedFacetCollectorFactory<I_PMM_PurchaseCandidate> factory = new ClassBasedFacetCollectorFactory<I_PMM_PurchaseCandidate>()
 			.setLogger(logger);

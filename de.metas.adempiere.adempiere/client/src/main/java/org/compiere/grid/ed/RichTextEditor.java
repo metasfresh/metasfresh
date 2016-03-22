@@ -68,7 +68,7 @@ public class RichTextEditor extends CPanel
 	private static final long serialVersionUID = 5543325281948291601L;
 
 	// /** Logger */
-	// private CLogger log = CLogger.getCLogger(getClass());
+	// private Logger log = CLogMgt.getLogger(getClass());
 
 	private JButton butPrint;
 

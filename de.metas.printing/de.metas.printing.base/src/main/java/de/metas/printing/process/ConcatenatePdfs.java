@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -38,7 +39,6 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -72,7 +72,7 @@ public class ConcatenatePdfs extends SvrProcess
 	protected String doIt() throws IOException, DocumentException
 	{
 		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.TRXNAME_None;
+		final String trxName = ITrx.TRXNAME_None;
 
 		final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
 		final String fileName = "printjobs_" + getAD_PInstance_ID();

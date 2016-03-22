@@ -24,7 +24,6 @@ package org.adempiere.impexp.spi.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.impexp.IImportProcess;
@@ -33,8 +32,9 @@ import org.adempiere.impexp.ImportProcessResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -52,7 +52,7 @@ import de.metas.event.Type;
 public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(AsyncImportWorkpackageProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(AsyncImportWorkpackageProcessor.class);
 
 	public static final String PARAM_ImportTableName = "ImportTableName";
 	public static final String PARAM_Selection_ID = IImportProcess.PARAM_Selection_ID;
@@ -111,7 +111,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Failed creating and posting event. Ignored.", e);
+			logger.error("Failed creating and posting event. Ignored.", e);
 		}
 	}
 

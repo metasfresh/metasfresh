@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -116,7 +117,7 @@ public class InvoiceGenerate extends SvrProcess
 			else if (name.equals("DocAction"))
 				p_docAction = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 
 		// Login Date
@@ -196,7 +197,7 @@ public class InvoiceGenerate extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		return generate(pstmt);
 	} // doIt
@@ -250,7 +251,7 @@ public class InvoiceGenerate extends SvrProcess
 					if (m_bp.getC_InvoiceSchedule_ID() == 0)
 					{
 						log
-								.warning("BPartner has no Schedule - set to After Delivery");
+								.warn("BPartner has no Schedule - set to After Delivery");
 						order.setInvoiceRule(MOrder.INVOICERULE_AfterDelivery);
 						order.save();
 					}
@@ -314,7 +315,7 @@ public class InvoiceGenerate extends SvrProcess
 						// Complete Order
 						if (completeOrder && !fullyDelivered)
 						{
-							log.fine("Failed CompleteOrder - " + oLine);
+							log.debug("Failed CompleteOrder - " + oLine);
 							addLog("Failed CompleteOrder - " + oLine); // Elaine
 							// 2008/11/25
 							completeOrder = false;
@@ -324,7 +325,7 @@ public class InvoiceGenerate extends SvrProcess
 						else if (MOrder.INVOICERULE_Immediate.equals(order
 								.getInvoiceRule()))
 						{
-							log.fine("Immediate - ToInvoice=" + toInvoice
+							log.debug("Immediate - ToInvoice=" + toInvoice
 									+ " - " + oLine);
 							BigDecimal qtyEntered = toInvoice;
 							// Correct UOM for QtyEntered
@@ -339,7 +340,7 @@ public class InvoiceGenerate extends SvrProcess
 						}
 						else
 						{
-							log.fine("Failed: " + order.getInvoiceRule()
+							log.debug("Failed: " + order.getInvoiceRule()
 									+ " - ToInvoice=" + toInvoice + " - "
 									+ oLine);
 							addLog("Failed: " + order.getInvoiceRule()
@@ -451,7 +452,7 @@ public class InvoiceGenerate extends SvrProcess
 		setLineNo(line, orderLine.getLine(), consolidate);
 		if (!line.save())
 			throw new IllegalStateException("Could not create Invoice Line (o)");
-		log.fine(line.toString());
+		log.debug(line.toString());
 	} // createLine
 
 	private void setLineNo(final MInvoiceLine line, final int sourceLineNo,
@@ -560,7 +561,7 @@ public class InvoiceGenerate extends SvrProcess
 			throw new IllegalStateException("Could not update Shipment Line.:\n"
 					+ MiscUtils.loggerMsgsUser());
 
-		log.fine(line.toString());
+		log.debug(line.toString());
 	} // createLine
 
 	/**
@@ -580,7 +581,7 @@ public class InvoiceGenerate extends SvrProcess
 
 			if (!m_invoice.processIt(p_docAction))
 			{
-				log.warning("completeInvoice - failed: " + m_invoice);
+				log.warn("completeInvoice - failed: " + m_invoice);
 				addLog("completeInvoice - failed: " + m_invoice); // Elaine
 				// 2008/11/25
 			}

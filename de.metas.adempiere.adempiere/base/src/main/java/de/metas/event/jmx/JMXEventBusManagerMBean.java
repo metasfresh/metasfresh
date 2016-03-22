@@ -35,10 +35,6 @@ public interface JMXEventBusManagerMBean
 {
 	boolean isEnabled();
 
-	String getLogLevel();
-
-	void setLogLevel(String logLevelName);
-
 	String getRemoteEndpointInfo();
 
 	boolean isRemoteEndpointConnected();

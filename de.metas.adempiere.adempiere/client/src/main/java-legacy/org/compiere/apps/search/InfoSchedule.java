@@ -29,7 +29,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -49,7 +50,8 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -96,7 +98,7 @@ public class InfoSchedule extends CDialog
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "InfoSchedule", ex);
+			log.error("InfoSchedule", ex);
 		}
 		AEnv.showCenterWindow(frame, this);
 	}	//	InfoSchedule
@@ -118,7 +120,7 @@ public class InfoSchedule extends CDialog
 	/**	 Ability to create new assignments	*/
 	private boolean			m_createNew;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(InfoSchedule.class);
+	private static Logger log = LogManager.getLogger(InfoSchedule.class);
 
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -251,7 +253,7 @@ public class InfoSchedule extends CDialog
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -295,7 +297,7 @@ public class InfoSchedule extends CDialog
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally {
 			DB.close(rs, pstmt);
@@ -320,7 +322,7 @@ public class InfoSchedule extends CDialog
 		m_mAssignment.setS_Resource_ID(S_Resource_ID);
 		Timestamp date = fieldDate.getTimestamp();
 		int index = timePane.getSelectedIndex();
-		log.config("Index=" + index + ", ID=" + S_Resource_ID + " - " + date);
+		log.info("Index=" + index + ", ID=" + S_Resource_ID + " - " + date);
 
 		//	Set Info
 		m_loading = true;

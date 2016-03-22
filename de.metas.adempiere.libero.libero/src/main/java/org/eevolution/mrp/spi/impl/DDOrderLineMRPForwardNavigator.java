@@ -28,21 +28,24 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.impl.MRPTracer;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -52,7 +55,7 @@ import org.eevolution.mrp.api.impl.MRPTracer;
 public class DDOrderLineMRPForwardNavigator
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
 
@@ -103,25 +106,25 @@ public class DDOrderLineMRPForwardNavigator
 
 	private void navigateForward(final I_PP_MRP mrpDemand, final List<I_PP_MRP> path)
 	{
-		if (logger.isLoggable(Level.FINE))
+		if (logger.isDebugEnabled())
 		{
-			logger.log(Level.FINE, "---------");
-			logger.log(Level.FINE, "MRP Demand: {0}", mrpDemand);
-			logger.log(Level.FINE, "MRP Demand info: {0}", MRPTracer.toString(mrpDemand));
-			logger.log(Level.FINE, "Path: {0}", path);
+			logger.debug("---------");
+			logger.debug("MRP Demand: {}", mrpDemand);
+			logger.debug("MRP Demand info: {}", MRPTracer.toString(mrpDemand));
+			logger.debug("Path: {}", path);
 		}
 
 		// Make sure we did not already seen this MRP demand (i.e. avoid endless recursions)
 		if (!seenPP_MRP_IDs.add(mrpDemand.getPP_MRP_ID()))
 		{
-			logger.log(Level.FINE, "Skip demand because already visited");
+			logger.debug("Skip demand because already visited");
 			return;
 		}
 
 		// Check if this MRP Demand is actually navigable
 		if (!isMRPDemandNavigable(mrpDemand))
 		{
-			logger.log(Level.FINE, "Skip demand because is not navigable");
+			logger.debug("Skip demand because is not navigable");
 			return;
 		}
 
@@ -135,7 +138,7 @@ public class DDOrderLineMRPForwardNavigator
 		{
 			// No demands found
 			// => do nothing, about this path
-			logger.log(Level.FINE, "Skip demand because it has no other forward demands");
+			logger.debug("Skip demand because it has no other forward demands");
 			return;
 		}
 
@@ -143,11 +146,11 @@ public class DDOrderLineMRPForwardNavigator
 		//
 		for (final I_PP_MRP forwardMRPDemand : forwardMRPDemands)
 		{
-			logger.log(Level.FINE, "Evaluating forward MRP Demand: {0}", forwardMRPDemand);
+			logger.debug("Evaluating forward MRP Demand: {}", forwardMRPDemand);
 
 			if (!isMRPDemandInScope(forwardMRPDemand))
 			{
-				logger.log(Level.FINE, "Skip forward demand because not in scope");
+				logger.debug("Skip forward demand because not in scope");
 				continue;
 			}
 
@@ -170,7 +173,7 @@ public class DDOrderLineMRPForwardNavigator
 
 			//
 			// Navigate to forward MRP Demand
-			logger.fine("Navigating forward MRP demand...");
+			logger.debug("Navigating forward MRP demand...");
 			navigateForward(forwardMRPDemand, Collections.unmodifiableList(forwardPath));
 		}
 	}
@@ -224,20 +227,20 @@ public class DDOrderLineMRPForwardNavigator
 		// Consider only DD Order Line's MRP demands
 		if (mrpDemand.getDD_OrderLine_ID() <= 0)
 		{
-			logger.log(Level.FINEST, "Demand not navigable because it's not about DD_OrderLines: {0}", mrpDemand);
+			logger.trace("Demand not navigable because it's not about DD_OrderLines: {}", mrpDemand);
 			return false;
 		}
 		if (mrpDemand.getDD_Order_ID() <= 0)
 		{
 			// shall not never ever happen
-			logger.log(Level.WARNING, "Skipping an MRP demand which has DD_OrderLine_ID but not DD_Order_ID: {0}", mrpDemand);
+			logger.warn("Skipping an MRP demand which has DD_OrderLine_ID but not DD_Order_ID: {}", mrpDemand);
 			return false;
 		}
 
 		// Consider only those MRP demands which are in our scope
 		if (!isMRPDemandInScope(mrpDemand))
 		{
-			logger.log(Level.FINEST, "Demand not navigable because it's not in scope: {0}", mrpDemand);
+			logger.trace("Demand not navigable because it's not in scope: {}", mrpDemand);
 			return false;
 		}
 
@@ -246,7 +249,7 @@ public class DDOrderLineMRPForwardNavigator
 
 	private final void collectPath(final List<I_PP_MRP> mrpRecordsPath)
 	{
-		logger.log(Level.FINE, "Collecting DD_Orders from path: {0}", mrpRecordsPath);
+		logger.debug("Collecting DD_Orders from path: {}", mrpRecordsPath);
 
 		//
 		// Extract DD_Order_IDs along the path
@@ -267,7 +270,7 @@ public class DDOrderLineMRPForwardNavigator
 		//
 		// Collect those DD_Order_IDs
 		collectedDD_Order_IDs.addAll(ddOrderIds);
-		logger.log(Level.FINE, "Collected DD_Order_IDs:: {0}", ddOrderIds);
+		logger.debug("Collected DD_Order_IDs:: {}", ddOrderIds);
 	}
 
 	public Set<Integer> getCollectedDD_Order_IDs()

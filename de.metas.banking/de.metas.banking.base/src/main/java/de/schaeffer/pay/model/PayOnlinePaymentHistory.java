@@ -85,7 +85,7 @@ public class PayOnlinePaymentHistory extends X_Pay_OnlinePaymentHistory {
 	 * @param p_mp
 	 */
 	public void setValuesFromPayment(MPayment payment, String errorMessage) {
-		log.fine("errorMessage: " + errorMessage);
+		log.debug("errorMessage: " + errorMessage);
 		setValuesFromPayment(payment);
 		setCCPaymentState(I_C_Payment.CCPAYMENTSTATE_Error);
 		setErrorMsg(errorMessage);

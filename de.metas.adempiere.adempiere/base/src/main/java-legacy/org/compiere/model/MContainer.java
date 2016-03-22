@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 /**
@@ -142,7 +143,7 @@ public class MContainer extends X_CM_Container
 	} // getContainers
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger (MContainer.class);
+	private static Logger s_log = LogManager.getLogger(MContainer.class);
 
 	
 	/***************************************************************************
@@ -435,9 +436,9 @@ public class MContainer extends X_CM_Container
 					", 0, 999)");
 			int no = DB.executeUpdate (sb.toString (), get_TrxName ());
 			if (no > 0)
-				log.fine ("#" + no + " - TreeType=CMC");
+				log.debug("#" + no + " - TreeType=CMC");
 			else
-				log.warning ("#" + no + " - TreeType=CMC");
+				log.warn("#" + no + " - TreeType=CMC");
 			return no > 0;
 		}
 		return success;
@@ -478,9 +479,9 @@ public class MContainer extends X_CM_Container
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
 		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
 		if (no > 0)
-			log.fine ("#" + no + " - TreeType=CMC");
+			log.debug("#" + no + " - TreeType=CMC");
 		else
-			log.warning ("#" + no + " - TreeType=CMC");
+			log.warn("#" + no + " - TreeType=CMC");
 		return no > 0;
 	}
 
@@ -501,9 +502,9 @@ public class MContainer extends X_CM_Container
 		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
 		// If 0 than there is nothing to delete which is okay.
 		if (no > 0)
-			log.fine ("#" + no + " - TreeType=CMC");
+			log.debug("#" + no + " - TreeType=CMC");
 		else
-			log.warning ("#" + no + " - TreeType=CMC");
+			log.warn("#" + no + " - TreeType=CMC");
 		return true;
 	} // afterDelete
 	

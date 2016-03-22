@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.util.Services;
@@ -159,13 +158,13 @@ public class OrderLine extends CalloutEngine
 				{
 					mTab.setValue("C_BPartner_Location_ID", rs.getInt(1));
 					log
-							.fine("C_BPartner_Location_ID for Subscription changed -> "
+							.debug("C_BPartner_Location_ID for Subscription changed -> "
 									+ rs.getInt(1));
 				}
 			}
 			catch (SQLException e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 				return e.getLocalizedMessage();
 			}
 			finally

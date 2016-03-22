@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -76,7 +77,7 @@ public class ImportInventory extends SvrProcess
 			else if (name.equals("DeleteOldImported"))
 				p_DeleteOldImported = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -102,7 +103,7 @@ public class ImportInventory extends SvrProcess
 			sql = new StringBuffer ("DELETE FROM I_Inventory "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
 			no = DB.executeUpdate (sql.toString (), get_TrxName());
-			log.fine("Deleted Old Imported=" + no);
+			log.debug("Deleted Old Imported=" + no);
 		}
 
 		//	Set Client, Org, Location, IsActive, Created/Updated
@@ -121,7 +122,7 @@ public class ImportInventory extends SvrProcess
 			  + " I_IsImported = 'N' "
 			  + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
-		log.info ("Reset=" + no);
+		log.info("Reset=" + no);
 
 		sql = new StringBuffer ("UPDATE I_Inventory o "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
@@ -130,7 +131,7 @@ public class ImportInventory extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
-			log.warning ("Invalid Org=" + no);
+			log.warn("Invalid Org=" + no);
 
 
 		//	Location
@@ -140,14 +141,14 @@ public class ImportInventory extends SvrProcess
 			+ "WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
-		log.fine("Set Locator from Value =" + no);
+		log.debug("Set Locator from Value =" + no);
 		sql = new StringBuffer ("UPDATE I_Inventory i "
 			+ "SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l"
 			+ " WHERE i.X=l.X AND i.Y=l.Y AND i.Z=l.Z AND i.AD_Client_ID=l.AD_Client_ID) "
 			+ "WHERE M_Locator_ID IS NULL AND X IS NOT NULL AND Y IS NOT NULL AND Z IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
-		log.fine("Set Locator from X,Y,Z =" + no);
+		log.debug("Set Locator from X,Y,Z =" + no);
 		if (p_M_Locator_ID != 0)
 		{
 			sql = new StringBuffer ("UPDATE I_Inventory "
@@ -155,7 +156,7 @@ public class ImportInventory extends SvrProcess
 				" WHERE M_Locator_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append (clientCheck);
 			no = DB.executeUpdate (sql.toString (), get_TrxName());
-			log.fine("Set Locator from Parameter=" + no);
+			log.debug("Set Locator from Parameter=" + no);
 		}
 		sql = new StringBuffer ("UPDATE I_Inventory "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Location, ' "
@@ -163,7 +164,7 @@ public class ImportInventory extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
-			log.warning ("No Location=" + no);
+			log.warn("No Location=" + no);
 
 
 		//	Set M_Warehouse_ID
@@ -172,14 +173,14 @@ public class ImportInventory extends SvrProcess
 			+ "WHERE M_Locator_ID IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
-		log.fine("Set Warehouse from Locator =" + no);
+		log.debug("Set Warehouse from Locator =" + no);
 		sql = new StringBuffer ("UPDATE I_Inventory "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' "
 			+ "WHERE M_Warehouse_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
-			log.warning ("No Warehouse=" + no);
+			log.warn("No Warehouse=" + no);
 
 
 		//	Product
@@ -189,21 +190,21 @@ public class ImportInventory extends SvrProcess
 			  + "WHERE M_Product_ID IS NULL AND Value IS NOT NULL"
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
-		log.fine("Set Product from Value=" + no);
+		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer ("UPDATE I_Inventory i "
 				  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
 				  + " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID) "
 				  + "WHERE M_Product_ID IS NULL AND UPC IS NOT NULL"
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 			no = DB.executeUpdate (sql.toString (), get_TrxName());
-			log.fine("Set Product from UPC=" + no);
+			log.debug("Set Product from UPC=" + no);
 		sql = new StringBuffer ("UPDATE I_Inventory "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' "
 			+ "WHERE M_Product_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
-			log.warning ("No Product=" + no);
+			log.warn("No Product=" + no);
 
 		//	No QtyCount
 		sql = new StringBuffer ("UPDATE I_Inventory "
@@ -212,7 +213,7 @@ public class ImportInventory extends SvrProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
-			log.warning ("No QtyCount=" + no);
+			log.warn("No QtyCount=" + no);
 
 		commitEx();
 		
@@ -251,7 +252,7 @@ public class ImportInventory extends SvrProcess
 					//
 					if (!inventory.save())
 					{
-						log.log(Level.SEVERE, "Inventory not saved");
+						log.error("Inventory not saved");
 						break;
 					}
 					x_M_Warehouse_ID = imp.getM_Warehouse_ID();
@@ -295,7 +296,7 @@ public class ImportInventory extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 
 		//	Set Error to indicator to not imported

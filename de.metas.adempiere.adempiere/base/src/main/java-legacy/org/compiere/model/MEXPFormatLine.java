@@ -56,9 +56,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 
@@ -71,7 +71,7 @@ public class MEXPFormatLine extends X_EXP_FormatLine {
 	 */
 	private static final long serialVersionUID = 1855089248134520749L;
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (X_EXP_FormatLine.class);
+	private static Logger	s_log	= LogManager.getLogger(X_EXP_FormatLine.class);
 	
 	
 	
@@ -114,7 +114,7 @@ public class MEXPFormatLine extends X_EXP_FormatLine {
 		pstmt.close ();
 		pstmt = null;
 	} catch (SQLException e) {
-		s_log.log(Level.SEVERE, sql.toString(), e);
+		s_log.error(sql.toString(), e);
 		throw e;
 	} finally {
 		try	{

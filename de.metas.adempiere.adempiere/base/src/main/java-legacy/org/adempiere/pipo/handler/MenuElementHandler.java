@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -417,7 +415,7 @@ public class MenuElementHandler extends AbstractElementHandler {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "getWindows", e);
+			log.error("getWindows", e);
 		} finally {
 			try {
 				if (pstmt != null)
@@ -487,7 +485,7 @@ public class MenuElementHandler extends AbstractElementHandler {
 			pstmt.close();
 			pstmt = null;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "getWindows", e);
+			log.error("getWindows", e);
 		} finally {
 			try {
 				if (pstmt != null)

@@ -25,7 +25,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -68,7 +69,7 @@ public abstract class Lookup extends AbstractListModel
 	private Object[]                m_tempData = null;
 
 	/**	Logger					*/
-	protected final transient CLogger log = CLogger.getCLogger(getClass());
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**	Display Type			*/
 	private final int m_displayType;
@@ -122,7 +123,7 @@ public abstract class Lookup extends AbstractListModel
 			else
 			{
 				m_selectedObject = null;
-				log.fine(getColumnName() + ": setSelectedItem - Set to NULL");
+				log.debug(getColumnName() + ": setSelectedItem - Set to NULL");
 			}
 			fireContentsChanged(this, -1, -1);
 		}
@@ -297,7 +298,7 @@ public abstract class Lookup extends AbstractListModel
 		//  Selected Object changed
 		if (selectedObjectOld != m_selectedObject)
 		{
-			log.finest(getColumnName() + ": SelectedValue Changed=" + selectedObjectOld + "->" + m_selectedObject);
+			log.trace(getColumnName() + ": SelectedValue Changed=" + selectedObjectOld + "->" + m_selectedObject);
 		}
 
 		// comment next code because of bug [ 2053140 ] Mandatory lookup fields autofilled (badly)
@@ -306,7 +307,7 @@ public abstract class Lookup extends AbstractListModel
 		// {
 		// 	obj = p_data.get(0);
 		// 	m_selectedObject = obj;
-		// 	log.finest(getColumnName() + ": SelectedValue SetToFirst=" + obj);
+		// 	log.trace(getColumnName() + ": SelectedValue SetToFirst=" + obj);
 		// //	fireContentsChanged(this, -1, -1);
 		// }
 		
@@ -314,12 +315,12 @@ public abstract class Lookup extends AbstractListModel
 		if (p_data.isEmpty())
 		{
 			fireContentsChanged(this, -1, -1);
-			log.fine(getColumnName() + ": #0 - ms=" + String.valueOf(System.currentTimeMillis()-startTime));
+			log.debug(getColumnName() + ": #0 - ms=" + String.valueOf(System.currentTimeMillis()-startTime));
 		}
 		else
 		{
 			fireContentsChanged(this, 0, p_data.size());
-			log.fine(getColumnName() + ": #" + p_data.size() + " - ms=" + String.valueOf(System.currentTimeMillis()-startTime));
+			log.debug(getColumnName() + ": #" + p_data.size() + " - ms=" + String.valueOf(System.currentTimeMillis()-startTime));
 		}
 	}   //  fillComboBox
 

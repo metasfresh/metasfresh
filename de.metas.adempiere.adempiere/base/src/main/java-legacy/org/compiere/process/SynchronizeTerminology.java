@@ -15,14 +15,11 @@ package org.compiere.process;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.Adempiere;
 import org.compiere.model.M_Element;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
  *	Synchronize Column with Database
@@ -32,11 +29,12 @@ import org.compiere.util.Env;
 public class SynchronizeTerminology extends SvrProcess
 {
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (SynchronizeTerminology.class);
+	private static Logger	s_log	= LogManager.getLogger(SynchronizeTerminology.class);
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 	}	//	prepare
@@ -46,6 +44,7 @@ public class SynchronizeTerminology extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		//TODO Error handling
@@ -756,27 +755,10 @@ public class SynchronizeTerminology extends SvrProcess
 			no = DB.executeUpdate(sql, false, get_TrxName());	  	
 			log.info("  trl rows updated: "+no);
 		} catch (Exception e) {
-			log.log (Level.SEVERE, "@Failed@: "+e.getLocalizedMessage(), e);
+			log.error("@Failed@: "+e.getLocalizedMessage(), e);
 			throw e;
 		}
 
 		return "@OK@";
-	}
-
-	//add main method, preparing for nightly build
-	public static void main(String[] args) 
-	{
-		Adempiere.startupEnvironment(false);
-		CLogMgt.setLevel(Level.FINE);
-		s_log.info("Synchronize Terminology");
-		s_log.info("-----------------------");
-		ProcessInfo pi = new ProcessInfo("Synchronize Terminology", 172);
-		pi.setAD_Client_ID(0);
-		pi.setAD_User_ID(100);
-		
-		SynchronizeTerminology sc = new SynchronizeTerminology();
-		sc.startProcess(Env.getCtx(), pi, null);
-		
-		System.out.println("Process=" + pi.getTitle() + " Error="+pi.isError() + " Summary=" + pi.getSummary());
 	}
 }

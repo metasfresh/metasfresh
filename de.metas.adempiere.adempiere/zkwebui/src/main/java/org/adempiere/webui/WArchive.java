@@ -25,17 +25,19 @@ package org.adempiere.webui;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.form.WArchiveViewer;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.session.SessionManager;
 import org.compiere.model.MBPartner;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -60,7 +62,7 @@ public class WArchive implements EventListener
 	 */
 	public WArchive (Component invoker, int AD_Table_ID, int Record_ID)
 	{
-		log.config("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
+		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
 		getArchives(invoker);
@@ -82,7 +84,7 @@ public class WArchive implements EventListener
 	StringBuffer 		m_where = null;
 	
 	/**	Logger	*/
-	private static CLogger	log	= CLogger.getCLogger (WArchive.class);
+	private static Logger	log	= LogManager.getLogger(WArchive.class);
 	
 	/**
 	 * 	Display Request Options - New/Existing.
@@ -126,7 +128,7 @@ public class WArchive implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{

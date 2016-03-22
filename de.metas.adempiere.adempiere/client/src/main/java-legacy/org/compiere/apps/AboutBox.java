@@ -41,8 +41,8 @@ import org.compiere.Adempiere;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
+import org.compiere.util.SupportInfo;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -79,7 +79,7 @@ public final class AboutBox extends CDialog implements ActionListener
 		//
 		labelVersion.setText(Adempiere.getVersion());
 		labelCopyright.setText(Adempiere.getCopyright());
-		infoArea.setText(CLogMgt.getInfo(null).toString());
+		infoArea.setText(SupportInfo.getInfo());
 		//  create 5 pt border
 		Dimension d = imageControl.getPreferredSize();
 		imageControl.setPreferredSize(new Dimension(d.width+10, d.height+10));

@@ -24,11 +24,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -82,7 +82,7 @@ public class GridWorkbench implements Serializable
 	private String      ColumnName = "";
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(GridWorkbench.class);
+	private static Logger log = LogManager.getLogger(GridWorkbench.class);
 	
 	/**
 	 *  Init Workbench
@@ -140,7 +140,7 @@ public class GridWorkbench implements Serializable
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 
 		if (AD_Workbench_ID == 0)
@@ -294,7 +294,7 @@ public class GridWorkbench implements Serializable
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return false;
 		}
 		return true;

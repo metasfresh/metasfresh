@@ -22,12 +22,12 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.apache.ecs.xhtml.b;
 import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.p;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -75,7 +75,7 @@ public class MChat extends X_CM_Chat
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -90,7 +90,7 @@ public class MChat extends X_CM_Chat
 	}	//	get
 	
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MChat.class);
+	private static Logger s_log = LogManager.getLogger(MChat.class);
 	
 	
 	/**************************************************************************
@@ -171,7 +171,7 @@ public class MChat extends X_CM_Chat
  		}
 		catch (Exception e)
 		{
-			log.log (Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{

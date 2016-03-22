@@ -40,7 +40,8 @@ import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorParameter;
 //import org.compiere.model.MIMPProcessor;
 //import org.compiere.model.X_IMP_ProcessorParameter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Aim of this class is to import records from JMS Server.
@@ -52,7 +53,7 @@ public class TopicImportProcessor implements IImportProcessor
 {
 
 	/** Logger */
-	protected CLogger log = CLogger.getCLogger(TopicImportProcessor.class);
+	protected Logger log = LogManager.getLogger(TopicImportProcessor.class);
 
 	public static final String PARAM_topicName = "topicName";
 

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.event.ActionEvent;
@@ -30,12 +29,15 @@ import org.adempiere.webui.event.ActionListener;
 import org.compiere.model.GridField;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 
@@ -50,11 +52,11 @@ public class WButtonEditor extends WEditor
 {
     private static final String[] LISTENER_EVENTS = {Events.ON_CLICK};
     
-    private static final CLogger logger;
+    private static final Logger logger;
     
     static
     {
-        logger = CLogger.getCLogger(WButtonEditor.class);
+        logger = LogManager.getLogger(WButtonEditor.class);
     }
     
     private String          m_text;
@@ -245,7 +247,7 @@ public class WButtonEditor extends WEditor
         }
         catch (SQLException e)
         {
-            logger.log(Level.SEVERE, SQL, e);
+            logger.error(SQL, e);
         }
        
     }   //  readReference

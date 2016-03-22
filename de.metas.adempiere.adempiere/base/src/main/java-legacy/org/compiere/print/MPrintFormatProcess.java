@@ -17,8 +17,6 @@
 package org.compiere.print;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
@@ -54,7 +52,7 @@ public class MPrintFormatProcess extends SvrProcess
 			else if (name.equals("AD_Table_ID"))
 				m_AD_Table_ID = ((BigDecimal)para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter=" 
+				log.error("prepare - Unknown Parameter=" 
 						+ para[i].getParameterName());
 		}
 	}   //  prepare

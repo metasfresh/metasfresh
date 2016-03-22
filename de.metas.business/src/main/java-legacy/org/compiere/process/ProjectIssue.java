@@ -18,7 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
@@ -98,7 +99,7 @@ public class ProjectIssue extends SvrProcess
 			else if (name.equals("Description"))
 				m_Description = (String)para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		  }
 	}	//	prepare
 

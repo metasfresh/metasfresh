@@ -19,9 +19,9 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
@@ -36,7 +36,7 @@ public class MWebProjectDomain extends X_CM_WebProject_Domain
 	private static final long serialVersionUID = 5134789895039452551L;
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger (MContainer.class);
+	private static Logger s_log = LogManager.getLogger(MContainer.class);
 
 	/**
 	 * 	Web Project Domain Constructor
@@ -84,7 +84,7 @@ public class MWebProjectDomain extends X_CM_WebProject_Domain
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{

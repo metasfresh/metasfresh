@@ -39,14 +39,15 @@ import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.interfaces.I_C_OrderLine;
 
 public class MMPurchaseSchedule extends X_M_PurchaseSchedule
 {
 
-	private static final CLogger logger = CLogger.getCLogger(MMPurchaseSchedule.class);
+	private static final Logger logger = LogManager.getLogger(MMPurchaseSchedule.class);
 
 	public static final String RELTYPE_CURRENT_PO_INT_NAME = "M_PurchaseSchedule_C_OrderLine_PO";
 
@@ -316,7 +317,7 @@ public class MMPurchaseSchedule extends X_M_PurchaseSchedule
 			{
 				relToDelete.deleteEx(false);
 			}
-			logger.fine(" Deleted " + relsToDelete.size() + " MRelation records for " + relType + " and " + oldSched);
+			logger.debug(" Deleted " + relsToDelete.size() + " MRelation records for " + relType + " and " + oldSched);
 		}
 		if (newSched != null)
 		{

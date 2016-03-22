@@ -20,7 +20,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -138,7 +139,7 @@ public class RequisitionPOCreate extends SvrProcess
 			else if (name.equals("ConsolidateDocument"))
 				p_ConsolidateDocument = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 	
@@ -295,7 +296,7 @@ public class RequisitionPOCreate extends SvrProcess
 	{
 		if (rLine.getM_Product_ID() == 0 && rLine.getC_Charge_ID() == 0)
 		{
-			log.warning("Ignored Line" + rLine.getLine() 
+			log.warn("Ignored Line" + rLine.getLine() 
 				+ " " + rLine.getDescription()
 				+ " - " + rLine.getLineNetAmt());
 			return;

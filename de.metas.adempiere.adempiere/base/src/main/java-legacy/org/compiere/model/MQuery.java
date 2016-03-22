@@ -23,11 +23,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -114,7 +114,7 @@ public class MQuery implements Serializable
 			{
 				if (row == rows)
 				{
-					s_log.log(Level.SEVERE, "(Parameter) - more rows than expected");
+					s_log.error("(Parameter) - more rows than expected");
 					break;
 				}
 				String ParameterName = rs.getString(1);
@@ -139,7 +139,7 @@ public class MQuery implements Serializable
 				String Name = rs.getString(10);
 				boolean isRange = "Y".equals(rs.getString(11));
 				//
-				s_log.fine(ParameterName + " S=" + P_String + "-" + P_String_To
+				s_log.debug(ParameterName + " S=" + P_String + "-" + P_String_To
 						+ ", N=" + P_Number + "-" + P_Number_To + ", D=" + P_Date + "-" + P_Date_To
 						+ "; Name=" + Name + ", Info=" + Info + "-" + Info_To + ", Range=" + isRange);
 				//
@@ -224,7 +224,7 @@ public class MQuery implements Serializable
 		}
 		catch (SQLException e2)
 		{
-			s_log.log(Level.SEVERE, SQL, e2);
+			s_log.error(SQL, e2);
 		}
 		finally
 		{
@@ -342,7 +342,7 @@ public class MQuery implements Serializable
 	}	// getNoRecordQuery
 
 	/** Static Logger */
-	private static CLogger s_log = CLogger.getCLogger(MQuery.class);
+	private static Logger s_log = LogManager.getLogger(MQuery.class);
 
 	/**************************************************************************
 	 * Constructor w/o table name

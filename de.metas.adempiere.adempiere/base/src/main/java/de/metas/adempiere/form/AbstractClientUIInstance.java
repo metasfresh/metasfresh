@@ -23,11 +23,10 @@ package de.metas.adempiere.form;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 
 /**
@@ -38,7 +37,7 @@ import de.metas.adempiere.form.IClientUIInvoker.OnFail;
  */
 public abstract class AbstractClientUIInstance implements IClientUIInstance
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public void warn(final int WindowNo, final Throwable e)
@@ -47,7 +46,7 @@ public abstract class AbstractClientUIInstance implements IClientUIInstance
 
 		final String message = buildErrorMessage(e);
 		
-		logger.log(Level.WARNING, message, e);
+		logger.warn(message, e);
 		warn(WindowNo, AD_Message, message);
 	}
 
@@ -61,7 +60,7 @@ public abstract class AbstractClientUIInstance implements IClientUIInstance
 		// Log the error to console
 		// NOTE: we need to do that because in case something went wrong we need the stacktrace to debug the actual issue
 		// Before removing this please consider that you need to provide an alternative from where the support guys can grab their detailed exception info.
-		logger.log(Level.WARNING, message, e);
+		logger.warn(message, e);
 		
 		error(WindowNo, AD_Message, message);
 	}

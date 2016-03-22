@@ -47,7 +47,8 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -91,7 +92,7 @@ import de.metas.commission.util.HierarchyDescender;
 public class SponsorCond implements ICommissionType
 {
 
-	private static final CLogger logger = CLogger.getCLogger(SponsorCond.class);
+	private static final Logger logger = LogManager.getLogger(SponsorCond.class);
 
 	private I_C_AdvComSystem_Type comSystemType;
 
@@ -320,11 +321,11 @@ public class SponsorCond implements ICommissionType
 
 		for (final Object po : ordersAndInvoices)
 		{
-			SponsorCond.logger.fine("retrieving all instances for poHeader " + po);
+			SponsorCond.logger.debug("retrieving all instances for poHeader " + po);
 
 			for (final Object poLine : faBL.retrieveLines(po, true))
 			{
-				SponsorCond.logger.fine("retrieving all instances for poLine " + poLine);
+				SponsorCond.logger.debug("retrieving all instances for poLine " + poLine);
 
 				// Step 1
 				// Get all commission instances that were triggered by 'poLine'.
@@ -529,11 +530,11 @@ public class SponsorCond implements ICommissionType
 			minusFact.setFactType(X_C_AdvCommissionFact.FACTTYPE_VorgangSchliessen);
 			minusFact.saveEx();
 
-			SponsorCond.logger.fine("Created minus fact " + minusFact);
+			SponsorCond.logger.debug("Created minus fact " + minusFact);
 		}
 		else
 		{
-			SponsorCond.logger.fine("No need to create minus fact for status='" + status + "' and " + instanceToClose);
+			SponsorCond.logger.debug("No need to create minus fact for status='" + status + "' and " + instanceToClose);
 		}
 	}
 
@@ -563,7 +564,7 @@ public class SponsorCond implements ICommissionType
 				candId2PO.put(existingCand.get_ID(), po);
 				candId2Cand.put(existingCand.get_ID(), existingCand);
 			}
-			SponsorCond.logger.fine("Retrieved " + candsForPO.size() + " existing candidates for " + po);
+			SponsorCond.logger.debug("Retrieved " + candsForPO.size() + " existing candidates for " + po);
 		}
 
 		SponsorCond.logger.info("Retrieved " + candId2PO.size() + " existing candidates for " + posToReevaluate.size() + " POs");
@@ -577,7 +578,7 @@ public class SponsorCond implements ICommissionType
 			newCand.setAlsoHandleTypesWithProcessNow(true);
 			newCand.saveEx();
 
-			SponsorCond.logger.fine("Created new candidate " + newCand);
+			SponsorCond.logger.debug("Created new candidate " + newCand);
 		}
 	}
 

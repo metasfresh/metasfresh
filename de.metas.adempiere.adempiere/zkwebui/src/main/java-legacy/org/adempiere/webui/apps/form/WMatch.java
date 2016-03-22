@@ -18,7 +18,6 @@ package org.adempiere.webui.apps.form;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
@@ -48,11 +47,14 @@ import org.compiere.apps.form.Match;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MMatchPO;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -105,14 +107,14 @@ public class WMatch extends Match
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 
 	/**	Window No			*/
 	private int         	m_WindowNo = 0;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(WMatch.class);
+	private static Logger log = LogManager.getLogger(WMatch.class);
 
 	private int     m_AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 	private int     m_AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
@@ -437,7 +439,7 @@ public class WMatch extends Match
 	 */
 	private void cmd_matchTo()
 	{
-	//	log.fine( "VMatch.cmd_matchTo");
+	//	log.debug( "VMatch.cmd_matchTo");
 		int index = matchTo.getSelectedIndex();
 		String selection = (String)matchTo.getModel().getElementAt(index);
 		xMatchedToBorder.setValue(selection);
@@ -452,7 +454,7 @@ public class WMatch extends Match
 	private void cmd_searchTo()
 	{
 		int row = xMatchedTable.getSelectedRow();
-		log.config("Row=" + row);
+		log.info("Row=" + row);
 
 		double qty = 0.0;
 		if (row < 0)
@@ -496,7 +498,7 @@ public class WMatch extends Match
 	{
 		if (e.getColumn() != 0)
 			return;
-		log.config("Row=" + e.getFirstRow() + "-" + e.getLastRow() + ", Col=" + e.getColumn()
+		log.info("Row=" + e.getFirstRow() + "-" + e.getLastRow() + ", Col=" + e.getColumn()
 			+ ", Type=" + e.getType());
 
 		//  Matched From

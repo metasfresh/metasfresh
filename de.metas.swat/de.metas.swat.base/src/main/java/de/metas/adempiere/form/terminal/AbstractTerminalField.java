@@ -25,21 +25,20 @@ package de.metas.adempiere.form.terminal;
 
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.CompositeTerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 
 public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final ITerminalContext terminalContext;
 	private final WeakPropertyChangeSupport listeners;
@@ -120,7 +119,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 						+ "\n field: " + this
 						+ "\n value: " + value
 						+ "\n fireEvent: " + fireEvent);
-				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+				logger.warn(ex.getLocalizedMessage(), ex);
 				return;
 			}
 

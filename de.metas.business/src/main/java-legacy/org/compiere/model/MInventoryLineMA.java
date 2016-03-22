@@ -21,9 +21,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 
 
@@ -64,7 +66,7 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -106,7 +108,7 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 	}	//	deleteInventoryMA
 	
 	/**	Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MInventoryLineMA.class);
+	private static Logger	s_log	= LogManager.getLogger(MInventoryLineMA.class);
 
 	
 	/**************************************************************************

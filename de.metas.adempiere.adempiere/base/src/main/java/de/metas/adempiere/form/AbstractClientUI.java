@@ -28,7 +28,8 @@ package de.metas.adempiere.form;
 
 import java.io.InputStream;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -36,7 +37,7 @@ import org.compiere.util.CLogger;
  */
 public abstract class AbstractClientUI implements IClientUI
 {
-	protected final CLogger logger = CLogger.getCLogger(getClass());
+	protected final Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Gets the instance in current running desktop

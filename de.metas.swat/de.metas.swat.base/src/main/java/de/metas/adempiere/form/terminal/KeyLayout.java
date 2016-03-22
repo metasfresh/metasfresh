@@ -36,7 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -44,7 +45,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.util.CLogger;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -58,7 +58,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 public abstract class KeyLayout implements IKeyLayout
 {
 	// Services
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	protected final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private final ITerminalContext tc;
@@ -367,7 +367,7 @@ public abstract class KeyLayout implements IKeyLayout
 					}
 
 					// In case we are not in developer mode, just log a WARNING and skip the duplicate.
-					logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+					logger.warn(ex.getLocalizedMessage(), ex);
 					keysIterator.remove();
 					continue;
 				}

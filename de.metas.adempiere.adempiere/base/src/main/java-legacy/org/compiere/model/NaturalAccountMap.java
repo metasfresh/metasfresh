@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
@@ -81,7 +81,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 	/** Map of Values and Element	*/
 	private HashMap<String,MElementValue> 	m_valueMap = new HashMap<String,MElementValue>();
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(NaturalAccountMap.class);
+	private static Logger log = LogManager.getLogger(NaturalAccountMap.class);
 
 	/**
 	 *  Read and Parse File
@@ -90,7 +90,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 	 */
 	public String parseFile (File file)
 	{
-		log.config(file.getAbsolutePath());
+		log.info(file.getAbsolutePath());
 		String line = null;
 		try
 		{
@@ -142,10 +142,10 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 	@SuppressWarnings("unchecked")
 	public String parseLine (String line, int lineNo) throws Exception
 	{
-		log.config(lineNo+" : "+line);
+		log.info(lineNo+" : "+line);
 
 		if (line.trim().length()==0) {
-			log.log(Level.WARNING, "Line "+lineNo+" is empty, ignored. ");
+			log.warn("Line "+lineNo+" is empty, ignored. ");
 			return "";
 		}
 		
@@ -153,7 +153,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 		StringBuffer newLine = new StringBuffer();
 		StringTokenizer st = new StringTokenizer(line, "\"", false);
 		if ((st==null )||(st.countTokens()==0)) {
-			log.log(Level.SEVERE, "Parse error: No \\\" found in line: "+lineNo);
+			log.error("Parse error: No \\\" found in line: "+lineNo);
 			return "";
 		}
 		newLine.append(st.nextToken());         //  first part
@@ -174,12 +174,12 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 		//  All fields there ?
 		if (st.countTokens() == 1)
 		{
-			log.log(Level.SEVERE, "Ignored: Require ',' as separator - " + pLine);
+			log.error("Ignored: Require ',' as separator - " + pLine);
 			return "";
 		}
 		if (st.countTokens() < 9)
 		{
-			log.log(Level.SEVERE, "Ignored: FieldNumber wrong: " + st.countTokens() + " - " + pLine);
+			log.error("Ignored: FieldNumber wrong: " + st.countTokens() + " - " + pLine);
 			return "";
 		}
 
@@ -240,7 +240,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 			IsDocControlled = "N";
 
 
-	//	log.config( "Value=" + Value + ", AcctType=" + AccountType
+	//	log.info( "Value=" + Value + ", AcctType=" + AccountType
 	//		+ ", Sign=" + AccountSign + ", Doc=" + docControlled
 	//		+ ", Summary=" + summary + " - " + Name + " - " + Description);
 
@@ -279,7 +279,7 @@ public final class NaturalAccountMap extends CCache<String,MElementValue>
 	 */
 	public boolean saveAccounts (int AD_Client_ID, int AD_Org_ID, int C_Element_ID)
 	{
-		log.config("");
+		log.info("");
 		Iterator iterator = this.values().iterator();
 		while (iterator.hasNext())
 		{

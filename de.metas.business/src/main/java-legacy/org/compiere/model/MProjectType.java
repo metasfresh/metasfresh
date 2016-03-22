@@ -22,7 +22,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.util.CCache;
@@ -131,7 +132,7 @@ public class MProjectType extends X_C_ProjectType
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{
@@ -196,7 +197,7 @@ public class MProjectType extends X_C_ProjectType
 		String sql = MMeasureCalc.addRestrictions(sb.toString(), false, restrictions, role, 
 			"C_Project", orgColumn, bpColumn, pColumn);
 		
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSql
 	
@@ -266,7 +267,7 @@ public class MProjectType extends X_C_ProjectType
 		if (groupBy != null)
 			sql += " GROUP BY " + groupBy + " ORDER BY " + orderBy;
 		//
-		log.fine(sql);
+		log.debug(sql);
 		return sql;
 	}	//	getSqlBarChart
 	

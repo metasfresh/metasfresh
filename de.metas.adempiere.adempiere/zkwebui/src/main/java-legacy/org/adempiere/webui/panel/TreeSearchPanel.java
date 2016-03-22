@@ -23,7 +23,6 @@ import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.AutoComplete;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Panel;
-import org.adempiere.webui.util.DocumentSearch;
 import org.adempiere.webui.util.TreeItemAction;
 import org.adempiere.webui.util.TreeNodeAction;
 import org.adempiere.webui.util.TreeUtils;
@@ -62,8 +61,6 @@ public class TreeSearchPanel extends Panel implements EventListener, TreeDataLis
 	private Tree tree;
 
 	private String eventToFire;
-
-	private static final String PREFIX_DOCUMENT_SEARCH = "/";
 
 	/**
      * @param tree
@@ -146,12 +143,14 @@ public class TreeSearchPanel extends Panel implements EventListener, TreeDataLis
 		treeNodeItemMap.clear();
 		if (tree.getModel() == null) {
 	    	TreeUtils.traverse(tree, new TreeItemAction() {
+				@Override
 				public void run(Treeitem treeItem) {
 					addTreeItem(treeItem);
 				}
 	    	});
 		} else {
 			TreeUtils.traverse(tree.getModel(), new TreeNodeAction() {
+				@Override
 				public void run(MTreeNode treeNode) {
 					addTreeItem(treeNode);
 				}
@@ -188,20 +187,12 @@ public class TreeSearchPanel extends Panel implements EventListener, TreeDataLis
      * @param event
      * @see EventListener#onEvent(Event)
      */
-    public void onEvent(Event event)
+    @Override
+	public void onEvent(Event event)
     {
         if (cmbSearch.equals(event.getTarget()) && (event.getName().equals(Events.ON_CHANGE)))
         {
             String value = cmbSearch.getValue();
-
-            if (value != null && value.trim().length() > 0
-            		&& value.substring(0, 1).equals(PREFIX_DOCUMENT_SEARCH))
-            {
-            	DocumentSearch search = new DocumentSearch();
-            	if (search.openDocumentsByDocumentNo(value.substring(1)))
-    				cmbSearch.setText(null);
-            	return;
-            }
 
             Object node = treeNodeItemMap.get(value);
             Treeitem treeItem = null;
@@ -252,6 +243,7 @@ public class TreeSearchPanel extends Panel implements EventListener, TreeDataLis
 	 * @param event
 	 * @see TreeDataListener#onChange(TreeDataEvent)
 	 */
+	@Override
 	public void onChange(TreeDataEvent event) {
 		refreshSearchList();
 	}

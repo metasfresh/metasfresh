@@ -44,7 +44,8 @@ import org.compiere.model.MOrg;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -62,7 +63,7 @@ import de.metas.ordercandidate.spi.IOLCandCreator;
  */
 public class OLCandGenerator extends AbstractModelInterceptor
 {
-	private static final CLogger logger = CLogger.getCLogger(OLCandGenerator.class);
+	private static final Logger logger = LogManager.getLogger(OLCandGenerator.class);
 
 	private IModelValidationEngine engine;
 

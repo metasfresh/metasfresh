@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MAllocationHdr;
@@ -96,7 +97,7 @@ public class AllocationAuto extends SvrProcess
 			}
 			else
 			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 			}
 		}
 	}	// prepare
@@ -148,7 +149,7 @@ public class AllocationAuto extends SvrProcess
 			}
 			catch (final Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -181,7 +182,7 @@ public class AllocationAuto extends SvrProcess
 			}
 			catch (final Exception e)
 			{
-				log.log(Level.SEVERE, sql, e);
+				log.error(sql, e);
 			}
 			finally
 			{
@@ -328,7 +329,7 @@ public class AllocationAuto extends SvrProcess
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -393,7 +394,7 @@ public class AllocationAuto extends SvrProcess
 		}
 		catch (final Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -440,7 +441,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				availableAmt = availableAmt.negate();
 			}
-			log.fine("Available=" + availableAmt);
+			log.debug("Available=" + availableAmt);
 			//
 			if (payment.getC_Invoice_ID() != 0)
 			{
@@ -451,7 +452,7 @@ public class AllocationAuto extends SvrProcess
 					{
 						continue;
 					}
-					// log.fine("allocateIndividualPayments - " + invoice);
+					// log.debug("allocateIndividualPayments - " + invoice);
 					if (payment.getC_Invoice_ID() == invoice.getC_Invoice_ID())
 					{
 						if (payment.getC_Currency_ID() == invoice.getC_Currency_ID())
@@ -461,7 +462,7 @@ public class AllocationAuto extends SvrProcess
 							{
 								openAmt = openAmt.negate();
 							}
-							log.fine(invoice + ", Open=" + openAmt);
+							log.debug(invoice + ", Open=" + openAmt);
 							// With Discount, etc.
 							if (availableAmt.compareTo(openAmt) == 0)
 							{
@@ -506,7 +507,7 @@ public class AllocationAuto extends SvrProcess
 						{
 							invoiceAmt = invoiceAmt.negate();
 						}
-						log.fine(invoice + ", Invoice=" + invoiceAmt);
+						log.debug(invoice + ", Invoice=" + invoiceAmt);
 						totalInvoice = totalInvoice.add(invoiceAmt);
 					}
 					else
@@ -561,7 +562,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				availableAmt = availableAmt.negate();
 			}
-			log.fine("Available=" + availableAmt);
+			log.debug("Available=" + availableAmt);
 			for (int i = 0; i < m_invoices.length; i++)
 			{
 				final MInvoice invoice = m_invoices[i];
@@ -571,14 +572,14 @@ public class AllocationAuto extends SvrProcess
 				}
 				if (payment.getC_Currency_ID() == invoice.getC_Currency_ID())
 				{
-					// log.fine("allocateBPartnerAll - " + invoice);
+					// log.debug("allocateBPartnerAll - " + invoice);
 					BigDecimal openAmt = invoice.getOpenAmt(true, null);
 					if (!invoice.isSOTrx())
 					{
 						openAmt = openAmt.negate();
 					}
 					final BigDecimal difference = availableAmt.subtract(openAmt).abs();
-					log.fine(invoice + ", Open=" + openAmt + " - Difference=" + difference);
+					log.debug(invoice + ", Open=" + openAmt + " - Difference=" + difference);
 					if (difference.signum() == 0)
 					{
 						Timestamp dateAcct = payment.getDateAcct();
@@ -651,7 +652,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				continue;
 			}
-			// log.fine("allocateBPartnerAll - Available=" + availableAmt);
+			// log.debug("allocateBPartnerAll - Available=" + availableAmt);
 			if (dateAcct == null || payment.getDateAcct().after(dateAcct))
 			{
 				dateAcct = payment.getDateAcct();
@@ -678,7 +679,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				continue;
 			}
-			// log.fine("allocateBPartnerAll - Open=" + openAmt);
+			// log.debug("allocateBPartnerAll - Open=" + openAmt);
 			if (dateAcct == null || invoice.getDateAcct().after(dateAcct))
 			{
 				dateAcct = invoice.getDateAcct();
@@ -795,7 +796,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				availableAmt = availableAmt.negate();
 			}
-			log.fine("Available=" + availableAmt);
+			log.debug("Available=" + availableAmt);
 			if (dateAcct == null || payment.getDateAcct().after(dateAcct))
 			{
 				dateAcct = payment.getDateAcct();
@@ -816,13 +817,13 @@ public class AllocationAuto extends SvrProcess
 				continue;
 			}
 			BigDecimal openAmt = invoice.getOpenAmt(true, null);
-			log.fine("" + invoice);
+			log.debug("" + invoice);
 			if (!invoice.isSOTrx())
 			{
 				openAmt = openAmt.negate();
 			}
 			// Foreign currency
-			log.fine("Open=" + openAmt);
+			log.debug("Open=" + openAmt);
 			if (dateAcct == null || invoice.getDateAcct().after(dateAcct))
 			{
 				dateAcct = invoice.getDateAcct();
@@ -833,7 +834,7 @@ public class AllocationAuto extends SvrProcess
 		// must be either AP or AR balance
 		if (totalInvoices.signum() != totalPayments.signum())
 		{
-			log.fine("Signum - Invoices=" + totalInvoices.signum()
+			log.debug("Signum - Invoices=" + totalInvoices.signum()
 					+ " <> Payments=" + totalPayments.signum());
 			return 0;
 		}
@@ -885,7 +886,7 @@ public class AllocationAuto extends SvrProcess
 				availableAmt = availableAmt.subtract(diff);
 				allocatedPayments = allocatedPayments.subtract(diff);
 			}
-			log.fine("Payment Allocated=" + availableAmt);
+			log.debug("Payment Allocated=" + availableAmt);
 			if (!createAllocation(C_Currency_ID, "BP Oldest (" + difference.abs() + ")",
 					dateAcct, availableAmt, null, null, null,
 					payment.getC_BPartner_ID(), payment.getC_Payment_ID(), 0, payment.getAD_Org_ID()))
@@ -927,7 +928,7 @@ public class AllocationAuto extends SvrProcess
 			{
 				break;
 			}
-			log.fine("Invoice Allocated=" + openAmt);
+			log.debug("Invoice Allocated=" + openAmt);
 			if (!createAllocation(C_Currency_ID, "BP Oldest (" + difference.abs() + ")",
 					dateAcct, openAmt, null, null, null,
 					invoice.getC_BPartner_ID(), 0, invoice.getC_Invoice_ID(), invoice.getAD_Org_ID()))

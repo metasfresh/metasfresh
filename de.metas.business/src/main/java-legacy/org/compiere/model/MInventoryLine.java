@@ -378,7 +378,7 @@ public class MInventoryLine extends X_M_InventoryLine
 		}
 		if (sum.compareTo(getQtyBook()) != 0)
 		{
-			log.warning("QtyBook=" + getQtyBook() + " corrected to Sum of MA=" + sum);
+			log.warn("QtyBook=" + getQtyBook() + " corrected to Sum of MA=" + sum);
 			setQtyBook(sum);
 		}
 	}	//	createMA

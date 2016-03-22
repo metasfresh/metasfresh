@@ -31,7 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -50,13 +51,14 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 public class DocFactory implements IDocFactory
 {
 	/** Static Log */
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Map of AD_Table_ID to {@link IDocMetaInfo} */
 	private transient Map<Integer, IDocMetaInfo> _tableId2docMetaInfo = null;
@@ -165,7 +167,7 @@ public class DocFactory implements IDocFactory
 		final PO documentModel = TableModelLoader.instance.getPO(ctx, TableName, Record_ID, trxName);
 		if (documentModel == null)
 		{
-			logger.severe("Not Found: " + TableName + "_ID=" + Record_ID + " (Processed=Y, trxName=" + trxName + ")");
+			logger.error("Not Found: " + TableName + "_ID=" + Record_ID + " (Processed=Y, trxName=" + trxName + ")");
 			return null;
 		}
 
@@ -301,12 +303,12 @@ public class DocFactory implements IDocFactory
 			// NOTE: it could be that some Doc classes are missing (e.g. Doc_HRProcess),
 			// and we don't want to pollute the log.
 			final AdempiereException ex = new AdempiereException("No Doc class found for " + className, e);
-			logger.log(Level.INFO, ex.getLocalizedMessage(), ex);
+			logger.info(ex.getLocalizedMessage(), ex);
 		}
 		catch (final Exception e)
 		{
 			final AdempiereException ex = new AdempiereException("Error while loading Doc class found for " + className, e);
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 
 		// No meta-info found

@@ -35,7 +35,8 @@ import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inout.model.I_M_InOut;
@@ -50,7 +51,7 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 
 	public final static String MSG_NO_ITEM_TO_SHIP = "ShipmentSchedule_NoItemToShip";
 
-	private static final CLogger logger = CLogger.getCLogger(DefaultCandidateProcessor.class);
+	private static final Logger logger = LogManager.getLogger(DefaultCandidateProcessor.class);
 
 	@Override
 	public final int processCandidates(final Properties ctx,

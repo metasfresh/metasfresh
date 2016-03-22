@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -74,7 +75,7 @@ public class InOutGenerateRMA extends SvrProcess
             else if (name.equals("DocAction"))
                 p_docAction = (String)para[i].getParameter();
             else
-                log.log(Level.SEVERE, "Unknown Parameter: " + name);
+                log.error("Unknown Parameter: " + name);
         }
         
         m_movementDate = Env.getContextAsDate(getCtx(), "#Date");
@@ -112,7 +113,7 @@ public class InOutGenerateRMA extends SvrProcess
         }
         catch (Exception ex)
         {
-            log.log(Level.SEVERE, sql, ex);
+            log.error(sql, ex);
         }
         finally
         {
@@ -122,7 +123,7 @@ public class InOutGenerateRMA extends SvrProcess
             }
             catch (Exception ex)
             {
-                log.log(Level.SEVERE, "Could not close prepared statement");
+                log.error("Could not close prepared statement");
             }
         }
         
@@ -237,7 +238,7 @@ public class InOutGenerateRMA extends SvrProcess
         
         if (shipmentLines.length == 0)
         {
-            log.log(Level.WARNING, "No shipment lines created: M_RMA_ID="
+            log.warn("No shipment lines created: M_RMA_ID="
                     + M_RMA_ID + ", M_InOut_ID=" + shipment.get_ID());
         }
         
@@ -246,7 +247,7 @@ public class InOutGenerateRMA extends SvrProcess
         if (!shipment.processIt(p_docAction))
         {
             processMsg.append(" (NOT Processed)");
-            log.warning("Shipment Processing failed: " + shipment + " - " + shipment.getProcessMsg());
+            log.warn("Shipment Processing failed: " + shipment + " - " + shipment.getProcessMsg());
         }
         
         if (!shipment.save())

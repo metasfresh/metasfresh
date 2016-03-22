@@ -20,7 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.SwingWorker;
 
@@ -35,7 +36,8 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MTask;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -131,7 +133,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	}
 
 	/** Logger */
-	private static final transient CLogger logger = CLogger.getCLogger(AMenuStartItem.class);
+	private static final transient Logger logger = LogManager.getLogger(AMenuStartItem.class);
 
 	/** The ID (AD_Menu_ID or AD_WF_Node_ID) */
 	private final int m_ID;
@@ -290,7 +292,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		}
 		catch (final InterruptedException e)
 		{
-			logger.log(Level.INFO, "Interrupted", e);
+			logger.info("Interrupted", e);
 		}
 		catch (final ExecutionException e)
 		{

@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,7 +40,8 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -182,7 +184,7 @@ public class MCost extends X_M_Cost
 				String cm = rs.getString(3);
 				percent = rs.getBigDecimal(4);
 				//M_CostElement_ID = rs.getInt(5);
-				s_log.finest("CurrentCostPrice=" + currentCostPrice
+				s_log.trace("CurrentCostPrice=" + currentCostPrice
 					+ ", CurrentCostPriceLL=" + currentCostPriceLL
 					+ ", CostElementType=" + costElementType
 					+ ", CostingMethod=" + cm
@@ -215,7 +217,7 @@ public class MCost extends X_M_Cost
 		}
 
 		if (count > 1)	//	Print summary
-			s_log.finest("MaterialCost=" + materialCostEach
+			s_log.trace("MaterialCost=" + materialCostEach
 				+ ", OtherCosts=" + otherCostEach
 				+ ", Percentage=" + percentage);
 
@@ -244,7 +246,7 @@ public class MCost extends X_M_Cost
 		//	Standard costs - just Material Costs
 		if (MCostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 		{
-			s_log.finer("MaterialCosts = " + materialCost);
+			s_log.trace("MaterialCosts = " + materialCost);
 			return materialCost;
 		}
 		if (MCostElement.COSTINGMETHOD_Fifo.equals(costingMethod)
@@ -263,7 +265,7 @@ public class MCost extends X_M_Cost
 		if (costs.signum() == 0)
 			return null;
 
-		s_log.finer("Sum Costs = " + costs);
+		s_log.trace("Sum Costs = " + costs);
 		int precision = as.getCostingPrecision();
 		if (percentage.signum() == 0)	//	no percentages
 		{
@@ -277,7 +279,7 @@ public class MCost extends X_M_Cost
 		costs = costs.add(percentCost);
 		if (costs.scale() > precision)
 			costs = costs.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		s_log.finer("Sum Costs = " + costs + " (Add=" + percentCost + ")");
+		s_log.trace("Sum Costs = " + costs + " (Add=" + percentCost + ")");
 		return costs;
 	}	//	getCurrentCost
 
@@ -329,7 +331,7 @@ public class MCost extends X_M_Cost
 			throw new IllegalArgumentException("Unknown Costing Method = " + costingMethod);
 		if (retValue != null && retValue.signum() != 0)
 		{
-			s_log.fine(product.getName() + ", CostingMethod=" + costingMethod + " - " + retValue);
+			s_log.debug(product.getName() + ", CostingMethod=" + costingMethod + " - " + retValue);
 			return retValue;
 		}
 
@@ -339,7 +341,7 @@ public class MCost extends X_M_Cost
 			retValue = getPOPrice(product, C_OrderLine_ID, as.getC_Currency_ID(), trxName);
 			if (retValue != null && retValue.signum() != 0)
 			{
-				s_log.fine(product.getName() + ", PO - " + retValue);
+				s_log.debug(product.getName() + ", PO - " + retValue);
 				return retValue;
 			}
 		}
@@ -351,7 +353,7 @@ public class MCost extends X_M_Cost
 			MCost cost = get(product, M_ASI_ID, as, Org_ID, ce.getM_CostElement_ID(), trxName);
 			if (cost != null && cost.getCurrentCostPrice().signum() != 0)
 			{
-				s_log.fine(product.getName() + ", Standard - " + retValue);
+				s_log.debug(product.getName() + ", Standard - " + retValue);
 				return cost.getCurrentCostPrice();
 			}
 		}
@@ -368,7 +370,7 @@ public class MCost extends X_M_Cost
 				retValue = getLastPOPrice(product, M_ASI_ID, 0, as.getC_Currency_ID(), trxName);
 			if (retValue != null && retValue.signum() != 0)
 			{
-				s_log.fine(product.getName() + ", LastPO = " + retValue);
+				s_log.debug(product.getName() + ", LastPO = " + retValue);
 				return retValue;
 			}
 		}
@@ -380,7 +382,7 @@ public class MCost extends X_M_Cost
 				retValue = getLastInvoicePrice(product, M_ASI_ID, 0, as.getC_Currency_ID(), trxName);
 			if (retValue != null && retValue.signum() != 0)
 			{
-				s_log.fine(product.getName() + ", LastInv = " + retValue);
+				s_log.debug(product.getName() + ", LastInv = " + retValue);
 				return retValue;
 			}
 		}
@@ -397,7 +399,7 @@ public class MCost extends X_M_Cost
 				retValue = getLastInvoicePrice(product, M_ASI_ID, 0, as.getC_Currency_ID(), trxName);
 			if (retValue != null && retValue.signum() != 0)
 			{
-				s_log.fine(product.getName() + ", LastInv = " + retValue);
+				s_log.debug(product.getName() + ", LastInv = " + retValue);
 				return retValue;
 			}
 		}
@@ -409,7 +411,7 @@ public class MCost extends X_M_Cost
 				retValue = getLastPOPrice(product, M_ASI_ID, 0, as.getC_Currency_ID(), trxName);
 			if (retValue != null && retValue.signum() != 0)
 			{
-				s_log.fine(product.getName() + ", LastPO = " + retValue);
+				s_log.debug(product.getName() + ", LastPO = " + retValue);
 				return retValue;
 			}
 		}
@@ -437,13 +439,13 @@ public class MCost extends X_M_Cost
 								product,
 								pos[i].getC_UOM(),
 								price);
-						if (price == null) s_log.warning("@NoUOMConversion@ @M_Product_ID@:"+product.getValue()+", @To_UOM_ID@:"+pos[i].getC_UOM_ID()); // metas: 01428
+						if (price == null) s_log.warn("@NoUOMConversion@ @M_Product_ID@:"+product.getValue()+", @To_UOM_ID@:"+pos[i].getC_UOM_ID()); // metas: 01428
 					}
 				}
 				if (price != null && price.signum() != 0)
 				{
 					retValue = price;
-					s_log.fine(product.getName() + ", Product_PO = " + retValue);
+					s_log.debug(product.getName() + ", Product_PO = " + retValue);
 					return retValue;
 				}
 			}
@@ -452,7 +454,7 @@ public class MCost extends X_M_Cost
 		//	Still nothing try Purchase Price List
 		//	....
 
-		s_log.fine(product.getName() + " = " + retValue);
+		s_log.debug(product.getName() + " = " + retValue);
 		return retValue;
 	}	//	getSeedCosts
 
@@ -501,7 +503,7 @@ public class MCost extends X_M_Cost
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -516,7 +518,7 @@ public class MCost extends X_M_Cost
 
 		if (retValue != null)
 		{
-			s_log.finer(product.getName() + " = " + retValue);
+			s_log.trace(product.getName() + " = " + retValue);
 			return retValue;
 		}
 		return null;
@@ -580,7 +582,7 @@ public class MCost extends X_M_Cost
 
 		if (retValue != null)
 		{
-			s_log.finer(product.getName() + " = " + retValue);
+			s_log.trace(product.getName() + " = " + retValue);
 			return retValue;
 		}
 		return null;
@@ -623,7 +625,7 @@ public class MCost extends X_M_Cost
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -633,7 +635,7 @@ public class MCost extends X_M_Cost
 
 		if (retValue != null)
 		{
-			s_log.finer(product.getName() + " = " + retValue);
+			s_log.trace(product.getName() + " = " + retValue);
 			return retValue;
 		}
 		return null;
@@ -684,7 +686,7 @@ public class MCost extends X_M_Cost
 									0, // C_OrderLine_ID
 									false, // zeroCostsOK: create non-zero costs
 									getTrxName());
-							s_log.log(Level.INFO, "{0} = {1}", new Object[] { product.getName(), cost });
+							s_log.info("{} = {}", new Object[] { product.getName(), cost });
 						}
 					}
 				})
@@ -717,7 +719,7 @@ public class MCost extends X_M_Cost
 	// metas: 01432: changed from protected to public
 	public static void create (final I_M_Product product)
 	{
-			s_log.config(product.getName());
+			s_log.info(product.getName());
 			final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 			final String trxName = InterfaceWrapperHelper.getTrxName(product);
 			
@@ -747,10 +749,10 @@ public class MCost extends X_M_Cost
 						if (cost.is_new())
 						{
 							if (cost.save())
-								s_log.config("Std.Cost for " + product.getName()
+								s_log.info("Std.Cost for " + product.getName()
 									+ " - " + as.getName());
 							else
-								s_log.warning("Not created: Std.Cost for " + product.getName()
+								s_log.warn("Not created: Std.Cost for " + product.getName()
 									+ " - " + as.getName());
 						}
 					}
@@ -768,11 +770,11 @@ public class MCost extends X_M_Cost
 							if (cost.is_new())
 							{
 								if (cost.save())
-									s_log.config("Std.Cost for " + product.getName()
+									s_log.info("Std.Cost for " + product.getName()
 										+ " - " + o.getName()
 										+ " - " + as.getName());
 								else
-									s_log.warning("Not created: Std.Cost for " + product.getName()
+									s_log.warn("Not created: Std.Cost for " + product.getName()
 										+ " - " + o.getName()
 										+ " - " + as.getName());
 							}
@@ -781,7 +783,7 @@ public class MCost extends X_M_Cost
 				}
 				else
 				{
-					s_log.warning("Not created: Std.Cost for " + product.getName()
+					s_log.warn("Not created: Std.Cost for " + product.getName()
 						+ " - Costing Level on Batch/Lot");
 				}
 			}	//	accounting schema loop
@@ -793,7 +795,7 @@ public class MCost extends X_M_Cost
 	 **/
 	protected static void delete (MProduct product)
 	{
-		s_log.config(product.getName());
+		s_log.info(product.getName());
 		//	Cost Elements
 		Collection <MCostElement> ces = MCostElement.getCostElementsWithCostingMethods(product);
 
@@ -837,7 +839,7 @@ public class MCost extends X_M_Cost
 				}
 				else
 				{
-					s_log.warning("Not created: Std.Cost for " + product.getName()
+					s_log.warn("Not created: Std.Cost for " + product.getName()
 						+ " - Costing Level on Batch/Lot");
 				}
 			}	//	accounting schema loop
@@ -897,7 +899,7 @@ public class MCost extends X_M_Cost
 				BigDecimal matchQty = rs.getBigDecimal(2);
 				if (matchQty == null)
 				{
-					s_log.finer("Movement=" + movementQty + ", StockQty=" + newStockQty);
+					s_log.trace("Movement=" + movementQty + ", StockQty=" + newStockQty);
 					continue;
 				}
 				//	Assumption: everything is matched
@@ -917,7 +919,7 @@ public class MCost extends X_M_Cost
 				BigDecimal newAmt = averageCurrent.add(averageIncrease);
 				newAmt = newAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
 				newAverageAmt = newAmt.divide(newStockQty, as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-				s_log.finer("Movement=" + movementQty + ", StockQty=" + newStockQty
+				s_log.trace("Movement=" + movementQty + ", StockQty=" + newStockQty
 					+ ", Match=" + matchQty + ", Cost=" + cost + ", NewAvg=" + newAverageAmt);
 			}
 		}
@@ -933,7 +935,7 @@ public class MCost extends X_M_Cost
 		//
 		if (newAverageAmt != null && newAverageAmt.signum() != 0)
 		{
-			s_log.finer(product.getName() + " = " + newAverageAmt);
+			s_log.trace(product.getName() + " = " + newAverageAmt);
 			return newAverageAmt;
 		}
 		return null;
@@ -994,7 +996,7 @@ public class MCost extends X_M_Cost
 				BigDecimal matchQty = rs.getBigDecimal(2);
 				if (matchQty == null)
 				{
-					s_log.finer("Movement=" + movementQty + ", StockQty=" + newStockQty);
+					s_log.trace("Movement=" + movementQty + ", StockQty=" + newStockQty);
 					continue;
 				}
 				//	Assumption: everything is matched
@@ -1016,7 +1018,7 @@ public class MCost extends X_M_Cost
 				BigDecimal newAmt = averageCurrent.add(averageIncrease);
 				newAmt = newAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
 				newAverageAmt = newAmt.divide(newStockQty, as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-				s_log.finer("Movement=" + movementQty + ", StockQty=" + newStockQty
+				s_log.trace("Movement=" + movementQty + ", StockQty=" + newStockQty
 					+ ", Match=" + matchQty + ", Cost=" + cost + ", NewAvg=" + newAverageAmt);
 			}
 		}
@@ -1032,7 +1034,7 @@ public class MCost extends X_M_Cost
 		//
 		if (newAverageAmt != null && newAverageAmt.signum() != 0)
 		{
-			s_log.finer(product.getName() + " = " + newAverageAmt);
+			s_log.trace(product.getName() + " = " + newAverageAmt);
 			return newAverageAmt;
 		}
 		return null;
@@ -1121,7 +1123,7 @@ public class MCost extends X_M_Cost
 						QtyCost pp = new QtyCost (movementQty, Env.ZERO);
 						fifo.add(pp);
 					}
-					s_log.finer("Movement=" + movementQty + ", Size=" + fifo.size());
+					s_log.trace("Movement=" + movementQty + ", Size=" + fifo.size());
 					continue;
 				}
 				//	Assumption: everything is matched
@@ -1156,7 +1158,7 @@ public class MCost extends X_M_Cost
 					QtyCost pp = new QtyCost (movementQty, cost);
 					fifo.add(pp);
 				}
-				s_log.finer("Movement=" + movementQty + ", Size=" + fifo.size());
+				s_log.trace("Movement=" + movementQty + ", Size=" + fifo.size());
 			}
 		}
 		catch (SQLException e)
@@ -1174,7 +1176,7 @@ public class MCost extends X_M_Cost
 			return null;
 		}
 		QtyCost pp = (QtyCost)fifo.get(0);
-		s_log.finer(product.getName() + " = " + pp.Cost);
+		s_log.trace(product.getName() + " = " + pp.Cost);
 		return pp.Cost;
 	}	//	calculateFiFo
 
@@ -1262,7 +1264,7 @@ public class MCost extends X_M_Cost
 						QtyCost pp = new QtyCost (movementQty, Env.ZERO);
 						lifo.add(pp);
 					}
-					s_log.finer("Movement=" + movementQty + ", Size=" + lifo.size());
+					s_log.trace("Movement=" + movementQty + ", Size=" + lifo.size());
 					continue;
 				}
 				//	Assumption: everything is matched
@@ -1278,7 +1280,7 @@ public class MCost extends X_M_Cost
 				//
 				QtyCost pp = new QtyCost (movementQty, cost);
 				lifo.add(pp);
-				s_log.finer("Movement=" + movementQty + ", Size=" + lifo.size());
+				s_log.trace("Movement=" + movementQty + ", Size=" + lifo.size());
 			}
 		}
 		catch (SQLException e)
@@ -1296,7 +1298,7 @@ public class MCost extends X_M_Cost
 			return null;
 		}
 		QtyCost pp = (QtyCost)lifo.get(lifo.size()-1);
-		s_log.finer(product.getName() + " = " + pp.Cost);
+		s_log.trace(product.getName() + " = " + pp.Cost);
 		return pp.Cost;
 	}	//	calculateLiFo
 
@@ -1409,7 +1411,7 @@ public class MCost extends X_M_Cost
 	}	//	get
 
 	/**	Logger	*/
-	private static CLogger 	s_log = CLogger.getCLogger (MCost.class);
+	private static Logger 	s_log = LogManager.getLogger(MCost.class);
 
 
 	/**************************************************************************

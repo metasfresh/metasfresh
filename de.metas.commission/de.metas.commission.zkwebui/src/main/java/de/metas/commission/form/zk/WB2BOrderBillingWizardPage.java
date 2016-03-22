@@ -52,7 +52,8 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -86,7 +87,7 @@ import de.metas.commission.interfaces.I_C_OrderLine;
  */
 public class WB2BOrderBillingWizardPage implements WizardPage
 {
-	private static final CLogger log = CLogger.getCLogger(WB2BOrderBillingWizardPage.class);
+	private static final Logger log = LogManager.getLogger(WB2BOrderBillingWizardPage.class);
 
 	private final Div panel = new Div();
 	private final Div panelBilling = new Div();
@@ -132,7 +133,7 @@ public class WB2BOrderBillingWizardPage implements WizardPage
 			}
 			else
 			{
-				log.warning("Editor " + editor + " is not a WTableDirEditor. Skip adding listener");
+				log.warn("Editor " + editor + " is not a WTableDirEditor. Skip adding listener");
 			}
 		}
 

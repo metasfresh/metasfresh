@@ -67,7 +67,8 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -103,7 +104,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 
 public class OLCandBL implements IOLCandBL
 {
-	private static final CLogger logger = CLogger.getCLogger(OLCandBL.class);
+	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
 
 	private static final String MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = "OLCandProcessor.Order_Completion_Failed";
 	private static final String MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = "OLCandProcessor.ProcessingError_Desc";
@@ -1144,7 +1145,7 @@ public class OLCandBL implements IOLCandBL
 		if (olCandCreator == null)
 		{
 			final String msg = "Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + Services.get(IADTableDAO.class).retrieveTableName(po.get_Table_ID()) + "'";
-			OLCandBL.logger.warning(msg);
+			OLCandBL.logger.warn(msg);
 			throw new AdempiereException(msg);
 		}
 

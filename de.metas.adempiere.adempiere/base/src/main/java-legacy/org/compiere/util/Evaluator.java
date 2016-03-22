@@ -24,6 +24,8 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -35,7 +37,7 @@ import org.adempiere.util.Services;
 public class Evaluator
 {
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (Evaluator.class);
+	private static final Logger s_log = LogManager.getLogger(Evaluator.class);
 	
 	/**
 	 * 	Check if All Variables are Defined
@@ -57,12 +59,12 @@ public class Evaluator
 			int second = logic.indexOf('@', first+1);
 			if (second == -1)
 			{
-				s_log.severe("No second @ in Logic: " + logic);
+				s_log.error("No second @ in Logic: " + logic);
 				return false;
 			}
 			String variable = logic.substring(first+1, second-1);
 			String eval = getValue(source, variable);
-			s_log.finest(variable + "=" + eval);
+			s_log.trace(variable + "=" + eval);
 			if (eval == null || eval.length() == 0)
 				return false;
 			//	
@@ -111,6 +113,7 @@ public class Evaluator
 	 *  @param parseString string to parse for variables
 	 *  @deprecated metas - Please use {@link IExpressionFactory} or {@link #parseDepends(List, IExpression)}
 	 */
+	@Deprecated
 	public static void parseDepends (List<String> list, String parseString)
 	{
 		final IStringExpression expression = Services.get(IExpressionFactory.class).compile(parseString, IStringExpression.class);
@@ -138,12 +141,12 @@ public class Evaluator
 			int second = expression.indexOf('@', first+1);
 			if (second == -1)
 			{
-				s_log.severe("No second @ in Logic: " + expression);
+				s_log.error("No second @ in Logic: " + expression);
 				return null;
 			}
 			String variable = expression.substring(first+1, second);
 			String eval = getValue(source, variable);
-			s_log.finest(variable + "=" + eval);
+			s_log.trace(variable + "=" + eval);
 			if (Check.isEmpty(eval, true))
 			{
 				eval = Env.getContext(Env.getCtx(), variable);

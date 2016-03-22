@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -39,8 +38,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -56,7 +54,7 @@ import de.metas.tax.api.ITaxDAO;
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
-	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
 
 	final String METHODNAME_setHeaderAggregationKey = de.metas.invoicecandidate.callout.InvoiceCandidate.class.getName()
 			+ "." + de.metas.invoicecandidate.callout.InvoiceCandidate.METHODNAME_setHeaderAggregationKey;
@@ -250,7 +248,7 @@ public class C_Invoice_Candidate
 
 		if (invoiceCandBL.isUpdateProcessInProgress())
 		{
-			logger.log(Level.FINE, "Change was performed by scheduler process. No need to invalidate: {0}", ic);
+			logger.debug("Change was performed by scheduler process. No need to invalidate: {}", ic);
 			return;
 		}
 

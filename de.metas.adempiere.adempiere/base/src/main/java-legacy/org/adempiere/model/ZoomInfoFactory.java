@@ -43,7 +43,8 @@ import java.util.Set;
 
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -90,8 +91,7 @@ public class ZoomInfoFactory {
 		}
 	}
 
-	private static final CLogger logger = CLogger
-			.getCLogger(ZoomInfoFactory.class);
+	private static final Logger logger = LogManager.getLogger(ZoomInfoFactory.class);
 
 	/**
 	 * Adds {@link ZoomInfo} instances from {@link MRelationType}s and
@@ -110,7 +110,7 @@ public class ZoomInfoFactory {
 	public static List<ZoomInfoFactory.ZoomInfo> retrieveZoomInfos(final PO po,
 			final int windowID) {
 
-		logger.config("PO=" + po + " - AD_Window_ID=" + windowID);
+		logger.info("PO=" + po + " - AD_Window_ID=" + windowID);
 
 		final List<ZoomInfoFactory.ZoomInfo> result = new ArrayList<ZoomInfoFactory.ZoomInfo>();
 
@@ -119,7 +119,7 @@ public class ZoomInfoFactory {
 		for (final ZoomInfo zoomInfo : MRelationType.retrieveZoomInfos(po,
 				windowID)) {
 
-			logger.fine("Adding zoomInfo " + zoomInfo);
+			logger.debug("Adding zoomInfo " + zoomInfo);
 
 			alreadySeen.add(zoomInfo.destinationDisplay);
 			result.add(zoomInfo);
@@ -132,13 +132,13 @@ public class ZoomInfoFactory {
 
 			if (alreadySeen.add(zoomInfo.destinationDisplay)) {
 
-				logger.fine("Adding zoomInfo " + zoomInfo + " from "
+				logger.debug("Adding zoomInfo " + zoomInfo + " from "
 						+ GenericZoomProvider.class.getSimpleName());
 				result.add(zoomInfo);
 
 			} else {
 
-				logger.fine("Skipping zoomInfo " + zoomInfo + " from "
+				logger.debug("Skipping zoomInfo " + zoomInfo + " from "
 						+ GenericZoomProvider.class.getSimpleName()
 						+ " because there is already one for destination '"
 						+ zoomInfo.destinationDisplay + "'");

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -54,11 +53,14 @@ import org.compiere.model.MLotCtl;
 import org.compiere.model.MQuery;
 import org.compiere.model.MSerNoCtl;
 import org.compiere.model.X_M_MovementLine;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -107,7 +109,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		this.setHeight("600px");
 		this.setSizable(true);
 
-		log.config("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
+		log.info("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
 			+ ", M_Product_ID=" + M_Product_ID
 			+ ", C_BPartner_ID=" + C_BPartner_ID
 			+ ", ProductW=" + productWindow + ", Column=" + AD_Column_ID);
@@ -133,7 +135,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "VPAttributeDialog" + ex);
+			log.error("VPAttributeDialog" + ex);
 		}
 		//	Dynamic Init
 		if (!initAttributes ())
@@ -158,7 +160,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	/**	Change							*/
 	private boolean					m_changed = false;
 
-	private CLogger					log = CLogger.getCLogger(getClass());
+	private Logger					log = LogManager.getLogger(getClass());
 	/** Row Counter					*/
 	private int						m_row = 0;
 	/** List of Editors				*/
@@ -236,7 +238,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			m_masi = MAttributeSetInstance.get(Env.getCtx(), m_M_AttributeSetInstance_ID, m_M_Product_ID);
 			if (m_masi == null)
 			{
-				log.severe ("No Model for M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID + ", M_Product_ID=" + m_M_Product_ID);
+				log.error("No Model for M_AttributeSetInstance_ID=" + m_M_AttributeSetInstance_ID + ", M_Product_ID=" + m_M_Product_ID);
 				return false;
 			}
 			Env.setContext(Env.getCtx(), m_WindowNo, "M_AttributeSet_ID", m_masi.getM_AttributeSet_ID());
@@ -268,7 +270,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		if (m_productWindow)
 		{
 			MAttribute[] attributes = as.getMAttributes (false);
-			log.fine ("Product Attributes=" + attributes.length);
+			log.debug("Product Attributes=" + attributes.length);
 			for (int i = 0; i < attributes.length; i++)
 			{
 				if (!Services.get(IAttributeExcludeBL.class).isExcludedAttribute(attributes[i], as, m_AD_Column_ID, Env.isSOTrx(Env.getCtx(), m_WindowNoParent)))
@@ -296,7 +298,7 @@ public class WPAttributeDialog extends Window implements EventListener
 
 			//	All Attributes
 			MAttribute[] attributes = as.getMAttributes (true);
-			log.fine ("Instance Attributes=" + attributes.length);
+			log.debug("Instance Attributes=" + attributes.length);
 			for (int i = 0; i < attributes.length; i++)
 			{
 				if (!Services.get(IAttributeExcludeBL.class).isExcludedAttribute(attributes[i], as, m_AD_Column_ID, Env.isSOTrx(Env.getCtx(), m_WindowNoParent)))
@@ -454,7 +456,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	 */
 	private void addAttributeLine (Rows rows, MAttribute attribute, boolean product, boolean readOnly)
 	{
-		log.fine(attribute + ", Product=" + product + ", R/O=" + readOnly);
+		log.debug(attribute + ", Product=" + product + ", R/O=" + readOnly);
 
 		m_row++;
 		Label label = new Label (attribute.getName());
@@ -491,12 +493,12 @@ public class WPAttributeDialog extends Window implements EventListener
 					}
 				}
 				if (found)
-					log.fine("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
+					log.debug("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
 				else
-					log.warning("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
+					log.warn("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
 			}	//	setComboBox
 			else
-				log.fine("Attribute=" + attribute.getName() + " #" + values.length + " no instance");
+				log.debug("Attribute=" + attribute.getName() + " #" + values.length + " no instance");
 			row.appendChild(editor);
 			if (readOnly)
 				editor.setEnabled(false);
@@ -616,7 +618,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			cmd_zoom();
 		}
 		else
-			log.log(Level.SEVERE, "not found - " + e);
+			log.error("not found - " + e);
 	}	//	actionPerformed
 
 	/**
@@ -625,7 +627,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	 */
 	private boolean cmd_select()
 	{
-		log.config("");
+		log.info("");
 
 		int M_Warehouse_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, "M_Warehouse_ID");
 
@@ -663,7 +665,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -690,7 +692,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	private void cmd_newEdit()
 	{
 		boolean rw = cbNewEdit.isChecked();
-		log.config("R/W=" + rw + " " + m_masi);
+		log.info("R/W=" + rw + " " + m_masi);
 		//
 		fieldLotString.setReadonly(!(rw && m_masi.getM_Lot_ID()==0));
 		if (fieldLot != null)
@@ -754,7 +756,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		String mandatory = "";
 		if (!m_productWindow && as.isLot())
 		{
-			log.fine("Lot=" + fieldLotString.getText ());
+			log.debug("Lot=" + fieldLotString.getText ());
 			String text = fieldLotString.getText();
 			m_masi.setLot (text);
 			if (as.isLotMandatory() && (text == null || text.length() == 0))
@@ -763,7 +765,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}	//	Lot
 		if (!m_productWindow && as.isSerNo())
 		{
-			log.fine("SerNo=" + fieldSerNo.getText());
+			log.debug("SerNo=" + fieldSerNo.getText());
 			String text = fieldSerNo.getText();
 			m_masi.setSerNo(text);
 			if (as.isSerNoMandatory() && (text == null || text.length() == 0))
@@ -772,7 +774,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}	//	SerNo
 		if (!m_productWindow && as.isGuaranteeDate())
 		{
-			log.fine("GuaranteeDate=" + fieldGuaranteeDate.getValue());
+			log.debug("GuaranteeDate=" + fieldGuaranteeDate.getValue());
 			Date gDate = fieldGuaranteeDate.getValue();
 			Timestamp ts = gDate != null ? new Timestamp(gDate.getTime()) : null;
 			m_masi.setGuaranteeDate(ts);
@@ -810,7 +812,7 @@ public class WPAttributeDialog extends Window implements EventListener
 				Listbox editor = (Listbox)m_editors.get(current);
 				ListItem item = editor.getSelectedItem();
 				I_M_AttributeValue value = item != null ? (I_M_AttributeValue)item.getValue() : null;
-				log.fine(attributes[i].getName() + "=" + value);
+				log.debug(attributes[i].getName() + "=" + value);
 				if (attributes[i].isMandatory() && value == null)
 					mandatory += " - " + attributes[i].getName();
 				attributes[i].setMAttributeInstance(m_M_AttributeSetInstance_ID, value);
@@ -819,7 +821,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			{
 				NumberBox editor = (NumberBox)m_editors.get(current);
 				BigDecimal value = editor.getValue();
-				log.fine(attributes[i].getName() + "=" + value);
+				log.debug(attributes[i].getName() + "=" + value);
 				if (attributes[i].isMandatory() && value == null)
 					mandatory += " - " + attributes[i].getName();
 				//setMAttributeInstance doesn't work without decimal point
@@ -831,7 +833,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			{
 				Textbox editor = (Textbox)m_editors.get(current);
 				String value = editor.getText();
-				log.fine(attributes[i].getName() + "=" + value);
+				log.debug(attributes[i].getName() + "=" + value);
 				if (attributes[i].isMandatory() && (value == null || value.length() == 0))
 					mandatory += " - " + attributes[i].getName();
 				attributes[i].setMAttributeInstance(m_M_AttributeSetInstance_ID, value);

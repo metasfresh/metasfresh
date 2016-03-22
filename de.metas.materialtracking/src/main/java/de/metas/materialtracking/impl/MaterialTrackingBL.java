@@ -22,15 +22,14 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingListener;
@@ -51,7 +50,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	 */
 	private boolean _enabled = false;
 
-	private static final transient CLogger logger = CLogger.getCLogger(MaterialTrackingBL.class);
+	private static final transient Logger logger = LogManager.getLogger(MaterialTrackingBL.class);
 
 	@Override
 	public boolean isEnabled()
@@ -135,7 +134,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 
 	private void logRequest(final MTLinkRequest request, final String msgSuffix)
 	{
-		logger.log(Level.FINE, request + msgSuffix); // log the request
+		logger.debug(request + msgSuffix); // log the request
 		ILoggable.THREADLOCAL
 				.getLoggableOr(ILoggable.NULL)
 				.addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.

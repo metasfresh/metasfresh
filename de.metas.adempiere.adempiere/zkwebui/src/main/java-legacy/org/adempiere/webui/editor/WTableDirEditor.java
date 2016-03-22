@@ -32,12 +32,13 @@ import org.adempiere.webui.event.ValueChangeEvent;
 import org.adempiere.webui.window.WFieldRecordInfo;
 import org.compiere.model.GridField;
 import org.compiere.model.Lookup;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Comboitem;
@@ -54,11 +55,11 @@ ContextMenuListener, IZoomableEditor
     public final static String[] LISTENER_EVENTS = {Events.ON_SELECT};
     
     @SuppressWarnings("unused")
-	private static final CLogger logger;
+	private static final Logger logger;
     
     static
     {
-        logger = CLogger.getCLogger(WTableDirEditor.class);
+        logger = LogManager.getLogger(WTableDirEditor.class);
     }
     
     private final Lookup lookup;

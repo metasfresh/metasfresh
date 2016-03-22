@@ -16,31 +16,6 @@
  *****************************************************************************/
 package org.eevolution.form;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -57,7 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -88,7 +62,6 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -98,6 +71,35 @@ import org.eevolution.form.bom.RadioButtonTreeCellRenderer;
 import org.eevolution.form.bom.nodeUserObject;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+
+/*
+ * #%L
+ * de.metas.adempiere.libero.libero
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
 
 /**
  *	Drop BOM
@@ -146,7 +148,7 @@ public class VProductConfigurationBOM extends CPanel
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		sizeIt();
 	}	//	init
@@ -204,7 +206,7 @@ public class VProductConfigurationBOM extends CPanel
 	/**	Line Counter				*/
 	private int			m_bomLine = 0;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VBOMDrop.class);
+	private static Logger log = LogManager.getLogger(VBOMDrop.class);
 	
 	/**	List of all selectors		*/
 	private ArrayList<JToggleButton>	m_selectionList = new ArrayList<JToggleButton>();
@@ -353,7 +355,7 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private void createMainPanel ()
 	{
-		log.config(": " + m_product);
+		log.info(": " + m_product);
 		this.removeAll();
 		this.setPreferredSize(null);
 		this.invalidate();
@@ -421,7 +423,7 @@ public class VProductConfigurationBOM extends CPanel
            }
            catch(SQLException s)
            {
-                      log.log(Level.SEVERE, "ERROR:", s);
+                      log.error("ERROR:", s);
            }
 
 	return m_product;
@@ -453,7 +455,7 @@ public class VProductConfigurationBOM extends CPanel
              }
              catch(SQLException s)
              {
-                      log.log(Level.SEVERE, "ERROR:", s);
+                      log.error("ERROR:", s);
              }
 
 	return m_product;
@@ -486,7 +488,7 @@ public class VProductConfigurationBOM extends CPanel
             }
             catch(SQLException s)
             {
-                      log.log(Level.SEVERE, "ERROR:", s);
+                      log.error("ERROR:", s);
             }
             
 		return col.toArray(new MPPProductBOMLine[col.size()]);
@@ -503,7 +505,7 @@ public class VProductConfigurationBOM extends CPanel
 		MPPProductBOMLine[] bomLines = getBOMLines(product);
 		for (int i = 0; i < bomLines.length; i++)
 			addBOMLine (bomLines[i], qty);
-		log.fine("#" + bomLines.length);
+		log.debug("#" + bomLines.length);
 	}	//	addBOMLines
 
 	/**
@@ -514,8 +516,8 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private void addBOMLine (MPPProductBOMLine line, BigDecimal qty)
 	{
-		log.fine("In addBOMLine");
-		log.fine(line.toString());
+		log.debug("In addBOMLine");
+		log.debug(line.toString());
 		//FIXME:  add a bomtype accessor here
 		String bomType = line.getComponentType();
 		if (bomType == null)
@@ -539,7 +541,7 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private void addDisplay (int parentM_Product_ID,int M_Product_ID, String bomType, String name, BigDecimal lineQty, int PP_Product_BOM_ID, String M_Feature, int PP_Product_BOMLine_ID)
 	{
-		log.fine("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
+		log.debug("M_Product_ID=" + M_Product_ID + ",Type=" + bomType + ",Name=" + name + ",Qty=" + lineQty);
 		//
 		boolean selected = true;
 	        	
@@ -575,7 +577,7 @@ public class VProductConfigurationBOM extends CPanel
 			ButtonGroup group = m_buttonGroups.get(groupName);
 			if (group == null)
 			{
-				log.fine("ButtonGroup=" + groupName);
+				log.debug("ButtonGroup=" + groupName);
 				group = new ButtonGroup();
 				m_buttonGroups.put(groupName, group);
 				group.add(b);
@@ -628,7 +630,7 @@ public class VProductConfigurationBOM extends CPanel
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-		log.config(e.getActionCommand());
+		log.info(e.getActionCommand());
 		
 		Object source = e.getSource();
 
@@ -748,7 +750,7 @@ public class VProductConfigurationBOM extends CPanel
 				return;
 			}
 		}
-		log.log(Level.SEVERE, "not found - " + source);
+		log.error("not found - " + source);
 	}	//	cmd_selection
 
 	/**
@@ -764,7 +766,7 @@ public class VProductConfigurationBOM extends CPanel
 		else if (source instanceof JRadioButton)
 			retValue = ((JRadioButton)source).isSelected();
 		else
-			log.log(Level.SEVERE, "Not valid - " + source);
+			log.error("Not valid - " + source);
 		return retValue;
 	}	//	isSelected
 
@@ -787,21 +789,21 @@ public class VProductConfigurationBOM extends CPanel
 		if (pp != null && pp.getKey() > 0)
 			return cmd_saveProject (pp.getKey());
 		//
-		log.log(Level.SEVERE, "Nothing selected");
+		log.error("Nothing selected");
 		return false;
 	}	//	cmd_save
 
 	private ArrayList<DefaultMutableTreeNode> getProductInstances(int root_m_product_id) {
-		log.fine("In getProductInstances root_m_product_id: " + root_m_product_id);
+		log.debug("In getProductInstances root_m_product_id: " + root_m_product_id);
 
 		ArrayList<DefaultMutableTreeNode> productInstancesList = new ArrayList<DefaultMutableTreeNode>();
 		try
                   {
                       StringBuffer sql1 = new StringBuffer("select a.m_product_id from pp_product_bom a, pp_product_bom b where a.name = b.name || ' Instance' and b.m_product_id = ? and a.bomtype = 'C' and a.bomuse = 'M'");
-		log.fine("sql1: " + sql1);
+		log.debug("sql1: " + sql1);
                 PreparedStatement pstmt = DB.prepareStatement(sql1.toString(), null);
 			
-			log.fine("root_m_product_id: " + root_m_product_id);
+			log.debug("root_m_product_id: " + root_m_product_id);
                         pstmt.setInt(1,root_m_product_id);
 
 
@@ -813,7 +815,7 @@ public class VProductConfigurationBOM extends CPanel
                                 int m_product_id = rs.getInt(1);
 				m_product = new MProduct(Env.getCtx(), m_product_id, null);
 				if(m_product.isVerified()) {
-				    log.fine("Adding product: " + m_product.get_ID());
+				    log.debug("Adding product: " + m_product.get_ID());
 				    productInstancesList.add(this.m_RadioButtonTreeCellRenderer.action_loadBOM(m_product, false));
 				}
 
@@ -823,27 +825,27 @@ public class VProductConfigurationBOM extends CPanel
                   }
                   catch(SQLException s)
 {
-                      log.log(Level.SEVERE, "ERROR:", s);
+                      log.error("ERROR:", s);
                   }
 
-		log.fine("# of product instances found: " + productInstancesList.size());
+		log.debug("# of product instances found: " + productInstancesList.size());
 		return productInstancesList;
 
         }
 
 	private ArrayList<DefaultMutableTreeNode> getProductInstances() {
-		log.fine("In getProductInstances");
+		log.debug("In getProductInstances");
 
 		ArrayList<DefaultMutableTreeNode> productInstancesList = new ArrayList<DefaultMutableTreeNode>();
 		try
                   {
                       StringBuffer sql1 = new StringBuffer("select a.m_product_id from pp_product_bom a, pp_product_bom b where a.name = b.name || ' Instance' and b.m_product_id = ? and a.bomtype = 'C' and a.bomuse = 'M'");
-		log.fine("sql1: " + sql1);
+		log.debug("sql1: " + sql1);
                 PreparedStatement pstmt = DB.prepareStatement(sql1.toString(), null);
 			
 			KeyNamePair pp = (KeyNamePair)productField.getSelectedItem();
 			MProduct m_productConfig = MProduct.get (Env.getCtx(), pp.getKey());
-			log.fine("m_productConfig.get_ID " + m_productConfig.get_ID());
+			log.debug("m_productConfig.get_ID " + m_productConfig.get_ID());
                         pstmt.setInt(1,m_productConfig.get_ID());
 
 
@@ -855,7 +857,7 @@ public class VProductConfigurationBOM extends CPanel
                                 int m_product_id = rs.getInt(1);
 				m_product = new MProduct(Env.getCtx(), m_product_id, null);
 				if(m_product.isVerified()) {
-				    log.fine("Adding product: " + m_product.get_ID());
+				    log.debug("Adding product: " + m_product.get_ID());
                         //this.m_RadioButtonTreeCellRenderer = new RadioButtonTreeCellRenderer();
 				    productInstancesList.add(this.m_RadioButtonTreeCellRenderer.action_loadBOM(m_product, false));
 				}
@@ -866,16 +868,16 @@ public class VProductConfigurationBOM extends CPanel
                   }
                   catch(SQLException s)
 {
-                      log.log(Level.SEVERE, "ERROR:", s);
+                      log.error("ERROR:", s);
                   }
 
-		log.fine("# of product instances found: " + productInstancesList.size());
+		log.debug("# of product instances found: " + productInstancesList.size());
 		return productInstancesList;
 
         }
 
    private HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> buildConfigBOMIDToBOMLevelToLinesMap(MProduct m_product) {
-      log.fine("In buildConfigBOMIDToBOMLevelToLinesMap");
+      log.debug("In buildConfigBOMIDToBOMLevelToLinesMap");
 
       HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>>	m_ConfigBOMIDToBOMLevelToLinesMap = new HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>>();
 
@@ -886,7 +888,7 @@ public class VProductConfigurationBOM extends CPanel
 
       ArrayList<MPPProductBOMLine> col = new ArrayList<MPPProductBOMLine>();
       for(int i = 0; i < bomLines.length; i++) {
-        log.fine("bom line from product with product_id: " + getProductFromMPPProductBOMLine(bomLines[i]).get_ID());
+        log.debug("bom line from product with product_id: " + getProductFromMPPProductBOMLine(bomLines[i]).get_ID());
         col.add(bomLines[i]);
 
       }
@@ -913,7 +915,7 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> buildConfigBOMIDToBOMLevelToLinesMapFromSelectionList() {
-     log.fine("In buildConfigBOMIDToBOMLevelToLinesMapFromSelectionList");
+     log.debug("In buildConfigBOMIDToBOMLevelToLinesMapFromSelectionList");
 
      KeyNamePair pp = (KeyNamePair)productField.getSelectedItem();
      MProduct m_productConfig = MProduct.get (Env.getCtx(), pp.getKey());
@@ -932,7 +934,7 @@ public class VProductConfigurationBOM extends CPanel
          if (isSelectionSelected(m_selectionList.get(i)))
 		{
 		   int PP_Product_BOMLine_ID = m_bomLineIDList.get(i).intValue();
-		   log.fine("PP_Product_BOMLine_ID: " + PP_Product_BOMLine_ID);
+		   log.debug("PP_Product_BOMLine_ID: " + PP_Product_BOMLine_ID);
 		   MPPProductBOMLine m_MPPProductBOMLine = new MPPProductBOMLine(Env.getCtx(), PP_Product_BOMLine_ID, null);
 		
 			m_BOMLevelToLinesMapFromKey = m_ConfigBOMIDToBOMLevelToLinesMapFromSelectionList.get(new Integer(m_MPPProductBOMLine.getPP_Product_BOM_ID()));
@@ -965,13 +967,13 @@ public class VProductConfigurationBOM extends CPanel
       for (Iterator i = set.iterator(); i.hasNext();) {
          Map.Entry me = (Map.Entry)i.next();
 
-         log.fine("BOM level: " + me.getKey().toString());
+         log.debug("BOM level: " + me.getKey().toString());
          ArrayList<MPPProductBOMLine> bomLines = (ArrayList<MPPProductBOMLine>)me.getValue();
          
-         log.fine("Total BOM line's: " + bomLines.size());
+         log.debug("Total BOM line's: " + bomLines.size());
          for(int j = 0; j < bomLines.size(); j++) {
             MPPProductBOMLine m_MPPProductBOMLine = bomLines.get(j);
-            log.fine("bom line #: " + j + " product: " + m_MPPProductBOMLine.getDescription());
+            log.debug("bom line #: " + j + " product: " + m_MPPProductBOMLine.getDescription());
 
          }
          
@@ -982,11 +984,11 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private void printConfigBOMIDToBOMLinesMapForProduct(MProduct m_product, HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>>   m_ConfigBOMInstIDToBOMLinesMap) {
-      log.fine("In printConfigBOMIDToBOMLinesMapForProduct");
-      log.fine("Analyzing product bom id's and corresponding bomlines and levels for those product bom id's for a particular product");
+      log.debug("In printConfigBOMIDToBOMLinesMapForProduct");
+      log.debug("Analyzing product bom id's and corresponding bomlines and levels for those product bom id's for a particular product");
       
-      log.fine("Product: " + m_product.getName() + " has:");
-      log.fine("Total BOM's: " + m_ConfigBOMInstIDToBOMLinesMap.size());
+      log.debug("Product: " + m_product.getName() + " has:");
+      log.debug("Total BOM's: " + m_ConfigBOMInstIDToBOMLinesMap.size());
 
       Set set = m_ConfigBOMInstIDToBOMLinesMap.entrySet();
     
@@ -995,7 +997,7 @@ public class VProductConfigurationBOM extends CPanel
 
          HashMap<Integer, ArrayList<MPPProductBOMLine>> m_BOMLevelToLinesMap = new HashMap<Integer, ArrayList<MPPProductBOMLine>>();
 
-         log.fine("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
+         log.debug("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
          m_BOMLevelToLinesMap = (HashMap<Integer, ArrayList<MPPProductBOMLine>>)me.getValue();
       Set setLines = m_BOMLevelToLinesMap.entrySet();
     
@@ -1004,10 +1006,10 @@ public class VProductConfigurationBOM extends CPanel
 
          ArrayList<MPPProductBOMLine> bomLines = (ArrayList<MPPProductBOMLine>)me2.getValue();
          
-            log.fine("Total bom lines: " + bomLines.size());
+            log.debug("Total bom lines: " + bomLines.size());
             for(int count = 0; count < bomLines.size(); count++) {
               MPPProductBOMLine m_MPPProductBOMLine = bomLines.get(count);
-              log.fine("bom line #: " + count + " product: " + m_MPPProductBOMLine.getDescription());
+              log.debug("bom line #: " + count + " product: " + m_MPPProductBOMLine.getDescription());
 
 
             }
@@ -1020,7 +1022,7 @@ public class VProductConfigurationBOM extends CPanel
 
    private int getTotalBOMLines(HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>>   m_ConfigBOMInstIDToBOMLinesMap) 
    {
-      log.fine("In getTotalBOMLines");
+      log.debug("In getTotalBOMLines");
      int retVal = 0;
       
       Set set = m_ConfigBOMInstIDToBOMLinesMap.entrySet();
@@ -1045,12 +1047,12 @@ public class VProductConfigurationBOM extends CPanel
          }
       }
      
-     log.fine("Total bom lines: " + retVal);
+     log.debug("Total bom lines: " + retVal);
      return retVal;
 
    }
       private int getTotalBOMLevels(HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> m_ConfigBOMInstIDToBOMLinesMap) {
-      log.fine("In getTotalBOMLevels");
+      log.debug("In getTotalBOMLevels");
       int maxBOMLevel = 0;
 
       Set set = m_ConfigBOMInstIDToBOMLinesMap.entrySet();
@@ -1060,7 +1062,7 @@ public class VProductConfigurationBOM extends CPanel
 
          HashMap<Integer, ArrayList<MPPProductBOMLine>> m_BOMLevelToLinesMap = new HashMap<Integer, ArrayList<MPPProductBOMLine>>();
 
-         log.fine("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
+         log.debug("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
          m_BOMLevelToLinesMap = (HashMap<Integer, ArrayList<MPPProductBOMLine>>)me.getValue();
          Set setLines = m_BOMLevelToLinesMap.entrySet();
     
@@ -1072,7 +1074,7 @@ public class VProductConfigurationBOM extends CPanel
          }
       }
 
-         log.fine("maxBOMLevel found: " + maxBOMLevel);
+         log.debug("maxBOMLevel found: " + maxBOMLevel);
 
          return maxBOMLevel;
       }
@@ -1089,7 +1091,7 @@ public class VProductConfigurationBOM extends CPanel
 
          HashMap<Integer, ArrayList<MPPProductBOMLine>> m_BOMLevelToLinesMap = new HashMap<Integer, ArrayList<MPPProductBOMLine>>();
 
-         log.fine("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
+         log.debug("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
          m_BOMLevelToLinesMap = (HashMap<Integer, ArrayList<MPPProductBOMLine>>)me.getValue();
          Set setLines = m_BOMLevelToLinesMap.entrySet();
     
@@ -1098,16 +1100,16 @@ public class VProductConfigurationBOM extends CPanel
 
                if(((Integer)me2.getKey()).intValue() == bomLevel) {
                   ArrayList<MPPProductBOMLine> configInstanceBomLines = (ArrayList<MPPProductBOMLine>)me2.getValue();
-                  log.fine("configBomLines.size: " + configBomLines.size());
-                  log.fine("configInstanceBomLines.size: " + configInstanceBomLines.size());
+                  log.debug("configBomLines.size: " + configBomLines.size());
+                  log.debug("configInstanceBomLines.size: " + configInstanceBomLines.size());
 		  for(int l = 0; l < configBomLines.size(); l++) {
                      boolean matchedProduct = false;
 		     for(int m = 0; m < configInstanceBomLines.size(); m++) {
                         int chosenProduct_ID = getProductFromMPPProductBOMLine(configBomLines.get(l)).get_ID();
                         int instanceProduct_ID = getProductFromMPPProductBOMLine(configBomLines.get(m)).get_ID();
-                        log.fine("bomLevel: " + bomLevel);
-	                log.fine("chosenProduct_ID: " + chosenProduct_ID);
-	                log.fine("instanceProduct_ID: " + instanceProduct_ID);
+                        log.debug("bomLevel: " + bomLevel);
+	                log.debug("chosenProduct_ID: " + chosenProduct_ID);
+	                log.debug("instanceProduct_ID: " + instanceProduct_ID);
 
                         if(chosenProduct_ID == instanceProduct_ID)
                            matchedProduct = true;
@@ -1123,7 +1125,7 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private boolean isSameProductsAtBOMLevel(int bomLevel, HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> m_ConfigBOMIDToBOMLinesMap, HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> m_ConfigBOMInstIDToBOMLinesMap) {
-      log.fine("In isSameProductsAtBOMLevel");
+      log.debug("In isSameProductsAtBOMLevel");
       boolean retVal = true;
       
       Set set = m_ConfigBOMIDToBOMLinesMap.entrySet();
@@ -1133,7 +1135,7 @@ public class VProductConfigurationBOM extends CPanel
 
          HashMap<Integer, ArrayList<MPPProductBOMLine>> m_BOMLevelToLinesMap = new HashMap<Integer, ArrayList<MPPProductBOMLine>>();
 
-         log.fine("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
+         log.debug("PP_Product_BOM_ID: " + me.getKey().toString() + " has: ");
          m_BOMLevelToLinesMap = (HashMap<Integer, ArrayList<MPPProductBOMLine>>)me.getValue();
          Set setLines = m_BOMLevelToLinesMap.entrySet();
     
@@ -1156,7 +1158,7 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private boolean isSameBOMStructure(HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> m_ConfigBOMIDToBOMLinesMap, HashMap<Integer, HashMap<Integer, ArrayList<MPPProductBOMLine>>> m_ConfigBOMInstIDToBOMLinesMap) {
-      log.fine("In isSameBOMStructure");
+      log.debug("In isSameBOMStructure");
 
       boolean retVal = true;
 
@@ -1183,30 +1185,30 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private boolean pruneProductConfig() {
-     log.fine("In pruneProductConfig");
+     log.debug("In pruneProductConfig");
      boolean retVal = false;
      DefaultMutableTreeNode rootProductConfig = this.m_RadioButtonTreeCellRenderer.root;
         Enumeration children = rootProductConfig.breadthFirstEnumeration();
-        log.fine("About to prune");
+        log.debug("About to prune");
         if (children != null) {
            while (children.hasMoreElements()) {
 
               DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-              log.fine("Analyzing: " + child);
-              log.fine("level: " + child.getLevel());
+              log.debug("Analyzing: " + child);
+              log.debug("level: " + child.getLevel());
               nodeUserObject m_nodeUserObject = (nodeUserObject)child.getUserObject();
-              log.fine("isMandatory: " + m_nodeUserObject.isMandatory);
-              log.fine("isChosen: " + m_nodeUserObject.isChosen);
+              log.debug("isMandatory: " + m_nodeUserObject.isMandatory);
+              log.debug("isChosen: " + m_nodeUserObject.isChosen);
 
               if(!(child.isRoot() || m_nodeUserObject.isChosen || m_nodeUserObject.isMandatory)) {
-                 log.fine("Removing: " + child);
+                 log.debug("Removing: " + child);
                  child.removeFromParent();
                  retVal = true;
               }
            }
         }
 
-        log.fine("Exiting pruneConfig");
+        log.debug("Exiting pruneConfig");
         return retVal;
    }
 
@@ -1218,10 +1220,10 @@ public class VProductConfigurationBOM extends CPanel
 
    }
    private boolean isProductContainedAtLevelInProductInstance(int m_product_id, int level, DefaultMutableTreeNode rootProductInstance) {
-        log.fine("In isProductContainedAtLevelInProductInstance");
-        log.fine("looking for m_product_id: " + m_product_id + " at level: " + level);
-     log.fine("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
-     log.fine("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
+        log.debug("In isProductContainedAtLevelInProductInstance");
+        log.debug("looking for m_product_id: " + m_product_id + " at level: " + level);
+     log.debug("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
+     log.debug("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
 
    boolean retValue = false;
         
@@ -1232,7 +1234,7 @@ public class VProductConfigurationBOM extends CPanel
 
               DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
               nodeUserObject m_nodeUserObject = (nodeUserObject)child.getUserObject();
-              log.fine("node: " + child + " product instance m_product_id: " + m_nodeUserObject.M_Product.get_ID() + " at level: " + child.getLevel());
+              log.debug("node: " + child + " product instance m_product_id: " + m_nodeUserObject.M_Product.get_ID() + " at level: " + child.getLevel());
               if(child.getLevel() == level &&  m_nodeUserObject.M_Product.get_ID() == m_product_id) {
                     retValue = true;
                     return retValue;
@@ -1245,9 +1247,9 @@ public class VProductConfigurationBOM extends CPanel
    }
 
    private void printTree(DefaultMutableTreeNode root) {
-     log.fine("In printTree");
-     log.fine("root.getDepth: " + root.getDepth());
-     log.fine("root.getNumNodesFromRoot: " + getNumNodesFromRoot(root));
+     log.debug("In printTree");
+     log.debug("root.getDepth: " + root.getDepth());
+     log.debug("root.getNumNodesFromRoot: " + getNumNodesFromRoot(root));
 
         Enumeration children = root.breadthFirstEnumeration();
         if (children != null) {
@@ -1255,10 +1257,10 @@ public class VProductConfigurationBOM extends CPanel
 
               DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
               nodeUserObject m_nodeUserObject = (nodeUserObject)child.getUserObject();
-              log.fine("node: " + child + " product instance m_product_id: " + m_nodeUserObject.M_Product.get_ID() + " at level: " + child.getLevel());
-              log.fine("bom id: " + m_nodeUserObject.bom.get_ID());
-              log.fine("isMandatory: " + m_nodeUserObject.isMandatory);
-              log.fine("isChosen: " + m_nodeUserObject.isChosen);
+              log.debug("node: " + child + " product instance m_product_id: " + m_nodeUserObject.M_Product.get_ID() + " at level: " + child.getLevel());
+              log.debug("bom id: " + m_nodeUserObject.bom.get_ID());
+              log.debug("isMandatory: " + m_nodeUserObject.isMandatory);
+              log.debug("isChosen: " + m_nodeUserObject.isChosen);
            }
         }
 
@@ -1266,15 +1268,15 @@ public class VProductConfigurationBOM extends CPanel
 
    private boolean isConfigEqualToProductInstance(DefaultMutableTreeNode rootProductInstance, DefaultMutableTreeNode rootProductConfig)
    {
-     log.fine("In isConfigEqualToProductInstance");
+     log.debug("In isConfigEqualToProductInstance");
 
      boolean retValue = false;
 
      boolean done = false;
-     log.fine("rootProductConfig.getDepth: " + rootProductConfig.getDepth());
-     log.fine("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
-     log.fine("rootProductConfig.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductConfig));
-     log.fine("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
+     log.debug("rootProductConfig.getDepth: " + rootProductConfig.getDepth());
+     log.debug("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
+     log.debug("rootProductConfig.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductConfig));
+     log.debug("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
 
      if(getNumNodesFromRoot(rootProductConfig) == (getNumNodesFromRoot(rootProductInstance))) {
 
@@ -1304,16 +1306,16 @@ public class VProductConfigurationBOM extends CPanel
 
    private boolean isConfigEqualToProductInstance(DefaultMutableTreeNode rootProductInstance)
    {
-     log.fine("In isConfigEqualToProductInstance");
+     log.debug("In isConfigEqualToProductInstance");
 
      boolean retValue = false;
 
      boolean done = false;
      DefaultMutableTreeNode rootProductConfig = this.m_RadioButtonTreeCellRenderer.root;
-     log.fine("rootProductConfig.getDepth: " + rootProductConfig.getDepth());
-     log.fine("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
-     log.fine("rootProductConfig.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductConfig));
-     log.fine("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
+     log.debug("rootProductConfig.getDepth: " + rootProductConfig.getDepth());
+     log.debug("rootProductInstance.getDepth: " + rootProductInstance.getDepth());
+     log.debug("rootProductConfig.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductConfig));
+     log.debug("rootProductInstance.getNumNodesFromRoot: " + getNumNodesFromRoot(rootProductInstance));
 
      if(getNumNodesFromRoot(rootProductConfig) == (getNumNodesFromRoot(rootProductInstance))) {
 
@@ -1343,7 +1345,7 @@ public class VProductConfigurationBOM extends CPanel
 
 		private DefaultMutableTreeNode findProductInstance(DefaultMutableTreeNode rootProductConfig) 
         {
-                log.fine("In findProductInstance");
+                log.debug("In findProductInstance");
         	DefaultMutableTreeNode retNode = null;
 
 		nodeUserObject m_rootNodeUserObject = (nodeUserObject)rootProductConfig.getUserObject();
@@ -1367,7 +1369,7 @@ public class VProductConfigurationBOM extends CPanel
 
 		private int findProductInstance() 
         {
-                log.fine("In findProductInstance");
+                log.debug("In findProductInstance");
         	int M_Product_ID = -1;
 
 
@@ -1392,7 +1394,7 @@ public class VProductConfigurationBOM extends CPanel
 
         private DefaultMutableTreeNode getLowestConfigurableBOMTreeNode() {
            DefaultMutableTreeNode retNode = null;
-           log.fine("In getLowestConfigurableBOMTreeNode");
+           log.debug("In getLowestConfigurableBOMTreeNode");
 
         DefaultMutableTreeNode rootProductConfig = this.m_RadioButtonTreeCellRenderer.root;
         Enumeration children = rootProductConfig.breadthFirstEnumeration();
@@ -1401,8 +1403,8 @@ public class VProductConfigurationBOM extends CPanel
 
               DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
               nodeUserObject m_nodeUserObject = (nodeUserObject)child.getUserObject();
-              log.fine("child level: " + child.getLevel());
-              log.fine("child: " + child);
+              log.debug("child level: " + child.getLevel());
+              log.debug("child: " + child);
               if(child.getLevel() > 1) {
                  if(m_nodeUserObject.bom.getBOMType().equals(m_nodeUserObject.bom.BOMTYPE_ProductConfigure) && m_nodeUserObject.bom.getBOMUse().equals(m_nodeUserObject.bom.BOMUSE_Master) ) {
                     if(m_nodeUserObject.bomLine == null) {
@@ -1430,17 +1432,17 @@ public class VProductConfigurationBOM extends CPanel
         private boolean replaceProductConfigBOMwithProductFromChoices() {
            boolean retValue = true;
            boolean done = false;
-           log.fine("In replaceProductConfigBOMwithProductFromChoices");
+           log.debug("In replaceProductConfigBOMwithProductFromChoices");
         
            while(!done) {
              DefaultMutableTreeNode lowestProductConfigBOMNode = getLowestConfigurableBOMTreeNode();
-             log.fine("lowestProductConfigBOMNode: " + lowestProductConfigBOMNode);
+             log.debug("lowestProductConfigBOMNode: " + lowestProductConfigBOMNode);
              if(lowestProductConfigBOMNode == null) {
                 done = true;
 
              } else {
 	        DefaultMutableTreeNode foundProductInstanceNode = findProductInstance(lowestProductConfigBOMNode);
-                log.fine("foundProductInstanceNode: " + foundProductInstanceNode);
+                log.debug("foundProductInstanceNode: " + foundProductInstanceNode);
                 if(foundProductInstanceNode == null) {
                    done = true;
                    retValue = false;
@@ -1467,11 +1469,11 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private boolean cmd_saveOrder (int C_Order_ID)
 	{
-		log.config("C_Order_ID=" + C_Order_ID);
+		log.info("C_Order_ID=" + C_Order_ID);
 		MOrder order = new MOrder (Env.getCtx(), C_Order_ID, null);
 		if (order.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Order_ID=" + C_Order_ID);
+			log.error("Not found - C_Order_ID=" + C_Order_ID);
 			return false;
 		}
 
@@ -1480,29 +1482,29 @@ public class VProductConfigurationBOM extends CPanel
 		//chosen.
 
 		m_qty = (BigDecimal)productQty.getValue();
-                log.fine("printing product config tree");
+                log.debug("printing product config tree");
                 printTree(this.m_RadioButtonTreeCellRenderer.root);
                 while(pruneProductConfig());
 		int M_Product_ID = -1;
                 boolean replaceResult = replaceProductConfigBOMwithProductFromChoices();
-                log.fine("replaceResult: " + replaceResult);
+                log.debug("replaceResult: " + replaceResult);
 
                 if(replaceResult) {
-                   log.fine("After replacement product config tree");
+                   log.debug("After replacement product config tree");
                    printTree(this.m_RadioButtonTreeCellRenderer.root);
 		   M_Product_ID = findProductInstance();
                 }
 
-                log.fine("M_Product_ID: " + M_Product_ID);
+                log.debug("M_Product_ID: " + M_Product_ID);
 		
                    if(M_Product_ID < 0 || !replaceResult) {
-					log.fine("No product instance found for the configuration chosen");
+					log.debug("No product instance found for the configuration chosen");
 					 String warningMsg = "No product instance found for the configuration chosen, create one?";
                                 String warningTitle = "Warning";
                                 int response = JOptionPane.showConfirmDialog(null, warningMsg,
                                                 warningTitle, JOptionPane.YES_NO_OPTION);
                                 if (response == JOptionPane.YES_OPTION) {
-					log.fine("create product instance");
+					log.debug("create product instance");
 
 				}
 		}
@@ -1513,9 +1515,9 @@ public class VProductConfigurationBOM extends CPanel
 		ol.setPrice();
 		ol.setTax();
 		if (ol.save())
-			log.fine("order line saved");
+			log.debug("order line saved");
 		else
-			log.log(Level.SEVERE, "Line not saved");
+			log.error("Line not saved");
 		int lineCount = 0;
 		
 		//	for all bom lines
@@ -1548,12 +1550,12 @@ public class VProductConfigurationBOM extends CPanel
 				if (ol.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		*/
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveOrder
 
@@ -1564,11 +1566,11 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private boolean cmd_saveInvoice (int C_Invoice_ID)
 	{
-		log.config("C_Invoice_ID=" + C_Invoice_ID);
+		log.info("C_Invoice_ID=" + C_Invoice_ID);
 		MInvoice invoice = new MInvoice (Env.getCtx(), C_Invoice_ID, null);
 		if (invoice.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Invoice_ID=" + C_Invoice_ID);
+			log.error("Not found - C_Invoice_ID=" + C_Invoice_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -1589,11 +1591,11 @@ public class VProductConfigurationBOM extends CPanel
 				if (il.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveInvoice
 
@@ -1604,11 +1606,11 @@ public class VProductConfigurationBOM extends CPanel
 	 */
 	private boolean cmd_saveProject (int C_Project_ID)
 	{
-		log.config("C_Project_ID=" + C_Project_ID);
+		log.info("C_Project_ID=" + C_Project_ID);
 		MProject project = new MProject (Env.getCtx(), C_Project_ID, null);
 		if (project.get_ID() == 0)
 		{
-			log.log(Level.SEVERE, "Not found - C_Project_ID=" + C_Project_ID);
+			log.error("Not found - C_Project_ID=" + C_Project_ID);
 			return false;
 		}
 		int lineCount = 0;
@@ -1628,11 +1630,11 @@ public class VProductConfigurationBOM extends CPanel
 				if (pl.save())
 					lineCount++;
 				else
-					log.log(Level.SEVERE, "Line not saved");
+					log.error("Line not saved");
 			}	//	line selected
 		}	//	for all bom lines
 		
-		log.config("#" + lineCount);
+		log.info("#" + lineCount);
 		return true;
 	}	//	cmd_saveProject
 

@@ -37,7 +37,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -70,7 +71,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -82,7 +82,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 {
 	// services
 	private static final POJOLookupMap instance = new POJOLookupMap("GLOBAL");
-	private static final transient CLogger logger = CLogger.getCLogger(POJOLookupMap.class);
+	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<POJOLookupMap>();
@@ -827,7 +827,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		if (!added)
 		{
 			final AdempiereException ex = new AdempiereException("Interceptor " + interceptor + " was already added so we are not adding it again, but please evaluate if this is a development error.");
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 			return;
 		}
 

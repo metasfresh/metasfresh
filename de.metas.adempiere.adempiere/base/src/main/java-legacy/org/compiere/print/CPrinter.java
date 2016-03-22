@@ -26,7 +26,8 @@ import javax.swing.DefaultComboBoxModel;
 
 import org.adempiere.util.Services;
 import org.compiere.swing.CComboBox;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
 
@@ -110,22 +111,22 @@ public class CPrinter extends CComboBox implements ActionListener
 			}
 			catch (Exception e)
 			{
-				log.warning("Could not set Print Service: " + e.toString());
+				log.warn("Could not set Print Service: " + e.toString());
 			}
 			//
 			PrintService psUsed = pj.getPrintService();
 			if (psUsed == null)
-				log.warning("Print Service not Found");
+				log.warn("Print Service not Found");
 			else
 			{
 				String serviceName = psUsed.getName();
 				if (printerName != null && !printerName.equals(serviceName))
-					log.warning("Not found: " + printerName + " - Used: " + serviceName);
+					log.warn("Not found: " + printerName + " - Used: " + serviceName);
 			}
 		}
 		catch (Exception e)
 		{
-			log.warning("Could not create for " + printerName + ": " + e.toString());
+			log.warn("Could not create for " + printerName + ": " + e.toString());
 		}
 		return pj;
 	}   //  getPrinterJob
@@ -136,7 +137,7 @@ public class CPrinter extends CComboBox implements ActionListener
 	private static PrintService[]   s_services = PrintServiceLookup.lookupPrintServices(null,null);
 
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (CPrinter.class);
+	private static Logger log = LogManager.getLogger(CPrinter.class);
 	
 	
 	/**************************************************************************

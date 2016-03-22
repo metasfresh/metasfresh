@@ -68,7 +68,7 @@ public class Doc_Movement extends Doc
 		m_DocStatus = move.getDocStatus();
 		//	Contained Objects
 		p_lines = loadLines(move);
-		log.fine("Lines=" + p_lines.length);
+		log.debug("Lines=" + p_lines.length);
 		return null;
 	}   //  loadDocumentDetails
 
@@ -87,7 +87,7 @@ public class Doc_Movement extends Doc
 			DocLine docLine = new DocLine (line, this);
 			docLine.setQty(line.getMovementQty(), false);
 			docLine.setReversalLine_ID(line.getReversalLine_ID());
-			log.fine(docLine.toString());
+			log.debug(docLine.toString());
 			list.add (docLine);
 		}
 

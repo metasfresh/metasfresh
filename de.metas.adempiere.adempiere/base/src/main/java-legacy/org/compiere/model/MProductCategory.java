@@ -22,14 +22,14 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -94,7 +94,7 @@ public class MProductCategory extends X_M_Product_Category
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e); 
+			s_log.error(sql, e); 
 		}
 		try
 		{
@@ -111,12 +111,12 @@ public class MProductCategory extends X_M_Product_Category
 			//	TODO: LRU logic  
 			s_products.put(product, category);
 			//
-			s_log.fine("M_Product_ID=" + M_Product_ID + "(" + category
+			s_log.debug("M_Product_ID=" + M_Product_ID + "(" + category
 				+ ") in M_Product_Category_ID=" + M_Product_Category_ID
 				+ " - " + (category.intValue() == M_Product_Category_ID));
 			return category.intValue() == M_Product_Category_ID;
 		}
-		s_log.log(Level.SEVERE, "Not found M_Product_ID=" + M_Product_ID);
+		s_log.error("Not found M_Product_ID=" + M_Product_ID);
 		return false;
 	}	//	isCategory
 	
@@ -125,7 +125,7 @@ public class MProductCategory extends X_M_Product_Category
 	/**	Product Cache				*/
 	private static CCache<Integer,Integer> s_products = new CCache<Integer,Integer>("M_Product", 100);
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MProductCategory.class);
+	private static Logger	s_log	= LogManager.getLogger(MProductCategory.class);
 
 	
 	/**************************************************************************
@@ -238,7 +238,7 @@ public class MProductCategory extends X_M_Product_Category
  			if (hasLoop(newParentCategoryId, categories, productCategoryId))
 				return true;
 		} catch (SQLException e) {
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 			return true;
 		}
 		finally

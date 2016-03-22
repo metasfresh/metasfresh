@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
@@ -97,7 +98,7 @@ public class DistributionRun extends SvrProcess
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
-		//	log.fine("prepare - " + para[i]);
+		//	log.debug("prepare - " + para[i]);
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("C_DocType_ID"))
@@ -121,7 +122,7 @@ public class DistributionRun extends SvrProcess
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("IsRequiredDRP"))
 				p_BasedInDamnd = "Y".equals((String)para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);		
+				log.error("prepare - Unknown Parameter: " + name);		
 		}
 		p_M_DistributionRun_ID = getRecord_ID();
 	}	//	prepare
@@ -234,7 +235,7 @@ public class DistributionRun extends SvrProcess
 		//	Delete Old
 		sql = "DELETE FROM T_DistributionRunDetail WHERE M_DistributionRun_ID=?";
 		no = DB.executeUpdateEx(sql,new Object[]{p_M_DistributionRun_ID}, get_TrxName());
-		log.fine("insertDetails - deleted #" + no);
+		log.debug("insertDetails - deleted #" + no);
 		//	Insert New
 		sql = "INSERT INTO T_DistributionRunDetail "
 			+ "(M_DistributionRun_ID, M_DistributionRunLine_ID, M_DistributionList_ID, M_DistributionListLine_ID,"
@@ -255,7 +256,7 @@ public class DistributionRun extends SvrProcess
 			+ "WHERE rl.M_DistributionRun_ID=?"
 			+ " AND l.RatioTotal<>0 AND rl.IsActive='Y' AND ll.IsActive='Y'";
 		no = DB.executeUpdateEx(sql,new Object[]{p_M_DistributionRun_ID}, get_TrxName());
-		log.fine("inserted #" + no);
+		log.debug("inserted #" + no);
 		return no;
 	}	//	insertDetails
 
@@ -288,7 +289,7 @@ public class DistributionRun extends SvrProcess
 					runLine.addActualAllocation(detail.getActualAllocation());
 					runLine.setMaxAllocation(detail.getActualAllocation(), false);
 					//
-					log.fine("RunLine=" + runLine.getLine() 
+					log.debug("RunLine=" + runLine.getLine() 
 						+ ": BP_ID=" + detail.getC_BPartner_ID() 
 						+ ", Min=" + detail.getMinQty()
 						+ ", Qty=" + detail.getQty()
@@ -302,7 +303,7 @@ public class DistributionRun extends SvrProcess
 		for (int j = 0; j < m_runLines.length; j++)
 		{
 			MDistributionRunLine runLine = m_runLines[j];
-			log.fine("Run - " + runLine.getInfo());
+			log.debug("Run - " + runLine.getInfo());
 		}
 	}	//	addAllocations
 	
@@ -355,7 +356,7 @@ public class DistributionRun extends SvrProcess
 		//	Adjust when difference is -1->1 or last difference is the same 
 		boolean adjustBiggest = difference.abs().compareTo(Env.ONE) <= 0
 			|| difference.abs().compareTo(runLine.getLastDifference().abs()) == 0;
-		log.fine("Line=" + runLine.getLine() 
+		log.debug("Line=" + runLine.getLine() 
 			+ ", Diff=" + difference + ", Adjust=" + adjustBiggest);
 		//	Adjust Biggest Amount
 		if (adjustBiggest)
@@ -365,7 +366,7 @@ public class DistributionRun extends SvrProcess
 				MDistributionRunDetail detail = m_details[i];
 				if (runLine.getM_DistributionRunLine_ID() == detail.getM_DistributionRunLine_ID())
 				{
-					log.fine("Biggest - DetailAllocation=" + detail.getActualAllocation()
+					log.debug("Biggest - DetailAllocation=" + detail.getActualAllocation()
 						+ ", MaxAllocation=" + runLine.getMaxAllocation() 
 						+ ", Qty Difference=" + difference);
 					if (detail.getActualAllocation().compareTo(runLine.getMaxAllocation()) == 0
@@ -406,7 +407,7 @@ public class DistributionRun extends SvrProcess
 					{
 						BigDecimal diffRatio = detail.getRatio().multiply(difference)
 							.divide(ratioTotal, BigDecimal.ROUND_HALF_UP);	// precision from total
-						log.fine("Detail=" + detail.toString()
+						log.debug("Detail=" + detail.toString()
 							+ ", Allocation=" + detail.getActualAllocation()
 							+ ", DiffRatio=" + diffRatio);
 						detail.adjustQty(diffRatio);
@@ -442,7 +443,7 @@ public class DistributionRun extends SvrProcess
 				+ " - " + m_docType);
 		log.info("Single=" + m_run.isCreateSingleOrder()
 			+ " - " + m_docType + ",SO=" + m_docType.isSOTrx());
-		log.fine("Counter=" + counter 
+		log.debug("Counter=" + counter 
 			+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
 		MBPartner bp = null;
@@ -468,7 +469,7 @@ public class DistributionRun extends SvrProcess
 				singleOrder.setDatePromised(p_DatePromised);
 				if (!singleOrder.save())
 				{
-					log.log(Level.SEVERE, "Order not saved");
+					log.error("Order not saved");
 					return false;
 				}
 				m_counter++;
@@ -509,7 +510,7 @@ public class DistributionRun extends SvrProcess
 					//	Counter Doc
 					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
 					{
-						log.fine("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int() 
+						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int() 
 							+ "-" + bp + ", To_BP=" + runBPartner);
 						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
 						MOrgInfo oi = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
@@ -519,7 +520,7 @@ public class DistributionRun extends SvrProcess
 					}
 					else	//	normal
 					{
-						log.fine("From_Org=" + runAD_Org_ID 
+						log.debug("From_Org=" + runAD_Org_ID 
 							+ ", To_BP=" + bp);
 						order.setAD_Org_ID(runAD_Org_ID);
 						order.setBPartner(bp);
@@ -530,7 +531,7 @@ public class DistributionRun extends SvrProcess
 					order.setDatePromised(p_DatePromised);
 					if (!order.save())
 					{
-						log.log(Level.SEVERE, "Order not saved");
+						log.error("Order not saved");
 						return false;
 					}
 				}
@@ -562,7 +563,7 @@ public class DistributionRun extends SvrProcess
 			line.setPrice();
 			if (!line.save())
 			{
-				log.log(Level.SEVERE, "OrderLine not saved");
+				log.error("OrderLine not saved");
 				return false;
 			}
 			addLog(0,null, detail.getActualAllocation(), order.getDocumentNo() 
@@ -593,7 +594,7 @@ public class DistributionRun extends SvrProcess
 		sql = "DELETE FROM T_DistributionRunDetail WHERE M_DistributionRun_ID="
 			+ p_M_DistributionRun_ID;
 		no = DB.executeUpdate(sql, get_TrxName());
-		log.fine("insertDetails - deleted #" + no);
+		log.debug("insertDetails - deleted #" + no);
 
 		//	Insert New
 		sql = "INSERT INTO T_DistributionRunDetail "
@@ -640,7 +641,7 @@ public class DistributionRun extends SvrProcess
 					record.setQty(drl.getTotalQty().multiply(factor));
 					record.save();
 			}			
-		log.fine("inserted #" + no);
+		log.debug("inserted #" + no);
 		return no;
 	}	//	insertDetails
 	
@@ -669,7 +670,7 @@ public class DistributionRun extends SvrProcess
  		}
  	    catch (Exception e)
  		{
- 	            	log.log(Level.SEVERE,"doIt - " + sql, e);
+ 	            	log.error("doIt - " + sql, e);
  	                return Env.ZERO;
  		}
  		finally
@@ -701,7 +702,7 @@ public class DistributionRun extends SvrProcess
 		sql = "DELETE FROM T_DistributionRunDetail WHERE M_DistributionRun_ID="
 			+ p_M_DistributionRun_ID;
 		no = DB.executeUpdate(sql, get_TrxName());
-		log.fine("insertDetails - deleted #" + no);
+		log.debug("insertDetails - deleted #" + no);
 		
 		//	Insert New
 		sql = "INSERT INTO T_DistributionRunDetail "
@@ -740,7 +741,7 @@ public class DistributionRun extends SvrProcess
 					record.setQty(factor.multiply(drl.getTotalQty()));
 					record.save();
 			}			
-		log.fine("inserted #" + no);
+		log.debug("inserted #" + no);
 		return no;
 	}	//	insertDetails
 	
@@ -806,7 +807,7 @@ public class DistributionRun extends SvrProcess
 		 		}
 		 	    catch (Exception e)
 		 		{
-		 	            	log.log(Level.SEVERE,"doIt - " + sql, e);
+		 	            	log.error("doIt - " + sql, e);
 		 	                return false;
 		 		}
 		 		finally
@@ -836,7 +837,7 @@ public class DistributionRun extends SvrProcess
 				+ " - " + m_docType);
 		log.info("Single=" + m_run.isCreateSingleOrder()
 			+ " - " + m_docType + ",SO=" + m_docType.isSOTrx());
-		log.fine("Counter=" + counter 
+		log.debug("Counter=" + counter 
 			+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
 		MBPartner bp = null;
@@ -883,7 +884,7 @@ public class DistributionRun extends SvrProcess
 				singleOrder.setM_Warehouse_ID(ws[0].getM_Warehouse_ID());
 				if (!singleOrder.save())
 				{
-					log.log(Level.SEVERE, "Order not saved");
+					log.error("Order not saved");
 					return false;
 				}
 				m_counter++;
@@ -953,7 +954,7 @@ public class DistributionRun extends SvrProcess
 					//	Counter Doc
 					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
 					{
-						log.fine("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int() 
+						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int() 
 							+ "-" + bp + ", To_BP=" + runBPartner);
 						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
 						if (ws[0].getM_Warehouse_ID() > 0)
@@ -962,7 +963,7 @@ public class DistributionRun extends SvrProcess
 					}
 					else	//	normal
 					{
-						log.fine("From_Org=" + runAD_Org_ID 
+						log.debug("From_Org=" + runAD_Org_ID 
 							+ ", To_BP=" + bp);
 						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
 						order.setBPartner(bp);
@@ -976,7 +977,7 @@ public class DistributionRun extends SvrProcess
 					order.setIsInTransit(false);
 					if (!order.save())
 					{
-						log.log(Level.SEVERE, "Order not saved");
+						log.error("Order not saved");
 						return false;
 					}
 				}

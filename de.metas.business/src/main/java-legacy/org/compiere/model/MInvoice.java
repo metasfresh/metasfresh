@@ -36,7 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoAddressException;
@@ -51,7 +52,8 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -358,7 +360,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	/**	Invoice Taxes			*/
 	private MInvoiceTax[]	m_taxes;
 	/**	Logger			*/
-	private static CLogger s_log = CLogger.getCLogger(MInvoice.class);
+	private static Logger s_log = LogManager.getLogger(MInvoice.class);
 
 	/**
 	 * 	Overwrite Client/Org if required
@@ -417,7 +419,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
 		}
 		if (getC_BPartner_Location_ID() == 0)
-			log.log(Level.SEVERE, new BPartnerNoAddressException(bp).getLocalizedMessage()); //TODO: throw exception?
+			log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); //TODO: throw exception?
 
 		//	Set Contact
 		MUser[] contacts = bp.getContacts(false);
@@ -537,11 +539,11 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			+ "ORDER BY IsDefault DESC, AD_Org_ID";
 		int C_DocType_ID = DB.getSQLValueEx(null, sql, getAD_Client_ID(), getAD_Org_ID(), DocBaseType);
 		if (C_DocType_ID <= 0)
-			log.log(Level.SEVERE, "Not found for AD_Client_ID="
+			log.error("Not found for AD_Client_ID="
 				+ getAD_Client_ID() + " - " + DocBaseType);
 		else
 		{
-			log.fine(DocBaseType);
+			log.debug(DocBaseType);
 			setC_DocTypeTarget_ID (C_DocType_ID);
 			boolean isSOTrx = MDocType.DOCBASETYPE_ARInvoice.equals(DocBaseType)
 				|| MDocType.DOCBASETYPE_ARCreditMemo.equals(DocBaseType);
@@ -747,7 +749,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		int noTax = DB.executeUpdate("UPDATE C_InvoiceTax " + set, get_TrxName());
 		m_lines = null;
 		m_taxes = null;
-		log.fine(processed + " - Lines=" + noLine + ", Tax=" + noTax);
+		log.debug(processed + " - Lines=" + noLine + ", Tax=" + noTax);
 	}	//	setProcessed
 
 	/**
@@ -758,7 +760,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	{
 		MInvoicePaySchedule[] schedule = MInvoicePaySchedule.getInvoicePaySchedule
 			(getCtx(), getC_Invoice_ID(), 0, get_TrxName());
-		log.fine("#" + schedule.length);
+		log.debug("#" + schedule.length);
 		if (schedule.length == 0)
 		{
 			setIsPayScheduleValid(false);
@@ -797,7 +799,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		log.fine("");
+		log.debug("");
 		//	No Partner Info - set Template
 		if (getC_BPartner_ID() == 0)
 			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
@@ -924,7 +926,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					+ " FROM C_Invoice o WHERE ol.C_Invoice_ID=o.C_Invoice_ID) "
 				+ "WHERE C_Invoice_ID=" + getC_Invoice_ID();
 			int no = DB.executeUpdate(sql, get_TrxName());
-			log.fine("Lines -> #" + no);
+			log.debug("Lines -> #" + no);
 		}
 		return true;
 	}	//	afterSave
@@ -986,7 +988,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 //			DB.close(rs, pstmt);
 //			rs = null; pstmt = null;
 //		}
-//	//	log.fine("getAllocatedAmt - " + retValue);
+//	//	log.debug("getAllocatedAmt - " + retValue);
 //		//	? ROUND(COALESCE(v_AllocatedAmt,0), 2);
 //		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
 //		return retValue;
@@ -1029,7 +1031,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 //			change = test != isPaid();
 //			if (change)
 //				setIsPaid(test);
-//			log.fine("Paid=" + test
+//			log.debug("Paid=" + test
 //					+ " (" + alloc + "=" + total + ")");
 //		}
 //
@@ -1072,7 +1074,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		finally {
 			DB.close(rs);
 		}
-		s_log.config("#" + counter);
+		s_log.info("#" + counter);
 		/**/
 	}	//	setIsPaid
 
@@ -1148,7 +1150,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -1349,7 +1351,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 //			{
 //				MInvoiceLine line = lines[i];
 //				MProduct product = MProduct.get (getCtx(), line.getM_Product_ID());
-//				log.fine(product.getName());
+//				log.debug(product.getName());
 //				//	New Lines
 //				int lineNo = line.getLine ();
 //
@@ -1425,7 +1427,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	{
 		final String trxName = get_TrxName();
 
-		log.fine("");
+		log.debug("");
 
 		//	Delete Taxes
 		DB.executeUpdateEx("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
@@ -1522,7 +1524,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (getC_PaymentTerm_ID() == 0)
 			return false;
 		MPaymentTerm pt = new MPaymentTerm(getCtx(), getC_PaymentTerm_ID(), null);
-		log.fine(pt.toString());
+		log.debug(pt.toString());
 		return pt.apply(this);		//	calls validate pay schedule
 	}	//	createPaySchedule
 
@@ -1776,7 +1778,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				newAmt = amt;
 			else
 				newAmt = newAmt.add(amt);
-			log.fine("GrandTotal=" + getGrandTotal(true) + "(" + amt
+			log.debug("GrandTotal=" + getGrandTotal(true) + "(" + amt
 				+ ") Project " + project.getName()
 				+ " - Invoiced=" + project.getInvoicedAmt() + "->" + newAmt);
 			project.setInvoicedAmt(newAmt);
@@ -1862,7 +1864,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
-			log.fine(counterDT.toString());
+			log.debug(counterDT.toString());
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
 				return null;
 			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
@@ -1870,7 +1872,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		else	//	indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
+			log.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
 				return null;
 		}
@@ -1908,7 +1910,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			counterLine.save(get_TrxName());
 		}
 
-		log.fine(counter.toString());
+		log.debug(counter.toString());
 
 		//	Document Action
 		if (counterDT != null)

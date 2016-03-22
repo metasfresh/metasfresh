@@ -18,9 +18,9 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogMgt;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 /**
  * 	Optimal Payment Processor Services Interface.
@@ -187,10 +187,11 @@ public class PP_Optimal extends PaymentProcessor
 	 *	@return true if OK
 	 *	@throws IllegalArgumentException
 	 */
+	@Override
 	public boolean processCC ()
 		throws IllegalArgumentException
 	{
-		log.fine(p_mpp.getHostAddress() + ":" + p_mpp.getHostPort() + ", Timeout=" + getTimeout()
+		log.debug(p_mpp.getHostAddress() + ":" + p_mpp.getHostPort() + ", Timeout=" + getTimeout()
 			+ "; Proxy=" + p_mpp.getProxyAddress() + ":" + p_mpp.getProxyPort() + " " + p_mpp.getProxyLogon() + " " + p_mpp.getProxyPassword());
 		setEncoded(true);
 
@@ -235,7 +236,7 @@ public class PP_Optimal extends PaymentProcessor
 		
 		try
 		{
-			log.fine("-> " + param.toString());
+			log.debug("-> " + param.toString());
 			Properties prop = getConnectPostProperties(urlString, param.toString());
 			m_ok = prop != null;
 			//	authCode=, authTime=1132330817, subErrorString=Card has expired: 04/04, errCode=91, clientVersion=1.1, status=E, subError=0, actionCode=CP, errString=Invalid Payment Information. Please verify request parameters.
@@ -258,14 +259,14 @@ public class PP_Optimal extends PaymentProcessor
 				String avsInfo = prop.getProperty(AVS_INFO);
 				String cvdInfo = prop.getProperty(CVD_INFO);
 				
-				log.fine("<- Status=" + status + ", AuthCode=" + authCode + ", Error=" + errString);
+				log.debug("<- Status=" + status + ", AuthCode=" + authCode + ", Error=" + errString);
 			}
 			if (!m_ok)
-				log.warning("<- " + prop);
+				log.warn("<- " + prop);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, param.toString(), e);
+			log.error(param.toString(), e);
 			m_ok = false;
 		}
 		return m_ok;
@@ -275,6 +276,7 @@ public class PP_Optimal extends PaymentProcessor
 	 * 	Is Processed OK
 	 *	@return true of ok
 	 */
+	@Override
 	public boolean isProcessedOK ()
 	{
 		return m_ok;
@@ -335,8 +337,8 @@ public class PP_Optimal extends PaymentProcessor
 > 60.00 to 69.99 = (2) Timeout
 > Amount greater than 69.99 = Approval
 **/
-		CLogMgt.initialize(true);
-		CLogMgt.setLevel(Level.ALL);
+		LogManager.initialize(true);
+		LogManager.setLevel(Level.ALL);
 		PP_Optimal pp = new PP_Optimal();
 		pp.processCC();
 		pp.isProcessedOK();

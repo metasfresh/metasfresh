@@ -45,7 +45,7 @@ import de.metas.letters.model.MADBoilerPlate;
 
 public class AEMailLetter implements ActionListener
 {
-	// private static final transient CLogger log = CLogger.getCLogger(getClass());
+	// private static final transient Logger log = CLogMgt.getLogger(getClass());
 
 	public static final String ACTION_Name = "EMailLetter";
 

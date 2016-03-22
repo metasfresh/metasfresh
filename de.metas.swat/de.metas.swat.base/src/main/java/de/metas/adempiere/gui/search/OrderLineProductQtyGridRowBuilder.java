@@ -24,14 +24,13 @@ package de.metas.adempiere.gui.search;
 
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.model.I_C_Order;
 
 /**
@@ -42,7 +41,7 @@ import de.metas.adempiere.model.I_C_Order;
  */
 public class OrderLineProductQtyGridRowBuilder implements IGridTabRowBuilder
 {
-	private static final transient CLogger logger = CLogger.getCLogger(OrderLineProductQtyGridRowBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(OrderLineProductQtyGridRowBuilder.class);
 	
 	private int productId;
 	private BigDecimal qty;
@@ -57,7 +56,7 @@ public class OrderLineProductQtyGridRowBuilder implements IGridTabRowBuilder
 	{
 		if (!InterfaceWrapperHelper.isInstanceOf(model, I_C_Order.class))
 		{
-			logger.log(Level.FINEST, "Skip setting the source because model does not apply: {0}", model);
+			logger.trace("Skip setting the source because model does not apply: {}", model);
 			return;
 		}
 
@@ -95,7 +94,7 @@ public class OrderLineProductQtyGridRowBuilder implements IGridTabRowBuilder
 	{
 		if (!InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
 		{
-			logger.log(Level.FINE, "Skip applying because it's not an order line: {0}", model);
+			logger.debug("Skip applying because it's not an order line: {}", model);
 			return;
 		}
 

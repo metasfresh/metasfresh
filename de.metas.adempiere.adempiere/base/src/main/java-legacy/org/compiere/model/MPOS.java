@@ -150,7 +150,7 @@ public class MPOS extends X_C_POS
 				m_template = MBPartner.getBPartnerCashTrx (getCtx(), getAD_Client_ID());
 			else
 				m_template = new MBPartner(getCtx(), getC_BPartnerCashTrx_ID(), get_TrxName());
-			log.fine("getBPartner - " + m_template);
+			log.debug("getBPartner - " + m_template);
 		}
 		return m_template;
 	}	//	getBPartner

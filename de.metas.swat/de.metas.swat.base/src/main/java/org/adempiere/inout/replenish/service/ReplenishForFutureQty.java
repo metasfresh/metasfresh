@@ -40,22 +40,23 @@ import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_T_Replenish;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IProductPA;
 import de.metas.product.IStoragePA;
 
 public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 
-	private static final CLogger logger = CLogger
-			.getCLogger(ReplenishForFutureQty.class);
+	private static final Logger logger = LogManager.getLogger(ReplenishForFutureQty.class);
 
+	@Override
 	public BigDecimal getQtyToOrder(final I_M_Warehouse warehouse,
 			final I_T_Replenish replenishPO, final String trxName) {
 
 		// make sure that we just use the interfaces
-		final I_T_Replenish replenish = (I_T_Replenish) replenishPO;
+		final I_T_Replenish replenish = replenishPO;
 
 		final IPOService poService = Services.get(IPOService.class);
 
@@ -83,13 +84,13 @@ public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 
 		final Date currentdate = SystemTime.asDate();
 		if (currentdate.before(replenishStartDate.getTime())) {
-			logger.fine("Current date is before replenish date '"
+			logger.debug("Current date is before replenish date '"
 					+ replenishStartDate.toString() + "' - returning 0");
 			return new BigDecimal("0");
 		}
 
 		if (currentdate.after(replenishEndDate.getTime())) {
-			logger.fine("Current date is after replenish date '"
+			logger.debug("Current date is after replenish date '"
 					+ replenishEndDate.toString() + "' - returning 0");
 			return new BigDecimal("0");
 		}

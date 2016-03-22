@@ -19,7 +19,8 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -210,7 +211,7 @@ public class MProjectLine extends X_C_ProjectLine
 			MProjectTask pt = new MProjectTask(getCtx(), getC_ProjectTask_ID(), get_TrxName());
 			if (pt == null || pt.get_ID() == 0)
 			{
-				log.warning("Project Task Not Found - ID=" + getC_ProjectTask_ID());
+				log.warn("Project Task Not Found - ID=" + getC_ProjectTask_ID());
 				return false;
 			}
 			else
@@ -221,7 +222,7 @@ public class MProjectLine extends X_C_ProjectLine
 			MProjectPhase pp = new MProjectPhase(getCtx(), getC_ProjectPhase_ID(), get_TrxName());
 			if (pp == null || pp.get_ID() == 0)
 			{
-				log.warning("Project Phase Not Found - " + getC_ProjectPhase_ID());
+				log.warn("Project Phase Not Found - " + getC_ProjectPhase_ID());
 				return false;
 			}
 			else
@@ -273,7 +274,7 @@ public class MProjectLine extends X_C_ProjectLine
 			+ "WHERE C_Project_ID=" + getC_Project_ID());
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
-			log.log(Level.SEVERE, "updateHeader - #" + no);
+			log.error("updateHeader - #" + no);
 	}	//	updateHeader
 	
 }	//	MProjectLine

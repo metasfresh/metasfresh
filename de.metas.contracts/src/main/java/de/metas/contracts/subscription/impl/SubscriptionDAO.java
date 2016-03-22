@@ -49,9 +49,10 @@ import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -74,8 +75,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 
 	public static final String SUBSCRIPTION_NO_SP_AT_DATE_1P = "Subscription_NoSPAtDate_1P";
 
-	private static final CLogger logger = CLogger
-			.getCLogger(SubscriptionDAO.class);
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	public static final String SQL_SUBSCRIPTION = //
 	"  SELECT c." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID
@@ -144,7 +144,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 	@Override
 	public I_C_SubscriptionProgress retrieveNextSP(final I_C_Flatrate_Term control, final Timestamp date, final int seqNo)
 	{
-		logger.fine("Parameters: date=" + date + ", seqNo=" + seqNo + ", control=" + control);
+		logger.debug("Parameters: date=" + date + ", seqNo=" + seqNo + ", control=" + control);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(control);
 		final String trxName = InterfaceWrapperHelper.getTrxName(control);

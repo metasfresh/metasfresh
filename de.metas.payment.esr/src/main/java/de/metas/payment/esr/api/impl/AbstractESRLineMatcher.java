@@ -29,14 +29,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.TimeUtil;
 
 import de.metas.payment.esr.api.IESRLineMatcher;
 
 public abstract class AbstractESRLineMatcher implements IESRLineMatcher
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 	
 	/**
 	 * Method to remove the left zeros from a string.

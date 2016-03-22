@@ -45,16 +45,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.model.MCashLine;
 import org.compiere.model.MPayment;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 
@@ -71,7 +73,7 @@ public class FixPaymentCashLine extends SvrProcess {
 	
 	
     private static final Properties ctx = Env.getCtx();
-	private static CLogger		s_log = CLogger.getCLogger (FixPaymentCashLine.class);
+	private static Logger		s_log = LogManager.getLogger(FixPaymentCashLine.class);
     //private static final String AD_Client_ID = ctx.getProperty("#AD_Client_ID");
     //private static final String AD_Org_ID = ctx.getProperty("#AD_Org_ID");
 
@@ -125,7 +127,7 @@ public class FixPaymentCashLine extends SvrProcess {
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -178,7 +180,7 @@ public class FixPaymentCashLine extends SvrProcess {
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{

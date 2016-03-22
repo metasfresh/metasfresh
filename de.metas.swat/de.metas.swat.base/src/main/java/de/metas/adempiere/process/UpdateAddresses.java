@@ -30,8 +30,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -176,7 +174,7 @@ public class UpdateAddresses extends SvrProcess
 		catch (Exception e)
 		{
 			addLog("Error on " + po + ", " + columnName + ": " + e.getLocalizedMessage());
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 
 		return true;
@@ -199,7 +197,7 @@ public class UpdateAddresses extends SvrProcess
 			Services.get(IBPartnerBL.class).setAddress(bpLocation);
 			if (Util.isEmpty(bpLocation.getAddress()))
 			{
-				log.warning("Cannot calculate Address for " + bpLocation);
+				log.warn("Cannot calculate Address for " + bpLocation);
 			}
 
 			InterfaceWrapperHelper.save(bpLocation);

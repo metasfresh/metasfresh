@@ -25,9 +25,9 @@ package de.metas.device.scales.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.device.api.DeviceException;
 import de.metas.device.api.IDeviceRequestHandler;
@@ -38,7 +38,7 @@ import de.metas.device.scales.request.GetWeightResponse;
 public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceRequestHandler<GetGrossWeighRequest, GetWeightResponse>
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(ScalesGetGrossWeightHandler.class);
+	private static final transient Logger logger = LogManager.getLogger(ScalesGetGrossWeightHandler.class);
 
 	private ITcpConnectionEndPoint endpoint;
 
@@ -59,10 +59,10 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	public GetWeightResponse handleRequest(final GetGrossWeighRequest request)
 	{
 		final String endpointResultStr = endpoint.sendCmd(cmd.getCmd());
-		logger.log(Level.FINEST, "Received result string {0} from endpoint {1}; command: {2}", new Object[] { endpointResultStr, endpoint, cmd });
+		logger.trace("Received result string {} from endpoint {}; command: {}", new Object[] { endpointResultStr, endpoint, cmd });
 
 		final String endPointWeight = parser.parse(cmd, endpointResultStr, weightFieldName, String.class);
-		logger.log(Level.FINEST, "Parsed weight number string {0} from the result string; will round according to roundWeightToPrecision={1}",
+		logger.trace("Parsed weight number string {} from the result string; will round according to roundWeightToPrecision={}",
 				new Object[] { endPointWeight, roundWeightToPrecision });
 		final BigDecimal weight;
 		try
@@ -75,7 +75,7 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 		}
 
 		final String endPointUom = parser.parse(cmd, endpointResultStr, uomFieldName, String.class);
-		logger.log(Level.FINEST, "Parsed uom string {0} from the result string", endPointUom);
+		logger.trace("Parsed uom string {} from the result string", endPointUom);
 
 		final GetWeightResponse response = new GetWeightResponse(
 				roundWeightToPrecision < 0  // task 09207: only round if a precision >=0 was supplied

@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
@@ -514,7 +513,7 @@ public class InfoSimplePanel extends InfoPanel
 			}
 			catch (Exception e)
 			{
-				log.log(Level.WARNING, "Cannot convert " + value + " to integer", e);
+				log.warn("Cannot convert " + value + " to integer", e);
 			}
 		}
 		return -1;

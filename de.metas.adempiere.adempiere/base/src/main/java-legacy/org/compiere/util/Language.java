@@ -24,9 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -231,7 +230,7 @@ public class Language implements Serializable
 	private static ExtendedMemorizingSupplier<Language> _baseLanguageSupplier = null;
 
 	/**	Logger			*/
-	private static final transient Logger log = Logger.getLogger(Language.class.getName());
+	private static final transient Logger log = LogManager.getLogger(Language.class.getName());
 	
 	/**
 	 *  Get Number of Languages
@@ -295,7 +294,7 @@ public class Language implements Serializable
 			String language = lang.substring(0,2);
 			String country = lang.substring(3);
 			Locale locale = new Locale(language, country);
-			log.info ("Adding Language=" + language + ", Country=" + country + ", Locale=" + locale);
+			log.info("Adding Language=" + language + ", Country=" + country + ", Locale=" + locale);
 			Language ll = new Language (lang, lang, locale);
 			//	Add to Languages
 			ArrayList<Language> list = new ArrayList<Language>(Arrays.asList(s_languages));
@@ -370,7 +369,8 @@ public class Language implements Serializable
 	 */
 	public static final boolean isBaseLanguageSet()
 	{
-		return _baseLanguageSupplier.isInitialized();
+		ExtendedMemorizingSupplier<Language> baseLanguageSupplier = _baseLanguageSupplier;
+		return baseLanguageSupplier != null && baseLanguageSupplier.isInitialized();
 	}
 
 	/**
@@ -491,13 +491,13 @@ public class Language implements Serializable
 	public static void setLoginLanguage (Language language)
 	{
 		// metas: tsa: 02214: prevent using this method:
-		log.log(Level.WARNING, "This method is deprecated. Please don't use it. Setting #AD_Language in context is enough", new Exception());
+		log.warn("This method is deprecated. Please don't use it. Setting #AD_Language in context is enough", new Exception());
 		// metas: tsa: original:
 		/*
 		if (language != null)
 		{
 			s_loginLanguage = language;
-			log.config(s_loginLanguage.toString());
+			log.info(s_loginLanguage.toString());
 		}
 		*/
 	}   //  setLanguage
@@ -581,7 +581,7 @@ public class Language implements Serializable
 		if (AD_Language != null)
 		{
 			m_AD_Language = AD_Language;
-			log.config(toString());
+			log.info(toString());
 		}
 	}   //  getAD_Language
 
@@ -672,7 +672,7 @@ public class Language implements Serializable
 		}
 		catch (Exception e)
 		{
-			log.severe(javaDatePattern + " - " + e);
+			log.error(javaDatePattern + " - " + e);
 			m_dateFormat = null;
 		}
 	}   //  setDateFormat
@@ -702,7 +702,7 @@ public class Language implements Serializable
 					else
 						nFormat += sFormat.charAt(i);
 				}
-			//	log.finer(sFormat + " => " + nFormat);
+			//	log.trace(sFormat + " => " + nFormat);
 				m_dateFormat.applyPattern(nFormat);
 			}
 			//	Unknown short format => use JDBC

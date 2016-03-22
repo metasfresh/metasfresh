@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.ad.persistence.TableModelLoader;
@@ -137,7 +135,7 @@ public class DataElementHandler extends AbstractElementHandler {
 					whereand = " and";
 				}
 				if (whereand.equals(" where"))
-					log.warning("no name or keyXname attribute defined.");
+					log.warn("no name or keyXname attribute defined.");
 				// Load GenericPO from rs, in fact ID could not exist e.g. Attribute Value
 				try {
 					PreparedStatement pstmt = DB.prepareStatement(sql, getTrxName(ctx));
@@ -178,7 +176,7 @@ public class DataElementHandler extends AbstractElementHandler {
 					
 				}
 				catch (Exception e) {
-					log.warning ("keyXname attribute. init from rs error."+e);
+					log.warn("keyXname attribute. init from rs error."+e);
 					throw new SAXException(e.getMessage());
 				}
 			}
@@ -401,7 +399,7 @@ public class DataElementHandler extends AbstractElementHandler {
 						pstmt = null;
 					}	
 					catch (Exception e)	{
-						log.log(Level.SEVERE,"getData", e);
+						log.error("getData", e);
 					}
 				}
 				document.endElement("","","drow");	
@@ -413,7 +411,7 @@ public class DataElementHandler extends AbstractElementHandler {
 		}	
 		
 		catch (Exception e)	{
-			log.log(Level.SEVERE,"getData", e);
+			log.error("getData", e);
 		}
 		
 		document.endElement("","","data");

@@ -25,7 +25,8 @@ package de.metas.payment.esr.api.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -33,13 +34,11 @@ import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.model.I_AD_Org;
-import org.compiere.util.CLogger;
-
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
 public class PlainESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 {	
-	private static final transient CLogger logger = CLogger.getCLogger(PlainESRBPBankAccountDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(PlainESRBPBankAccountDAO.class);
 	
 	private final POJOLookupMap db = POJOLookupMap.get();
 
@@ -59,7 +58,7 @@ public class PlainESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 			{
 				if ( pojo == null )
 				{
-					logger.log(Level.WARNING, "The associated C_BPartner for org "+ org + " has no ESR account");
+					logger.warn("The associated C_BPartner for org "+ org + " has no ESR account");
 					return false;
 				}
 			

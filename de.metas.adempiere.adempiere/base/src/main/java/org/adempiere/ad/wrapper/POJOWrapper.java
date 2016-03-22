@@ -37,7 +37,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -52,7 +53,6 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 
@@ -64,7 +64,7 @@ import org.compiere.util.Evaluatee2;
  */
 public class POJOWrapper implements InvocationHandler
 {
-	private static final transient CLogger log = CLogger.getCLogger(POJOWrapper.class);
+	private static final transient Logger log = LogManager.getLogger(POJOWrapper.class);
 
 	public static final int DEFAULT_VALUE_int = 0;
 	public static final int DEFAULT_VALUE_ID = -1;
@@ -338,7 +338,7 @@ public class POJOWrapper implements InvocationHandler
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			final AdempiereException e = new AdempiereException("Cannot get context from model " + model + " because is not supported. Returning global context.");
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 
 		return Env.getCtx();
@@ -416,7 +416,7 @@ public class POJOWrapper implements InvocationHandler
 		wrapper.valuesOld.clear();
 	}
 
-	// private final transient CLogger log = CLogger.getCLogger(getClass());
+	// private final transient Logger log = CLogMgt.getLogger(getClass());
 	private final long instanceId;
 	private final Properties ctx;
 	private final IPOJOLookupMap lookup;

@@ -24,15 +24,12 @@ package de.metas.document.archive.api.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.CLogger;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.archive.api.IDocOutboundProducer;
@@ -52,7 +49,7 @@ import de.metas.document.engine.IDocActionBL;
  */
 public abstract class AbstractDocOutboundProducer implements IDocOutboundProducer
 {
-	protected final transient Logger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final I_C_Doc_Outbound_Config config;
 	private final String tableName;
@@ -140,14 +137,14 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 			final I_C_DocType docType = Services.get(IDocActionBL.class).getDocTypeOrNull(model);
 			if (docType == null)
 			{
-				logger.log(Level.INFO, "No document type found for {0}. Ignore it.", model);
+				logger.info("No document type found for {}. Ignore it.", model);
 				return false;
 			}
 
 			final String actualDocBaseType = docType.getDocBaseType();
 			if (!requiredDocBaseType.equals(actualDocBaseType))
 			{
-				logger.log(Level.FINE, "Skip {0} because it has DocBaseType={1} when {2} was expected", new Object[] { model, actualDocBaseType, requiredDocBaseType });
+				logger.debug("Skip {} because it has DocBaseType={} when {} was expected", new Object[] { model, actualDocBaseType, requiredDocBaseType });
 				return false;
 			}
 		}

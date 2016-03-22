@@ -26,7 +26,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -39,7 +40,8 @@ import javax.swing.border.TitledBorder;
 import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -113,7 +115,7 @@ public class GroovyEditor extends CDialog implements ActionListener
 		}
 		catch(Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}   //  ScriptEditor
 
@@ -124,7 +126,7 @@ public class GroovyEditor extends CDialog implements ActionListener
 	/** Original Script */
 	private String      m_origScript;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(GroovyEditor.class);
+	private static Logger log = LogManager.getLogger(GroovyEditor.class);
 	//  --
 
 	private CPanel mainPanel = new CPanel();

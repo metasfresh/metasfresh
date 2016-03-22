@@ -24,7 +24,8 @@ package org.adempiere.ad.callout.api.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.script.ScriptEngine;
 
@@ -42,12 +43,11 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MRule;
 import org.compiere.model.X_AD_Rule;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 public class RuleCalloutInstance implements ICalloutInstance
 {
-	private static final transient CLogger logger = CLogger.getCLogger(RuleCalloutInstance.class);
+	private static final transient Logger logger = LogManager.getLogger(RuleCalloutInstance.class);
 
 	private final I_AD_Rule rule;
 
@@ -158,7 +158,7 @@ public class RuleCalloutInstance implements ICalloutInstance
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Error while executing callout", e);
+			logger.error("Error while executing callout", e);
 			throw new CalloutExecutionException(this, "Error while executing callout: " + e.getLocalizedMessage(), e);
 		}
 

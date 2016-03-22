@@ -22,11 +22,13 @@ package de.metas.adempiere.report.jasper;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -34,14 +36,12 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 
-import org.compiere.util.CLogger;
-
 /**
  * Helper class used to fill a {@link JasperReport} and produce {@link JasperPrint}.
  */
 /* package */final class ADJasperFiller
 {
-	private static final transient CLogger log = CLogger.getCLogger(ADJasperFiller.class);
+	private static final transient Logger log = LogManager.getLogger(ADJasperFiller.class);
 
 	private static final ADJasperFiller instance = new ADJasperFiller();
 
@@ -49,7 +49,7 @@ import org.compiere.util.CLogger;
 	{
 		return instance;
 	}
-	
+
 	private ADJasperFiller()
 	{
 		super();
@@ -58,14 +58,31 @@ import org.compiere.util.CLogger;
 	public JasperPrint fillReport(
 			final JasperReport jasperReport,
 			final Map<String, Object> parameters,
-			final Connection connection
-			) throws JRException
+			final Connection connection,
+			final ClassLoader jasperLoader) throws JRException
 	{
 		final Map<String, Object> paramsFixed = new HashMap<String, Object>(parameters);
 		fixParameterTypes(jasperReport, paramsFixed);
 
-		final JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
-		return jasperPrint;
+		final Thread currentThread = Thread.currentThread();
+		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
+		
+		// Set the jasper loader as thread context classloader.
+		// We do this to workaround the issue from net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle(),
+		// which is not fetching the right classloader.
+		// More, that method is executed a separate thread for sub-reports, so fetching resource bundles will fail.
+		currentThread.setContextClassLoader(jasperLoader);
+		
+		try
+		{
+			final JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
+			return jasperPrint;
+		}
+		finally
+		{
+			// restore the original class loader
+			currentThread.setContextClassLoader(classLoaderOld);
+		}
 	}
 
 	protected void fixParameterTypes(final JasperReport jasperReport, final Map<String, Object> params)
@@ -193,7 +210,7 @@ import org.compiere.util.CLogger;
 		}
 
 		// Nothing matched, log warning and return original value
-		log.warning("Cannot convert value '" + value + "' from " + fromClass + " to " + targetClass + ". Ignore");
+		log.warn("Cannot convert value '" + value + "' from " + fromClass + " to " + targetClass + ". Ignore");
 		return value;
 	}
 }

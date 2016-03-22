@@ -30,7 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -41,7 +42,6 @@ import org.compiere.model.MInOutLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -60,7 +60,7 @@ import de.metas.interfaces.I_C_BPartner;
 public class ShipmentCandidates implements IShipmentCandidates
 {
 
-	static final CLogger logger = CLogger.getCLogger(ShipmentCandidates.class);
+	static final Logger logger = LogManager.getLogger(ShipmentCandidates.class);
 
 	/**
 	 * List to store the shipments before it is decided if they are persisted to the database.
@@ -591,7 +591,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 
 					status = PostageFreeStatus.BELOW_POSTAGEFREE_AMT;
 
-					if (logger.isLoggable(Level.INFO))
+					if (logger.isInfoEnabled())
 					{
 						logger.info("Shipment "
 								+ shipmentCandidate.getDocumentNo()

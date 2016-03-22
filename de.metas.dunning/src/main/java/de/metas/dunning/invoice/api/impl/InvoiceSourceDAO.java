@@ -30,13 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -62,7 +62,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	@Override
 	public int retrieveDueDays(final int paymentTermId, final Date dateInvoiced, final Date date)
 	{
-		return DB.getSQLValueEx(Trx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId, dateInvoiced, date);
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId, dateInvoiced, date);
 	}
 
 	@Override

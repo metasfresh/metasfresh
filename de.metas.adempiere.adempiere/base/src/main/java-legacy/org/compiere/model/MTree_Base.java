@@ -36,7 +36,7 @@ import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -583,7 +583,7 @@ public class MTree_Base extends X_AD_Tree
 		final int AD_Client_ID = po.getAD_Client_ID();
 		final String treeTableName = MTree.getNodeTableName(AD_Table_ID);
 		final String trxName = po.get_TrxName();
-		final CLogger log = po.get_Logger();
+		final Logger log = po.get_Logger();
 		
 		final IPOTreeSupport treeSupport = treeSupportFactory.get(po.get_TableName());
 		final int AD_Tree_ID = treeSupport.getAD_Tree_ID(po);
@@ -619,10 +619,10 @@ public class MTree_Base extends X_AD_Tree
 		int no = DB.executeUpdateEx(sb.toString(), trxName);
 		if (no < 0)
 		{
-			log.warning("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 			return false;
 		}
-		log.fine("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 
 		listeners.onNodeInserted(po);
@@ -648,7 +648,7 @@ public class MTree_Base extends X_AD_Tree
 		if (treeTableName == null)
 			return false;
 		final String trxName = po.get_TrxName();
-		final CLogger log = po.get_Logger();
+		final Logger log = po.get_Logger();
 		//
 		// Check childrens:
 		List<MTreeNode> children = fetchNodes(AD_Table_ID, "Parent_ID=?", new Object[] { id }, trxName);
@@ -668,10 +668,10 @@ public class MTree_Base extends X_AD_Tree
 		final int no = DB.executeUpdateEx(sb.toString(), trxName);
 		if (no <= 0)
 		{
-			log.warning("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 			return false;
 		}
-		log.fine("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 		listeners.onNodeDeleted(po);
 
@@ -821,7 +821,7 @@ public class MTree_Base extends X_AD_Tree
 			sql.append(" AND (").append(sourceTableWhereClause).append(")");
 		}
 		sql.append(")");
-		log.finer(sql.toString());
+		log.trace(sql.toString());
 		//
 		final int deletes = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info(getName() + " Deleted #" + deletes);

@@ -45,7 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -56,7 +57,8 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -94,7 +96,7 @@ public class VCreateCorrections extends CreateCorrections implements ActionListe
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		
@@ -105,7 +107,7 @@ public class VCreateCorrections extends CreateCorrections implements ActionListe
 	private final int p_WindowNo;
 
 	/** Logger */
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final CLabel dateFromLabel = new CLabel(Msg.translate(Env.getCtx(), "dateInvoiced"));
 	protected final VDate dateFromField = new VDate("DateFrom", false, false, true, DisplayType.Date, Msg.translate(Env.getCtx(), "DateFrom"));
@@ -122,7 +124,7 @@ public class VCreateCorrections extends CreateCorrections implements ActionListe
 	 */
 	public final boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 
 		super.dynInit();
 
@@ -193,7 +195,7 @@ public class VCreateCorrections extends CreateCorrections implements ActionListe
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		log.config("Action=" + e.getActionCommand());
+		log.info("Action=" + e.getActionCommand());
 		// Object source = e.getSource();
 		if (e.getActionCommand().equals(ConfirmPanel.A_REFRESH))
 		{

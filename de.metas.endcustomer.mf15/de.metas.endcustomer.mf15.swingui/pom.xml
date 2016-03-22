@@ -1,6 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -15,25 +13,63 @@
 
 	<properties>
 		<dist.dir>target/swingui</dist.dir>
+		<mainJar>${project.name}-${project.version}.jar</mainJar>
+		<start-class>de.metas.SwingUIApplication</start-class>
+		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
+		
+		<launch4j.versionInfo>4.9.8.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.preCp>lib/jp.osdn.ocra.jar; lib/jp.osdn.ocrb.jar</launch4j.preCp>
+
+		<!-- NOTE: -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)" -->
+		<runner.java.options>-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true</runner.java.options>
+
+		<runner.bat.defaultAdempiereHome>%~dp0\..</runner.bat.defaultAdempiereHome>
+				
+		<runner.bat.classpath>%ADEMPIERE_HOME%\lib\jp.osdn.ocra.jar;%ADEMPIERE_HOME%\lib\jp.osdn.ocrb.jar;%ADEMPIERE_HOME%\lib\${mainJar}</runner.bat.classpath>
+		<runner.sh.classpath>$ADEMPIERE_HOME/lib/jp.osdn.ocra.jar:$ADEMPIERE_HOME/lib/jp.osdn.ocrb.jar:$ADEMPIERE_HOME/lib/${mainJar}</runner.sh.classpath>
 	</properties>
 
-	<dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-<!-- 
-	JASPER FONTS
-	Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
-	http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
-	==> That is why we don't just add these dependencies to adempiereJasper.commons
--->
-		<!-- 06489 Label is not printed when completing Kommissionierung -->
-		<!--	 
-		we probably don't need these fonts anymore
+
+	<dependencies>
+		<!-- Spring Boot -->
 		<dependency>
-			<groupId>de.metas.adempiere.adempiereJasper</groupId>
-			<artifactId>adempiereJasper-fonts</artifactId>
-			<version>1.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+
+
+		<!-- JASPER FONTS Our swing client is currently an uber-jar, and by copying 
+			this stuff into it, we run into trouble as described here: http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml 
+			==> That is why we don't just add these dependencies to adempiereJasper.commons -->
+		<!-- 06489 Label is not printed when completing Kommissionierung -->
+		<!-- we probably don't need these fonts anymore <dependency> <groupId>de.metas.adempiere.adempiereJasper</groupId> 
+			<artifactId>adempiereJasper-fonts</artifactId> <version>1.0</version> </dependency> -->
 		<!-- 07585 ESR an Debitoren (109078863663) -->
 		<!-- 03301 Mitgliedsrechnung (Jasper) (2012091810000098) -->
 		<!-- 03718 ESR-Schein auf Rechnung fertigstellen (2012121810000028) -->
@@ -49,8 +85,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -58,13 +94,11 @@
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
-				
-		<!--
-		Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer.
-		i.e. a developer wants to use embedded jasper server while working/debugging in eclipse.
-		scope=provided so it's ONLY considered on the local dev station
-		 -->
+		</dependency>
+
+		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
+			i.e. a developer wants to use embedded jasper server while working/debugging 
+			in eclipse. scope=provided so it's ONLY considered on the local dev station -->
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
@@ -77,80 +111,22 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<executable>false</executable>
+					<mainClass>${start-class}</mainClass>
+				</configuration>
 				<executions>
 					<execution>
-						<id>copy-allInOne-lib</id>
-						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
+							<goal>repackage</goal>
 						</goals>
-						<configuration>
-							<stripVersion>true</stripVersion>
-							<outputDirectory>${dist.dir}/metasfresh/lib</outputDirectory>
-							<overWriteReleases>true</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-							<overWriteIfNewer>true</overWriteIfNewer>
-							<excludeTransitive>true</excludeTransitive> <!-- just the dependencies we explicitly declared above -->
-							<includeScope>runtime</includeScope>  <!--  Include only runtime scope (i.e. exclude test scope). See http://stackoverflow.com/questions/13727165/is-there-a-way-to-divide-artifacts-between-test-and-compile-using-the-maven-depe -->
-							<!-- see the comment near the dependency declaration for these artifacts -->
-							<includeArtifactIds>
-								jp.osdn.ocra, jp.osdn.ocrb
-							</includeArtifactIds>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-
-				<executions>
-					<execution>
-						<id>shade-all</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<shadedArtifactAttached>true</shadedArtifactAttached> <!-- Make the shaded artifact not the main one -->
-							<outputFile>target/${project.artifactId}-allInOne.jar</outputFile>
-							<artifactSet>
-								<!-- see the comment near the dependency declaration for these artifacts -->
-								<excludes>
-									<exclude>jp.osdn.ocra:jp.osdn.ocra</exclude>
-									<exclude>jp.osdn.ocrb:jp.osdn.ocrb</exclude>
-								</excludes>
-							</artifactSet>
-
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<!-- thanks to 
-									http://stackoverflow.com/questions/31156393/nullpointerexception-at-org-apache-cxf-jaxrs-client-abstractclient-setupoutinter
-									and
-									https://cwiki.apache.org/confluence/display/CXF20DOC/Bundling+CXF+into+single+jar+with+Maven+shade+plugin 
-								-->
-								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/cxf/bus-extensions.txt</resource>
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
+			
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
@@ -174,7 +150,7 @@
 					</execution>
 					<execution>
 						<!-- copy or start scripts into the into place -->
-						<id>copy-resources-allInOne</id>
+						<id>copy-resources-lib</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -187,7 +163,7 @@
 								<resource>
 									<directory>target</directory>
 									<includes>
-										<include>*allInOne.jar</include>
+										<include>${mainJar}</include>
 									</includes>
 								</resource>
 							</resources>
@@ -195,6 +171,8 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+
 
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
@@ -209,16 +187,16 @@
 						</goals>
 						<configuration>
 							<headerType>gui</headerType>
-							<outfile>target/swingui/metasfresh/RUN_metasfresh.exe</outfile>
+							<outfile>${dist.dir}/metasfresh/RUN_metasfresh.exe</outfile>
 							<dontWrapJar>true</dontWrapJar>
-							<jar>lib/de.metas.endcustomer.mf15.swingui-allInOne.jar</jar>
+							<jar>lib/${mainJar}</jar>
 							<errTitle>metas Fresh</errTitle>
 							<icon>src/main/resources/misc/favicon_64.ico</icon>
 							<classPath>
-								<mainClass>org.compiere.Adempiere</mainClass>
+								<mainClass>${spring.jarLauncherClass}</mainClass>
 								<addDependencies>false</addDependencies>
 								<jarLocation>lib/</jarLocation>
-								<preCp>lib/jp.osdn.ocra.jar; lib/jp.osdn.ocrb.jar</preCp>
+								<preCp>${launch4j.preCp}</preCp>
 							</classPath>
 							<jre>
 								<minVersion>1.7.0</minVersion>
@@ -228,20 +206,19 @@
 									<opt>-Xmx1024m</opt>
 									<opt>-XX:MaxPermSize=256m</opt>
 									<opt>-XX:+HeapDumpOnOutOfMemoryError</opt>
-									xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract
-									(100965620270)"
+									<!-- xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract (100965620270)" -->
 									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
-									xml-comment: always create a log file because there is no other way to check the console when running gui/javaw
+									<!-- always create a log file because there is no other way to check the console when running gui/javaw -->
 									<opt>-DTraceFile=true</opt>
 								</opts>
 							</jre>
 							<versionInfo>
-								<fileVersion>4.10.9.${BUILD_NUMBER_NUMERIC}</fileVersion>
-								<txtFileVersion>4.10.9.${BUILD_NUMBER_NUMERIC}</txtFileVersion>
+								<fileVersion>${launch4j.versionInfo}</fileVersion>
+								<txtFileVersion>${launch4j.versionInfo}</txtFileVersion>
 								<fileDescription>metas Fresh ERP client</fileDescription>
 								<copyright>${project.organization.name}</copyright>
-								<productVersion>4.10.9.${BUILD_NUMBER_NUMERIC}</productVersion>
-								<txtProductVersion>4.10.9.${BUILD_NUMBER_NUMERIC}</txtProductVersion>
+								<productVersion>${launch4j.versionInfo}</productVersion>
+								<txtProductVersion>${launch4j.versionInfo}</txtProductVersion>
 								<productName>metas fresh ERP</productName>
 								<internalName>metasfresh</internalName>
 								<originalFilename>metasfresh.exe</originalFilename>

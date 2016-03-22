@@ -41,7 +41,8 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
@@ -68,7 +69,7 @@ import de.metas.product.IProductBL;
 public class SubscriptionInOutCandHandler implements IInOutCandHandler
 {
 
-	private static final CLogger logger = CLogger.getCLogger(SubscriptionInOutCandHandler.class);
+	private static final Logger logger = LogManager.getLogger(SubscriptionInOutCandHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(final Object model)

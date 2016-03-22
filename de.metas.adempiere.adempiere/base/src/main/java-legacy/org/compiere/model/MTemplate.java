@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 
 /**
@@ -224,9 +222,9 @@ public class MTemplate extends X_CM_Template
 					", 0, 999)");
 			int no = DB.executeUpdate (sb.toString (), get_TrxName ());
 			if (no > 0)
-				log.fine ("#" + no + " - TreeType=CMT");
+				log.debug("#" + no + " - TreeType=CMT");
 			else
-				log.warning ("#" + no + " - TreeType=CMT");
+				log.warn("#" + no + " - TreeType=CMT");
 			return no > 0;
 		}
 		if (!newRecord)
@@ -265,9 +263,9 @@ public class MTemplate extends X_CM_Template
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
 		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
 		if (no > 0)
-			log.fine ("#" + no + " - TreeType=CMT");
+			log.debug("#" + no + " - TreeType=CMT");
 		else
-			log.warning ("#" + no + " - TreeType=CMT");
+			log.warn("#" + no + " - TreeType=CMT");
 		return no > 0;
 	}	// afterDelete
 
@@ -308,7 +306,7 @@ public class MTemplate extends X_CM_Template
 		}
 		catch (SQLException ex)
 		{
-			log.log (Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{

@@ -24,8 +24,6 @@ package de.metas.handlingunits.movement.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.logging.Level;
-
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -168,7 +166,7 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 			final String errmsg = "Error on " + hu.getValue() + ": " + e.getLocalizedMessage();
 
 			addLog(errmsg);
-			log.log(Level.WARNING, errmsg, e);
+			log.warn(errmsg, e);
 		}
 	}
 }

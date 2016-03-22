@@ -17,8 +17,6 @@
 package org.compiere.sla;
 
 import java.sql.Timestamp;
-import java.util.logging.Level;
-
 import org.compiere.model.MSLACriteria;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
@@ -51,7 +49,7 @@ public class SLAMeasureProcess extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		p_PA_SLA_Measure_ID = getRecord_ID();
 	}	//	prepare
@@ -63,7 +61,7 @@ public class SLAMeasureProcess extends SvrProcess
 	 */
 	protected String doIt () throws Exception
 	{
-		log.info ("PA_SLA_Measure_ID=" + p_PA_SLA_Measure_ID);
+		log.info("PA_SLA_Measure_ID=" + p_PA_SLA_Measure_ID);
 		MSLAMeasure measure = new MSLAMeasure (getCtx(), p_PA_SLA_Measure_ID, get_TrxName());
 		if (measure.get_ID() == 0)
 			throw new AdempiereUserError("@PA_SLA_Measure_ID@ " + p_PA_SLA_Measure_ID);

@@ -305,7 +305,7 @@ public class InfoInvoice extends Info
 		//
 		sql.append(" AND i.IsPaid=? AND i.IsSOTrx=?");
 
-	//	log.fine( "InfoInvoice.setWhereClause", sql.toString());
+	//	log.debug( "InfoInvoice.setWhereClause", sql.toString());
 		return sql.toString();
 	}	//	getSQLWhere
 
@@ -331,21 +331,21 @@ public class InfoInvoice extends Info
 		{
 			Integer bp = (Integer)fBPartner_ID.getValue();
 			pstmt.setInt(index++, bp.intValue());
-			log.fine("BPartner=" + bp);
+			log.debug("BPartner=" + bp);
 		}
 		//
 		if (fOrder_ID.getValue() != null)
 		{
 			Integer order = (Integer)fOrder_ID.getValue();
 			pstmt.setInt(index++, order.intValue());
-			log.fine("Order=" + order);
+			log.debug("Order=" + order);
 		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
 			else if (from != null && to == null)
@@ -361,7 +361,7 @@ public class InfoInvoice extends Info
 		{
 			BigDecimal from = (BigDecimal)fAmtFrom.getValue();
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
-			log.fine("Amt From=" + from + ", To=" + to);
+			log.debug("Amt From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setBigDecimal(index++, to);
 			else if (from != null && to == null)
@@ -386,7 +386,7 @@ public class InfoInvoice extends Info
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 	

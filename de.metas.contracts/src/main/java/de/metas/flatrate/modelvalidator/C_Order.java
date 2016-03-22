@@ -1,5 +1,16 @@
 package de.metas.flatrate.modelvalidator;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.POWrapper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
 /*
  * #%L
  * de.metas.contracts
@@ -22,19 +33,8 @@ package de.metas.flatrate.modelvalidator;
  * #L%
  */
 
-import java.util.logging.Level;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -48,7 +48,7 @@ import de.metas.order.IOrderPA;
 
 public class C_Order implements ModelValidator
 {
-	private static final CLogger logger = CLogger.getCLogger(C_OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
@@ -129,7 +129,7 @@ public class C_Order implements ModelValidator
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
 			{
-				logger.fine("Order line " + ol + " has no subscription");
+				logger.debug("Order line " + ol + " has no subscription");
 				continue;
 			}
 			if (timing == TIMING_AFTER_COMPLETE)
@@ -156,11 +156,11 @@ public class C_Order implements ModelValidator
 		final I_C_Flatrate_Term existingSc = subscriptionDAO.retrieveTermForOl(ol);
 		if (existingSc != null)
 		{
-			logger.log(Level.FINE, "{0} has already {1}", ol, existingSc);
+			logger.debug("{} has already {}", ol, existingSc);
 			return;
 		}
 
-		logger.log(Level.INFO, "Creating new {0} entry", I_C_Flatrate_Term.Table_Name);
+		logger.info("Creating new {} entry", I_C_Flatrate_Term.Table_Name);
 
 		// Note that order.getDocStatus() might still return 'IP' at this point
 		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, true, order);
@@ -168,7 +168,7 @@ public class C_Order implements ModelValidator
 		Check.assume(
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
 				"{0} has DocStatus={1}", newSc, newSc.getDocStatus());
-		logger.log(Level.INFO, "Created and completed {0}", newSc);
+		logger.info("Created and completed {}", newSc);
 	}
 
 	/**
@@ -187,6 +187,6 @@ public class C_Order implements ModelValidator
 
 		final String sql = "UPDATE C_OrderLine SET Processed='Y' WHERE C_OrderLine_ID=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { ol.getC_OrderLine_ID() }, trxName);
-		logger.finer("Update result: " + no);
+		logger.trace("Update result: " + no);
 	}
 }

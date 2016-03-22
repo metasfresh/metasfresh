@@ -158,7 +158,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		final Exception exception = collector.getCollectedExceptionsOrNull(ctx);
 		if (exception != null)
 		{
-			log.warning(exception.getLocalizedMessage());
+			log.warn(exception.getLocalizedMessage());
 		}
 		return logLines;
 	}

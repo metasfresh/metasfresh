@@ -17,14 +17,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.model.MElementValue;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -59,7 +61,7 @@ public class Charge
 	private int         m_CreatedBy = 0;
 	private MAcctSchema  m_acctSchema = null;
 	/**	Logger			*/
-	public static CLogger log = CLogger.getCLogger(Charge.class);
+	public static Logger log = LogManager.getLogger(Charge.class);
 
 	/**
 	 *  Dynamic Init
@@ -97,7 +99,7 @@ public class Charge
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		
 		return data;
@@ -129,7 +131,7 @@ public class Charge
         }
         catch (SQLException exception)
         {
-            log.log(Level.SEVERE, sql, exception);
+            log.error(sql, exception);
         }
     }
 	
@@ -181,7 +183,7 @@ public class Charge
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 	}   //  dynInit
 	
@@ -194,7 +196,7 @@ public class Charge
 	 */
 	protected int createElementValue (String value, String name, boolean isExpenseType)
 	{
-		log.config(name);
+		log.info(name);
 		//
 		MElementValue ev = new MElementValue(Env.getCtx(), value, name, null,
 			isExpenseType ? MElementValue.ACCOUNTTYPE_Expense : MElementValue.ACCOUNTTYPE_Revenue, 
@@ -202,7 +204,7 @@ public class Charge
 				false, false, null);
 		ev.setAD_Org_ID(m_AD_Org_ID);
 		if (!ev.save())
-			log.log(Level.WARNING, "C_ElementValue_ID not created");
+			log.warn("C_ElementValue_ID not created");
 		return ev.getC_ElementValue_ID();
 	}   //  createElementValue
 
@@ -218,14 +220,14 @@ public class Charge
         MCharge charge;
         MAccount account;
 
-        log.config(name + " - ");
+        log.info(name + " - ");
         // Charge
         charge = new MCharge(Env.getCtx(), 0, null);
         charge.setName(name);
         charge.setC_TaxCategory_ID(m_C_TaxCategory_ID);
         if (!charge.save())
         {
-            log.log(Level.SEVERE, name + " not created");
+            log.error(name + " not created");
             return 0;
         }
 
@@ -259,7 +261,7 @@ public class Charge
         int noAffectedRows = DB.executeUpdate(sql.toString(), null);
         if (noAffectedRows != 1)
         {
-            log.log(Level.SEVERE, "Update #" + noAffectedRows + "\n" + sql.toString());
+            log.error("Update #" + noAffectedRows + "\n" + sql.toString());
         }
 
         return;
@@ -359,7 +361,7 @@ public class Charge
 
     public void createAccount(IMiniTable dataTable)
 	{
-		log.config("");
+		log.info("");
 		//
 		listCreated = new StringBuffer();
 		listRejected = new StringBuffer();

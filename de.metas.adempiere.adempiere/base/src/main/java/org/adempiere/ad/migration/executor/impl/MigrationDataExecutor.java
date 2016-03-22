@@ -24,7 +24,8 @@ package org.adempiere.ad.migration.executor.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -36,11 +37,10 @@ import org.adempiere.ad.migration.util.IDataConverter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
 
 public class MigrationDataExecutor
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IMigrationExecutorContext migrationCtx;
 	private final I_AD_MigrationStep step;
@@ -74,7 +74,7 @@ public class MigrationDataExecutor
 				throw ex;
 			}
 
-			logger.log(Level.INFO, ex.getLocalizedMessage(), ex);
+			logger.info(ex.getLocalizedMessage(), ex);
 			return;
 		}
 
@@ -149,7 +149,7 @@ public class MigrationDataExecutor
 
 		if (column != null && column.getAD_Table_ID() != adTableId)
 		{
-			logger.log(Level.WARNING, "Column '" + column.getColumnName()
+			logger.warn("Column '" + column.getColumnName()
 					+ "' (ID=" + column.getAD_Column_ID() + ") does not match AD_Table_ID from parent. Attempting to retrieve column by name and tableId.");
 			column = null;
 		}
@@ -157,7 +157,7 @@ public class MigrationDataExecutor
 		final String dataColumnName = data.getColumnName();
 		if (column != null && !dataColumnName.equalsIgnoreCase(column.getColumnName()))
 		{
-			logger.log(Level.WARNING, "Column ID collision '" + dataColumnName + "' with existing '" + column.getColumnName()
+			logger.warn("Column ID collision '" + dataColumnName + "' with existing '" + column.getColumnName()
 					+ "' (ID=" + column.getAD_Column_ID() + "). Attempting to retrieve column by name and tableId.");
 			column = null;
 		}

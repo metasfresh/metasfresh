@@ -28,7 +28,8 @@ import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -38,7 +39,8 @@ import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.swing.CLabel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * Class used to assist {@link VPanel} managing the label and fields mnemonics.
@@ -48,7 +50,7 @@ import org.compiere.util.CLogger;
  */
 class VPanelMnemonics
 {
-	private final transient CLogger log = VPanel.log;
+	private final transient Logger log = VPanel.log;
 
 	/** Used Mnemonics */
 	private final List<Character> m_mnemonics = new ArrayList<>(30);
@@ -81,7 +83,7 @@ class VPanelMnemonics
 				}
 				else
 				{
-					log.warning(mField.getColumnName() + " - Conflict - Already exists: " + mnemonic + " (" + text + ")");
+					log.warn(mField.getColumnName() + " - Conflict - Already exists: " + mnemonic + " (" + text + ")");
 				}
 			}
 		}
@@ -104,9 +106,9 @@ class VPanelMnemonics
 			label.setSavedMnemonic(predefinedMnemonic);
 			m_fields.add(label);
 
-			if (log.isLoggable(Level.FINEST))
+			if (log.isTraceEnabled())
 			{
-				log.finest(predefinedMnemonic + " - " + label.getName());
+				log.trace(predefinedMnemonic + " - " + label.getName());
 			}
 		}
 		else
@@ -140,9 +142,9 @@ class VPanelMnemonics
 				cb.setSavedMnemonic(predefinedMnemonic);
 				m_fields.add(cb);
 
-				if (log.isLoggable(Level.FINEST))
+				if (log.isTraceEnabled())
 				{
-					log.finest(predefinedMnemonic + " - " + cb.getName());
+					log.trace(predefinedMnemonic + " - " + cb.getName());
 				}
 			}
 			else
@@ -168,9 +170,9 @@ class VPanelMnemonics
 				b.setSavedMnemonic(predefinedMnemonic);
 				m_fields.add(b);
 
-				if (log.isLoggable(Level.FINEST))
+				if (log.isTraceEnabled())
 				{
-					log.finest(predefinedMnemonic + " - " + b.getName());
+					log.trace(predefinedMnemonic + " - " + b.getName());
 				}
 			}
 			else if (b.getColumnName().equals("DocAction"))
@@ -247,16 +249,16 @@ class VPanelMnemonics
 			// Nothing found
 			if (mnemonic == 0)
 			{
-				log.log(Level.FINEST, "None for: {0}", oText);
+				log.trace("None for: {}", oText);
 				return 0;	// if first char would be returned, the first occurrence is invalid.
 			}
 		}
 		m_mnemonics.add(mnemonic);
 		m_fields.add(source);
 
-		if (log.isLoggable(Level.FINEST))
+		if (log.isTraceEnabled())
 		{
-			log.finest(mnemonic + " - " + source.getName());
+			log.trace(mnemonic + " - " + source.getName());
 		}
 
 		return mnemonic;

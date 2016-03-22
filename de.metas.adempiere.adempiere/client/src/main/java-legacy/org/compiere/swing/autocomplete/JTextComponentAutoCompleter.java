@@ -30,7 +30,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -51,7 +52,8 @@ import javax.swing.text.JTextComponent;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.jgoodies.looks.Options;
 
@@ -63,7 +65,7 @@ import com.jgoodies.looks.Options;
 public class JTextComponentAutoCompleter
 {
 	// services
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	// config:
 	private static final int DEFAULT_PopupDelayMillis = 500;
@@ -451,14 +453,14 @@ public class JTextComponentAutoCompleter
 			return;
 		}
 
-		logger.finest("showPopupDelayed..");
+		logger.trace("showPopupDelayed..");
 		popupTrigger.setRepeats(false);
 		popupTrigger.start();
 	}
 
 	private final void showPopupNow()
 	{
-		logger.finest("showPopup");
+		logger.trace("showPopup");
 		popup.setVisible(false);
 
 		if (textBox.isEnabled() && updateListData() && !resultsListModel.isEmpty())
@@ -803,7 +805,7 @@ public class JTextComponentAutoCompleter
 					&& currentItem != null
 					&& currentItem.equals(resultsListModel.getElementAt(0)))
 			{
-				logger.finest("nothing to do 1");
+				logger.trace("nothing to do 1");
 				return false;
 			}
 		}
@@ -833,7 +835,7 @@ public class JTextComponentAutoCompleter
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed while firing current item changed", e);
+			logger.warn("Failed while firing current item changed", e);
 		}
 	}
 

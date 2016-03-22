@@ -30,7 +30,8 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
@@ -40,7 +41,7 @@ import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 public class OLCandAggAndOrder extends CalloutEngine
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OLCandAggAndOrder.class);
+	private static final Logger logger = LogManager.getLogger(OLCandAggAndOrder.class);
 
 	public String adColumnOLCandId(
 			final Properties ctx,
@@ -78,7 +79,7 @@ public class OLCandAggAndOrder extends CalloutEngine
 
 		if (aggAndOrder.getAD_Column_OLCand_ID() <= 0)
 		{
-			logger.fine("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
+			logger.debug("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
 					+ " is not set");
 			aggAndOrder.setAD_Reference_OLCand_ID(0);
 			return "";
@@ -90,7 +91,7 @@ public class OLCandAggAndOrder extends CalloutEngine
 		if (!aggAndOrder.isGroupBy()
 				|| (colOLCand.getAD_Reference_ID() != DisplayType.Date && colOLCand.getAD_Reference_ID() != DisplayType.DateTime))
 		{
-			logger.fine("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
+			logger.debug("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
 					+ " has AD_Reference_ID=" + colOLCand.getAD_Reference_ID()
 					+ " and IsGroupBy=" + aggAndOrder.isGroupBy()
 					+ "; Setting Granularity=null");
@@ -99,7 +100,7 @@ public class OLCandAggAndOrder extends CalloutEngine
 		else if (Util.isEmpty(aggAndOrder.getGranularity()))
 		{
 			aggAndOrder.setGranularity(X_C_OLCandAggAndOrder.GRANULARITY_Tag);
-			logger.fine("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
+			logger.debug("AD_Column_OLCand=" + aggAndOrder.getAD_Column_OLCand_ID()
 					+ " has AD_Reference_ID=" + colOLCand.getAD_Reference_ID()
 					+ " and IsGroupBy=" + aggAndOrder.isGroupBy()
 					+ "; Setting Granularity=" + X_C_OLCandAggAndOrder.GRANULARITY_Tag);

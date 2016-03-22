@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -71,7 +71,7 @@ public class MUserQuery extends X_AD_UserQuery
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -115,7 +115,7 @@ public class MUserQuery extends X_AD_UserQuery
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -126,7 +126,7 @@ public class MUserQuery extends X_AD_UserQuery
 	}	//	get
 
 	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MUserQuery.class);
+	private static Logger s_log = LogManager.getLogger(MUserQuery.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor

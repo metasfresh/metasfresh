@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
+
+import de.metas.logging.LogManager;
 
 /**
  * This RuntimeException is used to pass SQLException up the chain of calling methods to determine what to do where needed.
@@ -106,7 +107,7 @@ public class DBException extends AdempiereException
 	public DBException(Throwable e)
 	{
 		super(e);
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 		{
 			e.printStackTrace();
 		}

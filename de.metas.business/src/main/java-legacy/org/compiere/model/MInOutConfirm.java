@@ -22,12 +22,14 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -88,7 +90,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	}	//	MInOutConfirm
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MInOutConfirm.class);
+	private static Logger	s_log	= LogManager.getLogger(MInOutConfirm.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -218,7 +220,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -432,7 +434,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 				}
 				else
 				{
-					log.log(Level.SEVERE, "Scrapped=" + confirmLine.getScrappedQty()
+					log.error("Scrapped=" + confirmLine.getScrappedQty()
 						+ " - Difference=" + confirmLine.getDifferenceQty());
 					return DocAction.STATUS_Invalid;
 				}
@@ -480,7 +482,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 				continue;
 			//
 			MInOutLine oldLine = confirmLine.getLine();
-			log.fine("Qty=" + differenceQty + ", Old=" + oldLine);
+			log.debug("Qty=" + differenceQty + ", Old=" + oldLine);
 			//
 			// Create Header
 			if (split == null)

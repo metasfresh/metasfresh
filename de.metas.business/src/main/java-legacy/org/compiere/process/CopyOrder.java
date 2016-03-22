@@ -18,7 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
@@ -61,7 +62,7 @@ public class CopyOrder extends SvrProcess
 			else if (name.equals("IsCloseDocument"))
 				p_IsCloseDocument = "Y".equals(para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

@@ -26,7 +26,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.apache.ecs.MultiPartElement;
 import org.apache.ecs.Printable;
@@ -40,7 +41,7 @@ public class StoredHtmlSrc extends MultiPartElement implements Printable {
 	private static final long serialVersionUID = 50303119083373138L;
 	
 	/**	Logger					*/
-	protected static Logger 	log = Logger.getLogger(StoredHtmlSrc.class.getName());
+	protected static Logger 	log = LogManager.getLogger(StoredHtmlSrc.class.getName());
 	
 	
 	/**
@@ -54,7 +55,7 @@ public class StoredHtmlSrc extends MultiPartElement implements Printable {
 		
 		URL url = getClass().getClassLoader().getResource(srcLocation);
 		if (url==null) {
-			log.warning("failed to load html-src: " + srcLocation);
+			log.warn("failed to load html-src: " + srcLocation);
 			return;
 		}			
 		InputStreamReader ins;
@@ -67,7 +68,7 @@ public class StoredHtmlSrc extends MultiPartElement implements Printable {
 				result+=cssLine;
 			this.setTagText(result);
 		} catch (IOException e1) {
-			log.warning("failed to load html-src: " + srcLocation);
+			log.warn("failed to load html-src: " + srcLocation);
 		}
 	}
 }

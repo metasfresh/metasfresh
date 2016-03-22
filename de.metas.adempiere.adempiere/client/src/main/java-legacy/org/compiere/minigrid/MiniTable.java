@@ -30,7 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
@@ -55,7 +56,8 @@ import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CTable;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -96,7 +98,7 @@ public class MiniTable extends CTable implements IMiniTable
 	public MiniTable()
 	{
 		super(new MiniTableModel());
-		// log.config( "MiniTable");
+		// log.info( "MiniTable");
 		setCellSelectionEnabled(false);
 		setRowSelectionAllowed(false);
 		// Default Editor
@@ -173,7 +175,7 @@ public class MiniTable extends CTable implements IMiniTable
 	/** Lauout set in prepareTable and used in loadTable */
 	private ColumnInfo[] m_layout = null;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(MiniTable.class);
+	private static Logger log = LogManager.getLogger(MiniTable.class);
 	/** Is Total Show */
 	private boolean showTotals = false;
 	private boolean autoResize = true;
@@ -242,7 +244,7 @@ public class MiniTable extends CTable implements IMiniTable
 			int width = 0;
 			if (m_minWidth.size() > col)
 				width = m_minWidth.get(col).intValue();
-			// log.config( "Column=" + col + " " + column.getHeaderValue());
+			// log.info( "Column=" + col + " " + column.getHeaderValue());
 
 			// Header
 			TableCellRenderer renderer = tc.getHeaderRenderer();
@@ -250,7 +252,7 @@ public class MiniTable extends CTable implements IMiniTable
 				renderer = new DefaultTableCellRenderer();
 			Component comp = renderer.getTableCellRendererComponent
 					(this, tc.getHeaderValue(), false, false, 0, 0);
-			// log.fine( "Hdr - preferred=" + comp.getPreferredSize().width + ", width=" + comp.getWidth());
+			// log.debug( "Hdr - preferred=" + comp.getPreferredSize().width + ", width=" + comp.getWidth());
 			width = Math.max(width, comp.getPreferredSize().width + SLACK);
 
 			// Cells
@@ -269,9 +271,9 @@ public class MiniTable extends CTable implements IMiniTable
 			// Width not greater ..
 			width = Math.min(MAXSIZE, width);
 			tc.setPreferredWidth(width);
-			// log.fine( "width=" + width);
+			// log.debug( "width=" + width);
 		}	// for all columns
-		log.finer("Cols=" + size + " - " + (System.currentTimeMillis() - start) + "ms");
+		log.trace("Cols=" + size + " - " + (System.currentTimeMillis() - start) + "ms");
 	}	// autoSize
 
 	/**
@@ -419,7 +421,7 @@ public class MiniTable extends CTable implements IMiniTable
 		{
 			finalSQL = sql.toString();
 		}
-		log.finest(finalSQL);
+		log.trace(finalSQL);
 		return finalSQL;
 	}   // prepareTable
 
@@ -472,7 +474,7 @@ public class MiniTable extends CTable implements IMiniTable
 			return;
 		}
 
-		// log.config( "MiniTable.setColumnClass - " + index, c.getName() + ", r/o=" + readOnly);
+		// log.info( "MiniTable.setColumnClass - " + index, c.getName() + ", r/o=" + readOnly);
 		final TableColumn tc = getColumnModel().getColumn(index);
 		if (tc == null)
 		{
@@ -660,7 +662,7 @@ public class MiniTable extends CTable implements IMiniTable
 
 			tc.setHeaderRenderer(new VHeaderRenderer(displayTypeToUse));
 		}
-		// log.fine( "Renderer=" + tc.getCellRenderer().toString() + ", Editor=" + tc.getCellEditor().toString());
+		// log.debug( "Renderer=" + tc.getCellRenderer().toString() + ", Editor=" + tc.getCellEditor().toString());
 	}   // setColumnClass
 
 	/**
@@ -675,7 +677,7 @@ public class MiniTable extends CTable implements IMiniTable
 		{
 			DefaultTableModel model = (DefaultTableModel)getModel();
 			model.setRowCount(no);
-			// log.config( "MiniTable.setRowCount", "rows=" + getRowCount() + ", cols=" + getColumnCount());
+			// log.info( "MiniTable.setRowCount", "rows=" + getRowCount() + ", cols=" + getColumnCount());
 		}
 		else
 			throw new IllegalArgumentException("Model must be instance of DefaultTableModel");
@@ -734,7 +736,7 @@ public class MiniTable extends CTable implements IMiniTable
 					}
 					// store
 					setValueAt(data, row, col);
-					// log.fine( "r=" + row + ", c=" + col + " " + m_layout[col].getColHeader(),
+					// log.debug( "r=" + row + ", c=" + col + " " + m_layout[col].getColHeader(),
 					// "data=" + data.toString() + " " + data.getClass().getName() + " * " + m_table.getCellRenderer(row, col));
 				}
 
@@ -742,12 +744,12 @@ public class MiniTable extends CTable implements IMiniTable
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		if (getShowTotals())
 			addTotals(m_layout);
 		autoSize();
-		log.config("Row(rs)=" + getRowCount());
+		log.info("Row(rs)=" + getRowCount());
 
 	}	// loadTable
 
@@ -790,7 +792,7 @@ public class MiniTable extends CTable implements IMiniTable
 		if (getShowTotals())
 			addTotals(m_layout);
 		autoSize();
-		log.config("Row(array)=" + getRowCount());
+		log.info("Row(array)=" + getRowCount());
 	}	// loadTable
 
 	/**

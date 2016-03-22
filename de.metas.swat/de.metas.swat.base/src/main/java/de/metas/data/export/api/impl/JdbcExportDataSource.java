@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
@@ -50,7 +50,7 @@ import de.metas.data.export.api.IExportDataSource;
  */
 public class JdbcExportDataSource implements IExportDataSource
 {
-	private static final CLogger logger = CLogger.getCLogger(JdbcExportDataSource.class);
+	private static final Logger logger = LogManager.getLogger(JdbcExportDataSource.class);
 
 	private final List<String> fields;
 	private final List<String> sqlFields;
@@ -267,11 +267,11 @@ public class JdbcExportDataSource implements IExportDataSource
 
 		if (rowsCount == null)
 		{
-			logger.log(Level.INFO, "SQL: {0}", sqlCount);
-			logger.log(Level.INFO, "SQL Params: {0}", sqlParams);
+			logger.info("SQL: {}", sqlCount);
+			logger.info("SQL Params: {}", sqlParams);
 			rowsCount = DB.getSQLValueEx(Trx.TRXNAME_None, sqlCount, sqlParams);
 
-			logger.log(Level.INFO, "Rows Count: {0}" + rowsCount);
+			logger.info("Rows Count: {}" + rowsCount);
 		}
 
 		return rowsCount;

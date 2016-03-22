@@ -19,8 +19,6 @@ package org.compiere.report;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.model.X_PA_ReportColumn;
 
 /**
@@ -89,7 +87,7 @@ public class MReportColumn extends X_PA_ReportColumn
 			sb.append("acctBalance(Account_ID,Qty,0)");
 		else
 		{
-			log.log(Level.SEVERE, "AmountType=" + getPAAmountType () + ", at=" + amountType);
+			log.error("AmountType=" + getPAAmountType () + ", at=" + amountType);
 			return "NULL";
 		}
 		if (withSum)
@@ -193,11 +191,11 @@ public class MReportColumn extends X_PA_ReportColumn
 		else if (MReportColumn.ELEMENTTYPE_Combination.equals(et))
 			return getWhereCombination(PA_Hierarchy_ID);
 		else
-			log.warning("Unsupported Element Type=" + et);
+			log.warn("Unsupported Element Type=" + et);
 
 		if (ID == 0)
 		{
-			log.fine("No Restrictions - No ID for EntityType=" + et);
+			log.debug("No Restrictions - No ID for EntityType=" + et);
 			return "";
 		}
 		

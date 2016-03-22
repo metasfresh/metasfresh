@@ -21,12 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-
-import org.compiere.util.CLogger;
 
 /**
  * Mutable Tree Node (not a PO).
@@ -66,7 +65,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 			final Color color)
 	{
 		super();
-		// log.fine( "MTreeNode Node_ID=" + node_ID + ", Parent_ID=" + parent_ID + " - " + name);
+		// log.debug( "MTreeNode Node_ID=" + node_ID + ", Parent_ID=" + parent_ID + " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
 		m_name = name;
@@ -108,7 +107,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private int m_AD_Table_ID = -1;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(MTreeNode.class);
+	private static Logger log = LogManager.getLogger(MTreeNode.class);
 
 	/*************************************************************************/
 
@@ -190,7 +189,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		String retValue = "0000" + m_seqNo;	// not more than 100,000 nodes
 		if (m_seqNo > 99999)
 		{
-			log.log(Level.SEVERE, "MTreeNode.getIndex - TreeNode Index is higher than 99999");
+			log.error("MTreeNode.getIndex - TreeNode Index is higher than 99999");
 		}
 		if (retValue.length() > 5)
 		{
@@ -613,13 +612,13 @@ public final class MTreeNode extends DefaultMutableTreeNode
 			for (final MTreeNode n : tn.getPlaceholderNodes())
 			{
 				childrenAll.add(countBefore++, n);
-				log.fine("Added " + n + " from placeholder " + newChild);
+				log.debug("Added " + n + " from placeholder " + newChild);
 			}
 		}
 		else
 		{
 			childrenAll.add(countBefore, (MTreeNode)newChild);
-			log.fine("Added " + newChild);
+			log.debug("Added " + newChild);
 		}
 	}
 
@@ -656,7 +655,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 				}
 			}
 		}
-		log.warning("Child node " + child + " not found in all children array");
+		log.warn("Child node " + child + " not found in all children array");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -693,7 +692,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 				lastAdded = ph;
 			}
 		}
-		log.fine("" + this + " children #" + children.size() + ", all #" + childrenAll.size());
+		log.debug("" + this + " children #" + children.size() + ", all #" + childrenAll.size());
 	}
 
 	public List<MTreeNode> getChildrenAll()

@@ -1,0 +1,40 @@
+<configuration>
+	<!-- String boot defaults -->
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<!-- Sync log levels from SLF4J/logback to JUL -->	
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>false</resetJUL>
+	</contextListener>
+	
+	<!-- Console logging configuration -->
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+	
+
+	<!-- File logging configuration -->
+	<property name="LOG_PATH" value="${LOG_PATH:-./log/}" />
+	<appender name="FILE" class="de.metas.logging.MetasfreshFileAppender">
+		<encoder>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
+		</encoder>
+		
+		<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+			<LogDir>${LOG_PATH}</LogDir>
+			<LogFilePrefix>metasfresh</LogFilePrefix>
+			<LogFileDatePattern>%d{yyyy-MM-dd}_%d{HHmmss,aux}</LogFileDatePattern>
+			
+			<TimeBasedFileNamingAndTriggeringPolicy class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+		</rollingPolicy>
+	</appender>
+	
+	<!-- Error logger (AD_Issue) -->
+	<appender name="AD_ISSUE" class="de.metas.logging.MetasfreshIssueAppender">
+	</appender>
+	
+	<!-- Configure root logger -->
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+		<appender-ref ref="AD_ISSUE" />
+	</root>
+</configuration>

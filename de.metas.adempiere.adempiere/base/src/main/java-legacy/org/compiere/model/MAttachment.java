@@ -27,7 +27,6 @@ import java.nio.channels.FileChannel;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -91,7 +90,7 @@ public class MAttachment extends X_AD_Attachment
 	}	//	get
 	
 //	/**	Static Logger	*/
-//	private static CLogger	s_log	= CLogger.getCLogger (MAttachment.class);
+//	private static Logger	s_log	= CLogMgt.getLogger(MAttachment.class);
 
 	
 	/**************************************************************************
@@ -169,11 +168,11 @@ public class MAttachment extends X_AD_Attachment
 				m_attachmentPathRoot = client.getUnixAttachmentPath();
 			}
 			if("".equals(m_attachmentPathRoot)){
-				log.severe("no attachmentPath defined");
+				log.error("no attachmentPath defined");
 			} else if (!m_attachmentPathRoot.endsWith(File.separator)){
-				log.warning("attachment path doesn't end with " + File.separator);
+				log.warn("attachment path doesn't end with " + File.separator);
 				m_attachmentPathRoot = m_attachmentPathRoot + File.separator;
-				log.fine(m_attachmentPathRoot);
+				log.debug(m_attachmentPathRoot);
 			}
 		}
 	}
@@ -246,16 +245,16 @@ public class MAttachment extends X_AD_Attachment
 	{
 		if (file == null)
 		{
-			log.warning("No File");
+			log.warn("No File");
 			return false;
 		}
 		if (!file.exists() || file.isDirectory())
 		{
-			log.warning("not added - " + file
+			log.warn("not added - " + file
 				+ ", Exists=" + file.exists() + ", Directory=" + file.isDirectory());
 			return false;
 		}
-		log.fine("addEntry - " + file);
+		log.debug("addEntry - " + file);
 		//
 		String name = file.getName();
 		byte[] data = null;
@@ -273,7 +272,7 @@ public class MAttachment extends X_AD_Attachment
 		}
 		catch (IOException ioe)
 		{
-			log.log(Level.SEVERE, "(file)", ioe);
+			log.error("(file)", ioe);
 		}
 		return addEntry (name, data);
 	}	//	addEntry
@@ -303,7 +302,7 @@ public class MAttachment extends X_AD_Attachment
 		if (m_items == null)
 			loadLOBData();
 		boolean retValue = m_items.add(item);
-		log.fine(item.toStringX());
+		log.debug(item.toStringX());
 		addTextMsg(" ");	//	otherwise not saved
 		return retValue;
 	}	//	addEntry
@@ -348,18 +347,18 @@ public class MAttachment extends X_AD_Attachment
 				//remove files
 				final MAttachmentEntry entry = m_items.get(index);
 				final File file = entry.getFile();
-				log.fine("delete: " + file.getAbsolutePath());
+				log.debug("delete: " + file.getAbsolutePath());
 				if(file !=null && file.exists()){
 					if(!file.delete()){
-						log.warning("unable to delete " + file.getAbsolutePath());
+						log.warn("unable to delete " + file.getAbsolutePath());
 					}
 				}
 			}
 			m_items.remove(index);
-			log.config("Index=" + index + " - NewSize=" + m_items.size());
+			log.info("Index=" + index + " - NewSize=" + m_items.size());
 			return true;
 		}
-		log.warning("Not deleted Index=" + index + " - Size=" + m_items.size());
+		log.warn("Not deleted Index=" + index + " - Size=" + m_items.size());
 		return false;
 	} // deleteEntry
 	
@@ -495,20 +494,20 @@ public class MAttachment extends X_AD_Attachment
 				byte[] data = item.getData();
 				zip.write (data, 0, data.length);
 				zip.closeEntry();
-				log.fine(entry.getName() + " - "
+				log.debug(entry.getName() + " - "
 					+ entry.getCompressedSize() + " (" + entry.getSize() + ") "
 					+ (entry.getCompressedSize()*100/entry.getSize())+ "%");
 			}
 		//	zip.finish();
 			zip.close();
 			byte[] zipData = out.toByteArray();
-			log.fine("Length=" +  zipData.length);
+			log.debug("Length=" +  zipData.length);
 			setBinaryData(zipData);
 			return true;
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "saveLOBData", e);
+			log.error("saveLOBData", e);
 		}
 		setBinaryData(null);
 		return false;
@@ -521,7 +520,7 @@ public class MAttachment extends X_AD_Attachment
 	private boolean saveLOBDataToFileSystem()
 	{
 		if("".equals(m_attachmentPathRoot)){
-			log.severe("no attachmentPath defined");
+			log.error("no attachmentPath defined");
 			return false;
 		}
 		if (m_items == null || m_items.size() == 0) {
@@ -537,13 +536,13 @@ public class MAttachment extends X_AD_Attachment
 		//	document.setXmlStandalone(true);
 			// create xml entries
 			for (int i = 0; i < m_items.size(); i++) {
-				log.fine(m_items.get(i).toString());
+				log.debug(m_items.get(i).toString());
 				File entryFile = m_items.get(i).getFile();
 				final String path = entryFile.getAbsolutePath();
 				// if local file - copy to central attachment folder
-				log.fine(path + " - " + m_attachmentPathRoot);
+				log.debug(path + " - " + m_attachmentPathRoot);
 				if (!path.startsWith(m_attachmentPathRoot)) {
-					log.fine("move file: " + path);
+					log.debug("move file: " + path);
 					FileChannel in = null;
 					FileChannel out = null;
 					try {
@@ -551,7 +550,7 @@ public class MAttachment extends X_AD_Attachment
 						final File destFolder = new File(m_attachmentPathRoot + File.separator + getAttachmentPathSnippet());
 						if(!destFolder.exists()){
 							if(!destFolder.mkdirs()){
-								log.warning("unable to create folder: " + destFolder.getPath());
+								log.warn("unable to create folder: " + destFolder.getPath());
 							}
 						}
 						final File destFile = new File(m_attachmentPathRoot + File.separator
@@ -570,7 +569,7 @@ public class MAttachment extends X_AD_Attachment
 
 					} catch (IOException e) {
 						e.printStackTrace();
-						log.severe("unable to copy file " + entryFile.getAbsolutePath() + " to "
+						log.error("unable to copy file " + entryFile.getAbsolutePath() + " to "
 								+ m_attachmentPathRoot + File.separator + 
 								getAttachmentPathSnippet() + File.separator + entryFile.getName());
 					} finally {
@@ -587,7 +586,7 @@ public class MAttachment extends X_AD_Attachment
 				entry.setAttribute("name", getEntryName(i));
 				String filePathToStore = entryFile.getAbsolutePath();
 				filePathToStore = filePathToStore.replaceFirst(m_attachmentPathRoot.replaceAll("\\\\","\\\\\\\\"), ATTACHMENT_FOLDER_PLACEHOLDER);
-				log.fine(filePathToStore);
+				log.debug(filePathToStore);
 				entry.setAttribute("file", filePathToStore);
 				root.appendChild(entry);
 			}
@@ -598,11 +597,11 @@ public class MAttachment extends X_AD_Attachment
 			final Transformer xformer = TransformerFactory.newInstance().newTransformer();
 			xformer.transform(source, result);
 			final byte[] xmlData = bos.toByteArray();
-			log.fine(bos.toString());
+			log.debug(bos.toString());
 			setBinaryData(xmlData);
 			return true;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "saveLOBData", e);
+			log.error("saveLOBData", e);
 		}
 		setBinaryData(null);
 		return false;
@@ -633,7 +632,7 @@ public class MAttachment extends X_AD_Attachment
 		byte[] data = getBinaryData();
 		if (data == null)
 			return true;
-		log.fine("ZipSize=" + data.length);
+		log.debug("ZipSize=" + data.length);
 		if (data.length == 0)
 			return true;
 			
@@ -662,7 +661,7 @@ public class MAttachment extends X_AD_Attachment
 				}
 				//
 				byte[] dataEntry = out.toByteArray();
-				log.fine(name 
+				log.debug(name 
 					+ " - size=" + dataEntry.length + " - zip="
 					+ entry.getCompressedSize() + "(" + entry.getSize() + ") "
 					+ (entry.getCompressedSize()*100/entry.getSize())+ "%");
@@ -673,7 +672,7 @@ public class MAttachment extends X_AD_Attachment
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "loadLOBData", e);
+			log.error("loadLOBData", e);
 			m_items = null;
 			return false;
 		}
@@ -686,7 +685,7 @@ public class MAttachment extends X_AD_Attachment
 	 */
 	private boolean loadLOBDataFromFileSystem(){
 		if("".equals(m_attachmentPathRoot)){
-			log.severe("no attachmentPath defined");
+			log.error("no attachmentPath defined");
 			return false;
 		}
 		// Reset
@@ -695,7 +694,7 @@ public class MAttachment extends X_AD_Attachment
 		byte[] data = getBinaryData();
 		if (data == null)
 			return true;
-		log.fine("TextFileSize=" + data.length);
+		log.debug("TextFileSize=" + data.length);
 		if (data.length == 0)
 			return true;
 
@@ -711,13 +710,13 @@ public class MAttachment extends X_AD_Attachment
 				final Node fileNode = attributes.getNamedItem("file");
 				final Node nameNode = attributes.getNamedItem("name");
 				if(fileNode==null || nameNode==null){
-					log.severe("no filename for entry " + i);
+					log.error("no filename for entry " + i);
 					m_items = null;
 					return false;
 				}
-				log.fine("name: " + nameNode.getNodeValue());
+				log.debug("name: " + nameNode.getNodeValue());
 				String filePath = fileNode.getNodeValue();
-				log.fine("filePath: " + filePath);
+				log.debug("filePath: " + filePath);
 				if(filePath!=null){
 					filePath = filePath.replaceFirst(ATTACHMENT_FOLDER_PLACEHOLDER, m_attachmentPathRoot.replaceAll("\\\\","\\\\\\\\"));
 					//just to be shure...
@@ -728,7 +727,7 @@ public class MAttachment extends X_AD_Attachment
 					filePath = filePath.replaceAll("/", replaceSeparator);
 					filePath = filePath.replaceAll("\\\\", replaceSeparator);
 				}
-				log.fine("filePath: " + filePath);
+				log.debug("filePath: " + filePath);
 				final File file = new File(filePath);
 				if (file.exists()) {
 					// read files into byte[]
@@ -738,17 +737,17 @@ public class MAttachment extends X_AD_Attachment
 						fileInputStream.read(dataEntry);
 						fileInputStream.close();
 					} catch (FileNotFoundException e) {
-						log.severe("File Not Found.");
+						log.error("File Not Found.");
 						e.printStackTrace();
 					} catch (IOException e1) {
-						log.severe("Error Reading The File.");
+						log.error("Error Reading The File.");
 						e1.printStackTrace();
 					}
 					final MAttachmentEntry entry = new MAttachmentEntry(filePath,
 							dataEntry, m_items.size() + 1);
 					m_items.add(entry);
 				} else {
-					log.severe("file not found: " + file.getAbsolutePath());
+					log.error("file not found: " + file.getAbsolutePath());
 				}
 			}
 
@@ -758,17 +757,17 @@ public class MAttachment extends X_AD_Attachment
 			if (sxe.getException() != null)
 				x = sxe.getException();
 			x.printStackTrace();
-			log.severe(x.getMessage());
+			log.error(x.getMessage());
 
 		} catch (ParserConfigurationException pce) {
 			// Parser with specified options can't be built
 			pce.printStackTrace();
-			log.severe(pce.getMessage());
+			log.error(pce.getMessage());
 
 		} catch (IOException ioe) {
 			// I/O error
 			ioe.printStackTrace();
-			log.severe(ioe.getMessage());
+			log.error(ioe.getMessage());
 		}
 
 		return true;
@@ -819,14 +818,14 @@ public class MAttachment extends X_AD_Attachment
 			final File file = entry.getFile();
 			if(file !=null && file.exists()){
 				if(!file.delete()){
-					log.warning("unable to delete " + file.getAbsolutePath());
+					log.warn("unable to delete " + file.getAbsolutePath());
 				}
 			}
 		}
 		final File folder = new File(m_attachmentPathRoot + getAttachmentPathSnippet());
 		if(folder.exists()){
 			if(!folder.delete()){
-				log.warning("unable to delete " + folder.getAbsolutePath());
+				log.warn("unable to delete " + folder.getAbsolutePath());
 			}
 		}
 		}
@@ -843,16 +842,16 @@ public class MAttachment extends X_AD_Attachment
 	{
 		if (file == null)
 		{
-			log.warning("No File");
+			log.warn("No File");
 			return false;
 		}
 		if (!file.exists() || file.isDirectory())
 		{
-			log.warning("not added - " + file
+			log.warn("not added - " + file
 				+ ", Exists=" + file.exists() + ", Directory=" + file.isDirectory());
 			return false;
 		}
-		log.fine("updateEntry - " + file);
+		log.debug("updateEntry - " + file);
 		//
 		String name = file.getName();
 		byte[] data = null;
@@ -870,7 +869,7 @@ public class MAttachment extends X_AD_Attachment
 		}
 		catch (IOException ioe)
 		{
-			log.log(Level.SEVERE, "(file)", ioe);
+			log.error("(file)", ioe);
 		}
 		return updateEntry (i, data);
 		

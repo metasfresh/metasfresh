@@ -24,7 +24,8 @@ package org.adempiere.warehouse.api.impl;
 
 
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -35,12 +36,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 
 public class WarehouseBL implements IWarehouseBL
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public I_M_Locator getDefaultLocator(final I_M_Warehouse warehouse)
@@ -82,7 +81,7 @@ public class WarehouseBL implements IWarehouseBL
 				// Log a warning, in case there are more then one active locators.
 				if (activeLocatorsCount > 1)
 				{
-					logger.warning("No default locator for " + warehouse.getName() + ". Returning the first one: " + locatorFirst);
+					logger.warn("No default locator for " + warehouse.getName() + ". Returning the first one: " + locatorFirst);
 				}
 
 				return locatorFirst;
@@ -101,7 +100,7 @@ public class WarehouseBL implements IWarehouseBL
 		locatorNew.setZ("0");
 		locatorNew.setIsDefault(true);
 		InterfaceWrapperHelper.save(locatorNew);
-		if (CLogMgt.isLevel(Level.INFO))
+		if (logger.isInfoEnabled())
 		{
 			logger.info("Created default locator for " + warehouse.getName());
 		}

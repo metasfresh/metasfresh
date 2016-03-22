@@ -2,9 +2,11 @@ package org.compiere.util;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.util.jmx.IJMXNameAware;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * JMX bean for {@link CacheMgt} (implementation)
@@ -33,7 +35,7 @@ public class JMXCacheMgt implements JMXCacheMgtMBean, IJMXNameAware
 		return CacheMgt.get();
 	}
 	
-	private final CLogger getLogger()
+	private final Logger getLogger()
 	{
 		return CacheMgt.log;
 	}
@@ -41,13 +43,13 @@ public class JMXCacheMgt implements JMXCacheMgtMBean, IJMXNameAware
 	@Override
 	public String getLogLevel()
 	{
-		return getLogger().getLevel().getName();
+		return LogManager.getLoggerLevelName(getLogger());
 	}
 
 	@Override
 	public void setLogLevel(final String logLevelName)
 	{
-		getLogger().setLevel(Level.parse(logLevelName));
+		LogManager.setLoggerLevel(getLogger(), logLevelName);
 	}
 
 	@Override

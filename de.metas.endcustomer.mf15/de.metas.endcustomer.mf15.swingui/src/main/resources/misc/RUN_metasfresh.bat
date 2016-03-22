@@ -1,12 +1,11 @@
-@Title	Adempiere Client %ADEMPIERE_HOME%   %1%
-@Rem $Id: RUN_Adempiere.bat,v 1.24 2005/08/24 22:50:37 jjanke Exp $
+@Title	metasfresh Client %ADEMPIERE_HOME%   %1%
 @Echo off
 
 @Rem Set/Overwrite ADEMPIERE_HOME/JAVA_HOME 
 @Rem explicitly here for different versions, etc. e.g.
 @Rem
-@Rem SET ADEMPIERE_HOME=C:\R251\Adempiere
-@Rem SET JAVA_HOME=C:\j2sdk1.4.2_06
+@Rem SET ADEMPIERE_HOME=C:\Adempiere
+@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_40
 
 @Rem Variables: 
 @Rem DBG_PORT                   ->  Start-Port the script will scan (min. port)
@@ -69,19 +68,17 @@
 :CHECK_ADEMPIERE
 @if not "%ADEMPIERE_HOME%" == "" goto ADEMPIERE_HOME_OK
 
-REM set ADEMPIERE_HOME=%~dp0..
-set ADEMPIERE_HOME=%~dp0
+SET ADEMPIERE_HOME=${runner.bat.defaultAdempiereHome}
 
 @Echo ADEMPIERE_HOME is not set.  
 @Echo   You may not be able to start Adempiere
 @Echo   Set ADEMPIERE_HOME to the directory of Adempiere.
-@Echo   You could set it via WinEnv.js e.g.:
-@Echo     cscript WinEnv.js C:\Adempiere C:\j2sdk1.4.2_08
 @Echo   For now we will try with ADEMPIERE_HOME=%ADEMPIERE_HOME%
 REM @goto MULTI_INSTALL
 
 :ADEMPIERE_HOME_OK
-@SET CLASSPATH=%ADEMPIERE_HOME%\lib\jp.osdn.ocra.jar;%ADEMPIERE_HOME%\lib\jp.osdn.ocrb.jar;%ADEMPIERE_HOME%\lib\de.metas.endcustomer.mf15.swingui-allInOne.jar
+SET MAIN_CLASSNAME=${spring.jarLauncherClass}
+SET CLASSPATH=${runner.bat.classpath}
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created Adempiere.properties file
@@ -99,9 +96,8 @@ REM @goto MULTI_INSTALL
 @SET SECURE=
 
 :START
-@REM Note that we don't need the javaagent, because our stuff is already instrumented
-@REM Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
-"%JAVA%" -Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %SECURE% -classpath "%CLASSPATH%" org.compiere.Adempiere
+SET JAVA_OPTS=${runner.java.options}
+"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL

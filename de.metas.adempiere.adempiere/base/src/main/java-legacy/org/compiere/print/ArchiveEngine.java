@@ -85,7 +85,7 @@ public class ArchiveEngine
 	}
 	
 //	/**	Logger			*/
-//	private static CLogger log = CLogger.getCLogger(ArchiveEngine.class);
+//	private static Logger log = CLogMgt.getLogger(ArchiveEngine.class);
 	/** Singleton		*/
 	private static ArchiveEngine s_engine = null;
 	

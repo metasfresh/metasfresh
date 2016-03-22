@@ -149,7 +149,7 @@ public class WGeodbAutoCompleter extends AbstractAutoCompleter
 				&& list.get(0).equals(userObject))
 		{
 			setStyle("background:red");
-			log.finest("nothing to do 1");
+			log.trace("nothing to do 1");
 			return false;
 		}
 

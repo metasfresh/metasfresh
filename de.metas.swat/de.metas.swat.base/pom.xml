@@ -1,6 +1,4 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -103,21 +101,14 @@
 		</dependency>
 
 		<dependency>
-			<groupId>jdic</groupId>
-			<artifactId>jdic-all</artifactId>
-			<version>0.2.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>jdic</groupId>
-			<artifactId>jdic-native-win</artifactId>
-			<version>0.2.2</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 
 		<!-- unit testing dependencies -->

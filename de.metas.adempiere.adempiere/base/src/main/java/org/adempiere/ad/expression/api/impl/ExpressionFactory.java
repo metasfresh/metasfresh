@@ -25,7 +25,8 @@ package org.adempiere.ad.expression.api.impl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionCompiler;
@@ -34,11 +35,10 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
 
 public class ExpressionFactory implements IExpressionFactory
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Compilers registry.
@@ -103,7 +103,7 @@ public class ExpressionFactory implements IExpressionFactory
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+			logger.warn(e.getLocalizedMessage(), e);
 			return defaultExpr;
 		}
 	}

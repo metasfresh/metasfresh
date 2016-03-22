@@ -17,9 +17,9 @@
 package org.compiere.model;
 
 import java.io.Serializable;
-import java.util.logging.Level;
 
-import org.compiere.util.CLogMgt;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 /**
  * 	PayPal Payment Processor Services Interface
@@ -45,6 +45,7 @@ public class PP_PayPal extends PaymentProcessor
 	 *	@return true if processed
 	 *	@throws IllegalArgumentException
 	 */
+	@Override
 	public boolean processCC ()
 		throws IllegalArgumentException
 	{
@@ -55,6 +56,7 @@ public class PP_PayPal extends PaymentProcessor
 	 * 	Is Processed OK
 	 *	@return true if ok
 	 */
+	@Override
 	public boolean isProcessedOK ()
 	{
 		return m_ok;
@@ -196,8 +198,8 @@ public class PP_PayPal extends PaymentProcessor
 	 */
 	public static void main (String[] args)
 	{
-		CLogMgt.initialize(true);
-		CLogMgt.setLevel(Level.ALL);
+		LogManager.initialize(true);
+		LogManager.setLevel(Level.ALL);
 		PP_PayPal pp = new PP_PayPal();
 		pp.processCC();
 		pp.isProcessedOK();

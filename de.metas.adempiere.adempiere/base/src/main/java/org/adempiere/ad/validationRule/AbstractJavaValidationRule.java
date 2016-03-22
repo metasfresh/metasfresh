@@ -26,7 +26,8 @@ package org.adempiere.ad.validationRule;
 import java.util.Collections;
 import java.util.List;
 
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.NamePair;
 
 
@@ -38,7 +39,7 @@ import org.compiere.util.NamePair;
  */
 public abstract class AbstractJavaValidationRule implements IValidationRule
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public boolean isValidationRequired(IValidationContext evalCtx)

@@ -24,13 +24,13 @@ package de.metas.async.processor.impl;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.exceptions.ConfigurationException;
@@ -45,7 +45,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
-	protected final transient CLogger logger = CLogger.getCLogger(getClass());
+	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IWorkPackageQueue queue;
 	private long queuePollingTimeout = IWorkPackageQueue.TIMEOUT_Infinite;
@@ -100,13 +100,13 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (Thread.interrupted())
 			{
-				logger.log(Level.INFO, "Thread interrupted. Shutdown executor and quit");
+				logger.info("Thread interrupted. Shutdown executor and quit");
 				shutdown();
 				break;
 			}
 			if (!isRunning())
 			{
-				logger.log(Level.INFO, "Processor not running anymore. Shutdown executor and quit");
+				logger.info("Processor not running anymore. Shutdown executor and quit");
 				shutdown();
 				break;
 			}
@@ -147,7 +147,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 					}
 					else
 					{
-						logger.log(Level.INFO, "Last polling wasn't successful and QueuePollingTimeout is OneTimeOnly. Stopping here");
+						logger.info("Last polling wasn't successful and QueuePollingTimeout is OneTimeOnly. Stopping here");
 						break;
 					}
 				}
@@ -155,9 +155,9 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 				{
 					if (error != null)
 					{
-						logger.log(Level.WARNING, error.getLocalizedMessage(), error);
+						logger.warn(error.getLocalizedMessage(), error);
 					}
-					logger.log(Level.INFO, "Previous pollAndSubmit was not successfull. Sleeping 1000ms");
+					logger.info("Previous pollAndSubmit was not successfull. Sleeping 1000ms");
 					try
 					{
 						Thread.sleep(1000);
@@ -165,7 +165,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 					catch (InterruptedException e)
 					{
 						// thread was interrupted. Quit.
-						logger.log(Level.FINE, "Thread interrupted while sleeping. Quit.", e);
+						logger.debug("Thread interrupted while sleeping. Quit.", e);
 						break;
 					}
 				}
@@ -195,7 +195,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				logger.log(Level.INFO, "Submiting for processing next workpackage failed. Trying to unlock {0}.", workPackage);
+				logger.info("Submiting for processing next workpackage failed. Trying to unlock {}.", workPackage);
 				queue.unlockNoFail(workPackage);
 				
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());

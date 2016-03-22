@@ -28,7 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.JMenu;
@@ -50,7 +51,8 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -141,7 +143,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "Dialog init failed: " + ex.getMessage(), ex);
+			log.error("Dialog init failed: " + ex.getMessage(), ex);
 		}
 	}	// common
 
@@ -165,7 +167,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 			else
 			{
 				// In case we run in production, we won't fail because that would be a show stopper, but we will log the exception.
-				log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+				log.error(ex.getLocalizedMessage(), ex);
 			}
 		}
 	}
@@ -185,7 +187,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "Error while setting the message=" + message + ", messageType=" + messageType, ex);
+			log.error("Error while setting the message=" + message + ", messageType=" + messageType, ex);
 		}
 	}
 
@@ -216,7 +218,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	/** Answer */
 	private int m_returnCode = A_CLOSE;
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(ADialogDialog.class);
+	private static final Logger log = LogManager.getLogger(ADialogDialog.class);
 
 	private int _initialAnswer = -100; // will be initialized on construction time
 
@@ -372,7 +374,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		// log.finest( "ADialogDialog.actionPerformed - " + e);
+		// log.trace( "ADialogDialog.actionPerformed - " + e);
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			m_returnCode = A_OK;

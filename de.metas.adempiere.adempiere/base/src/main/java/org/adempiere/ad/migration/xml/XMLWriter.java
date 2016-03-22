@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,7 +44,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +52,7 @@ public class XMLWriter
 {
 	public static final String NODENAME_Migrations = "Migrations";
 
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final String fileName;
 
@@ -88,7 +88,7 @@ public class XMLWriter
 			throw new AdempiereException("No migration to export. Migration is null or new.");
 		}
 
-		logger.log(Level.FINE, "Creating xml document for migration: " + migration);
+		logger.debug("Creating xml document for migration: " + migration);
 
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -110,7 +110,7 @@ public class XMLWriter
 		trans.setOutputProperty(OutputKeys.INDENT, "yes");
 		trans.setOutputProperty(OutputKeys.STANDALONE, "yes");
 
-		logger.log(Level.FINE, "Writing xml to file.");
+		logger.debug("Writing xml to file.");
 		Writer writer = null;
 		try
 		{

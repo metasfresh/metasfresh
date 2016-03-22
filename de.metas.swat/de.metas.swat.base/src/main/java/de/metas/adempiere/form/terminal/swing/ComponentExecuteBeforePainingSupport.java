@@ -26,11 +26,10 @@ package de.metas.adempiere.form.terminal.swing;
 import java.awt.Component;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CLogger;
-
 import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
 
 /**
@@ -42,7 +41,7 @@ import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
 public class ComponentExecuteBeforePainingSupport implements IExecuteBeforePainingSupport
 {
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(ComponentExecuteBeforePainingSupport.class);
+	private static final transient Logger logger = LogManager.getLogger(ComponentExecuteBeforePainingSupport.class);
 
 	private final Component comp;
 
@@ -88,7 +87,7 @@ public class ComponentExecuteBeforePainingSupport implements IExecuteBeforePaini
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Error while running updater " + updater + " on " + this + ". Ignored.", e);
+			logger.warn("Error while running updater " + updater + " on " + this + ". Ignored.", e);
 		}
 	}
 

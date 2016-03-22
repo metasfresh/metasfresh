@@ -57,10 +57,11 @@ import org.compiere.model.MTransaction;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IProductBL;
 
@@ -74,7 +75,7 @@ public class StorageEngine
 {
 
 	/** Logger */
-	protected static transient CLogger log = CLogger.getCLogger(StorageEngine.class);
+	protected static transient Logger log = LogManager.getLogger(StorageEngine.class);
 
 	public static void createTrasaction(
 			IDocumentLine docLine,
@@ -201,7 +202,7 @@ public class StorageEngine
 					asi = MAttributeSetInstance.create(line.getCtx(), product, line.get_TrxName());
 				}
 				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-				log.config("New ASI=" + line);
+				log.info("New ASI=" + line);
 				createMA(line, line.getM_AttributeSetInstance_ID(), line.getMovementQty());
 			}
 			//
@@ -224,7 +225,7 @@ public class StorageEngine
 					{
 						createMA(line, storage.getM_AttributeSetInstance_ID(), storage.getQtyOnHand());
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-						log.fine("QtyToDeliver=" + qtyToDeliver);
+						log.debug("QtyToDeliver=" + qtyToDeliver);
 					}
 
 					if (qtyToDeliver.signum() == 0)
@@ -263,7 +264,7 @@ public class StorageEngine
 		String sql = "DELETE FROM " + getTableNameMA(model) + " WHERE " + model.get_TableName() + "_ID=?";
 		int no = DB.executeUpdateEx(sql, new Object[] { model.get_ID() }, model.get_TrxName());
 		if (no > 0)
-			log.config("Deleted old #" + no);
+			log.info("Deleted old #" + no);
 		return no;
 	}
 
@@ -303,7 +304,7 @@ public class StorageEngine
 		ma.setMovementQty(MovementQty);
 
 		saveMA(ma);
-		log.fine("##: " + ma);
+		log.debug("##: " + ma);
 
 		return ma;
 	}

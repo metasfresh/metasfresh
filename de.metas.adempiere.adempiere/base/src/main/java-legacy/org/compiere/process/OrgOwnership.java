@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -68,7 +66,7 @@ public class OrgOwnership extends SvrProcess
 				p_C_BPartner_ID = ((BigDecimal)para[i].getParameter()).intValue();
 
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -79,7 +77,7 @@ public class OrgOwnership extends SvrProcess
 	 */
 	protected String doIt() throws Exception
 	{
-		log.info ("doIt - AD_Org_ID=" + p_AD_Org_ID);
+		log.info("doIt - AD_Org_ID=" + p_AD_Org_ID);
 		if (p_AD_Org_ID < 0)
 			throw new IllegalArgumentException ("OrgOwnership - invalid AD_Org_ID=" + p_AD_Org_ID);
 			
@@ -104,7 +102,7 @@ public class OrgOwnership extends SvrProcess
 	 */
 	private String warehouseOwnership ()
 	{
-		log.info ("warehouseOwnership - M_Warehouse_ID=" + p_M_Warehouse_ID);
+		log.info("warehouseOwnership - M_Warehouse_ID=" + p_M_Warehouse_ID);
 		if (p_AD_Org_ID == 0)
 			throw new IllegalArgumentException ("Warehouse - Org cannot be * (0)");
 
@@ -159,7 +157,7 @@ public class OrgOwnership extends SvrProcess
 	 */
 	private String productOwnership ()
 	{
-		log.info ("productOwnership - M_Product_Category_ID=" + p_M_Product_Category_ID
+		log.info("productOwnership - M_Product_Category_ID=" + p_M_Product_Category_ID
 			+ ", M_Product_ID=" + p_M_Product_ID);
 			
 		String set = " SET AD_Org_ID=" + p_AD_Org_ID;
@@ -170,7 +168,7 @@ public class OrgOwnership extends SvrProcess
 		else
 			set += " WHERE M_Product_ID=" + p_M_Product_ID;
 		set += " AND AD_Client_ID=" + getAD_Client_ID() + " AND AD_Org_ID<>" + p_AD_Org_ID;
-		log.fine("productOwnership - " + set);
+		log.debug("productOwnership - " + set);
 		
 		//	Product
 		String sql = "UPDATE M_Product x " + set;
@@ -206,7 +204,7 @@ public class OrgOwnership extends SvrProcess
 	 */
 	private String bPartnerOwnership ()
 	{
-		log.info ("bPartnerOwnership - C_BP_Group_ID=" + p_C_BP_Group_ID
+		log.info("bPartnerOwnership - C_BP_Group_ID=" + p_C_BP_Group_ID
 			+ ", C_BPartner_ID=" + p_C_BPartner_ID);
 			
 		String set = " SET AD_Org_ID=" + p_AD_Org_ID;
@@ -215,7 +213,7 @@ public class OrgOwnership extends SvrProcess
 		else
 			set += " WHERE C_BPartner_ID=" + p_C_BPartner_ID;
 		set += " AND AD_Client_ID=" + getAD_Client_ID() + " AND AD_Org_ID<>" + p_AD_Org_ID;
-		log.fine("bPartnerOwnership - " + set);
+		log.debug("bPartnerOwnership - " + set);
 
 		//	BPartner
 		String sql = "UPDATE C_BPartner x " + set;
@@ -264,37 +262,37 @@ public class OrgOwnership extends SvrProcess
 		String sql = "UPDATE R_ContactInterest " + set;
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - R_ContactInterest=" + no);
+			log.debug("generalOwnership - R_ContactInterest=" + no);
 
 		//	AD_User_Roles
 		sql = "UPDATE AD_User_Roles " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - AD_User_Roles=" + no);
+			log.debug("generalOwnership - AD_User_Roles=" + no);
 		
 		//	C_BPartner_Product
 		sql = "UPDATE C_BPartner_Product " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - C_BPartner_Product=" + no);
+			log.debug("generalOwnership - C_BPartner_Product=" + no);
 
 		//	Withholding
 		sql = "UPDATE C_BP_Withholding x " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - C_BP_Withholding=" + no);
+			log.debug("generalOwnership - C_BP_Withholding=" + no);
 
 		//	Costing
 		sql = "UPDATE M_Product_Costing " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - M_Product_Costing=" + no);
+			log.debug("generalOwnership - M_Product_Costing=" + no);
 
 		//	Replenish
 		sql = "UPDATE M_Replenish " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.fine("generalOwnership - M_Replenish=" + no);
+			log.debug("generalOwnership - M_Replenish=" + no);
 	
 	}	//	generalOwnership
 

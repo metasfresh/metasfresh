@@ -54,7 +54,7 @@ import de.metas.interfaces.I_C_DocType;
 public final class DocumentPA implements IDocumentPA
 {
 
-	// private static final CLogger logger = CLogger.getCLogger(DocumentPA.class);
+	// private static final Logger logger = CLogMgt.getLogger(DocumentPA.class);
 	private static final String ERR_DocTypeNotSelected = "DocTypeNotSelected";
 
 	public static final String UPDATE_ORDERS_BILL_LOCATION = //

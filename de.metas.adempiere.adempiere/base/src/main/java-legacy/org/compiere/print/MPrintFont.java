@@ -19,8 +19,6 @@ package org.compiere.print;
 import java.awt.Font;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.X_AD_PrintFont;
 import org.compiere.util.CCache;
@@ -76,11 +74,11 @@ public class MPrintFont extends X_AD_PrintFont
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "MPrintFont.getFont", e);
+			log.error("MPrintFont.getFont", e);
 		}
 		if (code == null)
 			m_cacheFont = new Font (null);		//	family=dialog,name=Dialog,style=plain,size=12
-	//	log.fine( "MPrintFont.getFont " + code, m_cacheFont);
+	//	log.debug( "MPrintFont.getFont " + code, m_cacheFont);
 		return m_cacheFont;
 	}	//	getFont
 

@@ -48,7 +48,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -106,7 +107,7 @@ public class SubOrder extends PosSubPanel
 	private CButton f_bEdit;
 	private CButton f_bSettings;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(SubOrder.class);
+	private static Logger log = LogManager.getLogger(SubOrder.class);
 	
 	/**
 	 * 	Initialize
@@ -441,7 +442,7 @@ public class SubOrder extends PosSubPanel
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		log.fine( "PosSubCustomer.setC_BPartner_ID=" + C_BPartner_ID);
+		log.debug( "PosSubCustomer.setC_BPartner_ID=" + C_BPartner_ID);
 		if (C_BPartner_ID == 0)
 			m_bpartner = null;
 		else
@@ -613,7 +614,7 @@ public class SubOrder extends PosSubPanel
 			}
 			catch (Exception e) 
 			{
-				log.severe("PrintTicket - Error Printing Ticket");
+				log.error("PrintTicket - Error Printing Ticket");
 			}
 		}	  
 	}	

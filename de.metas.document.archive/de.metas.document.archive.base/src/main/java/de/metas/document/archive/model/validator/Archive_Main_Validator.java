@@ -25,7 +25,8 @@ package de.metas.document.archive.model.validator;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -42,7 +43,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -60,7 +60,7 @@ import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
  */
 public class Archive_Main_Validator implements ModelValidator
 {
-	private static final transient CLogger logger = CLogger.getCLogger(Archive_Main_Validator.class);
+	private static final transient Logger logger = LogManager.getLogger(Archive_Main_Validator.class);
 
 	private int m_AD_Client_ID = -1;
 	private ModelValidationEngine engine;
@@ -161,7 +161,7 @@ public class Archive_Main_Validator implements ModelValidator
 		if (processId <= 0)
 		{
 			final AdempiereException ex = new AdempiereException("No AD_Process_ID found for " + ExportArchivePDF.class);
-			Archive_Main_Validator.logger.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+			Archive_Main_Validator.logger.error(ex.getLocalizedMessage(), ex);
 			return;
 		}
 

@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.logging.Level;
 
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_I_BankStatement;
@@ -52,7 +51,7 @@ public class BankStatementPayment extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 
@@ -65,7 +64,7 @@ public class BankStatementPayment extends SvrProcess
 	{
 		final String tableName = getTableName();
 		final int Record_ID = getRecord_ID();
-		log.info ("Table_Name=" + tableName + ", Record_ID=" + Record_ID);
+		log.info("Table_Name=" + tableName + ", Record_ID=" + Record_ID);
 		
 		if (I_I_BankStatement.Table_Name.equals(tableName))
 			return createPayment (new X_I_BankStatement(getCtx(), Record_ID, get_TrxName()));
@@ -85,7 +84,7 @@ public class BankStatementPayment extends SvrProcess
 	{
 		if (ibs == null || ibs.getC_Payment_ID() != 0)
 			return "--";
-		log.fine(ibs.toString());
+		log.debug(ibs.toString());
 		if (ibs.getC_Invoice_ID() == 0 && ibs.getC_BPartner_ID() == 0)
 			throw new AdempiereUserError ("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
 		if (ibs.getC_BP_BankAccount_ID() == 0)
@@ -119,7 +118,7 @@ public class BankStatementPayment extends SvrProcess
 	{
 		if (bsl == null || bsl.getC_Payment_ID() != 0)
 			return "--";
-		log.fine(bsl.toString());
+		log.debug(bsl.toString());
 		if (bsl.getC_Invoice_ID() == 0 && bsl.getC_BPartner_ID() == 0)
 			throw new AdempiereUserError ("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
 		//

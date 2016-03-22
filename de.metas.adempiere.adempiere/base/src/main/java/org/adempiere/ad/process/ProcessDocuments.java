@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -139,7 +137,7 @@ public class ProcessDocuments extends SvrProcess
 							+ ": Failed - ProccessMsg: " + Services.get(IDocActionBL.class).getDocAction(doc).getProcessMsg()
 							+ "; ExceptionMsg: " + e.getMessage();
 					addLog(msg);
-					ProcessDocuments.this.log.log(Level.WARNING, msg, e);
+					ProcessDocuments.this.log.warn(msg, e);
 					ProcessDocuments.this.countError++;
 					return true; // rollback
 				}

@@ -15,8 +15,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MProcess;
 import org.compiere.util.Msg;
@@ -61,7 +59,7 @@ public class CopyReportProcess extends SvrProcess {
 			else if ( para.equals("AD_Process_To_ID"))
 				targetId = parameter.getParameterAsInt();
 			else
-				log.log(Level.WARNING, "Unknown paramter: " + para);
+				log.warn("Unknown paramter: " + para);
 		}
 		
 		if ( targetId == 0 )

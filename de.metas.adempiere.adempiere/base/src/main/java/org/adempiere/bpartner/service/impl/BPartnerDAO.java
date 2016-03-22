@@ -27,7 +27,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -58,7 +59,6 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_BPartner;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -71,7 +71,7 @@ import de.metas.adempiere.util.CacheTrx;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
-	private static final CLogger logger = CLogger.getCLogger(BPartnerDAO.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -93,10 +93,10 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (result == null)
 		{
-			BPartnerDAO.logger.fine("Didn't find bPartner with value '" + value + "'. Returning null.");
+			BPartnerDAO.logger.debug("Didn't find bPartner with value '" + value + "'. Returning null.");
 			return null;
 		}
-		BPartnerDAO.logger.fine("Returning bPartner with value '" + value + "'");
+		BPartnerDAO.logger.debug("Returning bPartner with value '" + value + "'");
 		return result;
 	}
 
@@ -397,9 +397,9 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (bpPriceListId != null && bpPriceListId > 0)
 		{
 
-			if (BPartnerDAO.logger.isLoggable(Level.FINE))
+			if (BPartnerDAO.logger.isDebugEnabled())
 			{
-				BPartnerDAO.logger.fine("Got M_PriceList_ID=" + bpPriceListId + " from bPartner=" + bPartner);
+				BPartnerDAO.logger.debug("Got M_PriceList_ID=" + bpPriceListId + " from bPartner=" + bPartner);
 			}
 			return bpPriceListId;
 		}
@@ -424,16 +424,16 @@ public class BPartnerDAO implements IBPartnerDAO
 			if (bpGroupPriceListId != null && bpGroupPriceListId > 0)
 			{
 
-				if (BPartnerDAO.logger.isLoggable(Level.FINE))
+				if (BPartnerDAO.logger.isDebugEnabled())
 				{
-					BPartnerDAO.logger.fine("Got M_PricingSystem_ID=" + bpGroupPriceListId
+					BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPriceListId
 							+ " from bpGroup=" + bpGroup);
 				}
 				return bpGroupPriceListId;
 			}
 		}
 
-		BPartnerDAO.logger.warning("bPartner=" + bPartner + " has no pricelist id");
+		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricelist id");
 		return 0;
 	}
 
@@ -463,7 +463,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// metas: end
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
-			BPartnerDAO.logger.fine("Got M_PricingSystem_ID=" + bpPricingSysId + " from bPartner=" + bPartner);
+			BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpPricingSysId + " from bPartner=" + bPartner);
 			return bpPricingSysId;
 		}
 
@@ -486,7 +486,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			// metas: end
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
-				BPartnerDAO.logger.fine("Got M_PricingSystem_ID=" + bpGroupPricingSysId + " from bpGroup=" + bpGroup);
+				BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPricingSysId + " from bpGroup=" + bpGroup);
 				return bpGroupPricingSysId;
 			}
 		}
@@ -501,7 +501,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		BPartnerDAO.logger.warning("bPartner=" + bPartner + " has no pricing system id (soTrx=" + soTrx + "); returning 0");
+		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricing system id (soTrx=" + soTrx + "); returning 0");
 		return 0;
 	}
 

@@ -24,7 +24,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
 
@@ -33,8 +34,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -114,7 +113,7 @@ public class MTree extends MTree_Base
 	private HashMap<Integer, ArrayList<Integer>> m_nodeIdMap;
 
 	/**	Logger			*/
-	private static CLogger s_log = CLogger.getCLogger(MTree.class);
+	private static Logger s_log = LogManager.getLogger(MTree.class);
 	
 	
 	/**************************************************************************
@@ -126,7 +125,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultAD_Tree_ID (int AD_Client_ID, String keyColumnName)
 	{
-		s_log.config(keyColumnName);
+		s_log.info(keyColumnName);
 		if (keyColumnName == null || keyColumnName.length() == 0)
 		{
 			return 0;
@@ -146,7 +145,7 @@ public class MTree extends MTree_Base
 		//
 		if (TreeType == null)
 		{
-			s_log.log(Level.SEVERE, "Could not map " + keyColumnName);
+			s_log.error("Could not map " + keyColumnName);
 			return 0;
 		}
 
@@ -169,7 +168,7 @@ public class MTree extends MTree_Base
 		}
 		catch (SQLException e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{
@@ -187,7 +186,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultByTableName (int AD_Client_ID, String tableName)
 	{
-		s_log.finer("TableName=" + tableName);
+		s_log.trace("TableName=" + tableName);
 		if (tableName == null)
 		{
 			return 0;
@@ -235,7 +234,7 @@ public class MTree extends MTree_Base
 			sql.append(" AND tn.IsActive='Y'");
 		}
 		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
-		log.finest(sql.toString());
+		log.trace(sql.toString());
 
 		//  The Node Loop
 		PreparedStatement pstmt = null;
@@ -272,7 +271,7 @@ public class MTree extends MTree_Base
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 			m_nodeRowSet = null;
 			m_nodeIdMap = null;
 		}
@@ -290,7 +289,7 @@ public class MTree extends MTree_Base
 		//  Done with loading - add remainder from buffer
 		if (!m_buffer.isEmpty())
 		{
-			log.finest("clearing buffer - Adding to: " + m_root);
+			log.trace("clearing buffer - Adding to: " + m_root);
 			for (int i = 0; i < m_buffer.size(); i++)
 			{
 				MTreeNode node = m_buffer.get(i);
@@ -310,7 +309,7 @@ public class MTree extends MTree_Base
 		//	Nodes w/o parent
 		if (!m_buffer.isEmpty())
 		{
-			log.severe ("Nodes w/o parent - adding to root - " + m_buffer);
+			log.error("Nodes w/o parent - adding to root - " + m_buffer);
 			for (int i = 0; i < m_buffer.size(); i++)
 			{
 				MTreeNode node = m_buffer.get(i);
@@ -322,15 +321,15 @@ public class MTree extends MTree_Base
 				i = -1;
 			}
 			if (!m_buffer.isEmpty())
-				log.severe ("Still nodes in Buffer - " + m_buffer);
+				log.error("Still nodes in Buffer - " + m_buffer);
 		}	//	nodes w/o parents
 
 		//  clean up
 		if (!m_editable && m_root.getChildCount() > 0)
 			trimTree();
 //		diagPrintTree();
-		if (CLogMgt.isLevelFinest() || m_root.getChildCount() == 0)
-			log.fine("ChildCount=" + m_root.getChildCount());
+		if (LogManager.isLevelFinest() || m_root.getChildCount() == 0)
+			log.debug("ChildCount=" + m_root.getChildCount());
 	}   //  loadNodes
 
 	/**
@@ -385,7 +384,7 @@ public class MTree extends MTree_Base
 				}
 				catch (Exception e)
 				{
-					log.severe("Adding " + node.getName() 
+					log.error("Adding " + node.getName() 
 						+ " to " + newNode.getName() + ": " + e.getMessage());
 				}
 				m_buffer.remove(i);
@@ -423,7 +422,7 @@ public class MTree extends MTree_Base
 		{
 			sql = Env.getUserRolePermissions(getCtx()).addAccessSQL(sql, sourceTable, IUserRolePermissions.SQL_FULLYQUALIFIED, m_editable);
 		}
-		log.fine(sql);
+		log.debug(sql);
 		
 		m_nodeRowSet = DB.getRowSet (sql, sqlParams);
 		m_nodeIdMap = new HashMap<Integer, ArrayList<Integer>>(50);
@@ -446,7 +445,7 @@ public class MTree extends MTree_Base
 			}
 		} catch (SQLException e) 
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}   //  getNodeDetails
 
@@ -491,7 +490,7 @@ public class MTree extends MTree_Base
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 		
 		return retValue;
@@ -601,7 +600,7 @@ public class MTree extends MTree_Base
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		finally
 		{

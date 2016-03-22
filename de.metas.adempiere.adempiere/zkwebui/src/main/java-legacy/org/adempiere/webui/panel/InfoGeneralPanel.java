@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridFactory;
@@ -279,18 +278,18 @@ public class InfoGeneralPanel extends InfoPanel implements EventListener
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return false;
 		}
 		
 		//	Miminum check
 		if (m_queryColumns.size() == 0)
 		{
-			log.log(Level.SEVERE, "No query columns found");
+			log.error("No query columns found");
 			return false;
 		}
 		
-		log.finest("Table " + tableName + ", ID=" + AD_Table_ID 
+		log.trace("Table " + tableName + ", ID=" + AD_Table_ID 
 			+ ", QueryColumns #" + m_queryColumns.size());
 		
 		//	Only 4 Query Columns
@@ -377,28 +376,28 @@ public class InfoGeneralPanel extends InfoPanel implements EventListener
 				if (colClass != null)
 				{
 					list.add(new ColumnInfo(Msg.translate(Env.getCtx(), columnName), colSql.toString(), colClass));
-					log.finest("Added Column=" + columnName);
+					log.trace("Added Column=" + columnName);
 				}
 				else
-					log.finest("Not Added Column=" + columnName);
+					log.trace("Not Added Column=" + columnName);
 			}
 			rs.close();
 			pstmt.close();
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			return false;
 		}
 		
 		if (list.size() == 0)
 		{
 			FDialog.error(p_WindowNo, this, "Error", "No Info Columns");
-			log.log(Level.SEVERE, "No Info for AD_Table_ID=" + AD_Table_ID + " - " + sql);
+			log.error("No Info for AD_Table_ID=" + AD_Table_ID + " - " + sql);
 			return false;
 		}
 		
-		log.finest("InfoColumns #" + list.size()); 
+		log.trace("InfoColumns #" + list.size()); 
 
 		//  Convert ArrayList to Array
 		m_generalLayout = new ColumnInfo[list.size()];
@@ -436,7 +435,7 @@ public class InfoGeneralPanel extends InfoPanel implements EventListener
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
 			s += "%";
-		log.fine( "String=" + s);
+		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
 

@@ -213,7 +213,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	// getPDF

@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.Adempiere;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -67,7 +67,7 @@ public class MClick extends X_W_Click
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -86,7 +86,7 @@ public class MClick extends X_W_Click
 	}	//	getUnprocessed
 	
 	/**	Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MClick.class);
+	private static Logger	s_log	= LogManager.getLogger(MClick.class);
 	
 	
 	/**************************************************************************
@@ -159,7 +159,7 @@ public class MClick extends X_W_Click
 		//	remove everything after /
 		if (slash != -1)
 			url = url.substring(0, slash);
-		log.fine(exactURL + " -> " + url);
+		log.debug(exactURL + " -> " + url);
 		int W_ClickCount_ID = search (url, exactURL);
 		//	try minumum
 		if (W_ClickCount_ID == 0)
@@ -172,13 +172,13 @@ public class MClick extends X_W_Click
 				lastDot = url.lastIndexOf('.');
 				firstDot = url.indexOf('.');
 			}
-			log.fine(exactURL + " -> " + url);
+			log.debug(exactURL + " -> " + url);
 			W_ClickCount_ID = search (url, exactURL);
 		}
 		//	Not found
 		if (W_ClickCount_ID == 0)
 		{
-			log.warning ("Not found: " + url 
+			log.warn("Not found: " + url 
 				+ " (" + exactURL + ") Referrer=" + getReferrer());
 			return;
 		}
@@ -219,7 +219,7 @@ public class MClick extends X_W_Click
 		}
 		catch (SQLException ex)
 		{
-			log.log(Level.SEVERE, sql, ex);
+			log.error(sql, ex);
 		}
 		try
 		{

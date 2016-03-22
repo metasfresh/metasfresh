@@ -33,7 +33,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,14 +52,13 @@ import org.compiere.model.Lookup;
 import org.compiere.model.Null;
 import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 public class ProcessParameterPanelModel
 {
-	private static final CLogger log = CLogger.getCLogger(ProcessParameterPanelModel.class);
+	private static final Logger log = LogManager.getLogger(ProcessParameterPanelModel.class);
 
 	public static final String FIELDSEPARATOR_TEXT = " - ";
 
@@ -133,7 +133,7 @@ public class ProcessParameterPanelModel
 		}
 		catch (Throwable e)
 		{
-			log.log(Level.SEVERE, "Failed instantiating class: " + classname, e);
+			log.error("Failed instantiating class: " + classname, e);
 			return null;
 		}
 	}
@@ -291,7 +291,7 @@ public class ProcessParameterPanelModel
 			catch (Exception e)
 			{
 				// ignore the error, but log it
-				log.log(Level.SEVERE, "Failed retrieving the parameters default value from defaults provider: ParameterName=" + parameterName + ", Provider=" + defaultsProvider, e);
+				log.error("Failed retrieving the parameters default value from defaults provider: ParameterName=" + parameterName + ", Provider=" + defaultsProvider, e);
 			}
 		}
 		if (defaultValue == null)
@@ -444,7 +444,7 @@ public class ProcessParameterPanelModel
 			// and not only the lookup dependencies
 			if (mLookup.getParameters().contains(changedColumnName))
 			{
-				log.fine(changedColumnName + " changed - " + gridField.getColumnName() + " set to null");
+				log.debug(changedColumnName + " changed - " + gridField.getColumnName() + " set to null");
 
 				// Invalidate current selection
 				//gridField.validateValue();
@@ -597,6 +597,6 @@ public class ProcessParameterPanelModel
 		para.setInfo_To(displayValueTo);
 		//
 		InterfaceWrapperHelper.save(para);
-		log.fine(para.toString());
+		log.debug(para.toString());
 	}
 }

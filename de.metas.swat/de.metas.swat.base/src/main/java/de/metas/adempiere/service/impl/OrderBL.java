@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -62,7 +63,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MPricingSystem;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -82,14 +82,14 @@ public class OrderBL implements IOrderBL
 	private static final String MSG_NO_PO_PRICELIST_FOUND = "NoPOPriceListFound";
 	private static final String MSG_NO_SO_PRICELIST_FOUND = "NoSOPriceListFound";
 
-	private static final CLogger logger = CLogger.getCLogger(OrderBL.class);
+	private static final Logger logger = LogManager.getLogger(OrderBL.class);
 
 	@Override
 	public String checkFreightCost(final Properties ctx, final I_C_Order order, final boolean nullIfOk, final String trxName)
 	{
 		if (!order.isSOTrx())
 		{
-			OrderBL.logger.log(Level.FINE, "{0} is no SO", order);
+			OrderBL.logger.debug("{} is no SO", order);
 			return nullIfOk ? null : "";
 		}
 
@@ -99,7 +99,7 @@ public class OrderBL implements IOrderBL
 
 		if (bPartnerId == 0 || bPartnerLocationId == 0 || shipperId == 0)
 		{
-			OrderBL.logger.fine("Can't check cause freight cost info is not yet complete for " + order);
+			OrderBL.logger.debug("Can't check cause freight cost info is not yet complete for " + order);
 			return nullIfOk ? null : "";
 		}
 
@@ -107,7 +107,7 @@ public class OrderBL implements IOrderBL
 		final de.metas.adempiere.model.I_C_Order o = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
 		if (freightCostBL.checkIfFree(o))
 		{
-			OrderBL.logger.fine("No freight cost for " + order);
+			OrderBL.logger.debug("No freight cost for " + order);
 			return nullIfOk ? null : "";
 		}
 
@@ -132,13 +132,13 @@ public class OrderBL implements IOrderBL
 	{
 		if (order.getM_PricingSystem_ID() > 0)
 		{
-			OrderBL.logger.fine("order " + order.getDocumentNo() + " already has a pricing system. Doing nothing");
+			OrderBL.logger.debug("order " + order.getDocumentNo() + " already has a pricing system. Doing nothing");
 			return nullIfOk ? null : "";
 		}
 		final int bPartnerId = order.getC_BPartner_ID();
 		if (bPartnerId <= 0)
 		{
-			OrderBL.logger.fine("order " + order.getDocumentNo() + " has no C_BPartner_ID. Doing nothing");
+			OrderBL.logger.debug("order " + order.getDocumentNo() + " has no C_BPartner_ID. Doing nothing");
 			return nullIfOk ? null : "";
 		}
 
@@ -356,11 +356,11 @@ public class OrderBL implements IOrderBL
 		final int C_DocType_ID = DB.getSQLValueEx(null, sql, clientId);
 		if (C_DocType_ID <= 0)
 		{
-			OrderBL.logger.severe("No POO found for AD_Client_ID=" + clientId);
+			OrderBL.logger.error("No POO found for AD_Client_ID=" + clientId);
 		}
 		else
 		{
-			OrderBL.logger.fine("(PO) - " + C_DocType_ID);
+			OrderBL.logger.debug("(PO) - " + C_DocType_ID);
 			order.setC_DocTypeTarget_ID(C_DocType_ID);
 		}
 	}
@@ -375,11 +375,11 @@ public class OrderBL implements IOrderBL
 
 		if (C_DocType_ID <= 0)
 		{
-			OrderBL.logger.severe("Not found for AD_Client_ID=" + order.getAD_Client_ID() + ", SubType=" + docSubType);
+			OrderBL.logger.error("Not found for AD_Client_ID=" + order.getAD_Client_ID() + ", SubType=" + docSubType);
 		}
 		else
 		{
-			OrderBL.logger.fine("(SO) - " + docSubType);
+			OrderBL.logger.debug("(SO) - " + docSubType);
 			order.setC_DocTypeTarget_ID(C_DocType_ID);
 			order.setIsSOTrx(true);
 		}
@@ -676,7 +676,7 @@ public class OrderBL implements IOrderBL
 
 		if (!foundLoc)
 		{
-			logger.log(Level.SEVERE, "MOrder.setBPartner - Has no Ship To Address: " + bp);
+			logger.error("MOrder.setBPartner - Has no Ship To Address: " + bp);
 		}
 	}
 
@@ -802,7 +802,7 @@ public class OrderBL implements IOrderBL
 
 		if (!foundLoc)
 		{
-			logger.log(Level.FINE, "MOrder.setBPartner - Has no Bill To Address: " + billBPartner);
+			logger.debug("MOrder.setBPartner - Has no Bill To Address: " + billBPartner);
 		}
 		return foundLoc;
 	}

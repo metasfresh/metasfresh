@@ -25,11 +25,10 @@ package de.metas.event.impl;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
@@ -43,7 +42,7 @@ import de.metas.event.Type;
 
 final class EventBus implements IEventBus
 {
-	private static final transient CLogger logger = EventBusConstants.getLogger();
+	private static final transient Logger logger = EventBusConstants.getLogger(EventBus.class);
 
 	/** Log all event bus exceptions */
 	private static final SubscriberExceptionHandler exceptionHandler = new SubscriberExceptionHandler()
@@ -54,7 +53,7 @@ final class EventBus implements IEventBus
 			String errmsg = "Could not dispatch event: "  + context.getSubscriber() + " to " + context.getSubscriberMethod()
 					+"\n Event: "+context.getEvent()
 					+"\n Bus: "+context.getEventBus();
-			logger.log(Level.SEVERE, errmsg, exception);
+			logger.error(errmsg, exception);
 		}
 	};
 
@@ -118,7 +117,7 @@ final class EventBus implements IEventBus
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.log(Level.WARNING, "Attempt to register a listener to a destroyed bus. Ignored."
+			logger.warn("Attempt to register a listener to a destroyed bus. Ignored."
 					+ "\n Bus: " + this
 					+ "\n Listener: " + listener);
 			return;
@@ -134,7 +133,7 @@ final class EventBus implements IEventBus
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.log(Level.WARNING, "Attempt to register a listener to a destroyed bus. Ignored."
+			logger.warn("Attempt to register a listener to a destroyed bus. Ignored."
 					+ "\n Bus: " + this
 					+ "\n Listener: " + listener);
 			return;
@@ -150,13 +149,13 @@ final class EventBus implements IEventBus
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.log(Level.WARNING, "Attempt to post an event to a destroyed bus. Ignored."
+			logger.warn("Attempt to post an event to a destroyed bus. Ignored."
 					+ "\n Bus: " + this
 					+ "\n Event: " + event);
 			return;
 		}
 
-		logger.log(Level.FINE, "Posting event: {0}", event);
+		logger.debug("Posting event: {0}", event);
 		eventBus.post(event);
 	}
 

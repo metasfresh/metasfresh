@@ -31,11 +31,11 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.Format;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -48,7 +48,7 @@ public abstract class AbstractTerminalNumericField
 		extends AbstractTerminalField<BigDecimal>
 		implements ITerminalNumericField
 {
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	private final String name;
 	private final int displayType;
@@ -281,7 +281,7 @@ public abstract class AbstractTerminalNumericField
 			}
 			else
 			{
-				log.log(Level.INFO, "Invalid Format '{0}' to be used to convert text '{1}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
+				log.info("Invalid Format '{}' to be used to convert text '{}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
 				return Env.ZERO;
 			}
 		}

@@ -27,7 +27,8 @@ import java.lang.reflect.Method;
 
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 /**
  * In case target object is an {@link PO} and {@link Cached#ignoreInstance()} is not set,
@@ -38,13 +39,13 @@ import org.compiere.util.CLogger;
  */
 class TargetPOPartDescriptor implements ICachedMethodPartDescriptor
 {
-	private static final transient CLogger logger = CLogger.getCLogger(TargetPOPartDescriptor.class);
+	private static final transient Logger logger = LogManager.getLogger(TargetPOPartDescriptor.class);
 
 	public static final TargetPOPartDescriptor createIfApplies(Method method, Cached annotation)
 	{
 		if (annotation.ignoreInstance())
 		{
-			logger.fine("not including the target object in the key");
+			logger.debug("not including the target object in the key");
 			return null;
 		}
 

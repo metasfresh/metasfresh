@@ -30,7 +30,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.compiere.apps.IStatusBar;
 import org.compiere.apps.form.GenForm;
@@ -45,13 +44,12 @@ import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstancePara;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
-
+import org.slf4j.Logger;
 import de.metas.adempiere.ui.MiniTableUtil;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -64,7 +62,7 @@ public abstract class InvoiceGenerate extends GenForm
 {
 	public static final String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
 
-	protected static final transient CLogger log = InvoiceCandidate_Constants.getLogger();
+	protected static final transient Logger log = InvoiceCandidate_Constants.getLogger(InvoiceGenerate.class);
 
 	private final int InvoiceCandidate_Window_ID = 540093; // HARDCODED
 	// see de.metas.adempiere.process.C_Invoice_Candidate_Generate class
@@ -127,7 +125,7 @@ public abstract class InvoiceGenerate extends GenForm
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -140,7 +138,7 @@ public abstract class InvoiceGenerate extends GenForm
 		for (int i = 0; i < rows; i++)
 		{
 			IDColumn id = (IDColumn)miniTable.getValueAt(i, 0); // ID in column 0
-			// log.fine( "Row=" + i + " - " + id);
+			// log.debug( "Row=" + i + " - " + id);
 			if (id != null && !id.isSelected())
 				id.setSelected(true);
 		}
@@ -162,14 +160,14 @@ public abstract class InvoiceGenerate extends GenForm
 		for (int i = 0; i < rows; i++)
 		{
 			IDColumn id = (IDColumn)miniTable.getValueAt(i, 0); // ID in column 0
-			// log.fine( "Row=" + i + " - " + id);
+			// log.debug( "Row=" + i + " - " + id);
 			if (id != null && id.isSelected())
 				results.add(id.getRecord_ID());
 		}
 
 		if (results.size() == 0)
 			return;
-		log.config("Selected #" + results.size());
+		log.info("Selected #" + results.size());
 		setSelection(results);
 	} // saveSelection
 

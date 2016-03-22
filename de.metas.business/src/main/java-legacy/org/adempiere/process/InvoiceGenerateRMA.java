@@ -21,7 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -68,7 +69,7 @@ public class InvoiceGenerateRMA extends SvrProcess
             else if (name.equals("DocAction"))
                 p_docAction = (String)para[i].getParameter();
             else
-                log.log(Level.SEVERE, "Unknown Parameter: " + name);
+                log.error("Unknown Parameter: " + name);
         }
         
         m_dateinvoiced = Env.getContextAsDate(getCtx(), "#Date");
@@ -106,7 +107,7 @@ public class InvoiceGenerateRMA extends SvrProcess
         }
         catch (Exception ex)
         {
-            log.log(Level.SEVERE, sql, ex);
+            log.error(sql, ex);
         }
         finally
         {
@@ -116,7 +117,7 @@ public class InvoiceGenerateRMA extends SvrProcess
             }
             catch (Exception ex)
             {
-                log.log(Level.SEVERE, "Could not close prepared statement");
+                log.error("Could not close prepared statement");
             }
         }
         return "@Created@ = " + m_created;
@@ -195,7 +196,7 @@ public class InvoiceGenerateRMA extends SvrProcess
         
         if (invoiceLines.length == 0)
         {
-            log.log(Level.WARNING, "No invoice lines created: M_RMA_ID="
+            log.warn("No invoice lines created: M_RMA_ID="
                     + M_RMA_ID + ", M_Invoice_ID=" + invoice.get_ID());
         }
         
@@ -204,7 +205,7 @@ public class InvoiceGenerateRMA extends SvrProcess
         if (!invoice.processIt(p_docAction))
         {
             processMsg.append(" (NOT Processed)");
-            log.warning("Invoice Processing failed: " + invoice + " - " + invoice.getProcessMsg());
+            log.warn("Invoice Processing failed: " + invoice + " - " + invoice.getProcessMsg());
         }
         
         if (!invoice.save())

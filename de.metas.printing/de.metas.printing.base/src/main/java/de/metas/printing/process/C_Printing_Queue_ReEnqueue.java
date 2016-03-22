@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.SqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -38,7 +36,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 
 import de.metas.printing.api.IPrintingDAO;
@@ -141,7 +138,7 @@ public class C_Printing_Queue_ReEnqueue extends SvrProcess
 				catch (Exception e)
 				{
 					countError++;
-					log.log(Level.WARNING, e.getLocalizedMessage(), e);
+					log.warn(e.getLocalizedMessage(), e);
 					addLog("Error on @C_Printing_Queue@#" + item.getC_Printing_Queue_ID() + ": " + e.getLocalizedMessage());
 				}
 			}
@@ -185,16 +182,16 @@ public class C_Printing_Queue_ReEnqueue extends SvrProcess
 			queueQuery.setModelFilter(modelFilter);
 		}
 
-		log.log(Level.INFO, "Queue query: {0}", queueQuery);
+		log.info("Queue query: {}", queueQuery);
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(ctx, queueQuery, ITrx.TRXNAME_None);
 		query.setOption(Query.OPTION_IteratorBufferSize, null); // use standard IteratorBufferSize
 
-		if (CLogMgt.isLevel(Level.INFO))
+		if (log.isInfoEnabled())
 		{
-			log.log(Level.INFO, "SQL Query: {0}", query);
-			log.log(Level.INFO, "SQL Query count: " + query.count());
+			log.info("SQL Query: {}", query);
+			log.info("SQL Query count: " + query.count());
 		}
 
 		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
@@ -220,8 +217,8 @@ public class C_Printing_Queue_ReEnqueue extends SvrProcess
 				.setOnlyActiveRecords(true);
 		final int count = query.createSelection(selectionId);
 
-		log.log(Level.INFO, "Window Selection Query: {0}", query);
-		log.log(Level.INFO, "Window Selection Count: {0}", count);
+		log.info("Window Selection Query: {}", query);
+		log.info("Window Selection Count: {}", count);
 
 		return count;
 	}

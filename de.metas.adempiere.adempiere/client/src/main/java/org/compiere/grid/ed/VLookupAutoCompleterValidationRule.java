@@ -33,7 +33,7 @@ import org.compiere.util.NamePair;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(VLookupAutoCompleterValidationRule.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(VLookupAutoCompleterValidationRule.class);
 
 	public static final Object SEARCHSQL_PLACEHOLDER = new String("***SEARCH SQL PLACEHOLDER***");
 

@@ -33,7 +33,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.IProductAware;
 import de.metas.adempiere.service.IParameterizable;
@@ -59,7 +60,7 @@ import de.metas.commission.util.HierarchyClimber.Result;
 
 public class HierarchyFixCommission extends HierarchyCommission
 {
-	private static final CLogger logger = CLogger.getCLogger(HierarchyFixCommission.class);
+	private static final Logger logger = LogManager.getLogger(HierarchyFixCommission.class);
 
 	private BigDecimal getPercentForSG(final ICommissionContext commissionCtx, final I_C_AdvCommissionSalaryGroup sg, final int level)
 	{
@@ -180,7 +181,7 @@ public class HierarchyFixCommission extends HierarchyCommission
 		final I_C_Sponsor_SalesRep contractSSR = sponsorBL.retrieveContractSSR(ctx, sponsor, date, trxName);
 		if (contractSSR == null)
 		{
-			HierarchyFixCommission.logger.fine(sponsor + " is not a sales rep at " + date);
+			HierarchyFixCommission.logger.debug(sponsor + " is not a sales rep at " + date);
 			return BigDecimal.ZERO;
 		}
 

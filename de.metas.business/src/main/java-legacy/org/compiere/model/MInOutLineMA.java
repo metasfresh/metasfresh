@@ -82,7 +82,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 		
 	
 //	/**	Logger	*/
-//	private static CLogger	s_log	= CLogger.getCLogger (MInOutLineMA.class);
+//	private static Logger	s_log	= CLogMgt.getLogger(MInOutLineMA.class);
 	
 	/**************************************************************************
 	 * 	Standard Constructor

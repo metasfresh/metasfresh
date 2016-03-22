@@ -40,7 +40,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -104,7 +105,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	private Properties p_ctx;
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(SubCheckout.class);
+	private static Logger log = LogManager.getLogger(SubCheckout.class);
 	
 	/**
 	 * 	Set up Panel 
@@ -416,7 +417,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 			v_change.setValue(cash.getEndingBalance());
 		}
 		else
-			log.severe("No Cash");
+			log.error("No Cash");
 	}
 
 	/**

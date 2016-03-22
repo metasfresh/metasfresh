@@ -39,7 +39,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -65,7 +66,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
@@ -96,7 +96,7 @@ import de.metas.payment.esr.spi.IESRActionHandler;
 
 public class ESRImportBL implements IESRImportBL
 {
-	private static final transient CLogger logger = CLogger.getCLogger(ESRImportBL.class);
+	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
@@ -149,7 +149,7 @@ public class ESRImportBL implements IESRImportBL
 			if (!unlocked)
 			{
 				final AdempiereException ex = new AdempiereException("Could not be unlocked: " + esrImport);
-				logger.log(Level.WARNING, ex.getLocalizedMessage() + " [IGNORED]", ex);
+				logger.warn(ex.getLocalizedMessage() + " [IGNORED]", ex);
 			}
 		}
 	}
@@ -281,7 +281,7 @@ public class ESRImportBL implements IESRImportBL
 				}
 				catch (IOException e)
 				{
-					logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+					logger.warn(e.getLocalizedMessage(), e);
 				}
 			}
 		}
@@ -420,7 +420,7 @@ public class ESRImportBL implements IESRImportBL
 				}
 				catch (Exception e)
 				{
-					logger.log(Level.INFO, e.getLocalizedMessage(), e);
+					logger.info(e.getLocalizedMessage(), e);
 
 					esrImportLine.setIsValid(false);
 					esrImportLine.setProcessed(false);
@@ -602,7 +602,7 @@ public class ESRImportBL implements IESRImportBL
 					}
 					catch (Exception e)
 					{
-						logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+						logger.warn(e.getLocalizedMessage(), e);
 						for (final I_ESR_ImportLine lineWithError : linesForKey)
 						{
 							addErrorMsg(lineWithError, e.getLocalizedMessage());
@@ -986,7 +986,7 @@ public class ESRImportBL implements IESRImportBL
 							if (invPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
 							{
 								final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
-								logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+								logger.warn(ex.getLocalizedMessage(), ex);
 								addErrorMsg(line, ex.getLocalizedMessage());
 								InterfaceWrapperHelper.save(line);
 								return;
@@ -998,7 +998,7 @@ public class ESRImportBL implements IESRImportBL
 							if (paymentPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
 							{
 								final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
-								logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+								logger.warn(ex.getLocalizedMessage(), ex);
 								addErrorMsg(line, ex.getLocalizedMessage());
 								InterfaceWrapperHelper.save(line);
 								return;
@@ -1010,7 +1010,7 @@ public class ESRImportBL implements IESRImportBL
 					if (Check.isEmpty(actionType, true))
 					{
 						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
-						logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+						logger.warn(ex.getLocalizedMessage(), ex);
 						addErrorMsg(line, ex.getLocalizedMessage());
 						InterfaceWrapperHelper.save(line);
 						return;
@@ -1020,7 +1020,7 @@ public class ESRImportBL implements IESRImportBL
 					if (handler == null)
 					{
 						final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
-						logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+						logger.warn(ex.getLocalizedMessage(), ex);
 						addErrorMsg(line, ex.getLocalizedMessage());
 						InterfaceWrapperHelper.save(line);
 						return;
@@ -1033,7 +1033,7 @@ public class ESRImportBL implements IESRImportBL
 					}
 					catch (Exception e)
 					{
-						logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+						logger.warn(e.getLocalizedMessage(), e);
 						addErrorMsg(line, e.getLocalizedMessage());
 						InterfaceWrapperHelper.save(line);
 						return;

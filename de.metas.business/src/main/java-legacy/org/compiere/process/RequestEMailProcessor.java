@@ -23,7 +23,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
+import de.metas.logging.LogManager;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -38,7 +41,6 @@ import javax.mail.Store;
 
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.EMailAuthenticator;
 
@@ -118,7 +120,7 @@ public class RequestEMailProcessor extends SvrProcess
 			else if (name.equals("p_DefaultConfidentiality"))
 				p_DefaultConfidentiality = ((String)para[i].getParameter());
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		
 	}	//	prepare
@@ -145,7 +147,7 @@ public class RequestEMailProcessor extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "processInBox", e);
+			log.error("processInBox", e);
 		}
 		//	Cleanup
 		try
@@ -181,8 +183,8 @@ public class RequestEMailProcessor extends SvrProcess
 		EMailAuthenticator auth = new EMailAuthenticator (p_IMAPUser, p_IMAPPwd);
 		//
 		m_session = Session.getDefaultInstance(props, auth);
-		m_session.setDebug(CLogMgt.isLevelFinest());
-		log.fine("getSession - " + m_session);
+		m_session.setDebug(LogManager.isLevelFinest());
+		log.debug("getSession - " + m_session);
 		return m_session;
 	}	//	getSession
 	
@@ -204,7 +206,7 @@ public class RequestEMailProcessor extends SvrProcess
 		//	Connect
 		m_store.connect();
 		//
-		log.fine("getStore - " + m_store);
+		log.debug("getStore - " + m_store);
 		return m_store;
 	}	//	getStore	
 	
@@ -225,7 +227,7 @@ public class RequestEMailProcessor extends SvrProcess
 		if (!inbox.exists())
 			throw new IllegalStateException("No Inbox");
 		inbox.open(Folder.READ_WRITE);
-		log.fine("processInBox - " + inbox.getName() 
+		log.debug("processInBox - " + inbox.getName() 
 			+ "; Messages Total=" + inbox.getMessageCount()
 			+ "; New=" + inbox.getNewMessageCount());
 		
@@ -301,8 +303,8 @@ public class RequestEMailProcessor extends SvrProcess
 			{
 				errorFolder.appendMessages(new Message[]{msg});
 				String[] hdrs = msg.getHeader("Message-ID");
-				log.warning("message " + hdrs[0] + " moved to " + p_ErrorFolder + " folder");
-				log.warning("message info: Sent -> " + msg.getSentDate() + " From -> " + msg.getFrom()[0].toString());
+				log.warn("message " + hdrs[0] + " moved to " + p_ErrorFolder + " folder");
+				log.warn("message info: Sent -> " + msg.getSentDate() + " From -> " + msg.getFrom()[0].toString());
 				noError++;
 			}
 			noProcessed++;
@@ -548,7 +550,7 @@ public class RequestEMailProcessor extends SvrProcess
 		}
 		catch (MessagingException e)
 		{
-			log.log(Level.SEVERE, "getSubject", e);
+			log.error("getSubject", e);
 		}
 		return "";
 	}	//	getSubject
@@ -633,7 +635,7 @@ public class RequestEMailProcessor extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getMessage", e);
+			log.error("getMessage", e);
 		}
 		return sb.toString().trim();
 	}	//	getMessage
@@ -676,7 +678,7 @@ public class RequestEMailProcessor extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getDeliveryReport", e);
+			log.error("getDeliveryReport", e);
 		}
 		//	Nothing
 		return null;
@@ -930,7 +932,7 @@ public class RequestEMailProcessor extends SvrProcess
 	{
 	//    System.out.print(indentStr.substring(0, level * 2));
 		// System.out.println(s);
-		log.finer(s);
+		log.trace(s);
 	}	
 
 }	//	RequestEMailProcessor

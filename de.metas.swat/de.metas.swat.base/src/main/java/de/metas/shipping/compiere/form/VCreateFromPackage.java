@@ -45,7 +45,8 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
@@ -62,7 +63,6 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -97,7 +97,7 @@ public class VCreateFromPackage extends CreateFromPackage implements ActionListe
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.positionCenterWindow(Env.getWindow(p_WindowNo), dialog);
@@ -107,7 +107,7 @@ public class VCreateFromPackage extends CreateFromPackage implements ActionListe
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 	
 	private JLabel shipperLabel = new JLabel();
 	protected VLookup shipperField;
@@ -128,7 +128,7 @@ public class VCreateFromPackage extends CreateFromPackage implements ActionListe
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -218,7 +218,7 @@ public class VCreateFromPackage extends CreateFromPackage implements ActionListe
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		log.config("Action=" + e.getActionCommand());
+		log.info("Action=" + e.getActionCommand());
 //		Object source = e.getSource();
 		if ( e.getActionCommand().equals(ConfirmPanel.A_REFRESH) )
 		{

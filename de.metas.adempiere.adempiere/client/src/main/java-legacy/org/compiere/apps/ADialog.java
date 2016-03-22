@@ -22,7 +22,6 @@ import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -33,12 +32,16 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.CLogMgt;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.SupportInfo;
 import org.compiere.util.Trace;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Info Dialog Management
@@ -52,7 +55,7 @@ public final class ADialog
 	/** Show ADialogADialog - if false use JOptionPane  */
 	public static final boolean	showDialog = true;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ADialog.class);
+	private static Logger log = LogManager.getLogger(ADialog.class);
 	
 	/**
 	 *	Show plain message
@@ -210,7 +213,7 @@ public final class ADialog
 	public static void error (int WindowNo, Container c, String AD_Message, String msg)
 	{
 		log.info(AD_Message + " - " + msg);
-		if (CLogMgt.isLevelFinest())
+		if (LogManager.isLevelFinest())
 			Trace.printStack();
 		Properties ctx = Env.getCtx();
 		StringBuffer out = new StringBuffer();
@@ -338,7 +341,7 @@ public final class ADialog
 			return;
 		clear(WindowNo, c, ParseString);
 		if (WindowNo == 0)
-			log.log(Level.SEVERE, "WIndowNo == 0");
+			log.error("WIndowNo == 0");
 	}	//	clear
 
 	/**
@@ -346,6 +349,7 @@ public final class ADialog
 	 *	@param	ParseString	String to be parsed
 	 *  @deprecated
 	 */
+	@Deprecated
 	public static void clear (String ParseString)
 	{
 		clear(0, null, ParseString);
@@ -356,19 +360,19 @@ public final class ADialog
 	/**
 	 * Create Support EMail
 	 * @param owner owner
-	 * @param subject subkect
+	 * @param subject subject
 	 * @param message message
 	 */
 	public static void createSupportEMail(Dialog owner, String subject, String message)
 	{
-		log.config( "ADialog.createSupportEMail");
+		log.info( "ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
 		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
 		StringBuffer myMessage = new StringBuffer(message);
 		myMessage.append("\n");
-		CLogMgt.getInfo(myMessage);
-		CLogMgt.getInfoDetail(myMessage, Env.getCtx());
+		SupportInfo.getInfo(myMessage);
+		SupportInfo.getInfoDetail(myMessage, Env.getCtx());
 		ModelValidationEngine.get().getInfoDetail(myMessage, Env.getCtx()); // teo_sarca - FR [ 1724662 ]
 
 		new EMailDialog(owner,
@@ -379,19 +383,19 @@ public final class ADialog
 	/**
 	 *	Create Support EMail
 	 *	@param owner owner
-	 *  @param subject subkect
+	 *  @param subject subject
 	 *  @param message message
 	 */
 	public static void createSupportEMail(Frame owner, String subject, String message)
 	{
-		log.config( "ADialog.createSupportEMail");
+		log.info( "ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
 		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
 		StringBuffer myMessage = new StringBuffer(message);
 		myMessage.append("\n");
-		CLogMgt.getInfo(myMessage);
-		CLogMgt.getInfoDetail(myMessage, Env.getCtx());
+		SupportInfo.getInfo(myMessage);
+		SupportInfo.getInfoDetail(myMessage, Env.getCtx());
 		ModelValidationEngine.get().getInfoDetail(myMessage, Env.getCtx()); // teo_sarca - FR [ 1724662 ]
 
 		new EMailDialog(owner,
@@ -413,7 +417,7 @@ public final class ADialog
 	{
 		String adMessage = "Error";
 		String msg = ex.getLocalizedMessage();
-		log.log(Level.WARNING, msg, ex);
+		log.warn(msg, ex);
 		error(WindowNo, c, adMessage, msg);
 	}
 // metas: end

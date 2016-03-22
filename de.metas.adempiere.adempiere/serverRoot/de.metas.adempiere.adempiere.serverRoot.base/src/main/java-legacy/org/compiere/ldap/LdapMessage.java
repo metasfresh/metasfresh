@@ -15,10 +15,8 @@
  *****************************************************************************/
 package org.compiere.ldap;
 
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import com.sun.jndi.ldap.BerDecoder;
 
 /**
@@ -48,7 +46,7 @@ public class LdapMessage
 	/** Decoder */
 	private BerDecoder decoder = null;
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (LdapMessage.class);
+	private static Logger log = LogManager.getLogger(LdapMessage.class);
 	/** Protocol Operation		*/
 	private int		m_protocolOp = -1;
     /** Message Id needed for the reply message */
@@ -107,7 +105,7 @@ public class LdapMessage
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, data.toString(), e);
+			log.error(data.toString(), e);
 			return;
 		}
 
@@ -134,13 +132,13 @@ public class LdapMessage
 			{
 				result.setErrorNo(LdapResult.LDAP_PROTOCOL_ERROR);
 				result.setErrorString(": Unsupported Request");
-				log.warning("#" + msgId + ": Unknown Op + " + m_protocolOp);
+				log.warn("#" + msgId + ": Unknown Op + " + m_protocolOp);
 			}
 		}
 		catch (Exception ex)
 		{
 			result.setErrorNo(LdapResult.LDAP_PROTOCOL_ERROR);
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}	//	decode
 
@@ -186,7 +184,7 @@ public class LdapMessage
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}   // handleSearch()
 
@@ -238,7 +236,7 @@ public class LdapMessage
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 	}  // handleBind()
 

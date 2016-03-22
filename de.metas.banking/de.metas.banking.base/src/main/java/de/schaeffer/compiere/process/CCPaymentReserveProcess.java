@@ -118,9 +118,9 @@ public class CCPaymentReserveProcess extends SvrProcess {
 
 
 
-		log.fine(sql);
+		log.debug(sql);
 		final Timestamp time = getReserveDate();
-		log.fine(time.toString());
+		log.debug(time.toString());
 		final PreparedStatement pstmt_getCCOrders = DB.prepareStatement(sql, get_TrxName());
 		//try to find existing (draft) payment - reuse it (if a reservation has failed)
 		sql = "SELECT C_Payment_ID FROM C_Payment WHERE DocStatus='DR' AND C_Order_ID=? and ad_client_id = " + getAD_Client_ID();
@@ -159,7 +159,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 
 					}
 
-					log.severe("No C_BP_BankAccount_ID for C_Order: " + orderId
+					log.error("No C_BP_BankAccount_ID for C_Order: " + orderId
 							+ " Please check the mandatory logic!");
 					continue;
 
@@ -203,7 +203,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 
 						}
 
-						log.severe("creditcard not found: " + bankaccountId);
+						log.error("creditcard not found: " + bankaccountId);
 						continue;
 					} else {
 						//payment: set credit card and payment processor
@@ -225,7 +225,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 								.append("\tMissing data (number or type) in creditcard, ID: ").append(bankaccountId).append("\n");
 
 							}
-							log.severe("missing data for creditcard: " + cc.get_ID());
+							log.error("missing data for creditcard: " + cc.get_ID());
 							continue;
 						} else {
 							if(!paymentPO.setCreditCard(MPayment.TRXTYPE_Authorization, cc.getCreditCardType(),
@@ -252,7 +252,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 									.append("\tMissing or wrong creditcard data, ID: ").append(bankaccountId).append("\n");
 
 								}
-								log.severe("unable to set creditcard: " + cc.get_ID() + " for order: " + orderId);
+								log.error("unable to set creditcard: " + cc.get_ID() + " for order: " + orderId);
 								continue;
 
 							}
@@ -264,7 +264,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 								errorMessages = errorMessages.append(paymentPO.getDocumentNo()).append(" <-> ").append(documentNo)
 								.append("\tKein Payment Prozessor gefunden f�r Kreditkarten-ID: ").append(bankaccountId).append("\n");
 
-								log.severe("no payment processor found for creditcard: " + cc.get_ID());
+								log.error("no payment processor found for creditcard: " + cc.get_ID());
 								continue;
 
 							}
@@ -278,20 +278,20 @@ public class CCPaymentReserveProcess extends SvrProcess {
 					.append(documentNo).append("\n"); */
 					errorMessages = errorMessages.append(paymentPO.getDocumentNo()).append(" <-> ").append(documentNo)
 					.append("\tCannot save MPayment\n");
-					log.severe("Cannot save MPayment for order: " + documentNo);
+					log.error("Cannot save MPayment for order: " + documentNo);
 					continue;
 				}
 				//set payment reference in order
 				MOrder order = new MOrder(ctx, orderId, get_TrxName());
 				order.setC_Payment_ID(paymentPO.get_ID());
 				order.save(get_TrxName());
-				log.warning("before is online");
+				log.warn("before is online");
 				//process the payment (online)
 				if(paymentPO.isOnline()) {
 
 					if(!paymentPO.processOnline()) {
 						payment.setCCPaymentState(I_C_Payment.CCPAYMENTSTATE_Error);
-						log.severe("Unable to process online: " + paymentPO.getErrorMessage());
+						log.error("Unable to process online: " + paymentPO.getErrorMessage());
 						if (MSysConfig.getValue(Constants.LOCATION_NAME, Constants.SAG, Env.getAD_Client_ID(ctx)).equals(Constants.SAG)) {
 /*							errorMessages = errorMessages.append("Fehler bei Onlinebuchung in Zahlung: ")
 							.append(payment.getDocumentNo()).append(" f�r Auftrag ").append(documentNo).append(". ")
@@ -322,7 +322,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			log.severe(e.getLocalizedMessage());
+			log.error(e.getLocalizedMessage());
 			throw new AdempiereSystemError("SQLException: " + e.getLocalizedMessage());
 		} finally {
 			pstmt_getCCOrders.close();
@@ -385,7 +385,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 		final String liveSystemServerName = MSysConfig.getValue(Constants.LIVESYSTEM_SERVERNAME,
 				"", Env.getAD_Client_ID(Env.getCtx()));
 		if ("".equals(liveSystemServerName)) {
-			log.severe("LIVESYSTEM_SERVERNAME not found, check the System Configuration window");
+			log.error("LIVESYSTEM_SERVERNAME not found, check the System Configuration window");
 			return;
 		}
 		final String adresses = MSysConfig.getValue(Constants.CCPAYMENT_REVIEW_MAILS, "", Env
@@ -402,7 +402,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 		final MClient client = MClient.get(ctx);
 
 		if (client.getSMTPHost() == null || client.getSMTPHost().length() == 0) {
-			log.severe("No SMTP Host found");
+			log.error("No SMTP Host found");
 			return;
 		}
 
@@ -422,14 +422,14 @@ public class CCPaymentReserveProcess extends SvrProcess {
 			}
 
 			if (!email.isValid()) {
-				log.severe("Unable to send mail (not valid) - " + email);
+				log.error("Unable to send mail (not valid) - " + email);
 			}
 			final boolean ok = EMail.SENT_OK.equals(email.send());
 			//
 			if (ok) {
-				log.fine("sucessfully sent to " + emailAddresses[i]);
+				log.debug("sucessfully sent to " + emailAddresses[i]);
 			} else {
-				log.severe("Unable to send mail (not sent) - " + emailAddresses[i]);
+				log.error("Unable to send mail (not sent) - " + emailAddresses[i]);
 			}
 		}
 

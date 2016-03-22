@@ -26,7 +26,8 @@ package de.metas.dunning.invoice.api.impl;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,7 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.CLogger;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
@@ -53,7 +53,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 
 public class InvoiceSourceBL implements IInvoiceSourceBL
 {
-	private final static transient CLogger logger = CLogger.getCLogger(InvoiceSourceBL.class);
+	private final static transient Logger logger = LogManager.getLogger(InvoiceSourceBL.class);
 
 	@Override
 	public boolean setDunningGraceIfAutomatic(final I_C_Invoice invoice)
@@ -135,7 +135,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 				public boolean doCatch(Throwable e) throws Throwable
 				{
 					final String errmsg = "Error processing: " + source;
-					logger.log(Level.SEVERE, errmsg, e);
+					logger.error(errmsg, e);
 
 					// notify monitor too about this issue
 					if (monitor != null)

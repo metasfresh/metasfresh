@@ -28,9 +28,8 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -188,7 +187,7 @@ public class CTable extends JTable implements ITable
 	protected int p_keyColumnIndex = -1;
 
 	/** Logger */
-	private static final transient Logger log = Logger.getLogger(CTable.class.getName());
+	private static final transient Logger log = LogManager.getLogger(CTable.class.getName());
 
 	/**
 	 * ScrollPane's original vertical scroll policy. If the column control is visible the policy is set to ALWAYS.
@@ -385,7 +384,7 @@ public class CTable extends JTable implements ITable
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Error when packing column " + column.getIdentifier().toString(), e);
+				log.error("Error when packing column " + column.getIdentifier().toString(), e);
 			}
 			// Width not greater than 250
 			width = Math.min(MAXSIZE, width + SLACK);

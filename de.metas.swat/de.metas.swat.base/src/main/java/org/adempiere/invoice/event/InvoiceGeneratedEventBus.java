@@ -23,15 +23,14 @@ package org.adempiere.invoice.event;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.CLogger;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.event.Event;
@@ -60,7 +59,7 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 			.setType(Type.REMOTE)
 			.build();
 
-	private static final transient CLogger logger = CLogger.getCLogger(InvoiceGeneratedEventBus.class);
+	private static final transient Logger logger = LogManager.getLogger(InvoiceGeneratedEventBus.class);
 
 	private static final String MSG_Event_InvoiceGenerated = "Event_InvoiceGenerated";
 
@@ -105,7 +104,7 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.WARNING, "Failed creating event for invoice " + invoice + ". Ignored.", e);
+			logger.warn("Failed creating event for invoice " + invoice + ". Ignored.", e);
 		}
 
 		return this;

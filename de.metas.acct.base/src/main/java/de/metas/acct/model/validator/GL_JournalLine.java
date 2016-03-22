@@ -45,7 +45,7 @@ import de.metas.acct.spi.impl.GLJournalLineCopyRecordSupport;
 @Interceptor(I_GL_JournalLine.class)
 public class GL_JournalLine
 {
-	// private static final transient CLogger logger = CLogger.getCLogger(GL_JournalLine.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(GL_JournalLine.class);
 
 	@Init
 	public void init()

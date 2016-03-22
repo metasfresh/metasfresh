@@ -36,7 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -89,7 +90,6 @@ import org.adempiere.pipo.handler.WorkflowElementHandler;
 import org.adempiere.pipo.handler.WorkflowNodeElementHandler;
 import org.adempiere.pipo.handler.WorkflowNodeNextConditionElementHandler;
 import org.adempiere.pipo.handler.WorkflowNodeNextElementHandler;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -124,7 +124,7 @@ public class PackInHandler extends DefaultHandler {
     private int m_AD_Client_ID = 0;
     private int AD_Package_Imp_ID=0;
 	private int AD_Package_Imp_Inst_ID=0;
-    private CLogger log = CLogger.getCLogger(PackInHandler.class);
+    private Logger log = LogManager.getLogger(PackInHandler.class);
     private OutputStream  fw_document = null;
     private TransformerHandler logDocument = null;
     private StreamResult streamResult_document = null;		
@@ -162,7 +162,7 @@ public class PackInHandler extends DefaultHandler {
 		try {
 			fw_document = new FileOutputStream (file_document, false);
 		} catch (FileNotFoundException e1) {
-			log.warning ("Failed to create log file:"+e1);
+			log.warn("Failed to create log file:"+e1);
 		}
 		streamResult_document = new StreamResult(fw_document);		
 		tf_document = (SAXTransformerFactory) SAXTransformerFactory.newInstance();	
@@ -170,7 +170,7 @@ public class PackInHandler extends DefaultHandler {
 		try {
 			logDocument = tf_document.newTransformerHandler();
 		} catch (TransformerConfigurationException e2) {
-			log.info ("startElement:"+e2);
+			log.info("startElement:"+e2);
 		}		
 		serializer_document = logDocument.getTransformer();		
 		serializer_document.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");		
@@ -452,7 +452,7 @@ public class PackInHandler extends DefaultHandler {
     			tables = dbm.getTables(null, null, tablename.toLowerCase(), null );
     		
     		if (tables.next()) {
-    			log.info ("Table Found");
+    			log.info("Table Found");
     		}
     		else {        		
     			if (tablename.equals("AD_Package_Imp")){
@@ -489,7 +489,7 @@ public class PackInHandler extends DefaultHandler {
     					pstmt = null;
     				}
     				catch (Exception e) {
-    					log.info ("createImp_Sum_table:"+e);
+    					log.info("createImp_Sum_table:"+e);
     				}
     			}
     			if (tablename.equals("AD_Package_Imp_Inst")){
@@ -526,7 +526,7 @@ public class PackInHandler extends DefaultHandler {
     					pstmt = null;
     				}
     				catch (Exception e) {
-    					log.info ("createImp_Sum_table:"+e);
+    					log.info("createImp_Sum_table:"+e);
     				}
     			}
     			if (tablename.equals("AD_Package_Imp_Detail")){
@@ -560,7 +560,7 @@ public class PackInHandler extends DefaultHandler {
     					pstmt = null;
     				}
     				catch (Exception e) {
-    					log.info ("createImp_Sum_table:"+e);
+    					log.info("createImp_Sum_table:"+e);
     				}
     			}
     			if (tablename.equals("AD_Package_Imp_Backup")){
@@ -593,7 +593,7 @@ public class PackInHandler extends DefaultHandler {
     					pstmt = null;
     				}	
     				catch (Exception e) {
-    					log.info ("createImp_Sum_table:"+e);
+    					log.info("createImp_Sum_table:"+e);
     				}
     			}	
     		}
@@ -602,7 +602,7 @@ public class PackInHandler extends DefaultHandler {
     	}
     	
     	catch (SQLException e) {
-    		log.info ("createImp_Sum_table:"+e);
+    		log.info("createImp_Sum_table:"+e);
     	}
     	
     	finally
@@ -761,7 +761,7 @@ public class PackInHandler extends DefaultHandler {
 	    		if (e.defer || e.deferEnd)
 					defer.add(new DeferEntry(e, false));
 	    		else if (!e.skip) {
-	    			if (log.isLoggable(Level.INFO))
+	    			if (log.isInfoEnabled())
 	    				log.info("Processed: " + e.getElementValue() + " - " + e.attributes.getValue(0));
 	    		}
     		}
@@ -799,7 +799,7 @@ public class PackInHandler extends DefaultHandler {
     	    			d.element.unresolved = "";
     				}    				
     			}
-    			if (log.isLoggable(Level.INFO)) {
+    			if (log.isInfoEnabled()) {
     				log.info("Processeing Defer Element: " + d.element.getElementValue() + " - " 
 						+ d.element.attributes.getValue(0));
     			}
@@ -816,7 +816,7 @@ public class PackInHandler extends DefaultHandler {
     				if (d.element.deferEnd)
     					defer.add(d);
     				else {
-	    				if (log.isLoggable(Level.INFO))
+	    				if (log.isInfoEnabled())
 	    					log.info("Imported Defer Element: " + d.element.getElementValue() + " - " 
 	    							+ d.element.attributes.getValue(0));
     				}
@@ -831,8 +831,8 @@ public class PackInHandler extends DefaultHandler {
     		for (DeferEntry d : defer) {
     			if (!d.startElement) {
     				count++;
-    				if (log.isLoggable(Level.SEVERE))
-    					log.severe("Unresolved: " + d.element.getElementValue() + " - " + d.element.attributes.getValue(0) + ", " + d.element.unresolved);
+    				if (log.isErrorEnabled())
+    					log.error("Unresolved: " + d.element.getElementValue() + " - " + d.element.attributes.getValue(0) + ", " + d.element.unresolved);
     			}
     		}
     		throw new RuntimeException("Failed to resolve dependency for " + count + " elements.");

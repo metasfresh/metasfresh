@@ -22,7 +22,8 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -35,7 +36,8 @@ import javax.swing.table.TableModel;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.swing.CTable;
 import org.compiere.swing.CTableModelRowSorter;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.MSort;
 
 /**
@@ -75,7 +77,7 @@ public class ResultTable extends CTable implements MouseListener
 	private RModel		m_model = null;
 	
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ResultTable.class);
+	private static Logger log = LogManager.getLogger(ResultTable.class);
 
 	/**
 	 *  Create a JTable Model from ReportModel
@@ -93,7 +95,7 @@ public class ResultTable extends CTable implements MouseListener
 	 */
 	public void setModel (RModel reportModel)
 	{
-		log.config(reportModel.toString());
+		log.info(reportModel.toString());
 		m_model = reportModel;
 		super.setModel(new ResultTableModel(reportModel));
 		//
@@ -110,7 +112,7 @@ public class ResultTable extends CTable implements MouseListener
 				//
 			}
 			else
-				log.log(Level.SEVERE, "RColumn=" + rc.getColHeader() + " <> TableColumn=" + tc.getHeaderValue());
+				log.error("RColumn=" + rc.getColHeader() + " <> TableColumn=" + tc.getHeaderValue());
 		}
 		autoSize();
 	}   //  setModel
@@ -145,7 +147,7 @@ public class ResultTable extends CTable implements MouseListener
 	public final void mouseClicked(final MouseEvent e)
 	{
 		final int viewColumnIndex = getColumnModel().getColumnIndexAtX(e.getX());
-		log.fine("Column " + viewColumnIndex + " = " + getColumnModel().getColumn(viewColumnIndex).getHeaderValue()
+		log.debug("Column " + viewColumnIndex + " = " + getColumnModel().getColumn(viewColumnIndex).getHeaderValue()
 				+ ", Table r=" + this.getSelectedRow() + " c=" + this.getSelectedColumn());
 
 		if (e.getSource() == this)
@@ -191,7 +193,7 @@ public class ResultTable extends CTable implements MouseListener
 	 */
 	private void autoSize()
 	{
-		log.config("");
+		log.info("");
 		//
 		final int SLACK = 8;		//	making sure it fits in a column
 		final int MAXSIZE = 300;    //	max size of a column
@@ -201,7 +203,7 @@ public class ResultTable extends CTable implements MouseListener
 		for (int col = 0; col < tcm.getColumnCount(); col++)
 		{
 			TableColumn tc = tcm.getColumn(col);
-		//  log.config( "Column=" + col, tc.getHeaderValue());
+		//  log.info( "Column=" + col, tc.getHeaderValue());
 			int width = 0;
 
 			//	Header
@@ -210,7 +212,7 @@ public class ResultTable extends CTable implements MouseListener
 				renderer = new DefaultTableCellRenderer();
 			Component comp = renderer.getTableCellRendererComponent
 				(this, tc.getHeaderValue(), false, false, 0, 0);
-		//	log.fine( "Hdr - preferred=" + comp.getPreferredSize().width + ", width=" + comp.getWidth());
+		//	log.debug( "Hdr - preferred=" + comp.getPreferredSize().width + ", width=" + comp.getWidth());
 			width = comp.getPreferredSize().width + SLACK;
 
 			//	Cells
@@ -226,7 +228,7 @@ public class ResultTable extends CTable implements MouseListener
 			//	Width not greater ..
 			width = Math.min(MAXSIZE, width);
 			tc.setPreferredWidth(width);
-		//	log.fine( "width=" + width);
+		//	log.debug( "width=" + width);
 		}	//	for all columns
 	}	//	autoSize
 	
@@ -260,7 +262,7 @@ public class ResultTable extends CTable implements MouseListener
 				}
 
 				m_lastSortIndex = modelColumnIndex;
-				log.config("#" + modelColumnIndex + " - rows=" + rows + ", asc=" + m_asc);
+				log.info("#" + modelColumnIndex + " - rows=" + rows + ", asc=" + m_asc);
 
 				final ResultTableModel model = (ResultTableModel)getModel();
 

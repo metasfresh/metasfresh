@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -68,7 +67,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -78,9 +76,15 @@ import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import com.google.common.base.Throwables;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Application Login Window
@@ -119,7 +123,7 @@ public final class ALogin extends CDialog
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Failed initializing the login window", e);
+			log.error("Failed initializing the login window", e);
 		}
 
 		// Focus to OK
@@ -131,7 +135,7 @@ public final class ALogin extends CDialog
 	private ResourceBundle res = ResourceBundle.getBundle(RESOURCE);
 
 	/** Logger */
-	private static final CLogger log = CLogger.getCLogger(ALogin.class);
+	private static final Logger log = LogManager.getLogger(ALogin.class);
 
 	private CPanel mainPanel = new CPanel(new BorderLayout());
 	private CTabbedPane loginTabPane = new CTabbedPane();
@@ -820,7 +824,7 @@ public final class ALogin extends CDialog
 			ADialog.info(m_WindowNo, this, msg);
 
 		// Check Apps Server - DB Checked in Menu
-		// checkVersion();	not checking the DB version here. we do check the version in ClientUpdateValidator, that's enough
+		// checkVersion();			// exits if conflict
 
 		// Close - we are done
 		if (m_connectionOK)
@@ -882,8 +886,8 @@ public final class ALogin extends CDialog
 			}
 			else
 			{
-				final Throwable rootCause = CLogger.getRootCause(e);
-				log.log(Level.SEVERE, rootCause.getLocalizedMessage(), rootCause);
+				final Throwable rootCause = Throwables.getRootCause(e);
+				log.error(rootCause.getLocalizedMessage(), rootCause);
 				statusBar.setStatusLine(rootCause.getLocalizedMessage(), true);
 				return false;
 			}
@@ -940,7 +944,7 @@ public final class ALogin extends CDialog
 		final KeyNamePair role = roleCombo.getSelectedItem();
 		if (role == null || m_comboActive)
 			return;
-		log.config(": " + role);
+		log.info(": " + role);
 		m_comboActive = true;
 		//
 		final KeyNamePair[] clients = m_login.getClients(role);
@@ -983,7 +987,7 @@ public final class ALogin extends CDialog
 		KeyNamePair client = clientCombo.getSelectedItem();
 		if (client == null || m_comboActive)
 			return;
-		log.config(": " + client);
+		log.info(": " + client);
 		m_comboActive = true;
 
 		// @Trifon - Set Proper Env.CTXNAME_AD_Client_ID, Env.CTXNAME_AD_User_ID and Env.CTXNAME_SalesRep_ID
@@ -1046,7 +1050,7 @@ public final class ALogin extends CDialog
 		KeyNamePair org = orgCombo.getSelectedItem();
 		if (org == null || m_comboActive)
 			return;
-		log.config(": " + org);
+		log.info(": " + org);
 		m_comboActive = true;
 		//
 		KeyNamePair[] whs = m_login.getWarehouses(org);

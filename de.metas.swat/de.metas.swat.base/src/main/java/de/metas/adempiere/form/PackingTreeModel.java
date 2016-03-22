@@ -49,7 +49,8 @@ import org.compiere.model.PackagingTreeItemComparable;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.model.X_M_PackagingTreeItemSched;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -72,7 +73,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	 */
 	private static final long serialVersionUID = 447858978512397688L;
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final DefaultMutableTreeNode nodeUnpackedItemsParent;
 
@@ -243,7 +244,7 @@ public class PackingTreeModel extends DefaultTreeModel
 				final I_M_ShipmentSchedule sched = schedItem.getM_ShipmentSchedule();
 				if (sched == null)
 				{
-					logger.warning("No schedule found found "+schedItem+" [SKIP]");
+					logger.warn("No schedule found found "+schedItem+" [SKIP]");
 					continue;
 				}
 				schedWithQty = Collections.singletonMap(sched, schedItem.getQty());

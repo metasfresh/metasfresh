@@ -25,11 +25,11 @@ package org.compiere.apps.search.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.apps.search.IGridTabRowBuilder;
-import org.compiere.util.CLogger;
 
 /**
  * Implementation which groups several {@link IGridTabRowBuilder} and behave like one {@link IGridTabRowBuilder}.
@@ -39,7 +39,7 @@ import org.compiere.util.CLogger;
  */
 public class CompositeGridTabRowBuilder implements IGridTabRowBuilder
 {
-	private static final transient CLogger logger = CLogger.getCLogger(CompositeGridTabRowBuilder.class);
+	private static final transient Logger logger = LogManager.getLogger(CompositeGridTabRowBuilder.class);
 
 	private final List<IGridTabRowBuilder> builders = new ArrayList<IGridTabRowBuilder>();
 
@@ -64,12 +64,12 @@ public class CompositeGridTabRowBuilder implements IGridTabRowBuilder
 		{
 			if (!builder.isValid())
 			{
-				logger.log(Level.FINE, "Skip builder because it's not valid: {0}", builder);
+				logger.debug("Skip builder because it's not valid: {}", builder);
 				continue;
 			}
 
 			builder.apply(model);
-			logger.log(Level.FINE, "Applied {0} to {1}", new Object[] { builder, model });
+			logger.debug("Applied {} to {}", new Object[] { builder, model });
 		}
 	}
 

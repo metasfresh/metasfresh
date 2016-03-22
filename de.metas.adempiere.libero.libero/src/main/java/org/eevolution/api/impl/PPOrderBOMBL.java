@@ -38,7 +38,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IProductBOMBL;
@@ -51,13 +50,15 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
-	private final transient CLogger log = CLogger.getCLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	private I_PP_Order_BOM createOrderBOM(final I_PP_Order ppOrder, final I_PP_Product_BOM bom)
 	{
@@ -206,7 +207,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		{
 			if (!Services.get(IProductBOMBL.class).isValidFromTo(productBOMLine, dateStartSchedule))
 			{
-				log.fine("BOM Line skiped - " + productBOMLine);
+				log.debug("BOM Line skiped - " + productBOMLine);
 				continue;
 			}
 

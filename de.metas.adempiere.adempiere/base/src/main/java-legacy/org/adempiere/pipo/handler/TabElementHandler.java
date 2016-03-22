@@ -20,8 +20,6 @@ package org.adempiere.pipo.handler;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -139,7 +137,7 @@ public class TabElementHandler extends AbstractElementHandler
 				m_Tab.setAD_Column_ID(id);
 				if (id <= 0)
 				{
-					log.warning("@NotFound@ @AD_Column_ID@ - @Name@:"+name+", @AD_Table_ID@:"+atts.getValue("ADTableNameID"));
+					log.warn("@NotFound@ @AD_Column_ID@ - @Name@:"+name+", @AD_Table_ID@:"+atts.getValue("ADTableNameID"));
 				}
 			}
 			m_Tab.setAD_Window_ID(windowid);   
@@ -218,7 +216,7 @@ public class TabElementHandler extends AbstractElementHandler
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE,e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			throw new DatabaseAccessException("Failed to export window tab", e);
 		}
 		finally

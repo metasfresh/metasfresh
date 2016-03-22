@@ -23,15 +23,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.event.ToolbarListener;
 import org.adempiere.webui.session.SessionManager;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -87,7 +89,7 @@ public class CWindowToolbar extends FToolbar implements EventListener
 
 	private static final String EMBEDDED_TOOLBAR_BUTTON_STYLE = "background-color: transparent; display:inline-block; margin-left: 1px; margin-right: 1px; width: 20px; height: 18px;";
 	
-    private static CLogger log = CLogger.getCLogger(CWindowToolbar.class);
+    private static Logger log = LogManager.getLogger(CWindowToolbar.class);
 
     private ToolBarButton btnIgnore;
 
@@ -396,23 +398,23 @@ public class CWindowToolbar extends FToolbar implements EventListener
 		    }
 		    catch(SecurityException e)
 		    {
-		        log.log(Level.SEVERE, "Could not invoke Toolbar listener method: " + methodName + "()", e);
+		        log.error("Could not invoke Toolbar listener method: " + methodName + "()", e);
 		    }
 		    catch(NoSuchMethodException e)
 		    {
-		        log.log(Level.SEVERE, "Could not invoke Toolbar listener method: " + methodName + "()", e);
+		        log.error("Could not invoke Toolbar listener method: " + methodName + "()", e);
 		    }
 		    catch(IllegalArgumentException e)
 		    {
-		        log.log(Level.SEVERE, "Could not invoke Toolbar listener method: " + methodName + "()", e);
+		        log.error("Could not invoke Toolbar listener method: " + methodName + "()", e);
 		    }
 		    catch(IllegalAccessException e)
 		    {
-		        log.log(Level.SEVERE, "Could not invoke Toolbar listener method: " + methodName + "()", e);
+		        log.error("Could not invoke Toolbar listener method: " + methodName + "()", e);
 		    }
 		    catch(InvocationTargetException e)
 		    {
-		        log.log(Level.SEVERE, "Could not invoke Toolbar listener method: " + methodName + "()", e);
+		        log.error("Could not invoke Toolbar listener method: " + methodName + "()", e);
 		    }
 		}
 		this.event = null;

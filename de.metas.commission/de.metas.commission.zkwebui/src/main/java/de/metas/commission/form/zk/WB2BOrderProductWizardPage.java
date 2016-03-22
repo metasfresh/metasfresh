@@ -60,7 +60,8 @@ import org.compiere.model.Query;
 import org.compiere.model.StateChangeEvent;
 import org.compiere.model.StateChangeListener;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.zkoss.zk.ui.Component;
@@ -87,7 +88,7 @@ import de.metas.web.component.ADTabpanelCRUDToolbarListener;
 public class WB2BOrderProductWizardPage
 		implements WizardPage
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
 	private final Div mainPanel = new Div();
 	private final Div panelProduct = new Div();
@@ -363,7 +364,7 @@ public class WB2BOrderProductWizardPage
 			if (M_Warehouse_ID <= 0)
 			{
 				M_Warehouse_ID = Env.getContextAsInt(ctx, "#M_Warehouse_ID");
-				log.warning("Could not found warehouse for AD_Org_ID="+AD_Org_ID);
+				log.warn("Could not found warehouse for AD_Org_ID="+AD_Org_ID);
 			}
 			de.metas.commission.interfaces.I_C_Order order = GridTabWrapper.create(gridTabOrder, de.metas.commission.interfaces.I_C_Order.class);
 			order.setIsSOTrx(true);

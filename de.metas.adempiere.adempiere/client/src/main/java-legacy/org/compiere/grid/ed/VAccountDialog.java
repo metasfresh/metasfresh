@@ -34,7 +34,8 @@ import java.beans.VetoableChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -76,7 +77,8 @@ import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -141,9 +143,9 @@ public final class VAccountDialog extends CDialog
 			final int C_AcctSchema_ID)
 	{
 		super(frame, title, true);
-		if (log.isLoggable(Level.CONFIG))
+		if (log.isInfoEnabled())
 		{
-			log.config("C_AcctSchema_ID=" + C_AcctSchema_ID + ", C_ValidCombination_ID=" + mAccount.getC_ValidCombination_ID());
+			log.info("C_AcctSchema_ID=" + C_AcctSchema_ID + ", C_ValidCombination_ID=" + mAccount.getC_ValidCombination_ID());
 		}
 
 		m_mAccount = mAccount;
@@ -157,7 +159,7 @@ public final class VAccountDialog extends CDialog
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, ex.toString());
+			log.error(ex.toString());
 		}
 
 		if (initAccount())
@@ -207,7 +209,7 @@ public final class VAccountDialog extends CDialog
 	/** Where clause for combination search */
 	private MQuery m_query;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VAccountDialog.class);
+	private static Logger log = LogManager.getLogger(VAccountDialog.class);
 
 	// Editors for Query
 	private VEditor f_C_AcctSchema_ID;
@@ -516,7 +518,7 @@ public final class VAccountDialog extends CDialog
 			m_mTab.navigate(0);
 		}
 
-		log.config("fini");
+		log.info("fini");
 		return true;
 	}	// initAccount
 
@@ -529,7 +531,7 @@ public final class VAccountDialog extends CDialog
 	 */
 	private void addLine(final GridField field, final VEditor editor, final boolean mandatory)
 	{
-		log.fine("Field=" + field);
+		log.debug("Field=" + field);
 		final JLabel label = editorFactory.getLabel(field);
 		label.setLabelFor(editorFactory.getEditorComponent(editor));
 		editor.setReadWrite(true);
@@ -657,7 +659,7 @@ public final class VAccountDialog extends CDialog
 			int row = m_gridController.getTable().getSelectedRow();
 			if (row >= 0)
 				m_C_ValidCombination_ID = ((Integer)m_mTab.getValue(row, "C_ValidCombination_ID")).intValue();
-			log.config("(" + row + ") - " + m_C_ValidCombination_ID);
+			log.info("(" + row + ") - " + m_C_ValidCombination_ID);
 		}
 	}	// saveSelection
 
@@ -716,7 +718,7 @@ public final class VAccountDialog extends CDialog
 	@Override
 	public void dataStatusChanged(DataStatusEvent e)
 	{
-		log.config(e.toString());
+		log.info(e.toString());
 		String info = (String)m_mTab.getValue("Description");
 		f_Description.setText(info);
 		//

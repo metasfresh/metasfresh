@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
@@ -48,6 +47,7 @@ import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPNoteBuilder;
 import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
+import org.slf4j.Logger;
 
 public abstract class AbstractMRPSuppliesPool implements IMRPSuppliesPool
 {
@@ -56,7 +56,7 @@ public abstract class AbstractMRPSuppliesPool implements IMRPSuppliesPool
 	protected final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
 	protected final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	protected final transient CLogger logger;
+	protected final transient Logger logger;
 
 	private final IMRPContext _mrpContext;
 	private final MRPExecutor _mrpExecutor;

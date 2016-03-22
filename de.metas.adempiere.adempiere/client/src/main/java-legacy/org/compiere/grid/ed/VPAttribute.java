@@ -27,7 +27,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -51,7 +52,8 @@ import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.model.MProduct;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
@@ -213,7 +215,7 @@ public class VPAttribute extends JComponent
 	/**	No Instance Key					*/
 	private static Integer		NO_INSTANCE = new Integer(0);
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VPAttribute.class);
+	private static Logger log = LogManager.getLogger(VPAttribute.class);
 		
 
 	/**
@@ -329,7 +331,7 @@ public class VPAttribute extends JComponent
 		if (value.equals(m_value)) 
 			return;
 		//	new value
-		log.fine("Value=" + value);
+		log.debug("Value=" + value);
 		m_value = value;
 		m_text.setText(m_mPAttribute.getDisplay(value));	//	loads value
 	}	//	setValue
@@ -432,7 +434,7 @@ public class VPAttribute extends JComponent
 		int M_ProductBOM_ID =attributeContext.getM_ProductBOM_ID();
 		int M_Locator_ID = -1;
 
-		log.config("M_Product_ID=" + M_Product_ID + "/" + M_ProductBOM_ID
+		log.info("M_Product_ID=" + M_Product_ID + "/" + M_ProductBOM_ID
 			+ ",M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
 			+ ", AD_Column_ID=" + m_AD_Column_ID);
 		
@@ -492,7 +494,7 @@ public class VPAttribute extends JComponent
 		//	Set Value
 		if (changed)
 		{
-			log.finest("Changed M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
+			log.trace("Changed M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
 			m_value = new Object();				//	force re-query display
 			if (M_AttributeSetInstance_ID <= 0)
 				setValue(null);
@@ -502,7 +504,7 @@ public class VPAttribute extends JComponent
 			// Change Locator
 			if (m_GridTab != null && M_Locator_ID > 0)
 			{
-				log.finest("Change M_Locator_ID=" + M_Locator_ID);
+				log.trace("Change M_Locator_ID=" + M_Locator_ID);
 				m_GridTab.setValue("M_Locator_ID", M_Locator_ID);
 			}
 			
@@ -519,7 +521,7 @@ public class VPAttribute extends JComponent
 			}
 			catch (PropertyVetoException pve)
 			{
-				log.log(Level.SEVERE, "", pve);
+				log.error("", pve);
 			}
 			if (M_AttributeSetInstance_ID == oldValueInt && m_GridTab != null && m_GridField != null)
 			{

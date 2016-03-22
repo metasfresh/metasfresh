@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.model.X_AD_ImpFormat;
 import org.compiere.util.DB;
 
@@ -86,7 +84,7 @@ public class MImpFormat extends X_AD_ImpFormat
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getRows", e);
+			log.error("getRows", e);
 		}
 		try
 		{

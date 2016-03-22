@@ -51,8 +51,6 @@ package org.compiere.process;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Level;
-
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.AdempiereUserError;
@@ -113,7 +111,7 @@ public class ColumnEncryption extends SvrProcess {
 			else if (name.equals("TestValue"))
 				p_TestValue = (String) para[i].getParameter();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_Column_ID = getRecord_ID();
 	} // prepare
@@ -189,7 +187,7 @@ public class ColumnEncryption extends SvrProcess {
 			while (testClear.length() < p_MaxLength)
 				testClear += testClear;
 			testClear = testClear.substring(0, p_MaxLength);
-			log.config("Test=" + testClear + " (" + p_MaxLength + ")");
+			log.info("Test=" + testClear + " (" + p_MaxLength + ")");
 			//
 			String encString = SecureEngine.encrypt(testClear);
 			int encLength = encString.length();
@@ -212,13 +210,13 @@ public class ColumnEncryption extends SvrProcess {
 			// If the column has already been encrypted, show a warning message
 			// and exit.
 			if (column.isEncrypted()) {
-				log.severe("EncryptError: Column already encrypted.");
+				log.error("EncryptError: Column already encrypted.");
 				throw new Exception();
 			}
 			// Init the transaction and setup the connection.
 			m_trx = Trx.get(get_TrxName(), true);
 			if ((m_conn = m_trx.getConnection()) == null) {
-				log.warning("EncryptError: No connections available");
+				log.warn("EncryptError: No connections available");
 				throw new Exception();
 			}
 			m_conn.setAutoCommit(false);
@@ -233,7 +231,7 @@ public class ColumnEncryption extends SvrProcess {
 			if (newLength > oldLength)
 				if (changeFieldLength(columnID, columnName, newLength,
 						tableName) == -1) {
-					log.warning("EncryptError [ChangeFieldLength]: "
+					log.warn("EncryptError [ChangeFieldLength]: "
 							+ "ColumnID=" + columnID + ", NewLength="
 							+ newLength);
 					throw new Exception();
@@ -241,7 +239,7 @@ public class ColumnEncryption extends SvrProcess {
 
 			// Encrypt column contents.
 			if (encryptColumnContents(columnName, column.getAD_Table_ID()) == -1) {
-				log.warning("EncryptError: No records encrypted.");
+				log.warn("EncryptError: No records encrypted.");
 				throw new Exception();
 			}
 			
@@ -324,7 +322,7 @@ public class ColumnEncryption extends SvrProcess {
 			updateStmt.setString(1, value);
 			updateStmt.setInt(2, id);
 			if (updateStmt.executeUpdate() != 1) {
-				log.warning("EncryptError: Table=" + tableName + ", ID=" + id);
+				log.warn("EncryptError: Table=" + tableName + ", ID=" + id);
 				throw new Exception();
 			}
 		}
@@ -400,7 +398,7 @@ public class ColumnEncryption extends SvrProcess {
 			// Change the column size physically.
 			if (DB.executeUpdate(alterSql.toString(), false, m_trx
 							.getTrxName()) == -1) {
-				log.warning("EncryptError [ChangeFieldLength]: ColumnID="
+				log.warn("EncryptError [ChangeFieldLength]: ColumnID="
 						+ columnID + ", NewLength=" + length);
 				throw new Exception();
 			}
@@ -408,7 +406,7 @@ public class ColumnEncryption extends SvrProcess {
 			// Change the column size in AD.
 			if (DB.executeUpdate(updateSql.toString(), false, m_trx
 					.getTrxName()) == -1) {
-				log.warning("EncryptError [ChangeFieldLength]: ColumnID="
+				log.warn("EncryptError [ChangeFieldLength]: ColumnID="
 						+ columnID + ", NewLength=" + length);
 				throw new Exception();
 			}

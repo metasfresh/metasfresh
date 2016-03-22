@@ -42,7 +42,8 @@ import java.util.Calendar;
 import org.compiere.model.MGoal;
 import org.compiere.model.MMeasure;
 import org.compiere.model.X_PA_Goal;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CategoryPlot;
@@ -68,7 +69,7 @@ public class GraphBuilder {
 	protected DefaultCategoryDataset linearDataset = new DefaultCategoryDataset();
 	protected DefaultPieDataset pieDataset = new DefaultPieDataset();
 
-	private static final CLogger log = CLogger.getCLogger(GraphBuilder.class);
+	private static final Logger log = LogManager.getLogger(GraphBuilder.class);
 
 	public GraphBuilder() {
 		super();
@@ -261,7 +262,7 @@ public class GraphBuilder {
 		MMeasure measure = getMGoal().getMeasure();
 		if (measure == null)
 		{
-			log.warning("No Measure for " + getMGoal());
+			log.warn("No Measure for " + getMGoal());
 			return null;
 		}
 

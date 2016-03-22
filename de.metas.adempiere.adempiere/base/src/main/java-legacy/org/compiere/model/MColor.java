@@ -22,8 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.compiere.plaf.CompiereColor;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -92,7 +90,7 @@ public class MColor extends X_AD_Color
 	@Override
 	protected Object loadSpecial (ResultSet rs, int index) throws SQLException
 	{
-		log.config(getPOInfo().getColumnName(index));
+		log.info(getPOInfo().getColumnName(index));
 		if (index == get_ColumnIndex("ColorType"))
 			return rs.getString(index+1);
 		return null;
@@ -111,7 +109,7 @@ public class MColor extends X_AD_Color
 	{
 		String colName = getPOInfo().getColumnName(index);
 		String colValue = value == null ? "null" : value.getClass().toString();
-		log.fine(colName + "=" + colValue);
+		log.debug(colName + "=" + colValue);
 		if (value == null)
 			return "NULL";
 		return value.toString();
@@ -132,7 +130,7 @@ public class MColor extends X_AD_Color
 		String ColorType = (String)getColorType();
 		if (ColorType == null)
 		{
-			log.log(Level.SEVERE, "MColor.getAdempiereColor - No ColorType");
+			log.error("MColor.getAdempiereColor - No ColorType");
 			return null;
 		}
 		CompiereColor cc = null;
@@ -207,7 +205,7 @@ public class MColor extends X_AD_Color
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 		}
 		return retValue;
 	}   //  getURL

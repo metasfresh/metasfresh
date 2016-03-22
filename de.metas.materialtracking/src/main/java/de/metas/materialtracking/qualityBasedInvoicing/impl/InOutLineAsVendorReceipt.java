@@ -25,7 +25,8 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
@@ -35,8 +36,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
-import org.compiere.util.CLogger;
-
 import de.metas.document.engine.IDocActionBL;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -51,7 +50,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
  */
 /* package */class InOutLineAsVendorReceipt implements IVendorReceipt<I_M_InOutLine>
 {
-	private static final transient CLogger logger = CLogger.getCLogger(InOutLineAsVendorReceipt.class);
+	private static final transient Logger logger = LogManager.getLogger(InOutLineAsVendorReceipt.class);
 
 	// services
 	// private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -181,7 +180,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		{
 			if (inoutLine.getM_Product_ID() != productId)
 			{
-				logger.log(Level.FINE, "Not counting {0} because its M_Product_ID={1} is not the ID of product {2}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
+				logger.debug("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
 				continue;
 			}
 
@@ -189,7 +188,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 			if (!docActionBL.isStatusOneOf(inoutLine.getM_InOut(), DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 			{
-				logger.log(Level.FINE, "Not counting {0} because its M_InOut has docstatus {1}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
+				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
 				continue;
 			}
 

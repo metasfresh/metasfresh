@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.compiere.model.I_AD_InfoColumn;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -44,7 +45,7 @@ import de.metas.adempiere.util.Permutation;
  */
 public abstract class InfoQueryCriteriaBPSearchAbstract implements IInfoQueryCriteria
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 	
 	private IInfoSimple parent;
 	private I_AD_InfoColumn infoColumn;
@@ -113,7 +114,7 @@ public abstract class InfoQueryCriteriaBPSearchAbstract implements IInfoQueryCri
 					search = ("%" + itr.next() + "%").replace(" ", "%");
 					whereClauses.add("UPPER(bpcs.Search) LIKE UPPER(?)");
 					params.add(search);
-					log.fine("Search: " + search);
+					log.debug("Search: " + search);
 
 				}
 			}
@@ -126,7 +127,7 @@ public abstract class InfoQueryCriteriaBPSearchAbstract implements IInfoQueryCri
 					search += "%";
 				whereClauses.add("UPPER(bpcs.Search) LIKE UPPER(?)");
 				params.add(search);
-				log.fine("Search(2): " + search);
+				log.debug("Search(2): " + search);
 			}
 
 			// list.add ("UPPER(bpcs.Search) LIKE ?");

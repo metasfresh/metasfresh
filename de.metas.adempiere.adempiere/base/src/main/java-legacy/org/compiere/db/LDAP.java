@@ -16,7 +16,8 @@
 package org.compiere.db;
 
 import java.util.Hashtable;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -25,8 +26,6 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.InitialLdapContext;
-
-import org.compiere.util.CLogger;
 
 
 /**
@@ -79,7 +78,7 @@ public class LDAP
 		}
 		catch (Exception e) 
 		{
-			log.log (Level.SEVERE, ldapURL + " - " + principal, e);
+			log.error(ldapURL + " - " + principal, e);
 		    return false;
 		}
 		log.info("OK: " + principal);
@@ -87,7 +86,7 @@ public class LDAP
 	}	//	validate
 	
 	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (LDAP.class);
+	private static Logger log = LogManager.getLogger(LDAP.class);
 	
 	
 	/**

@@ -22,7 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -161,7 +162,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, sql, e); 
+			log.error(sql, e); 
 		}
 		try
 		{
@@ -234,7 +235,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.severe("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
 	}	//	getPDF
@@ -406,7 +407,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 				}
 				else
 				{
-					log.log(Level.SEVERE, "completeIt - Scrapped=" + confirm.getScrappedQty()
+					log.error("completeIt - Scrapped=" + confirm.getScrappedQty()
 						+ " - Difference=" + confirm.getDifferenceQty());
 					
 					m_processMsg = "Differnce Doc not created";

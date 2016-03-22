@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 
-import java.util.logging.Level;
-
 import org.compiere.impexp.BankStatementMatchInfo;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
@@ -48,7 +46,7 @@ public class BankStatementMatcher extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 		m_matchers = MBankStatementMatcher.getMatchers(getCtx(), get_TrxName());
 	}	//	prepare
@@ -65,7 +63,7 @@ public class BankStatementMatcher extends SvrProcess
 		if (m_matchers == null || m_matchers.length == 0)
 			throw new IllegalStateException("No Matchers found");
 		//
-		log.info ("doIt - Table_Name=" + tableName + ", Record_ID=" + Record_ID
+		log.info("doIt - Table_Name=" + tableName + ", Record_ID=" + Record_ID
 			+ ", Matchers=" + m_matchers.length);
 		
 		if (X_I_BankStatement.Table_Name.equals(tableName))
@@ -88,7 +86,7 @@ public class BankStatementMatcher extends SvrProcess
 		if (m_matchers == null || ibs == null || ibs.getC_Payment_ID() != 0)
 			return "--";
 			
-		log.fine("" + ibs);
+		log.debug("" + ibs);
 		BankStatementMatchInfo info = null;
 		for (int i = 0; i < m_matchers.length; i++)
 		{
@@ -122,7 +120,7 @@ public class BankStatementMatcher extends SvrProcess
 		if (m_matchers == null || bsl == null || bsl.getC_Payment_ID() != 0)
 			return "--";
 			
-		log.fine("match - " + bsl);
+		log.debug("match - " + bsl);
 		BankStatementMatchInfo info = null;
 		for (int i = 0; i < m_matchers.length; i++)
 		{
@@ -154,7 +152,7 @@ public class BankStatementMatcher extends SvrProcess
 	{
 		if (m_matchers == null || bs == null)
 			return "--";
-		log.fine("match - " + bs);
+		log.debug("match - " + bs);
 		int count = 0;
 		MBankStatementLine[] lines = bs.getLines(false);
 		for (int i = 0; i < lines.length; i++)

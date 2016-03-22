@@ -24,9 +24,8 @@ package org.compiere.db;
 
 
 import java.sql.Connection;
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import com.mchange.v2.c3p0.AbstractConnectionCustomizer;
 
@@ -42,7 +41,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 {
 
 	private static final String CLIENTINFO_ApplicationName = "ApplicationName";
-	private static CLogger log = CLogger.getCLogger(DB_PostgreSQL_ConnectionCustomizer.class);
+	private static Logger log = LogManager.getLogger(DB_PostgreSQL_ConnectionCustomizer.class);
 
 	/**
 	 * When a new connection is acquired from the underlying postgres JDBC driver, this method sets the connections log limit to "WARNING".
@@ -54,7 +53,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 	@Override
 	public void onAcquire(Connection c, String parentDataSourceIdentityToken) throws Exception
 	{
-		log.log(Level.INFO, "Attempting to set client_min_messages=WARNING for pooled connection: {0} ", c);
+		log.debug("Attempting to set client_min_messages=WARNING for pooled connection: {} ", c);
 		c.prepareStatement("SET client_min_messages=WARNING").execute();
 		
 		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh");

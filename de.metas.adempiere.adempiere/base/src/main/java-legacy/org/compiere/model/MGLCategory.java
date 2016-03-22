@@ -19,10 +19,10 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -92,7 +92,7 @@ public class MGLCategory extends X_GL_Category
 		}
 		catch (Exception e)
 		{
-			s_log.log (Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -130,7 +130,7 @@ public class MGLCategory extends X_GL_Category
 
 	
 	/**	Logger						*/
-	private static CLogger s_log = CLogger.getCLogger (MGLCategory.class);
+	private static Logger s_log = LogManager.getLogger(MGLCategory.class);
 	/**	Cache						*/
 	private static CCache<Integer, MGLCategory> s_cache 
 		= new CCache<Integer, MGLCategory> ("GL_Category", 5);

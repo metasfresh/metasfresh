@@ -19,7 +19,6 @@ package org.adempiere.webui.panel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -32,9 +31,12 @@ import org.adempiere.webui.window.FDialog;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MAttachmentEntry;
 import org.compiere.model.MSysConfig;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.util.media.AMedia;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.au.AuScript;
@@ -69,7 +71,7 @@ public class WAttachment extends Window implements EventListener
 	 */
 	private static final long serialVersionUID = 2923895336573554570L;
 
-	private static CLogger log = CLogger.getCLogger(WAttachment.class);
+	private static Logger log = LogManager.getLogger(WAttachment.class);
 
 	/**	Window No				*/
 	private int	m_WindowNo;
@@ -119,7 +121,7 @@ public class WAttachment extends Window implements EventListener
 	{
 		super();
 		
-		log.config("ID=" + AD_Attachment_ID + ", Table=" + AD_Table_ID + ", Record=" + Record_ID);
+		log.info("ID=" + AD_Attachment_ID + ", Table=" + AD_Table_ID + ", Record=" + Record_ID);
 
 		m_WindowNo = WindowNo;
 
@@ -129,7 +131,7 @@ public class WAttachment extends Window implements EventListener
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		
 		//	Create Model
@@ -270,7 +272,7 @@ public class WAttachment extends Window implements EventListener
 	
 	private void loadAttachments()
 	{
-		log.config("");
+		log.info("");
 		
 		//	Set Text/Description
 		
@@ -321,13 +323,13 @@ public class WAttachment extends Window implements EventListener
 	 */
 	public void displaySelected() {
 		MAttachmentEntry entry = m_attachment.getEntry(displayIndex); 
-		log.config("Index=" + displayIndex + " - " + entry);
+		log.info("Index=" + displayIndex + " - " + entry);
 		if (entry != null && entry.getData() != null)
 		{
 			bSave.setEnabled(true);
 			bDelete.setEnabled(true);
 			
-			log.config(entry.toStringX());
+			log.info(entry.toStringX());
 
 			try
 			{
@@ -339,7 +341,7 @@ public class WAttachment extends Window implements EventListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "attachment", e);
+				log.error("attachment", e);
 			}
 		}
 	}
@@ -474,11 +476,11 @@ public class WAttachment extends Window implements EventListener
 		}
 		catch (InterruptedException e) 
 		{
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			log.warn(e.getLocalizedMessage(), e);
 		}
 	
 		String fileName = media.getName(); 
-		log.config(fileName);
+		log.info(fileName);
 		int cnt = m_attachment.getEntryCount();
 		
 		//update		
@@ -518,7 +520,7 @@ public class WAttachment extends Window implements EventListener
 				while (( byteread=is.read(buf) )!=-1)
 					baos.write(buf,0,byteread);
 			} catch (IOException e) {
-				log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+				log.error(e.getLocalizedMessage(), e);
 				throw new IllegalStateException(e.getLocalizedMessage());
 			}
 			bytes = baos.toByteArray();
@@ -588,7 +590,7 @@ public class WAttachment extends Window implements EventListener
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "attachment", e);
+				log.error("attachment", e);
 			}
 		}
 	}	//	saveAttachmentToFile

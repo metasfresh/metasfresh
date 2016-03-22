@@ -11,7 +11,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyDAO;
@@ -52,7 +53,7 @@ public class GLDistributionBuilder
 	}
 
 	// services
-	private static final transient CLogger log = CLogger.getCLogger(GLDistributionBuilder.class);
+	private static final transient Logger log = LogManager.getLogger(GLDistributionBuilder.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
@@ -125,7 +126,7 @@ public class GLDistributionBuilder
 				}
 				else
 				{
-					log.warning("distribute - Remaining Difference=" + amountNotDistributed);
+					log.warn("distribute - Remaining Difference=" + amountNotDistributed);
 				}
 			}
 		}
@@ -146,7 +147,7 @@ public class GLDistributionBuilder
 				}
 				else
 				{
-					log.warning("distribute - Remaining Qty Difference=" + qtyNotDistributed);
+					log.warn("distribute - Remaining Qty Difference=" + qtyNotDistributed);
 				}
 			}
 		}

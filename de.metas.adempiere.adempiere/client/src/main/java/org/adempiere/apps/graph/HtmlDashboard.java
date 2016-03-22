@@ -44,7 +44,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -65,7 +66,8 @@ import org.compiere.model.MProjectType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRequestType;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -85,7 +87,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	private static Dimension paneldimensionMin = new Dimension(80, 80);
 	private	JEditorPane	html;
 	private enum PAGE_TYPE {PAGE_HOME, PAGE_PERFORMANCE, PAGE_LOGO};
-	private static CLogger log = CLogger.getCLogger (HtmlDashboard.class);
+	private static Logger log = LogManager.getLogger(HtmlDashboard.class);
 	MGoal[] m_goals = null;
 	JPopupMenu 					popupMenu = new JPopupMenu();
 	private CMenuItem mRefresh = new CMenuItem(Msg.getMsg(Env.getCtx(), "Refresh"), Images.getImageIcon2("Refresh16"));
@@ -145,7 +147,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 			while ((cssLine = bufferedReader.readLine()) != null) 
 				result += cssLine + "\n";
 		} catch (IOException e1) {
-			log.log(Level.SEVERE, e1.getLocalizedMessage(), e1);
+			log.error(e1.getLocalizedMessage(), e1);
 		}
 		//System.out.println(result);
 		switch (requestPage) {
@@ -201,7 +203,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 				}
 				catch (SQLException e)
 				{
-					log.log(Level.SEVERE, sql, e);
+					log.error(sql, e);
 				}
 				finally
 				{
@@ -212,7 +214,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 				+ "</div>\n</body>\n</html>\n";
 				break;
 			default: //************************************************************** 
-				log.warning("Unknown option - "+requestPage);
+				log.warn("Unknown option - "+requestPage);
 		}
 		return result;
 	}
@@ -316,7 +318,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 		try {
 			htmlUpdate( new URL( url ) );
 		} catch( MalformedURLException e )	{
-		    log.warning("Malformed URL: " + e );
+		    log.warn("Malformed URL: " + e );
 		}
 	}
 	

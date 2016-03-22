@@ -22,7 +22,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
-import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
 
 /*

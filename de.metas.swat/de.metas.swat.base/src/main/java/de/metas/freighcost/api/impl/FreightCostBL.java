@@ -28,7 +28,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,7 +48,6 @@ import org.compiere.model.MProductPricing;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
@@ -61,7 +61,7 @@ import de.metas.order.IOrderPA;
 // This class was formerly known as de.metas.adempiere.service.impl.FreightCostSubscriptionBL
 public class FreightCostBL implements IFreightCostBL
 {
-	static final CLogger logger = CLogger.getCLogger(FreightCostBL.class);
+	static final Logger logger = LogManager.getLogger(FreightCostBL.class);
 
 	/**
 	 * Checks if the order or shipment is without freight cost for different simple reasons
@@ -74,7 +74,7 @@ public class FreightCostBL implements IFreightCostBL
 	{
 		if (!X_C_Order.DELIVERYVIARULE_Shipper.equals(orderOrInOut.getDeliveryViaRule()))
 		{
-			logger.log(Level.INFO, "No freightcost because of deliveryViaRule={0} (not 'shipper'); Order :{1}"
+			logger.info("No freightcost because of deliveryViaRule={} (not 'shipper'); Order :{}"
 					, new Object[]{orderOrInOut.getDeliveryViaRule(), orderOrInOut});
 			return true;
 		}

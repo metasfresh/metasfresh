@@ -59,6 +59,18 @@ import de.metas.migration.scanner.impl.SingletonScriptScanner;
 
 public final class RolloutMigrate
 {
+	private static final String PROP_DB_NAME = "METASFRESH_DB_NAME";
+
+	private static final String PROP_DB_PASSWORD = "METASFRESH_DB_PASSWORD";
+
+	private static final String PROP_DB_USER = "METASFRESH_DB_USER";
+
+	private static final String PROP_DB_PORT = "METASFRESH_DB_PORT";
+
+	private static final String PROP_DB_SERVER = "METASFRESH_DB_SERVER";
+
+	private static final String PROP_DB_TYPE = "METASFRESH_DB_TYPE";
+
 	private static final String DEFAULT_SETTINGS_FILENAME = "local_settings.properties";
 
 	private static final transient Logger logger = LoggerFactory.getLogger(RolloutMigrate.class);
@@ -298,6 +310,23 @@ public final class RolloutMigrate
 			}
 		}
 
+		//
+		// fallback: be nice to old settings files that contains "ADEMPIERE_" settings.
+		final Properties additionalProps = new Properties();
+		for (String key : settings.stringPropertyNames())
+		{
+			if (!key.contains("ADEMPIERE"))
+			{
+				continue; // nothing to do
+			}
+
+			final String newKey = key.replaceAll("ADEMPIERE", "METASFRESH");
+
+			logger.info("The settings file contains the old settings name " + key + ". Acting as if it was the new settings name " + newKey + ".");
+			additionalProps.setProperty(newKey, settings.getProperty(key));
+		}
+		settings.putAll(additionalProps);
+
 		log("Settings file: " + settingsFilename);
 		this.settings = settings;
 	}
@@ -407,7 +436,7 @@ public final class RolloutMigrate
 					final CreateDBFromTemplateScript createDBFromTemplateScript = CreateDBFromTemplateScript.builder()
 							.templateDBName(templateDBName)
 							.newDBName(newDBName)
-							.newOwner(getProperty("ADEMPIERE_DB_USER", "metasfresh"))
+							.newOwner(getProperty(PROP_DB_USER, "metasfresh"))
 							.build();
 
 					final IScriptScanner result = new SingletonScriptScanner(createDBFromTemplateScript);
@@ -423,15 +452,14 @@ public final class RolloutMigrate
 				@Override
 				protected IDatabase createDatabase()
 				{
-					final String dbType = getProperty("ADEMPIERE_DB_TYPE", "postgresql");
-					final String dbHostname = getProperty("ADEMPIERE_DB_SERVER", "localhost");
-					final String dbPort = getProperty("ADEMPIERE_DB_PORT", "5432");
+					final String dbType = getProperty(PROP_DB_TYPE, "postgresql");
+					final String dbHostname = getProperty(PROP_DB_SERVER, "localhost");
+					final String dbPort = getProperty(PROP_DB_PORT, "5432");
 					final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
-					final String dbUser = getProperty("ADEMPIERE_DB_USER", "metasfresh");
-					final String dbPassword = getProperty("ADEMPIERE_DB_PASSWORD",
+					final String dbUser = getProperty(PROP_DB_USER, "metasfresh");
+					final String dbPassword = getProperty(PROP_DB_PASSWORD,
 							// Default value is null because in case is not configured we shall use other auth methods
-							IDatabase.PASSWORD_NA
-							);
+							IDatabase.PASSWORD_NA);
 					// return a database that does not check whether our script was applied or not
 					return new SQLDatabase(dbType, dbHostname, dbPort, dbName, dbUser, dbPassword)
 					{
@@ -503,17 +531,16 @@ public final class RolloutMigrate
 			@Override
 			protected IDatabase createDatabase()
 			{
-				final String dbType = getProperty("ADEMPIERE_DB_TYPE", "postgresql");
-				final String dbHostname = getProperty("ADEMPIERE_DB_SERVER", "localhost");
-				final String dbPort = getProperty("ADEMPIERE_DB_PORT", "5432");
+				final String dbType = getProperty(PROP_DB_TYPE, "postgresql");
+				final String dbHostname = getProperty(PROP_DB_SERVER, "localhost");
+				final String dbPort = getProperty(PROP_DB_PORT, "5432");
 
-				final String dbName = useNewDBName ? newDBName : getProperty("ADEMPIERE_DB_NAME", "metasfresh");
+				final String dbName = useNewDBName ? newDBName : getProperty(PROP_DB_NAME, "metasfresh");
 
-				final String dbUser = getProperty("ADEMPIERE_DB_USER", "metasfresh");
-				final String dbPassword = getProperty("ADEMPIERE_DB_PASSWORD",
+				final String dbUser = getProperty(PROP_DB_USER, "metasfresh");
+				final String dbPassword = getProperty(PROP_DB_PASSWORD,
 						// Default value is null because in case is not configured we shall use other auth methods
-						IDatabase.PASSWORD_NA
-						);
+						IDatabase.PASSWORD_NA);
 				return new SQLDatabase(dbType, dbHostname, dbPort, dbName, dbUser, dbPassword);
 			}
 		};
@@ -530,16 +557,16 @@ public final class RolloutMigrate
 
 		final HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(
-				writer, // output
-				200, // width,
-				commandName, // cmdLineSyntax
-				header, // header,
-				options, // options
-				4, // leftPad,
-				4, // descPad,
-				footer, // footer,
+				writer,   // output
+				200,   // width,
+				commandName,   // cmdLineSyntax
+				header,   // header,
+				options,   // options
+				4,   // leftPad,
+				4,   // descPad,
+				footer,   // footer,
 				true // autoUsage
-				);
+		);
 
 		writer.flush();
 	}

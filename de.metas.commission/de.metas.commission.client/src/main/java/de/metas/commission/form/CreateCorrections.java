@@ -42,7 +42,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
@@ -99,7 +100,7 @@ public class CreateCorrections extends CreateFrom
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 
 		final Properties ctx = Env.getCtx();
 
@@ -145,7 +146,7 @@ public class CreateCorrections extends CreateFrom
 			}
 		}
 		//
-		log.fine(sql.toString());
+		log.debug(sql.toString());
 
 		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(false);
 
@@ -177,7 +178,7 @@ public class CreateCorrections extends CreateFrom
 		{
 			Timestamp from = (Timestamp)DateFrom;
 			Timestamp to = (Timestamp)DateTo;
-			log.fine("Date From=" + from + ", To=" + to);
+			log.debug("Date From=" + from + ", To=" + to);
 
 			if (from == null && to != null)
 			{
@@ -208,7 +209,7 @@ public class CreateCorrections extends CreateFrom
 	// String s = text.toUpperCase();
 	// if (!s.endsWith("%"))
 	// s += "%";
-	// log.fine("String=" + s);
+	// log.debug("String=" + s);
 	// return s;
 	// } // getSQLText
 
@@ -263,7 +264,7 @@ public class CreateCorrections extends CreateFrom
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql.toString(), e);
+			log.error(sql.toString(), e);
 		}
 		finally
 		{
@@ -306,7 +307,7 @@ public class CreateCorrections extends CreateFrom
 		final Properties ctx = Env.getCtx();
 		final MInvoice thisInvoice = new MInvoice(ctx, invoice.getC_Invoice_ID(), trxName);
 
-		log.config(thisInvoice.toString());
+		log.info(thisInvoice.toString());
 
 		final IBPartnerDAO bPartnerBl = Services.get(IBPartnerDAO.class);
 
@@ -338,7 +339,7 @@ public class CreateCorrections extends CreateFrom
 			final boolean isSmallBusiness = ((Boolean)miniTable.getValueAt(i, 8)); // 8-IsSmallBusinessAtDate
 
 			final MInvoiceLine lineToCorrect = new MInvoiceLine(ctx, invoiceLineId, trxName);
-			log.fine("Correcting " + lineToCorrect);
+			log.debug("Correcting " + lineToCorrect);
 
 			final int plusTaxId;
 			if (isSmallBusiness)

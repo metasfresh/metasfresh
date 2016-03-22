@@ -23,7 +23,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
@@ -180,7 +181,7 @@ public class MRfQResponse extends X_C_RfQResponse
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "getLines", e);
+			log.error("getLines", e);
 		}
 		try
 		{
@@ -243,7 +244,7 @@ public class MRfQResponse extends X_C_RfQResponse
 		MUser to = MUser.get(getCtx(), getAD_User_ID());
 		if (to.get_ID() == 0 || to.getEMail() == null || to.getEMail().length() == 0)
 		{
-			log.log(Level.SEVERE, "No User or no EMail - " + to);
+			log.error("No User or no EMail - " + to);
 			return false;
 		}
 		MClient client = MClient.get(getCtx());

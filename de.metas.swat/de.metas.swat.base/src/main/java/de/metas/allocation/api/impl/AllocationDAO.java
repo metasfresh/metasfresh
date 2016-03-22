@@ -209,7 +209,7 @@ public class AllocationDAO implements IAllocationDAO
 			rs = null;
 			pstmt = null;
 		}
-		// log.fine("getAllocatedAmt - " + retValue);
+		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(COALESCE(v_AllocatedAmt,0), 2);
 		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
 		return retValue;
@@ -266,7 +266,7 @@ public class AllocationDAO implements IAllocationDAO
 			rs = null;
 			pstmt = null;
 		}
-		// log.fine("getAllocatedAmt - " + retValue);
+		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(NVL(v_AllocatedAmt,0), 2);
 		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
 		return retValue == null ? BigDecimal.ZERO : retValue;

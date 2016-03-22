@@ -26,10 +26,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -79,7 +81,7 @@ public class ScheduleUtil
 	public static final Timestamp	LATEST = new Timestamp(new GregorianCalendar(2070,Calendar.DECEMBER,31).getTimeInMillis());
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(ScheduleUtil.class);
+	private static Logger log = LogManager.getLogger(ScheduleUtil.class);
 	
 	
 	/**************************************************************************
@@ -103,7 +105,7 @@ public class ScheduleUtil
 		Timestamp start_Date, Timestamp end_Date,
 		BigDecimal qty, boolean getAll, String trxName)
 	{
-		log.config(start_Date.toString());
+		log.info(start_Date.toString());
 		if (m_S_Resource_ID != S_Resource_ID)
 			getBaseInfo (S_Resource_ID);
 		//
@@ -123,11 +125,11 @@ public class ScheduleUtil
 		m_endDate = end_Date;
 		if (m_endDate == null)
 			m_endDate = MUOMConversion.getEndDate(m_ctx, m_startDate, m_C_UOM_ID, qty);
-		log.fine( "- EndDate=" + m_endDate);
+		log.debug( "- EndDate=" + m_endDate);
 
 
 		//	Resource Unavailability -------------------------------------------
-	//	log.fine( "- Unavailability -");
+	//	log.debug( "- Unavailability -");
 		String sql = "SELECT Description, DateFrom, DateTo "
 		  + "FROM S_ResourceUnavailable "
 		  + "WHERE S_Resource_ID=?"					//	#1
@@ -136,7 +138,7 @@ public class ScheduleUtil
 		  + " AND IsActive='Y'";
 		try
 		{
-	//		log.fine( sql, "ID=" + S_Resource_ID + ", Start=" + m_startDate + ", End=" + m_endDate);
+	//		log.debug( sql, "ID=" + S_Resource_ID + ", Start=" + m_startDate + ", End=" + m_endDate);
 			PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 			pstmt.setInt(1, m_S_Resource_ID);
 			pstmt.setTimestamp(2, m_startDate);
@@ -148,7 +150,7 @@ public class ScheduleUtil
 					TimeUtil.getNextDay(rs.getTimestamp(3)),	//	user entered date need to convert to not including end time
 					Msg.getMsg (m_ctx, "ResourceUnAvailable"), rs.getString(1),
 					MAssignmentSlot.STATUS_UnAvailable);
-			//	log.fine( "- Unavailable", ma);
+			//	log.debug( "- Unavailable", ma);
 				if (getAll)
 					createDaySlot (list, ma);
 				else
@@ -159,7 +161,7 @@ public class ScheduleUtil
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			ma = new MAssignmentSlot (EARLIEST, LATEST,
 				Msg.getMsg (m_ctx, "ResourceUnAvailable"), e.toString(),
 				MAssignmentSlot.STATUS_UnAvailable);
@@ -169,7 +171,7 @@ public class ScheduleUtil
 
 
 		//	NonBusinessDay ----------------------------------------------------
-	//	log.fine( "- NonBusinessDay -");
+	//	log.debug( "- NonBusinessDay -");
 		//	"WHERE TRUNC(Date1) BETWEEN TRUNC(?) AND TRUNC(?)"   causes
 		//	ORA-00932: inconsistent datatypes: expected NUMBER got TIMESTAMP
 		sql = Env.getUserRolePermissions(m_ctx).addAccessSQL(
@@ -180,7 +182,7 @@ public class ScheduleUtil
 		{
 			Timestamp startDay = TimeUtil.getDay(m_startDate);
 			Timestamp endDay = TimeUtil.getDay(m_endDate);
-	//		log.fine( sql, "Start=" + startDay + ", End=" + endDay);
+	//		log.debug( sql, "Start=" + startDay + ", End=" + endDay);
 			PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 			pstmt.setTimestamp(1, startDay);
 			pstmt.setTimestamp(2, endDay);
@@ -191,7 +193,7 @@ public class ScheduleUtil
 					TimeUtil.getNextDay(rs.getTimestamp(2)),	//	user entered date need to convert to not including end time
 					Msg.getMsg(m_ctx, "NonBusinessDay"), rs.getString(1),
 					MAssignmentSlot.STATUS_NonBusinessDay);
-				log.finer("- NonBusinessDay " + ma);
+				log.trace("- NonBusinessDay " + ma);
 				list.add(ma);
 			}
 			rs.close();
@@ -199,7 +201,7 @@ public class ScheduleUtil
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			ma = new MAssignmentSlot (EARLIEST, LATEST,
 				Msg.getMsg(m_ctx, "NonBusinessDay"), e.toString(),
 				MAssignmentSlot.STATUS_NonBusinessDay);
@@ -209,7 +211,7 @@ public class ScheduleUtil
 
 
 		//	ResourceType Available --------------------------------------------
-	//	log.fine( "- ResourceTypeAvailability -");
+	//	log.debug( "- ResourceTypeAvailability -");
 		sql = "SELECT Name, IsTimeSlot,TimeSlotStart,TimeSlotEnd, "	//	1..4
 			+ "IsDateSlot,OnMonday,OnTuesday,OnWednesday,"			//	5..8
 			+ "OnThursday,OnFriday,OnSaturday,OnSunday "			//	9..12
@@ -264,7 +266,7 @@ public class ScheduleUtil
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			ma = new MAssignmentSlot (EARLIEST, LATEST,
 				Msg.getMsg(m_ctx, "ResourceNotInSlotDay"), e.toString(),
 				MAssignmentSlot.STATUS_NonBusinessDay);
@@ -300,7 +302,7 @@ public class ScheduleUtil
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			ma = new MAssignmentSlot (EARLIEST, LATEST,
 				Msg.translate(m_ctx, "S_R"), e.toString(),
 				MAssignmentSlot.STATUS_NotConfirmed);
@@ -558,7 +560,7 @@ public class ScheduleUtil
 			if (m_timeSlots[i].inSlot (time, endTime))
 				return i;
 		}
-		log.log(Level.SEVERE, "MSchedule.getTimeSlotIndex - did not find Slot for " + time + " end=" + endTime);
+		log.error("MSchedule.getTimeSlotIndex - did not find Slot for " + time + " end=" + endTime);
 		return 0;
 	}	//	getTimeSlotIndex
 
@@ -593,7 +595,7 @@ public class ScheduleUtil
 				//
 				m_S_ResourceType_ID = rs.getInt(4);
 				m_C_UOM_ID = rs.getInt(5);
-			//	log.fine( "- Resource_ID=" + m_S_ResourceType_ID + ",IsAvailable=" + m_isAvailable);
+			//	log.debug( "- Resource_ID=" + m_S_ResourceType_ID + ",IsAvailable=" + m_isAvailable);
 			}
 			else
 				m_isAvailable = false;
@@ -602,7 +604,7 @@ public class ScheduleUtil
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.error(sql, e);
 			m_isAvailable = false;
 		}
 		m_S_Resource_ID = S_Resource_ID;
@@ -619,7 +621,7 @@ public class ScheduleUtil
 	private void createTimeSlot (ArrayList<MAssignmentSlot> list,
 		Timestamp startTime, Timestamp endTime)
 	{
-	//	log.fine( "MSchedule.createTimeSlot");
+	//	log.debug( "MSchedule.createTimeSlot");
 		GregorianCalendar cal = new GregorianCalendar(Language.getLoginLanguage().getLocale());
 		cal.setTimeInMillis(m_startDate.getTime());
 		//	End Date for Comparison
@@ -683,7 +685,7 @@ public class ScheduleUtil
 		boolean OnMonday, boolean OnTuesday, boolean OnWednesday,
 		boolean OnThursday, boolean OnFriday, boolean OnSaturday, boolean OnSunday)
 	{
-	//	log.fine( "MSchedule.createDaySlot");
+	//	log.debug( "MSchedule.createDaySlot");
 		GregorianCalendar cal = new GregorianCalendar(Language.getLoginLanguage().getLocale());
 		cal.setTimeInMillis(m_startDate.getTime());
 		//	End Date for Comparison
@@ -727,7 +729,7 @@ public class ScheduleUtil
 	 */
 	private void createDaySlot (ArrayList<MAssignmentSlot> list, MAssignmentSlot ma)
 	{
-	//	log.fine( "MSchedule.createDaySlot", ma);
+	//	log.debug( "MSchedule.createDaySlot", ma);
 		//
 		Timestamp start = ma.getStartTime();
 		GregorianCalendar calStart = new GregorianCalendar();
@@ -778,7 +780,7 @@ public class ScheduleUtil
 		ArrayList<MAssignmentSlot> list = new ArrayList<MAssignmentSlot>();
 		MUOM uom = MUOM.get (m_ctx, m_C_UOM_ID);
 		int minutes = MUOMConversion.convertToMinutes (m_ctx, m_C_UOM_ID, Env.ONE);
-		log.config("Minutes=" + minutes);
+		log.info("Minutes=" + minutes);
 		//
 		if (minutes > 0 && minutes < 60*24)
 		{

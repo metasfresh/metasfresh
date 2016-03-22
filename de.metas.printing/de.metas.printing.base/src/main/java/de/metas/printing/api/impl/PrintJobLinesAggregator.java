@@ -33,7 +33,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.print.attribute.standard.MediaSize;
 
@@ -47,7 +48,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.CLogger;
 import org.compiere.util.Util.ArrayKey;
 
 import com.lowagie.text.Document;
@@ -81,7 +81,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	public static final String DEFAULT_BinaryFormat = "application/pdf";
 
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(PrintJobLinesAggregator.class);
+	private static final transient Logger logger = LogManager.getLogger(PrintJobLinesAggregator.class);
 	private final transient IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final transient IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 
@@ -168,7 +168,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		final List<I_C_Print_Job_Detail> printJobDetails = printJobBL.getCreatePrintJobDetails(jobLine);
 		if (printJobDetails.isEmpty())
 		{
-			logger.log(Level.INFO, "Print Job Line has no details: {0}. Skipping it", jobLine);
+			logger.info("Print Job Line has no details: {}. Skipping it", jobLine);
 			return;
 		}
 
@@ -178,7 +178,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		final ArchiveData archiveData = new ArchiveData(jobLine, archive);
 		if (!archiveData.hasData())
 		{
-			logger.log(Level.INFO, "Print Job Line's Archive has no data: {0}. Skipping it", archiveData);
+			logger.info("Print Job Line's Archive has no data: {}. Skipping it", archiveData);
 			return;
 		}
 
@@ -224,7 +224,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 				}
 				else
 				{
-					logger.log(Level.WARNING, "Ignoring: archive part because LastPages <= 0", ex);
+					logger.warn("Ignoring: archive part because LastPages <= 0", ex);
 				}
 				it.remove();
 				continue;
@@ -287,7 +287,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			}
 			if (pageTo > numberOfPagesAvailable)
 			{
-				logger.log(Level.FINE, "Page to ({0}) is greather then number of pages available. Considering number of pages: {1}", new Object[] { pageTo, numberOfPagesAvailable });
+				logger.debug("Page to ({}) is greather then number of pages available. Considering number of pages: {}", new Object[] { pageTo, numberOfPagesAvailable });
 				pageTo = numberOfPagesAvailable;
 			}
 			if (pageFrom > pageTo)
@@ -569,7 +569,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			mapArchiveParts.put(printPackageInfo, archiveParts);
 		}
 
-		logger.log(Level.FINE, "Adding archive to map: {0}", archivePart);
+		logger.debug("Adding archive to map: {}", archivePart);
 		archiveParts.add(archivePart);
 	}
 
@@ -601,12 +601,12 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		{
 			for (final I_C_Print_PackageInfo printPackageInfo : curentMap.values())
 			{
-				logger.log(Level.FINE, "Adding {0}", printPackageInfo);
+				logger.debug("Adding {}", printPackageInfo);
 
 				final List<ArchivePart> archiveParts = mapArchiveParts.get(printPackageInfo);
 				if (archiveParts == null || archiveParts.isEmpty())
 				{
-					logger.log(Level.INFO, "Skipping {0} because there are not archive parts", printPackageInfo);
+					logger.info("Skipping {} because there are not archive parts", printPackageInfo);
 					continue;
 				}
 
@@ -617,12 +617,12 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 				}
 				if (pagesAdded == 0)
 				{
-					logger.log(Level.INFO, "Skipping {0} because no pages were added", printPackageInfo);
+					logger.info("Skipping {} because no pages were added", printPackageInfo);
 				}
 
 				final int pageFrom = documentCurrentPage + 1;
 				final int pageTo = pageFrom + pagesAdded - 1;
-				logger.log(Level.FINE, "Added {0}: PageFrom={1}, PageTo={2}", new Object[] { printPackageInfo, pageFrom, pageTo });
+				logger.debug("Added {}: PageFrom={}, PageTo={}", new Object[] { printPackageInfo, pageFrom, pageTo });
 
 				printPackageInfo.setPageFrom(pageFrom);
 				printPackageInfo.setPageTo(pageTo);
@@ -632,7 +632,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		}
 		if (documentCurrentPage == 0)
 		{
-			logger.log(Level.INFO, "No pages were added");
+			logger.info("No pages were added");
 			return 0;
 		}
 
@@ -655,12 +655,12 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	private int addArchivePartToPDF0(final PdfCopy copy, final ArchivePart archivePart) throws IOException
 	{
-		logger.log(Level.FINE, "Adding {0}", archivePart);
+		logger.debug("Adding {}", archivePart);
 
 		final ArchiveData archiveData = archivePart.getArchiveData();
 		if (!archiveData.hasData())
 		{
-			logger.log(Level.INFO, "Archive {0} does not contain any data. Skip", archivePart);
+			logger.info("Archive {} does not contain any data. Skip", archivePart);
 			return 0;
 		}
 
@@ -678,17 +678,17 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		if (pageTo > archivePageNums)
 		{
 			// shall not happen at this point
-			logger.log(Level.FINE, "Page to ({0}) is greather then number of pages. Considering number of pages: {1}", new Object[] { pageTo, archivePageNums });
+			logger.debug("Page to ({}) is greather then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
 			pageTo = archivePageNums;
 		}
 		if (pageFrom > pageTo)
 		{
 			// shall not happen at this point
-			logger.log(Level.WARNING, "Page from ({0}) is greather then Page to ({1}). Skipping: {2}", new Object[] { pageFrom, pageTo, archivePart });
+			logger.warn("Page from ({}) is greather then Page to ({}). Skipping: {}", new Object[] { pageFrom, pageTo, archivePart });
 			return 0;
 		}
 
-		logger.log(Level.FINE, "PageFrom={0}, PageTo={1}, NumberOfPages={2}", new Object[] { pageFrom, pageTo, archivePageNums });
+		logger.debug("PageFrom={}, PageTo={}, NumberOfPages={}", new Object[] { pageFrom, pageTo, archivePageNums });
 
 		int pagesAdded = 0;
 		for (int page = pageFrom; page <= pageTo; page++)
@@ -707,7 +707,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		copy.freeReader(reader);
 		reader.close();
 
-		logger.log(Level.FINE, "Added {0} pages", pagesAdded);
+		logger.debug("Added {} pages", pagesAdded);
 		return pagesAdded;
 	}
 
@@ -754,7 +754,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			dataLoaded = true;
 			if (data == null || data.length == 0)
 			{
-				logger.log(Level.INFO, "Archive {0} does not contain any data. Skip", archive);
+				logger.info("Archive {} does not contain any data. Skip", archive);
 				data = null;
 			}
 

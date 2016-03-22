@@ -58,8 +58,8 @@ import de.schaeffer.compiere.mt940.BankstatementLine;
 public class ImportBankstatementCtrl {
 
 	/** the logger */
-	// private CLogger logger =
-	// CLogger.getCLogger(ImportBankstatementCtrl.class);
+	// private Logger logger =
+	// CLogMgt.getLogger(ImportBankstatementCtrl.class);
 
 	public ImportBankstatementCtrl(final Bankstatement statement,
 			final List<MInvoice> invoiceList, final List<MOrder> orderList) {

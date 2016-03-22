@@ -38,7 +38,6 @@ package org.adempiere.webui.apps.form;
 
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Grid;
@@ -60,11 +59,14 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MDocType;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zkex.zul.Borderlayout;
@@ -95,7 +97,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 			setInitOK(false);
 		}
 		AEnv.showWindow(window);
@@ -105,7 +107,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 	private int p_WindowNo;
 
 	/**	Logger			*/
-	private CLogger log = CLogger.getCLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 		
 	protected Label bPartnerLabel = new Label();
 	protected WEditor bPartnerField;
@@ -128,7 +130,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 	 */
 	public boolean dynInit() throws Exception
 	{
-		log.config("");
+		log.info("");
 		
 		super.dynInit();
 		
@@ -250,7 +252,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 	 */
 	public void valueChange (ValueChangeEvent e)
 	{
-		log.config(e.getPropertyName() + "=" + e.getNewValue());
+		log.info(e.getPropertyName() + "=" + e.getNewValue());
 
 		//  BPartner - load Order/Invoice/Shipment
 		if (e.getPropertyName().equals("C_BPartner_ID"))
@@ -287,7 +289,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 	 */
 	protected void initBPOrderDetails (int C_BPartner_ID, boolean forInvoice)
 	{
-		log.config("C_BPartner_ID=" + C_BPartner_ID);
+		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		KeyNamePair pp = new KeyNamePair(0,"");
 		//  load PO Orders - Closed, Completed
 		orderField.removeActionListener(this);
@@ -316,7 +318,7 @@ public class WCreateFromInvoiceUI extends CreateFromInvoice implements EventList
 	 */
 	private void initBPShipmentDetails(int C_BPartner_ID)
 	{
-		log.config("C_BPartner_ID" + C_BPartner_ID);
+		log.info("C_BPartner_ID" + C_BPartner_ID);
 
 		//  load Shipments (Receipts) - Completed, Closed
 		shipmentField.removeActionListener(this);

@@ -28,11 +28,14 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+
+import de.metas.logging.MetasfreshLastError;
 
 /**
  * 	Request Model
@@ -79,13 +82,13 @@ public class MRequest extends X_R_Request
 		}
 		catch (Exception e)
 		{
-			s_log.severe ("Cannot parse " + idString);
+			s_log.error("Cannot parse " + idString);
 		}
 		return R_Request_ID;
 	}	//	getR_Request_ID
 
 	/**	Static Logger					*/
-	private static CLogger	s_log	= CLogger.getCLogger (MRequest.class);
+	private static Logger	s_log	= LogManager.getLogger(MRequest.class);
 	/** Request Tag Start				*/
 	private static final String		TAG_START = "[Req#";
 	/** Request Tag End					*/
@@ -181,7 +184,7 @@ public class MRequest extends X_R_Request
 	{
 		m_requestType = MRequestType.getDefault(getCtx());
 		if (m_requestType == null)
-			log.warning("No default found");
+			log.warn("No default found");
 		else
 			super.setR_RequestType_ID(m_requestType.getR_RequestType_ID());
 	}	//	setR_RequestType_ID
@@ -194,7 +197,7 @@ public class MRequest extends X_R_Request
 		MStatus status = MStatus.getDefault(getCtx(), getR_RequestType_ID());
 		if (status == null)
 		{
-			log.warning("No default found");
+			log.warn("No default found");
 			if (getR_Status_ID() != 0)
 				setR_Status_ID(0);
 		}
@@ -518,6 +521,7 @@ public class MRequest extends X_R_Request
 	 * 	Get Sales Rep
 	 *	@return Sales Rep User
 	 */
+	@Override
 	public MUser getSalesRep()
 	{
 		if (getSalesRep_ID() == 0)
@@ -637,6 +641,7 @@ public class MRequest extends X_R_Request
 	 * 	Set Confidential Type Entry
 	 *	@param ConfidentialTypeEntry confidentiality
 	 */
+	@Override
 	public void setConfidentialTypeEntry (String ConfidentialTypeEntry)
 	{
 		if (ConfidentialTypeEntry == null)
@@ -685,6 +690,7 @@ public class MRequest extends X_R_Request
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MRequest[");
@@ -706,7 +712,7 @@ public class MRequest extends X_R_Request
 //		}
 //		catch (Exception e)
 //		{
-//			log.severe("Could not create PDF - " + e.getMessage());
+//			log.error("Could not create PDF - " + e.getMessage());
 //		}
 		return null;
 	}	//	getPDF
@@ -729,6 +735,7 @@ public class MRequest extends X_R_Request
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		//	Request Type
@@ -982,12 +989,13 @@ public class MRequest extends X_R_Request
 	 * 	Set SalesRep_ID
 	 *	@param SalesRep_ID id
 	 */
+	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
 		if (SalesRep_ID != 0)
 			super.setSalesRep_ID (SalesRep_ID);
 		else if (getSalesRep_ID() != 0)
-			log.warning("Ignored - Tried to set SalesRep_ID to 0 from " + getSalesRep_ID());
+			log.warn("Ignored - Tried to set SalesRep_ID to 0 from " + getSalesRep_ID());
 	}	//	setSalesRep_ID
 	
 	/**
@@ -1045,7 +1053,7 @@ public class MRequest extends X_R_Request
 		}
 		
 		if (m_emailTo.length() > 0)
-			log.saveInfo ("RequestActionEMailOK", m_emailTo.toString());
+			MetasfreshLastError.saveInfo ("RequestActionEMailOK", m_emailTo.toString());
 		
 		return success;
 	}	//	afterSave
@@ -1116,7 +1124,7 @@ public class MRequest extends X_R_Request
 		//	Changes
 		for (int i = 0; i < list.size(); i++)
 		{
-			String columnName = (String)list.get(i);
+			String columnName = list.get(i);
 			message.append("\n").append(Msg.getElement(getCtx(), columnName))
 				.append(": ").append(get_DisplayValue(columnName, false))
 				.append(" -> ").append(get_DisplayValue(columnName, true));
@@ -1131,7 +1139,7 @@ public class MRequest extends X_R_Request
 			message.append("\n----------\n").append(getResult());
 		message.append(getMailTrailer(null));
 		File pdf = createPDF();
-		log.finer(message.toString());
+		log.trace(message.toString());
 		
 		//	Prepare sending Notice/Mail
 		MClient client = MClient.get(getCtx());
@@ -1182,7 +1190,7 @@ public class MRequest extends X_R_Request
 				
 				if (X_AD_User.NOTIFICATIONTYPE_None.equals(NotificationType))
 				{
-					log.config("Opt out: " + Name);
+					log.info("Opt out: " + Name);
 					continue;
 				}
 				if ((X_AD_User.NOTIFICATIONTYPE_EMail.equals(NotificationType)
@@ -1193,14 +1201,14 @@ public class MRequest extends X_R_Request
 						NotificationType = X_AD_User.NOTIFICATIONTYPE_Notice;
 					else
 					{
-						log.config("No EMail: " + Name);
+						log.info("No EMail: " + Name);
 						continue;
 					}
 				}
 				if (X_AD_User.NOTIFICATIONTYPE_Notice.equals(NotificationType)
 					&& AD_Role_ID >= 0)
 				{
-					log.config("No internal User: " + Name);
+					log.info("No internal User: " + Name);
 					continue;
 				}
 
@@ -1224,7 +1232,7 @@ public class MRequest extends X_R_Request
 					}
 					else
 					{
-						log.warning("Failed: " + Name);
+						log.warn("Failed: " + Name);
 						failure++;
 						NotificationType = X_AD_User.NOTIFICATIONTYPE_Notice;
 					}

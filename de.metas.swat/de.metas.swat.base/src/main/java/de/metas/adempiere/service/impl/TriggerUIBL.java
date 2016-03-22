@@ -61,7 +61,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -75,7 +76,7 @@ import de.metas.adempiere.util.CacheTrx;
  */
 public class TriggerUIBL implements ITriggerUIBL
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	public class TriggerUICalloutInstance implements ICalloutInstance
 	{
@@ -529,7 +530,7 @@ public class TriggerUIBL implements ITriggerUIBL
 		{
 			if (evalCtx == null)
 			{
-				log.fine("Context field not specified. Ignoring context variable " + variableName);
+				log.debug("Context field not specified. Ignoring context variable " + variableName);
 				return null;
 			}
 			return getContextValueAsType(evalCtx, variableName, displayType);

@@ -230,7 +230,7 @@ public class M_Element extends X_AD_Element
 					.append(", Help=").append(DB.TO_STRING(getHelp()))
 					.append(" WHERE AD_Element_ID=").append(get_ID());
 				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.fine("afterSave - Columns updated #" + no);
+				log.debug("afterSave - Columns updated #" + no);
 
 				//	Parameter 
 				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
@@ -252,7 +252,7 @@ public class M_Element extends X_AD_Element
 					.append(" WHERE AD_Element_ID=").append(get_ID())
 					.append(" AND IsCentrallyMaintained='Y'");
 				no += DB.executeUpdate(sql.toString(), get_TrxName());
-				log.fine("Parameters updated #" + no);
+				log.debug("Parameters updated #" + no);
 			}
 			
 			if (   is_ValueChanged(M_Element.COLUMNNAME_Name)
@@ -268,11 +268,11 @@ public class M_Element extends X_AD_Element
 					.append(get_ID())
 					.append(") AND IsCentrallyMaintained='Y'");
 				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.fine("Fields updated #" + no);
+				log.debug("Fields updated #" + no);
 				
 				// Info Column - update Name, Description, Help - doesn't have IsCentrallyMaintained currently
 				// no = DB.executeUpdate(sql.toString(), get_TrxName());
-				// log.fine("InfoColumn updated #" + no);
+				// log.debug("InfoColumn updated #" + no);
 			}
 			
 			if (   is_ValueChanged(M_Element.COLUMNNAME_PrintName)
@@ -287,7 +287,7 @@ public class M_Element extends X_AD_Element
 						.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
 						.append(get_ID()).append(")");
 				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.fine("PrintFormatItem updated #" + no);
+				log.debug("PrintFormatItem updated #" + no);
 			}
 			
 		}

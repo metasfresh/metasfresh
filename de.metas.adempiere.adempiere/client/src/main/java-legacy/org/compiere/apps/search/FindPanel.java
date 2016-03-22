@@ -32,7 +32,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -75,7 +76,8 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -104,7 +106,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
-	private static final transient CLogger log = CLogger.getCLogger(FindPanel.class);
+	private static final transient Logger log = LogManager.getLogger(FindPanel.class);
 
 	FindPanel(final FindPanelBuilder builder)
 	{
@@ -155,7 +157,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Find", e);
+			log.error("Find", e);
 		}
 
 		setDefaultButton();
@@ -766,7 +768,7 @@ public final class FindPanel extends CPanel implements ActionListener
 			if (value != null && value.toString().length() > 0)
 			{
 				final String ColumnName = veditor.getName();
-				log.fine(ColumnName + "=" + value);
+				log.debug(ColumnName + "=" + value);
 
 				final FindPanelSearchField field = getSearchFieldByColumnName(ColumnName);
 				final boolean isProductCategoryField = field.isProductCategoryField();
@@ -961,11 +963,11 @@ public final class FindPanel extends CPanel implements ActionListener
 			m_query = MQuery.getNoRecordQuery(m_tableName, false);
 			m_query.setUserQuery(true);
 			m_total = 0;
-			log.warning("Query - over max");
+			log.warn("Query - over max");
 		}
 		else
 		{
-			log.log(Level.INFO, "Query={0}", m_query);
+			log.info("Query={}", m_query);
 		}
 
 		return m_query;
@@ -1006,7 +1008,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	 */
 	private int getNoOfRecords(final MQuery query, final boolean alertZeroRecords)
 	{
-		log.log(Level.CONFIG, "query={0}", query);
+		log.info("query={}", query);
 
 		// metas-2009_0021_AP1_G113: begin
 		if (!alertZeroRecords // we do count optimizations only if
@@ -1067,7 +1069,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 		if (Check.isEmpty(finalSQL, true))
 		{
-			log.log(Level.WARNING, "SQL could not be parsed: " + sql);
+			log.warn("SQL could not be parsed: " + sql);
 			return 0;
 		}
 
@@ -1087,7 +1089,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		catch (SQLException e)
 		{
 			m_total = -1; // don'T show the "too many records" message when it fact we don't know how many bloody records there are.
-			log.log(Level.SEVERE, finalSQL, e);
+			log.error(finalSQL, e);
 			clientUI.warn(m_targetWindowNo, e); // .. show the error instead so the user can call us to fix it
 		}
 		finally
@@ -1113,7 +1115,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		}
 		else
 		{
-			log.config("#" + m_total);
+			log.info("#" + m_total);
 		}
 
 		//

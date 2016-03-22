@@ -28,7 +28,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -82,7 +83,6 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.X_AD_Role;
 import org.compiere.model.X_AD_Table_Access;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -94,7 +94,7 @@ import com.google.common.collect.ImmutableList;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
 	public void resetCache()
@@ -183,7 +183,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final Timestamp dateDay = TimeUtil.trunc(date, TimeUtil.TRUNC_DAY);
 		if (!dateDay.equals(date))
 		{
-			logger.log(Level.WARNING, "For performance purpose, make sure you providing a date which is truncated on day level: {0}", date);
+			logger.warn("For performance purpose, make sure you providing a date which is truncated on day level: {}", date);
 		}
 
 		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateDay);
@@ -697,7 +697,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access" + whereDel, trxName);
 		int docact = DB.executeUpdate(sqlDocAction, trxName);
 
-		logger.fine("AD_Window_ID=" + winDel + "+" + win
+		logger.debug("AD_Window_ID=" + winDel + "+" + win
 				+ ", AD_Process_ID=" + procDel + "+" + proc
 				+ ", AD_Form_ID=" + formDel + "+" + form
 				+ ", AD_Workflow_ID=" + wfDel + "+" + wf
@@ -726,7 +726,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		int wfDel = DB.executeUpdate("DELETE FROM AD_WorkFlow_Access" + whereDel, trxName);
 		int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access" + whereDel, trxName);
 
-		logger.fine("AD_Window_Access=" + winDel
+		logger.debug("AD_Window_Access=" + winDel
 				+ ", AD_Process_Access=" + procDel
 				+ ", AD_Form_Access=" + formDel
 				+ ", AD_Workflow_Access=" + wfDel

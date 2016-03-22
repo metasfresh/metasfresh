@@ -32,7 +32,8 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.NamePair;
@@ -47,7 +48,7 @@ public class SQLValidationRule implements IValidationRule
 {
 	private static final String SYSCONFIG_IsIgnoredValidationCodeFail = "org.adempiere.ad.api.impl.SQLValidationRule.IsIgnoredValidationCodeFail";
 
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final boolean isIgnoredValidationCodeFail;
 
@@ -109,12 +110,12 @@ public class SQLValidationRule implements IValidationRule
 		// metas: begin: us1261
 		if (isIgnoredValidationCodeFail)
 		{
-			log.fine("Loader NOT Validated BUT IGNORED: " + this);
+			log.debug("Loader NOT Validated BUT IGNORED: " + this);
 			return "1=1";
 		}
 		// metas: end: us1261
 
-		log.fine("Loader NOT Validated: " + whereClause);
+		log.debug("Loader NOT Validated: " + whereClause);
 		// Bug 1843862 - Lookups not working on Report Viewer window
 		// globalqss - when called from Viewer window ignore error about unparsabe context variables
 		// there is no context in report viewer windows

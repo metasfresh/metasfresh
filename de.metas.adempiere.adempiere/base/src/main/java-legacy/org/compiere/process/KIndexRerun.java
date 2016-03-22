@@ -17,8 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.util.logging.Level;
-
 import org.compiere.model.MContainer;
 import org.compiere.model.MNewsChannel;
 import org.compiere.model.MNewsItem;
@@ -48,7 +46,7 @@ public class KIndexRerun extends SvrProcess
 			else if (name.equals("CM_WebProject_ID"))
 				p_CM_WebProject_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+				log.error("Unknown Parameter: " + name);
 		}
 	}	//	prepare
 

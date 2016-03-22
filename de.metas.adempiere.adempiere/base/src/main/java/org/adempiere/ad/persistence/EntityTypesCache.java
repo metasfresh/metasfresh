@@ -28,7 +28,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,7 +37,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_EntityType;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -55,7 +55,7 @@ public class EntityTypesCache implements IEntityTypesCache
 	public static final transient EntityTypesCache instance = new EntityTypesCache();
 
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Cache: EntityType to {@link EntityTypeEntry} */
 	private final CCache<String, EntityTypeEntry> cache = new CCache<>(
@@ -188,7 +188,7 @@ public class EntityTypesCache implements IEntityTypesCache
 		{
 			final AdempiereException ex = new AdempiereException("No EntityType entry found for entity type: " + entityType
 					+ "\n Available EntityTypes are: " + cache.keySet());
-			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 		return entry;
 	}

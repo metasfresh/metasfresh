@@ -21,9 +21,8 @@ import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -115,7 +114,7 @@ public class Secure implements SecureInterface
 		}
 		catch (Exception e)
 		{
-			log.finest(hexString + " - " + e.getLocalizedMessage());
+			log.trace(hexString + " - " + e.getLocalizedMessage());
 		}
 		return null;
 	}   //  convertToHexString
@@ -137,7 +136,7 @@ public class Secure implements SecureInterface
 	private MessageDigest	m_md = null;
 
 	/**	Logger						*/
-	private static Logger	log	= Logger.getLogger (Secure.class.getName());
+	private static Logger	log	= LogManager.getLogger(Secure.class.getName());
 
 	/**
 	 * 	Initialize Cipher & Key
@@ -169,7 +168,7 @@ public class Secure implements SecureInterface
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "", ex);
+			log.error("", ex);
 		}
 		m_cipher = cc;
 	}	//	initCipher
@@ -198,13 +197,13 @@ public class Secure implements SecureInterface
 				byte[] encBytes = m_cipher.doFinal(clearText.getBytes("UTF8"));
 				String encString = convertToHexString(encBytes);
 				// globalqss - [ 1577737 ] Security Breach - show database password
-				// log.log (Level.ALL, value + " => " + encString);
+				// log.trace(value + " => " + encString);
 				return encString;
 			}
 			catch (Exception ex)
 			{
-				// log.log(Level.INFO, value, ex);
-				log.log(Level.INFO, "Problem encrypting string", ex);
+				// log.info(value, ex);
+				log.info("Problem encrypting string", ex);
 			}
 		}
 		//	Fallback
@@ -251,7 +250,7 @@ public class Secure implements SecureInterface
 				byte[] out = m_cipher.doFinal(data);
 				String retValue = new String(out, "UTF8");
 				// globalqss - [ 1577737 ] Security Breach - show database password
-				// log.log (Level.ALL, value + " => " + retValue);
+				// log.trace(value + " => " + retValue);
 				return retValue;
 			}
 			catch (Exception ex)

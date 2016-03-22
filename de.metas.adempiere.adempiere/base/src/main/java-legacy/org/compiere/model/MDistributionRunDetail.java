@@ -21,9 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -71,7 +71,7 @@ public class MDistributionRunDetail extends X_T_DistributionRunDetail
 		}
 		catch (Exception e)
 		{
-			s_log.log(Level.SEVERE, sql, e);
+			s_log.error(sql, e);
 		}
 		try
 		{
@@ -89,7 +89,7 @@ public class MDistributionRunDetail extends X_T_DistributionRunDetail
 	}	//	get
 	
 	/**	Static Logger	*/
-	private static CLogger	s_log	= CLogger.getCLogger (MDistributionRunDetail.class);
+	private static Logger	s_log	= LogManager.getLogger(MDistributionRunDetail.class);
 	
 	/**
 	 * 	Standard Constructor
@@ -179,7 +179,7 @@ public class MDistributionRunDetail extends X_T_DistributionRunDetail
 		}
 		else
 			setQty(qty.add(diff));
-		log.fine("Qty=" + qty + ", Min=" + getMinQty() 
+		log.debug("Qty=" + qty + ", Min=" + getMinQty() 
 			+ ", Max=" + max + ", Diff=" + diff + ", newQty=" + getQty() 
 			+ ", Remaining=" + remaining);
 		return remaining;

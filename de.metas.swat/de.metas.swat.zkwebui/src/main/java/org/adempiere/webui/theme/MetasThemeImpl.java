@@ -31,7 +31,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.servlet.ServletRequest;
 
@@ -42,7 +43,6 @@ import org.compiere.model.MImage;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.zkoss.image.AImage;
@@ -58,7 +58,7 @@ import de.metas.adempiere.model.I_AD_OrgInfo;
  */
 public class MetasThemeImpl extends DefaultThemeImpl
 {
-	private final CLogger log = CLogger.getCLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	private final CCache<ArrayKey, Object> logoCache = new CCache<ArrayKey, Object>(I_AD_OrgInfo.Table_Name + "_LogoCache", 10, 0);
 	private final static Object NullImage = new Object();
@@ -219,7 +219,7 @@ public class MetasThemeImpl extends DefaultThemeImpl
 		}
 		catch (final IOException e)
 		{
-			log.log(Level.SEVERE, e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}

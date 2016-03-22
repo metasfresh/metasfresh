@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,8 +43,9 @@ import org.compiere.model.MPayment;
 import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_Payment;
 import org.compiere.model.X_I_BankStatement;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
@@ -57,7 +57,7 @@ import de.metas.currency.ICurrencyBL;
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
 
-	private static final transient CLogger logger = CLogger.getCLogger(BankStatmentPaymentBL.class);
+	private static final transient Logger logger = LogManager.getLogger(BankStatmentPaymentBL.class);
 
 	@Override
 	public void setC_Payment(IBankStatementLineOrRef lineOrRef, I_C_Payment payment)
@@ -139,7 +139,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		{
 			return "--";
 		}
-		logger.fine(ibs.toString());
+		logger.debug(ibs.toString());
 		if (ibs.getC_Invoice_ID() == 0 && ibs.getC_BPartner_ID() == 0)
 		{
 			throw new AdempiereException("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
@@ -197,7 +197,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		{
 			return "--";
 		}
-		logger.fine(bslPO.toString());
+		logger.debug(bslPO.toString());
 
 		// CHANGED
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(bslPO, I_C_BankStatementLine.class);
@@ -430,8 +430,8 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final int AD_Org_ID,
 			final String trxName)
 	{
-		if (logger.isLoggable(Level.FINE))
-			logger.fine(C_Invoice_ID + " - " + C_BPartner_ID + " - " + C_Currency_ID
+		if (logger.isDebugEnabled())
+			logger.debug(C_Invoice_ID + " - " + C_BPartner_ID + " - " + C_Currency_ID
 					+ " - " + StmtAmt + " - " + TrxAmt + " - " + discountAmt
 					+ " - " + overUnderAmt + " - " + writeOffAmt + " - " + C_BP_BankAccount_ID
 					+ " - " + DateTrx + " - " + DateAcct + " - " + Description + " - " + AD_Org_ID);

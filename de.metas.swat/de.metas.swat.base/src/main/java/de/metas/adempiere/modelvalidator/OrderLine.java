@@ -23,7 +23,8 @@ package de.metas.adempiere.modelvalidator;
  */
 
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +37,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -56,7 +56,7 @@ import de.metas.interfaces.I_C_OrderLine;
 public class OrderLine implements ModelValidator
 {
 
-	private static final CLogger logger = CLogger.getCLogger(OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(OrderLine.class);
 
 	private int ad_Client_ID = -1;
 
@@ -119,11 +119,11 @@ public class OrderLine implements ModelValidator
 					true, // usePriceUOM
 					po.get_TrxName());
 
-			logger.log(Level.FINE, "Setting TaxAmtInfo for {0}", ol);
+			logger.debug("Setting TaxAmtInfo for {}", ol);
 			orderLineBL.setTaxAmtInfoIfNotIgnored(po.getCtx(), ol, po.get_TrxName());
 		}
 
-		logger.log(Level.FINE, "Making sure {0} has a M_Shipper_ID", ol);
+		logger.debug("Making sure {} has a M_Shipper_ID", ol);
 		orderLineBL.setShipperIfNotIgnored(po.getCtx(), ol, false, po.get_TrxName());
 	}
 

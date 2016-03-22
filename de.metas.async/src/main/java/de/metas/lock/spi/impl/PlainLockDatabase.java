@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOInSelectionQueryFilter;
@@ -168,7 +167,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		{
 			if (locks.containsKey(recordKey))
 			{
-				logger.log(Level.WARNING, "Already found a lock for key " + recordKey + ". Info: " + locks.get(recordKey));
+				logger.warn("Already found a lock for key " + recordKey + ". Info: " + locks.get(recordKey));
 				return false;
 			}
 

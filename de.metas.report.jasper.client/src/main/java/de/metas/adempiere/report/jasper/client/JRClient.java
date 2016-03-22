@@ -25,7 +25,8 @@ package de.metas.adempiere.report.jasper.client;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import net.sf.jasperreports.engine.JasperPrint;
 
@@ -43,7 +44,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.print.MPrintFormat;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CLogger;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -67,7 +67,7 @@ public class JRClient
 	public static final String SYSCONFIG_JRServerClass_DEFAULT = "de.metas.adempiere.report.jasper.server.RemoteServletServer";
 	public static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 
 	private IJasperServer server = null;
 
@@ -105,7 +105,7 @@ public class JRClient
 		if (!Ini.isClient())
 		{
 			CacheMgt.get().register(cacheListener);
-			logger.config("Registered cache listener for JasperReports");
+			logger.info("Registered cache listener for JasperReports");
 		}
 	}
 
@@ -178,7 +178,7 @@ public class JRClient
 		}
 
 		final String jrClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerClass, SYSCONFIG_JRServerClass_DEFAULT);
-		logger.log(Level.CONFIG, "JasperServer classname: {0}", jrClassname);
+		logger.info("JasperServer classname: {}", jrClassname);
 
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		if (cl == null)
@@ -192,7 +192,7 @@ public class JRClient
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		logger.config("JasperServer instance: " + server);
+		logger.info("JasperServer instance: " + server);
 
 		return server;
 	}

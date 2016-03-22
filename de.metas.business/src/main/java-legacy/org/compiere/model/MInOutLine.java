@@ -557,7 +557,7 @@ public class MInOutLine extends X_M_InOutLine
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		log.fine("");
+		log.debug("");
 		if (newRecord && getParent().isComplete())
 		{
 			throw new AdempiereException("@ParentComplete@ @M_InOutLine_ID@");
@@ -610,7 +610,7 @@ public class MInOutLine extends X_M_InOutLine
 		// {
 		// if (getParent().isSOTrx())
 		// {
-		// log.saveError("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
+		// log.error("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
 		// return false;
 		// }
 		// }
@@ -653,8 +653,8 @@ public class MInOutLine extends X_M_InOutLine
 		 * BigDecimal qty = storage.getQtyOnHand();
 		 * if (getMovementQty().compareTo(qty) > 0)
 		 * {
-		 * log.warning("Qty - Stock=" + qty + ", Movement=" + getMovementQty());
-		 * log.saveError("QtyInsufficient", "=" + qty);
+		 * log.warn("Qty - Stock=" + qty + ", Movement=" + getMovementQty());
+		 * log.error("QtyInsufficient", "=" + qty);
 		 * return false;
 		 * }
 		 * }
@@ -711,7 +711,7 @@ public class MInOutLine extends X_M_InOutLine
 			MInvoiceLine m_il = MInvoiceLine.getOfInOutLine(this);
 			if (m_il == null)
 			{
-				log.severe("No Invoice Line for: " + this.toString());
+				log.error("No Invoice Line for: " + this.toString());
 				return Env.ZERO;
 			}
 			return m_il.getLineNetAmt();
@@ -725,7 +725,7 @@ public class MInOutLine extends X_M_InOutLine
 			MProduct product = getProduct();
 			if (product == null)
 			{
-				log.severe("No Product");
+				log.error("No Product");
 				return Env.ZERO;
 			}
 			return getMovementQty().multiply(product.getVolume());
@@ -735,13 +735,13 @@ public class MInOutLine extends X_M_InOutLine
 			MProduct product = getProduct();
 			if (product == null)
 			{
-				log.severe("No Product");
+				log.error("No Product");
 				return Env.ZERO;
 			}
 			return getMovementQty().multiply(product.getWeight());
 		}
 		//
-		log.severe("Invalid Criteria: " + CostDistribution);
+		log.error("Invalid Criteria: " + CostDistribution);
 		return Env.ZERO;
 	}	// getBase
 

@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.logging.Level;
-
 import org.compiere.model.MTree;
 
 /**
@@ -43,7 +41,7 @@ public class TreeMaintenance extends SvrProcess
 			if (para[i].getParameter() == null)
 				;
 			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: " + name);
 		}
 		m_AD_Tree_ID = getRecord_ID();		//	from Window
 	}	//	prepare

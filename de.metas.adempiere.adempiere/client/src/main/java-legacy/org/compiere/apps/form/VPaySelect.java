@@ -27,7 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -90,7 +91,7 @@ public class VPaySelect extends PaySelect implements FormPanel, ActionListener, 
 		}
 		catch(Exception e)
 		{
-			log.log(Level.SEVERE, "", e);
+			log.error("", e);
 		}
 	}	//	init
 	
@@ -268,7 +269,7 @@ public class VPaySelect extends PaySelect implements FormPanel, ActionListener, 
 	{
 		Timestamp payDate = (Timestamp)fieldPayDate.getValue();
 		miniTable.setColorCompare(payDate);
-		log.config("PayDate=" + payDate);
+		log.info("PayDate=" + payDate);
 		
 		BankInfo bi = (BankInfo)fieldBankAccount.getSelectedItem();
 		
@@ -440,6 +441,6 @@ public class VPaySelect extends PaySelect implements FormPanel, ActionListener, 
 	 */
 	public void executeASync (ProcessInfo pi)
 	{
-		log.config("-");
+		log.info("-");
 	}   //  executeASync
 }   //  VPaySelect

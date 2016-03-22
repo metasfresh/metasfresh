@@ -29,8 +29,6 @@ import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -330,10 +328,10 @@ public class PackOut extends SvrProcess
 						else if (Type.compareTo(X_AD_Package_Exp_Detail.TYPE_EntityType) == 0)
 							createEntityType(AD_EntityType_ID, packOutDocument);
 						else if (Type.compareTo("C") == 0){
-							log.log(Level.INFO,"In PackOut.java handling Code or Other 2pack module creation");
+							log.info("In PackOut.java handling Code or Other 2pack module creation");
 							
 							String fullDirectory = rs1.getString(X_AD_Package_Exp.COLUMNNAME_File_Directory) + rs1.getString(X_AD_Package_Exp.COLUMNNAME_Name)+rs.getString(X_AD_Package_Exp_Detail.COLUMNNAME_Target_Directory);
-							log.log(Level.INFO,"fullDirectory" + fullDirectory);
+							log.info("fullDirectory" + fullDirectory);
 							String targetDirectoryModified=null;
 							char fileseperator1 = '/';
 							char fileseperator2 = '\\';
@@ -426,7 +424,7 @@ public class PackOut extends SvrProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE,e.getLocalizedMessage(), e);
+			log.error(e.getLocalizedMessage(), e);
 			throw e;
 		}
 		finally

@@ -26,8 +26,6 @@ package de.metas.payment.esr.api.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
-import java.util.logging.Level;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -75,7 +73,7 @@ class ESRReceiptLineMatcher extends AbstractESRLineMatcher
 		}
 		catch (NumberFormatException e)
 		{
-			logger.log(Level.INFO, e.getLocalizedMessage(), e);
+			logger.info(e.getLocalizedMessage(), e);
 			esrImportBL.addErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(ctx, ERR_WRONG_CTRL_AMT, new Object[] { ctrlAmtStr }));
 		}
 
@@ -88,7 +86,7 @@ class ESRReceiptLineMatcher extends AbstractESRLineMatcher
 		}
 		catch (NumberFormatException e)
 		{
-			logger.log(Level.INFO, e.getLocalizedMessage(), e);
+			logger.info(e.getLocalizedMessage(), e);
 			esrImportBL.addErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(ctx, ERR_WRONG_CTRL_QTY, new Object[] { trxQtysStr }));
 		}
 

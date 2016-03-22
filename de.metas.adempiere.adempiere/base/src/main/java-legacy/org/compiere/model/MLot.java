@@ -22,9 +22,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
@@ -42,7 +42,7 @@ public class MLot extends X_M_Lot
 	 */
 	private static final long serialVersionUID = -2238962371935615958L;
 	/**	Logger					*/
-	private static CLogger		s_log = CLogger.getCLogger(MLot.class);
+	private static Logger		s_log = LogManager.getLogger(MLot.class);
 
 	/**
 	 * 	Get Lots for Product
@@ -89,7 +89,7 @@ public class MLot extends X_M_Lot
  		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
@@ -121,7 +121,7 @@ public class MLot extends X_M_Lot
 		}
 		catch (SQLException ex)
 		{
-			s_log.log(Level.SEVERE, sql, ex);
+			s_log.error(sql, ex);
 		}
 		finally
 		{
