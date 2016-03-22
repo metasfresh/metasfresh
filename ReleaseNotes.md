@@ -21,7 +21,16 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.10.9 (Upcoming Release)
+
+# metasfresh 4.10.9b (Upcoming Release)  
+
+## Features
+
+## Fixes
+
+## Instructions
+
+# metasfresh 4.10.9 
 
 ## Features
  - 09915 procurement conditions jasper process (109344045046)
