@@ -193,24 +193,7 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
-			
-			<!--
-			<dependency>
-				<artifactId>spring-beans</artifactId>
-				<groupId>org.springframework</groupId>
-				<version>${spring.version}</version>
-			</dependency>
-			<dependency>
-				<artifactId>spring-core</artifactId>
-				<groupId>org.springframework</groupId>
-				<version>${spring.version}</version>
-			</dependency>
-			<dependency>
-				<artifactId>spring-context</artifactId>
-				<groupId>org.springframework</groupId>
-				<version>${spring.version}</version>
-			</dependency>
-			-->
+
 			<!--
 			Using dependency management is a workaround for:
 			[WARNING] Rule 0: org.apache.maven.plugins.enforcer.BanDuplicateClasses failed with message:  
