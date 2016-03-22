@@ -30,6 +30,7 @@ The actual release notes
  - 09925 Create Balance Sheet Jasper (107146104064)
  
 ## Fixes
+ - 09939 Inconsistent ASI in InOutLine (109676742143)
  - 09922 null in tageslot sscc etikett (100681187457)
  - 09923 sepa export npe (106359694025)
 	* if a given bank account info has no aasociated bank, we now give an informative error message
