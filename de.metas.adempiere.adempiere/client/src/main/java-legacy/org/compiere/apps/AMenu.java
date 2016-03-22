@@ -328,11 +328,12 @@ public final class AMenu extends CFrame
 		}
 
 		// Check Build
-		if (!DB.isBuildOK(m_ctx))
-			AEnv.exit(1);
+		// we already check the server version via ClientUpdateValidator and that's enough
+//		if (!DB.isBuildOK(m_ctx))
+//			AEnv.exit(1);
 
 		// Check DB (AppsServer Version checked in Login)
-		DB.isDatabaseOK(m_ctx);
+		// DB.isDatabaseOK(m_ctx); // we already check the server version via ClientUpdateValidator and that's enough
 	}	// initSystem
 
 	// UI

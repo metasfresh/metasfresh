@@ -10,12 +10,12 @@ package org.compiere.pos;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,13 +36,12 @@ import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.ALogin;
 import org.compiere.model.MSession;
 import org.compiere.swing.CFrame;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Splash;
 
 public class PosApplication {
-	
+
 	private Properties m_ctx;
 
 	PosApplication() {
@@ -71,23 +70,25 @@ public class PosApplication {
 		}
 
 		//  Check Build
-		if (!DB.isBuildOK(m_ctx))
-			AEnv.exit(1);
+		// we already check the server version via ClientUpdateValidator and that's enough
+//		if (!DB.isBuildOK(m_ctx))
+//			AEnv.exit(1);
 
 		//  Check DB	(AppsServer Version checked in Login)
-		DB.isDatabaseOK(m_ctx);
-	
+		// DB.isDatabaseOK(m_ctx); 	// we already check the server version via ClientUpdateValidator and that's enough
+
+
 		splash.setText(Msg.getMsg(m_ctx, "Loading"));
 		splash.toFront();
 		splash.paint(splash.getGraphics());
-	
+
 		//
 		if (!Adempiere.startupEnvironment(true)) // Load Environment
-			System.exit(1);		
+			System.exit(1);
 		MSession.get (Env.getCtx(), true);		//	Start Session
-		
+
 		int m_WindowNo = Env.createWindowNo(frame);
-		
+
 	//  Default Image
 		frame.setIconImage(Adempiere.getProductIconSmall());
 
@@ -106,7 +107,7 @@ public class PosApplication {
 		pos.init(0,frame);
 		frame.pack();
 		splash.dispose();
-		splash = null;	
+		splash = null;
 		frame.setVisible(true);
 	}
 
@@ -114,7 +115,7 @@ public class PosApplication {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
 		new PosApplication();
 
 	}

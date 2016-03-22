@@ -37,7 +37,6 @@ import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -821,7 +820,7 @@ public final class ALogin extends CDialog
 			ADialog.info(m_WindowNo, this, msg);
 
 		// Check Apps Server - DB Checked in Menu
-		checkVersion();			// exits if conflict
+		// checkVersion();	not checking the DB version here. we do check the version in ClientUpdateValidator, that's enough
 
 		// Close - we are done
 		if (m_connectionOK)
@@ -1073,44 +1072,45 @@ public final class ALogin extends CDialog
 		m_comboActive = false;
 	}	// orgComboChanged
 
-	/**
-	 * Check Version
-	 *
-	 * @return true if version is OK and false if version could not be checked or is not the same
-	 * @see AEnv#getServerVersion
-	 */
-	private boolean checkVersion()
-	{
-		boolean retValue = false;
-		try
-		{
-			String version = AEnv.getServerVersion();
-			if (Adempiere.getDateVersion().equals(version))
-			{
-				log.config("Server = Client - " + version);
-				retValue = true;
-			}
-			else if (version != null)
-			{
-				StringBuffer msg = new StringBuffer(">>\n");
-				msg.append(res.getString("VersionConflict")).append("\n")
-						.append(res.getString("VersionInfo")).append("\n");
-				msg.append(version == null ? "null" : version).append(" <> ")
-						.append(Adempiere.getDateVersion()).append("\n");
-				msg.append(res.getString("PleaseUpgrade")).append("\n<<");
-				JOptionPane.showMessageDialog(null, msg.toString(),
-						Adempiere.getName() + " - " + res.getString("VersionConflict"),
-						JOptionPane.ERROR_MESSAGE);
-				AEnv.exit(1);
-			}
-		}
-		catch (Exception e)
-		{
-			log.severe("Contact Server failed - "
-					+ e.getClass().toString() + ": " + e.getMessage());
-		}
-		return retValue;
-	}   // checkVersion
+	// @formatter:off
+//	/**
+//	 * Check Version
+//	 *
+//	 * @return true if version is OK and false if version could not be checked or is not the same
+//	 * @see AEnv#getServerVersion
+//	 */
+//	private boolean checkVersion()
+//	{
+//		boolean retValue = false;
+//		try
+//		{
+//			String version = AEnv.getServerVersion();
+//			if (Adempiere.getDateVersion().equals(version))
+//			{
+//				log.config("Server = Client - " + version);
+//				retValue = true;
+//			}
+//			else if (version != null)
+//			{
+//				StringBuffer msg = new StringBuffer(">>\n");
+//				msg.append(res.getString("VersionConflict")).append("\n")
+//						.append(res.getString("VersionInfo")).append("\n");
+//				msg.append(version == null ? "null" : version).append(" <> ")
+//						.append(Adempiere.getDateVersion()).append("\n");
+//				msg.append(res.getString("PleaseUpgrade")).append("\n<<");
+//				JOptionPane.showMessageDialog(null, msg.toString(),
+//						Adempiere.getName() + " - " + res.getString("VersionConflict"),
+//						JOptionPane.ERROR_MESSAGE);
+//				AEnv.exit(1);
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			log.severe("Contact Server failed - " + e.getClass().toString() + ": " + e.getMessage());
+//		}
+//		return retValue;
+//	}   // checkVersion
+	// @formatter:on
 
 	/**************************************************************************
 	 * Language issues

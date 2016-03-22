@@ -19,9 +19,9 @@ import org.compiere.util.EMail;
 
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailBL.IMailbox;
+import de.metas.notification.INotificationBL;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
-import de.metas.notification.INotificationBL;
 
 /*
  * #%L
