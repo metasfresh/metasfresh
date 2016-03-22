@@ -65,10 +65,10 @@ import de.metas.product.IStorageBL;
 
 /**
  * Shipment Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  *          Modifications: Added the RMA functionality (Ashley Ramdass)
  * @author Karsten Thiemann, Schaeffer AG <li>Bug [ 1759431 ] Problems with VCreateFrom
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse <li>FR [ 2520591 ] Support multiples calendar for Org
@@ -82,7 +82,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Create Shipment From Order
-	 * 
+	 *
 	 * @param order order
 	 * @param movementDate optional movement date
 	 * @param forceDelivery ignore order delivery rule
@@ -184,7 +184,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Create new Shipment by copying
-	 * 
+	 *
 	 * @param from shipment
 	 * @param dateDoc date of the document date
 	 * @param C_DocType_ID doc type
@@ -325,7 +325,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**************************************************************************
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_InOut_ID
 	 * @param trxName rx name
@@ -365,7 +365,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -377,7 +377,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Order Constructor - create header only
-	 * 
+	 *
 	 * @param order order
 	 * @param movementDate optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
@@ -499,7 +499,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Invoice Constructor - create header only
-	 * 
+	 *
 	 * @param invoice invoice
 	 * @param C_DocTypeShipment_ID document type or 0
 	 * @param movementDate optional movement date (default today)
@@ -572,7 +572,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Copy Constructor - create header only
-	 * 
+	 *
 	 * @param original original
 	 * @param movementDate optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
@@ -642,7 +642,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Document Status
-	 * 
+	 *
 	 * @return Document Status Clear Text
 	 */
 	public String getDocStatusName()
@@ -652,7 +652,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 */
 	public void addDescription(String description)
@@ -666,7 +666,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -681,7 +681,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Document Info
-	 * 
+	 *
 	 * @return document info (untranslated)
 	 */
 	@Override
@@ -693,7 +693,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Create PDF
-	 * 
+	 *
 	 * @return File or null
 	 */
 	@Override
@@ -713,7 +713,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Create PDF file
-	 * 
+	 *
 	 * @param file output file
 	 * @return file if success
 	 */
@@ -727,7 +727,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Lines of Shipment
-	 * 
+	 *
 	 * @param requery refresh from db
 	 * @return lines
 	 */
@@ -748,7 +748,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Lines of Shipment
-	 * 
+	 *
 	 * @return lines
 	 */
 	public MInOutLine[] getLines()
@@ -758,7 +758,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Confirmations
-	 * 
+	 *
 	 * @param requery requery
 	 * @return array of Confirmations
 	 */
@@ -779,7 +779,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Copy Lines From other Shipment
-	 * 
+	 *
 	 * @param otherShipment shipment
 	 * @param counter set counter info
 	 * @param setOrder set order link
@@ -809,7 +809,9 @@ public class MInOut extends X_M_InOut implements DocAction
 				line.setM_RMALine_ID(0); // Reset RMA Line
 			}
 			if (!counter)
+			{
 				line.setM_AttributeSetInstance_ID(0);
+			}
 			// line.setS_ResourceAssignment_ID(0);
 			line.setRef_InOutLine_ID(0);
 			line.setIsInvoiced(false);
@@ -863,7 +865,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Set Reversal
-	 * 
+	 *
 	 * @param reversal reversal
 	 */
 	private void setReversal(boolean reversal)
@@ -873,7 +875,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Is Reversal
-	 * 
+	 *
 	 * @return reversal
 	 */
 	private boolean isReversal()
@@ -883,7 +885,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Set Processed. Propagate to Lines/Taxes
-	 * 
+	 *
 	 * @param processed processed
 	 */
 	@Override
@@ -902,7 +904,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get BPartner
-	 * 
+	 *
 	 * @return partner
 	 */
 	public MBPartner getBPartner()
@@ -914,7 +916,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Set Document Type
-	 * 
+	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
 	 */
 	public void setC_DocType_ID(String DocBaseType)
@@ -950,7 +952,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Set Business Partner Defaults & Details
-	 * 
+	 *
 	 * @param bp business partner
 	 */
 	public void setBPartner(MBPartner bp)
@@ -1041,7 +1043,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Set Warehouse and check/set Organization
-	 * 
+	 *
 	 * @param M_Warehouse_ID id
 	 */
 	@Override
@@ -1079,7 +1081,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @return true or false
 	 */
@@ -1132,7 +1134,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -1157,7 +1159,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**************************************************************************
 	 * Process document
-	 * 
+	 *
 	 * @param processAction document action
 	 * @return true if performed
 	 */
@@ -1175,7 +1177,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1188,7 +1190,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1201,7 +1203,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -1312,7 +1314,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1325,7 +1327,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1338,7 +1340,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -1468,11 +1470,11 @@ public class MInOut extends X_M_InOut implements DocAction
 							else
 								orderedDiff = ma.getMovementQty().negate();
 						}
-						
+
 						// Update Storage - see also VMatch.createMatchRecord
 						// task 08999 : update the storage async
 						storageBL.addAsync(
-								getCtx(), 
+								getCtx(),
 								getM_Warehouse_ID(),
 								sLine.getM_Locator_ID(),
 								sLine.getM_Product_ID(),
@@ -1487,7 +1489,7 @@ public class MInOut extends X_M_InOut implements DocAction
 							MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
 							// task 08999 : update the storage async
 							storageBL.addAsync(
-									getCtx(), 
+									getCtx(),
 									Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
 									Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(),
 									sLine.getM_Product_ID(),
@@ -1513,7 +1515,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					// Fallback: Update Storage - see also VMatch.createMatchRecord
 					// task 08999 : update the storage async
 					storageBL.addAsync(
-							getCtx(), 
+							getCtx(),
 							getM_Warehouse_ID(),
 							sLine.getM_Locator_ID(),
 							sLine.getM_Product_ID(),
@@ -1525,7 +1527,7 @@ public class MInOut extends X_M_InOut implements DocAction
 						MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
 						// task 08999 : update the storage async
 						storageBL.addAsync(
-								getCtx(), 
+								getCtx(),
 								Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
 								Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(), +
 								sLine.getM_Product_ID(),
@@ -1543,7 +1545,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			} // stock movement
 
 			// Correct Order Line
-// task 09358: get rid of this; instead, update qtyReserved at one central place			
+// task 09358: get rid of this; instead, update qtyReserved at one central place
 //			if (product != null && oLine != null) // other in VMatch.createMatchRecord
 //			{
 //				oLine.setQtyReserved(oLine.getQtyReserved().subtract(
@@ -1633,7 +1635,7 @@ public class MInOut extends X_M_InOut implements DocAction
 						// Ship - PO
 						final MMatchPO po = MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
 						InterfaceWrapperHelper.save(po, get_TrxName());
-						
+
 						// Update PO with ASI
 						if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
 								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0) // just if full match [
@@ -1654,7 +1656,7 @@ public class MInOut extends X_M_InOut implements DocAction
 							// Ship - Invoice
 							MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
 							InterfaceWrapperHelper.save(po, get_TrxName());
-							
+
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());
 							if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
@@ -1684,7 +1686,7 @@ public class MInOut extends X_M_InOut implements DocAction
 							.setAllowQtysOfOppositeSigns(true) // backward compatibility
 							.setSkipIfMatchingsAlreadyExist(true) // backward compatibility
 							.build();
-					
+
 					// Update matched invoice line's ASI
 					if (matchInvCreated && iLine.getM_AttributeSetInstance_ID() != sLine.getM_AttributeSetInstance_ID())
 					{
@@ -1730,7 +1732,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Order the lines to avoid deadlocks in MStorage, when multiple concurrent threads try to acquire locks on on the same set of storages, but in different orderings
-	 * 
+	 *
 	 * @param lines
 	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */
@@ -1778,7 +1780,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Renumber Lines Without Comment
-	 * 
+	 *
 	 * @param step start and step
 	 */
 	public void renumberLinesWithoutComment(final int step)
@@ -1819,7 +1821,7 @@ public class MInOut extends X_M_InOut implements DocAction
 // @formatter:off
 //	/**
 //	 * Automatically creates a customer shipment for any drop shipment material receipt Based on createCounterDoc() by JJ
-//	 * 
+//	 *
 //	 * @return shipment if created else null
 //	 */
 //	private List<MInOut> createDropShipment()
@@ -1858,7 +1860,7 @@ public class MInOut extends X_M_InOut implements DocAction
 //			iol2QtyLeft.put(iol, iol.getMovementQty());
 //
 //			final List<MOrderLine> soOls = new ArrayList<>();
-//			
+//
 //			final MOrderLine poOl = (MOrderLine)iol.getC_OrderLine();
 //			boolean hasPurchaseOrderLine = poOl != null && poOl.getC_OrderLine_ID() > 0;
 //			if (hasPurchaseOrderLine)
@@ -2050,16 +2052,21 @@ public class MInOut extends X_M_InOut implements DocAction
 			{
 				MAttributeSetInstance asi = null;
 				// auto balance negative on hand
-				MStorage[] storages = MStorage.getWarehouse(getCtx(), getM_Warehouse_ID(), line.getM_Product_ID(), 0,
-						null, MClient.MMPOLICY_FiFo.equals(product.getMMPolicy()), false, line.getM_Locator_ID(), get_TrxName());
-				for (MStorage storage : storages)
-				{
-					if (storage.getQtyOnHand().signum() < 0)
-					{
-						asi = new MAttributeSetInstance(getCtx(), storage.getM_AttributeSetInstance_ID(), get_TrxName());
-						break;
-					}
-				}
+				// task 09939: don't just pick "any" ASI-id and assign it to the iol!
+				// it will be the wrong one, because we M_Storage.M_AttributeSetInstance_ID is not not synched with the HU-Attributes.
+				// more, we are going to remove M_AttributeSetInstance_ID from M_Storage anyways
+// @formatter:off
+//				MStorage[] storages = MStorage.getWarehouse(getCtx(), getM_Warehouse_ID(), line.getM_Product_ID(), 0,
+//						null, MClient.MMPOLICY_FiFo.equals(product.getMMPolicy()), false, line.getM_Locator_ID(), get_TrxName());
+//				for (MStorage storage : storages)
+//				{
+//					if (storage.getQtyOnHand().signum() < 0)
+//					{
+//						asi = new MAttributeSetInstance(getCtx(), storage.getM_AttributeSetInstance_ID(), get_TrxName());
+//						break;
+//					}
+//				}
+// @formatter:on
 				// always create asi so fifo/lifo work.
 				if (asi == null)
 				{
@@ -2122,7 +2129,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**************************************************************************
 	 * Create Counter Document
-	 * 
+	 *
 	 * @return InOut
 	 */
 	private MInOut createCounterDoc()
@@ -2227,7 +2234,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2285,7 +2292,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2309,7 +2316,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Reverse Correction - same date
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2327,7 +2334,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			m_processMsg = "@PeriodClosed@";
 			return false;
 		}
-		
+
 		//
 		// Delete invoice matching records
 		// (no matter is IsSOTrx or not, because we are creating them for both cases)
@@ -2448,7 +2455,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		{
 			return; // nothing to do
 		}
-		
+
 		for (final I_M_MatchPO matchPO : MMatchPO.getInOut(getCtx(), getM_InOut_ID(), get_TrxName()))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
@@ -2466,7 +2473,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -2488,7 +2495,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -2628,7 +2635,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/*************************************************************************
 	 * Get Summary
-	 * 
+	 *
 	 * @return Summary of Document
 	 */
 	@Override
@@ -2648,7 +2655,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Process Message
-	 * 
+	 *
 	 * @return clear text error message
 	 */
 	@Override
@@ -2659,7 +2666,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Document Owner (Responsible)
-	 * 
+	 *
 	 * @return AD_User_ID
 	 */
 	@Override
@@ -2670,7 +2677,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get Document Approval Amount
-	 * 
+	 *
 	 * @return amount
 	 */
 	@Override
@@ -2681,7 +2688,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Get C_Currency_ID
-	 * 
+	 *
 	 * @return Accounting Currency
 	 */
 	@Override
@@ -2692,7 +2699,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	/**
 	 * Document Status is Complete or Closed
-	 * 
+	 *
 	 * @return true if CO, CL or RE
 	 */
 	public boolean isComplete()
