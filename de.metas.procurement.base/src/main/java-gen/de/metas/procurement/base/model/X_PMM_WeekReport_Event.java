@@ -14,7 +14,7 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -938227434L;
+	private static final long serialVersionUID = -1618605524L;
 
     /** Standard Constructor */
     public X_PMM_WeekReport_Event (Properties ctx, int PMM_WeekReport_Event_ID, String trxName)
@@ -245,16 +245,16 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 		return false;
 	}
 
-	/** Set Wochen.
-		@param WeekDate Wochen	  */
+	/** Set Wochendatum.
+		@param WeekDate Wochendatum	  */
 	@Override
 	public void setWeekDate (java.sql.Timestamp WeekDate)
 	{
 		set_Value (COLUMNNAME_WeekDate, WeekDate);
 	}
 
-	/** Get Wochen.
-		@return Wochen	  */
+	/** Get Wochendatum.
+		@return Wochendatum	  */
 	@Override
 	public java.sql.Timestamp getWeekDate () 
 	{

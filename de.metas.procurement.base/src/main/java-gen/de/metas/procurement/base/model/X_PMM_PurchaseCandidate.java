@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1783510625L;
+	private static final long serialVersionUID = 2106503273L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -29,7 +29,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 			setC_UOM_ID (0);
 			setDatePromised (new Timestamp( System.currentTimeMillis() ));
 			setM_HU_PI_Item_Product_ID (0);
-			setM_PriceList_ID (0);
 			setM_PricingSystem_ID (0);
 			setM_Product_ID (0);
 			setPMM_PurchaseCandidate_ID (0);
@@ -441,6 +440,64 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * PMM_Trend_NextWeek AD_Reference_ID=540648
+	 * Reference name: PMM_Trend
+	 */
+	public static final int PMM_TREND_NEXTWEEK_AD_Reference_ID=540648;
+	/** Up = U */
+	public static final String PMM_TREND_NEXTWEEK_Up = "U";
+	/** Down = D */
+	public static final String PMM_TREND_NEXTWEEK_Down = "D";
+	/** Same = E */
+	public static final String PMM_TREND_NEXTWEEK_Same = "E";
+	/** Zero = Z */
+	public static final String PMM_TREND_NEXTWEEK_Zero = "Z";
+	/** Set Trend (next week).
+		@param PMM_Trend_NextWeek Trend (next week)	  */
+	@Override
+	public void setPMM_Trend_NextWeek (java.lang.String PMM_Trend_NextWeek)
+	{
+
+		throw new IllegalArgumentException ("PMM_Trend_NextWeek is virtual column");	}
+
+	/** Get Trend (next week).
+		@return Trend (next week)	  */
+	@Override
+	public java.lang.String getPMM_Trend_NextWeek () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend_NextWeek);
+	}
+
+	/** 
+	 * PMM_Trend_ThisWeek AD_Reference_ID=540648
+	 * Reference name: PMM_Trend
+	 */
+	public static final int PMM_TREND_THISWEEK_AD_Reference_ID=540648;
+	/** Up = U */
+	public static final String PMM_TREND_THISWEEK_Up = "U";
+	/** Down = D */
+	public static final String PMM_TREND_THISWEEK_Down = "D";
+	/** Same = E */
+	public static final String PMM_TREND_THISWEEK_Same = "E";
+	/** Zero = Z */
+	public static final String PMM_TREND_THISWEEK_Zero = "Z";
+	/** Set Trend (this week).
+		@param PMM_Trend_ThisWeek Trend (this week)	  */
+	@Override
+	public void setPMM_Trend_ThisWeek (java.lang.String PMM_Trend_ThisWeek)
+	{
+
+		throw new IllegalArgumentException ("PMM_Trend_ThisWeek is virtual column");	}
+
+	/** Get Trend (this week).
+		@return Trend (this week)	  */
+	@Override
+	public java.lang.String getPMM_Trend_ThisWeek () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend_ThisWeek);
 	}
 
 	/** Set Preis.

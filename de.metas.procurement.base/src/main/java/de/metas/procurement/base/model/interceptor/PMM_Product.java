@@ -6,15 +6,11 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.procurement.base.ISyncBL;
+import de.metas.procurement.base.IPMMProductBL;
+import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
 /*
  * #%L
@@ -54,7 +50,7 @@ public class PMM_Product
 					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct)
 	{
-		updateReadOnlyFields0(pmmProduct);
+		Services.get(IPMMProductBL.class).update(pmmProduct);
 	}
 
 
@@ -63,24 +59,7 @@ public class PMM_Product
 			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct, final ICalloutField unused)
 	{
-		updateReadOnlyFields0(pmmProduct);
-	}
-
-	private void updateReadOnlyFields0(I_PMM_Product pmmProduct)
-	{
-		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Product();
-		if (huPiItemProd != null)
-		{
-			pmmProduct.setValidFrom(huPiItemProd.getValidFrom());
-			pmmProduct.setValidTo(huPiItemProd.getValidTo());
-			pmmProduct.setC_BPartner_ID(huPiItemProd.getC_BPartner_ID());
-		}
-		else
-		{
-			pmmProduct.setValidFrom(null);
-			pmmProduct.setValidTo(null);
-			pmmProduct.setC_BPartner(null);
-		}
+		Services.get(IPMMProductBL.class).update(pmmProduct);
 	}
 
 	@ModelChange(
@@ -92,22 +71,6 @@ public class PMM_Product
 					I_PMM_Product.COLUMNNAME_M_Warehouse_ID, })
 	public void syncWithUI(final I_PMM_Product pmmProduct)
 	{
-		final ISyncBL syncBL = Services.get(ISyncBL.class);
-
-		final IAgentSync agentSync = syncBL.getAgentSyncOrNull();
-		if (agentSync == null)
-		{
-			return;
-		}
-
-		final I_M_Product product = pmmProduct.getM_Product();
-		final String produtName = product == null ? null : product.getName();
-
-		final SyncProduct syncProduct = syncBL.createSyncProduct(produtName, pmmProduct);
-
-		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
-		syncProductsRequest.getProducts().add(syncProduct);
-
-		agentSync.syncProducts(syncProductsRequest);
+		Services.get(IWebuiPush.class).pushProduct(pmmProduct);
 	}
 }

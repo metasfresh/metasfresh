@@ -1,10 +1,11 @@
 package de.metas.procurement.base;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 
+import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncProduct;
 
 /*
  * #%L
@@ -28,20 +29,29 @@ import de.metas.procurement.sync.protocol.SyncProduct;
  * #L%
  */
 /**
- * Contains business logic that is potentially used at more than one place.
+ * Service which allows us to PUSH from metasfresh server to webui server.
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public interface ISyncBL extends ISingletonService
+public interface IWebuiPush extends ISingletonService
 {
-	SyncProduct createSyncProduct(String productName, I_PMM_Product pmmProduct);
+	/**
+	 * @return true if the webui connection is available
+	 */
+	boolean checkAvailable();
 
 	/**
-	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
-	 * If no such client endpoint is avaialabe, return <code>null</code>.
-	 *
-	 * @return
+	 * Push bpartner (without pushing the bpartner's contracts).
+	 * 
+	 * @param bpartner
 	 */
-	IAgentSync getAgentSyncOrNull();
+	void pushBPartnerWithoutContracts(I_C_BPartner bpartner);
+
+	void pushBPartnerForContact(I_AD_User contact);
+
+	void pushBPartnerForContract(I_C_Flatrate_Term contract);
+
+	void pushProduct(I_PMM_Product pmmProduct);
+
 }

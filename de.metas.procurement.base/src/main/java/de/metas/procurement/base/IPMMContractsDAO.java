@@ -1,13 +1,16 @@
-package de.metas.procurement.sync.protocol;
+package de.metas.procurement.base;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
+
+import de.metas.flatrate.model.I_C_Flatrate_Term;
 
 /*
  * #%L
- * de.metas.procurement.sync-api
+ * de.metas.procurement.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -27,25 +30,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  * #L%
  */
 
-@XmlRootElement(name = "SyncProductRequest")
-public class SyncProductsRequest
+public interface IPMMContractsDAO extends ISingletonService
 {
-	public static final SyncProductsRequest of(final SyncProduct syncProduct)
-	{
-		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
-		syncProductsRequest.getProducts().add(syncProduct);
-		return syncProductsRequest;
-	}
-	
-	private List<SyncProduct> products = new ArrayList<>();
 
-	public List<SyncProduct> getProducts()
-	{
-		return products;
-	}
+	List<I_C_Flatrate_Term> retrieveAllRunningContractsOnDate(Date date);
 
-	public void setProducts(List<SyncProduct> products)
-	{
-		this.products = products;
-	}
+	List<I_C_Flatrate_Term> retrieveRunningContractsOnDateForBPartner(Date date, int bpartnerId);
+
+	boolean hasRunningContract(I_C_BPartner bpartner);
+
 }

@@ -156,7 +156,7 @@ public interface I_PMM_Product
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
@@ -165,7 +165,7 @@ public interface I_PMM_Product
 	 * Get Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_Product_ID();
@@ -238,6 +238,29 @@ public interface I_PMM_Product
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Packbeschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackDescription (java.lang.String PackDescription);
+
+	/**
+	 * Get Packbeschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPackDescription();
+
+    /** Column definition for PackDescription */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_PackDescription = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "PackDescription", null);
+    /** Column name PackDescription */
+    public static final String COLUMNNAME_PackDescription = "PackDescription";
+
+	/**
 	 * Set Lieferprodukt.
 	 *
 	 * <br>Type: ID
@@ -259,6 +282,31 @@ public interface I_PMM_Product
     public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_PMM_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "PMM_Product_ID", null);
     /** Column name PMM_Product_ID */
     public static final String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
+
+	/**
+	 * Set Produktname.
+	 * Name des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductName (java.lang.String ProductName);
+
+	/**
+	 * Get Produktname.
+	 * Name des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductName();
+
+    /** Column definition for ProductName */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "ProductName", null);
+    /** Column name ProductName */
+    public static final String COLUMNNAME_ProductName = "ProductName";
 
 	/**
 	 * Get Aktualisiert.

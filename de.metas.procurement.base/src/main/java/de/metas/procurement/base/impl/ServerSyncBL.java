@@ -3,18 +3,11 @@ package de.metas.procurement.base.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -23,50 +16,31 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.procurement.base.IServerSyncBL;
-import de.metas.procurement.base.ISyncBL;
-import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.sync.util.UUIDs;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /*
  * #%L
@@ -95,212 +69,13 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
-		try
-		{
-			return getAllBPartners0();
-		}
-		catch (Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-	}
-
-	private List<SyncBPartner> getAllBPartners0() throws Exception
-	{
-		final LoadingCache<Integer, SyncBPartner> bpartner2sycBPartner = CacheBuilder.newBuilder()
-				.build(new CacheLoader<Integer, SyncBPartner>()
-				{
-					@Override
-					public SyncBPartner load(final Integer bpartnerId) throws Exception
-					{
-						return createSyncBPartner(bpartnerId);
-					}
-				});
-
-		// retrieve the flatrate terms
-		final Timestamp time = SystemTime.asTimestamp();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final List<I_C_Flatrate_Term> terms = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				// .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, time) also add terms that start in future, so we already have them on the frontend-UI
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, time)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend)
-				.create()
-				.list();
-
-		final List<I_PMM_Product> allPmmProducts = createPMMProductQueryBuilder(time)
-				.create()
-				.list();
-
-		final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product = MultimapBuilder.hashKeys().arrayListValues().build();
-		for (final I_PMM_Product product : allPmmProducts)
-		{
-			key2product.put(
-					new Pair<>(product.getC_BPartner_ID(), product.getM_Product_ID()),
-					product);
-		}
-
-		// create the objects to send
-		for (final I_C_Flatrate_Term term : terms)
-		{
-			final int bpartnerId = term.getDropShip_BPartner_ID();
-			final SyncBPartner syncBPartner = bpartner2sycBPartner.get(bpartnerId);
-
-			final SyncContract syncContract = new SyncContract();
-			syncContract.setUuid(UUIDs.fromIdAsString(term.getC_Flatrate_Term_ID()));
-			syncContract.setDateFrom(term.getStartDate());
-			syncContract.setDateTo(term.getEndDate());
-
-			syncBPartner.getContracts().add(syncContract);
-
-			final I_M_Product product = term.getM_Product();
-
-			final I_C_BPartner bPartner = term.getDropShip_BPartner();
-			final List<SyncProduct> syncProducts = createSyncProducts(bPartner, product, key2product);
-			for (final SyncProduct syncProduct : syncProducts)
-			{
-				final SyncContractLine syncContractLine = new SyncContractLine();
-				syncContractLine.setUuid(syncContract.getUuid());
-				syncContractLine.setProduct(syncProduct);
-
-				syncContract.getContractLines().add(syncContractLine);
-			}
-		}
-
-		return new ArrayList<>(bpartner2sycBPartner.asMap().values());
-	}
-
-	private IQueryBuilder<I_PMM_Product> createPMMProductQueryBuilder(final Timestamp time)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final ICompositeQueryFilter<I_PMM_Product> validToIsAfterOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
-				.setJoinOr()
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, time)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_ValidTo, null);
-
-		final ICompositeQueryFilter<I_PMM_Product> validFromIsOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
-				.setJoinOr()
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, time)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_ValidFrom, null);
-
-		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.filter(validFromIsOrNull)
-				.filter(validToIsAfterOrNull)
-				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, null)
-				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_Warehouse_ID, null);
-		return queryBuilder;
+		return SyncObjectsFactory.newFactory().createAllSyncBPartners();
 	}
 
 	@Override
 	public List<SyncProduct> getAllNotContractedProducts()
 	{
-		final ISyncBL syncPojosBL = Services.get(ISyncBL.class);
-
-		final Timestamp time = SystemTime.asTimestamp();
-
-		final List<I_PMM_Product> allPmmProducts = createPMMProductQueryBuilder(time)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
-				.create()
-				.list();
-
-		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>();
-		for (final I_PMM_Product pmmProduct : allPmmProducts)
-		{
-			final SyncProduct syncProduct = syncPojosBL.createSyncProduct(pmmProduct.getM_Product().getName(), pmmProduct);
-			syncProducts.add(syncProduct);
-		}
-		return syncProducts;
-	}
-
-	/**
-	 * Creates one SyncProduct instance for each {@link I_PMM_Product} that references the given <code>product</code> and either the given <code>bPartner</code> or no bpartner at all.
-	 *
-	 * @param bPartner
-	 * @param product
-	 * @param key2product
-	 * @return
-	 */
-	private List<SyncProduct> createSyncProducts(
-			final I_C_BPartner bPartner,
-			final I_M_Product product,
-			final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product)
-	{
-		if (product == null || bPartner == null)
-		{
-			// this should not, but *might* happen in case of a broken/inconsistent C_Flatrate_Term
-			return Collections.emptyList();
-		}
-
-		final ISyncBL syncPojosBL = Services.get(ISyncBL.class);
-
-		final String productName = getProductName(bPartner, product);
-
-		final List<SyncProduct> syncProducts = new ArrayList<>();
-
-		final Collection<I_PMM_Product> pmmProducts = key2product.get(new Pair<>(bPartner.getC_BPartner_ID(), product.getM_Product_ID()));
-		pmmProducts.addAll(key2product.get(new Pair<>(0, product.getM_Product_ID())));
-
-		for (final I_PMM_Product pmmProduct : pmmProducts)
-		{
-			final SyncProduct syncProduct = syncPojosBL.createSyncProduct(productName, pmmProduct);
-			syncProducts.add(syncProduct);
-		}
-
-		return syncProducts;
-	}
-
-	private String getProductName(final I_C_BPartner bPartner, final I_M_Product product)
-	{
-		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-
-		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
-				bPartnerProductDAO.retrieveBPartnerProductAssociation(bPartner, product),
-				I_C_BPartner_Product.class);
-
-		final String productName;
-		if (bPartnerProduct != null && !Check.isEmpty(bPartnerProduct.getProductName(), true))
-		{
-			productName = bPartnerProduct.getProductName();
-		}
-		else
-		{
-			productName = product.getName();
-		}
-		return productName;
-	}
-
-	private SyncBPartner createSyncBPartner(final int bpartnerId)
-	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-		final SyncBPartner syncBPartner = new SyncBPartner();
-		syncBPartner.setName(bPartner.getName());
-		syncBPartner.setUuid(UUIDs.fromIdAsString(bPartner.getC_BPartner_ID()));
-
-		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(bPartner);
-		for (final I_AD_User contact : contacts)
-		{
-			if (Check.isEmpty(contact.getEMail(), true))
-			{
-				continue;
-			}
-			final SyncUser syncUser = new SyncUser();
-			syncUser.setLanguage(bPartner.getAD_Language());
-			syncUser.setUuid(UUIDs.fromIdAsString(contact.getAD_User_ID()));
-			syncUser.setEmail(contact.getEMail());
-			syncUser.setPassword(contact.getPassword());
-
-			syncBPartner.getUsers().add(syncUser);
-		}
-		return syncBPartner;
+		return SyncObjectsFactory.newFactory().createAllNotContractedSyncProducts();
 	}
 
 	@Override
@@ -355,7 +130,7 @@ public class ServerSyncBL implements IServerSyncBL
 			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
 			final Timestamp datePromised = productSupply.getDay() == null ? null : new Timestamp(productSupply.getDay().getTime());
 
-			final int bPartnerId = UUIDs.toId(productSupply.getBpartner_uuid());
+			final int bPartnerId = SyncUUIDs.getC_BPartner_ID(productSupply.getBpartner_uuid());
 			final I_C_BPartner bPartner;
 			if (bPartnerId > 0)
 			{
@@ -436,7 +211,7 @@ public class ServerSyncBL implements IServerSyncBL
 					final I_C_Flatrate_Term flatrateTerm;
 					final int currencyId;
 					final List<I_C_Flatrate_DataEntry> dataEntries;
-					final int flatrateTermId = UUIDs.toId(productSupply.getContractLine_uuid());
+					final int flatrateTermId = SyncUUIDs.getC_Flatrate_Term_ID(productSupply.getContractLine_uuid());
 					if (flatrateTermId > 0)
 					{
 						flatrateTerm = InterfaceWrapperHelper.create(ctxProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, ctxProvider.getTrxName());
@@ -528,7 +303,7 @@ public class ServerSyncBL implements IServerSyncBL
 	 */
 	private I_PMM_Product getPMM_ProductAndUpdateCtx(final IContextAware ctxProvider, final String product_uuid)
 	{
-		final int pmmProductId = UUIDs.toId(product_uuid);
+		final int pmmProductId = SyncUUIDs.getPMM_Product_ID(product_uuid);
 		if (pmmProductId > 0)
 		{
 			return null;
@@ -550,7 +325,7 @@ public class ServerSyncBL implements IServerSyncBL
 
 		final I_PMM_Product pmmProduct = getPMM_ProductAndUpdateCtx(cxtAware, syncWeeklySupply.getProduct_uuid());
 
-		final int bpartnerId = UUIDs.toId(syncWeeklySupply.getBpartner_uuid());
+		final int bpartnerId = SyncUUIDs.getC_BPartner_ID(syncWeeklySupply.getBpartner_uuid());
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(cxtAware.getCtx(), bpartnerId, I_C_BPartner.class, cxtAware.getTrxName());
 
 		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, bpartner, true);

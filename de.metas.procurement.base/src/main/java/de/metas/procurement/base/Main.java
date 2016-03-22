@@ -68,9 +68,17 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_WeekReport_Event(), client);
 
 		//
-		// contract and master data
+		// Master data: bpartner & users
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.AD_User.instance, client);
+		// Master data: contracts
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_Term.instance, client);
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance, client);
+		// Master data: products
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_Product.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner_Product.instance, client);
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Product.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance, client);
 	}
 
 	@Override

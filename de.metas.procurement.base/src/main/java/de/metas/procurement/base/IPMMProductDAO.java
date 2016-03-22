@@ -1,13 +1,19 @@
-package de.metas.procurement.sync.protocol;
+package de.metas.procurement.base;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
  * #%L
- * de.metas.procurement.sync-api
+ * de.metas.procurement.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -27,25 +33,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  * #L%
  */
 
-@XmlRootElement(name = "SyncProductRequest")
-public class SyncProductsRequest
+public interface IPMMProductDAO extends ISingletonService
 {
-	public static final SyncProductsRequest of(final SyncProduct syncProduct)
-	{
-		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
-		syncProductsRequest.getProducts().add(syncProduct);
-		return syncProductsRequest;
-	}
-	
-	private List<SyncProduct> products = new ArrayList<>();
+	IQueryBuilder<I_PMM_Product> retrieveAllPMMProductsValidOnDateQuery(Date date);
 
-	public List<SyncProduct> getProducts()
-	{
-		return products;
-	}
+	List<I_PMM_Product> retrieveByHUPIItemProduct(I_M_HU_PI_Item_Product huPIItemProduct);
 
-	public void setProducts(List<SyncProduct> products)
-	{
-		this.products = products;
-	}
+	List<I_PMM_Product> retrieveByProduct(I_M_Product product);
+
+	List<I_PMM_Product> retrieveByBPartner(I_C_BPartner bpartner);
 }

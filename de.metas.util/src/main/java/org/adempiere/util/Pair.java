@@ -1,5 +1,10 @@
 package org.adempiere.util;
 
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+
+import edu.umd.cs.findbugs.annotations.DefaultAnnotationForParameters;
+
 /*
  * #%L
  * de.metas.util
@@ -31,8 +36,11 @@ package org.adempiere.util;
  * 
  * @param <F> the type of the first item
  * @param <S> the type of the second item
+ * 
+ * @deprecated Please consider using {@link ImmutablePair}
  */
-public final class Pair<F, S>
+@Deprecated
+public final class Pair<F, S> implements IPair<F, S>
 {
 	private final F first;
 
@@ -104,5 +112,16 @@ public final class Pair<F, S>
 		builder.append("]");
 		return builder.toString();
 	}
-
+	
+	@Override
+	public F getLeft()
+	{
+		return getFirst();
+	}
+	
+	@Override
+	public S getRight()
+	{
+		return getSecond();
+	}
 }

@@ -25,10 +25,12 @@ The actual release notes
 # metasfresh 4.10.9b (Upcoming Release)  
 
 ## Features
-
+ - 09628 procurement management (106716240958)
+    * all changes in products, partners, contracts etc are now directly pushed to the mobile webUI
+ 
 ## Fixes
  - 09502 quality inspection (100925494419)
-    the final settlement invoice didn't have the correct witholding amount
+    * the final settlement invoice didn't have the correct witholding amount
 	
 ## Instructions
 

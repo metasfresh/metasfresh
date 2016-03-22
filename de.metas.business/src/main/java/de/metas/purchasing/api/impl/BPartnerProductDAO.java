@@ -44,6 +44,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
@@ -110,13 +111,19 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final int productId = product.getM_Product_ID();
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId);
 	}
-	
+
 	@Override
-	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
 	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId)
 	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, trxName);
+	}
+
+	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId, @CacheTrx final String trxName)
+	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_BPartner_Product.class, ctx, trxName)
 				//
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)

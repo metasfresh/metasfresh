@@ -30,6 +30,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "SyncBPartnersRequest")
 public class SyncBPartnersRequest
 {
+	public static final SyncBPartnersRequest of(final SyncBPartner syncBPartner)
+	{
+		final SyncBPartnersRequest request = new SyncBPartnersRequest();
+		request.getBpartners().add(syncBPartner);
+		return request;
+	}
+	
 	private List<SyncBPartner> bpartners = new ArrayList<>();
 
 	public List<SyncBPartner> getBpartners()

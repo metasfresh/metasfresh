@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1392675252L;
+	private static final long serialVersionUID = -1050168217L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
       super (ctx, PMM_Product_ID, trxName);
       /** if (PMM_Product_ID == 0)
         {
+			setM_HU_PI_Item_Product_ID (0);
 			setM_Product_ID (0);
 			setPMM_Product_ID (0);
         } */
@@ -187,6 +188,22 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		return ii.intValue();
 	}
 
+	/** Set Packbeschreibung.
+		@param PackDescription Packbeschreibung	  */
+	@Override
+	public void setPackDescription (java.lang.String PackDescription)
+	{
+		set_Value (COLUMNNAME_PackDescription, PackDescription);
+	}
+
+	/** Get Packbeschreibung.
+		@return Packbeschreibung	  */
+	@Override
+	public java.lang.String getPackDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PackDescription);
+	}
+
 	/** Set Lieferprodukt.
 		@param PMM_Product_ID Lieferprodukt	  */
 	@Override
@@ -207,6 +224,25 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Produktname.
+		@param ProductName 
+		Name des Produktes
+	  */
+	@Override
+	public void setProductName (java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	/** Get Produktname.
+		@return Name des Produktes
+	  */
+	@Override
+	public java.lang.String getProductName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
 	}
 
 	/** Set Gültig ab.

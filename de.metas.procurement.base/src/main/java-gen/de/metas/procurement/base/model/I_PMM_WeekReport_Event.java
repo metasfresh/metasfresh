@@ -333,7 +333,7 @@ public interface I_PMM_WeekReport_Event
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Wochen.
+	 * Set Wochendatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -342,7 +342,7 @@ public interface I_PMM_WeekReport_Event
 	public void setWeekDate (java.sql.Timestamp WeekDate);
 
 	/**
-	 * Get Wochen.
+	 * Get Wochendatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
