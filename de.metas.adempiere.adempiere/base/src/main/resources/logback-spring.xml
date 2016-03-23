@@ -18,6 +18,7 @@
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 		
+		<!-- it works with changing the logging.path property -->
 		<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
 			<LogDir>${LOG_PATH}</LogDir>
 			<LogFilePrefix>metasfresh</LogFilePrefix>

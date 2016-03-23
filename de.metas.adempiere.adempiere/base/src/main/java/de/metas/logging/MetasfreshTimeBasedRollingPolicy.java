@@ -34,16 +34,15 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
 public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E>
 {
-	private static final String DEFAULT_LogDir = "./log/";
-	private String logDir = DEFAULT_LogDir;
 
-	private static final String DEFAULT_LogFilePrefix = "metasfresh";
-	private String logFilePrefix = DEFAULT_LogFilePrefix;
+	private String logDir = LoggingConstants.DEFAULT_LogDir;
+
+	private String logFilePrefix = LoggingConstants.DEFAULT_LogFilePrefix;
+
+	private String logFileDatePattern = LoggingConstants.DEFAULT_LogFileDatePattern;
 
 	private final String logFileSuffix = ".log";
 
-	private static final String DEFAULT_LogFileDatePattern = "%d{yyyy-MM-dd}_%d{HHmmss,aux}";
-	private String logFileDatePattern = DEFAULT_LogFileDatePattern;
 
 	private final FilenameFilter logFileNameFilter = new FilenameFilter()
 	{
@@ -65,7 +64,6 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 	public MetasfreshTimeBasedRollingPolicy()
 	{
 		super();
-
 		updateFileNamePattern();
 	}
 

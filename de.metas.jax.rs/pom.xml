@@ -111,7 +111,7 @@
 			So, as of now, we explicitly declare the
 			spring-dependencies here, with our version 4.2.4 and we explicitly exclude their dependencies
 			which might otherwise be resolved to 4.1.8
-		 -->
+		-->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>

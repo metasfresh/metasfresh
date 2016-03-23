@@ -68,7 +68,10 @@
 :CHECK_ADEMPIERE
 @if not "%ADEMPIERE_HOME%" == "" goto ADEMPIERE_HOME_OK
 
-SET ADEMPIERE_HOME=${runner.bat.defaultAdempiereHome}
+SET LOG_DIR=%UserProfile%\.metasfresh\log
+@Echo Going to write our log files to %LOG_DIR%
+
+SET ADEMPIERE_HOME=%~dp0
 
 @Echo ADEMPIERE_HOME is not set.  
 @Echo   You may not be able to start Adempiere
@@ -77,8 +80,8 @@ SET ADEMPIERE_HOME=${runner.bat.defaultAdempiereHome}
 REM @goto MULTI_INSTALL
 
 :ADEMPIERE_HOME_OK
-SET MAIN_CLASSNAME=${spring.jarLauncherClass}
-SET CLASSPATH=${runner.bat.classpath}
+SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
+SET CLASSPATH=%ADEMPIERE_HOME%\lib\de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created Adempiere.properties file
@@ -95,9 +98,18 @@ SET CLASSPATH=${runner.bat.classpath}
 @Rem  SET SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
 @SET SECURE=
 
+@Echo JAVA=%JAVA%
+@Echo JAVA_OPTS=%JAVA_OPTS%
+@Echo PROP=%PROP%
+@Echo CLIENT_REMOTE_DEBUG_OPTS=%CLIENT_REMOTE_DEBUG_OPTS%
+@Echo JMX_REMOTE_DEBUG_OPTS=%JMX_REMOTE_DEBUG_OPTS%
+@Echo SECURE=%SECURE%
+@Echo CLASSPATH=%CLASSPATH%
+@Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
+
 :START
-SET JAVA_OPTS=${runner.java.options}
-"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
+SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang="de_CH"
+"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
