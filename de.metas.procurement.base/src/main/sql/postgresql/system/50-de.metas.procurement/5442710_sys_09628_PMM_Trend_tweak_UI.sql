@@ -79,9 +79,12 @@ UPDATE AD_Menu SET Name='Beschaffung',Updated=TO_TIMESTAMP('2016-03-16 11:21:36'
 UPDATE AD_Menu_Trl SET IsTranslated='N' WHERE AD_Menu_ID=540688
 ;
 
+---
 -- 16.03.2016 11:22
 -- URL zum Konzept
-INSERT INTO AD_Menu (AD_Client_ID,AD_Menu_ID,AD_Org_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES (1000000,540697,0,TO_TIMESTAMP('2016-03-16 11:22:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.procurement','Admin','Y','N','N','Y','Admin',TO_TIMESTAMP('2016-03-16 11:22:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (AD_Client_ID,AD_Menu_ID,AD_Org_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) 
+SELECT 1000000,540697,0,TO_TIMESTAMP('2016-03-16 11:22:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.procurement','Admin','Y','N','N','Y','Admin',TO_TIMESTAMP('2016-03-16 11:22:17','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_MEnu where AD_Menu_ID=1000000);
 ;
 
 -- 16.03.2016 11:22
