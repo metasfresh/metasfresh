@@ -1,4 +1,5 @@
 #!/bin/sh
+
 if [ $ADEMPIERE_HOME ]; then
 	echo "Using environment variable ADEMPIERE_HOME = $ADEMPIERE_HOME"
 else
@@ -6,12 +7,17 @@ else
 	echo "Assuming ADEMPIERE_HOME = $ADEMPIERE_HOME"
 fi
 
+if [ $LOG_DIR ]; then
+	echo "Going to write our log files to LOG_DIR=$LOG_DIR"
+else
+	LOG_DIR=$(dirname $0)
+	echo "Assuming LOG_DIR = $LOG_DIR"
+fi
+
 # Exit on Error of command immediately
 set -e
 
-CLASSPATH=${runner.sh.classpath}
-
-echo "CLASSPATH = $CLASSPATH"
+JAR_FILE="$ADEMPIERE_HOME/lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar"
 
 ##	Check Java Home
 if [ $JAVA_HOME ]; then
@@ -38,6 +44,19 @@ fi
 #  SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
 SECURE=
 
-JAVA_OPTS=${runner.java.options}
-$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH ${spring.jarLauncherClass}
+#Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
+#JAVA_OPTS="-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError $REMOTE_DEBUG_OPTS -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang=\"de_CH\" -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+
+echo "JAVA_OPTS = $JAVA_OPTS"
+echo "JAR_FILE = $JAR_FILE"
+echo "REMOTE_DEBUG_OPTS = $REMOTE_DEBUG_OPTS"
+echo "PROP=$PROP"
+echo "SECURE=$SECURE"
+
+echo "================================"
+echo "about to execute"
+echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -jar $JAR_FILE"
+echo "================================"
+
+$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
 
