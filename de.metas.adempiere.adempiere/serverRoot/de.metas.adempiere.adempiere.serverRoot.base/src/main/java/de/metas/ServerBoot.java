@@ -64,7 +64,7 @@ public class ServerBoot
 	public static void main(final String[] args)
 	{
 		new SpringApplicationBuilder(ServerBoot.class)
-				.headless(false) // FIXME: for now we use headless=false because of the CConnection popup
+				.headless(true)
 				.web(true)
 				.run(args);
 	}

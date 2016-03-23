@@ -76,9 +76,9 @@ import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 /**
  * Server Monitor
@@ -90,7 +90,7 @@ import ch.qos.logback.classic.Level;
 public class ServerMonitor extends HttpServlet
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2640663091564185714L;
 
@@ -101,7 +101,7 @@ public class ServerMonitor extends HttpServlet
 
 	/**
 	 * Shall we allow cache reset options?
-	 * 
+	 *
 	 * Default: false, because we had so many problems with this.
 	 */
 	private static final boolean ALLOW_CacheReset = false;
@@ -333,7 +333,6 @@ public class ServerMonitor extends HttpServlet
 	private boolean processTraceParameter(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
-		if (true) throw new RuntimeException("FAILURE TEST!");
 		final String traceCmd = WebUtil.getParameter(request, "Trace");
 		final String traceLevel = WebUtil.getParameter(request, "TraceLevel");
 		if (traceLevel != null && traceLevel.length() > 0)
@@ -365,7 +364,7 @@ public class ServerMonitor extends HttpServlet
 				{
 					continue;
 				}
-				
+
 				if (logFile.delete())
 				{
 					log.warn("Deleted: " + logFile);
@@ -395,9 +394,9 @@ public class ServerMonitor extends HttpServlet
 			catch (IOException e)
 			{
 			}
-			
+
 			final List<File> allLogFiles = LogManager.getLogFiles();
-			
+
 			if (!allLogFiles.contains(logFile))
 			{
 				log.warn("Requested file " + logFile + " is not a valid log file");
@@ -414,7 +413,7 @@ public class ServerMonitor extends HttpServlet
 //				log.warn("File Length=0: " + logFileName);
 //				return false;
 //			}
-			
+
 			if (LogManager.isActiveLogFile(logFile))
 			{
 				LogManager.flushLogFile();
@@ -877,7 +876,7 @@ public class ServerMonitor extends HttpServlet
 				line.addElement(new th().addElement(new label("TraceLevel").addElement("Trace Log Level")));
 				final form myForm = new form(NAME, form.METHOD_POST, form.ENC_DEFAULT);
 				// LogLevel Selection
-				
+
 				final List<Level> logLevels = LogManager.getAvailableLoggingLevels();
 				final option[] options = new option[logLevels.size()];
 				for (int i = 0; i < options.length; i++)
@@ -990,7 +989,7 @@ public class ServerMonitor extends HttpServlet
 	{
 		final p containerElement = new p();
 		containerElement.addElement(new b("All Log Files: "));
-		
+
 		// All in dir
 		boolean first = true;
 		for (final File logFile : LogManager.getLogFiles())
@@ -1000,12 +999,12 @@ public class ServerMonitor extends HttpServlet
 			{
 				continue;
 			}
-			
+
 			if (!first)
 			{
 				containerElement.addElement(" - ");
 			}
-			
+
 			final String fileName = logFile.getAbsolutePath();
 			final a link = new a(NAME + "?Trace=" + fileName, logFile.getName());
 			link.setTarget("_blank");
@@ -1013,13 +1012,13 @@ public class ServerMonitor extends HttpServlet
 			containerElement.addElement(link);
 			final long sizeBytes = logFile.length();
 			containerElement.addElement(" (" + bytesToString(sizeBytes) + ")");
-			
+
 			first = false;
 		}
 
 		return containerElement;
 	}
-	
+
 	private static final String bytesToString(final long sizeBytes)
 	{
 		if (sizeBytes < 1024)
