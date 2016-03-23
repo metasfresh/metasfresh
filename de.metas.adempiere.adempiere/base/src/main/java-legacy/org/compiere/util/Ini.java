@@ -87,9 +87,7 @@ public final class Ini implements Serializable
 	/** Connection Details */
 	public static final String P_CONNECTION = "Connection";
 	private static final String DEFAULT_CONNECTION = "";
-	/** Data Source */
-	public static final String P_CONTEXT = "DataSource";
-	private static final String DEFAULT_CONTEXT = "java:adempiereDB";
+
 	/** Look & Feel */
 	public static final String P_UI_LOOK = "UILookFeel";
 
@@ -216,7 +214,6 @@ public final class Ini implements Serializable
 			.put(P_SHOW_TRL, DisplayType.toBooleanString(DEFAULT_SHOW_TRL))
 			.put(P_SHOW_ADVANCED, DisplayType.toBooleanString(DEFAULT_SHOW_ADVANCED))
 			.put(P_CACHE_WINDOW, DisplayType.toBooleanString(DEFAULT_CACHE_WINDOW))
-			.put(P_CONTEXT, DEFAULT_CONTEXT)
 			.put(P_TEMP_DIR, DEFAULT_TEMP_DIR)
 			.put(P_ROLE, DEFAULT_ROLE)
 			.put(P_CLIENT, DEFAULT_CLIENT)
