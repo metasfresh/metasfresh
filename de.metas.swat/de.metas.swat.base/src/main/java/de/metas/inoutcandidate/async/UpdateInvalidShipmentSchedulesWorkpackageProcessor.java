@@ -26,14 +26,16 @@ package de.metas.inoutcandidate.async;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.DB;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -53,14 +55,12 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	public static final void schedule(final Properties ctx, final String trxName)
 	{
-		Services.get(IWorkPackageQueueFactory.class)
-				.getQueueForEnqueuing(ctx, UpdateInvalidShipmentSchedulesWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
-				.bindToTrxName(trxName)
-				.build();
+		SCHEDULER.schedule(new PlainContextAware(ctx, trxName));
 	}
+	
+	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
+	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newContextAwareSchedulerNoCollect(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
+
 
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);

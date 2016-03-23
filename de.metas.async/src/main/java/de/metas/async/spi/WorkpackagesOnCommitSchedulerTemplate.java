@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -54,6 +55,13 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	{
 		final boolean collectModels = false;
 		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
+	}
+	
+	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
+	public static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
+	{
+		final boolean collectModels = false;
+		return new ModelsScheduler<>(workpackageProcessorClass, IContextAware.class, collectModels);
 	}
 
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
