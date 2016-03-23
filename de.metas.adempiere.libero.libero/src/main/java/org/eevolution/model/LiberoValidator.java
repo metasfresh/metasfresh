@@ -85,7 +85,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// Register MRP model validators
 		// NOTE: keep this as the last model validators to register
-		engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
+		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
+		//engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
 
 		// Callouts
 

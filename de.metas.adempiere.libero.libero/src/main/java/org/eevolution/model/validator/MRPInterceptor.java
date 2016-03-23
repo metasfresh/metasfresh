@@ -39,11 +39,9 @@ import org.eevolution.mrp.process.PP_MRP_RecreateForDocument;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 /**
  * MRP Model Interceptors
@@ -53,10 +51,9 @@ import de.metas.document.engine.IDocActionBL;
  */
 public class MRPInterceptor extends AbstractModelInterceptor
 {
-	public static final transient MRPInterceptor instance = new MRPInterceptor();
 	private static final transient Logger logger = LogManager.getLogger(MRPInterceptor.class);
 
-	private MRPInterceptor()
+	public MRPInterceptor()
 	{
 		super();
 	}
