@@ -46,10 +46,10 @@ check_file_readable(){
 
 check_var()
 {
-	varName=$1
-	var=$2
+	local varName=$1
+	local var=$2
 	
-	if [ "$var" = "" ]
+	if [[ "$var" = "" || "$var" = "NOT_SET" ]]
 	then
 		trace "check_vars" "Variable/Param '${varName}' must be set"
 		exit 1
@@ -62,19 +62,19 @@ check_var()
 # if the given var is not set, then it 
 check_var_fallback()
 {
-	varName=$1
-	var=$2
-	fallback_varName=$3
-	fallback_var=$4
+	local varName=$1
+	local var=$2
+	local fallback_varName=$3
+	local fallback_var=$4
 	
-	if [ "$var" = "" ]
+	if [[ "$var" = "" || "$var" = "NOT_SET" ]]
 	then
-		trace "check_vars" "Variable/Param '${varName}' is not set. Trying fallback variable '${fallback_varName}'"
+		trace "check_var_fallback" "Variable '${varName}' is not set. Trying fallback to variable '${fallback_varName}'"
 		check_var $fallback_varName $fallback_var
-		echo $fallback_var	
+		trace "check_var_fallback" "Setting '${varName}' to ${fallback_var}"
+		eval $varName=$fallback_var
 	fi
-	trace "check_vars" "Variable/Param '${varName}' is set to ${var}"
-	echo $var
+	trace "check_var_fallback" "Variable/Param '${varName}' is set to ${var}"
 }
 
 check_std_tool()
@@ -109,7 +109,7 @@ check_vars_server()
 	trace check_vars_server BEGIN
 	
 	check_var "INSTALL_DIR" $INSTALL_DIR
-	check_var "METASFRESH_HOME" $METASFRESH_HOME "ADEMPIERE_HOME" $ADEMPIERE_HOME
+	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
 	check_var "JAVA_HOME" $JAVA_HOME
 		
 	trace check_vars_server END
@@ -133,8 +133,8 @@ check_vars_database()
 {
 	trace check_vars_database BEGIN
 	
-	check_var "METASFRESH_DB_SERVER" $METASFRESH_DB_SERVER "ADEMPIERE_DB_SERVER" $ADEMPIERE_DB_SERVER
-	check_var "METASFRESH_DB_NAME" $METASFRESH_DB_NAME "ADEMPIERE_DB_NAME" $ADEMPIERE_DB_NAME
+	check_var_fallback "METASFRESH_DB_SERVER" ${METASFRESH_DB_SERVER:-NOT_SET} "ADEMPIERE_DB_SERVER" ${ADEMPIERE_DB_SERVER:-NOT_SET}
+	check_var_fallback "METASFRESH_DB_NAME" ${METASFRESH_DB_NAME:-NOT_SET} "ADEMPIERE_DB_NAME" ${ADEMPIERE_DB_NAME:-NOT_SET}
 	
 	trace check_vars_database END
 }
@@ -161,7 +161,7 @@ check_vars_minor()
 {
 	trace check_vars_minor BEGIN
 
-	check_var "METASFRESH_HOME" $METASFRESH_HOME "$ADEMPIERE_HOME" $$ADEMPIERE_HOME
+	check_var "METASFRESH_HOME" ${METASFRESH_HOME:-} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-}
 	check_var "JAVA_HOME" $JAVA_HOME
 	check_var "PATH" $PATH
 
