@@ -14,7 +14,7 @@ fi
 
 #Note: BUILD_URL is mandatory
 #if [ "$BUILD_URL" == "" ]; then
-#	BUILD_URL="NOT_SET"
+#	BUILD_URL="NOT_YET_SPECIFIED"
 #fi
 
 if [ "$TARGET_USER" == "" ]; then
@@ -22,11 +22,11 @@ if [ "$TARGET_USER" == "" ]; then
 fi
 
 if [ "$TARGET_HOST" == "" ]; then
-	TARGET_HOST="NOT_SET"
+	TARGET_HOST="NOT_YET_SPECIFIED"
 fi
 
 if [ "$ROLLOUT_DIR" == "" ]; then
-	ROLLOUT_DIR="NOT_SET"
+	ROLLOUT_DIR="NOT_YET_SPECIFIED"
 fi
 
 if [ "$CLEAN_ROLLOUT_APPSERVER" == "" ]; then
@@ -76,7 +76,7 @@ prepare()
 	check_var MINOR $MINOR
 	
 	check_var BUILD_URL $BUILD_URL
-	check_var ROLLOUT_DIR $ROLLOUT_DIR
+	check_var ROLLOUT_DIR $ROLLOUT_DIR 
 	check_var TARGET_HOST $TARGET_HOST
 	check_var SSH_PORT $SSH_PORT
 	
@@ -92,13 +92,13 @@ prepare()
 		trace prepare "============================================================================================"
 	fi
 		
-	if [ "$ROLLOUT_DIR" = "NOT_SET" ]  && [ "$BUILD_URL" = "NOT_SET" ]; 
+	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$BUILD_URL" = "NOT_YET_SPECIFIED" ]; 
 	then
 		trace prepare "At least one of -d or the environment variable 'BUILD_URL' must be set"
 		exit 1
 	fi
 	
-	if [ "$ROLLOUT_DIR" != "NOT_SET" ] && [ "$BUILD_URL" != "NOT_SET" ]; 
+	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$BUILD_URL" != "NOT_YET_SPECIFIED" ]; 
 	then
 		trace prepare "ignoring BUILD_URL because a rollout dir is set"
 		exit 1
