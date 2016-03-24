@@ -30,9 +30,9 @@
 
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
 
-		<!-- this is the spring version from the dependency tree of camel-2.16.1.
+		<!-- this is the spring version from the dependency tree of spring-boot-1.3.3
 		Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason.	-->
-		<spring.version>4.2.4.RELEASE</spring.version>
+		<spring.version>4.2.5.RELEASE</spring.version>
 		
 		<guava.version>18.0</guava.version>
 
