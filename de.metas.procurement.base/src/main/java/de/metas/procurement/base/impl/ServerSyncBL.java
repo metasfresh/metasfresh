@@ -304,7 +304,7 @@ public class ServerSyncBL implements IServerSyncBL
 	private I_PMM_Product getPMM_ProductAndUpdateCtx(final IContextAware ctxProvider, final String product_uuid)
 	{
 		final int pmmProductId = SyncUUIDs.getPMM_Product_ID(product_uuid);
-		if (pmmProductId > 0)
+		if (pmmProductId <= 0)
 		{
 			return null;
 		}
