@@ -29,12 +29,11 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
+import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.user.api.IUserDAO;
@@ -45,7 +44,6 @@ import org.compiere.grid.VTable;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MChangeLog;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -54,12 +52,15 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextArea;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Record Info (Who) With Change History
@@ -316,10 +317,10 @@ public class RecordInfo extends CDialog
 		}
 		
 		//
-		if (OldValue != null && OldValue.equals(MChangeLog.NULL))
+		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			OldValue = null;
 		String showOldValue = OldValue;
-		if (NewValue != null && NewValue.equals(MChangeLog.NULL))
+		if (NewValue != null && NewValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			NewValue = null;
 		String showNewValue = NewValue;
 		//

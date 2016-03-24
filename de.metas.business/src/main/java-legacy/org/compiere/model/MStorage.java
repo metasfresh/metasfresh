@@ -23,17 +23,15 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -550,7 +548,7 @@ public class MStorage extends X_M_Storage
 		}
 
 		// CarlosRuiz - globalqss - Fix [ 1725383 ] QtyOrdered wrongly updated
-		final MProduct prd = new MProduct(ctx, M_Product_ID, trxName);
+		final I_M_Product prd = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, trxName);
 		if (Services.get(IProductBL.class).getM_AttributeSet_ID(prd) <= 0)
 		{
 			// Product doesn't manage attribute set, always reserved with 0

@@ -20,8 +20,8 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -260,27 +260,6 @@ public class MSession extends X_AD_Session
 
 	}	// MSession
 
-	/**	Web Store Session		*/
-	private boolean		m_webStoreSession = false;
-
-	/**
-	 * 	Is it a Web Store Session
-	 *	@return Returns true if Web Store Session.
-	 */
-	public boolean isWebStoreSession ()
-	{
-		return m_webStoreSession;
-	}	//	isWebStoreSession
-
-	/**
-	 * 	Set Web Store Session
-	 *	@param webStoreSession The webStoreSession to set.
-	 */
-	public void setWebStoreSession (boolean webStoreSession)
-	{
-		m_webStoreSession = webStoreSession;
-	}	//	setWebStoreSession
-
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -296,8 +275,6 @@ public class MSession extends X_AD_Session
 		String s = getRemote_Host();
 		if (s != null && s.length() > 0)
 			sb.append(",").append(s);
-		if (m_webStoreSession)
-			sb.append(",WebStoreSession");
 
 		// metas: display also exported attributes
 		for (int i = 0, cols = get_ColumnCount(); i < cols; i++)
@@ -345,84 +322,6 @@ public class MSession extends X_AD_Session
 			ModelValidationEngine.get().fireAfterLogout(this);
 		}
 	}	//	logout
-
-	/**
-	 * 	Preserved for backward compatibility
-	 *@deprecated
-	 */
-	@Deprecated
-	public MChangeLog changeLog (
-		String TrxName, int AD_ChangeLog_ID,
-		int AD_Table_ID, int AD_Column_ID, int Record_ID,
-		int AD_Client_ID, int AD_Org_ID,
-		Object OldValue, Object NewValue)
-	{
-		return changeLog(TrxName, AD_ChangeLog_ID, AD_Table_ID, AD_Column_ID,
-				Record_ID, AD_Client_ID, AD_Org_ID, OldValue, NewValue,
-				(String) null);
-	}	// changeLog
-
-	/**
-	 * 	Create Change Log only if table is logged
-	 * 	@param TrxName transaction name
-	 *	@param AD_ChangeLog_ID 0 for new change log
-	 *	@param AD_Table_ID table
-	 *	@param AD_Column_ID column
-	 *	@param Record_ID record
-	 *	@param AD_Client_ID client
-	 *	@param AD_Org_ID org
-	 *	@param OldValue old
-	 *	@param NewValue new
-	 *	@return saved change log or null
-	 */
-	public MChangeLog changeLog (
-		String TrxName, int AD_ChangeLog_ID,
-		int AD_Table_ID, int AD_Column_ID, int Record_ID,
-		int AD_Client_ID, int AD_Org_ID,
-		Object OldValue, Object NewValue, String event)
-	{
-		//	Null handling
-		if (OldValue == null && NewValue == null)
-			return null;
-		//	Equal Value
-		if (OldValue != null && NewValue != null && OldValue.equals(NewValue))
-			return null;
-
-		//	Role Logging
-		final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
-		//	Do we need to log
-		if (m_webStoreSession						//	log if WebStore
-			|| MChangeLog.isLogged(AD_Table_ID)		//	im/explicit log
-				|| (role != null && role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog)))// Role Logging
-			;
-		else
-			return null;
-		//
-		log.trace("AD_ChangeLog_ID=" + AD_ChangeLog_ID
-				+ ", AD_Session_ID=" + getAD_Session_ID()
-				+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID
-				+ ": " + OldValue + " -> " + NewValue);
-		try
-		{
-			MChangeLog cl = new MChangeLog(getCtx(),
-				AD_ChangeLog_ID, TrxName, getAD_Session_ID(),
-				AD_Table_ID, AD_Column_ID, Record_ID, AD_Client_ID, AD_Org_ID,
-				OldValue, NewValue, event);
-			if (cl.save())
-				return cl;
-		}
-		catch (Exception e)
-		{
-			log.error("AD_ChangeLog_ID=" + AD_ChangeLog_ID
-				+ ", AD_Session_ID=" + getAD_Session_ID()
-				+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID, e);
-			return null;
-		}
-		log.error("AD_ChangeLog_ID=" + AD_ChangeLog_ID
-			+ ", AD_Session_ID=" + getAD_Session_ID()
-			+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID);
-		return null;
-	}	//	changeLog
 
 	public void logMigration(PO po, POInfo pinfo, String event)
 	{
@@ -569,7 +468,6 @@ public class MSession extends X_AD_Session
 
 		return true;
 	}
-
 
 }	//	MSession
 

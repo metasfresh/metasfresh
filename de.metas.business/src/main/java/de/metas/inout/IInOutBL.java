@@ -22,7 +22,6 @@ package de.metas.inout;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.pricing.api.IPricingContext;
@@ -105,7 +104,8 @@ public interface IInOutBL extends ISingletonService
 	/**
 	 *
 	 * @param movementType
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>true if Customer Shipment or Returns
 	 *         <li>false if Vendor Receipts or Returns
 	 *         </ul>
@@ -128,14 +128,17 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> sortLines(I_M_InOut inOut);
 
 	/**
-	 * Method called before the given {@link I_M_InOutLine} is about to be deleted and/or before its M_InOut is reactivated, voiced etc.
+	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
 	 * 
-	 * At the moment it does:
-	 * <ul>
-	 * <li>delete all {@link I_M_MatchInv}s
-	 * </ul>
+	 * @param inout
+	 */
+	void deleteMatchInvs(I_M_InOut inout);
+
+	/**
+	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
 	 * 
 	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
+
 }

@@ -1,5 +1,7 @@
 package org.adempiere.ad.session.impl;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,6 +26,7 @@ package org.adempiere.ad.session.impl;
 
 
 import org.adempiere.ad.session.ISessionBL;
+import org.compiere.util.Env;
 
 public class SessionBL implements ISessionBL
 {
@@ -45,12 +48,22 @@ public class SessionBL implements ISessionBL
 	@Override
 	public boolean isChangeLogEnabled()
 	{
+		//
+		// Check if it's disabled for current thread
 		final Boolean disableChangeLogsThreadLocalValue = disableChangeLogsThreadLocal.get();
-		if (disableChangeLogsThreadLocalValue != null && disableChangeLogsThreadLocalValue.booleanValue() == true)
+		if (Boolean.TRUE.equals(disableChangeLogsThreadLocalValue))
 		{
 			return false;
 		}
 		
-		return true;
+		//
+		// Check if role allows us to create the change log
+		final IUserRolePermissions role = Env.getUserRolePermissions();
+		if (role == null || !role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog))
+		{
+			return false;
+		}
+		
+		return true; // enabled
 	}
 }

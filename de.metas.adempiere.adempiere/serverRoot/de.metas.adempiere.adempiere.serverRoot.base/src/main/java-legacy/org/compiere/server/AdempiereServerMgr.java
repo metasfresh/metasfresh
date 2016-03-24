@@ -37,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -103,7 +104,6 @@ public final class AdempiereServerMgr
 
 		// Set Session
 		MSession session = MSession.get(getCtx(), true);
-		session.setWebStoreSession(false);
 		session.setWebSession("Server");
 
 		DB.saveConstraints();

@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
+import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Listbox;
@@ -30,7 +31,6 @@ import org.adempiere.webui.component.SimpleListModel;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.editor.WEditorPopupMenu;
 import org.compiere.model.GridField;
-import org.compiere.model.MChangeLog;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -43,8 +43,6 @@ import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -54,6 +52,9 @@ import org.zkoss.zkex.zul.South;
 import org.zkoss.zul.Listhead;
 import org.zkoss.zul.Listheader;
 import org.zkoss.zul.Menuitem;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Change History for field
@@ -247,10 +248,10 @@ public class WFieldRecordInfo extends Window implements EventListener
 		//	Column
 		MColumn column = MColumn.get (Env.getCtx(), AD_Column_ID);
 		//
-		if (OldValue != null && OldValue.equals(MChangeLog.NULL))
+		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			OldValue = null;
 		String showOldValue = OldValue;
-		if (NewValue != null && NewValue.equals(MChangeLog.NULL))
+		if (NewValue != null && NewValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			NewValue = null;
 		String showNewValue = NewValue;
 		//

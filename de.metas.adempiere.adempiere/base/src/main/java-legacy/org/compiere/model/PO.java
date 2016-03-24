@@ -51,7 +51,9 @@ import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -83,13 +85,13 @@ import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -2454,10 +2456,11 @@ public abstract class PO
 		final int recordId = get_ID();
 		final int adTableId = p_info.getAD_Table_ID();
 		final int adOrgId = getAD_Org_ID();
+		final int adUserId = Env.getAD_User_ID(getCtx());
 
 		//
 		// Iterate all columns
-		int adChangeLogId = -1;
+		List<ChangeLogRecord> changeLogRecords = null;
 		final int columnCount = get_ColumnCount();
 		for (int i = 0; i < columnCount; i++)
 		{
@@ -2532,21 +2535,31 @@ public abstract class PO
 
 			//
 			// Create Change Log record
-			final I_AD_ChangeLog cLog = session.changeLog(
-					m_trxName, // TrxName
-					adChangeLogId, // AD_ChangeLog_ID
-					adTableId, // AD_Table_ID
-					p_info.getColumn(i).AD_Column_ID, // AD_Column_ID
-					recordId, // Record_ID
-					adClientId, // AD_Client_ID
-					adOrgId, // AD_Org_ID
-					valueOld, // Value Old
-					valueNew, // Value New
-					changeLogType);
-			if (cLog != null)
+			final ChangeLogRecord changeLogRecord = ChangeLogRecord.builder()
+					.setAD_Session_ID(session.getAD_Session_ID())
+					.setTrxName(m_trxName)
+					.setAD_Table_ID(adTableId)
+					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID())
+					.setRecord_ID(recordId)
+					.setAD_Client_ID(adClientId)
+					.setAD_Org_ID(adOrgId)
+					.setOldValue(valueOld)
+					.setNewValue(valueNew)
+					.setEventType(changeLogType)
+					.setAD_User_ID(adUserId)
+					.build();
+			if(changeLogRecords == null)
 			{
-				adChangeLogId = cLog.getAD_ChangeLog_ID();
+				changeLogRecords = new ArrayList<>();
 			}
+			changeLogRecords.add(changeLogRecord);
+		}
+
+		//
+		// Save change log records
+		if (changeLogRecords != null)
+		{
+			Services.get(ISessionDAO.class).saveChangeLogs(changeLogRecords);
 		}
 	}
 

@@ -385,6 +385,18 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public void deleteMatchInvs(final I_M_InOut inout)
+	{
+		final List<I_M_MatchInv> matchInvs = Services.get(IMatchInvDAO.class).retrieveForInOut(inout);
+		for (final I_M_MatchInv matchInv : matchInvs)
+		{
+			matchInv.setProcessed(false);
+			InterfaceWrapperHelper.delete(matchInv);
+		}
+	}
+
+
+	@Override
 	public void deleteMatchInvsForInOutLine(final I_M_InOutLine iol)
 	{
 		//

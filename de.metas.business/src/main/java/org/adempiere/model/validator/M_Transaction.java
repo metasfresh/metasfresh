@@ -48,6 +48,7 @@ public class M_Transaction
 		final BigDecimal diffQtyReserved = BigDecimal.ZERO;
 		final BigDecimal diffQtyOrdered = BigDecimal.ZERO;
 
+		// FIXME: consider to do it async, after commit to make sure we are consistent!
 		final boolean updated = MStorage.add(ctx,
 				locator.getM_Warehouse_ID(),
 				locator.getM_Locator_ID(),

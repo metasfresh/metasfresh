@@ -49,8 +49,6 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -58,10 +56,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
+import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridField;
-import org.compiere.model.MChangeLog;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -71,13 +69,16 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Change History for field
@@ -252,10 +253,10 @@ public class FieldRecordInfo extends CDialog
 		//	Column
 		MColumn column = MColumn.get (Env.getCtx(), AD_Column_ID);
 		//
-		if (OldValue != null && OldValue.equals(MChangeLog.NULL))
+		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			OldValue = null;
 		String showOldValue = OldValue;
-		if (NewValue != null && NewValue.equals(MChangeLog.NULL))
+		if (NewValue != null && NewValue.equals(ISessionDAO.CHANGELOG_NullValue))
 			NewValue = null;
 		String showNewValue = NewValue;
 		//

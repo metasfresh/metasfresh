@@ -20,9 +20,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import org.compiere.model.MChangeLog;
+
+import org.adempiere.ad.session.ISessionDAO;
+import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
+import org.compiere.model.X_AD_ChangeLog;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -32,7 +35,10 @@ import org.compiere.util.DisplayType;
  *	
  *  @author Jorg Janke
  *  @version $Id: ChangeLogProcess.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
+ *  
+ *  @deprecated We are planning to drop this because we are not using it anymore.
  */
+@Deprecated
 public class ChangeLogProcess extends SvrProcess
 {
 	/** The Change Log (when applied directly)		*/
@@ -80,6 +86,7 @@ public class ChangeLogProcess extends SvrProcess
 	/**
 	 * 	Prepare
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -106,6 +113,7 @@ public class ChangeLogProcess extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		if (p_SetCustomization)
@@ -130,7 +138,7 @@ public class ChangeLogProcess extends SvrProcess
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
-				createStatement (new MChangeLog(getCtx(), rs, get_TrxName()), get_TrxName());
+				createStatement (new X_AD_ChangeLog(getCtx(), rs, get_TrxName()), get_TrxName());
 			}
  		}
 		catch (Exception e)
@@ -154,7 +162,7 @@ public class ChangeLogProcess extends SvrProcess
 	 *	@param cLog log
 	 *	@param trxName trx
 	 */
-	private void createStatement (MChangeLog cLog, String trxName)
+	private void createStatement (I_AD_ChangeLog cLog, String trxName)
 	{
 		//	New Table 
 		if (m_table != null)
@@ -197,7 +205,7 @@ public class ChangeLogProcess extends SvrProcess
 			
 			//	Insert - new value is null and UnDo only
 			// m_isInsert = cLog.isNewNull() && p_CheckNewValue != null;
-			m_isInsert = MChangeLog.EVENTCHANGELOG_Insert.equals(cLog.getEventChangeLog());
+			m_isInsert = X_AD_ChangeLog.EVENTCHANGELOG_Insert.equals(cLog.getEventChangeLog());
 			if (m_isInsert)
 			{
 				m_sqlInsert = new StringBuffer ("INSERT INTO ")
@@ -219,7 +227,11 @@ public class ChangeLogProcess extends SvrProcess
 			m_sqlUpdate.append(", ");
 			//	Insert
 			if (m_isInsert)
-				m_isInsert = cLog.isNewNull();
+			{
+				final String value = cLog.getNewValue();
+				final boolean isNewNull = value == null || value.equals(ISessionDAO.CHANGELOG_NullValue);
+				m_isInsert = isNewNull;
+			}
 			if (m_isInsert && !m_keyColumn.equals(m_column.getColumnName()))
 			{
 				m_sqlInsert.append(",").append(m_column.getColumnName());

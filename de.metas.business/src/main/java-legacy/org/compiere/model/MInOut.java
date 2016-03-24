@@ -30,8 +30,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -60,7 +58,6 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
-import de.metas.invoice.IMatchInvDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 
@@ -2339,7 +2336,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		//
 		// Delete invoice matching records
 		// (no matter is IsSOTrx or not, because we are creating them for both cases)
-		deleteMatchInvs();
+		Services.get(IInOutBL.class).deleteMatchInvs(this);
 
 		// reverse/unlink Matching
 		deleteOrUnLinkMatchPOs();
@@ -2439,16 +2436,6 @@ public class MInOut extends X_M_InOut implements DocAction
 		setDocAction(DOCACTION_None);
 		return true;
 	} // reverseCorrectionIt
-
-	private void deleteMatchInvs()
-	{
-		final List<I_M_MatchInv> matchInvs = Services.get(IMatchInvDAO.class).retrieveForInOut(this);
-		for (final I_M_MatchInv matchInv : matchInvs)
-		{
-			matchInv.setProcessed(false);
-			InterfaceWrapperHelper.delete(matchInv);
-		}
-	}
 
 	private void deleteOrUnLinkMatchPOs()
 	{
@@ -2609,7 +2596,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			}
 
 			// task 09266: delete MatchInvs also on reactivate
-			deleteMatchInvs();
+			Services.get(IInOutBL.class).deleteMatchInvs(this);
 
 			// task 09266: unlink or delete MatchPOs also on reactivate
 			deleteOrUnLinkMatchPOs();
