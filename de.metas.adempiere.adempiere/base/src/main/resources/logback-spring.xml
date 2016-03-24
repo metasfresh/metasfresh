@@ -38,4 +38,6 @@
 		<appender-ref ref="FILE" />
 		<appender-ref ref="AD_ISSUE" />
 	</root>
+	
+	<jmxConfigurator/>
 </configuration>
