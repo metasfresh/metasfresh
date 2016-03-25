@@ -37,6 +37,9 @@ import org.adempiere.util.Check;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -935,5 +938,15 @@ public final class Ini implements Serializable
 	public static String getPropertyFileName()
 	{
 		return s_propertyFileName;
+	}
+
+	public static class IsNotSwingClient implements Condition
+	{
+		@Override
+		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata)
+		{
+			return Ini.getRunMode() != RunMode.SWING_CLIENT;
+		}
+
 	}
 }	// Ini

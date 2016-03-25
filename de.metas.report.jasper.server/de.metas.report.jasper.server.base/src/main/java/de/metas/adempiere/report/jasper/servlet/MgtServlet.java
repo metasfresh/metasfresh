@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper.servlet;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,21 +31,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.compiere.util.CacheMgt;
+import org.compiere.util.Ini.IsNotSwingClient;
+import org.springframework.context.annotation.Conditional;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 
 /**
  * This servlet was introduced for managing the actions that the other Jasper servlets can take.
- * 
+ *
  * @author RC
  *
  */
+@Conditional(IsNotSwingClient.class)
 @WebServlet(value = JasperServerConstants.SERVLET_ROOT + "/MgtServlet", loadOnStartup = 1)
 public class MgtServlet extends HttpServlet
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1652716813425364152L;
 

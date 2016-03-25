@@ -30,19 +30,21 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.compiere.util.Ini.IsNotSwingClient;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.springframework.context.annotation.Conditional;
 
 import com.google.common.base.Optional;
 
 /**
  * Servlet used to server images directly from our database
- * 
+ *
  * Currently supported images are:
  * <ul>
  * <li> {@link WebEnv#LOGO} - servers the AD_ClientInfo logo (fallback to product logo)
  * </ul>
- * 
+ *
  * Currently supported query parameters
  * <ul>
  * <li> {@link #PARAM_Width} - optional, if greater than zero, it will scale the image to fit the given width
@@ -51,6 +53,7 @@ import com.google.common.base.Optional;
  * @author tsa
  *
  */
+@Conditional(IsNotSwingClient.class)
 @WebServlet("/images/*")
 public class ImagesServlet extends HttpServlet
 {

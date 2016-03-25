@@ -73,9 +73,11 @@ import org.compiere.util.CMemoryUsage;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Ini.IsNotSwingClient;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Conditional;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
@@ -86,6 +88,7 @@ import de.metas.logging.LogManager;
  * @author Jorg Janke
  * @author tsa
  */
+@Conditional(IsNotSwingClient.class)
 @WebServlet(value = "/serverMonitor", loadOnStartup = 1)
 public class ServerMonitor extends HttpServlet
 {
@@ -1049,11 +1052,8 @@ public class ServerMonitor extends HttpServlet
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
-//		final boolean adempiereStarted = WebEnv.initWeb(config);
-//		boolean adempiereStarted = true;
-//		log.info("");
 		m_serverMgr = AdempiereServerMgr.get();
-	}	// init
+	}
 
 	/**
 	 * Destroy

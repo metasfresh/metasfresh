@@ -770,13 +770,22 @@ public final class Adempiere
 	}
 
 	/**
-	 * Starts the metasfresh swing client with an empty set of command line parameters, but with a spring application context.
+	 * Starts the metasfresh swing client <b>in a new thread</b> and with an empty set of command line parameters, but with a spring application context.
 	 *
 	 * @param applicationContext
 	 */
-	public static void main(ApplicationContext applicationContext)
+	public static void main(final ApplicationContext applicationContext)
 	{
-		main(applicationContext, new String[]{});
+		final Runnable runnable = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				main(applicationContext, new String[] {});
+			}
+		};
+		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName()+".main");
+		thread.start();
 	}
 
 	/**

@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper.servlet;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.compiere.util.Ini.IsNotSwingClient;
+import org.springframework.context.annotation.Conditional;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -46,11 +49,12 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 
+@Conditional(IsNotSwingClient.class)
 @WebServlet(value = JasperServerConstants.SERVLET_ROOT + "/BarcodeServlet", loadOnStartup = 1)
 public class BarcodeServlet extends HttpServlet
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2265392707215362607L;
 
@@ -122,7 +126,7 @@ public class BarcodeServlet extends HttpServlet
 	 * </ul>
 	 * <br>
 	 * If a parameter is not valid, an exception is thrown.
-	 * 
+	 *
 	 * @param req
 	 * @throws IllegalArgumentException
 	 */
