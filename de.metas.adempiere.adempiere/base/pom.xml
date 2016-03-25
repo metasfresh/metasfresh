@@ -54,11 +54,7 @@
 			<groupId>org.jolokia</groupId>
 			<artifactId>jolokia-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-		</dependency>
-		
+
 
 		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
 		<dependency>
