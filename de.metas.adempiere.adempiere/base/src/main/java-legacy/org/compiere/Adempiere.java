@@ -784,8 +784,9 @@ public final class Adempiere
 				main(applicationContext, new String[] {});
 			}
 		};
-		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName()+".main");
-		thread.start();
+		runnable.run();
+		//final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName()+".main");
+		//thread.start();
 	}
 
 	/**
