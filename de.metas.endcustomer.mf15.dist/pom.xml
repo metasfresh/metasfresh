@@ -408,16 +408,6 @@ note: when adding new records, please roughly order them by alphabet.
 									<type>zip</type>
 									<destFileName>metasfresh-client.zip</destFileName>
 								</artifactItem>
-								<!-- currently we don't have a standalone exe distributable; the exe is within the zip file
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.swingui</artifactId>
-									<classifier>client</classifier>
-									<version>${project.version}</version>
-									<type>exe</type>
-									<destFileName>metasfresh-client.exe</destFileName>
-								</artifactItem>
-								-->
 								<artifactItem>
 									<groupId>de.metas.printing.esb</groupId>
 									<artifactId>de.metas.printing.esb.camel</artifactId>
@@ -437,6 +427,11 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>de.metas.document.archive.esb</groupId>
 									<artifactId>de.metas.document.archive.esb.camel</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.admin.webui</groupId>
+									<artifactId>de.metas.admin.webui</artifactId>
 									<version>${project.version}</version>
 								</artifactItem>
 							</artifactItems>
