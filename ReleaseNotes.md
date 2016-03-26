@@ -32,6 +32,7 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
+ - 09945 Pricelist for french customer - excel export not in customer language (107056752126)
  - 09944 Performance: Inout Reactivate-Complete taking too long (107539809839)
  - 09502 quality inspection (100925494419)
     * the final settlement invoice didn't have the correct witholding amount
