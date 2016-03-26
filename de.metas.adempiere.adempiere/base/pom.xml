@@ -8,7 +8,7 @@
 		<version>1.0_IT-SNAPSHOT</version>
 		<relativePath>../../de.metas.parent/pom.xml</relativePath>
 	</parent>
-	
+
 	<groupId>de.metas.adempiere.adempiere</groupId>
 	<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 	<packaging>jar</packaging>
@@ -49,6 +49,12 @@
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
 			<version>1.3.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jolokia</groupId>
