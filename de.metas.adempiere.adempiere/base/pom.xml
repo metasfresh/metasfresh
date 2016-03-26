@@ -46,7 +46,9 @@
 
 		<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#client-applications -->
 		<!-- 
-		before commenting in agian, make sure the maven enforcer plugin is satisfied
+		there are exclusions to avoid dependency version convergence issues
+		(i.e. to satisfy the enforcer plugin)
+		-->
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
@@ -64,13 +66,17 @@
 					<artifactId>spring-boot</artifactId>
 					<groupId>org.springframework.boot</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jolokia</groupId>
 			<artifactId>jolokia-core</artifactId>
 		</dependency>
- -->
+
 
 		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
 		<dependency>
