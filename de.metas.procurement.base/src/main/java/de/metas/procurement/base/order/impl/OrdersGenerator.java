@@ -31,17 +31,21 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * Generates purchase orders from {@link I_PMM_PurchaseCandidate}s by utilizing {@link OrdersAggregator}.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class OrdersGenerator
 {
 	public static final OrdersGenerator newInstance()
 	{
 		return new OrdersGenerator();
 	}
-	
+
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-
 
 	private Iterator<I_PMM_PurchaseCandidate> candidates;
 

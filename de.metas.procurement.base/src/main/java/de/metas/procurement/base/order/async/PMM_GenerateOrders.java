@@ -38,8 +38,8 @@ import de.metas.procurement.base.order.impl.OrdersGenerator;
  */
 
 /**
- * Generate purchase orders from {@link I_PMM_PurchaseCandidate}.
- * 
+ * Generates purchase orders from {@link I_PMM_PurchaseCandidate} by invoking {@link OrdersGenerator}.
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -77,7 +77,7 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	@Override
 	public boolean isAllowRetryOnError()
 	{
