@@ -24,6 +24,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.jms.JMSConfigFeature;
 import org.apache.cxf.transport.jms.JMSConfiguration;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -41,6 +42,7 @@ import de.metas.jax.rs.IJaxRsDAO;
 import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
 import de.metas.jax.rs.model.X_AD_JAXRS_Endpoint;
 import de.metas.jms.IJMSService;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -66,6 +68,8 @@ import de.metas.jms.IJMSService;
 @Configuration
 public class JaxRsBL implements IJaxRsBL
 {
+
+	private static final Logger logger = LogManager.getLogger(JaxRsBL.class);
 
 	/**
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
@@ -148,6 +152,8 @@ public class JaxRsBL implements IJaxRsBL
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
 
 		automaticEndpointsServer = svrFactory.create();
+
+		logger.info("Created server {} for {}", automaticEndpointsServer, request);
 	}
 
 	private JMSConfigFeature setupJMSConfiguration(
@@ -176,6 +182,8 @@ public class JaxRsBL implements IJaxRsBL
 		{
 			automaticEndpointsServer.stop();
 			automaticEndpointsServer.destroy();
+
+			logger.info("Destroyed {}", automaticEndpointsServer);
 		}
 		automaticEndpointsServer = null;
 	}
@@ -311,6 +319,7 @@ public class JaxRsBL implements IJaxRsBL
 
 			result.add(client);
 		}
+		logger.info("Created client endpoints for {}", request);
 		return result;
 	}
 
@@ -327,83 +336,83 @@ public class JaxRsBL implements IJaxRsBL
 	// See SwingUIApplication to know what I mean.
 	// Currently, if we change the appserver-settings in the login dialog, the system blocks, because it's trying to get the "adempiere" bean, whose @Bean method is actually the source of all this
 	//
-//formatter:off
-//
-//	@Autowired
-//	private ApplicationEventPublisher applicationEventPublisher;
-//
-//	@Autowired
-//	private SpringBus bus;
-//
-//	@EventListener
-//	public void onAppServerSettingsChange(final CConnection.AppServerSettingsChangedEvent event)
-//	{
-//		bus.shutdown();
-//		bus = bus();
-//
-//		applicationEventPublisher.publishEvent(new JaxRsWasResetEvent(JaxRsWasResetEvent.Advise.RESTART));
-//	}
-//
-//	@EventListener
-//	public void onJaxRsWasReset(final JaxRsWasResetEvent event)
-//	{
-//		if (automaticEndpointsServer != null && event.getAdvise() == JaxRsWasResetEvent.Advise.RESTART)
-//		{
-//			createServerEndPoints();
-//		}
-//	}
-//
-//	/**
-//	 * Creates a new cxf bus.
-//	 *
-//	 * @return
-//	 */
-//	@Bean
-//	public SpringBus bus()
-//	{
-//		return new SpringBus();
-//	}
-//
-//	/**
-//	 * Creates and configures an InstrumentationManager, see http://cxf.apache.org/docs/jmx-management.html.
-//	 *
-//	 * @param bus the cxf bus for the InstrumentationManager. Autowired by spring.
-//	 * @return
-//	 */
-//	@Bean
-//	public org.apache.cxf.management.InstrumentationManager instrumentationManager(final SpringBus bus)
-//	{
-//		final InstrumentationManagerImpl instrumentationManager = new InstrumentationManagerImpl();
-//		instrumentationManager.setEnabled(true);
-//		instrumentationManager.setBus(bus);
-//		instrumentationManager.setUsePlatformMBeanServer(true);
-//		return instrumentationManager;
-//	}
-//
-//	 /**
-//	 * Creates and configures an CounterRepository, see http://cxf.apache.org/docs/jmx-management.html.
-//	 *
-//	 * @param bus the cxf bus for the CounterRepository. Autowired by spring.
-//	 * @return
-//	 */
-//	 @Bean
-//	 public org.apache.cxf.management.counters.CounterRepository counterRepository(final SpringBus bus)
-//	 {
-//	 final CounterRepository counterRepository = new CounterRepository();
-//	 counterRepository.setBus(bus);
-//	 return counterRepository;
-//	 }
-//
-//	/**
-//	 * Called by spring to inject the cxf bus created by {@link #bus()} into this instance. This bus is used when creating new server (and client) endpoints.
-//	 *
-//	 * @param bus
-//	 */
-//	@Autowired
-//	public void setBus(SpringBus bus)
-//	{
-//		this.bus = bus;
-//	}
-	//formatter:off
+	// formatter:off
+	//
+	// @Autowired
+	// private ApplicationEventPublisher applicationEventPublisher;
+	//
+	// @Autowired
+	// private SpringBus bus;
+	//
+	// @EventListener
+	// public void onAppServerSettingsChange(final CConnection.AppServerSettingsChangedEvent event)
+	// {
+	// bus.shutdown();
+	// bus = bus();
+	//
+	// applicationEventPublisher.publishEvent(new JaxRsWasResetEvent(JaxRsWasResetEvent.Advise.RESTART));
+	// }
+	//
+	// @EventListener
+	// public void onJaxRsWasReset(final JaxRsWasResetEvent event)
+	// {
+	// if (automaticEndpointsServer != null && event.getAdvise() == JaxRsWasResetEvent.Advise.RESTART)
+	// {
+	// createServerEndPoints();
+	// }
+	// }
+	//
+	// /**
+	// * Creates a new cxf bus.
+	// *
+	// * @return
+	// */
+	// @Bean
+	// public SpringBus bus()
+	// {
+	// return new SpringBus();
+	// }
+	//
+	// /**
+	// * Creates and configures an InstrumentationManager, see http://cxf.apache.org/docs/jmx-management.html.
+	// *
+	// * @param bus the cxf bus for the InstrumentationManager. Autowired by spring.
+	// * @return
+	// */
+	// @Bean
+	// public org.apache.cxf.management.InstrumentationManager instrumentationManager(final SpringBus bus)
+	// {
+	// final InstrumentationManagerImpl instrumentationManager = new InstrumentationManagerImpl();
+	// instrumentationManager.setEnabled(true);
+	// instrumentationManager.setBus(bus);
+	// instrumentationManager.setUsePlatformMBeanServer(true);
+	// return instrumentationManager;
+	// }
+	//
+	// /**
+	// * Creates and configures an CounterRepository, see http://cxf.apache.org/docs/jmx-management.html.
+	// *
+	// * @param bus the cxf bus for the CounterRepository. Autowired by spring.
+	// * @return
+	// */
+	// @Bean
+	// public org.apache.cxf.management.counters.CounterRepository counterRepository(final SpringBus bus)
+	// {
+	// final CounterRepository counterRepository = new CounterRepository();
+	// counterRepository.setBus(bus);
+	// return counterRepository;
+	// }
+	//
+	// /**
+	// * Called by spring to inject the cxf bus created by {@link #bus()} into this instance. This bus is used when creating new server (and client) endpoints.
+	// *
+	// * @param bus
+	// */
+	// @Autowired
+	// public void setBus(SpringBus bus)
+	// {
+	// this.bus = bus;
+	// }
+	// formatter:off
 
 }

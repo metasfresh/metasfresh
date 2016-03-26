@@ -100,6 +100,13 @@ public class CreateEndpointRequest<T>
 		return responseQueueName;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "CreateEndpointRequest [cconnection=" + cconnection + ", timeoutMillis=" + timeoutMillis + ", clazzes=" + clazzes + ", requestQueueName=" + requestQueueName
+				+ ", responseQueueName=" + responseQueueName + "]";
+	}
+
 	public static class Builder<T>
 	{
 		public final static long DEFAULT_CLIENT_TIMEOUT_MILLIS = 60000L;
