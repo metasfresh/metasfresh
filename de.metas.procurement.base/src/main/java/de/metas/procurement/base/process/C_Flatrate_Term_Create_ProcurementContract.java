@@ -8,6 +8,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
@@ -118,6 +119,8 @@ public class C_Flatrate_Term_Create_ProcurementContract
 			newDataEntry.setType(I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased);
 			InterfaceWrapperHelper.save(newDataEntry);
 		}
+		
+		setRecordToSelectAfterExecution(TableRecordReference.of(term));
 
 		return "@Success@";
 	}
