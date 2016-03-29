@@ -40,7 +40,11 @@ public class SwingUIApplication
 	{
 		new SpringApplicationBuilder(SwingUIApplication.class)
 				.headless(false)
-				//.web(false) // we want it to start actuator endpoints and register with the spring-boot admin server
+				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
+				// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
+				// there might be resource/performance problems
+				// at any rate, we have not yet a solution as to how to configure them
+				.web(false)
 				.run(args);
 	}
 
