@@ -37,13 +37,12 @@ import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -56,12 +55,13 @@ import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.Strings;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Number Control
@@ -126,6 +126,13 @@ public final class VNumber extends JComponent
 		m_text.setHorizontalAlignment(JTextField.TRAILING);
 		m_text.addKeyListener(textFieldKeyListener);
 		m_text.addFocusListener(textFieldFocusListener);
+		
+		// Use DefaultCaret instead of com.jgoodies.looks.plastic.PlasticFieldCaret,
+		// because there is a usability bug in com.jgoodies.looks.plastic.PlasticFieldCaret.focusGained which invokes later an selectAll() even if the current field is empty.
+		// As a result, if in meantime (before the selectAll() is actually executed) we are filling the field (i.e. user presses a key) that text will be selected,
+		// so when the user presses the next key, it will override the first one.
+		m_text.setCaret(new DefaultCaret());
+		
 		this.add(m_text, BorderLayout.CENTER);
 		// 
 		// Swing will search for other places and other components to consume the KeyEvent 
@@ -895,7 +902,11 @@ public final class VNumber extends JComponent
 			{
 				skipNextSelectAllOnFocusGained = true;
 				m_text.requestFocus();
-				m_text.selectAll();
+				
+				if (m_text.getDocument().getLength() > 0)
+				{
+					m_text.selectAll();
+				}
 			}
 			
 			if (m_text.processKeyBinding(ks, e, condition, pressed))
