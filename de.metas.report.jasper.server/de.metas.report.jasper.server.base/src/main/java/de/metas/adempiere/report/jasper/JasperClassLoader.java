@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +41,10 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
+import de.metas.logging.LogManager;
 
 /**
  * Jasper class loader: basically it will resolve {@link #PLACEHOLDER} from resource names and will fetch the resources from remote HTTP servers.
@@ -124,8 +124,8 @@ final class JasperClassLoader extends ClassLoader
 		//
 		// Get resource's URL
 		final URL url = getResource(name);
-		if (logger.isDebugEnabled())
-			logger.debug("URL: " + url + " for " + name);
+		logger.debug("URL: {} for {}", new Object[] { url, name });
+
 		if (url == null)
 		{
 			return null; // no resource URL found
@@ -171,7 +171,7 @@ final class JasperClassLoader extends ClassLoader
 
 	/**
 	 * Converts given resource name to URL string. Mainly it will parse {@link #PLACEHOLDER}.
-	 * 
+	 *
 	 * @param resourceName
 	 * @return resource's URL string
 	 */
