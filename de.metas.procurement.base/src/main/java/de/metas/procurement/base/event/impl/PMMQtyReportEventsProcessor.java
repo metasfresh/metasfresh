@@ -9,6 +9,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 
 /*
@@ -33,6 +34,12 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  * #L%
  */
 
+/**
+ * Process {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class PMMQtyReportEventsProcessor
 {
 	public static final PMMQtyReportEventsProcessor newInstance()
@@ -47,6 +54,9 @@ public class PMMQtyReportEventsProcessor
 		super();
 	}
 
+	/**
+	 * Process all events.
+	 */
 	public void processAll()
 	{
 		final Properties ctx = Env.getCtx();

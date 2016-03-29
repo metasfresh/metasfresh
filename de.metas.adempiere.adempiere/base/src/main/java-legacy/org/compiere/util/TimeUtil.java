@@ -863,7 +863,7 @@ public class TimeUtil
 	public static final String TRUNC_HOUR = "H";
 	/** Truncate Day - D */
 	public static final String TRUNC_DAY = "D";
-	/** Truncate Week - W */
+	/** Truncate Week - W (Monday is always considered the first day of the week) */
 	public static final String TRUNC_WEEK = "W";
 	/** Truncate Month - MM */
 	public static final String TRUNC_MONTH = "MM";
@@ -917,6 +917,7 @@ public class TimeUtil
 		// W
 		if (trunc.equals(TRUNC_WEEK))
 		{
+			cal.setFirstDayOfWeek(Calendar.MONDAY);
 			cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
 			return new Timestamp(cal.getTimeInMillis());
 		}

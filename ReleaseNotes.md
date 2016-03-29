@@ -25,6 +25,8 @@ The actual release notes
 # metasfresh 4.10.9b (Upcoming Release)  
 
 ## Features
+ - 09915 procurement conditions jasper process (109344045046)
+    * now also supports contracts that have quantities, but no prices
  - 09628 procurement management (106716240958)
     * all changes in products, partners, contracts etc are now directly pushed to the mobile webUI
  - 09931 Bootify metasfresh (100627676679)

@@ -10,18 +10,17 @@ package org.adempiere.util.collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,11 +32,11 @@ import org.apache.commons.collections4.map.LRUMap;
 
 /**
  * An aggregator which takes items as input and group them.
- * 
+ *
  * You can use it whenever how have a huge stream of items and you want to distribute them to groups (aggregation).
- * 
+ *
  * Items are put in the same group if they have the same hash key (see {@link #setItemAggregationKeyBuilder(IAggregationKeyBuilder)}).
- * 
+ *
  * @author tsa
  *
  * @param <GroupType> items group type
@@ -71,7 +70,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Create a new EMPTY group instance.
-	 * 
+	 *
 	 * @param itemHashKey
 	 * @param item
 	 * @return created group
@@ -80,14 +79,14 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Close given group. This method is called by API when it removes given group from its buffer.
-	 * 
+	 *
 	 * @param group
 	 */
 	protected abstract void closeGroup(GroupType group);
 
 	/**
 	 * Adds given <code>item</code> to <code>group</code>.
-	 * 
+	 *
 	 * @param group
 	 * @param item
 	 */
@@ -107,7 +106,10 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Configure which is the hash key builder used to group the items.
-	 * 
+	 * <p>
+	 * <b>IMPORTANT TO KNOW:</b> only the key builder's {@link IAggregationKeyBuilder#buildKey(Object) buildKey(Object)} method is invoked.<br>
+	 * Not its {@link IAggregationKeyBuilder#isSame(Object, Object) isSame(Object, Object} method
+	 *
 	 * @param itemAggregationKeyBuilder
 	 */
 	public final void setItemAggregationKeyBuilder(final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder)
@@ -123,9 +125,9 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Sets how many groups you want to keep in memory. If the value is zero then all groups will be kept in memory.
-	 * 
+	 *
 	 * Default value is {@value #DEFAULT_BufferSize}.
-	 * 
+	 *
 	 * @param bufferSize
 	 */
 	public void setGroupsBufferSize(final int bufferSize)
@@ -153,7 +155,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 				protected boolean removeLRU(final org.apache.commons.collections4.map.AbstractLinkedMap.LinkEntry<Object, GroupType> entry)
 				{
 					final GroupType group = entry.getValue();
-					if(group != null)
+					if (group != null)
 					{
 						closeGroup(group);
 					}
@@ -166,7 +168,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Adds item to be aggregated.
-	 * 
+	 *
 	 * @param item
 	 */
 	public final void add(final ItemType item)
@@ -199,20 +201,24 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		_lastGroupUsed = group;
 		_countItems++;
 	}
-	
+
 	public MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
 	{
 		Check.assumeNotNull(items, "items not null");
-		while(items.hasNext())
+		while (items.hasNext())
 		{
 			final ItemType item = items.next();
 			add(item);
 		}
-		
+
 		return this;
 	}
 
-	/** @return hash/aggregation key for given <code>item</code> */
+	/**
+	 * Invokes this instance's {@link IAggregationKeyBuilder}'s (see {@link #setItemAggregationKeyBuilder(IAggregationKeyBuilder)}) <code>buildKey</code> method.
+	 *
+	 * @return hash/aggregation key for given <code>item</code>
+	 */
 	private final Object createItemHashKey(final ItemType item)
 	{
 		final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
@@ -222,24 +228,24 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Creates a new group based on given item and adds it to groups buffer.
-	 * 
+	 *
 	 * If the groups buffer capacity is reached the last used group will be removed from buffer (this is done indirectly by {@link LRUMap}).
-	 * 
+	 *
 	 * @param itemHashKey
 	 * @param item item to be used for creating the new group
-	 * @return 
+	 * @return
 	 */
 	private final GroupType createAndAddGroupToBuffer(final Object itemHashKey, final ItemType item)
 	{
 		// We put a null value to map (before actually creating the group),
 		// to make sure the previous groups are closed before the new group is actually created
 		_itemHashKey2group.put(itemHashKey, null);
-		
+
 		final GroupType group = createGroup(itemHashKey, item);
 
 		_itemHashKey2group.put(itemHashKey, group);
 		_countGroups++;
-		
+
 		return group;
 	}
 
@@ -262,7 +268,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Close all groups.
-	 * 
+	 *
 	 * @param exceptGroup optional group to except from closing
 	 */
 	private final void closeAllGroupsExcept(final GroupType exceptGroup)
@@ -287,13 +293,17 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		}
 	}
 
-	/** @return how many groups were created */
+	/**
+	 * @return how many groups were created
+	 */
 	public final int getGroupsCount()
 	{
 		return _countGroups;
 	}
 
-	/** @return how many items were added */
+	/**
+	 * @return how many items were added
+	 */
 	public final int getItemsCount()
 	{
 		return _countItems;

@@ -34,7 +34,7 @@ import de.metas.procurement.base.model.I_PMM_Week;
 public class PMMWeekDAO implements IPMMWeekDAO
 {
 	@Override
-	public I_PMM_Week retrieveFor(final int bpartnerId, final int productId, final Date day)
+	public I_PMM_Week retrieveFor(final int bpartnerId, final int productId, final int huPIItemProductId, final Date day)
 	{
 		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
 		return Services.get(IQueryBL.class)
@@ -42,6 +42,7 @@ public class PMMWeekDAO implements IPMMWeekDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PMM_Week.COLUMN_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_PMM_Week.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_PMM_Week.COLUMN_M_HU_PI_Item_Product_ID, huPIItemProductId > 0 ? huPIItemProductId : null)
 				.addEqualsFilter(I_PMM_Week.COLUMN_WeekDate, day)
 				.create()
 				.firstOnly(I_PMM_Week.class);

@@ -10,18 +10,17 @@ package org.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -29,13 +28,21 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
+
+import de.metas.logging.LogManager;
 
 public class SysConfigDAO extends AbstractSysConfigDAO
 {
+	private final Logger logger = LogManager.getLogger(SysConfigDAO.class);
+
 	@Override
 	public I_AD_SysConfig retrieveSysConfig(final Properties ctx, final String name, final int AD_Client_ID, final int AD_Org_ID, final String trxName)
 	{
@@ -46,19 +53,31 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 		final I_AD_SysConfig sysConfig = new Query(ctx, I_AD_SysConfig.Table_Name, whereClause, trxName)
 				.setParameters(name, AD_Client_ID, AD_Org_ID)
 				.firstOnly(I_AD_SysConfig.class);
-		
+
 		return sysConfig;
 	}
-	
+
 	@Override
-	public String retrieveSysConfigValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID)
+	public String retrieveSysConfigValue(final String Name, final String defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
+		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
+		if (springApplicationContext != null)
+		{
+			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name, defaultValue);
+			if (!Check.isEmpty(springContextValue, true))
+			{
+				logger.info("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record",
+						new Object[] { Name, springApplicationContext });
+				return springContextValue.trim();
+			}
+		}
+
 		return MSysConfig.getValue(Name, defaultValue, AD_Client_ID, AD_Org_ID);
 	}
-	
+
 	@Override
 	@Cached(cacheName = I_AD_SysConfig.Table_Name + "#NamesForPrefix", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public List<String> retrieveNamesForPrefix(String prefix, int adClientId, int adOrgId)
+	public List<String> retrieveNamesForPrefix(final String prefix, final int adClientId, final int adOrgId)
 	{
 		Check.assume(!Check.isEmpty(prefix, true), "prefix is empty");
 
@@ -72,7 +91,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 		return new Query(Env.getCtx(), I_AD_SysConfig.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setParameters(sqlPrefix, adClientId, adOrgId, true)
 				.setOrderBy(I_AD_SysConfig.COLUMNNAME_Name)
-				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, Query.AGGREGATE_DISTINCT, String.class);
+				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, IQuery.AGGREGATE_DISTINCT, String.class);
 	}
 
 }

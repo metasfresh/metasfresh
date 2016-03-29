@@ -62,6 +62,7 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Candidate -> Purchase order
 		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.C_Order(), client);
+		engine.addModelValidator(de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate.instance, client);
 		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate_OrderLine(), client);
 
 		//
@@ -122,7 +123,7 @@ public class Main extends AbstractModuleInterceptor
 					+ "To fix this, add AD_SysConfig records with AD_Client_ID={} and AD_Org_ID=0 and with the following names:\n"
 					+ "{} \n"
 					+ "{}",
-					new Object[] { requestQueueName, responseQueueName, Math.max(getAD_Client_ID(),0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE });
+					new Object[] { requestQueueName, responseQueueName, Math.max(getAD_Client_ID(), 0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE });
 			return;
 		}
 		//

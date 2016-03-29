@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -14,7 +14,6 @@ import org.compiere.util.Util;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
-import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 
 /*
  * #%L
@@ -26,12 +25,12 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,14 +44,12 @@ public final class PurchaseCandidate
 		return new PurchaseCandidate(candidateModel);
 	}
 
-	private final transient IPMMPurchaseCandidateBL purchaseCandidateBL = Services.get(IPMMPurchaseCandidateBL.class);
-
 	private final I_PMM_PurchaseCandidate model;
 
-	private PurchaseCandidate(I_PMM_PurchaseCandidate candidateModel)
+	private PurchaseCandidate(final I_PMM_PurchaseCandidate candidateModel)
 	{
 		super();
-		this.model = candidateModel;
+		model = candidateModel;
 	}
 
 	public int getAD_Org_ID()
@@ -125,6 +122,15 @@ public final class PurchaseCandidate
 		return model.getQtyToOrder();
 	}
 
+	public BigDecimal getQtyToOrder_TU()
+	{
+		return model.getQtyToOrder_TU();
+	}
+
+	/**
+	 *
+	 * @return the <code>model</code>'s date promised value, truncated to "day".
+	 */
 	public Timestamp getDatePromised()
 	{
 		return TimeUtil.trunc(model.getDatePromised(), TimeUtil.TRUNC_DAY);
@@ -132,51 +138,49 @@ public final class PurchaseCandidate
 
 	public final Object getHeaderAggregationKey()
 	{
-		return Util.mkKey(
-				getAD_Org_ID()
-				, getM_Warehouse_ID()
-				, getC_BPartner_ID()
-				, getDatePromised().getTime()
-				, getM_PricingSystem_ID()
-				, getM_PriceList_ID()
-				, getC_Currency_ID()
-				);
+		// the pricelist is no aggregation criterion, because
+		// the orderline's price is manually set, i.e. the pricing system is not invoked
+		// and we often want to combine candidates with C_Flatrate_Terms (-> no pricelist, price take from the term)
+		// and candidates without a term, where the candidate's price is computed by the pricing system
+		return Util.mkKey(getAD_Org_ID(),
+				getM_Warehouse_ID(),
+				getC_BPartner_ID(),
+				getDatePromised().getTime(),
+				getM_PricingSystem_ID(),
+				// getM_PriceList_ID(),
+				getC_Currency_ID());
 	}
 
 	public final Object getLineAggregationKey()
 	{
-		return Util.mkKey(
-				getDatePromised().getTime()
-				, getM_Product_ID()
-				, getC_UOM_ID()
-				, getM_HU_PI_Item_Product_ID()
-				, getPrice()
-				);
+		return Util.mkKey(getM_Product_ID(),
+				getC_UOM_ID(),
+				getM_HU_PI_Item_Product_ID(),
+				getPrice());
 	}
 
-	public void createAllocation(final I_C_OrderLine orderLine)
+	/**
+	 * Creates and {@link I_PMM_PurchaseCandidate} to {@link I_C_OrderLine} line allocation using the whole candidate's QtyToOrder.
+	 * 
+	 * @param orderLine
+	 */
+	/* package */void createAllocation(final I_C_OrderLine orderLine)
 	{
+		Check.assumeNotNull(orderLine, "orderLine not null");
+		
 		final BigDecimal qtyToOrder = getQtyToOrder();
+		final BigDecimal qtyToOrderTU = getQtyToOrder_TU();
 
 		//
 		// Create allocation
-		{
-			final I_PMM_PurchaseCandidate_OrderLine alloc = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate_OrderLine.class, orderLine);
-			alloc.setC_OrderLine(orderLine);
-			alloc.setPMM_PurchaseCandidate(model);
-			alloc.setQtyOrdered(qtyToOrder);
-			InterfaceWrapperHelper.save(alloc);
-		}
+		final I_PMM_PurchaseCandidate_OrderLine alloc = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate_OrderLine.class, orderLine);
+		alloc.setC_OrderLine(orderLine);
+		alloc.setPMM_PurchaseCandidate(model);
+		alloc.setQtyOrdered(qtyToOrder);
+		alloc.setQtyOrdered_TU(qtyToOrderTU);
+		InterfaceWrapperHelper.save(alloc);
 
-		//
-		// Update candidate's quantities
-		{
-			model.setQtyOrdered(model.getQtyOrdered().add(qtyToOrder));
-
-			final BigDecimal qtyToOrderNew = purchaseCandidateBL.calculateQtyToOrder(model);
-			model.setQtyToOrder(qtyToOrderNew);
-
-			InterfaceWrapperHelper.save(model);
-		}
+		// NOTE: on alloc's save we expect the model's quantities to be updated
+		InterfaceWrapperHelper.markStaled(model); // FIXME: workaround because we are modifying the model from alloc's model interceptor
 	}
 }

@@ -35,6 +35,7 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.service.impl.ValuePreferenceBL;
 import org.adempiere.util.Check;
@@ -75,6 +76,8 @@ import de.metas.logging.LogManager;
  */
 public final class Adempiere
 {
+	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
+
 	public static final transient Adempiere instance = new Adempiere();
 
 	/**
@@ -86,7 +89,6 @@ public final class Adempiere
 	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project pom.xml
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
-
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -126,13 +128,12 @@ public final class Adempiere
 	private static final String DEFAULT_ProductLicenseResourceName = "org/adempiere/license.html";
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
-
 	/** Logging */
-	private static Logger log = null;
+	private static Logger logger = null;
 
 	private ApplicationContext applicationContext;
 
-	public static final ApplicationContext getContext()
+	public static final ApplicationContext getSpringApplicationContext()
 	{
 		return instance.applicationContext;
 	}
@@ -156,11 +157,11 @@ public final class Adempiere
 	 */
 	public static final void autowire(final Object bean)
 	{
-		if(getContext() == null)
+		if (getSpringApplicationContext() == null)
 		{
 			return;
 		}
-		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
 	//
@@ -258,13 +259,17 @@ public final class Adempiere
 		return _productUrl;
 	}   // getURL
 
-	/** @return product's copyright text */
+	/**
+	 * @return product's copyright text
+	 */
 	public static String getCopyright()
 	{
 		return _copyright;
 	}
 
-	/** @return product's brand copyright */
+	/**
+	 * @return product's brand copyright
+	 */
 	public static String getBrandCopyright()
 	{
 		return _brandCopyright;
@@ -382,7 +387,7 @@ public final class Adempiere
 		return System.getProperty("java.vm.name") // e.g. Java HotSpot(TM) 64-Bit Server VM
 				+ " " + System.getProperty("java.version") // e.g. 1.7.0_21
 				+ "/" + System.getProperty("java.vm.version") // e.g. 23.21-b01
-		;
+				;
 	}	// getJavaInfo
 
 	/**
@@ -395,7 +400,7 @@ public final class Adempiere
 		return System.getProperty("os.name") // e.g. Windows 7
 				+ " " + System.getProperty("os.version") // e.g. 6.1
 				+ " " + System.getProperty("sun.os.patch.level") // e.g. Service Pack 1
-		;
+				;
 	}	// getJavaInfo
 
 	/**
@@ -406,7 +411,9 @@ public final class Adempiere
 		return _onlineHelpUrl;
 	}
 
-	/** @return product icon (small, i.e. 16x16 image) */
+	/**
+	 * @return product icon (small, i.e. 16x16 image)
+	 */
 	public static Image getProductIconSmall()
 	{
 		if (_productIconSmall == null && !Check.isEmpty(_productIconSmallName, true))
@@ -420,7 +427,9 @@ public final class Adempiere
 		return _productIconSmall;
 	}
 
-	/** @return product's logo (large, high resolution) */
+	/**
+	 * @return product's logo (large, high resolution)
+	 */
 	public static Image getProductLogoLarge()
 	{
 		if (_productLogoLargeImage == null && !Check.isEmpty(getProductLogoLargeResourceName(), true))
@@ -434,7 +443,9 @@ public final class Adempiere
 		return _productLogoLargeImage;
 	}   // getImageLogoSmall
 
-	/** @return product large logo resource URL */
+	/**
+	 * @return product large logo resource URL
+	 */
 	public static URL getProductLogoLargeURL()
 	{
 		return org.compiere.Adempiere.class.getResource(getProductLogoLargeResourceName());
@@ -445,7 +456,9 @@ public final class Adempiere
 		return _productLogoLargeName;
 	}
 
-	/** @return product's logo (small) */
+	/**
+	 * @return product's logo (small)
+	 */
 	public static Image getProductLogoSmall()
 	{
 		if (_productLogoSmallImage == null && !Check.isEmpty(_productLogoSmallName, true))
@@ -459,7 +472,9 @@ public final class Adempiere
 		return _productLogoSmallImage;
 	}   // getImageLogo
 
-	/** @return Image Icon (100x30 ImageIcon) */
+	/**
+	 * @return Image Icon (100x30 ImageIcon)
+	 */
 	public static ImageIcon getProductLogoAsIcon()
 	{
 		if (_productLogoSmallImageIcon == null && getProductLogoSmall() != null)
@@ -605,9 +620,9 @@ public final class Adempiere
 		Ini.setRunMode(runMode);
 
 		// Init Log
-		log = LogManager.getLogger(Adempiere.class);
+		logger = LogManager.getLogger(Adempiere.class);
 		// Greeting
-		log.info(getSummaryAscii());
+		logger.info(getSummaryAscii());
 
 		// System properties
 		Ini.loadProperties(false); // reload=false
@@ -618,9 +633,9 @@ public final class Adempiere
 		// Set UI
 		if (runmodeClient)
 		{
-			if (log.isTraceEnabled())
+			if (logger.isTraceEnabled())
 			{
-				log.trace("{}", System.getProperties());
+				logger.trace("{}", System.getProperties());
 			}
 
 			AdempierePLAF.setPLAF(); // metas: load plaf from last session
@@ -673,7 +688,7 @@ public final class Adempiere
 		// startup(runMode); // returns if already initiated
 		if (!DB.isConnected())
 		{
-			log.error("No Database");
+			logger.error("No Database");
 			return false;
 		}
 
@@ -681,7 +696,7 @@ public final class Adempiere
 
 		if (system == null)
 		{
-			log.error("No AD_System record found");
+			logger.error("No AD_System record found");
 			return false;
 		}
 
@@ -717,7 +732,7 @@ public final class Adempiere
 		}
 		catch (Exception e)
 		{
-			log.warn("Environment problems: " + e.toString());
+			logger.warn("Environment problems: " + e.toString());
 		}
 
 		// Start Workflow Document Manager (in other package) for PO
@@ -732,7 +747,7 @@ public final class Adempiere
 		}
 		catch (Exception e)
 		{
-			log.warn("Not started: " + className + " - " + e.getMessage());
+			logger.warn("Not started: " + className + " - " + e.getMessage());
 		}
 
 		// metas: begin
@@ -744,8 +759,13 @@ public final class Adempiere
 		// task 06295
 		if (runMode == RunMode.BACKEND)
 		{
-			// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-			Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
+			final boolean skipHouseKeeping = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
+			logger.info("Sysconfig {} = {}", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
+			if (!skipHouseKeeping)
+			{
+				// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
+				Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
+			}
 		}
 
 		if (runMode == RunMode.BACKEND)
@@ -754,8 +774,6 @@ public final class Adempiere
 		}
 		return true;
 	}	// startupEnvironment
-
-
 
 	/**
 	 * Main Method
@@ -784,7 +802,7 @@ public final class Adempiere
 				main(applicationContext, new String[] {});
 			}
 		};
-		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName()+".main");
+		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName() + ".main");
 		thread.start();
 	}
 
@@ -811,7 +829,7 @@ public final class Adempiere
 		String className = "org.compiere.apps.AMenu";
 		for (int i = 0; i < args.length; i++)
 		{
-			if (!args[i].equals("-debug"))  // ignore -debug
+			if (!args[i].equals("-debug"))   // ignore -debug
 			{
 				className = args[i];
 				break;
@@ -853,7 +871,9 @@ public final class Adempiere
 
 	private static boolean unitTestMode = false;
 
-	/** @return if running on server side and the ZK webui server is enabled */
+	/**
+	 * @return if running on server side and the ZK webui server is enabled
+	 */
 	public static boolean isZkWebUIServerEnabled()
 	{
 		final Boolean enabled = zkWebUIServerEnabledSupplier.get();
@@ -865,7 +885,7 @@ public final class Adempiere
 		@Override
 		public Boolean get()
 		{
-			if(Ini.isClient())
+			if (Ini.isClient())
 			{
 				return false;
 			}

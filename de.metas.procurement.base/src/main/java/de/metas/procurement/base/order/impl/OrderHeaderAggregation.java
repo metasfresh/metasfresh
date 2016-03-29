@@ -7,6 +7,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MPriceList;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -93,7 +94,10 @@ public class OrderHeaderAggregation
 		final I_C_BPartner bpartner = candidate.getC_BPartner();
 
 		final int pricingSystemId = candidate.getM_PricingSystem_ID();
-		final int priceListId = candidate.getM_PriceList_ID();
+
+		// the price is taken from the candidates and C_OrderLine.IsManualPrice is set to 'Y'
+		final int priceListId =  MPriceList.M_PriceList_ID_None;
+
 		final int currencyId = candidate.getC_Currency_ID();
 
 		final Timestamp datePromised = candidate.getDatePromised();
@@ -147,7 +151,7 @@ public class OrderHeaderAggregation
 		{
 			order.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
-		
+
 		order.setDocStatus(DocAction.STATUS_Drafted);
 		order.setDocAction(DocAction.ACTION_Complete);
 

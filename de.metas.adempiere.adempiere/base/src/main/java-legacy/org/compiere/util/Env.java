@@ -33,8 +33,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -66,11 +64,13 @@ import org.compiere.model.MLookupCache;
 import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.logging.LogManager;
 
 /**
  * System Environment and static variables.
@@ -270,6 +270,7 @@ public final class Env
 	 * i.e. the AD_Org_ID used to store records which don't belong to a particular organization.
 	 */
 	public static final int CTXVALUE_AD_Org_ID_System = 0;
+	public static final int CTXVALUE_AD_Org_ID_Any = 0;
 
 	public static final String CTXNAME_AD_Role_ID = "#AD_Role_ID";
 	public static final int CTXVALUE_AD_Role_ID_NONE = -1;

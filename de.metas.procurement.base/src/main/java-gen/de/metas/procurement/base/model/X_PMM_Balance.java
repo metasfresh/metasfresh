@@ -1,38 +1,47 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.procurement.base.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
-/** Generated Model for PMM_Week
+/** Generated Model for PMM_Balance
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org.compiere.model.I_Persistent 
+public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balance, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1411723628L;
+	private static final long serialVersionUID = 2119042927L;
 
     /** Standard Constructor */
-    public X_PMM_Week (Properties ctx, int PMM_Week_ID, String trxName)
+    public X_PMM_Balance (Properties ctx, int PMM_Balance_ID, String trxName)
     {
-      super (ctx, PMM_Week_ID, trxName);
-      /** if (PMM_Week_ID == 0)
+      super (ctx, PMM_Balance_ID, trxName);
+      /** if (PMM_Balance_ID == 0)
         {
 			setC_BPartner_ID (0);
+			setM_HU_PI_Item_Product_ID (0);
+			setMonthDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
-			setPMM_Week_ID (0);
-			setProcessed (false);
-// N
-			setWeekDate (new Timestamp( System.currentTimeMillis() ));
+			setPMM_Balance_ID (0);
+			setQtyOrdered (Env.ZERO);
+// 0
+			setQtyOrdered_TU (Env.ZERO);
+// 0
+			setQtyPromised (Env.ZERO);
+// 0
+			setQtyPromised_TU (Env.ZERO);
+// 0
         } */
     }
 
     /** Load Constructor */
-    public X_PMM_Week (Properties ctx, ResultSet rs, String trxName)
+    public X_PMM_Balance (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -83,51 +92,35 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		return ii.intValue();
 	}
 
-	/** Set Fehlermeldung.
-		@param ErrorMsg Fehlermeldung	  */
 	@Override
-	public void setErrorMsg (java.lang.String ErrorMsg)
+	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
-	}
-
-	/** Get Fehlermeldung.
-		@return Fehlermeldung	  */
-	@Override
-	public java.lang.String getErrorMsg () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
 	}
 
 	@Override
-	public de.metas.procurement.base.model.I_PMM_WeekReport_Event getLast_WeekReport_Event() throws RuntimeException
+	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
 	{
-		return get_ValueAsPO(COLUMNNAME_Last_WeekReport_Event_ID, de.metas.procurement.base.model.I_PMM_WeekReport_Event.class);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
 	}
 
+	/** Set Abrechnungssatz.
+		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
 	@Override
-	public void setLast_WeekReport_Event(de.metas.procurement.base.model.I_PMM_WeekReport_Event Last_WeekReport_Event)
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_Last_WeekReport_Event_ID, de.metas.procurement.base.model.I_PMM_WeekReport_Event.class, Last_WeekReport_Event);
-	}
-
-	/** Set Last week report event.
-		@param Last_WeekReport_Event_ID Last week report event	  */
-	@Override
-	public void setLast_WeekReport_Event_ID (int Last_WeekReport_Event_ID)
-	{
-		if (Last_WeekReport_Event_ID < 1) 
-			set_Value (COLUMNNAME_Last_WeekReport_Event_ID, null);
+		if (C_Flatrate_DataEntry_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, null);
 		else 
-			set_Value (COLUMNNAME_Last_WeekReport_Event_ID, Integer.valueOf(Last_WeekReport_Event_ID));
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, Integer.valueOf(C_Flatrate_DataEntry_ID));
 	}
 
-	/** Get Last week report event.
-		@return Last week report event	  */
+	/** Get Abrechnungssatz.
+		@return Abrechnungssatz	  */
 	@Override
-	public int getLast_WeekReport_Event_ID () 
+	public int getC_Flatrate_DataEntry_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Last_WeekReport_Event_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_DataEntry_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -167,6 +160,22 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		return ii.intValue();
 	}
 
+	/** Set Monatserster.
+		@param MonthDate Monatserster	  */
+	@Override
+	public void setMonthDate (java.sql.Timestamp MonthDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_MonthDate, MonthDate);
+	}
+
+	/** Get Monatserster.
+		@return Monatserster	  */
+	@Override
+	public java.sql.Timestamp getMonthDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MonthDate);
+	}
+
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -204,82 +213,108 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		return ii.intValue();
 	}
 
-	/** 
-	 * PMM_Trend AD_Reference_ID=540648
-	 * Reference name: PMM_Trend
-	 */
-	public static final int PMM_TREND_AD_Reference_ID=540648;
-	/** Up = U */
-	public static final String PMM_TREND_Up = "U";
-	/** Down = D */
-	public static final String PMM_TREND_Down = "D";
-	/** Same = E */
-	public static final String PMM_TREND_Same = "E";
-	/** Zero = Z */
-	public static final String PMM_TREND_Zero = "Z";
-	/** Set Trend.
-		@param PMM_Trend Trend	  */
+	/** Set PMM balance.
+		@param PMM_Balance_ID PMM balance	  */
 	@Override
-	public void setPMM_Trend (java.lang.String PMM_Trend)
+	public void setPMM_Balance_ID (int PMM_Balance_ID)
 	{
-
-		set_Value (COLUMNNAME_PMM_Trend, PMM_Trend);
-	}
-
-	/** Get Trend.
-		@return Trend	  */
-	@Override
-	public java.lang.String getPMM_Trend () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend);
-	}
-
-	/** Set Procurement Week.
-		@param PMM_Week_ID Procurement Week	  */
-	@Override
-	public void setPMM_Week_ID (int PMM_Week_ID)
-	{
-		if (PMM_Week_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PMM_Week_ID, null);
+		if (PMM_Balance_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PMM_Balance_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PMM_Week_ID, Integer.valueOf(PMM_Week_ID));
+			set_ValueNoCheck (COLUMNNAME_PMM_Balance_ID, Integer.valueOf(PMM_Balance_ID));
 	}
 
-	/** Get Procurement Week.
-		@return Procurement Week	  */
+	/** Get PMM balance.
+		@return PMM balance	  */
 	@Override
-	public int getPMM_Week_ID () 
+	public int getPMM_Balance_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_Week_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_Balance_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	/** Set Bestellte Menge.
+		@param QtyOrdered 
+		Bestellte Menge
 	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	/** Get Bestellte Menge.
+		@return Bestellte Menge
 	  */
 	@Override
-	public boolean isProcessed () 
+	public java.math.BigDecimal getQtyOrdered () 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellte Menge (TU).
+		@param QtyOrdered_TU 
+		Bestellte Menge (TU)
+	  */
+	@Override
+	public void setQtyOrdered_TU (java.math.BigDecimal QtyOrdered_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyOrdered_TU, QtyOrdered_TU);
+	}
+
+	/** Get Bestellte Menge (TU).
+		@return Bestellte Menge (TU)
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar.
+		@param QtyPromised Zusagbar	  */
+	@Override
+	public void setQtyPromised (java.math.BigDecimal QtyPromised)
+	{
+		set_Value (COLUMNNAME_QtyPromised, QtyPromised);
+	}
+
+	/** Get Zusagbar.
+		@return Zusagbar	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar (TU).
+		@param QtyPromised_TU Zusagbar (TU)	  */
+	@Override
+	public void setQtyPromised_TU (java.math.BigDecimal QtyPromised_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPromised_TU, QtyPromised_TU);
+	}
+
+	/** Get Zusagbar (TU).
+		@return Zusagbar (TU)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Wochenerster.

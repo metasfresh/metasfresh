@@ -228,6 +228,31 @@ public interface I_PMM_PurchaseCandidate_OrderLine
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
+	 * Set Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered_TU (java.math.BigDecimal QtyOrdered_TU);
+
+	/**
+	 * Get Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered_TU();
+
+    /** Column definition for QtyOrdered_TU */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate_OrderLine, Object> COLUMN_QtyOrdered_TU = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate_OrderLine, Object>(I_PMM_PurchaseCandidate_OrderLine.class, "QtyOrdered_TU", null);
+    /** Column name QtyOrdered_TU */
+    public static final String COLUMNNAME_QtyOrdered_TU = "QtyOrdered_TU";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

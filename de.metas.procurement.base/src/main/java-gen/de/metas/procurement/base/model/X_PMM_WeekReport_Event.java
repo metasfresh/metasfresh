@@ -14,7 +14,7 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1618605524L;
+	private static final long serialVersionUID = 1155582969L;
 
     /** Standard Constructor */
     public X_PMM_WeekReport_Event (Properties ctx, int PMM_WeekReport_Event_ID, String trxName)
@@ -94,6 +94,40 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
+	}
+
+	/** Set Packvorschrift-Produkt Zuordnung.
+		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	@Override
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
+	}
+
+	/** Get Packvorschrift-Produkt Zuordnung.
+		@return Packvorschrift-Produkt Zuordnung	  */
+	@Override
+	public int getM_HU_PI_Item_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -245,16 +279,16 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 		return false;
 	}
 
-	/** Set Wochendatum.
-		@param WeekDate Wochendatum	  */
+	/** Set Wochenerster.
+		@param WeekDate Wochenerster	  */
 	@Override
 	public void setWeekDate (java.sql.Timestamp WeekDate)
 	{
 		set_Value (COLUMNNAME_WeekDate, WeekDate);
 	}
 
-	/** Get Wochendatum.
-		@return Wochendatum	  */
+	/** Get Wochenerster.
+		@return Wochenerster	  */
 	@Override
 	public java.sql.Timestamp getWeekDate () 
 	{

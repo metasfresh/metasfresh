@@ -41,6 +41,8 @@ public class C_Flatrate_Term
 	{
 	}
 	
+	// TODO: when activating a flatrate term, make sure the product is present in PMM_Product table
+	
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void pushWithUI(final I_C_Flatrate_Term term)

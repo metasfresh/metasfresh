@@ -1,5 +1,6 @@
 package de.metas.procurement.base.impl;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -14,10 +16,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 
 /*
  * #%L
@@ -87,5 +91,27 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bpartner.getC_BPartner_ID())
 				.create()
 				.match();
+	}
+
+	@Override
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	{
+		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
+		Check.assumeNotNull(date, "date not null");
+		
+		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+		final List<I_C_Flatrate_DataEntry> dataEntries = InterfaceWrapperHelper.createList(
+				flatrateDAO.retrieveDataEntries(flatrateTerm, date, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),           // onlyNonSim = true
+				I_C_Flatrate_DataEntry.class);
+		
+		for (final I_C_Flatrate_DataEntry dataEntry : dataEntries)
+		{
+			if (dataEntry.getM_Product_DataEntry_ID() == flatrateTerm.getM_Product_ID())
+			{
+				return dataEntry;
+			}
+		}
+
+		return null;
 	}
 }

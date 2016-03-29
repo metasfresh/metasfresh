@@ -127,6 +127,33 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Abrechnungssatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID);
+
+	/**
+	 * Get Abrechnungssatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_DataEntry_ID();
+
+	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry();
+
+	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry);
+
+    /** Column definition for C_Flatrate_DataEntry_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_DataEntry> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_DataEntry>(I_PMM_QtyReport_Event.class, "C_Flatrate_DataEntry_ID", de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+    /** Column name C_Flatrate_DataEntry_ID */
+    public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search
@@ -152,6 +179,29 @@ public interface I_PMM_QtyReport_Event
     public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_Term>(I_PMM_QtyReport_Event.class, "C_Flatrate_Term_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
     /** Column name C_Flatrate_Term_ID */
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set ContractLine UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContractLine_UUID (java.lang.String ContractLine_UUID);
+
+	/**
+	 * Get ContractLine UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getContractLine_UUID();
+
+    /** Column definition for ContractLine_UUID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_ContractLine_UUID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "ContractLine_UUID", null);
+    /** Column name ContractLine_UUID */
+    public static final String COLUMNNAME_ContractLine_UUID = "ContractLine_UUID";
 
 	/**
 	 * Get Erstellt.
@@ -648,6 +698,75 @@ public interface I_PMM_QtyReport_Event
     public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_QtyPromised = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "QtyPromised", null);
     /** Column name QtyPromised */
     public static final String COLUMNNAME_QtyPromised = "QtyPromised";
+
+	/**
+	 * Set Old Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised_Old (java.math.BigDecimal QtyPromised_Old);
+
+	/**
+	 * Get Old Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised_Old();
+
+    /** Column definition for QtyPromised_Old */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_QtyPromised_Old = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "QtyPromised_Old", null);
+    /** Column name QtyPromised_Old */
+    public static final String COLUMNNAME_QtyPromised_Old = "QtyPromised_Old";
+
+	/**
+	 * Set Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised_TU (java.math.BigDecimal QtyPromised_TU);
+
+	/**
+	 * Get Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised_TU();
+
+    /** Column definition for QtyPromised_TU */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_QtyPromised_TU = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "QtyPromised_TU", null);
+    /** Column name QtyPromised_TU */
+    public static final String COLUMNNAME_QtyPromised_TU = "QtyPromised_TU";
+
+	/**
+	 * Set Old Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised_TU_Old (java.math.BigDecimal QtyPromised_TU_Old);
+
+	/**
+	 * Get Old Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised_TU_Old();
+
+    /** Column definition for QtyPromised_TU_Old */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_QtyPromised_TU_Old = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "QtyPromised_TU_Old", null);
+    /** Column name QtyPromised_TU_Old */
+    public static final String COLUMNNAME_QtyPromised_TU_Old = "QtyPromised_TU_Old";
 
 	/**
 	 * Get Aktualisiert.

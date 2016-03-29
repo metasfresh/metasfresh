@@ -1,10 +1,6 @@
-package de.metas.procurement.base;
-
-import java.util.Date;
+package de.metas.procurement.base.balance;
 
 import org.adempiere.util.ISingletonService;
-
-import de.metas.procurement.base.model.I_PMM_Week;
 
 /*
  * #%L
@@ -28,7 +24,8 @@ import de.metas.procurement.base.model.I_PMM_Week;
  * #L%
  */
 
-public interface IPMMWeekDAO extends ISingletonService
+public interface IPMMBalanceBL extends ISingletonService
 {
-	I_PMM_Week retrieveFor(final int bpartnerId, final int productId, final int huPIItemProductId, final Date day);
+
+	void process(PMMBalanceChangeEvent event);
 }

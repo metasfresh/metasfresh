@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2106503273L;
+	private static final long serialVersionUID = 2114215743L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -37,8 +37,14 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 // N
 			setQtyOrdered (Env.ZERO);
 // 0
+			setQtyOrdered_TU (Env.ZERO);
+// 0
 			setQtyPromised (Env.ZERO);
+			setQtyPromised_TU (Env.ZERO);
+// 0
 			setQtyToOrder (Env.ZERO);
+// 0
+			setQtyToOrder_TU (Env.ZERO);
 // 0
         } */
     }
@@ -127,6 +133,40 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+	}
+
+	@Override
+	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
+	}
+
+	/** Set Abrechnungssatz.
+		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
+	@Override
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID)
+	{
+		if (C_Flatrate_DataEntry_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, Integer.valueOf(C_Flatrate_DataEntry_ID));
+	}
+
+	/** Get Abrechnungssatz.
+		@return Abrechnungssatz	  */
+	@Override
+	public int getC_Flatrate_DataEntry_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_DataEntry_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -628,6 +668,28 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
+	/** Set Bestellte Menge (TU).
+		@param QtyOrdered_TU 
+		Bestellte Menge (TU)
+	  */
+	@Override
+	public void setQtyOrdered_TU (java.math.BigDecimal QtyOrdered_TU)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_TU, QtyOrdered_TU);
+	}
+
+	/** Get Bestellte Menge (TU).
+		@return Bestellte Menge (TU)
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Zusagbar.
 		@param QtyPromised Zusagbar	  */
 	@Override
@@ -683,6 +745,25 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
+	/** Set Zusagbar (TU).
+		@param QtyPromised_TU Zusagbar (TU)	  */
+	@Override
+	public void setQtyPromised_TU (java.math.BigDecimal QtyPromised_TU)
+	{
+		set_Value (COLUMNNAME_QtyPromised_TU, QtyPromised_TU);
+	}
+
+	/** Get Zusagbar (TU).
+		@return Zusagbar (TU)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Quantity to Order.
 		@param QtyToOrder Quantity to Order	  */
 	@Override
@@ -697,6 +778,25 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public java.math.BigDecimal getQtyToOrder () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToOrder);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Quantity to Order (TU).
+		@param QtyToOrder_TU Quantity to Order (TU)	  */
+	@Override
+	public void setQtyToOrder_TU (java.math.BigDecimal QtyToOrder_TU)
+	{
+		set_Value (COLUMNNAME_QtyToOrder_TU, QtyToOrder_TU);
+	}
+
+	/** Get Quantity to Order (TU).
+		@return Quantity to Order (TU)	  */
+	@Override
+	public java.math.BigDecimal getQtyToOrder_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToOrder_TU);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

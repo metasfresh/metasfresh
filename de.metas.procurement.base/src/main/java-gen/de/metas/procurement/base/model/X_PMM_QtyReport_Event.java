@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 897123285L;
+	private static final long serialVersionUID = -592337065L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -29,6 +29,12 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 			setPMM_QtyReport_Event_ID (0);
 			setProcessed (false);
 // N
+			setQtyPromised_Old (Env.ZERO);
+// 0
+			setQtyPromised_TU (Env.ZERO);
+// 0
+			setQtyPromised_TU_Old (Env.ZERO);
+// 0
         } */
     }
 
@@ -122,6 +128,40 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	}
 
 	@Override
+	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+	}
+
+	@Override
+	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
+	}
+
+	/** Set Abrechnungssatz.
+		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
+	@Override
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID)
+	{
+		if (C_Flatrate_DataEntry_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_DataEntry_ID, Integer.valueOf(C_Flatrate_DataEntry_ID));
+	}
+
+	/** Get Abrechnungssatz.
+		@return Abrechnungssatz	  */
+	@Override
+	public int getC_Flatrate_DataEntry_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_DataEntry_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class);
@@ -153,6 +193,22 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ContractLine UUID.
+		@param ContractLine_UUID ContractLine UUID	  */
+	@Override
+	public void setContractLine_UUID (java.lang.String ContractLine_UUID)
+	{
+		set_Value (COLUMNNAME_ContractLine_UUID, ContractLine_UUID);
+	}
+
+	/** Get ContractLine UUID.
+		@return ContractLine UUID	  */
+	@Override
+	public java.lang.String getContractLine_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContractLine_UUID);
 	}
 
 	@Override
@@ -619,6 +675,63 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	public java.math.BigDecimal getQtyPromised () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Old Zusagbar.
+		@param QtyPromised_Old Old Zusagbar	  */
+	@Override
+	public void setQtyPromised_Old (java.math.BigDecimal QtyPromised_Old)
+	{
+		set_Value (COLUMNNAME_QtyPromised_Old, QtyPromised_Old);
+	}
+
+	/** Get Old Zusagbar.
+		@return Old Zusagbar	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_Old () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_Old);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar (TU).
+		@param QtyPromised_TU Zusagbar (TU)	  */
+	@Override
+	public void setQtyPromised_TU (java.math.BigDecimal QtyPromised_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPromised_TU, QtyPromised_TU);
+	}
+
+	/** Get Zusagbar (TU).
+		@return Zusagbar (TU)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Old Zusagbar (TU).
+		@param QtyPromised_TU_Old Old Zusagbar (TU)	  */
+	@Override
+	public void setQtyPromised_TU_Old (java.math.BigDecimal QtyPromised_TU_Old)
+	{
+		set_Value (COLUMNNAME_QtyPromised_TU_Old, QtyPromised_TU_Old);
+	}
+
+	/** Get Old Zusagbar (TU).
+		@return Old Zusagbar (TU)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU_Old () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU_Old);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

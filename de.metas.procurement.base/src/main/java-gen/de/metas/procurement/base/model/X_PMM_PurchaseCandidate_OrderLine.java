@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -639331466L;
+	private static final long serialVersionUID = -842330716L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate_OrderLine (Properties ctx, int PMM_PurchaseCandidate_OrderLine_ID, String trxName)
@@ -28,6 +28,8 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 			setPMM_PurchaseCandidate_ID (0);
 			setPMM_PurchaseCandidate_OrderLine_ID (0);
 			setQtyOrdered (Env.ZERO);
+			setQtyOrdered_TU (Env.ZERO);
+// 0
         } */
     }
 
@@ -156,6 +158,28 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	public java.math.BigDecimal getQtyOrdered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellte Menge (TU).
+		@param QtyOrdered_TU 
+		Bestellte Menge (TU)
+	  */
+	@Override
+	public void setQtyOrdered_TU (java.math.BigDecimal QtyOrdered_TU)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_TU, QtyOrdered_TU);
+	}
+
+	/** Get Bestellte Menge (TU).
+		@return Bestellte Menge (TU)
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_TU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

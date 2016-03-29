@@ -37,6 +37,13 @@ import de.metas.handlingunits.model.I_C_OrderLine;
  * #L%
  */
 
+/**
+ * Instances of this class are handled by {@link OrderLinesAggregator} and can generate a new {@link I_C_OrderLine}.<br>
+ * It is assumed that all purchase candidates added to the same instance have an equal {@link PurchaseCandidate#getLineAggregationKey()} value.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class OrderLineAggregation
 {
 	// services
@@ -112,7 +119,8 @@ public class OrderLineAggregation
 		orderLine.setQtyOrdered(BigDecimal.ZERO);
 
 		orderLine.setDatePromised(datePromised);
-		
+
+		orderLine.setIsManualPrice(true); // go with the candidate's price. e.g. don't reset it to 0 because we have no PL
 		orderLine.setPriceEntered(price);
 		orderLine.setPriceActual(price);
 

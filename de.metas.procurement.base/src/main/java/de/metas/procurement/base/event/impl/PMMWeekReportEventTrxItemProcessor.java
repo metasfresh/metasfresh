@@ -53,7 +53,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		//
 		// Get aggregate
 		final Timestamp weekDate = TimeUtil.trunc(event.getWeekDate(), TimeUtil.TRUNC_WEEK);
-		I_PMM_Week aggregate = purchaseCandidateDAO.retrieveFor(event.getC_BPartner_ID(), event.getM_Product_ID(), weekDate);
+		I_PMM_Week aggregate = purchaseCandidateDAO.retrieveFor(event.getC_BPartner_ID(), event.getM_Product_ID(), event.getM_HU_PI_Item_Product_ID(), weekDate);
 
 		//
 		// If candidate is currently locked, skip processing this event for now
@@ -78,6 +78,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 			aggregate = InterfaceWrapperHelper.newInstance(I_PMM_Week.class);
 			aggregate.setC_BPartner_ID(event.getC_BPartner_ID());
 			aggregate.setM_Product_ID(event.getM_Product_ID());
+			aggregate.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
 			aggregate.setWeekDate(weekDate);
 
 			aggregate.setAD_Org_ID(event.getAD_Org_ID());

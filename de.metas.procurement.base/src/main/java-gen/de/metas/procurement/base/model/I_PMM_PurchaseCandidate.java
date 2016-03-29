@@ -127,6 +127,33 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Abrechnungssatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID);
+
+	/**
+	 * Get Abrechnungssatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_DataEntry_ID();
+
+	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry();
+
+	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry);
+
+    /** Column definition for C_Flatrate_DataEntry_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, de.metas.flatrate.model.I_C_Flatrate_DataEntry> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, de.metas.flatrate.model.I_C_Flatrate_DataEntry>(I_PMM_PurchaseCandidate.class, "C_Flatrate_DataEntry_ID", de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+    /** Column name C_Flatrate_DataEntry_ID */
+    public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -642,6 +669,31 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_QtyOrdered_ThisWeek = "QtyOrdered_ThisWeek";
 
 	/**
+	 * Set Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered_TU (java.math.BigDecimal QtyOrdered_TU);
+
+	/**
+	 * Get Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered_TU();
+
+    /** Column definition for QtyOrdered_TU */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyOrdered_TU = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyOrdered_TU", null);
+    /** Column name QtyOrdered_TU */
+    public static final String COLUMNNAME_QtyOrdered_TU = "QtyOrdered_TU";
+
+	/**
 	 * Set Zusagbar.
 	 *
 	 * <br>Type: Quantity
@@ -711,6 +763,29 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_QtyPromised_ThisWeek = "QtyPromised_ThisWeek";
 
 	/**
+	 * Set Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised_TU (java.math.BigDecimal QtyPromised_TU);
+
+	/**
+	 * Get Zusagbar (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised_TU();
+
+    /** Column definition for QtyPromised_TU */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_TU = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_TU", null);
+    /** Column name QtyPromised_TU */
+    public static final String COLUMNNAME_QtyPromised_TU = "QtyPromised_TU";
+
+	/**
 	 * Set Quantity to Order.
 	 *
 	 * <br>Type: Quantity
@@ -732,6 +807,29 @@ public interface I_PMM_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyToOrder = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyToOrder", null);
     /** Column name QtyToOrder */
     public static final String COLUMNNAME_QtyToOrder = "QtyToOrder";
+
+	/**
+	 * Set Quantity to Order (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToOrder_TU (java.math.BigDecimal QtyToOrder_TU);
+
+	/**
+	 * Get Quantity to Order (TU).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToOrder_TU();
+
+    /** Column definition for QtyToOrder_TU */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyToOrder_TU = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyToOrder_TU", null);
+    /** Column name QtyToOrder_TU */
+    public static final String COLUMNNAME_QtyToOrder_TU = "QtyToOrder_TU";
 
 	/**
 	 * Get Aktualisiert.

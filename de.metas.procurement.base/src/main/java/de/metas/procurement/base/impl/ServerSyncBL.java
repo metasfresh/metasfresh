@@ -3,35 +3,33 @@ package de.metas.procurement.base.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import com.google.common.base.Joiner;
+
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
@@ -66,6 +64,8 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 public class ServerSyncBL implements IServerSyncBL
 {
+	private static final Logger logger = LogManager.getLogger(ServerSyncBL.class);
+
 	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
@@ -81,206 +81,144 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public void reportProductSupplies(final SyncProductSuppliesRequest request)
 	{
-		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final PlainContextAware ctxProvider = new PlainContextAware(Env.getCtx());
-
-		final boolean soTrx = false;
-
-		final List<SyncProductSupply> productSupplies = request.getProductSupplies();
-		for (final SyncProductSupply productSupply : productSupplies)
+		final List<SyncProductSupply> syncProductSupplies = request.getProductSupplies();
+		for (final SyncProductSupply syncProductSupply : syncProductSupplies)
 		{
-			final List<String> errors = new ArrayList<>();
-
-			// first load the PMM_Product which also defines the new record's client and org
-			final I_PMM_Product pmmProduct = getPMM_ProductAndUpdateCtx(ctxProvider, productSupply.getProduct_uuid());
-			final I_M_Product product;
-			final I_M_HU_PI_Item_Product huPIItemProduct;
-			final I_C_UOM uom;
-			final int warehouseId;
-			final int orgId;
-			if (pmmProduct != null)
+			try
 			{
-				product = pmmProduct.getM_Product();
-				huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
-				if (huPIItemProduct != null)
-				{
-					uom = huPIItemProduct.getC_UOM();
-				}
-				else
-				{
-					errors.add("@Missing@ @" + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "@");
-					uom = null;
-				}
-				warehouseId = pmmProduct.getM_Warehouse_ID();
-				orgId = pmmProduct.getAD_Org_ID();
+				createQtyReportEvent(syncProductSupply);
 			}
-			else
+			catch (final Exception e)
 			{
-				errors.add("@Missing@ @" + I_PMM_Product.COLUMNNAME_PMM_Product_ID + "@");
-
-				product = null;
-				huPIItemProduct = null;
-				uom = null;
-				warehouseId = 0;
-				orgId = 0;
+				logger.error("Failed importing " + syncProductSupply + ". Skipped.", e);
 			}
+		}
+	}
 
-			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
-			final Timestamp datePromised = productSupply.getDay() == null ? null : new Timestamp(productSupply.getDay().getTime());
+	private void createQtyReportEvent(final SyncProductSupply syncProductSupply)
+	{
+		final String product_uuid = syncProductSupply.getProduct_uuid();
+		loadPMMProductAndProcess(product_uuid, new IEventProcessor()
+		{
 
-			final int bPartnerId = SyncUUIDs.getC_BPartner_ID(productSupply.getBpartner_uuid());
-			final I_C_BPartner bPartner;
-			if (bPartnerId > 0)
+			@Override
+			public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
 			{
-				bPartner = InterfaceWrapperHelper.create(ctxProvider.getCtx(), bPartnerId, I_C_BPartner.class, ctxProvider.getTrxName());
+				createQtyReportEvent(context, pmmProduct, syncProductSupply);
+			}
+		});
+	}
+
+	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
+	{
+		final List<String> errors = new ArrayList<>();
+
+		final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, context);
+		try
+		{
+			// Product
+			qtyReportEvent.setProduct_UUID(syncProductSupply.getProduct_uuid());
+			qtyReportEvent.setPMM_Product(pmmProduct);
+
+			// BPartner
+			final String bpartner_uuid = syncProductSupply.getBpartner_uuid();
+			qtyReportEvent.setPartner_UUID(bpartner_uuid);
+			if (!Check.isEmpty(bpartner_uuid, true))
+			{
+				final int bpartnerId = SyncUUIDs.getC_BPartner_ID(bpartner_uuid);
+				qtyReportEvent.setC_BPartner_ID(bpartnerId);
 			}
 			else
 			{
 				errors.add("@Missing@ @" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "@");
-				bPartner = null;
 			}
-			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctxProvider.getCtx(), bPartnerId, soTrx, ctxProvider.getTrxName());
 
-
-			// now create the event record
-			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, ctxProvider);
-			// try-finally to make sure we attempt to save the new instance, also if there are exceptions
-			try
+			// C_FlatrateTerm
+			final String contractLine_uuid = syncProductSupply.getContractLine_uuid();
+			qtyReportEvent.setContractLine_UUID(contractLine_uuid);
+			if (!Check.isEmpty(contractLine_uuid, true))
 			{
-				qtyReportEvent.setPartner_UUID(productSupply.getBpartner_uuid());
-				qtyReportEvent.setProduct_UUID(productSupply.getProduct_uuid());
-
-				// first set the "general stuff"
-				qtyReportEvent.setAD_Org_ID(orgId);
-				qtyReportEvent.setC_BPartner(bPartner);
-
-				qtyReportEvent.setPMM_Product(pmmProduct);
-				qtyReportEvent.setM_Product(product);
-				qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
-
-				qtyReportEvent.setQtyPromised(qtyPromised);
-				qtyReportEvent.setC_UOM(uom);
-				qtyReportEvent.setDatePromised(datePromised);
-				qtyReportEvent.setM_PricingSystem_ID(pricingSystemId);
-
-				qtyReportEvent.setM_Warehouse_ID(warehouseId);
-
-				if (Check.isEmpty(productSupply.getContractLine_uuid(), true))
-				{
-					final List<I_C_BPartner_Location> shipToLocations = bPartnerDAO.retrieveBPartnerShipToLocations(bPartner);
-
-					// import a non-contract product.
-					if (pricingSystemId <= 0)
-					{
-						// no term and no pricing system means that we can't figure out the price
-						errors.add("@Missing@ @" + I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + "@");
-					}
-					else if (shipToLocations.isEmpty())
-					{
-						errors.add("@Missing@ @" + I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
-					}
-					else if (product == null || uom == null)
-					{
-						// nothing to do. We already added an error about the missing piip. Also shouldn't happen.
-					}
-					else
-					{
-						final IPricingBL pricingBL = Services.get(IPricingBL.class);
-						final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bPartnerId, uom.getC_UOM_ID(), qtyPromised, soTrx);
-						pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-						pricingCtx.setPriceDate(datePromised);
-						pricingCtx.setC_Country_ID(shipToLocations.get(0).getC_Location().getC_Country_ID());
-
-						final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
-						if (!pricingResult.isCalculated())
-						{
-							errors.add("@Missing@ " + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + " " + pricingResult);
-
-						}
-						// these will be "empty" results, if the price was not calculated
-						qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-						qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
-						qtyReportEvent.setPrice(pricingResult.getPriceStd());
-					}
-				}
-				else
-				{
-					// import a contracted product
-					final I_C_Flatrate_Term flatrateTerm;
-					final int currencyId;
-					final List<I_C_Flatrate_DataEntry> dataEntries;
-					final int flatrateTermId = SyncUUIDs.getC_Flatrate_Term_ID(productSupply.getContractLine_uuid());
-					if (flatrateTermId > 0)
-					{
-						flatrateTerm = InterfaceWrapperHelper.create(ctxProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, ctxProvider.getTrxName());
-						currencyId = flatrateTerm.getC_Currency_ID();
-
-						dataEntries = InterfaceWrapperHelper.createList(
-								flatrateDAO.retrieveDataEntries(flatrateTerm, datePromised, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),      // onlyNonSim = true
-								I_C_Flatrate_DataEntry.class);
-					}
-					else
-					{
-						errors.add("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
-						flatrateTerm = null;
-						currencyId = 0;
-						dataEntries = Collections.emptyList();
-					}
-
-					qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
-					qtyReportEvent.setC_Currency_ID(currencyId);
-
-					I_C_Flatrate_DataEntry dataEntryForProduct = null;
-					for (I_C_Flatrate_DataEntry dataEntry : dataEntries)
-					{
-						if (dataEntry.getM_Product_DataEntry_ID() != flatrateTerm.getM_Product_ID())
-						{
-							continue;
-						}
-						dataEntryForProduct = dataEntry;
-						break;
-					}
-					if (dataEntryForProduct == null)
-					{
-						errors.add("@Missing@ " + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID);
-						qtyReportEvent.setPrice(BigDecimal.ZERO);
-					}
-
-					else if (product != null && huPIItemProduct.getC_UOM() != null && flatrateTerm != null)
-					{
-						final BigDecimal price = Services.get(IUOMConversionBL.class).convertPrice(
-								product,
-								dataEntryForProduct.getFlatrateAmtPerUOM(),
-								flatrateTerm.getC_UOM(),                      // this is the flatrateAmt's UOM
-								huPIItemProduct.getC_UOM(),                   // this is the qtyReportEvent's UOM
-								flatrateTerm.getC_Currency().getStdPrecision());
-
-						qtyReportEvent.setPrice(price);
-					}
-				}
-
-				//
-				// check if we have errors to report
-				if (!errors.isEmpty())
-				{
-					final StringBuilder sb = new StringBuilder();
-					for (String error : errors)
-					{
-						sb.append(error);
-						sb.append("\n");
-					}
-					final IMsgBL msgBL = Services.get(IMsgBL.class);
-					final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
-					qtyReportEvent.setErrorMsg(msgBL.translate(ctx, sb.toString()));
-					qtyReportEvent.setIsError(true);
-				}
+				final int flatrateTermId = SyncUUIDs.getC_Flatrate_Term_ID(contractLine_uuid);
+				qtyReportEvent.setC_Flatrate_Term_ID(flatrateTermId);
 			}
-			finally
+
+			// QtyPromised(TU)
+			final BigDecimal qtyPromisedTU = syncProductSupply.getQty();
+			qtyReportEvent.setQtyPromised_TU(qtyPromisedTU);
+
+			// DatePromised
+			final Timestamp datePromised = TimeUtil.asTimestamp(syncProductSupply.getDay());
+			qtyReportEvent.setDatePromised(datePromised);
+
+			//
+			// Update the QtyReport event
+			updateFromPMMProduct(qtyReportEvent, errors);
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed importing " + syncProductSupply, e);
+			errors.add(e.getLocalizedMessage());
+		}
+		finally
+		{
+			//
+			// check if we have errors to report
+			if (!errors.isEmpty())
 			{
-				InterfaceWrapperHelper.save(qtyReportEvent);
+				final String errorMsg = Joiner.on("\n").skipNulls().join(errors);
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
+				qtyReportEvent.setErrorMsg(msgBL.translate(ctx, errorMsg));
+				qtyReportEvent.setIsError(true);
 			}
+
+			// Save
+			InterfaceWrapperHelper.save(qtyReportEvent);
+		}
+	}
+
+	private void updateFromPMMProduct(final I_PMM_QtyReport_Event qtyReportEvent, final Collection<String> errors)
+	{
+		final I_PMM_Product pmmProduct = qtyReportEvent.getPMM_Product();
+		if (pmmProduct == null)
+		{
+			errors.add("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_PMM_Product_ID + "@");
+			return;
+		}
+
+		final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
+		final I_M_Product product = pmmProduct.getM_Product();
+		final I_C_UOM uom;
+		if (huPIItemProduct != null)
+		{
+			uom = huPIItemProduct.getC_UOM();
+		}
+		else
+		{
+			errors.add("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_HU_PI_Item_Product_ID + "@");
+			uom = null;
+		}
+
+		// Product, UOM
+		qtyReportEvent.setM_Product(product);
+		qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
+		qtyReportEvent.setC_UOM(uom);
+
+		// M_Warehouse
+		final int warehouseId = pmmProduct.getM_Warehouse_ID();
+		qtyReportEvent.setM_Warehouse_ID(warehouseId);
+
+		// AD_Org_ID
+		final int orgId = pmmProduct.getAD_Org_ID();
+		qtyReportEvent.setAD_Org_ID(orgId);
+
+		// QtyPromised
+		if (huPIItemProduct != null)
+		{
+			final BigDecimal qtyPromisedTU = qtyReportEvent.getQtyPromised_TU();
+			final BigDecimal qtyPromised = qtyPromisedTU.multiply(huPIItemProduct.getQty());
+			qtyReportEvent.setQtyPromised(qtyPromised);
 		}
 	}
 
@@ -289,57 +227,103 @@ public class ServerSyncBL implements IServerSyncBL
 	{
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
 		{
-			createWeekReportEvent(syncWeeklySupply);
+			try
+			{
+				createWeekReportEvent(syncWeeklySupply);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed importing " + syncWeeklySupply + ". Skipped.", e);
+			}
 		}
 	}
 
-	/**
-	 * Attempts to load the {@link I_PMM_Product} from the given uuid.<br>
-	 * If successful, then it also updates the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> of the given <code>ctxProvider</code>.
-	 *
-	 * @param ctxProvider
-	 * @param product_uuid
-	 * @return
-	 */
-	private I_PMM_Product getPMM_ProductAndUpdateCtx(final IContextAware ctxProvider, final String product_uuid)
+	private void loadPMMProductAndProcess(final String product_uuid, final IEventProcessor processor)
 	{
 		final int pmmProductId = SyncUUIDs.getPMM_Product_ID(product_uuid);
 		if (pmmProductId <= 0)
 		{
-			return null;
+			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for UUID=" + product_uuid);
 		}
 
-		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(ctxProvider.getCtx(), pmmProductId, I_PMM_Product.class, ctxProvider.getTrxName());
+		final Properties tempCtx = Env.newTemporaryCtx();
+		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(tempCtx, pmmProductId, I_PMM_Product.class, ITrx.TRXNAME_None);
+		if (pmmProduct == null)
+		{
+			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for ID=" + pmmProductId + " (record not found)");
+		}
 
 		// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO further down,
 		// and also the new even record needs to have the PMM_Product's AD_Client_ID and AD_Org_ID
-		Env.setContext(ctxProvider.getCtx(), Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
-		Env.setContext(ctxProvider.getCtx(), Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
 
-		return pmmProduct;
+		try (final IAutoCloseable contextRestorer = Env.switchContext(tempCtx))
+		{
+			Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+			{
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(tempCtx);
+					processor.processEvent(context, pmmProduct);
+				}
+			});
+		}
+	}
+
+	public static interface IEventProcessor
+	{
+		void processEvent(IContextAware context, I_PMM_Product pmmProduct);
 	}
 
 	private void createWeekReportEvent(final SyncWeeklySupply syncWeeklySupply)
 	{
-		final PlainContextAware cxtAware = PlainContextAware.createUsingThreadInheritedTransaction();
+		final String product_uuid = syncWeeklySupply.getProduct_uuid();
+		loadPMMProductAndProcess(product_uuid, new IEventProcessor()
+		{
 
-		final I_PMM_Product pmmProduct = getPMM_ProductAndUpdateCtx(cxtAware, syncWeeklySupply.getProduct_uuid());
+			@Override
+			public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+			{
+				createWeekReportEvent(context, pmmProduct, syncWeeklySupply);
+			}
+		});
+	}
 
+	private void createWeekReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncWeeklySupply syncWeeklySupply)
+	{
+		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, context);
+
+		// BPartner
 		final int bpartnerId = SyncUUIDs.getC_BPartner_ID(syncWeeklySupply.getBpartner_uuid());
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(cxtAware.getCtx(), bpartnerId, I_C_BPartner.class, cxtAware.getTrxName());
+		if (bpartnerId <= 0)
+		{
+			throw new AdempiereException("No C_BPartner found for " + syncWeeklySupply);
+		}
+		event.setC_BPartner_ID(bpartnerId);
+		final I_C_BPartner bpartner = event.getC_BPartner();
+		if (bpartner == null)
+		{
+			throw new AdempiereException("No C_BPartner found for ID=" + bpartnerId);
+		}
 
-		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, bpartner, true);
-
+		// Organization
 		event.setAD_Org_ID(bpartner.getAD_Org_ID());
-		event.setC_BPartner(bpartner);
-		event.setM_Product_ID(pmmProduct.getM_Product_ID());
 
+		// Product
+		event.setM_Product_ID(pmmProduct.getM_Product_ID());
+		event.setM_HU_PI_Item_Product_ID(pmmProduct.getM_HU_PI_Item_Product_ID());
+
+		// WeekDate
 		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
 		event.setWeekDate(weekDate);
 
+		// Trend
 		final String trend = syncWeeklySupply.getTrend();
 		event.setPMM_Trend(trend);
 
+		// Save
 		InterfaceWrapperHelper.save(event);
 	}
 }
