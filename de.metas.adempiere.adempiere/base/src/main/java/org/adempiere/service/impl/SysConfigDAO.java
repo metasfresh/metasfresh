@@ -63,7 +63,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
 		if (springApplicationContext != null)
 		{
-			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name, defaultValue);
+			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name);
 			if (!Check.isEmpty(springContextValue, true))
 			{
 				logger.info("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record",

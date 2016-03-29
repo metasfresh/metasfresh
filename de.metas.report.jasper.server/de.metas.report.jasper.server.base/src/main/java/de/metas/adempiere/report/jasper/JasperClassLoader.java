@@ -43,6 +43,8 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
 import de.metas.logging.LogManager;
 
@@ -95,8 +97,15 @@ final class JasperClassLoader extends ClassLoader
 		try
 		{
 			final URL url = new URL(urlStr);
-			if (logger.isDebugEnabled())
-				logger.debug("URL: " + url + " for " + name);
+			logger.debug("URL: {} for {}", new Object[] { url, name });
+
+			if (isJarInJarURL(url))
+			{
+				logger.debug("Returning null, because this class loader won't be able to open this resource.");
+				// return null to avoid errors like
+				// org.apache.commons.vfs2.FileSystemException: Could not replicate "file:///opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar" as it does not exist.
+				return null;
+			}
 			return url;
 		}
 		catch (MalformedURLException e)
@@ -115,7 +124,16 @@ final class JasperClassLoader extends ClassLoader
 			return url;
 		}
 
-		return super.getResource(name);
+		final URL resource = super.getResource(name);
+		if (isJarInJarURL(url))
+		{
+			logger.debug("Returning null, because this class loader won't be able to open this resource.");
+			// return null to avoid errors like
+			// org.apache.commons.vfs2.FileSystemException: Could not replicate "file:///opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar" as it does not exist.
+			return null;
+		}
+
+		return resource;
 	}
 
 	@Override
@@ -130,12 +148,17 @@ final class JasperClassLoader extends ClassLoader
 		{
 			return null; // no resource URL found
 		}
+		if (isJarInJarURL(url))
+		{
+			logger.debug("Returning null, because this class loader won't be able to open this resource.");
+			// return null to avoid errors like
+			// org.apache.commons.vfs2.FileSystemException: Could not replicate "file:///opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar" as it does not exist.
+			return null;
+		}
 
 		try
 		{
 			final FileSystemManager fsManager = VFS.getManager();
-
-			// TODO add provider for ADempiere attachments
 
 			final FileObject jasperFile = fsManager.resolveFile(url.toString());
 
@@ -170,6 +193,25 @@ final class JasperClassLoader extends ClassLoader
 	}
 
 	/**
+	 * Returns true, e.g. for <code>file:/opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar</code>.<br>
+	 * Such URLs can't be handled by our vfs inplementation.
+	 *
+	 * @param url
+	 * @return
+	 */
+	@VisibleForTesting
+	/* package */ static boolean isJarInJarURL(final URL url)
+	{
+		if (url == null)
+		{
+			return false;
+		}
+
+		final String urlStr = url.toString();
+		return urlStr.matches("^file:/.*!.*");
+	}
+
+	/**
 	 * Converts given resource name to URL string. Mainly it will parse {@link #PLACEHOLDER}.
 	 *
 	 * @param resourceName
@@ -191,11 +233,9 @@ final class JasperClassLoader extends ClassLoader
 			{
 
 				urlStr.append(resourceName.replace(PLACEHOLDER, prefix));
-
 			}
 			else
 			{
-
 				if (prefix.endsWith("/"))
 				{
 					urlStr.append(resourceName.replace(PLACEHOLDER, prefix));
@@ -207,7 +247,6 @@ final class JasperClassLoader extends ClassLoader
 			}
 			alwaysPrependPrefix = true;
 			return urlStr.toString();
-
 		}
 		else
 		{
