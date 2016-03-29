@@ -23,8 +23,6 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -40,15 +38,18 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_AD_Process;
+import de.metas.logging.LogManager;
 
 /**
  * Process Information (Value Object)
@@ -166,6 +167,8 @@ public class ProcessInfo implements Serializable
 	private Throwable m_throwable = null;
 
 	private Boolean _refreshAllAfterExecution;
+	
+	private ITableRecordReference _recordToSelectAfterExecution = null;
 
 	/**
 	 * String representation
@@ -1224,6 +1227,24 @@ public class ProcessInfo implements Serializable
 	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
 	{
 		this._refreshAllAfterExecution = refreshAllAfterExecution;
+	}
+
+	/**
+	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 */
+	public ITableRecordReference getRecordToSelectAfterExecution()
+	{
+		return _recordToSelectAfterExecution;
+	}
+
+	/**
+	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 * 
+	 * @param recordToSelectAfterExecution
+	 */
+	public void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
+	{
+		this._recordToSelectAfterExecution = recordToSelectAfterExecution;
 	}
 	
 	/**

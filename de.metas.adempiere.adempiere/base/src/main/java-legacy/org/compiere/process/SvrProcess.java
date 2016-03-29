@@ -21,8 +21,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -42,6 +40,7 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
@@ -49,9 +48,11 @@ import org.compiere.model.PO;
 import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.logging.LogManager;
 import de.metas.process.Param;
 import de.metas.process.Process;
 import de.metas.process.RunOutOfTrx;
@@ -880,6 +881,17 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 	}
+	
+	/**
+	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 * 
+	 * @param recordToSelectAfterExecution
+	 */
+	protected final void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
+	{
+		m_pi.setRecordToSelectAfterExecution(recordToSelectAfterExecution);
+	}
+
 
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.

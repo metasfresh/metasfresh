@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.event.EventListenerList;
 
@@ -64,6 +62,7 @@ import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -73,12 +72,15 @@ import org.compiere.util.Evaluator;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -2975,6 +2977,35 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			Env.setContext(Env.getCtx(), getWindowNo(), getTabNo(), CTX_RowLoading, null);
 		}
 	}   // setCurrentRow
+	
+	public void setCurrentRowByRecord(final ITableRecordReference record)
+	{
+		if (record == null)
+		{
+			return;
+		}
+		
+		if (!getTableName().equals(record.getTableName()))
+		{
+			log.warn("Cannot select current row by record because table name is not compatible (GridTab:{}, Record:{})", this, record);
+			return;
+		}
+		
+		final int recordId = record.getRecord_ID();
+		
+		final int rowCount = m_mTable.getRowCount();
+		for (int rowNo = 0; rowNo < rowCount; rowNo++)
+		{
+			if (recordId == m_mTable.getKeyID(rowNo))
+			{
+				final boolean fireEvents = true;
+				setCurrentRow(rowNo, fireEvents);
+				return;
+			}
+		}
+		
+		log.info("Cannot select current row by record because the record ID was not found (GridTab:{}, Record:{})", this, record);
+	}
 
 	/**
 	 * Set current row - used for deleteSelection

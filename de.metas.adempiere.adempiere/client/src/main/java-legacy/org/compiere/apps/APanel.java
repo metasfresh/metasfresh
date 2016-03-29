@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -123,16 +121,18 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Process;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 /**
@@ -3156,6 +3156,13 @@ public class APanel extends CPanel
 			else
 			{
 				m_curTab.dataRefresh();
+			}
+			
+			//
+			// Select record after execution (if any)
+			if (pi.getRecordToSelectAfterExecution() != null)
+			{
+				m_curTab.setCurrentRowByRecord(pi.getRecordToSelectAfterExecution());
 			}
 
 			// Timeout
