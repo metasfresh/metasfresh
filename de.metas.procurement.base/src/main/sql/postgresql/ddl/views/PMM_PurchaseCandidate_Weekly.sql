@@ -14,6 +14,7 @@ from (
 		b.C_BPartner_ID
 		, b.M_Product_ID
 		, b.M_HU_PI_Item_Product_ID
+		, b.C_Flatrate_DataEntry_ID
 		--
 		, b.MonthDate
 		, b.WeekDate
