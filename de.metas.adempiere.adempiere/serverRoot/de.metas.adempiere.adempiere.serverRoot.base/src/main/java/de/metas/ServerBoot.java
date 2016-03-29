@@ -9,6 +9,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,6 +64,9 @@ public class ServerBoot
 
 	public static void main(final String[] args)
 	{
+		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+		Ini.setRunMode(RunMode.BACKEND);
+
 		new SpringApplicationBuilder(ServerBoot.class)
 				.headless(true)
 				.web(true)
