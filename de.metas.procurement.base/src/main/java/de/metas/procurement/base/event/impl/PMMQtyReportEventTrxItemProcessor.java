@@ -220,7 +220,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		final I_M_Product product = qtyReportEvent.getM_Product();
 		final I_C_UOM uom = qtyReportEvent.getC_UOM();
 		final Timestamp datePromised = qtyReportEvent.getDatePromised();
-			qtyReportEvent.setC_Flatrate_DataEntry(dataEntryForProduct);
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pmmContractsDAO.retrieveFlatrateDataEntry(flatrateTerm, datePromised);
 		if (dataEntryForProduct == null
@@ -238,6 +237,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				flatrateTerm.getC_Currency().getStdPrecision());
 
 		qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
+		qtyReportEvent.setC_Flatrate_DataEntry(dataEntryForProduct);
 		qtyReportEvent.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
 		qtyReportEvent.setPrice(price);
 		return true;
