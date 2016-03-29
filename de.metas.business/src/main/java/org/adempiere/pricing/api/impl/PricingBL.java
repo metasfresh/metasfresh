@@ -27,8 +27,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,14 +50,14 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 
 public class PricingBL implements IPricingBL
 {
@@ -184,23 +182,25 @@ public class PricingBL implements IPricingBL
 					pricingCtx.getM_Product(),
 					pricingCtx.getC_Country(),
 					pricingCtx.isSOTrx());
-
-			final I_M_PriceList_Version computedPLV = productPrice.getM_PriceList_Version();
-
-			final int priceListId = computedPLV.getM_PriceList_ID();
-			pricingCtxToUse.setM_PriceList_ID(priceListId);
-
-			// while we are at it, do a little sanity check and also set the PLV-ID
-			Check.assume(pricingCtxToUse.getM_PriceList_Version_ID()<=0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
-					"Given PricingContext {0} has M_PriceList_Version={1}, but from M_PricingSystem={2}, Product={3}, Country={4} and IsSOTrx={5}, we computed a different M_PriceList_Version={6}",
-					pricingCtxToUse, // 0
-					pricingCtxToUse.getM_PriceList_Version(), // 1
-					pricingCtxToUse.getM_PricingSystem(), // 2
-					pricingCtx.getM_Product(), // 3
-					pricingCtx.getC_Country(), // 4
-					pricingCtx.isSOTrx(), // 5
-					computedPLV);
-			pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
+			if (productPrice != null)
+			{
+				final I_M_PriceList_Version computedPLV = productPrice.getM_PriceList_Version();
+	
+				final int priceListId = computedPLV.getM_PriceList_ID();
+				pricingCtxToUse.setM_PriceList_ID(priceListId);
+	
+				// while we are at it, do a little sanity check and also set the PLV-ID
+				Check.assume(pricingCtxToUse.getM_PriceList_Version_ID()<=0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
+						"Given PricingContext {0} has M_PriceList_Version={1}, but from M_PricingSystem={2}, Product={3}, Country={4} and IsSOTrx={5}, we computed a different M_PriceList_Version={6}",
+						pricingCtxToUse, // 0
+						pricingCtxToUse.getM_PriceList_Version(), // 1
+						pricingCtxToUse.getM_PricingSystem(), // 2
+						pricingCtx.getM_Product(), // 3
+						pricingCtx.getC_Country(), // 4
+						pricingCtx.isSOTrx(), // 5
+						computedPLV);
+				pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
+			}
 		}
 
 		//
