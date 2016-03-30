@@ -138,3 +138,13 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540613, SeqNo=17, Updated=now(), UpdatedBy=10
 UPDATE AD_TreeNodeMM SET Parent_ID=540613, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540701 AND AD_Tree_ID=10
 ;
 
+-- 30.03.2016 09:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/all_procurements_conditions/report.jasper',Updated=TO_TIMESTAMP('2016-03-30 09:19:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540674
+;
+
+-- 30.03.2016 10:36
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET EntityType='de.metas.procurement',Updated=TO_TIMESTAMP('2016-03-30 10:36:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540674
+;
+

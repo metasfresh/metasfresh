@@ -125,6 +125,8 @@ public class MainValidator implements ModelValidator
 	{
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.subscription.callout.C_OrderLine());
+		
+		calloutProvider.registerAnnotatedCallout(new de.metas.flatrate.callout.C_Flatrate_Term());
 	}
 
 	@Override

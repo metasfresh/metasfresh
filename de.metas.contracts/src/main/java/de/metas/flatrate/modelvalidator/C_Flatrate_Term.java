@@ -32,6 +32,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +42,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.MRefList;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -51,20 +51,17 @@ import org.compiere.util.Ini;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.document.IDocumentPA;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
+import de.metas.flatrate.api.IFlatrateHandlersService;
 import de.metas.flatrate.interfaces.I_C_DocType;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
 import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -73,9 +70,6 @@ import de.metas.ordercandidate.modelvalidator.C_OLCand;
 @Validator(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
-	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
-
-	private static final String MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = "Term_Error_Entry_Already_CO";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
 
@@ -119,7 +113,7 @@ public class C_Flatrate_Term
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(localCtx, I_C_DocType.Table_Name);
 			final String name =
-					MRefList.getListName(localCtx, docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+							Services.get(IADReferenceDAO.class).retrieveListNameTrl(localCtx, docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 							+ " (" + org.getValue() + ")";
 			final org.compiere.model.I_C_DocType newType = documentPA.createDocType(localCtx, "de.metas.flatrate",
 					name,
@@ -335,6 +329,8 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
+		// TODO: refactor it to specific IFlatrateHandlers
+		
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
@@ -378,6 +374,8 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void afterComplete(final I_C_Flatrate_Term term)
 	{
+		// TODO: refactor it to specific IFlatrateHandlers
+		
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
@@ -409,6 +407,8 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void deleteInvoiceCandidate(final I_C_Flatrate_Term term)
 	{
+		//
+		// Delete invoice candidates
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
 		{
@@ -419,47 +419,9 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void beforeReactivate(final I_C_Flatrate_Term term)
 	{
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
-		{
-			final ISubscriptionDAO subscriptionBL = Services.get(ISubscriptionDAO.class);
-			final List<I_C_SubscriptionProgress> entries = subscriptionBL.retrieveSubscriptionProgress(term);
-			for (final I_C_SubscriptionProgress entry : entries)
-			{
-				if (entry.getM_ShipmentSchedule_ID() > 0)
-				{
-					throw new AdempiereException("@" + MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P + "@");
-				}
-				InterfaceWrapperHelper.delete(entry);
-			}
-		}
-		else
-		{
-			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-			final List<I_C_Flatrate_DataEntry> entries = flatrateDB.retrieveDataEntries(term, null, null);
-
-			for (final I_C_Flatrate_DataEntry entry : entries)
-			{
-				// note: The system will prevent the deletion of a completed entry
-				// However, we want to give a user-friendly explanation to the user.
-				if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(entry.getDocStatus()))
-				{
-					final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-
-					throw new AdempiereException(
-							Env.getLanguage(ctx).getAD_Language(),
-							MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P,
-							new Object[] { entry.getC_UOM().getName(), entry.getC_Period().getName() });
-				}
-				InterfaceWrapperHelper.delete(entry);
-			}
-
-			// note: we assume that invoice candidate validator will take care of the invoice candidate's IsToClear flag
-			final List<I_C_Invoice_Clearing_Alloc> icas = flatrateDB.retrieveClearingAllocs(term);
-			for (final I_C_Invoice_Clearing_Alloc ica : icas)
-			{
-				InterfaceWrapperHelper.delete(ica);
-			}
-		}
+		Services.get(IFlatrateHandlersService.class)
+				.getHandler(term.getType_Conditions())
+				.beforeFlatrateTermReactivate(term);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }

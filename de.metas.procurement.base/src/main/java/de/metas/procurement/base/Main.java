@@ -15,9 +15,11 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
+import de.metas.flatrate.api.IFlatrateHandlersService;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.logging.LogManager;
+import de.metas.procurement.base.contracts.ProcurementFlatrateHandler;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 
@@ -111,6 +113,12 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+		setupFlatrateTerms();
+		setupJaxRs();
+	}
+	
+	private void setupJaxRs()
+	{		
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
@@ -139,5 +147,10 @@ public class Main extends AbstractModuleInterceptor
 		Services.registerService(IAgentSyncBL.class, agentEndpointService);
 
 		// note: ServerSync will just be a "normal" server, listening no our default queues
+	}
+	
+	private void setupFlatrateTerms()
+	{
+		Services.get(IFlatrateHandlersService.class).registerHandler(ProcurementFlatrateHandler.TYPE_CONDITIONS, new ProcurementFlatrateHandler());
 	}
 }
