@@ -34,10 +34,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.jms.IJMSService;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IStatusService;
 
 /**
@@ -381,7 +381,7 @@ public final class CConnection implements Serializable, Cloneable
 			{
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
-			log.error("Caught this while trying to connect to application server {0}: {1}", connect, t.toString());
+			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
 			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
