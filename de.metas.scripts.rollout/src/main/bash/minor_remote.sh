@@ -29,6 +29,9 @@ RELEASE_TIME=$(date "+%Y%m%d_%H%M%S")
 
 DEFAULT_LOCAL_SETTINGS_FILE=~/local_settings.properties
 
+# by default, this script will stop and start metasfrresh
+SKIP_START_STOP=false
+
 trace $(basename $0) "BEGIN"
 
 prepare()
@@ -128,13 +131,14 @@ invoke_customer_script()
 LOCAL_SETTINGS_FILE=$DEFAULT_LOCAL_SETTINGS_FILE
 
 #parse the command line args (getopts doesn't work from inside a procedure)
-while getopts "d:s:" OPTION; do
-	echo "$OPTION = $OPTARG"
+while getopts "d:s:n" OPTION; do
 	case "$OPTION" in
 		d)
+			echo "$OPTION = $OPTARG"
 			ROLLOUT_DIR="$OPTARG"
 		;;		
 		s)
+			echo "$OPTION = $OPTARG"
 			LOCAL_SETTINGS_FILE="$OPTARG"
 		;;
 		n)
