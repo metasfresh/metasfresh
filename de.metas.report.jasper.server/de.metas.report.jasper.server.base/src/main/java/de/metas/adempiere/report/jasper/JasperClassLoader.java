@@ -207,7 +207,7 @@ final class JasperClassLoader extends ClassLoader
 		}
 
 		final String urlStr = url.toString();
-		return urlStr.matches("file:/.*!.*");
+		return urlStr.matches("(jar:)?file:/.*!.*");
 	}
 
 	/**

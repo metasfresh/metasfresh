@@ -172,7 +172,7 @@ start_metasfresh()
 {
 	trace start_metasfresh BEGIN
 
-	service metasfresh_server start
+	sudo service metasfresh_server start
 
 	trace start_metasfresh END
 }
@@ -181,7 +181,7 @@ stop_metasfresh()
 {
 	trace stop_metasfresh BEGIN
 
-	service metasfresh_server stop
+	sudo service metasfresh_server stop
 	
 	trace stop_metasfresh END
 }
