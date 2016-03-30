@@ -22,7 +22,7 @@ Additional notes:
 The actual release notes
 
 
-# metasfresh 4.10.9b (Upcoming Release)  
+# metasfresh 4.11.10 (Upcoming Release)  
 
 ## Features
  - when implementing a process, it is now possible to specifiy which record shall be selected after the process is executed
