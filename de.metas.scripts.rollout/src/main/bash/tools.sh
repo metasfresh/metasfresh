@@ -161,7 +161,7 @@ check_vars_minor()
 {
 	trace check_vars_minor BEGIN
 
-	check_var "METASFRESH_HOME" ${METASFRESH_HOME:-} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-}
+	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
 	check_var "JAVA_HOME" $JAVA_HOME
 	check_var "PATH" $PATH
 
@@ -172,7 +172,11 @@ start_metasfresh()
 {
 	trace start_metasfresh BEGIN
 
-	sudo service metasfresh_server start
+	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
+	else
+		sudo service metasfresh_server start
+	fi
 
 	trace start_metasfresh END
 }
@@ -181,8 +185,12 @@ stop_metasfresh()
 {
 	trace stop_metasfresh BEGIN
 
-	sudo service metasfresh_server stop
-	
+	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
+	else
+		sudo service metasfresh_server stop
+	fi
+		
 	trace stop_metasfresh END
 }
 

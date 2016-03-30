@@ -90,6 +90,9 @@ prepare()
 		trace prepare "= IMPORTANT: we will only copy the data, but do not actual rollout!                        ="
 		trace prepare "= Set at least one of DATABASE or MINOR environment variables to do more than just copying ="
 		trace prepare "============================================================================================"
+		START_STOP="false"
+	else
+		START_STOP="true"
 	fi
 		
 	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$BUILD_URL" = "NOT_YET_SPECIFIED" ]; 
@@ -172,7 +175,7 @@ rollout_minor()
 	# Note: 
 	#   the -tt is necessary because we might call sudo on the remote site and sudo requries a tty 
 	#   Multiple -t options force tty allocation, even if ssh has no local tty.
-	ssh -tt -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "${REMOTE_EXEC_DIR}/minor_remote.sh" 
+	ssh -tt -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "${REMOTE_EXEC_DIR}/minor_remote.sh -n" 
 	trace rollout_minor "=========================================================="
 	trace rollout_minor "Done with remote script minor_remote.sh"
 	
@@ -184,7 +187,7 @@ rollout_database()
 	trace rollout_database BEGIN
 	
 	trace rollout_database "Making remote script sql_remote.sh executable"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh" 
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh -n" 
 	
 	trace rollout_database "Invoking remote script sql_remote.sh"
 	trace rollout_database "=========================================================="
@@ -249,12 +252,25 @@ check_ssh()
 
 prepare
 
+if [ "$START_STOP" = "true" ]; 
+then
+	trace $(basename $0) "Stopping remote metasfresh service"
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo service metasfresh_server stop" 
+fi
+
 if [ "$DATABASE" == "true" ]; then
 	rollout_database
 fi
 if [ "$MINOR" == "true" ]; then
 	rollout_minor
 fi
+
+if [ "$START_STOP" = "true" ]; 
+then
+	trace $(basename $0) "Starting remote metasfresh service"
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo service metasfresh_server start" 
+fi
+
 
 clean_rollout_appserver
 

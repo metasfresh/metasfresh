@@ -67,7 +67,16 @@ install_metasfresh()
 	trace install_metasfresh BEGIN
 
 	prepare
-
+	
+	if [[ -f ${METASFRESH_HOME}/metasfresh_server.conf ]]; then
+		trace install_metasfresh "The local instalation is already spring-bootified"
+	else
+		trace install_metasfresh "The local instalation is not yet spring-bootified."
+		trace install_metasfresh "Please run the script spring_bootify_metasfresh.sh as user root,"
+		trace install_metasfresh "then please run this script again"
+		exit 1
+	fi
+	
 	stop_metasfresh
 	
     if [[ -d ${METASFRESH_HOME}/src ]]; then
@@ -77,9 +86,16 @@ install_metasfresh()
     else
           trace install_metasfresh "No source-folder present in app-dir. Skipping adding sourcefiles."
 	fi
+
+	trace main "Making sure that the main jar can be overwritten with our new version"
+	chmod 200 ${METASFRESH_HOME}/metasfresh_server.jar
+	
 	
 	trace install_metasfresh "Copying our files to the metasfresh folder" 
 	cp -Rv ${ROLLOUT_DIR}/deploy/* ${METASFRESH_HOME}
+
+	trace main "Making sure that the main jar shall only be accessible for its owner"
+	chmod 500 ${METASFRESH_HOME}/metasfresh_server.jar
 	
 	trace install_metasfresh "Making ${METASFRESH_HOME}/reports/ writable to allowing everyone to install jasper files"
 	chmod -R a+w ${METASFRESH_HOME}/reports/
@@ -121,6 +137,8 @@ while getopts "d:s:" OPTION; do
 		s)
 			LOCAL_SETTINGS_FILE="$OPTARG"
 		;;
+		n)
+			SKIP_START_STOP="true"
 	esac
 done
 
