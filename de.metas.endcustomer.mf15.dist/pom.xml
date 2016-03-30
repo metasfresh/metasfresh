@@ -126,6 +126,12 @@ note: when adding new records, please roughly order them by alphabet.
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
 			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -312,7 +318,6 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-
 	</dependencies>
 
 	<build>
