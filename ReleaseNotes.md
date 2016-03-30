@@ -21,6 +21,17 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.11.11 (Upcoming Release)  
+
+## Features
+
+## Fixes
+ - 09931 Bootify metasfresh (100627676679)
+    * fixing another problem with the JasperClassLoader
+    * fixing a big problem with the swing client starter scripts, when running with java-7
+	
+## Instructions
+
 
 # metasfresh 4.11.10 (Upcoming Release)  
 
