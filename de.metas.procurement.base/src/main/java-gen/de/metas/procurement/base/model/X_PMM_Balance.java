@@ -16,7 +16,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2119042927L;
+	private static final long serialVersionUID = 623503345L;
 
     /** Standard Constructor */
     public X_PMM_Balance (Properties ctx, int PMM_Balance_ID, String trxName)
@@ -29,6 +29,8 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 			setMonthDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
 			setPMM_Balance_ID (0);
+			setQtyDelivered (Env.ZERO);
+// 0
 			setQtyOrdered (Env.ZERO);
 // 0
 			setQtyOrdered_TU (Env.ZERO);
@@ -233,6 +235,28 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Gelieferte Menge.
+		@param QtyDelivered 
+		Gelieferte Menge
+	  */
+	@Override
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
+	{
+		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
+
+	/** Get Gelieferte Menge.
+		@return Gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Bestellte Menge.

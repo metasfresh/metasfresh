@@ -23,6 +23,7 @@ from (
 		, b.QtyPromised_TU
 		, b.QtyOrdered
 		, b.QtyOrdered_TU
+		, b.QtyDelivered
 		--
 		, b.AD_Client_ID
 		, b.AD_Org_ID

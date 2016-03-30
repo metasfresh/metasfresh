@@ -11,7 +11,7 @@ import org.compiere.model.ModelValidator;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.procurement.base.balance.IPMMBalanceBL;
+import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
@@ -57,7 +57,7 @@ public class PMM_PurchaseCandidate_OrderLine
 
 		//
 		// Update PMM balance
-		Services.get(IPMMBalanceBL.class).process(createPMMBalanceChangeEvent(alloc, false));
+		Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(createPMMBalanceChangeEvent(alloc, false));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -75,7 +75,7 @@ public class PMM_PurchaseCandidate_OrderLine
 
 		//
 		// Update PMM balance
-		Services.get(IPMMBalanceBL.class).process(createPMMBalanceChangeEvent(alloc, true));
+		Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(createPMMBalanceChangeEvent(alloc, true));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE //

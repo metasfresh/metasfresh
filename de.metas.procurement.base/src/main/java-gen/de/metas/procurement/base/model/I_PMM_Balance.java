@@ -282,6 +282,31 @@ public interface I_PMM_Balance
     public static final String COLUMNNAME_PMM_Balance_ID = "PMM_Balance_ID";
 
 	/**
+	 * Set Gelieferte Menge.
+	 * Gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+
+	/**
+	 * Get Gelieferte Menge.
+	 * Gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDelivered();
+
+    /** Column definition for QtyDelivered */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "QtyDelivered", null);
+    /** Column name QtyDelivered */
+    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+
+	/**
 	 * Set Bestellte Menge.
 	 * Bestellte Menge
 	 *

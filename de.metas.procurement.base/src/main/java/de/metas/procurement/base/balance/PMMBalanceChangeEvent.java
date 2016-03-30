@@ -34,17 +34,24 @@ public final class PMMBalanceChangeEvent
 		return new Builder();
 	}
 
-	private final int C_BPartner_ID;
-	private final int M_Product_ID;
-	private final int M_HU_PI_Item_Product_ID;
-	private final int C_Flatrate_DataEntry_ID;
+	private int C_BPartner_ID;
+	private int M_Product_ID;
+	private int M_HU_PI_Item_Product_ID;
+	private int C_Flatrate_DataEntry_ID;
 	//
-	private final Date date;
+	private Date date;
 	//
-	private final BigDecimal qtyPromised;
-	private final BigDecimal qtyPromised_TU;
-	private final BigDecimal qtyOrdered;
-	private final BigDecimal qtyOrdered_TU;
+	private BigDecimal qtyPromised;
+	private BigDecimal qtyPromised_TU;
+	private BigDecimal qtyOrdered;
+	private BigDecimal qtyOrdered_TU;
+	private BigDecimal qtyDelivered;
+	
+	public PMMBalanceChangeEvent()
+	{
+		// NOTE: we need to make the event class mutable because we want to serialize/deserialize as JSON when we are calling REST apis 
+		super();
+	}
 
 	private PMMBalanceChangeEvent(final Builder builder)
 	{
@@ -60,8 +67,9 @@ public final class PMMBalanceChangeEvent
 		qtyPromised_TU = builder.qtyPromised_TU;
 		qtyOrdered = builder.qtyOrdered;
 		qtyOrdered_TU = builder.qtyOrdered_TU;
+		qtyDelivered = builder.qtyDelivered;
 	}
-
+	
 	@Override
 	public String toString()
 	{
@@ -72,10 +80,20 @@ public final class PMMBalanceChangeEvent
 	{
 		return C_BPartner_ID;
 	}
+	
+	public void setC_BPartner_ID(int c_BPartner_ID)
+	{
+		C_BPartner_ID = c_BPartner_ID;
+	}
 
 	public int getM_Product_ID()
 	{
 		return M_Product_ID;
+	}
+	
+	public void setM_Product_ID(int m_Product_ID)
+	{
+		M_Product_ID = m_Product_ID;
 	}
 
 	public int getM_HU_PI_Item_Product_ID()
@@ -83,34 +101,79 @@ public final class PMMBalanceChangeEvent
 		return M_HU_PI_Item_Product_ID;
 	}
 	
+	public void setM_HU_PI_Item_Product_ID(int m_HU_PI_Item_Product_ID)
+	{
+		M_HU_PI_Item_Product_ID = m_HU_PI_Item_Product_ID;
+	}
+	
 	public int getC_Flatrate_DataEntry_ID()
 	{
 		return C_Flatrate_DataEntry_ID;
+	}
+	
+	public void setC_Flatrate_DataEntry_ID(int c_Flatrate_DataEntry_ID)
+	{
+		C_Flatrate_DataEntry_ID = c_Flatrate_DataEntry_ID;
 	}
 
 	public Date getDate()
 	{
 		return date;
 	}
+	
+	public void setDate(Date date)
+	{
+		this.date = date;
+	}
 
 	public BigDecimal getQtyOrdered()
 	{
 		return qtyOrdered;
+	}
+	
+	public void setQtyOrdered(BigDecimal qtyOrdered)
+	{
+		this.qtyOrdered = qtyOrdered;
 	}
 
 	public BigDecimal getQtyOrdered_TU()
 	{
 		return qtyOrdered_TU;
 	}
+	
+	public void setQtyOrdered_TU(BigDecimal qtyOrdered_TU)
+	{
+		this.qtyOrdered_TU = qtyOrdered_TU;
+	}
 
 	public BigDecimal getQtyPromised()
 	{
 		return qtyPromised;
 	}
+	
+	public void setQtyPromised(BigDecimal qtyPromised)
+	{
+		this.qtyPromised = qtyPromised;
+	}
 
 	public BigDecimal getQtyPromised_TU()
 	{
 		return qtyPromised_TU;
+	}
+	
+	public void setQtyPromised_TU(BigDecimal qtyPromised_TU)
+	{
+		this.qtyPromised_TU = qtyPromised_TU;
+	}
+	
+	public BigDecimal getQtyDelivered()
+	{
+		return qtyDelivered;
+	}
+	
+	public void setQtyDelivered(BigDecimal qtyDelivered)
+	{
+		this.qtyDelivered = qtyDelivered;
 	}
 
 	public static final class Builder
@@ -126,6 +189,7 @@ public final class PMMBalanceChangeEvent
 		private BigDecimal qtyPromised_TU = BigDecimal.ZERO;
 		private BigDecimal qtyOrdered = BigDecimal.ZERO;
 		private BigDecimal qtyOrdered_TU = BigDecimal.ZERO;
+		private BigDecimal qtyDelivered = BigDecimal.ZERO;
 
 		private Builder()
 		{
@@ -178,6 +242,12 @@ public final class PMMBalanceChangeEvent
 		{
 			this.qtyOrdered = qtyOrdered;
 			this.qtyOrdered_TU = qtyOrdered_TU;
+			return this;
+		}
+		
+		public Builder setQtyDelivered(BigDecimal qtyDelivered)
+		{
+			this.qtyDelivered = qtyDelivered;
 			return this;
 		}
 	}

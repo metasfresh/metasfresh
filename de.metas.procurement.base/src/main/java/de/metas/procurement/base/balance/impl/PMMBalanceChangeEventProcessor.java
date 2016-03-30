@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.procurement.base.balance.IPMMBalanceBL;
+import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.IPMMBalanceDAO;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_PMM_Balance;
@@ -32,10 +32,15 @@ import de.metas.procurement.base.model.I_PMM_Balance;
  * #L%
  */
 
-public class PMMBalanceBL implements IPMMBalanceBL
+public class PMMBalanceChangeEventProcessor implements IPMMBalanceChangeEventProcessor
 {
+	public PMMBalanceChangeEventProcessor()
+	{
+		super();
+	}
+
 	@Override
-	public void process(final PMMBalanceChangeEvent event)
+	public void addEvent(final PMMBalanceChangeEvent event)
 	{
 		final IPMMBalanceDAO balanceDAO = Services.get(IPMMBalanceDAO.class);
 
@@ -65,5 +70,11 @@ public class PMMBalanceBL implements IPMMBalanceBL
 			balanceRecord.setQtyOrdered_TU(balanceRecord.getQtyOrdered_TU().add(qtyOrderedTU));
 		}
 
+		//
+		// Qty Delivered (i.e. receipt)
+		{
+			final BigDecimal qtyDelivered = event.getQtyDelivered();
+			balanceRecord.setQtyDelivered(balanceRecord.getQtyDelivered().add(qtyDelivered));
+		}
 	}
 }

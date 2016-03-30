@@ -32,7 +32,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMContractsDAO;
-import de.metas.procurement.base.balance.IPMMBalanceBL;
+import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -74,15 +74,14 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPMMPurchaseCandidateDAO purchaseCandidateDAO = Services.get(IPMMPurchaseCandidateDAO.class);
 	private final transient IPMMPurchaseCandidateBL purchaseCandidateBL = Services.get(IPMMPurchaseCandidateBL.class);
-	private final transient IPMMBalanceBL pmmBalanceBL = Services.get(IPMMBalanceBL.class);
+	private final transient IPMMBalanceChangeEventProcessor pmmBalanceEventProcessor = Services.get(IPMMBalanceChangeEventProcessor.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private static final String ERRORMSG_None = null;
-
 	private final AtomicInteger countProcessed = new AtomicInteger(0);
+	private final AtomicInteger countErrors = new AtomicInteger(0);
 	private final AtomicInteger countSkipped = new AtomicInteger(0);
 
 	/**
@@ -158,16 +157,16 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 			//
 			// Update PMM_Balance
-			pmmBalanceBL.process(createPMMBalanceChangeEvent(event));
+			pmmBalanceEventProcessor.addEvent(createPMMBalanceChangeEvent(event));
+			
+			//
+			// Mark the event as processed
+			markProcessed(event, candidate);
 		}
 		catch (final Exception e)
 		{
-			markProcessed(event, candidate, e.getLocalizedMessage());
-			throw e;
+			markError(event, e);
 		}
-		//
-		// Mark the event as processed
-		markProcessed(event, candidate, ERRORMSG_None);
 	}
 
 	private final void updatePricing(final I_PMM_QtyReport_Event qtyReportEvent)
@@ -258,7 +257,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		if (pricingSystemId <= 0)
 		{
 			// no term and no pricing system means that we can't figure out the price
-			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_PricingSystem_ID + "@");
+			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_PricingSystem_ID + "@ ("
+					+ "@C_BPartner_ID@:" + bpartnerId
+					+ ", @IsSOTrx@:" + soTrx
+					+ ")");
 		}
 
 		// BPartner location -> Country
@@ -281,7 +283,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
-			throw new AdempiereException("@Missing@ " + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + " " + pricingResult);
+			throw new AdempiereException("@Missing@ @" + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "@: " + pricingResult);
 		}
 
 		// these will be "empty" results, if the price was not calculated
@@ -291,22 +293,37 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		qtyReportEvent.setPrice(pricingResult.getPriceStd());
 	}
 
+	private final void markProcessed(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate)
+	{
+		final String errorMsg = null; // no error message
+		markProcessed(event, candidate, errorMsg);
+	}
+
 	private final void markProcessed(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate, final String errorMsg)
 	{
 		event.setPMM_PurchaseCandidate(candidate);
 
-		final boolean isError = !Check.equals(ERRORMSG_None, errorMsg);
-		event.setIsError(isError);
-		event.setProcessed(!isError);
+		event.setProcessed(true);
+		event.setIsError(!Check.isEmpty(errorMsg, true));
 		event.setErrorMsg(errorMsg);
 		InterfaceWrapperHelper.save(event);
 
-		if (errorMsg != null)
-		{
-			getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
-		}
-
 		countProcessed.incrementAndGet();
+	}
+	
+	private final void markError(final I_PMM_QtyReport_Event event, final Throwable ex)
+	{
+		final String errorMsg = ex.getLocalizedMessage();
+		
+		InterfaceWrapperHelper.refresh(event, true);
+		event.setIsError(true);
+		event.setErrorMsg(errorMsg);
+		event.setProcessed(false);
+		InterfaceWrapperHelper.save(event);
+		
+		getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+		
+		countErrors.incrementAndGet();
 	}
 
 	private final void markSkipped(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate, final String errorMsg)
@@ -345,7 +362,9 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 	public String getProcessSummary()
 	{
-		return "@Processed@ #" + countProcessed.get() + ", @Skipped@ #" + countSkipped.get();
+		return "@Processed@ #" + countProcessed.get()
+				+ ", @IsError@ #" + countErrors.get()
+				+ ", @Skipped@ #" + countSkipped.get();
 	}
 
 	@VisibleForTesting

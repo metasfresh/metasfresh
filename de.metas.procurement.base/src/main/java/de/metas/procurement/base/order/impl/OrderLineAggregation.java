@@ -8,12 +8,13 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.procurement.base.order.model.I_C_OrderLine;
 
 /*
  * #%L
@@ -103,6 +104,8 @@ public class OrderLineAggregation
 
 	private I_C_OrderLine createOrderLine(final PurchaseCandidate candidate)
 	{
+		final I_C_BPartner bpartner = candidate.getC_BPartner();
+		final int flatrateDataEntryId = candidate.getC_Flatrate_DataEntry_ID();
 		final I_M_Product product = candidate.getM_Product();
 		final I_C_UOM uom = candidate.getC_UOM();
 		final int huPIItemProductId = candidate.getM_HU_PI_Item_Product_ID();
@@ -110,6 +113,13 @@ public class OrderLineAggregation
 		final BigDecimal price = candidate.getPrice();
 
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
+		orderLine.setIsMFProcurement(true);
+		
+		orderLine.setC_BPartner(bpartner);
+		if(flatrateDataEntryId > 0)
+		{
+			orderLine.setC_Flatrate_DataEntry_ID(flatrateDataEntryId);
+		}
 
 		orderLine.setM_Product(product);
 		orderLine.setC_UOM(uom);

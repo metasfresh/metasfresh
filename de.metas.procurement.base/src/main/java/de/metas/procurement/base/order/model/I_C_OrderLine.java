@@ -1,6 +1,4 @@
-package de.metas.procurement.base.balance;
-
-import org.adempiere.util.ISingletonService;
+package de.metas.procurement.base.order.model;
 
 /*
  * #%L
@@ -24,8 +22,13 @@ import org.adempiere.util.ISingletonService;
  * #L%
  */
 
-public interface IPMMBalanceBL extends ISingletonService
+public interface I_C_OrderLine extends de.metas.handlingunits.model.I_C_OrderLine
 {
+	int getC_Flatrate_DataEntry_ID();
 
-	void process(PMMBalanceChangeEvent event);
+	void setC_Flatrate_DataEntry_ID(final int C_Flatrate_DataEntry_ID);
+
+	boolean isMFProcurement();
+
+	void setIsMFProcurement(boolean IsMFProcurement);
 }

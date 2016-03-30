@@ -65,8 +65,5 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_DatePromised, day)
 				.create()
 				.firstOnly(I_PMM_PurchaseCandidate.class);
-		
 	}
-	
-	
 }

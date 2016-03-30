@@ -71,6 +71,11 @@ public final class PurchaseCandidate
 	{
 		return model.getC_BPartner_ID();
 	}
+	
+	public int getC_Flatrate_DataEntry_ID()
+	{
+		return model.getC_Flatrate_DataEntry_ID();
+	}
 
 	public int getM_PricingSystem_ID()
 	{
