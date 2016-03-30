@@ -44,8 +44,11 @@ fi
 #  SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
 SECURE=
 
+# MaxPermSize is required when we run with java-7
+MEMORY_OPTS="-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError"
+
 #Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
-#JAVA_OPTS="-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError $REMOTE_DEBUG_OPTS -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang=\"de_CH\" -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang=\"de_CH\" -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
 
 echo "JAVA_OPTS = $JAVA_OPTS"
 echo "JAR_FILE = $JAR_FILE"
@@ -58,5 +61,5 @@ echo "about to execute"
 echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -jar $JAR_FILE"
 echo "================================"
 
-$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
+$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
 

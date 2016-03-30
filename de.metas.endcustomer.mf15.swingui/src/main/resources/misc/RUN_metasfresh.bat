@@ -108,7 +108,7 @@ SET CLASSPATH=%ADEMPIERE_HOME%\lib\de.metas.endcustomer.mf15.swingui-1.0_IT-SNAP
 @Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
 
 :START
-SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang="de_CH"
+SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang="de_CH"
 "%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
