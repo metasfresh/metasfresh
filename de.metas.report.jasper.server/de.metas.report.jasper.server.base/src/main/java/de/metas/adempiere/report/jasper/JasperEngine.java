@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -45,7 +43,9 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -61,10 +61,10 @@ public class JasperEngine
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
-	
+
 	/**
 	 * Desired output type.
-	 * 
+	 *
 	 * @see OutputType
 	 */
 	public static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
@@ -74,7 +74,7 @@ public class JasperEngine
 
 	/**
 	 * Retrieves the server's direct database connection.
-	 * 
+	 *
 	 * @return database connection
 	 */
 	private final Connection getConnection()
@@ -86,11 +86,11 @@ public class JasperEngine
 	{
 		log.info("{}", pi);
 
-		
+
 		//
 		// Get the classloader to be used when loading jasper resources
 		final ClassLoader jasperLoader = getJasperClassLoader(ctx);
-		
+
 		final Map<String, Object> jrParameters = createJRParameters(ctx, pi);
 		final JasperReport jasperReport = createJasperReport(ctx, pi.getAD_Process_ID(), jrParameters, jasperLoader);
 
@@ -148,7 +148,7 @@ public class JasperEngine
 
 		//
 		// Load report's resource bundles, if any.
-		// NOTE: we need to load them here beause jasper engine is not using our "jasperLoader" to load the bundles, but the thread context one.
+		// NOTE: we need to load them here because jasper engine is not using our "jasperLoader" to load the bundles, but the thread context one.
 		// (see net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle() )
 		{
 			final String reportDir = extractReportDir(reportPath);
@@ -203,7 +203,7 @@ public class JasperEngine
 
 	/**
 	 * Extracts {@link Language} parameter
-	 * 
+	 *
 	 * @param ctx
 	 * @param jrParameters
 	 * @return {@link Language}; never returns null
@@ -231,7 +231,7 @@ public class JasperEngine
 
 	/**
 	 * Gets desired output type
-	 * 
+	 *
 	 * @param jrParameters
 	 * @return {@link OutputType}; never returns null
 	 */
@@ -330,13 +330,13 @@ public class JasperEngine
 
 	/**
 	 * Extracts the fully qualified report directory from given report path.
-	 * 
+	 *
 	 * e.g.
 	 * <ul>
 	 * <li>for "@PREFIX@/de/metas/docs/order/report.jasper" it will return "@PREFIX@/de/metas/docs/order".
 	 * <li>for "report.jasper" will return "" (empty string)
 	 * </ul>
-	 * 
+	 *
 	 * @param reportPath
 	 * @return report directory or empty string.
 	 */
@@ -353,7 +353,7 @@ public class JasperEngine
 
 	/**
 	 * Gets fully qualified report's resource bundle name.
-	 * 
+	 *
 	 * @param jasperReport
 	 * @param reportDir
 	 * @return resource bundle name or <code>null</code>
@@ -389,9 +389,9 @@ public class JasperEngine
 
 	/**
 	 * Loads the resource bundle for given <code>resourceBundleName</code>.
-	 * 
+	 *
 	 * If the {@link ResourceBundle} was found it will be set as {@link JRParameter#REPORT_RESOURCE_BUNDLE} parameter in <code>jrParameters</code>.
-	 * 
+	 *
 	 * @param resourceBundleName
 	 * @param jrParameters
 	 * @param classLoader class loader to be used for loading the resource

@@ -25,6 +25,7 @@ The actual release notes
 # metasfresh 4.10.9b (Upcoming Release)  
 
 ## Features
+ - when implementing a process, it is now possible to specifiy which record shall be selected after the process is executed
  - 09915 procurement conditions jasper process (109344045046)
     * now also supports contracts that have quantities, but no prices
  - 09628 procurement management (106716240958)
@@ -34,6 +35,7 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
+ - usability fix in VNumber: first key press was lost
  - 09945 Pricelist for french customer - excel export not in customer language (107056752126)
  - 09944 Performance: Inout Reactivate-Complete taking too long (107539809839)
  - 09502 quality inspection (100925494419)

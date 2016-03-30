@@ -67,6 +67,8 @@ final class JasperClassLoader extends ClassLoader
 	public JasperClassLoader(final int adOrgId, final ClassLoader parent)
 	{
 		super(parent);
+		Check.assumeNotNull(parent, "Param 'parent' is not null");
+
 		this.prefix = retrieveReportPrefix(adOrgId);
 		this.logoHook = OrgLogoClassLoaderHook.forAD_Org_ID(adOrgId);
 	}
@@ -130,7 +132,7 @@ final class JasperClassLoader extends ClassLoader
 			logger.debug("Returning null, because this class loader won't be able to open this resource.");
 			// return null to avoid errors like
 			// org.apache.commons.vfs2.FileSystemException: Could not replicate "file:///opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar" as it does not exist.
-			return null;
+			return getParent().getResource(name);
 		}
 
 		return resource;
@@ -151,19 +153,16 @@ final class JasperClassLoader extends ClassLoader
 		if (isJarInJarURL(url))
 		{
 			logger.debug("Returning null, because this class loader won't be able to open this resource.");
-			// return null to avoid errors like
+			// invoke the parent to avoid errors like
 			// org.apache.commons.vfs2.FileSystemException: Could not replicate "file:///opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar" as it does not exist.
-			return null;
+			return getParent().getResourceAsStream(name);
 		}
 
 		try
 		{
 			final FileSystemManager fsManager = VFS.getManager();
-
 			final FileObject jasperFile = fsManager.resolveFile(url.toString());
-
 			final FileContent jasperData = jasperFile.getContent();
-
 			final InputStream is = jasperData.getInputStream();
 
 			// copy the stream data to a local stream
@@ -179,12 +178,12 @@ final class JasperClassLoader extends ClassLoader
 		catch (org.apache.commons.vfs2.FileNotFoundException e)
 		{
 			logger.info("Resource not found. Skipping.", e);
-			return null;
+			return getParent().getResourceAsStream(name);
 		}
 		catch (FileSystemException e)
 		{
 			logger.warn("Error while retrieving bytes for resource " + url + ". Skipping.", e);
-			return null;
+			return getParent().getResourceAsStream(name);
 		}
 		catch (IOException e)
 		{
@@ -194,7 +193,7 @@ final class JasperClassLoader extends ClassLoader
 
 	/**
 	 * Returns true, e.g. for <code>file:/opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar</code>.<br>
-	 * Such URLs can't be handled by our vfs inplementation.
+	 * Such URLs can't be handled by our vfs implementation.
 	 *
 	 * @param url
 	 * @return
