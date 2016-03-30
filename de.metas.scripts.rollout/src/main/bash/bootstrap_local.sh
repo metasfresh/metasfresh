@@ -187,7 +187,7 @@ rollout_database()
 	trace rollout_database BEGIN
 	
 	trace rollout_database "Making remote script sql_remote.sh executable"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh -n" 
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh" 
 	
 	trace rollout_database "Invoking remote script sql_remote.sh"
 	trace rollout_database "=========================================================="
