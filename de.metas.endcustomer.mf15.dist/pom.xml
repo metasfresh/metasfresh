@@ -476,7 +476,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
-					<!-- Add dist/deploy/metasfresh-server: metasfresh server executable -->
+					<!-- Add dist/deploy/metasfresh_server: metasfresh server executable -->
 					<execution>
 						<id>copy-main-deployable</id>
 						<phase>prepare-package</phase>
@@ -492,7 +492,7 @@ note: when adding new records, please roughly order them by alphabet.
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.serverRoot</artifactId>
 									<version>${project.version}</version>
-									<destFileName>metasfresh-server.jar</destFileName>
+									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
