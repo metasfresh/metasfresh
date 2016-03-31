@@ -18,10 +18,4 @@ public final class Convert_PostgreSQL_Native extends Convert
 		return Collections.singletonList(sqlStatement);
 	}
 
-	@Override
-	public final boolean isOracle()
-	{
-		return false;
-	}
-
 }
