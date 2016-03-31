@@ -31,9 +31,9 @@ JOIN C_BPartner billBP ON ft.bill_bpartner_id = billBP.C_BPartner_ID
 JOIN AD_User u ON ft.ad_user_incharge_ID = u.AD_User_ID
 JOIN C_UOM uom ON ft.C_UOM_ID = uom.C_UOM_ID
 LEFT OUTER JOIN C_UOM_trl uom_trl ON uom.C_UOM_ID = uom_trl.C_UOM_ID AND uom_trl.ad_language = $2
-JOIN c_period prd ON ft.startdate = prd.startdate
-JOIN c_period p_param_st ON ft.startdate = p_param_st.startdate
-JOIN c_period p_param_end ON ft.enddate = p_param_end.enddate
+
+JOIN c_period p_param_st ON ft.startdate >= p_param_st.startdate AND ft.startdate <= p_param_st.enddate
+JOIN c_period p_param_end ON ft.enddate >= p_param_end.startdate AND ft.enddate <= p_param_end.enddate
 
 WHERE 
 ft.C_Flatrate_Term_id=$1 AND
