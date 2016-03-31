@@ -22,17 +22,21 @@ package de.metas.fresh.gui.search;
  * #L%
  */
 
-
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Properties;
 
+import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.event.ListSelectionEvent;
 
 import org.adempiere.service.ISysConfigBL;
@@ -47,11 +51,13 @@ import org.compiere.apps.search.InfoSimple;
 import org.compiere.apps.search.history.IInvoiceHistoryTabHandler;
 import org.compiere.apps.search.history.impl.InvoiceHistory;
 import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
+import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.eevolution.form.VMRPDetailed;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
@@ -79,6 +85,13 @@ public class MRPInfoWindow extends InfoSimple
 	private CButton resetSortFiltersButton = null;
 
 	private MRPInfoWindowDetails panelDetails;
+
+	/**
+	 * task 09961
+	 * 
+	 * variable that keeps the selected product ID for further selections
+	 */
+	private Integer selectedProductID = 0;
 
 	public MRPInfoWindow(final Frame frame, final Boolean modal)
 	{
@@ -264,13 +277,102 @@ public class MRPInfoWindow extends InfoSimple
 
 		try
 		{
+			Integer selectedRowKey = getSelectedRowKey();
+
+			// task 09961
+			// update the selected product ID and keep it in memory so it can be reselected after refresh
+			if (selectedRowKey != null)
+			{
+				selectedProductID = selectedRowKey;
+			}
+
 			getWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			panelDetails.refresh();
+
 		}
 		finally
 		{
 			getWindow().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
 		}
+	}
+
+	@Override
+	protected void selectRowAfterLoad()
+	{
+		final MiniTable miniTable = (MiniTable)getMiniTable();
+
+		// flag to know if a line with the same product was found in the second selection
+		boolean found = false;
+
+		// variable to keep the row number which is about to do be highlighted (selected)
+		int rowNumber = 0;
+
+		for (int i = 0; i < miniTable.getRowCount(); i++)
+		{
+			final KeyNamePair productIdValue = (KeyNamePair)miniTable.getValueAt(i, "M_Product_ID");
+
+			if (selectedProductID == productIdValue.getKey())
+			{
+				// in case there exists a row for the product that was selected before, highlight (select this row)
+				miniTable.setSelectedRows(Collections.singletonList(i));
+
+				// it means the row for the product was found
+				found = true;
+
+				// remember the row number where the product was found. This will be later used to know the position of the row and make sure it is visible
+				rowNumber = i;
+
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			// in case there was no row found for the initially selected product, let the selection work as before
+			// (fallback to the implementation from Info class)
+			super.selectRowAfterLoad();
+
+			// in case there are rows but this one was not found, do not keep the product in memory
+			if (miniTable.getRowCount() > 0)
+			{
+				selectedProductID = 0;
+			}
+		}
+
+		// scroll to visible. Usefull in case the row of the product was/is placed below the bottom of the window
+		scrollToVisible(miniTable, rowNumber, 0);
+
+	}
+
+	/**
+	 * From {@link http://stackoverflow.com/questions/853020/jtable-scrolling-to-a-specified-row-index}
+	 * 
+	 * @param table
+	 * @param rowIndex
+	 * @param vColIndex
+	 */
+	private static void scrollToVisible(JTable table, int rowIndex, int vColIndex)
+	{
+		if (!(table.getParent() instanceof JViewport))
+		{
+			return;
+		}
+		JViewport viewport = (JViewport)table.getParent();
+
+		// This rectangle is relative to the table where the
+		// northwest corner of cell (0,0) is always (0,0).
+		Rectangle rect = table.getCellRect(rowIndex, vColIndex, true);
+
+		// The location of the viewport relative to the table
+		Point pt = viewport.getViewPosition();
+
+		// Translate the cell location so that it is relative
+		// to the view, assuming the northwest corner of the
+		// view is (0,0)
+		rect.setLocation(rect.x - pt.x, rect.y - pt.y);
+
+		table.scrollRectToVisible(rect);
 	}
 
 	private Timestamp getDatePromisedParameter()

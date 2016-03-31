@@ -127,8 +127,7 @@ import org.compiere.util.Util;
  *         </ul>
  */
 public abstract class Info extends Component
-		implements ActionListener, ListSelectionListener, MouseListener
-		, IWindowNoAware
+		implements ActionListener, ListSelectionListener, MouseListener, IWindowNoAware
 {
 	/**
 	 *
@@ -143,7 +142,7 @@ public abstract class Info extends Component
 	/** Window Width */
 	// metas: changed from protected to public
 	public static final int INFO_WIDTH = 800;
-	
+
 	/** Default icon name to be used for Info windows */
 	public static final String DEFAULT_IconName = "Info16";
 
@@ -357,10 +356,10 @@ public abstract class Info extends Component
 	protected void jbInit() throws Exception
 	{
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		
+
 		// Set window icon if any
 		final Image icon = Images.getImage2(DEFAULT_IconName);
-		if(icon != null)
+		if (icon != null)
 		{
 			getWindow().setIconImage(icon);
 		}
@@ -379,7 +378,7 @@ public abstract class Info extends Component
 		scrollPane.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createEmptyBorder(0, 2, 0, 2) // outsideBorder
 				, scrollPane.getBorder() // insideBorder
-				));
+		));
 		//
 		confirmPanel.setActionListener(this);
 		confirmPanel.getResetButton().setVisible(hasReset());
@@ -549,7 +548,7 @@ public abstract class Info extends Component
 		p_table.addMouseListener(this);
 		p_table.setMultiSelection(p_multiSelection);
 		p_table.setShowTotals(false); // c.ghita@metas.ro : if true can cause 'Cannot format given Object as a Number (
-										// S ) String'
+ // S ) String'
 
 		// set editors (two steps)
 		for (int i = 0; i < layout.length; i++)
@@ -816,7 +815,7 @@ public abstract class Info extends Component
 		p_table.stopEditor(true);
 
 		log.info("OK=" + m_ok);
-		if (!m_ok) // did not press OK
+		if (!m_ok)  // did not press OK
 		{
 			m_results.clear();
 			p_table.removeAll();
@@ -1098,7 +1097,7 @@ public abstract class Info extends Component
 			final Calculator c = new Calculator(null, number);
 			c.setVisible(true);
 			return;
-		} // popup
+		}  // popup
 
 		// Confirm Panel
 		final String cmd = e.getActionCommand();
@@ -1309,7 +1308,7 @@ public abstract class Info extends Component
 	{
 		return p_keyColumn;
 	} // getKeyColumn
-	
+
 	protected final boolean isMultiSelection()
 	{
 		return p_multiSelection;
@@ -1885,7 +1884,7 @@ public abstract class Info extends Component
 			}
 			else
 			{
-				p_table.getSelectionModel().setSelectionInterval(0, 0);
+				selectRowAfterLoad();
 				if (confirmPanel.getRefreshButton().hasFocus())
 				{
 					p_table.requestFocus(); // only if we clicked on the refresh button; otherwise (assuming fields triggered it, do not change focus)
@@ -1935,6 +1934,17 @@ public abstract class Info extends Component
 	} // Worker
 
 	/**
+	 * task 09961
+	 * 
+	 * Method to tell which row is to be selected after loading.
+	 * By default, the selected row will be the first one
+	 */
+	protected void selectRowAfterLoad()
+	{
+		p_table.getSelectionModel().setSelectionInterval(0, 0);
+	}
+
+	/**
 	 * fresh 08329: Initialize AD_User sorting preferences
 	 *
 	 * @param ctx
@@ -1979,7 +1989,7 @@ public abstract class Info extends Component
 				final String columnName = column.getColumnName();
 
 				modelColumnIndex = p_table.getColumnModelIndex(columnName);
-				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1) // make sure index is right
+				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1)  // make sure index is right
 				{
 					final Exception ex = new AdempiereException("Model column out of bounds: {0}", new Object[] { columnName });
 					log.warn(ex.getLocalizedMessage(), ex);
@@ -2114,7 +2124,7 @@ public abstract class Info extends Component
 		{
 			return;
 		}
-		
+
 		//
 		// Create the split pane if not already created.
 		// This will involve layout changes.
@@ -2122,10 +2132,10 @@ public abstract class Info extends Component
 		{
 			final Container contentPane = getContentPane();
 			contentPane.add(parameterPanel, BorderLayout.PAGE_START);
-	
+
 			final JPanel centerAndSouth = new JPanel();
 			centerAndSouth.setLayout(new GridBagLayout());
-	
+
 			final GridBagConstraints c = new GridBagConstraints();
 			c.gridx = 0;
 			c.gridy = 0;
@@ -2133,7 +2143,7 @@ public abstract class Info extends Component
 			c.weightx = 1;
 			c.weighty = 1;
 			centerAndSouth.add(scrollPane, c);
-	
+
 			c.gridx = 0;
 			c.gridy = 1;
 			c.fill = GridBagConstraints.BOTH;
@@ -2141,7 +2151,7 @@ public abstract class Info extends Component
 			c.weighty = 0;
 			centerAndSouth.add(southPanel, c);
 			centerAndSouth.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
-	
+
 			splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 			splitPane.setBorder(BorderFactory.createEmptyBorder());
 			splitPane.add(centerAndSouth, JSplitPane.RIGHT);
@@ -2150,7 +2160,7 @@ public abstract class Info extends Component
 
 		// Set the tree panel in split pane's left side.
 		splitPane.add(treePanel, JSplitPane.LEFT);
-		
+
 		// Set the split pane's divider location.
 		if (dividerLocation >= 0)
 		{
