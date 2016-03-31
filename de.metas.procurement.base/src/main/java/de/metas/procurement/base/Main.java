@@ -102,6 +102,10 @@ public class Main extends AbstractModuleInterceptor
 		// contract and master data
 		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.PMM_Product.instance);
+		
+		//
+		// Purchase candidate
+		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate.instance);
 	}
 
 	@Override

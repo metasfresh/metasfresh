@@ -2,6 +2,7 @@ package de.metas.procurement.base.order.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 
@@ -94,6 +95,23 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		}
 
 		return qtyToOrderTU;
+	}
+
+	@Override
+	public void updateQtyToOrderFromQtyToOrderTU(final I_PMM_PurchaseCandidate candidate)
+	{
+		final I_M_HU_PI_Item_Product huPIItemProduct = candidate.getM_HU_PI_Item_Product();
+		if (huPIItemProduct != null)
+		{
+			final BigDecimal qtyToOrderTU = candidate.getQtyToOrder_TU();
+			final BigDecimal tuCapacity = huPIItemProduct.getQty();
+			final BigDecimal qtyToOrder = qtyToOrderTU.multiply(tuCapacity);
+			candidate.setQtyToOrder(qtyToOrder);
+		}
+		else
+		{
+			candidate.setQtyOrdered(candidate.getQtyToOrder_TU());
+		}
 	}
 
 }

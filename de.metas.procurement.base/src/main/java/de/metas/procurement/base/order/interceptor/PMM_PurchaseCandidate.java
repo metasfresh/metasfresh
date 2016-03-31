@@ -1,11 +1,15 @@
 package de.metas.procurement.base.order.interceptor;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 
 /*
  * #%L
@@ -30,6 +34,7 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
  */
 
 @Interceptor(I_PMM_PurchaseCandidate.class)
+@Callout(I_PMM_PurchaseCandidate.class)
 public class PMM_PurchaseCandidate
 {
 	public static final transient PMM_PurchaseCandidate instance = new PMM_PurchaseCandidate();
@@ -46,4 +51,11 @@ public class PMM_PurchaseCandidate
 		// If we really want to allow deleting, we will have to trigger an event to update the PMM_Balance
 		throw new AdempiereException("Deleting candidates is not allowed");
 	}
+	
+	@CalloutMethod(columnNames = I_PMM_PurchaseCandidate.COLUMNNAME_QtyToOrder_TU)
+	public void onQtyToOrderTUChanged_UI(final I_PMM_PurchaseCandidate candidate)
+	{
+		Services.get(IPMMPurchaseCandidateBL.class).updateQtyToOrderFromQtyToOrderTU(candidate);
+	}
+
 }

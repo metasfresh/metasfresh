@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2114215743L;
+	private static final long serialVersionUID = 1373448490L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -483,61 +483,32 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	}
 
 	/** 
-	 * PMM_Trend_NextWeek AD_Reference_ID=540648
+	 * PMM_Trend_InTwoWeeks AD_Reference_ID=540648
 	 * Reference name: PMM_Trend
 	 */
-	public static final int PMM_TREND_NEXTWEEK_AD_Reference_ID=540648;
+	public static final int PMM_TREND_INTWOWEEKS_AD_Reference_ID=540648;
 	/** Up = U */
-	public static final String PMM_TREND_NEXTWEEK_Up = "U";
+	public static final String PMM_TREND_INTWOWEEKS_Up = "U";
 	/** Down = D */
-	public static final String PMM_TREND_NEXTWEEK_Down = "D";
+	public static final String PMM_TREND_INTWOWEEKS_Down = "D";
 	/** Same = E */
-	public static final String PMM_TREND_NEXTWEEK_Same = "E";
+	public static final String PMM_TREND_INTWOWEEKS_Same = "E";
 	/** Zero = Z */
-	public static final String PMM_TREND_NEXTWEEK_Zero = "Z";
-	/** Set Trend (next week).
-		@param PMM_Trend_NextWeek Trend (next week)	  */
+	public static final String PMM_TREND_INTWOWEEKS_Zero = "Z";
+	/** Set Trend (in zwei Wochen).
+		@param PMM_Trend_InTwoWeeks Trend (in zwei Wochen)	  */
 	@Override
-	public void setPMM_Trend_NextWeek (java.lang.String PMM_Trend_NextWeek)
+	public void setPMM_Trend_InTwoWeeks (java.lang.String PMM_Trend_InTwoWeeks)
 	{
 
-		throw new IllegalArgumentException ("PMM_Trend_NextWeek is virtual column");	}
+		throw new IllegalArgumentException ("PMM_Trend_InTwoWeeks is virtual column");	}
 
-	/** Get Trend (next week).
-		@return Trend (next week)	  */
+	/** Get Trend (in zwei Wochen).
+		@return Trend (in zwei Wochen)	  */
 	@Override
-	public java.lang.String getPMM_Trend_NextWeek () 
+	public java.lang.String getPMM_Trend_InTwoWeeks () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend_NextWeek);
-	}
-
-	/** 
-	 * PMM_Trend_ThisWeek AD_Reference_ID=540648
-	 * Reference name: PMM_Trend
-	 */
-	public static final int PMM_TREND_THISWEEK_AD_Reference_ID=540648;
-	/** Up = U */
-	public static final String PMM_TREND_THISWEEK_Up = "U";
-	/** Down = D */
-	public static final String PMM_TREND_THISWEEK_Down = "D";
-	/** Same = E */
-	public static final String PMM_TREND_THISWEEK_Same = "E";
-	/** Zero = Z */
-	public static final String PMM_TREND_THISWEEK_Zero = "Z";
-	/** Set Trend (this week).
-		@param PMM_Trend_ThisWeek Trend (this week)	  */
-	@Override
-	public void setPMM_Trend_ThisWeek (java.lang.String PMM_Trend_ThisWeek)
-	{
-
-		throw new IllegalArgumentException ("PMM_Trend_ThisWeek is virtual column");	}
-
-	/** Get Trend (this week).
-		@return Trend (this week)	  */
-	@Override
-	public java.lang.String getPMM_Trend_ThisWeek () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend_ThisWeek);
+		return (java.lang.String)get_Value(COLUMNNAME_PMM_Trend_InTwoWeeks);
 	}
 
 	/** Set Preis.
@@ -632,42 +603,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	/** Set Bestellte Menge (next week).
-		@param QtyOrdered_NextWeek Bestellte Menge (next week)	  */
-	@Override
-	public void setQtyOrdered_NextWeek (java.math.BigDecimal QtyOrdered_NextWeek)
-	{
-		throw new IllegalArgumentException ("QtyOrdered_NextWeek is virtual column");	}
-
-	/** Get Bestellte Menge (next week).
-		@return Bestellte Menge (next week)	  */
-	@Override
-	public java.math.BigDecimal getQtyOrdered_NextWeek () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_NextWeek);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Bestellte Menge (this week).
-		@param QtyOrdered_ThisWeek Bestellte Menge (this week)	  */
-	@Override
-	public void setQtyOrdered_ThisWeek (java.math.BigDecimal QtyOrdered_ThisWeek)
-	{
-		throw new IllegalArgumentException ("QtyOrdered_ThisWeek is virtual column");	}
-
-	/** Get Bestellte Menge (this week).
-		@return Bestellte Menge (this week)	  */
-	@Override
-	public java.math.BigDecimal getQtyOrdered_ThisWeek () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_ThisWeek);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Bestellte Menge (TU).
 		@param QtyOrdered_TU 
 		Bestellte Menge (TU)
@@ -685,6 +620,42 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public java.math.BigDecimal getQtyOrdered_TU () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellte Menge TU (next week).
+		@param QtyOrdered_TU_NextWeek Bestellte Menge TU (next week)	  */
+	@Override
+	public void setQtyOrdered_TU_NextWeek (java.math.BigDecimal QtyOrdered_TU_NextWeek)
+	{
+		throw new IllegalArgumentException ("QtyOrdered_TU_NextWeek is virtual column");	}
+
+	/** Get Bestellte Menge TU (next week).
+		@return Bestellte Menge TU (next week)	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_TU_NextWeek () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU_NextWeek);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellte Menge TU (this week).
+		@param QtyOrdered_TU_ThisWeek Bestellte Menge TU (this week)	  */
+	@Override
+	public void setQtyOrdered_TU_ThisWeek (java.math.BigDecimal QtyOrdered_TU_ThisWeek)
+	{
+		throw new IllegalArgumentException ("QtyOrdered_TU_ThisWeek is virtual column");	}
+
+	/** Get Bestellte Menge TU (this week).
+		@return Bestellte Menge TU (this week)	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_TU_ThisWeek () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU_ThisWeek);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -709,42 +680,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	/** Set Zusagbar (next week).
-		@param QtyPromised_NextWeek Zusagbar (next week)	  */
-	@Override
-	public void setQtyPromised_NextWeek (java.math.BigDecimal QtyPromised_NextWeek)
-	{
-		throw new IllegalArgumentException ("QtyPromised_NextWeek is virtual column");	}
-
-	/** Get Zusagbar (next week).
-		@return Zusagbar (next week)	  */
-	@Override
-	public java.math.BigDecimal getQtyPromised_NextWeek () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_NextWeek);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Zusagbar (this week).
-		@param QtyPromised_ThisWeek Zusagbar (this week)	  */
-	@Override
-	public void setQtyPromised_ThisWeek (java.math.BigDecimal QtyPromised_ThisWeek)
-	{
-		throw new IllegalArgumentException ("QtyPromised_ThisWeek is virtual column");	}
-
-	/** Get Zusagbar (this week).
-		@return Zusagbar (this week)	  */
-	@Override
-	public java.math.BigDecimal getQtyPromised_ThisWeek () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_ThisWeek);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Zusagbar (TU).
 		@param QtyPromised_TU Zusagbar (TU)	  */
 	@Override
@@ -759,6 +694,42 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public java.math.BigDecimal getQtyPromised_TU () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar TU (nächste Woche).
+		@param QtyPromised_TU_NextWeek Zusagbar TU (nächste Woche)	  */
+	@Override
+	public void setQtyPromised_TU_NextWeek (java.math.BigDecimal QtyPromised_TU_NextWeek)
+	{
+		throw new IllegalArgumentException ("QtyPromised_TU_NextWeek is virtual column");	}
+
+	/** Get Zusagbar TU (nächste Woche).
+		@return Zusagbar TU (nächste Woche)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU_NextWeek () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU_NextWeek);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar TU (diese Woche).
+		@param QtyPromised_TU_ThisWeek Zusagbar TU (diese Woche)	  */
+	@Override
+	public void setQtyPromised_TU_ThisWeek (java.math.BigDecimal QtyPromised_TU_ThisWeek)
+	{
+		throw new IllegalArgumentException ("QtyPromised_TU_ThisWeek is virtual column");	}
+
+	/** Get Zusagbar TU (diese Woche).
+		@return Zusagbar TU (diese Woche)	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised_TU_ThisWeek () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU_ThisWeek);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

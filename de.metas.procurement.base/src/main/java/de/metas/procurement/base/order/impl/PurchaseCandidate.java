@@ -131,6 +131,12 @@ public final class PurchaseCandidate
 	{
 		return model.getQtyToOrder_TU();
 	}
+	
+	public boolean isZeroQty()
+	{
+		return getQtyToOrder().signum() == 0
+				&& getQtyToOrder_TU().signum() == 0;
+	}
 
 	/**
 	 *

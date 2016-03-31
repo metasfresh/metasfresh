@@ -90,7 +90,7 @@ public class OrderLineAggregation
 		{
 			return;
 		}
-
+		
 		if (orderLine == null)
 		{
 			orderLine = createOrderLine(candidate);

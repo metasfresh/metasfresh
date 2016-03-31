@@ -479,50 +479,27 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_PMM_PurchaseCandidate_ID = "PMM_PurchaseCandidate_ID";
 
 	/**
-	 * Set Trend (next week).
+	 * Set Trend (in zwei Wochen).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public void setPMM_Trend_NextWeek (java.lang.String PMM_Trend_NextWeek);
+	public void setPMM_Trend_InTwoWeeks (java.lang.String PMM_Trend_InTwoWeeks);
 
 	/**
-	 * Get Trend (next week).
+	 * Get Trend (in zwei Wochen).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getPMM_Trend_NextWeek();
+	public java.lang.String getPMM_Trend_InTwoWeeks();
 
-    /** Column definition for PMM_Trend_NextWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_PMM_Trend_NextWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "PMM_Trend_NextWeek", null);
-    /** Column name PMM_Trend_NextWeek */
-    public static final String COLUMNNAME_PMM_Trend_NextWeek = "PMM_Trend_NextWeek";
-
-	/**
-	 * Set Trend (this week).
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setPMM_Trend_ThisWeek (java.lang.String PMM_Trend_ThisWeek);
-
-	/**
-	 * Get Trend (this week).
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getPMM_Trend_ThisWeek();
-
-    /** Column definition for PMM_Trend_ThisWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_PMM_Trend_ThisWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "PMM_Trend_ThisWeek", null);
-    /** Column name PMM_Trend_ThisWeek */
-    public static final String COLUMNNAME_PMM_Trend_ThisWeek = "PMM_Trend_ThisWeek";
+    /** Column definition for PMM_Trend_InTwoWeeks */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_PMM_Trend_InTwoWeeks = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "PMM_Trend_InTwoWeeks", null);
+    /** Column name PMM_Trend_InTwoWeeks */
+    public static final String COLUMNNAME_PMM_Trend_InTwoWeeks = "PMM_Trend_InTwoWeeks";
 
 	/**
 	 * Set Preis.
@@ -623,52 +600,6 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Bestellte Menge (next week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setQtyOrdered_NextWeek (java.math.BigDecimal QtyOrdered_NextWeek);
-
-	/**
-	 * Get Bestellte Menge (next week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getQtyOrdered_NextWeek();
-
-    /** Column definition for QtyOrdered_NextWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyOrdered_NextWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyOrdered_NextWeek", null);
-    /** Column name QtyOrdered_NextWeek */
-    public static final String COLUMNNAME_QtyOrdered_NextWeek = "QtyOrdered_NextWeek";
-
-	/**
-	 * Set Bestellte Menge (this week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setQtyOrdered_ThisWeek (java.math.BigDecimal QtyOrdered_ThisWeek);
-
-	/**
-	 * Get Bestellte Menge (this week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getQtyOrdered_ThisWeek();
-
-    /** Column definition for QtyOrdered_ThisWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyOrdered_ThisWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyOrdered_ThisWeek", null);
-    /** Column name QtyOrdered_ThisWeek */
-    public static final String COLUMNNAME_QtyOrdered_ThisWeek = "QtyOrdered_ThisWeek";
-
-	/**
 	 * Set Bestellte Menge (TU).
 	 * Bestellte Menge (TU)
 	 *
@@ -694,6 +625,52 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_QtyOrdered_TU = "QtyOrdered_TU";
 
 	/**
+	 * Set Bestellte Menge TU (next week).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setQtyOrdered_TU_NextWeek (java.math.BigDecimal QtyOrdered_TU_NextWeek);
+
+	/**
+	 * Get Bestellte Menge TU (next week).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getQtyOrdered_TU_NextWeek();
+
+    /** Column definition for QtyOrdered_TU_NextWeek */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyOrdered_TU_NextWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyOrdered_TU_NextWeek", null);
+    /** Column name QtyOrdered_TU_NextWeek */
+    public static final String COLUMNNAME_QtyOrdered_TU_NextWeek = "QtyOrdered_TU_NextWeek";
+
+	/**
+	 * Set Bestellte Menge TU (this week).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setQtyOrdered_TU_ThisWeek (java.math.BigDecimal QtyOrdered_TU_ThisWeek);
+
+	/**
+	 * Get Bestellte Menge TU (this week).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getQtyOrdered_TU_ThisWeek();
+
+    /** Column definition for QtyOrdered_TU_ThisWeek */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyOrdered_TU_ThisWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyOrdered_TU_ThisWeek", null);
+    /** Column name QtyOrdered_TU_ThisWeek */
+    public static final String COLUMNNAME_QtyOrdered_TU_ThisWeek = "QtyOrdered_TU_ThisWeek";
+
+	/**
 	 * Set Zusagbar.
 	 *
 	 * <br>Type: Quantity
@@ -717,52 +694,6 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_QtyPromised = "QtyPromised";
 
 	/**
-	 * Set Zusagbar (next week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setQtyPromised_NextWeek (java.math.BigDecimal QtyPromised_NextWeek);
-
-	/**
-	 * Get Zusagbar (next week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getQtyPromised_NextWeek();
-
-    /** Column definition for QtyPromised_NextWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_NextWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_NextWeek", null);
-    /** Column name QtyPromised_NextWeek */
-    public static final String COLUMNNAME_QtyPromised_NextWeek = "QtyPromised_NextWeek";
-
-	/**
-	 * Set Zusagbar (this week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setQtyPromised_ThisWeek (java.math.BigDecimal QtyPromised_ThisWeek);
-
-	/**
-	 * Get Zusagbar (this week).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getQtyPromised_ThisWeek();
-
-    /** Column definition for QtyPromised_ThisWeek */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_ThisWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_ThisWeek", null);
-    /** Column name QtyPromised_ThisWeek */
-    public static final String COLUMNNAME_QtyPromised_ThisWeek = "QtyPromised_ThisWeek";
-
-	/**
 	 * Set Zusagbar (TU).
 	 *
 	 * <br>Type: Quantity
@@ -784,6 +715,52 @@ public interface I_PMM_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_TU = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_TU", null);
     /** Column name QtyPromised_TU */
     public static final String COLUMNNAME_QtyPromised_TU = "QtyPromised_TU";
+
+	/**
+	 * Set Zusagbar TU (nächste Woche).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setQtyPromised_TU_NextWeek (java.math.BigDecimal QtyPromised_TU_NextWeek);
+
+	/**
+	 * Get Zusagbar TU (nächste Woche).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getQtyPromised_TU_NextWeek();
+
+    /** Column definition for QtyPromised_TU_NextWeek */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_TU_NextWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_TU_NextWeek", null);
+    /** Column name QtyPromised_TU_NextWeek */
+    public static final String COLUMNNAME_QtyPromised_TU_NextWeek = "QtyPromised_TU_NextWeek";
+
+	/**
+	 * Set Zusagbar TU (diese Woche).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setQtyPromised_TU_ThisWeek (java.math.BigDecimal QtyPromised_TU_ThisWeek);
+
+	/**
+	 * Get Zusagbar TU (diese Woche).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getQtyPromised_TU_ThisWeek();
+
+    /** Column definition for QtyPromised_TU_ThisWeek */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_QtyPromised_TU_ThisWeek = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "QtyPromised_TU_ThisWeek", null);
+    /** Column name QtyPromised_TU_ThisWeek */
+    public static final String COLUMNNAME_QtyPromised_TU_ThisWeek = "QtyPromised_TU_ThisWeek";
 
 	/**
 	 * Set Quantity to Order.

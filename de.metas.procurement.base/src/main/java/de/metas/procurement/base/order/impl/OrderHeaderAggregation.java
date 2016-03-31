@@ -73,7 +73,7 @@ public class OrderHeaderAggregation
 
 	public void add(final PurchaseCandidate candidate)
 	{
-		if (candidate.getQtyToOrder().signum() == 0)
+		if (candidate.isZeroQty())
 		{
 			return;
 		}

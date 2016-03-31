@@ -62,4 +62,10 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 	 * @param qtyOrderedTU
 	 */
 	void subtractQtyOrderedAndUpdate(I_PMM_PurchaseCandidate candidate, BigDecimal qtyOrdered, BigDecimal qtyOrderedTU);
+
+	/**
+	 * Updates QtyToOrder = QtyToOrderTU x TU capacity
+	 * @param candidate
+	 */
+	void updateQtyToOrderFromQtyToOrderTU(I_PMM_PurchaseCandidate candidate);
 }
