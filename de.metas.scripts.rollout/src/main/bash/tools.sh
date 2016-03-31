@@ -175,7 +175,7 @@ start_metasfresh()
 	if [ ${SKIP_START_STOP:-false} == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		sudo service metasfresh_server start
+		service metasfresh_server start
 	fi
 
 	trace start_metasfresh END
@@ -188,7 +188,7 @@ stop_metasfresh()
 	if [ ${SKIP_START_STOP:-false} == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		sudo service metasfresh_server stop
+		service metasfresh_server stop
 	fi
 		
 	trace stop_metasfresh END

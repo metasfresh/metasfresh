@@ -255,7 +255,7 @@ prepare
 if [ "$START_STOP" = "true" ]; 
 then
 	trace $(basename $0) "Stopping remote metasfresh service"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo service metasfresh_server stop" 
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "service metasfresh_server stop" 
 fi
 
 if [ "$DATABASE" == "true" ]; then
@@ -268,7 +268,7 @@ fi
 if [ "$START_STOP" = "true" ]; 
 then
 	trace $(basename $0) "Starting remote metasfresh service"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo service metasfresh_server start" 
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "service metasfresh_server start" 
 fi
 
 
