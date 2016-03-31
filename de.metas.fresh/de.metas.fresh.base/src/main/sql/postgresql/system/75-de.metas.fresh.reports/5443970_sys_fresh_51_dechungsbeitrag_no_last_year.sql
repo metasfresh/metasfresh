@@ -23,10 +23,6 @@ UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Deckungsbeitrag Kurzver
 UPDATE AD_Menu_Trl SET IsTranslated='N' WHERE AD_Menu_ID=540676
 ;
 
--- 31.03.2016 14:55
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
 
 -- 31.03.2016 14:55
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

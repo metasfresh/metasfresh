@@ -87,8 +87,6 @@ public abstract class Convert
 	/**	Logger	*/
 	private static Logger	log	= LogManager.getLogger(Convert.class);
 	
-    private static FileOutputStream tempFileOr = null;
-    private static Writer writerOr;
     private static FileOutputStream tempFilePg = null;
     private static Writer writerPg;
 
@@ -445,11 +443,11 @@ public abstract class Convert
 	protected abstract List<String> convertStatement (String sqlStatement);
 
 	/**
-	 * True if the database support native oracle dialect, false otherwise.
-	 * @return boolean
+	 * task it_FRESH_47 : Log only Postgresql migration scripts
+	 * 
+	 * @param oraStatement
+	 * @param pgStatement
 	 */
-	public abstract boolean isOracle();
-
 	public static void logMigrationScript(String oraStatement, String pgStatement)
 	{
 		if (QUERY_STATISTICS_LOGGER != null)
@@ -460,35 +458,33 @@ public abstract class Convert
 		// Check AdempiereSys
 		// check property Log migration script
 		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
-		if (logMigrationScript) {
+		if (logMigrationScript)
+		{
 			if (dontLog(oraStatement))
 				return;
-			// Log oracle and postgres migration scripts in temp directory
-			// migration_script_oracle.sql and migration_script_postgresql.sql
-			try {
-				if (tempFileOr == null) {
-		            File fileNameOr = createMigrationScriptFile("oracle");
-		            tempFileOr = new FileOutputStream(fileNameOr, true);
-		            writerOr = new BufferedWriter(new OutputStreamWriter(tempFileOr, "UTF8"));
-				}
-				writeLogMigrationScript(writerOr, oraStatement);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
-				if (pgStatement == null) {
+			// task it_FRESH_47 : we only need scripts for Postgresql database
+			// Log postgres migration scripts in temp directory
+			// migration_script_postgresql.sql
+
+			try
+			{
+				if (pgStatement == null)
+				{
 					// if oracle call convert for postgres before logging
 					Convert_PostgreSQL convert = new Convert_PostgreSQL();
-					List<String>r = convert.convert(oraStatement);
+					List<String> r = convert.convert(oraStatement);
 					pgStatement = r.get(0);
 				}
-				if (tempFilePg == null) {
-		            File fileNamePg = createMigrationScriptFile("postgresql");
-		            tempFilePg = new FileOutputStream(fileNamePg, true);
-		            writerPg = new BufferedWriter(new OutputStreamWriter(tempFilePg, "UTF8"));
+				if (tempFilePg == null)
+				{
+					File fileNamePg = createMigrationScriptFile("postgresql");
+					tempFilePg = new FileOutputStream(fileNamePg, true);
+					writerPg = new BufferedWriter(new OutputStreamWriter(tempFilePg, "UTF8"));
 				}
 				writeLogMigrationScript(writerPg, pgStatement);
-			} catch (IOException e) {
+			}
+			catch (IOException e)
+			{
 				e.printStackTrace();
 			}
 		}
