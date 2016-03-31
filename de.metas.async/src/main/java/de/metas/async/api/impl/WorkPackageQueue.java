@@ -38,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -73,6 +74,8 @@ import de.metas.logging.LogManager;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
+	private final static String SYSCONFIG_POLLINTERVAL = "de.metas.async.PollIntervallMillis";
+
 	private static final transient Logger logger = LogManager.getLogger(WorkPackageQueue.class);
 
 	private final transient IQueueDAO dao;
@@ -232,7 +235,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			// No workpackages were found. Sleep 1sec and then try again
 			try
 			{
-				Thread.sleep(5000);
+				// note: we always get the new service, because things might have changed since this method started
+				final int pollIntervalMs = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_POLLINTERVAL, 1000);
+				Thread.sleep(pollIntervalMs);
 			}
 			catch (InterruptedException e)
 			{
