@@ -24,10 +24,10 @@ import org.compiere.util.Env;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMProductDAO;
+import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
@@ -119,7 +119,7 @@ public class SyncObjectsFactory
 
 		return syncBPartners;
 	}
-	
+
 	private SyncContract createSyncContract(final I_C_Flatrate_Term term)
 	{
 		final SyncContract syncContract = new SyncContract();
@@ -143,7 +143,7 @@ public class SyncObjectsFactory
 
 		return syncContract;
 	}
-	
+
 	public boolean hasRunningContracts(final I_C_BPartner bpartner)
 	{
 		return pmmContractsDAO.hasRunningContract(bpartner);
@@ -167,7 +167,7 @@ public class SyncObjectsFactory
 			}
 			syncBPartner.getContracts().add(syncContract);
 		}
-		
+
 		return syncBPartner;
 	}
 
@@ -188,7 +188,9 @@ public class SyncObjectsFactory
 
 		//
 		// Fill Users
-		final List<I_AD_User> contacts = bpartnerDAO.retrieveContacts(bpartner);
+		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(
+				bpartnerDAO.retrieveContacts(bpartner), I_AD_User.class);
+
 		for (final I_AD_User contact : contacts)
 		{
 			final SyncUser syncUser = createSyncUser(contact, adLanguage);
@@ -209,25 +211,25 @@ public class SyncObjectsFactory
 
 	private SyncUser createSyncUser(final I_AD_User contact, final String adLanguage)
 	{
-		if (!contact.isActive())
+		if (!contact.isActive() || !contact.isIsMFProcurementUser())
 		{
 			return null;
 		}
-		
+
 		final String email = contact.getEMail();
 		final String password = contact.getPassword();
-		
+
 		if (Check.isEmpty(email, true))
 		{
 			return null;
 		}
-		
+
 		final SyncUser syncUser = new SyncUser();
 		syncUser.setLanguage(adLanguage);
 		syncUser.setUuid(SyncUUIDs.toUUIDString(contact));
 		syncUser.setEmail(email);
 		syncUser.setPassword(password);
-		
+
 		return syncUser;
 	}
 
@@ -236,7 +238,7 @@ public class SyncObjectsFactory
 		if (fullyLoadedRequired && !_bpartnerId2contract_fullyLoaded)
 		{
 			_bpartnerId2contract.clear(); // clear all first
-			
+
 			final List<I_C_Flatrate_Term> terms = pmmContractsDAO.retrieveAllRunningContractsOnDate(date);
 			for (final I_C_Flatrate_Term term : terms)
 			{
@@ -270,7 +272,7 @@ public class SyncObjectsFactory
 	{
 		final boolean fullyLoadedRequired = false;
 		final Multimap<Integer, I_C_Flatrate_Term> bpartnerId2contract = getC_Flatrate_Terms_IndexedByBPartnerId(fullyLoadedRequired);
-		if(!bpartnerId2contract.containsKey(bpartnerId))
+		if (!bpartnerId2contract.containsKey(bpartnerId))
 		{
 			final List<I_C_Flatrate_Term> contracts = pmmContractsDAO.retrieveRunningContractsOnDateForBPartner(date, bpartnerId);
 			bpartnerId2contract.putAll(bpartnerId, contracts);
@@ -367,7 +369,7 @@ public class SyncObjectsFactory
 
 		final SyncProduct syncProduct = new SyncProduct();
 
-		final boolean valid = pmmProduct.isActive() 
+		final boolean valid = pmmProduct.isActive()
 				&& pmmProduct.getM_Warehouse_ID() > 0
 				&& pmmProduct.getM_Product_ID() > 0
 				&& pmmProduct.getM_HU_PI_Item_Product_ID() > 0;

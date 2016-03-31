@@ -1,0 +1,99 @@
+﻿
+-- 31.03.2016 13:01
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='Y', SpanX=2, SpanY=2,Updated=TO_TIMESTAMP('2016-03-31 13:01:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556744
+;
+
+-- 31.03.2016 13:05
+-- URL zum Konzept
+UPDATE AD_Field SET IsCentrallyMaintained='N', Name='Bemerkungen',Updated=TO_TIMESTAMP('2016-03-31 13:05:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=548437
+;
+
+-- 31.03.2016 13:05
+-- URL zum Konzept
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=548437
+;
+
+-- 31.03.2016 13:05
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=285, SeqNoGrid=285,Updated=TO_TIMESTAMP('2016-03-31 13:05:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=548437
+;
+
+-- 31.03.2016 13:06
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='N',Updated=TO_TIMESTAMP('2016-03-31 13:06:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556744
+;
+
+-- 31.03.2016 13:12
+-- URL zum Konzept
+UPDATE AD_Field SET AD_FieldGroup_ID=540039, SeqNo=265, SeqNoGrid=265,Updated=TO_TIMESTAMP('2016-03-31 13:12:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=548437
+;
+
+-- 31.03.2016 13:14
+-- URL zum Konzept
+UPDATE AD_Field SET SpanX=2, SpanY=2,Updated=TO_TIMESTAMP('2016-03-31 13:14:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=548437
+;
+
+--
+--
+--
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547796
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547790
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547788
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547789
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547792
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547793
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547797
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547795
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547794
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-03-31 13:47:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=548195
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2016-03-31 13:47:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540328
+;
+
+-- 31.03.2016 13:47
+-- URL zum Konzept
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2016-03-31 13:47:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540340
+;
