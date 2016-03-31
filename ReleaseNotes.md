@@ -25,6 +25,8 @@ The actual release notes
 # metasfresh 4.11.10 (Upcoming Release)  
 
 ## Features
+ - 09961 MRP Product Info row selection persistency (109095061891)
+    * when switching between days and filter settings, the selected row remains the same (if is is still there with the new filter settings)
  - when implementing a process, it is now possible to specifiy which record shall be selected after the process is executed
  - 09915 procurement conditions jasper process (109344045046)
     * now also supports contracts that have quantities, but no prices
