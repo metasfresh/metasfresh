@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,7 +45,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
@@ -70,6 +69,7 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
+import de.metas.logging.LogManager;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
@@ -232,7 +232,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			// No workpackages were found. Sleep 1sec and then try again
 			try
 			{
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			}
 			catch (InterruptedException e)
 			{
@@ -264,9 +264,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	/**
 	 * Update context from work package (AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID etc).
-	 * 
+	 *
 	 * NOTE: this will be the context that work package processors will use on processing
-	 * 
+	 *
 	 * @param workPackageCtx
 	 */
 	private final void setupWorkpackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
@@ -291,7 +291,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, adUserId);
 		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, adUserId);
-		
+
 		//
 		// Role
 		final int adRoleId;
@@ -307,7 +307,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
-		
+
 		//
 		// Session: N/A
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Session_ID, Env.CTXVALUE_AD_SESSION_ID_NONE);
@@ -421,7 +421,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
-		
+
 		Check.assume(block != null, "block not null");
 		Check.assume(priority != null, "Param 'priority' not null. Use {0} to indicate 'no specific priority'", NullWorkpackagePrio.class);
 
@@ -460,7 +460,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			final int asyncBatchId = asyncBatch == null ? -1 : asyncBatch.getC_Async_Batch_ID();
 			workPackage.setC_Async_Batch_ID(asyncBatchId);
 		}
-		
+
 		//
 		// Set User/Role
 		workPackage.setAD_User_ID(Env.getAD_User_ID(ctx));
