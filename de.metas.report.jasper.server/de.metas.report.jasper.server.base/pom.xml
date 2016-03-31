@@ -120,6 +120,26 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
  		-->
+ 		
+ 		
+ 		<!-- JXls integration -->
+		<dependency>
+			<groupId>org.jxls</groupId>
+			<artifactId>jxls</artifactId>
+			<version>2.2.9</version>
+			
+			<exclusions>
+				<exclusion>
+				  <groupId>ch.qos.logback</groupId>
+				  <artifactId>logback-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.jxls</groupId>
+			<artifactId>jxls-poi</artifactId>
+			<version>1.0.8</version>
+		</dependency>
 	</dependencies>
 
 	<build>

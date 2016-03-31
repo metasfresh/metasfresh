@@ -51,7 +51,7 @@ import de.metas.logging.LogManager;
 /**
  * Jasper class loader: basically it will resolve {@link #PLACEHOLDER} from resource names and will fetch the resources from remote HTTP servers.
  */
-final class JasperClassLoader extends ClassLoader
+public final class JasperClassLoader extends ClassLoader
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(JasperClassLoader.class);
@@ -127,7 +127,7 @@ final class JasperClassLoader extends ClassLoader
 		}
 
 		final URL resource = super.getResource(name);
-		if (isJarInJarURL(url))
+		if (isJarInJarURL(resource))
 		{
 			logger.debug("Returning null, because this class loader won't be able to open this resource.");
 			// return null to avoid errors like

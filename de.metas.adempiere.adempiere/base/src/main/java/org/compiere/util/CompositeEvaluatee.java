@@ -30,6 +30,18 @@ import org.adempiere.util.Check;
 
 public class CompositeEvaluatee implements Evaluatee2
 {
+	public static final CompositeEvaluatee of(final Evaluatee... evaluatees)
+	{
+		Check.assumeNotEmpty(evaluatees, "evaluatees not empty");
+		
+		final CompositeEvaluatee composite = new CompositeEvaluatee(evaluatees[0]);
+		for (int i = 1; i < evaluatees.length; i++)
+		{
+			composite.addEvaluatee(evaluatees[i]);
+		}
+		return composite;
+	}
+
 	private List<Evaluatee> sources = new ArrayList<Evaluatee>();
 
 	public CompositeEvaluatee(Evaluatee source)

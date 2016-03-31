@@ -25,10 +25,6 @@ package de.metas.adempiere.report.jasper.client;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import net.sf.jasperreports.engine.JasperPrint;
 
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.persistence.TableModelClassLoader;
@@ -49,10 +45,13 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import net.sf.jasperreports.engine.JasperPrint;
 
 public class JRClient
 {
@@ -157,11 +156,10 @@ public class JRClient
 
 	public byte[] report(final Properties ctx, final ProcessInfo pi, final OutputType outputType)
 	{
-		final JRClient jrClient = JRClient.get();
 		try
 		{
 			final Language language = extractLanguage(ctx, pi);
-			final byte[] data = jrClient.report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputType);
+			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputType);
 			return data;
 		}
 		catch (Exception e)

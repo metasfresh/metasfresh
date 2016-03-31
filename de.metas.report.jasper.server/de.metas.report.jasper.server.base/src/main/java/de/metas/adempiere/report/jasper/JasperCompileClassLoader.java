@@ -34,13 +34,13 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sf.jasperreports.engine.JasperCompileManager;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.FileUtils;
 
 import com.google.common.io.Closeables;
+
+import net.sf.jasperreports.engine.JasperCompileManager;
 
 /**
  * Alternative class loader to be used when doing dev-tests on a local machine.<br>
@@ -49,7 +49,7 @@ import com.google.common.io.Closeables;
  * @author tsa
  *
  */
-class JasperCompileClassLoader extends ClassLoader
+public class JasperCompileClassLoader extends ClassLoader
 {
 	public static final String jasperExtension = ".jasper";
 	public static final String jrxmlExtension = ".jrxml";
@@ -78,6 +78,12 @@ class JasperCompileClassLoader extends ClassLoader
 		{
 			return findJaserResource(nameNormalized);
 		}
+		// handle Excel reporting templates
+		else if (nameNormalized.endsWith(".xls"))
+		{
+			return findMiscResource(nameNormalized);
+		}
+		// handle property files (i.e. resource bundles)
 		else if (nameNormalized.endsWith(propertiesExtension))
 		{
 			return findMiscResource(nameNormalized);

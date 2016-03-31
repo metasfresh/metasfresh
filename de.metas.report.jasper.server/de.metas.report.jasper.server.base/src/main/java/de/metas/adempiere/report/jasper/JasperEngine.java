@@ -1,5 +1,8 @@
 package de.metas.adempiere.report.jasper;
 
+import java.io.File;
+import java.io.IOException;
+
 /*
  * #%L
  * de.metas.report.jasper.server.base
@@ -23,6 +26,8 @@ package de.metas.adempiere.report.jasper;
  */
 
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,31 +35,41 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MProcess;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.logging.LogManager;
+import de.metas.report.engine.AbstractReportEngine;
+import de.metas.report.engine.ReportContext;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.util.JRLoader;
 
-public class JasperEngine
+public class JasperEngine extends AbstractReportEngine
 {
-	public static final String PARAM_REPORT_LANGUAGE = "REPORT_LANGUAGE";
+	public static final Set<String> REPORT_FILE_EXTENSIONS = ImmutableSet.of("jasper", "jrxml");
+	
+	private static final OutputType DEFAULT_OutputType = OutputType.PDF;
+	
+	private static final String PARAM_REPORT_LANGUAGE = "REPORT_LANGUAGE";
 	private static final String PARAM_REPORT_LOCALE = JRParameter.REPORT_LOCALE;
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
@@ -67,10 +82,25 @@ public class JasperEngine
 	 *
 	 * @see OutputType
 	 */
-	public static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
+	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
 	private final transient Logger log = LogManager.getLogger(getClass());
+	
+	@Override
+	public void report(final ReportContext reportContext, final OutputStream out)
+	{
+		try
+		{
+			final JasperPrint jasperPrint = createJasperPrint(reportContext);
+			createOutput(out, jasperPrint, reportContext.getOutputType());
+		}
+		catch (Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+	}
 
 	/**
 	 * Retrieves the server's direct database connection.
@@ -82,17 +112,18 @@ public class JasperEngine
 		return DB.getConnectionRW();
 	}
 
-	public JasperPrint createJasperPrint(final Properties ctx, final ProcessInfo pi) throws JRException
+	private JasperPrint createJasperPrint(final ReportContext reportContext) throws JRException
 	{
-		log.info("{}", pi);
+		log.info("{}", reportContext);
 
 
 		//
 		// Get the classloader to be used when loading jasper resources
-		final ClassLoader jasperLoader = getJasperClassLoader(ctx);
+		final Properties ctx = reportContext.getCtx();
+		final ClassLoader jasperLoader = createReportClassLoader(reportContext);
 
-		final Map<String, Object> jrParameters = createJRParameters(ctx, pi);
-		final JasperReport jasperReport = createJasperReport(ctx, pi.getAD_Process_ID(), jrParameters, jasperLoader);
+		final Map<String, Object> jrParameters = createJRParameters(reportContext);
+		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
 		Connection conn = null;
 		try
@@ -100,8 +131,8 @@ public class JasperEngine
 			//
 			// Create jasper's JDBC connection
 			conn = getConnection();
-			final String sqlQueryInfo = "main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-					+ ", AD_PInstance_ID=" + pi.getAD_PInstance_ID();
+			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
+					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
 			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo);
 
 			//
@@ -161,22 +192,23 @@ public class JasperEngine
 		return jasperReport;
 	}
 
-	private final Map<String, Object> createJRParameters(final Properties ctx, final ProcessInfo pi)
+	private final Map<String, Object> createJRParameters(final ReportContext reportContext)
 	{
-		final int AD_PInstance_ID = pi.getAD_PInstance_ID();
-		final int Record_ID = pi.getRecord_ID();
-		log.info("Name=" + pi.getTitle() + "  AD_PInstance_ID=" + AD_PInstance_ID + " Record_ID=" + Record_ID);
+		final Properties ctx = reportContext.getCtx();
+		final int AD_PInstance_ID = reportContext.getAD_PInstance_ID();
+		final int Record_ID = reportContext.getRecord_ID();
 
 		final Map<String, Object> jrParameters = new HashMap<String, Object>(ctx.size() + 10);
-
 		for (final Map.Entry<Object, Object> e : ctx.entrySet())
 		{
 			final Object key = e.getKey();
 			jrParameters.put(key == null ? null : key.toString(), e.getValue());
 		}
 
-		addProcessParameters(jrParameters, ctx, AD_PInstance_ID);
-		addProcessInfoParameters(jrParameters, pi.getParameter());
+		addProcessInfoParameters(jrParameters, reportContext.getProcessInfoParameters());
+
+		jrParameters.put(PARAM_REPORT_LANGUAGE, reportContext.getAD_Language());
+		jrParameters.put(PARAM_OUTPUTTYPE, reportContext.getOutputType());
 
 		if (Record_ID > 0)
 		{
@@ -218,7 +250,7 @@ public class JasperEngine
 		}
 		else if (langParam instanceof Language)
 		{
-			currLang = (Language)jrParameters.get(PARAM_REPORT_LANGUAGE);
+			currLang = (Language)langParam;
 		}
 
 		if (currLang == null)
@@ -280,51 +312,34 @@ public class JasperEngine
 		return reportPath;
 	}
 
-	private ClassLoader getJasperClassLoader(final Properties ctx)
+	private void addProcessInfoParameters(final Map<String, Object> jrParameters, final List<ProcessInfoParameter> processParams)
 	{
-		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-
-		final ClassLoader parentClassLoader;
-		final boolean useJasperCompileClassLoader = Services.get(IDeveloperModeBL.class).isEnabled();
-		if (useJasperCompileClassLoader)
-		{
-			parentClassLoader = new JasperCompileClassLoader(contextClassLoader);
-		}
-		else
-		{
-			parentClassLoader = contextClassLoader;
-		}
-
-		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader);
-		return jasperLoader;
-	}
-
-	private void addProcessParameters(final Map<String, Object> jrParameters, final Properties ctx, final int fromAD_PInstance_ID)
-	{
-		final List<ProcessInfoParameter> processParams = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(ctx, fromAD_PInstance_ID);
-		final ProcessInfoParameter[] processParamsArr = processParams.toArray(new ProcessInfoParameter[processParams.size()]);
-		addProcessInfoParameters(jrParameters, processParamsArr);
-	}
-
-	private void addProcessInfoParameters(final Map<String, Object> jrParameters, final ProcessInfoParameter[] processParams)
-	{
-		if (processParams == null || processParams.length == 0)
+		if (processParams == null || processParams.isEmpty())
 		{
 			return;
 		}
 
 		for (final ProcessInfoParameter processParam : processParams)
 		{
-			// NOTE: just to be on the safe side, for each process info parameter we are setting the ParameterName even if it's a range parameter
-			jrParameters.put(processParam.getParameterName(), processParam.getParameter());
+			addProcessInfoParameter(jrParameters, processParam);
+		}
+	}
+	
+	private void addProcessInfoParameter(final Map<String, Object> jrParameters, final ProcessInfoParameter processParam)
+	{
+		if (processParam == null)
+		{
+			return;
+		}
+		
+		// NOTE: just to be on the safe side, for each process info parameter we are setting the ParameterName even if it's a range parameter
+		jrParameters.put(processParam.getParameterName(), processParam.getParameter());
 
-			// If we are dealing with a range parameter we are setting ParameterName1 and ParameterName2 too.
-			if (processParam.getParameter_To() != null)
-			{
-				jrParameters.put(processParam.getParameterName() + "1", processParam.getParameter());
-				jrParameters.put(processParam.getParameterName() + "2", processParam.getParameter_To());
-			}
+		// If we are dealing with a range parameter we are setting ParameterName1 and ParameterName2 too.
+		if (processParam.getParameter_To() != null)
+		{
+			jrParameters.put(processParam.getParameterName() + "1", processParam.getParameter());
+			jrParameters.put(processParam.getParameterName() + "2", processParam.getParameter_To());
 		}
 	}
 
@@ -418,5 +433,62 @@ public class JasperEngine
 		}
 
 		return false; // not loaded
+	}
+	
+	private void createOutput(final OutputStream out, final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
+	{
+		if (outputType == null)
+			outputType = DEFAULT_OutputType;
+
+		if (OutputType.PDF == outputType)
+		{
+			byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
+			out.write(data);
+		}
+		else if (OutputType.HTML == outputType)
+		{
+			File file = File.createTempFile("JasperPrint", ".html");
+			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
+			// TODO: handle image links
+
+			JasperUtil.copy(file, out);
+		}
+		else if (OutputType.XML == outputType)
+		{
+			JasperExportManager.exportReportToXmlStream(jasperPrint, out);
+		}
+		else if (OutputType.JasperPrint == outputType)
+		{
+			exportAsJasperPrint(jasperPrint, out);
+		}
+		else if (OutputType.XLS == outputType)
+		{
+			exportAsExcel(jasperPrint, out);
+		}
+		else
+		{
+			throw new RuntimeException("Output type " + outputType + " not supported");
+		}
+		out.flush();
+		out.close();
+	}
+
+	private void exportAsJasperPrint(final JasperPrint jasperPrint, final OutputStream out) throws IOException
+	{
+		final ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(jasperPrint);
+	}
+
+	private void exportAsExcel(final JasperPrint jasperPrint, final OutputStream out) throws JRException
+	{
+		final MetasJRXlsExporter exporter = new MetasJRXlsExporter();
+		exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, out); // Output
+		exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint); // Input
+
+		// Make sure our cells will be locked by default
+		// and assume that cells which shall not be locked are particularly specified.
+		jasperPrint.setProperty(JRXlsExporter.PROPERTY_CELL_LOCKED, "true");
+
+		exporter.exportReport();
 	}
 }
