@@ -63,13 +63,14 @@ public class PMM_Product
 	}
 
 	@ModelChange(
-			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, //
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_IsActive,
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
 					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_Warehouse_ID, })
-	public void syncWithUI(final I_PMM_Product pmmProduct)
+					I_PMM_Product.COLUMNNAME_M_Warehouse_ID, } //
+			, afterCommit = true)
+	public void pushToWebUI(final I_PMM_Product pmmProduct)
 	{
 		Services.get(IWebuiPush.class).pushProduct(pmmProduct);
 	}

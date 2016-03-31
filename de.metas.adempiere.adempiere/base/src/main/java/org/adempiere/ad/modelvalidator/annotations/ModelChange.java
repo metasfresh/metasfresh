@@ -84,4 +84,11 @@ public @interface ModelChange
 	 * @return
 	 */
 	boolean ifUIAction() default false;
+	
+	/**
+	 * <code>true</code> if this method shall be executed after transaction commit.
+	 * 
+	 * WARNING: any failure will be just logged and will not prevent execution.
+	 */
+	boolean afterCommit() default false;
 }

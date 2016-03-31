@@ -1,7 +1,7 @@
 package de.metas.procurement.base.model.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
@@ -36,16 +36,27 @@ import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 public class C_Flatrate_Term
 {
 	public static final transient C_Flatrate_Term instance = new C_Flatrate_Term();
-	
+
 	private C_Flatrate_Term()
 	{
+		super();
 	}
-	
-	// TODO: when activating a flatrate term, make sure the product is present in PMM_Product table
-	
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
-	public void pushWithUI(final I_C_Flatrate_Term term)
+	// TODO: when activating a flatrate term, make sure the product is present in PMM_Product table
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE, afterCommit = true)
+	public void onAfterComplete(final I_C_Flatrate_Term term)
+	{
+		pushToWebUI(term);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID }, afterCommit = true)
+	public void onAfterVoid(final I_C_Flatrate_Term term)
+	{
+		pushToWebUI(term);
+	}
+
+	private final void pushToWebUI(final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Conditions condidations = InterfaceWrapperHelper.create(term.getC_Flatrate_Conditions(), I_C_Flatrate_Conditions.class);
 

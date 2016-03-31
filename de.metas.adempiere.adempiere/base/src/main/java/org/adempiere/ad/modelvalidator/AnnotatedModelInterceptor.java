@@ -1,29 +1,5 @@
 package org.adempiere.ad.modelvalidator;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
@@ -42,6 +16,9 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.ModelChanges;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -49,8 +26,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidator;
 import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
+
+import de.metas.logging.LogManager;
 
 /**
  * Wrapping class which introspect an object, identifies it's pointcuts (ModelChange, DocValidate etc) and maps them to {@link ModelValidator} interface.
@@ -298,7 +279,7 @@ import com.google.common.base.Throwables;
 
 	private void loadPointcut(ModelChange annModelChange, Method method)
 	{
-		final Pointcut pointcut = new Pointcut(PointcutType.ModelChange, method, annModelChange.timings());
+		final Pointcut pointcut = new Pointcut(PointcutType.ModelChange, method, annModelChange.timings(), annModelChange.afterCommit());
 		pointcut.setChangedColumns(annModelChange.ifColumnsChanged());
 		pointcut.setIgnoredColumns(annModelChange.ignoreColumnsChanged());
 		pointcut.setOnlyIfUIAction(annModelChange.ifUIAction());
@@ -307,7 +288,7 @@ import com.google.common.base.Throwables;
 
 	private void loadPointcut(DocValidate annDocValidate, Method method)
 	{
-		final Pointcut pointcut = new Pointcut(PointcutType.DocValidate, method, annDocValidate.timings());
+		final Pointcut pointcut = new Pointcut(PointcutType.DocValidate, method, annDocValidate.timings(), annDocValidate.afterCommit());
 		initPointcutAndAddToMap(pointcut);
 	}
 
@@ -504,6 +485,46 @@ import com.google.common.base.Throwables;
 			}
 		}
 
+		//
+		// Execute the method now
+		if (!pointcut.isAfterCommit())
+		{
+			executeNow(po, pointcut, timing);
+		}
+		//
+		// ... or schedule it to be executed after commit
+		else
+		{
+			logger.debug("Scheduling to be executed after commit: {}", pointcut);
+			final String trxName = InterfaceWrapperHelper.getTrxName(po);
+			Services.get(ITrxManager.class)
+					.getTrxListenerManagerOrAutoCommit(trxName)
+					.registerListener(new TrxListenerAdapter()
+					{
+						@Override
+						public void afterCommit(final ITrx trx)
+						{
+							deactivate(); // make sure it won't be executed twice
+							InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited); // make sure we use the RIGHT transaction!
+							
+							executeNow(po, pointcut, timing);
+						}
+						
+						@Override
+						public String toString()
+						{
+							return MoreObjects.toStringHelper(this)
+									.add("pointcut", pointcut)
+									.add("po", po)
+									.add("timing", timing)
+									.toString();
+						}
+					});
+		}
+	}
+	
+	private final void executeNow(final Object po, final IPointcut pointcut, final int timing)
+	{
 		final Object model = InterfaceWrapperHelper.create(po, pointcut.getModelClass());
 		try
 		{
@@ -515,10 +536,8 @@ import com.google.common.base.Throwables;
 				method.setAccessible(true);
 			}
 
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("Executing: " + pointcut);
-			}
+			logger.debug("Executing: {}", pointcut);
+			
 			if (pointcut.isMethodRequiresTiming())
 			{
 				final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
@@ -529,24 +548,10 @@ import com.google.common.base.Throwables;
 				method.invoke(annotatedObject, model);
 			}
 		}
-		catch (IllegalArgumentException e)
+		catch (Exception e)
 		{
-			throw new AdempiereException(e);
-		}
-		catch (IllegalAccessException e)
-		{
-			throw new AdempiereException(e);
-		}
-		catch (InvocationTargetException e)
-		{
-			final Throwable cause = e.getCause();
 			// 03444 if the pointcut method threw an adempiere exception, just forward it
-			if (cause instanceof AdempiereException)
-			{
-				throw (AdempiereException)cause;
-			}
-			// 03444 end
-			throw new AdempiereException(cause);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 

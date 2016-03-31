@@ -55,4 +55,11 @@ public @interface DocValidate
 	 * At least one event shall be specified.
 	 */
 	int[] timings() default {};
+	
+	/**
+	 * <code>true</code> if this method shall be executed after transaction commit.
+	 * 
+	 * WARNING: any failure will be just logged and will not prevent execution.
+	 */
+	boolean afterCommit() default false;
 }

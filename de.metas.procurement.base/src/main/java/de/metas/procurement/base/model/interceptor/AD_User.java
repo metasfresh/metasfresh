@@ -48,8 +48,10 @@ public class AD_User
 			I_AD_User.COLUMNNAME_EMail,
 			I_AD_User.COLUMNNAME_IsMFProcurementUser,
 			I_AD_User.COLUMNNAME_Password,
-			I_AD_User.COLUMNNAME_IsActive })
-	public void pushWithUI(final I_AD_User contact)
+			I_AD_User.COLUMNNAME_IsActive }
+			//
+			, afterCommit = true)
+	public void pushToWebUI(final I_AD_User contact)
 	{
 		Services.get(IWebuiPush.class).pushBPartnerForContact(contact);
 	}

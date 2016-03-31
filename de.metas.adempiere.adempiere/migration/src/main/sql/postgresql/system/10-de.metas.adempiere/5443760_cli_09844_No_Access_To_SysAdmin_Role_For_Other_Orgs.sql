@@ -1,1 +1,0 @@
-DELETE FROM AD_Role_OrgAccess WHERE AD_Role_ID=0 AND AD_Org_ID<>0;

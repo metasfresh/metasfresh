@@ -35,6 +35,9 @@ import java.util.Set;
 
 	Class<?> getModelClass();
 
+	/** @return true if the actual pointcut shall be executed after transaction commit */
+	boolean isAfterCommit();
+
 	boolean isMethodRequiresTiming();
 
 	/**
@@ -57,5 +60,4 @@ import java.util.Set;
 	Set<String> getColumnsToCheckForChanges();
 
 	boolean isOnlyIfUIAction();
-
 }

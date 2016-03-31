@@ -21,6 +21,18 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.11.11 (Upcoming Release)  
+
+## Features
+ - Report Deckungsbeitrag Kurzversion take out previous year
+
+## Fixes
+ - 09931 Bootify metasfresh (100627676679)
+    * fixing another problem with the JasperClassLoader
+    * fixing a big problem with the swing client starter scripts, when running with java-7
+	
+## Instructions
+
 
 # metasfresh 4.11.10 (Upcoming Release)  
 
@@ -35,9 +47,6 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
- - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
- - 09915 procurement conditions jasper process (109344045046)
-    * fix related to the contract start and end dates
  - usability fix in VNumber: first key press was lost
  - 09945 Pricelist for french customer - excel export not in customer language (107056752126)
  - 09944 Performance: Inout Reactivate-Complete taking too long (107539809839)
@@ -55,7 +64,6 @@ The actual release notes
  - 09925 Create Balance Sheet Jasper (107146104064)
  
 ## Fixes
- - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
  - 09939 Inconsistent ASI in InOutLine (109676742143)
  - 09922 null in tageslot sscc etikett (100681187457)
  - 09923 sepa export npe (106359694025)

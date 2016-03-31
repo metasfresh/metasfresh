@@ -39,8 +39,10 @@ public class C_BPartner
 	{
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Name, I_C_BPartner.COLUMNNAME_AD_Language, I_C_BPartner.COLUMNNAME_IsVendor })
-	public void pushWithUI(final I_C_BPartner bpartner)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE //
+	, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Name, I_C_BPartner.COLUMNNAME_AD_Language, I_C_BPartner.COLUMNNAME_IsVendor } //
+	, afterCommit = true)
+	public void pushToWebUI(final I_C_BPartner bpartner)
 	{
 		Services.get(IWebuiPush.class).pushBPartnerWithoutContracts(bpartner);
 	}

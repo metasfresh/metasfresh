@@ -39,6 +39,7 @@ import com.google.common.primitives.Ints;
 	private final PointcutType type;
 	private final Method method;
 	private final Set<Integer> timings;
+	private final boolean afterCommit;
 	private String tableName;
 	private Class<?> modelClass;
 	private Class<?> methodTimingParameterType;
@@ -48,12 +49,13 @@ import com.google.common.primitives.Ints;
 	private volatile Set<String> columnsToCheckForChanges = null;
 	private boolean onlyIfUIAction = false;
 
-	public Pointcut(final PointcutType type, final Method method, final int[] timings)
+	public Pointcut(final PointcutType type, final Method method, final int[] timings, final boolean afterCommit)
 	{
 		super();
 		this.type = type;
 		this.method = method;
 		this.timings = ImmutableSet.copyOf(Ints.asList(timings));
+		this.afterCommit = afterCommit;
 
 		//
 		// Validate timings
@@ -92,6 +94,7 @@ import com.google.common.primitives.Ints;
 				+ ", modelClass=" + modelClass
 				+ ", method=" + method
 				+ ", timings=" + timings
+				+ ", afterCommit=" + afterCommit
 				+ ", onColumnChanged=" + changedColumns
 				+ ", ignoredColumns=" + ignoredColumns
 				+ ", methodTimingParameterType=" + methodTimingParameterType
@@ -211,6 +214,12 @@ import com.google.common.primitives.Ints;
 	public Set<Integer> getTimings()
 	{
 		return timings;
+	}
+
+	@Override
+	public boolean isAfterCommit()
+	{
+		return afterCommit;
 	}
 
 	public void setChangedColumns(String[] changedColumns)
