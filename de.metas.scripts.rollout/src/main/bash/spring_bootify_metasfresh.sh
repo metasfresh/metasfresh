@@ -86,13 +86,6 @@ main()
 	rm -v /etc/init.d/metasfresh_server
 	ln -vs /opt/metasfresh/metasfresh_server.jar /etc/init.d/metasfresh_server
 	
-	trace main "Creating/Extending /etc/sudoers.d/metasfresh to allow ${ROLLOUT_USER} to start and stop the metasfresh service"
-	echo "" >> /etc/sudoers.d/metasfresh
-	echo "${ROLLOUT_USER} ALL=(root)NOPASSWD: /usr/sbin/service metasfresh_server start" >> /etc/sudoers.d/metasfresh
-	echo "${ROLLOUT_USER} ALL=(root)NOPASSWD: /usr/sbin/service metasfresh_server stop" >> /etc/sudoers.d/metasfresh
-	echo "${ROLLOUT_USER} ALL=(root)NOPASSWD: /usr/sbin/service metasfresh_server status" >> /etc/sudoers.d/metasfresh
-	echo "${ROLLOUT_USER} ALL=(root)NOPASSWD: /usr/sbin/service metasfresh_server restart" >> /etc/sudoers.d/metasfresh
-	chmod -v 440 /etc/sudoers.d/metasfresh
 	trace main "Done! Please run the script minor_remote.sh as user ${ROLLOUT_USER} to finish the update."
 	trace main END
 }
