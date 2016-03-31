@@ -35,6 +35,9 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
+ - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
+ - 09915 procurement conditions jasper process (109344045046)
+    * fix related to the contract start and end dates
  - usability fix in VNumber: first key press was lost
  - 09945 Pricelist for french customer - excel export not in customer language (107056752126)
  - 09944 Performance: Inout Reactivate-Complete taking too long (107539809839)
