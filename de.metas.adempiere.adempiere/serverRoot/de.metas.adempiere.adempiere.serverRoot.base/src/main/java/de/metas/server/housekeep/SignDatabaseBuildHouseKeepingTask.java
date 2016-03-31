@@ -5,8 +5,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ILoggable;
 import org.compiere.Adempiere;
+import org.compiere.db.CConnection;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -47,7 +49,12 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		final String lastBuildInfo = Adempiere.getImplementationVersion();
 		if (lastBuildInfo!= null && lastBuildInfo.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
 		{
-			logger.info("Not signing the database build with our version, because it makes no sense: {}", lastBuildInfo);
+			logger.warn("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
+			return;
+		}
+		if (CConnection.isServerEmbedded())
+		{
+			logger.warn("Not signing the database build with our version, because we run in embedded server mode");
 			return;
 		}
 		try
