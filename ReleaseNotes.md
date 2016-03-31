@@ -24,6 +24,7 @@ The actual release notes
 # metasfresh 4.11.11 (Upcoming Release)  
 
 ## Features
+ - Report Deckungsbeitrag Kurzversion take out previous year
 
 ## Fixes
  - 09931 Bootify metasfresh (100627676679)
