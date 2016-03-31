@@ -25,10 +25,6 @@ The actual release notes
 # metasfresh 4.11.10 (Upcoming Release)  
 
 ## Features
- - FRESH-47	Don't create oracle migration scripts
-    * removing another legacy piece of code
- - FRESH-37: 09955 excel Report Procurement Statistics (105226320154)
-    * now using a high level excel templating engine (jxls)
  - 09961 MRP Product Info row selection persistency (109095061891)
     * when switching between days and filter settings, the selected row remains the same (if is is still there with the new filter settings)
  - when implementing a process, it is now possible to specifiy which record shall be selected after the process is executed
