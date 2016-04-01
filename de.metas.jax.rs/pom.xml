@@ -15,11 +15,6 @@
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
-	<!-- 
-	   	Note about the locked SNAPSHOT dependencies: 
-	   	3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need. 
-		Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions
-	-->
 	<dependencies>
 		<!-- even without using the http transport we do need the servlet API!-->
 		<dependency>
@@ -34,20 +29,20 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-core</artifactId>
-			<version>3.1.6-20160315.073520-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-jms</artifactId>
-			<version>3.1.6-20160315.074001-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<!-- needed for jmx -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-management</artifactId>
-			<version>3.1.6-20160317.073951-32</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<!-- not needed since we currently only communicate over jms
@@ -68,19 +63,19 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>3.1.6-20160315.074410-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>3.1.6-20160315.074957-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-rs-extension-providers</artifactId>
-			<version>3.1.6-20160315.074503-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
 
 		<dependency>
@@ -176,18 +171,19 @@
 			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement 
 				sections of those poms. Those sections define the versions of various third 
 				party deps that CXF used to build with and test with and we would like to 
-				make sure the same versions are used for the samples -->
+				make sure the same versions are used for the samples 
+			-->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-parent</artifactId>
-				<version>3.1.6-SNAPSHOT</version>
+				<version>${metasfresh.cxf.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf</artifactId>
-				<version>3.1.6-SNAPSHOT</version>
+				<version>${metasfresh.cxf.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
