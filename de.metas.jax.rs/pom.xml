@@ -25,6 +25,10 @@
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>javax.transaction-api</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -44,14 +48,14 @@
 			<artifactId>cxf-rt-management</artifactId>
 			<version>${metasfresh.cxf.version}</version>
 		</dependency>
-
-		<!-- not needed since we currently only communicate over jms
+		
+		<!-- needed, even if we currently communicate with JMS only  -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>3.1.6-20160315.074053-30</version>
+			<version>${metasfresh.cxf.version}</version>
 		</dependency>
-
+		<!-- not needed since we currently only communicate over jms 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http-jetty</artifactId>

@@ -31,6 +31,8 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  */
 /**
  * This is implemented in the procurementUI (agent) and called from metasfresh (server).
+ * <p>
+ * Note that currently we don't have to use the Consumes and Produces annotations, because we specify those types in the client.
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
