@@ -71,17 +71,14 @@ main()
 	
 	trace main "Making sure that the main jar shall only be accessible for its owner"
 	chmod 500 ${METASFRESH_HOME}/metasfresh_server.jar
-	
-	trace main "Making sure that everything so far is owned by ${ROLLOUT_USER}"
-	chown -Rv ${ROLLOUT_USER}:${ROLLOUT_USER} ${METASFRESH_HOME}
 
 	trace main "Copying the file with our runtime parameters"
 	cp -v ${ROLLOUT_DIR}/misc/metasfresh_server.conf ${METASFRESH_HOME}
-	
-	trace main "Making sure that our runtime parameters file belongs to root"
 	chmod -v 400 ${METASFRESH_HOME}/metasfresh_server.conf
-	chown -v root:root ${METASFRESH_HOME}/metasfresh_server.conf
-	
+
+	trace main "Making sure that everything so far is owned by ${ROLLOUT_USER}"
+	chown -Rv ${ROLLOUT_USER}:${ROLLOUT_USER} ${METASFRESH_HOME}
+
 	trace main "Linking metasfresh_server.jar as service"
 	rm -v /etc/init.d/metasfresh_server
 	ln -vs /opt/metasfresh/metasfresh_server.jar /etc/init.d/metasfresh_server
