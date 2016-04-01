@@ -23,12 +23,6 @@ UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Deckungsbeitrag Kurzver
 UPDATE AD_Menu_Trl SET IsTranslated='N' WHERE AD_Menu_ID=540676
 ;
 
-
--- 31.03.2016 14:55
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540677,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-03-31 14:55:16','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','N','N','N','@PREFIX@de/metas/reports/deckungsbeitrag_kurzversion/report.jasper',0,'Deckungsbeitrag Kurzversion','N','Y',0,0,'Java',TO_TIMESTAMP('2016-03-31 14:55:16','YYYY-MM-DD HH24:MI:SS'),100,'10000000')
-;
-
 -- 31.03.2016 14:55
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540678,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-03-31 14:55:30','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','N','N','N','@PREFIX@de/metas/reports/deckungsbeitrag_kurzversion/report.jasper',0,'Deckungsbeitrag Kurzversion','N','Y',0,0,'Java',TO_TIMESTAMP('2016-03-31 14:55:30','YYYY-MM-DD HH24:MI:SS'),100,'Deckungsbeitrag Kurzversion (Jasper)')
@@ -64,10 +58,6 @@ UPDATE AD_Process_Para SET Description='Stichtag',Updated=TO_TIMESTAMP('2016-03-
 UPDATE AD_Process_Para_Trl SET IsTranslated='N' WHERE AD_Process_Para_ID=540932
 ;
 
--- 31.03.2016 14:58
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('R',0,540707,0,540678,TO_TIMESTAMP('2016-03-31 14:58:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Deckungsbeitrag Kurzversion (Jasper)','Y','N','N','N','Deckungsbeitrag Kurzversion',TO_TIMESTAMP('2016-03-31 14:58:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
 -- 31.03.2016 14:58
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
