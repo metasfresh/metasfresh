@@ -21,8 +21,16 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.x.x (Upcoming Release)  
 
-# metasfresh 4.11.10 (Upcoming Release)  
+## Features
+
+## Fixes
+	
+## Instructions
+
+
+# metasfresh 4.11.10
 
 ## Features
  - FRESH-47	Don't create oracle migration scripts
@@ -49,8 +57,11 @@ The actual release notes
  - 09944 Performance: Inout Reactivate-Complete taking too long (107539809839)
  - 09502 quality inspection (100925494419)
     * the final settlement invoice didn't have the correct witholding amount
-	
+
 ## Instructions
+ - When updateing an existing instalation, the script minor_remote.sh will stop. 
+   Please read the instructions to update your instalation to the new JBoss free version.
+
 
 # metasfresh 4.10.9 
 
@@ -69,8 +80,6 @@ The actual release notes
  - 09933 InvoiceCandidates not created - Deadlock
     * now we generally try processing a work package on deadlock.
  - Fixing NPE when invoicing failed *and* the user in charge had no C_BPartner
- 
-## Instructions
 
 # metasfresh 4.9.8b
 
