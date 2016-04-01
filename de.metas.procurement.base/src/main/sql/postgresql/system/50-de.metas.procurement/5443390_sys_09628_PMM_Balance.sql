@@ -311,10 +311,6 @@ CREATE SEQUENCE PMM_Balance_seq
   MAXVALUE 2147483647
   START 1000000
   CACHE 1;
-ALTER TABLE ad_boilerplate_seq
-  OWNER TO metasfresh;
-GRANT ALL ON TABLE ad_boilerplate_seq TO metasfresh;
-GRANT ALL ON TABLE ad_boilerplate_seq TO zabbix;
 
 
 -- 24.03.2016 17:40
