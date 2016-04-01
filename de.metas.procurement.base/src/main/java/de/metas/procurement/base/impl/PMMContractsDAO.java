@@ -33,12 +33,12 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -98,12 +98,12 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	{
 		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
 		Check.assumeNotNull(date, "date not null");
-		
+
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> dataEntries = InterfaceWrapperHelper.createList(
 				flatrateDAO.retrieveDataEntries(flatrateTerm, date, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),           // onlyNonSim = true
 				I_C_Flatrate_DataEntry.class);
-		
+
 		for (final I_C_Flatrate_DataEntry dataEntry : dataEntries)
 		{
 			if (dataEntry.getM_Product_DataEntry_ID() == flatrateTerm.getM_Product_ID())
@@ -111,7 +111,6 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				return dataEntry;
 			}
 		}
-
 		return null;
 	}
 }

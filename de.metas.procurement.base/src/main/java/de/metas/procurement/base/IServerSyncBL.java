@@ -7,6 +7,7 @@ import javax.ws.rs.core.Response;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.javaclasses.AD_JavaClass;
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
@@ -80,7 +81,8 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	public List<SyncProduct> getAllNotContractedProducts();
 
 	/**
-	 * Create {@link I_PMM_QtyReport_Event}s from the given <code>request</code>'s {@link SyncProductSupply} instances.
+	 * Create {@link I_PMM_QtyReport_Event}s from the given <code>request</code>'s {@link SyncProductSupply} instances.<br>
+	 * Don't update the pricing information, that is done one the fly, when a {@link I_PMM_PurchaseCandidate} is created or updated.
 	 * <p>
 	 * <b>Important:</b> Make sure that each record is saved.
 	 *

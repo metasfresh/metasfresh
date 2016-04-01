@@ -71,7 +71,7 @@ public final class PurchaseCandidate
 	{
 		return model.getC_BPartner_ID();
 	}
-	
+
 	public int getC_Flatrate_DataEntry_ID()
 	{
 		return model.getC_Flatrate_DataEntry_ID();
@@ -131,7 +131,7 @@ public final class PurchaseCandidate
 	{
 		return model.getQtyToOrder_TU();
 	}
-	
+
 	public boolean isZeroQty()
 	{
 		return getQtyToOrder().signum() == 0
@@ -162,6 +162,10 @@ public final class PurchaseCandidate
 				getC_Currency_ID());
 	}
 
+	/**
+	 * This method is actually used by the item aggregation key builder of {@link OrderLinesAggregator}.
+	 * @return
+	 */
 	public final Object getLineAggregationKey()
 	{
 		return Util.mkKey(getM_Product_ID(),
@@ -172,13 +176,13 @@ public final class PurchaseCandidate
 
 	/**
 	 * Creates and {@link I_PMM_PurchaseCandidate} to {@link I_C_OrderLine} line allocation using the whole candidate's QtyToOrder.
-	 * 
+	 *
 	 * @param orderLine
 	 */
 	/* package */void createAllocation(final I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
-		
+
 		final BigDecimal qtyToOrder = getQtyToOrder();
 		final BigDecimal qtyToOrderTU = getQtyToOrder_TU();
 

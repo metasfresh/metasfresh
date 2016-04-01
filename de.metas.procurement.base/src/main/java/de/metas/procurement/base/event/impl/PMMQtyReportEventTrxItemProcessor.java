@@ -22,9 +22,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPricingSystem;
-import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -63,7 +60,7 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
  */
 
 /**
- * Process {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.
+ * Processes {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
@@ -132,8 +129,8 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				//
 				// Pricing
 				updatePricing(event);
-				candidate.setM_PricingSystem_ID(Util.coalesceInt(event.getM_PricingSystem_ID(), MPricingSystem.M_PricingSystem_ID_None));
-				candidate.setM_PriceList_ID(Util.coalesceInt(event.getM_PriceList_ID(), MPriceList.M_PriceList_ID_None));
+				candidate.setM_PricingSystem_ID(event.getM_PricingSystem_ID());
+				candidate.setM_PriceList_ID(event.getM_PriceList_ID());
 				candidate.setC_Currency_ID(event.getC_Currency_ID());
 				if (event.getC_Flatrate_DataEntry_ID() > 0)
 				{
@@ -158,7 +155,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 			//
 			// Update PMM_Balance
 			pmmBalanceEventProcessor.addEvent(createPMMBalanceChangeEvent(event));
-			
+
 			//
 			// Mark the event as processed
 			markProcessed(event, candidate);
@@ -190,29 +187,25 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_C_UOM_ID + "@");
 		}
 
+		// Always get the pricing from masterdata.
+		// We need it to be there, e.g. to know if the price is incl VAT and which VAT category to use.
+		updatePriceFromPricingMasterdata(qtyReportEvent);
+
 		//
-		// Non-contract product: fetch price from pricing system
+		// contract product: override the price amount and currency from the contract, if one is set there
 		final String contractLine_uuid = qtyReportEvent.getContractLine_UUID();
-		if (Check.isEmpty(contractLine_uuid, true))
+		if (!Check.isEmpty(contractLine_uuid, true))
 		{
-			updatePriceFromPricingMasterdata(qtyReportEvent);
-		}
-		//
-		// Contracted product
-		else
-		{
-			if (!updatePriceFromContract(qtyReportEvent))
-			{
-				updatePriceFromPricingMasterdata(qtyReportEvent);
-			}
+			updatePriceFromContract(qtyReportEvent);
 		}
 	}
 
-	private boolean updatePriceFromContract(final I_PMM_QtyReport_Event qtyReportEvent)
+	private void updatePriceFromContract(final I_PMM_QtyReport_Event qtyReportEvent)
 	{
 		final I_C_Flatrate_Term flatrateTerm = qtyReportEvent.getC_Flatrate_Term();
 		if (flatrateTerm == null)
 		{
+			// we are called, because qtyReportEvent has a contractLine_uuid. So if there is no term then something is wrong
 			throw new AdempiereException("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
 		}
 
@@ -225,7 +218,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				|| dataEntryForProduct.getFlatrateAmtPerUOM() == null
 				|| dataEntryForProduct.getFlatrateAmtPerUOM().signum() <= 0)
 		{
-			return false;
+			return; // nothing to do
 		}
 
 		final BigDecimal price = uomConversionBL.convertPrice(
@@ -239,7 +232,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		qtyReportEvent.setC_Flatrate_DataEntry(dataEntryForProduct);
 		qtyReportEvent.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
 		qtyReportEvent.setPrice(price);
-		return true;
 	}
 
 	private void updatePriceFromPricingMasterdata(final I_PMM_QtyReport_Event qtyReportEvent)
@@ -310,19 +302,19 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 		countProcessed.incrementAndGet();
 	}
-	
+
 	private final void markError(final I_PMM_QtyReport_Event event, final Throwable ex)
 	{
 		final String errorMsg = ex.getLocalizedMessage();
-		
+
 		InterfaceWrapperHelper.refresh(event, true);
 		event.setIsError(true);
 		event.setErrorMsg(errorMsg);
 		event.setProcessed(false);
 		InterfaceWrapperHelper.save(event);
-		
+
 		getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
-		
+
 		countErrors.incrementAndGet();
 	}
 

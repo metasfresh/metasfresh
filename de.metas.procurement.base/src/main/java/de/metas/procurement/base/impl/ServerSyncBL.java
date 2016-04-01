@@ -99,15 +99,16 @@ public class ServerSyncBL implements IServerSyncBL
 	private void createQtyReportEvent(final SyncProductSupply syncProductSupply)
 	{
 		final String product_uuid = syncProductSupply.getProduct_uuid();
-		loadPMMProductAndProcess(product_uuid, new IEventProcessor()
-		{
-
-			@Override
-			public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
-			{
-				createQtyReportEvent(context, pmmProduct, syncProductSupply);
-			}
-		});
+		loadPMMProductAndProcess(
+				product_uuid,
+				new IEventProcessor()
+				{
+					@Override
+					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+					{
+						createQtyReportEvent(context, pmmProduct, syncProductSupply);
+					}
+				});
 	}
 
 	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
@@ -238,40 +239,6 @@ public class ServerSyncBL implements IServerSyncBL
 		}
 	}
 
-	private void loadPMMProductAndProcess(final String product_uuid, final IEventProcessor processor)
-	{
-		final int pmmProductId = SyncUUIDs.getPMM_Product_ID(product_uuid);
-		if (pmmProductId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for UUID=" + product_uuid);
-		}
-
-		final Properties tempCtx = Env.newTemporaryCtx();
-		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(tempCtx, pmmProductId, I_PMM_Product.class, ITrx.TRXNAME_None);
-		if (pmmProduct == null)
-		{
-			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for ID=" + pmmProductId + " (record not found)");
-		}
-
-		// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO further down,
-		// and also the new even record needs to have the PMM_Product's AD_Client_ID and AD_Org_ID
-		Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
-		Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
-
-		try (final IAutoCloseable contextRestorer = Env.switchContext(tempCtx))
-		{
-			Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
-					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(tempCtx);
-					processor.processEvent(context, pmmProduct);
-				}
-			});
-		}
-	}
-
 	public static interface IEventProcessor
 	{
 		void processEvent(IContextAware context, I_PMM_Product pmmProduct);
@@ -282,7 +249,6 @@ public class ServerSyncBL implements IServerSyncBL
 		final String product_uuid = syncWeeklySupply.getProduct_uuid();
 		loadPMMProductAndProcess(product_uuid, new IEventProcessor()
 		{
-
 			@Override
 			public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
 			{
@@ -326,4 +292,45 @@ public class ServerSyncBL implements IServerSyncBL
 		// Save
 		InterfaceWrapperHelper.save(event);
 	}
+
+	/**
+	 * Loads the {@link I_PMM_Product} for the given <code>product_uuid</code>, then creates and updates a temporary context and invokes the given <code>processor</code>.
+	 *
+	 * @param product_uuid
+	 * @param processor
+	 */
+	private void loadPMMProductAndProcess(final String product_uuid, final IEventProcessor processor)
+	{
+		final int pmmProductId = SyncUUIDs.getPMM_Product_ID(product_uuid);
+		if (pmmProductId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for UUID=" + product_uuid);
+		}
+
+		final Properties tempCtx = Env.newTemporaryCtx();
+		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(tempCtx, pmmProductId, I_PMM_Product.class, ITrx.TRXNAME_None);
+		if (pmmProduct == null)
+		{
+			throw new AdempiereException("@NotFound@ @PMM_Product_ID@ for ID=" + pmmProductId + " (record not found)");
+		}
+
+		// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO further down,
+		// and also the new even record needs to have the PMM_Product's AD_Client_ID and AD_Org_ID
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
+
+		try (final IAutoCloseable contextRestorer = Env.switchContext(tempCtx))
+		{
+			Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+			{
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(tempCtx);
+					processor.processEvent(context, pmmProduct);
+				}
+			});
+		}
+	}
+
 }

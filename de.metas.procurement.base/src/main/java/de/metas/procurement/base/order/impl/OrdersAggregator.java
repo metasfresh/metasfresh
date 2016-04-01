@@ -2,7 +2,6 @@ package de.metas.procurement.base.order.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
@@ -39,7 +38,7 @@ public class OrdersAggregator extends MapReduceAggregator<OrderHeaderAggregation
 	}
 
 	private final IOrdersCollector collector;
-	
+
 	private OrdersAggregator(final IOrdersCollector collector)
 	{
 		super();
@@ -56,9 +55,7 @@ public class OrdersAggregator extends MapReduceAggregator<OrderHeaderAggregation
 			@Override
 			public boolean isSame(final PurchaseCandidate item1, final PurchaseCandidate item2)
 			{
-				final String key1 = buildKey(item1);
-				final String key2 = buildKey(item2);
-				return Check.equals(key1, key2);
+				throw new UnsupportedOperationException(); // shall not be called
 			}
 
 			@Override

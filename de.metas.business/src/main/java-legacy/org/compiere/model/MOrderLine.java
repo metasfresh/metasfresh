@@ -20,8 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -34,17 +32,19 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -58,10 +58,10 @@ import de.metas.tax.api.ITaxBL;
 			ol.save();
 
  *	</code>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MOrderLine.java,v 1.6 2006/10/02 05:18:39 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *         <ul>
  *         <li>BF [ 2588043 ] Insufficient message ProductNotOnPriceList
@@ -73,7 +73,7 @@ import de.metas.tax.api.ITaxBL;
 public class MOrderLine extends X_C_OrderLine
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7305265800857547603L;
 
@@ -147,7 +147,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_OrderLine_ID order line to load
 	 * @param trxName trx name
@@ -200,7 +200,7 @@ public class MOrderLine extends X_C_OrderLine
 	 * <li>ol.setPriceActual(wbl.getPrice());
 	 * <li>ol.setTax();
 	 * <li>ol.save();
-	 * 
+	 *
 	 * @param order parent order
 	 */
 	public MOrderLine(MOrder order)
@@ -214,7 +214,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -242,7 +242,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Set Defaults from Order. Does not set Parent !!
-	 * 
+	 *
 	 * @param order order
 	 */
 	public void setOrder(MOrder order)
@@ -260,9 +260,9 @@ public class MOrderLine extends X_C_OrderLine
 		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 		oline.setAD_User_ID(AD_User_ID);
 		// metas: end
-		
+
 		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
-		
+
 		setM_Warehouse_ID(order.getM_Warehouse_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDatePromised(order.getDatePromised());
@@ -281,7 +281,7 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final I_C_Order order = InterfaceWrapperHelper.create(orderPO, de.metas.adempiere.model.I_C_Order.class);
-		
+
 		m_precision = orderBL.getPrecision(order);
 
 		m_M_PriceList_ID = orderBL.retrievePriceListId(order);
@@ -339,7 +339,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Set Price for Product and PriceList
-	 * 
+	 *
 	 * @param M_PriceList_ID price list
 	 */
 	public void setPrice(int M_PriceList_ID)
@@ -533,7 +533,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			return m_precision;
 		}
-		
+
 		//
 		if (getC_Currency_ID() == 0)
 		{
@@ -550,7 +550,7 @@ public class MOrderLine extends X_C_OrderLine
 				return m_precision;
 			}
 		}
-		
+
 		//
 		// Fallback
 		// FIXME: drop this, i guess is not used AT ALL
@@ -763,7 +763,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**************************************************************************
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -977,9 +977,12 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			// Set Price if Actual = 0
 			if (m_productPrice == null
-					&& Env.ZERO.compareTo(getPriceActual()) == 0
-					&& Env.ZERO.compareTo(getPriceList()) == 0)
+					&& getPriceActual().signum() == 0
+					&& getPriceList().signum() == 0)
+			{
 				setPrice();
+			}
+
 			// Check if on Price list
 			if (m_productPrice == null)
 				getProductPricing(m_M_PriceList_ID, get_ValueAsInt(de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_PriceList_Version_ID));
@@ -1085,7 +1088,7 @@ public class MOrderLine extends X_C_OrderLine
 		// commented out because we are not using this anymore
 		// setLineNetAmt(); // extended Amount with or without tax
 
-		// metas 
+		// metas
 		// setDiscount();
 		// metas ende
 
@@ -1177,10 +1180,10 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Recalculate order tax
-	 * 
+	 *
 	 * @param oldTax true if the old C_Tax_ID should be used
 	 * @return true if success, false otherwise
-	 * 
+	 *
 	 * @author teo_sarca [ 1583825 ]
 	 */
 	private boolean updateOrderTax(final boolean oldTax)
@@ -1261,7 +1264,7 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * See the comment in {@link #updateHeaderTax()}.
-	 * 
+	 *
 	 * @param orderId
 	 */
 	private static void updateHeader0(final int orderId)
