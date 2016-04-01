@@ -52,8 +52,8 @@ main()
 	trace main "Moving the old metasfresh directory out of the way"
 	mv -v ${METASFRESH_HOME} ${METASFRESH_HOME}_old
 	
-	trace main "Creating the new metasfresh directory"
-	mkdir -v ${METASFRESH_HOME}
+	trace main "Creating the new metasfresh home directory and its pid file directory"
+	mkdir -vp ${METASFRESH_HOME}/metasfresh_server
 	
 	trace main "Salvaging the existing metasfresh.properties file from the old directory"
 	cp -v ${METASFRESH_HOME}_old/metasfresh.properties ${METASFRESH_HOME}
