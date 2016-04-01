@@ -857,7 +857,7 @@
 				<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="344b0bb0-0840-4fa2-b03d-7fb1465c766e" x="0" y="0" width="198" height="14"/>
+				<reportElement uuid="344b0bb0-0840-4fa2-b03d-7fb1465c766e" x="0" y="0" width="305" height="14"/>
 				<textElement markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
