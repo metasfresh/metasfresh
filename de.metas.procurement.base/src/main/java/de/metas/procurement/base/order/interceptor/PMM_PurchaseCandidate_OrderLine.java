@@ -94,6 +94,7 @@ public class PMM_PurchaseCandidate_OrderLine
 		return PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(candidate.getC_BPartner_ID())
 				.setM_Product_ID(candidate.getM_Product_ID())
+				.setM_AttributeSetInstance_ID(candidate.getM_AttributeSetInstance_ID())
 				.setM_HU_PI_Item_Product_ID(candidate.getM_HU_PI_Item_Product_ID())
 				.setC_Flatrate_DataEntry_ID(candidate.getC_Flatrate_DataEntry_ID())
 				//

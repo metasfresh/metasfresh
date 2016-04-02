@@ -17,11 +17,12 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
  * #%L
@@ -52,7 +53,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	{
 		return retrieveAllRunningContractsOnDateQuery(date)
 				.create()
-				.list();
+				.list(I_C_Flatrate_Term.class);
 	}
 
 	@Override
@@ -61,24 +62,35 @@ public class PMMContractsDAO implements IPMMContractsDAO
 		return retrieveAllRunningContractsOnDateQuery(date)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bpartnerId)
 				.create()
-				.list();
+				.list(I_C_Flatrate_Term.class);
 	}
 
-	private IQueryBuilder<I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
+	private IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
 				//
 				// Collect linked C_Flatrate_Terms
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
-				// .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, time) also add terms that start in future, so we already have them on the frontend-UI
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				//
+				// Running contract restriction
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend)
+				//
+				;
+
+		// Date restriction
+		if (date != null)
+		{
+			// queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date) also add terms that start in future, so we already have them on the frontend-UI
+			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date);
+		}
+
+		return queryBuilder;
 	}
 
 	@Override
@@ -94,14 +106,25 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	public boolean hasRunningContracts(final I_PMM_Product pmmProduct)
+	{
+		Check.assumeNotNull(pmmProduct, "pmmProduct not null");
+		final Date date = null; // any date
+		return retrieveAllRunningContractsOnDateQuery(date)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID, pmmProduct.getPMM_Product_ID())
+				.create()
+				.match();
+	}
+
+	@Override
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
 	{
 		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
 		Check.assumeNotNull(date, "date not null");
 
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> dataEntries = InterfaceWrapperHelper.createList(
-				flatrateDAO.retrieveDataEntries(flatrateTerm, date, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),           // onlyNonSim = true
+				flatrateDAO.retrieveDataEntries(flatrateTerm, date, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),            // onlyNonSim = true
 				I_C_Flatrate_DataEntry.class);
 
 		for (final I_C_Flatrate_DataEntry dataEntry : dataEntries)

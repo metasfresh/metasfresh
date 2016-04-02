@@ -313,6 +313,35 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_Last_QtyReport_Event_ID = "Last_QtyReport_Event_ID";
 
 	/**
+	 * Set Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeSetInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance>(I_PMM_PurchaseCandidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: Search

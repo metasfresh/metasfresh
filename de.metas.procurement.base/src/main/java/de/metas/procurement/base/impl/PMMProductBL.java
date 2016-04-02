@@ -4,17 +4,14 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /*
  * #%L
@@ -43,6 +40,8 @@ public class PMMProductBL implements IPMMProductBL
 	@Override
 	public void update(final I_PMM_Product pmmProduct)
 	{
+		//
+		// Update PMM_Product from M_HU_PI_Item_Product 
 		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Product();
 		if (huPiItemProd != null)
 		{
@@ -53,7 +52,6 @@ public class PMMProductBL implements IPMMProductBL
 
 			final I_M_Product product = huPiItemProd.getM_Product();
 			pmmProduct.setM_Product(product);
-			pmmProduct.setProductName(product.getName());
 		}
 		else
 		{
@@ -61,26 +59,14 @@ public class PMMProductBL implements IPMMProductBL
 			pmmProduct.setValidTo(null);
 			pmmProduct.setC_BPartner(null);
 			pmmProduct.setPackDescription(null);
-			pmmProduct.setProductName(null);
 		}
-
+		
 		//
-		// Update from C_BPartner_Product
-		if (pmmProduct.getC_BPartner_ID() > 0 && pmmProduct.getM_Product_ID() > 0)
-		{
-			final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-
-			final I_C_BPartner bpartner = pmmProduct.getC_BPartner();
-			final I_M_Product product = pmmProduct.getM_Product();
-			final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.create(
-					bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product),
-					I_C_BPartner_Product.class);
-			if (bpartnerProduct != null && !Check.isEmpty(bpartnerProduct.getProductName(), true))
-			{
-				pmmProduct.setProductName(bpartnerProduct.getProductName());
-			}
-		}
-
+		// Build and set the full product name
+		final String productName = PMMProductNameBuilder.newBuilder()
+				.setPMM_Product(pmmProduct)
+				.build();
+		pmmProduct.setProductName(productName);
 	}
 
 	@Override

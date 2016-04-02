@@ -7,10 +7,12 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMWeekDAO;
+import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Week;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 
@@ -51,9 +53,17 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 	public void process(final I_PMM_WeekReport_Event event)
 	{
 		//
-		// Get aggregate
+		// Dimension
+		final PMMBalanceSegment segment = PMMBalanceSegment.builder()
+				.setC_BPartner_ID(event.getC_BPartner_ID())
+				.setM_Product_ID(event.getM_Product_ID())
+				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
+				.build();
 		final Timestamp weekDate = TimeUtil.trunc(event.getWeekDate(), TimeUtil.TRUNC_WEEK);
-		I_PMM_Week aggregate = purchaseCandidateDAO.retrieveFor(event.getC_BPartner_ID(), event.getM_Product_ID(), event.getM_HU_PI_Item_Product_ID(), weekDate);
+		
+		//
+		// Get aggregate
+		I_PMM_Week aggregate = purchaseCandidateDAO.retrieveFor(segment, weekDate);
 
 		//
 		// If candidate is currently locked, skip processing this event for now
@@ -64,6 +74,8 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 			return;
 		}
 
+		//
+		// Skip this event if the aggregate was processed by a future event
 		if (aggregate != null && isProcessedByFutureEvent(aggregate, event))
 		{
 			final String errorMsg = "Skipped because candidate " + aggregate + " was already processed by future event: " + aggregate.getLast_WeekReport_Event_ID();
@@ -75,13 +87,20 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		// If no candidate found, create a new candidate
 		if (aggregate == null)
 		{
+			// Segment
 			aggregate = InterfaceWrapperHelper.newInstance(I_PMM_Week.class);
-			aggregate.setC_BPartner_ID(event.getC_BPartner_ID());
-			aggregate.setM_Product_ID(event.getM_Product_ID());
-			aggregate.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
+			aggregate.setC_BPartner_ID(segment.getC_BPartner_ID());
+			aggregate.setM_Product_ID(segment.getM_Product_ID());
+			if (segment.getM_AttributeSetInstance_ID() > 0)
+			{
+				aggregate.setM_AttributeSetInstance_ID(segment.getM_AttributeSetInstance_ID());
+			}
+			
+			// Time dimension
 			aggregate.setWeekDate(weekDate);
 
-			aggregate.setAD_Org_ID(event.getAD_Org_ID());
+			// Others
+			aggregate.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
 		}
 
 		//

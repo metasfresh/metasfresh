@@ -1,6 +1,7 @@
 package de.metas.procurement.base.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,19 +70,24 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
-		return SyncObjectsFactory.newFactory().createAllSyncBPartners();
+		List<SyncBPartner> syncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
+		logger.debug("Returning: {}", syncBPartners);
+		return syncBPartners;
 	}
 
 	@Override
 	public List<SyncProduct> getAllNotContractedProducts()
 	{
-		return SyncObjectsFactory.newFactory().createAllNotContractedSyncProducts();
+		List<SyncProduct> syncProducts = SyncObjectsFactory.newFactory().createAllNotContractedSyncProducts();
+		logger.debug("Returning: {}", syncProducts);
+		return syncProducts;
 	}
 
 	@Override
 	public void reportProductSupplies(final SyncProductSuppliesRequest request)
 	{
-
+		logger.debug("Got request: {}", request);
+		
 		final List<SyncProductSupply> syncProductSupplies = request.getProductSupplies();
 		for (final SyncProductSupply syncProductSupply : syncProductSupplies)
 		{
@@ -113,6 +119,8 @@ public class ServerSyncBL implements IServerSyncBL
 
 	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
 	{
+		logger.debug("Creating QtyReport event from {} ({})", syncProductSupply, pmmProduct);
+		
 		final List<String> errors = new ArrayList<>();
 
 		final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, context);
@@ -144,9 +152,9 @@ public class ServerSyncBL implements IServerSyncBL
 				qtyReportEvent.setC_Flatrate_Term_ID(flatrateTermId);
 			}
 
-			// QtyPromised(TU)
-			final BigDecimal qtyPromisedTU = syncProductSupply.getQty();
-			qtyReportEvent.setQtyPromised_TU(qtyPromisedTU);
+			// QtyPromised(CU)
+			final BigDecimal qtyPromised = syncProductSupply.getQty();
+			qtyReportEvent.setQtyPromised(qtyPromised);
 
 			// DatePromised
 			final Timestamp datePromised = TimeUtil.asTimestamp(syncProductSupply.getDay());
@@ -172,10 +180,16 @@ public class ServerSyncBL implements IServerSyncBL
 				final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
 				qtyReportEvent.setErrorMsg(msgBL.translate(ctx, errorMsg));
 				qtyReportEvent.setIsError(true);
+				InterfaceWrapperHelper.save(qtyReportEvent);
+				
+				logger.debug("Got following errors while importing {} to {}:\n{}", syncProductSupply, qtyReportEvent, errorMsg);
 			}
-
-			// Save
-			InterfaceWrapperHelper.save(qtyReportEvent);
+			else
+			{
+				InterfaceWrapperHelper.save(qtyReportEvent);
+				
+				logger.debug("Imported {} to {}:\n{}", syncProductSupply, qtyReportEvent);
+			}
 		}
 	}
 
@@ -201,10 +215,16 @@ public class ServerSyncBL implements IServerSyncBL
 			uom = null;
 		}
 
-		// Product, UOM
+		// Product, UOM, PI Item Product
 		qtyReportEvent.setM_Product(product);
 		qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
 		qtyReportEvent.setC_UOM(uom);
+
+		// ASI
+		if (pmmProduct.getM_AttributeSetInstance_ID() > 0)
+			qtyReportEvent.setM_AttributeSetInstance_ID(pmmProduct.getM_AttributeSetInstance_ID());
+		else
+			qtyReportEvent.setM_AttributeSetInstance(null);
 
 		// M_Warehouse
 		final int warehouseId = pmmProduct.getM_Warehouse_ID();
@@ -214,12 +234,21 @@ public class ServerSyncBL implements IServerSyncBL
 		final int orgId = pmmProduct.getAD_Org_ID();
 		qtyReportEvent.setAD_Org_ID(orgId);
 
-		// QtyPromised
+		// QtyPromised_TU
 		if (huPIItemProduct != null)
 		{
-			final BigDecimal qtyPromisedTU = qtyReportEvent.getQtyPromised_TU();
-			final BigDecimal qtyPromised = qtyPromisedTU.multiply(huPIItemProduct.getQty());
-			qtyReportEvent.setQtyPromised(qtyPromised);
+			final BigDecimal qtyPromisedCU = qtyReportEvent.getQtyPromised();
+			final BigDecimal qtyCUsPerTU = huPIItemProduct.getQty();
+			final BigDecimal qtyPromisedTU;
+			if (qtyCUsPerTU.signum() == 0)
+			{
+				qtyPromisedTU = BigDecimal.ONE;
+			}
+			else
+			{
+				qtyPromisedTU = qtyPromisedCU.divide(qtyCUsPerTU, 0, RoundingMode.UP);
+			}
+			qtyReportEvent.setQtyPromised_TU(qtyPromisedTU);
 		}
 	}
 
@@ -259,6 +288,8 @@ public class ServerSyncBL implements IServerSyncBL
 
 	private void createWeekReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncWeeklySupply syncWeeklySupply)
 	{
+		logger.debug("Creating Week Report event from {} ({})", syncWeeklySupply, pmmProduct);
+		
 		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, context);
 
 		// BPartner
@@ -291,6 +322,8 @@ public class ServerSyncBL implements IServerSyncBL
 
 		// Save
 		InterfaceWrapperHelper.save(event);
+		
+		logger.debug("Imported {} to {}:\n{}", syncWeeklySupply, event);
 	}
 
 	/**

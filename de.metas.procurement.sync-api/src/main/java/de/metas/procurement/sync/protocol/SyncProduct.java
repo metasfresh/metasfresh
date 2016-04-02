@@ -30,8 +30,14 @@ public class SyncProduct extends AbstractSyncModel
 	private String name;
 	private String packingInfo;
 	private boolean shared = false;
-	
+
 	private Map<String, String> namesTrl = new HashMap<>();
+	
+	@Override
+	public String toString()
+	{
+		return "SyncProduct [name=" + name + ", packingInfo=" + packingInfo + ", shared=" + shared + ", namesTrl=" + namesTrl + "]";
+	}
 
 	public String getName()
 	{
@@ -62,12 +68,18 @@ public class SyncProduct extends AbstractSyncModel
 	{
 		this.shared = shared;
 	}
-	
+
+	/**
+	 * @param namesTrl adLanguage to translated product name map
+	 */
 	public void setNamesTrl(Map<String, String> namesTrl)
 	{
 		this.namesTrl = namesTrl;
 	}
-	
+
+	/**
+	 * @return namesTrl adLanguage to translated product name map
+	 */
 	public Map<String, String> getNamesTrl()
 	{
 		return namesTrl;

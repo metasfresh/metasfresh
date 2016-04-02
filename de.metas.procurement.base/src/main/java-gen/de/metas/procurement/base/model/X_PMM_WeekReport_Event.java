@@ -14,7 +14,7 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1155582969L;
+	private static final long serialVersionUID = 1765873147L;
 
     /** Standard Constructor */
     public X_PMM_WeekReport_Event (Properties ctx, int PMM_WeekReport_Event_ID, String trxName)
@@ -97,6 +97,43 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	}
 
 	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Ausprägung Merkmals-Satz.
+		@param M_AttributeSetInstance_ID 
+		Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Ausprägung Merkmals-Satz.
+		@return Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
@@ -162,6 +199,40 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PMM_Product_ID, de.metas.procurement.base.model.I_PMM_Product.class);
+	}
+
+	@Override
+	public void setPMM_Product(de.metas.procurement.base.model.I_PMM_Product PMM_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_PMM_Product_ID, de.metas.procurement.base.model.I_PMM_Product.class, PMM_Product);
+	}
+
+	/** Set Lieferprodukt.
+		@param PMM_Product_ID Lieferprodukt	  */
+	@Override
+	public void setPMM_Product_ID (int PMM_Product_ID)
+	{
+		if (PMM_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PMM_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PMM_Product_ID, Integer.valueOf(PMM_Product_ID));
+	}
+
+	/** Get Lieferprodukt.
+		@return Lieferprodukt	  */
+	@Override
+	public int getPMM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

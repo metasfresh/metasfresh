@@ -25,6 +25,12 @@ package de.metas.procurement.sync.protocol;
 public class SyncContractLine extends AbstractSyncModel
 {
 	private SyncProduct product;
+	
+	@Override
+	public String toString()
+	{
+		return "SyncContractLine [product=" + product + "]";
+	}
 
 	public SyncProduct getProduct()
 	{

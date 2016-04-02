@@ -9,7 +9,7 @@ begin
 	raise notice 'Snapshot current events';
 	drop table if exists TMP_PMM_Balance_Events;
 	create temporary table TMP_PMM_Balance_Events as select * from de_metas_procurement.PMM_Balance_Events_v;
-	create index on TMP_PMM_Balance_Events(ad_client_id, c_bpartner_id, m_product_id, m_hu_pi_item_product_id, C_Flatrate_DataEntry_ID, MonthDate);
+	create index on TMP_PMM_Balance_Events(ad_client_id, c_bpartner_id, m_product_id, M_AttributeSetInstance_ID, m_hu_pi_item_product_id, C_Flatrate_DataEntry_ID, MonthDate);
 
 	--
 	--
@@ -19,7 +19,8 @@ begin
 	select
 		e.C_BPartner_ID
 		, e.M_Product_ID
-		, e.M_HU_PI_Item_Product_ID
+		, e.M_AttributeSetInstance_ID
+		-- , e.M_HU_PI_Item_Product_ID
 		, e.C_Flatrate_DataEntry_ID
 		--
 		,  e.MonthDate
@@ -44,7 +45,8 @@ begin
 		e.AD_Client_ID
 		, e.C_BPartner_ID
 		, e.M_Product_ID
-		, e.M_HU_PI_Item_Product_ID
+		, e.M_AttributeSetInstance_ID
+		-- , e.M_HU_PI_Item_Product_ID
 		, e.C_Flatrate_DataEntry_ID
 		, e.MonthDate
 		, e.WeekDate
@@ -56,7 +58,8 @@ begin
 	(
 		c_bpartner_id
 		, m_product_id
-		, m_hu_pi_item_product_id
+		, M_AttributeSetInstance_ID
+		-- , m_hu_pi_item_product_id
 		, C_Flatrate_DataEntry_ID
 		--
 		, MonthDate
@@ -80,7 +83,8 @@ begin
 	select
 		e.C_BPartner_ID
 		, e.M_Product_ID
-		, e.M_HU_PI_Item_Product_ID
+		, e.M_AttributeSetInstance_ID
+		-- , e.M_HU_PI_Item_Product_ID
 		, e.C_Flatrate_DataEntry_ID
 		--
 		,  e.MonthDate
@@ -105,7 +109,8 @@ begin
 		e.AD_Client_ID
 		, e.C_BPartner_ID
 		, e.M_Product_ID
-		, e.M_HU_PI_Item_Product_ID
+		, e.M_AttributeSetInstance_ID
+		-- , e.M_HU_PI_Item_Product_ID
 		, e.C_Flatrate_DataEntry_ID
 		, e.MonthDate
 	;
@@ -119,7 +124,8 @@ begin
 	(
 		c_bpartner_id
 		, m_product_id
-		, m_hu_pi_item_product_id
+		, M_AttributeSetInstance_ID
+		-- , m_hu_pi_item_product_id
 		, C_Flatrate_DataEntry_ID
 		--
 		, MonthDate
@@ -143,7 +149,8 @@ begin
 	select
 		c_bpartner_id
 		, m_product_id
-		, m_hu_pi_item_product_id
+		, M_AttributeSetInstance_ID
+		-- , m_hu_pi_item_product_id
 		, C_Flatrate_DataEntry_ID
 		--
 		, monthdate

@@ -22,11 +22,12 @@ import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.process.Param;
 import de.metas.process.Process;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
  * #%L
@@ -49,6 +50,12 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+/**
+ * Process used to create procurement contracts
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class C_Flatrate_Term_Create_ProcurementContract
 		extends SvrProcess
@@ -70,8 +77,8 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	@Param(mandatory = true, parameterName = "Dates", parameterTo = true)
 	private Timestamp p_EndDate;
 
-	@Param(mandatory = true, parameterName = "M_Product_ID")
-	private I_M_Product p_M_Product;
+	@Param(mandatory = true, parameterName = "PMM_Product_ID")
+	private I_PMM_Product p_PMM_Product;
 
 	@Param(mandatory = true, parameterName = "C_UOM_ID")
 	private I_C_UOM p_C_UOM;
@@ -90,16 +97,21 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	{
 		// create the term
 		final boolean completeIt = false;
+		
+		final I_M_Product product = p_PMM_Product.getM_Product();
 
-		final I_C_Flatrate_Term term = flatrateBL.createTerm(p_C_BPartner, p_C_Flatrate_Conditions, p_StartDate, p_AD_User_Incharge, p_M_Product, completeIt);
+		final I_C_Flatrate_Term term = InterfaceWrapperHelper.create(flatrateBL.createTerm(p_C_BPartner, p_C_Flatrate_Conditions, p_StartDate, p_AD_User_Incharge, product, completeIt), I_C_Flatrate_Term.class);
 		if (term == null)
 		{
 			return "@Success@"; // the process messages will display what went wrong
 		}
 
 		term.setC_Currency(p_C_Currency);
+		
+		// Product
+		term.setPMM_Product(p_PMM_Product);
+		term.setM_Product(product);
 		term.setC_UOM(p_C_UOM);
-		term.setM_Product(p_M_Product);
 		term.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);
 
 		InterfaceWrapperHelper.save(term);
@@ -119,7 +131,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 			newDataEntry.setType(I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased);
 			InterfaceWrapperHelper.save(newDataEntry);
 		}
-		
+
 		setRecordToSelectAfterExecution(TableRecordReference.of(term));
 
 		return "@Success@";

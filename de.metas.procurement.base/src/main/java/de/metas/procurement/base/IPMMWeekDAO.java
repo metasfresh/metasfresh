@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Week;
 
 /*
@@ -30,5 +31,5 @@ import de.metas.procurement.base.model.I_PMM_Week;
 
 public interface IPMMWeekDAO extends ISingletonService
 {
-	I_PMM_Week retrieveFor(final int bpartnerId, final int productId, final int huPIItemProductId, final Date day);
+	I_PMM_Week retrieveFor(PMMBalanceSegment segment, Date weekDate);
 }

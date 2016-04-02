@@ -17,7 +17,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.procurement.base.balance.IPMMBalanceDAO;
-import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
+import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Balance;
 
 /*
@@ -50,25 +50,23 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 	};
 
 	@Override
-	public List<I_PMM_Balance> retriveForAllDateSegments(final PMMBalanceChangeEvent event)
+	public List<I_PMM_Balance> retriveForAllDateSegments(final PMMBalanceSegment event, final Date date)
 	{
 		return Arrays.asList(
-				retrieveForDateSegment(event, DateSegment.Month)
-				, retrieveForDateSegment(event, DateSegment.Week)
-				);
+				retrieveForDateSegment(event, date, DateSegment.Month) //
+				, retrieveForDateSegment(event, date, DateSegment.Week));
 	}
 
 	@VisibleForTesting
-	I_PMM_Balance retrieveForDateSegment(final PMMBalanceChangeEvent event, final DateSegment dateSegment)
+	I_PMM_Balance retrieveForDateSegment(final PMMBalanceSegment segment, final Date date, final DateSegment dateSegment)
 	{
 		//
 		// Set the date segment values
-		final Date eventDate = event.getDate();
-		final Timestamp monthDate = TimeUtil.trunc(eventDate, TimeUtil.TRUNC_MONTH);
+		final Timestamp monthDate = TimeUtil.trunc(date, TimeUtil.TRUNC_MONTH);
 		final Timestamp weekDate;
 		if (dateSegment == DateSegment.Week)
 		{
-			weekDate = TimeUtil.trunc(eventDate, TimeUtil.TRUNC_WEEK);
+			weekDate = TimeUtil.trunc(date, TimeUtil.TRUNC_WEEK);
 		}
 		else if (dateSegment == DateSegment.Month)
 		{
@@ -83,10 +81,11 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 		I_PMM_Balance balanceRecord = Services.get(IQueryBL.class).createQueryBuilder(I_PMM_Balance.class, context)
 				//
 				// BPartner + Product segment
-				.addEqualsFilter(I_PMM_Balance.COLUMN_C_BPartner_ID, event.getC_BPartner_ID())
-				.addEqualsFilter(I_PMM_Balance.COLUMN_M_Product_ID, event.getM_Product_ID())
-				.addEqualsFilter(I_PMM_Balance.COLUMN_M_HU_PI_Item_Product_ID, event.getM_HU_PI_Item_Product_ID())
-				.addEqualsFilter(I_PMM_Balance.COLUMN_C_Flatrate_DataEntry_ID, event.getC_Flatrate_DataEntry_ID() > 0 ? event.getC_Flatrate_DataEntry_ID() : null)
+				.addEqualsFilter(I_PMM_Balance.COLUMN_C_BPartner_ID, segment.getC_BPartner_ID())
+				.addEqualsFilter(I_PMM_Balance.COLUMN_M_Product_ID, segment.getM_Product_ID())
+				.addEqualsFilter(I_PMM_Balance.COLUMN_M_AttributeSetInstance_ID, segment.getM_AttributeSetInstance_ID() > 0 ? segment.getM_AttributeSetInstance_ID() : null)
+				// .addEqualsFilter(I_PMM_Balance.COLUMN_M_HU_PI_Item_Product_ID, segment.getM_HU_PI_Item_Product_ID() > 0 ? segment.getM_HU_PI_Item_Product_ID() : null)
+				.addEqualsFilter(I_PMM_Balance.COLUMN_C_Flatrate_DataEntry_ID, segment.getC_Flatrate_DataEntry_ID() > 0 ? segment.getC_Flatrate_DataEntry_ID() : null)
 				//
 				// Date segment
 				.addEqualsFilter(I_PMM_Balance.COLUMN_MonthDate, monthDate)
@@ -101,22 +100,28 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 		{
 			balanceRecord = InterfaceWrapperHelper.newInstance(I_PMM_Balance.class, context);
 			balanceRecord.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-			
+
 			//
 			// BPartner + Product segment
-			balanceRecord.setC_BPartner_ID(event.getC_BPartner_ID());
-			balanceRecord.setM_Product_ID(event.getM_Product_ID());
-			balanceRecord.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
-			if (event.getC_Flatrate_DataEntry_ID() > 0)
+			balanceRecord.setC_BPartner_ID(segment.getC_BPartner_ID());
+			balanceRecord.setM_Product_ID(segment.getM_Product_ID());
+			if (segment.getM_AttributeSetInstance_ID() > 0)
 			{
-				balanceRecord.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID());
+				balanceRecord.setM_AttributeSetInstance_ID(segment.getM_AttributeSetInstance_ID());
 			}
-			
+
+			// balanceRecord.setM_HU_PI_Item_Product_ID(segment.getM_HU_PI_Item_Product_ID());
+
+			if (segment.getC_Flatrate_DataEntry_ID() > 0)
+			{
+				balanceRecord.setC_Flatrate_DataEntry_ID(segment.getC_Flatrate_DataEntry_ID());
+			}
+
 			//
 			// Date segment
 			balanceRecord.setMonthDate(monthDate);
 			balanceRecord.setWeekDate(weekDate);
-			
+
 			//
 			// Qtys
 			balanceRecord.setQtyOrdered(BigDecimal.ZERO);
@@ -124,8 +129,7 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 			balanceRecord.setQtyPromised(BigDecimal.ZERO);
 			balanceRecord.setQtyPromised_TU(BigDecimal.ZERO);
 		}
-		
-		return balanceRecord;
 
+		return balanceRecord;
 	}
 }

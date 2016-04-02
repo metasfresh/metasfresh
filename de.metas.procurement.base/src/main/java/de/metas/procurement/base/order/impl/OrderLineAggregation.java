@@ -5,12 +5,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.service.IOrderLineBL;
@@ -90,7 +92,7 @@ public class OrderLineAggregation
 		{
 			return;
 		}
-		
+
 		if (orderLine == null)
 		{
 			orderLine = createOrderLine(candidate);
@@ -114,29 +116,61 @@ public class OrderLineAggregation
 
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
 		orderLine.setIsMFProcurement(true);
-		
+
+		//
+		// BPartner/Location/Contact
 		orderLine.setC_BPartner(bpartner);
-		if(flatrateDataEntryId > 0)
+		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
+		orderLine.setAD_User_ID(order.getAD_User_ID());
+
+		//
+		// PMM Contract
+		if (flatrateDataEntryId > 0)
 		{
 			orderLine.setC_Flatrate_DataEntry_ID(flatrateDataEntryId);
 		}
 
+		//
+		// Product/UOM/Handling unit
 		orderLine.setM_Product(product);
 		orderLine.setC_UOM(uom);
-		orderLine.setM_HU_PI_Item_Product_ID(huPIItemProductId);
+		if (huPIItemProductId > 0)
+		{
+			orderLine.setM_HU_PI_Item_Product_ID(huPIItemProductId);
+		}
 
+		//
+		// ASI
+		final I_M_AttributeSetInstance contractASI = candidate.getM_AttributeSetInstance_ID() > 0 ? candidate.getM_AttributeSetInstance() : null;
+		final I_M_AttributeSetInstance asi;
+		if (contractASI != null)
+		{
+			asi = Services.get(IAttributeDAO.class).copy(contractASI);
+		}
+		else
+		{
+			asi = null;
+		}
+		orderLine.setPMM_Contract_ASI(contractASI);
+		orderLine.setM_AttributeSetInstance(asi);
+
+		//
+		// Quantities
 		orderLine.setQtyEntered(BigDecimal.ZERO);
 		orderLine.setQtyOrdered(BigDecimal.ZERO);
 
+		//
+		// Dates
 		orderLine.setDatePromised(datePromised);
 
+		//
+		// Pricing
 		orderLine.setIsManualPrice(true); // go with the candidate's price. e.g. don't reset it to 0 because we have no PL
 		orderLine.setPriceEntered(price);
 		orderLine.setPriceActual(price);
 
-		orderLine.setC_BPartner(order.getC_BPartner());
-		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
-		orderLine.setAD_User_ID(order.getAD_User_ID());
+		//
+		// BPartner/Location/Contact
 
 		return orderLine;
 	}

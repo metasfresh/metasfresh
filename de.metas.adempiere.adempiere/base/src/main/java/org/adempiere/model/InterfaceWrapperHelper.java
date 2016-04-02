@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
@@ -54,8 +52,13 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.logging.LogManager;
 
 public class InterfaceWrapperHelper
 {
@@ -1591,7 +1594,20 @@ public class InterfaceWrapperHelper
 			throw new AdempiereException("Model translation is not supported for " + model + " (class:" + model.getClass() + ")");
 		}
 	}
-
+	
+	public static final IModelTranslationMap getModelTranslationMap(final Object model)
+	{
+		Check.assumeNotNull(model, "model not null");
+		if (POWrapper.isHandled(model))
+		{
+			return POWrapper.getModelTranslationMap(model);
+		}
+		else
+		{
+			return NullModelTranslationMap.instance;
+		}
+	}
+	
 	/**
 	 * @param model
 	 * @return true if model is a new record (not yet saved in database)

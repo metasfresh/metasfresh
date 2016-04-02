@@ -1,6 +1,7 @@
 package de.metas.procurement.base.balance.impl;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -8,6 +9,7 @@ import org.adempiere.util.Services;
 import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.IPMMBalanceDAO;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
+import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Balance;
 
 /*
@@ -43,8 +45,11 @@ public class PMMBalanceChangeEventProcessor implements IPMMBalanceChangeEventPro
 	public void addEvent(final PMMBalanceChangeEvent event)
 	{
 		final IPMMBalanceDAO balanceDAO = Services.get(IPMMBalanceDAO.class);
-
-		for (final I_PMM_Balance balanceRecord : balanceDAO.retriveForAllDateSegments(event))
+		
+		final PMMBalanceSegment segment = PMMBalanceSegment.of(event);
+		final Date date = event.getDate();
+		
+		for (final I_PMM_Balance balanceRecord : balanceDAO.retriveForAllDateSegments(segment, date))
 		{
 			updateBalanceRecordFromEvent(balanceRecord, event);
 			InterfaceWrapperHelper.save(balanceRecord);

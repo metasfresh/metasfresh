@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,11 +35,15 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+
+import de.metas.logging.LogManager;
 
 /**
  * Persistent Object Info. Provides structural information
@@ -225,10 +227,16 @@ public final class POInfo implements Serializable
 	private String sqlSelectColumns;
 	private String sqlSelect;
 
+	//
+	// Translation info
+	public static final String COLUMNNAME_AD_Language = "AD_Language";
 	/**
 	 * True if at least one column is translated
 	 */
 	private boolean translated = false;
+	private ImmutableList<String> translatedColumnNames = null; // built on demand
+	private Optional<String> sqlSelectTrlByIdAndLanguage;  // built on demand
+	private Optional<String> sqlSelectTrlById;  // built on demand
 
 	/**
 	 * Load Table/Column Info into this instance. If the select returns no result, nothing is loaded and no error is raised.
@@ -1367,5 +1375,99 @@ public final class POInfo implements Serializable
 	/* package */boolean hasStaleableColumns()
 	{
 		return m_HasStaleableColumns;
+	}
+	
+	/**
+	 * @return list of column names which are translated
+	 */
+	public List<String> getTranslatedColumnNames()
+	{
+		if (translatedColumnNames == null)
+		{
+			if (isTranslated())
+			{
+				final ImmutableList.Builder<String> columnNames = ImmutableList.builder();
+				for (final POInfoColumn columnInfo : this.m_columns)
+				{
+					if (!columnInfo.isTranslated())
+					{
+						continue;
+					}
+
+					columnNames.add(columnInfo.getColumnName());
+				}
+
+				translatedColumnNames = columnNames.build();
+			}
+			else
+			{
+				translatedColumnNames = ImmutableList.of();
+			}
+		}
+		return translatedColumnNames;
+	}
+
+	/**
+	 * @return <code>SELECT * FROM TableName_Trl WHERE KeyColumnName=? AND AD_Language=?</code> or <code>null</code>
+	 */
+	public String getSqlSelectTrlByIdAndLanguage()
+	{
+		if (sqlSelectTrlByIdAndLanguage == null)
+		{
+			sqlSelectTrlByIdAndLanguage = buildSqlSelectTrl(true); // byLanguageToo=true
+		}
+		return sqlSelectTrlByIdAndLanguage.orNull();
+	}
+
+	/**
+	 * @return <code>SELECT * FROM TableName_Trl WHERE KeyColumnName=?</code> or <code>null</code>
+	 */
+	public String getSqlSelectTrlById()
+	{
+		if (sqlSelectTrlById == null)
+		{
+			sqlSelectTrlById = buildSqlSelectTrl(false); // byLanguageToo=false
+		}
+		return sqlSelectTrlById.orNull();
+	}
+
+	/**
+	 * Builds the SQL to select from translation table (i.e. <code>SELECT * FROM TableName_Trl WHERE KeyColumnName=? [AND AD_Language=?]</code>)
+	 * 
+	 * @param byLanguageToo if <code>true</code> the returned SQL shall also filter by "AD_Language"
+	 * @return
+	 * 		<ul>
+	 *         <li>SQL select
+	 *         <li>or {@link Optional#absent()} if table is not translatable or there are no translation columns
+	 *         </ul>
+	 */
+	private Optional<String> buildSqlSelectTrl(final boolean byLanguageToo)
+	{
+		final String keyColumnName = getKeyColumnName(); // assume not null
+		if (keyColumnName == null)
+		{
+			return Optional.absent();
+		}
+
+		final List<String> columnNames = getTranslatedColumnNames(); // assume not empty
+		if (columnNames.isEmpty())
+		{
+			return Optional.absent();
+		}
+
+		final String sqlColumns = Joiner.on(",").join(columnNames);
+		StringBuilder sql = new StringBuilder("SELECT ")
+				.append(sqlColumns)
+				.append(", ").append(COLUMNNAME_AD_Language)
+				.append(" FROM ").append(getTableName()).append("_Trl")
+				.append(" WHERE ")
+				.append(keyColumnName).append("=?");
+
+		if (byLanguageToo)
+		{
+			sql.append(" AND ").append(COLUMNNAME_AD_Language).append("=?");
+		}
+
+		return Optional.of(sql.toString());
 	}
 }   // POInfo

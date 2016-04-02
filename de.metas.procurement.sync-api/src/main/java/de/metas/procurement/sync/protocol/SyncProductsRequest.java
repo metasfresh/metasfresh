@@ -38,6 +38,12 @@ public class SyncProductsRequest
 	}
 	
 	private List<SyncProduct> products = new ArrayList<>();
+	
+	@Override
+	public String toString()
+	{
+		return "SyncProductsRequest [products=" + products + "]";
+	}
 
 	public List<SyncProduct> getProducts()
 	{

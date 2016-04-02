@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1050168217L;
+	private static final long serialVersionUID = 1495682491L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -75,6 +75,43 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Ausprägung Merkmals-Satz.
+		@param M_AttributeSetInstance_ID 
+		Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Ausprägung Merkmals-Satz.
+		@return Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

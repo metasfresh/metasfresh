@@ -7,6 +7,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMMWeekDAO;
+import de.metas.procurement.base.balance.PMMBalanceSegment;
 import de.metas.procurement.base.model.I_PMM_Week;
 
 /*
@@ -34,19 +35,19 @@ import de.metas.procurement.base.model.I_PMM_Week;
 public class PMMWeekDAO implements IPMMWeekDAO
 {
 	@Override
-	public I_PMM_Week retrieveFor(final int bpartnerId, final int productId, final int huPIItemProductId, final Date day)
+	public I_PMM_Week retrieveFor(final PMMBalanceSegment segment, final Date weekDate)
 	{
 		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_Week.class, context)
 				.addOnlyContextClient()
-				.addEqualsFilter(I_PMM_Week.COLUMN_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_PMM_Week.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_PMM_Week.COLUMN_M_HU_PI_Item_Product_ID, huPIItemProductId > 0 ? huPIItemProductId : null)
-				.addEqualsFilter(I_PMM_Week.COLUMN_WeekDate, day)
+				.addEqualsFilter(I_PMM_Week.COLUMN_C_BPartner_ID, segment.getC_BPartner_ID())
+				.addEqualsFilter(I_PMM_Week.COLUMN_M_Product_ID, segment.getM_Product_ID())
+				.addEqualsFilter(I_PMM_Week.COLUMN_M_AttributeSetInstance_ID, segment.getM_AttributeSetInstance_ID())
+				//.addEqualsFilter(I_PMM_Week.COLUMN_M_HU_PI_Item_Product_ID, segment.getM_HU_PI_Item_Product_ID() > 0 ? segment.getM_HU_PI_Item_Product_ID() : null)
+				.addEqualsFilter(I_PMM_Week.COLUMN_WeekDate, weekDate)
 				.create()
 				.firstOnly(I_PMM_Week.class);
-
 	}
 
 }

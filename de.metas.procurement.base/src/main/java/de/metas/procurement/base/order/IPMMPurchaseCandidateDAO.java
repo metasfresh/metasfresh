@@ -37,5 +37,5 @@ public interface IPMMPurchaseCandidateDAO extends ISingletonService
 
 	void deletePurchaseCandidateOrderLines(I_C_Order order);
 
-	I_PMM_PurchaseCandidate retrieveFor(int bpartnerId, int productId, Date day);
+	I_PMM_PurchaseCandidate retrieveFor(PMMPurchaseCandidateSegment pmmSegment, Date day);
 }

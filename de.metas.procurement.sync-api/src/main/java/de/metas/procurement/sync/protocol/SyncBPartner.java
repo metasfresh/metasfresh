@@ -32,7 +32,16 @@ public class SyncBPartner extends AbstractSyncModel
 	
 	private boolean syncContracts = false;
 	private List<SyncContract> contracts = new ArrayList<>();
-	
+
+	@Override
+	public String toString()
+	{
+		return "SyncBPartner [name=" + name
+				+ ", users=" + users
+				+ ", syncContracts=" + syncContracts
+				+ ", contracts=" + contracts
+				+ "]";
+	}
 
 	public String getName()
 	{

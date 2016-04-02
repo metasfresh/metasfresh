@@ -100,6 +100,7 @@ public class C_OrderLine
 				.setC_BPartner_ID(orderLine.getC_BPartner_ID())
 				.setC_Flatrate_DataEntry_ID(orderLine.getC_Flatrate_DataEntry_ID())
 				.setM_Product_ID(orderLine.getM_Product_ID())
+				.setM_AttributeSetInstance_ID(orderLine.getPMM_Contract_ASI_ID()) // important: use the contracted ASI and NOT the order line ASI which was generated
 				.setM_HU_PI_Item_Product_ID(orderLine.getM_HU_PI_Item_Product_ID())
 				.setDate(orderLine.getDatePromised())
 				.setQtyDelivered(qtyDeliveredDiff)

@@ -38,6 +38,12 @@ public class SyncBPartnersRequest
 	}
 	
 	private List<SyncBPartner> bpartners = new ArrayList<>();
+	
+	@Override
+	public String toString()
+	{
+		return "SyncBPartnersRequest [bpartners=" + bpartners + "]";
+	}
 
 	public List<SyncBPartner> getBpartners()
 	{

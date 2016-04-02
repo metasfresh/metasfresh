@@ -5,6 +5,7 @@ create or replace view de_metas_procurement.PMM_Balance_Events_v as
 	select
 		c.C_BPartner_ID
 		, c.M_Product_ID
+		, c.M_AttributeSetInstance_ID
 		, c.M_HU_PI_Item_Product_ID
 		, c.C_Flatrate_DataEntry_ID
 		--
@@ -32,6 +33,7 @@ union all (
 	select
 		ol.C_BPartner_ID
 		, ol.M_Product_ID
+		, ol.PMM_Contract_ASI_ID as M_AttributeSetInstance_ID
 		, ol.M_HU_PI_Item_Product_ID
 		, ol.C_Flatrate_DataEntry_ID
 		--

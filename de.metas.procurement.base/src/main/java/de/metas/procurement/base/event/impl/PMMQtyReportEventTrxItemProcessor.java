@@ -2,33 +2,21 @@ package de.metas.procurement.base.event.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMContractsDAO;
+import de.metas.procurement.base.IPMMPricingAware;
+import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -36,6 +24,7 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
+import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 
 /*
  * #%L
@@ -68,14 +57,13 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
 class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_QtyReport_Event, Void>
 {
 	// services
+	// private static final Logger logger = LogManager.getLogger(PMMQtyReportEventTrxItemProcessor.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPMMPurchaseCandidateDAO purchaseCandidateDAO = Services.get(IPMMPurchaseCandidateDAO.class);
 	private final transient IPMMPurchaseCandidateBL purchaseCandidateBL = Services.get(IPMMPurchaseCandidateBL.class);
 	private final transient IPMMBalanceChangeEventProcessor pmmBalanceEventProcessor = Services.get(IPMMBalanceChangeEventProcessor.class);
-	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final transient IPMMPricingBL pmmPricingBL = Services.get(IPMMPricingBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final AtomicInteger countProcessed = new AtomicInteger(0);
 	private final AtomicInteger countErrors = new AtomicInteger(0);
@@ -87,9 +75,20 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	@Override
 	public void process(final I_PMM_QtyReport_Event event)
 	{
+		updateC_Flatrate_DataEntry(event);
+
+		//
+		// Create the aggregation segment
+		final PMMPurchaseCandidateSegment pmmSegment = PMMPurchaseCandidateSegment.builder()
+				.setC_BPartner_ID(event.getC_BPartner_ID())
+				.setM_Product_ID(event.getM_Product_ID())
+				.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID())
+				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
+				.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID())
+				.build();
 		//
 		// Get candidate
-		I_PMM_PurchaseCandidate candidate = purchaseCandidateDAO.retrieveFor(event.getC_BPartner_ID(), event.getM_Product_ID(), event.getDatePromised());
+		I_PMM_PurchaseCandidate candidate = purchaseCandidateDAO.retrieveFor(pmmSegment, event.getDatePromised());
 
 		//
 		// If candidate is currently locked, skip processing this event for now
@@ -114,13 +113,25 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 			if (candidate == null)
 			{
 				candidate = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate.class);
-				candidate.setC_BPartner_ID(event.getC_BPartner_ID());
-				candidate.setM_Product_ID(event.getM_Product_ID());
+
+				// Segment values
+				candidate.setC_BPartner_ID(pmmSegment.getC_BPartner_ID());
+				candidate.setM_Product_ID(pmmSegment.getM_Product_ID());
+				if (pmmSegment.getM_AttributeSetInstance_ID() > 0)
+				{
+					candidate.setM_AttributeSetInstance_ID(pmmSegment.getM_AttributeSetInstance_ID());
+				}
+				candidate.setM_HU_PI_Item_Product_ID(pmmSegment.getM_HU_PI_Item_Product_ID());
+				if (pmmSegment.getC_Flatrate_DataEntry_ID() > 0)
+				{
+					candidate.setC_Flatrate_DataEntry_ID(pmmSegment.getC_Flatrate_DataEntry_ID());
+				}
+
 				candidate.setC_UOM_ID(event.getC_UOM_ID());
-				candidate.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
 				candidate.setDatePromised(event.getDatePromised());
 
 				candidate.setAD_Org_ID(event.getAD_Org_ID());
+
 				if (event.getM_Warehouse_ID() > 0)
 				{
 					candidate.setM_Warehouse_ID(event.getM_Warehouse_ID());
@@ -132,10 +143,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				candidate.setM_PricingSystem_ID(event.getM_PricingSystem_ID());
 				candidate.setM_PriceList_ID(event.getM_PriceList_ID());
 				candidate.setC_Currency_ID(event.getC_Currency_ID());
-				if (event.getC_Flatrate_DataEntry_ID() > 0)
-				{
-					candidate.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID());
-				}
 				candidate.setPrice(event.getPrice());
 			}
 
@@ -168,49 +175,20 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 	private final void updatePricing(final I_PMM_QtyReport_Event qtyReportEvent)
 	{
-		// Get BPartner
-		final int bpartnerId = qtyReportEvent.getC_BPartner_ID();
-		if (bpartnerId <= 0)
-		{
-			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_C_BPartner_ID + "@");
-		}
-
-		// Get Product and UOM
-		final I_M_Product product = qtyReportEvent.getM_Product();
-		if (product == null)
-		{
-			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_Product_ID + "@");
-		}
-		final I_C_UOM uom = qtyReportEvent.getC_UOM();
-		if (uom == null)
-		{
-			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_C_UOM_ID + "@");
-		}
-
-		// Always get the pricing from masterdata.
-		// We need it to be there, e.g. to know if the price is incl VAT and which VAT category to use.
-		updatePriceFromPricingMasterdata(qtyReportEvent);
-
-		//
-		// contract product: override the price amount and currency from the contract, if one is set there
-		final String contractLine_uuid = qtyReportEvent.getContractLine_UUID();
-		if (!Check.isEmpty(contractLine_uuid, true))
-		{
-			updatePriceFromContract(qtyReportEvent);
-		}
+		// Non-contract product: fetch price from pricing system
+		final IPMMPricingAware pricingAware = PMMPricingAware_QtyReportEvent.of(qtyReportEvent);
+		pmmPricingBL.updatePricing(pricingAware);
 	}
 
-	private void updatePriceFromContract(final I_PMM_QtyReport_Event qtyReportEvent)
+	private void updateC_Flatrate_DataEntry(final I_PMM_QtyReport_Event qtyReportEvent)
 	{
 		final I_C_Flatrate_Term flatrateTerm = qtyReportEvent.getC_Flatrate_Term();
 		if (flatrateTerm == null)
 		{
 			// we are called, because qtyReportEvent has a contractLine_uuid. So if there is no term then something is wrong
-			throw new AdempiereException("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
+			return;
 		}
 
-		final I_M_Product product = qtyReportEvent.getM_Product();
-		final I_C_UOM uom = qtyReportEvent.getC_UOM();
 		final Timestamp datePromised = qtyReportEvent.getDatePromised();
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pmmContractsDAO.retrieveFlatrateDataEntry(flatrateTerm, datePromised);
@@ -218,71 +196,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				|| dataEntryForProduct.getFlatrateAmtPerUOM() == null
 				|| dataEntryForProduct.getFlatrateAmtPerUOM().signum() <= 0)
 		{
-			return; // nothing to do
+			return;
 		}
 
-		final BigDecimal price = uomConversionBL.convertPrice(
-				product,
-				dataEntryForProduct.getFlatrateAmtPerUOM(),
-				flatrateTerm.getC_UOM(),  								// this is the flatrateAmt's UOM
-				uom,  													// this is the qtyReportEvent's UOM
-				flatrateTerm.getC_Currency().getStdPrecision());
-
-		qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
 		qtyReportEvent.setC_Flatrate_DataEntry(dataEntryForProduct);
-		qtyReportEvent.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
-		qtyReportEvent.setPrice(price);
-	}
-
-	private void updatePriceFromPricingMasterdata(final I_PMM_QtyReport_Event qtyReportEvent)
-	{
-		final boolean soTrx = false;
-		final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
-
-		final int bpartnerId = qtyReportEvent.getC_BPartner_ID();
-		final I_M_Product product = qtyReportEvent.getM_Product();
-		final I_C_UOM uom = qtyReportEvent.getC_UOM();
-		final Timestamp datePromised = qtyReportEvent.getDatePromised();
-
-		// Pricing system
-		final int pricingSystemId = bpartnerDAO.retrievePricingSystemId(ctx, bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
-		if (pricingSystemId <= 0)
-		{
-			// no term and no pricing system means that we can't figure out the price
-			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_PricingSystem_ID + "@ ("
-					+ "@C_BPartner_ID@:" + bpartnerId
-					+ ", @IsSOTrx@:" + soTrx
-					+ ")");
-		}
-
-		// BPartner location -> Country
-		final I_C_BPartner bpartner = qtyReportEvent.getC_BPartner();
-		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
-		if (shipToLocations.isEmpty())
-		{
-			throw new AdempiereException("@Missing@ @" + org.compiere.model.I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
-		}
-		final int countryId = shipToLocations.get(0).getC_Location().getC_Country_ID();
-
-		//
-		// Fetch price from pricing engine
-		final BigDecimal qtyPromised = qtyReportEvent.getQtyPromised();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qtyPromised, soTrx);
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-		pricingCtx.setPriceDate(datePromised);
-		pricingCtx.setC_Country_ID(countryId);
-
-		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
-		if (!pricingResult.isCalculated())
-		{
-			throw new AdempiereException("@Missing@ @" + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "@: " + pricingResult);
-		}
-
-		// these will be "empty" results, if the price was not calculated
-		qtyReportEvent.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
-		qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-		qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
-		qtyReportEvent.setPrice(pricingResult.getPriceStd());
 	}
 
 	private final void markProcessed(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate)
@@ -367,6 +284,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		return PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(qtyReportEvent.getC_BPartner_ID())
 				.setM_Product_ID(qtyReportEvent.getM_Product_ID())
+				.setM_AttributeSetInstance_ID(qtyReportEvent.getM_AttributeSetInstance_ID())
 				.setM_HU_PI_Item_Product_ID(qtyReportEvent.getM_HU_PI_Item_Product_ID())
 				.setC_Flatrate_DataEntry_ID(qtyReportEvent.getC_Flatrate_DataEntry_ID())
 				//

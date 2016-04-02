@@ -36,6 +36,7 @@ public final class PMMBalanceChangeEvent
 
 	private int C_BPartner_ID;
 	private int M_Product_ID;
+	private int M_AttributeSetInstance_ID;
 	private int M_HU_PI_Item_Product_ID;
 	private int C_Flatrate_DataEntry_ID;
 	//
@@ -58,6 +59,7 @@ public final class PMMBalanceChangeEvent
 		super();
 		C_BPartner_ID = builder.C_BPartner_ID;
 		M_Product_ID = builder.M_Product_ID;
+		M_AttributeSetInstance_ID = builder.M_AttributeSetInstance_ID > 0 ? builder.M_AttributeSetInstance_ID : 0;
 		M_HU_PI_Item_Product_ID = builder.M_HU_PI_Item_Product_ID;
 		C_Flatrate_DataEntry_ID = builder.C_Flatrate_DataEntry_ID;
 		//
@@ -95,15 +97,25 @@ public final class PMMBalanceChangeEvent
 	{
 		M_Product_ID = m_Product_ID;
 	}
+	
+	public int getM_AttributeSetInstance_ID()
+	{
+		return M_AttributeSetInstance_ID;
+	}
+	
+	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID)
+	{
+		this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID > 0 ? M_AttributeSetInstance_ID : 0;
+	}
 
 	public int getM_HU_PI_Item_Product_ID()
 	{
 		return M_HU_PI_Item_Product_ID;
 	}
 	
-	public void setM_HU_PI_Item_Product_ID(int m_HU_PI_Item_Product_ID)
+	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID)
 	{
-		M_HU_PI_Item_Product_ID = m_HU_PI_Item_Product_ID;
+		this.M_HU_PI_Item_Product_ID = M_HU_PI_Item_Product_ID;
 	}
 	
 	public int getC_Flatrate_DataEntry_ID()
@@ -111,9 +123,9 @@ public final class PMMBalanceChangeEvent
 		return C_Flatrate_DataEntry_ID;
 	}
 	
-	public void setC_Flatrate_DataEntry_ID(int c_Flatrate_DataEntry_ID)
+	public void setC_Flatrate_DataEntry_ID(int C_Flatrate_DataEntry_ID)
 	{
-		C_Flatrate_DataEntry_ID = c_Flatrate_DataEntry_ID;
+		this.C_Flatrate_DataEntry_ID = C_Flatrate_DataEntry_ID;
 	}
 
 	public Date getDate()
@@ -180,6 +192,7 @@ public final class PMMBalanceChangeEvent
 	{
 		private Integer C_BPartner_ID;
 		private Integer M_Product_ID;
+		private Integer M_AttributeSetInstance_ID;
 		private Integer M_HU_PI_Item_Product_ID;
 		private int C_Flatrate_DataEntry_ID = -1;
 		//
@@ -210,6 +223,12 @@ public final class PMMBalanceChangeEvent
 		public Builder setM_Product_ID(final int M_Product_ID)
 		{
 			this.M_Product_ID = M_Product_ID;
+			return this;
+		}
+		
+		public Builder setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+		{
+			this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
 			return this;
 		}
 

@@ -627,8 +627,12 @@ public final class Adempiere
 		// System properties
 		Ini.loadProperties(false); // reload=false
 
-		// Set up Log
-		LogManager.updateConfigurationFromIni();
+		//
+		// Update logging configuration from Ini file (applies only if we are running the swing client)
+		if (runmodeClient)
+		{
+			LogManager.updateConfigurationFromIni();
+		}
 
 		// Set UI
 		if (runmodeClient)

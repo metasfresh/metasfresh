@@ -7,8 +7,9 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
  * #%L
@@ -41,6 +42,8 @@ public interface IPMMContractsDAO extends ISingletonService
 
 	boolean hasRunningContract(I_C_BPartner bpartner);
 
-	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(I_C_Flatrate_Term flatrateTerm, Timestamp date);
+	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, Timestamp date);
+
+	boolean hasRunningContracts(I_PMM_Product pmmProduct);
 
 }

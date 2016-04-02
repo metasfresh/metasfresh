@@ -31,6 +31,12 @@ public class SyncContract extends AbstractSyncModel
 	private Date dateFrom;
 	private Date dateTo;
 	private List<SyncContractLine> contractLines = new ArrayList<>();
+	
+	@Override
+	public String toString()
+	{
+		return "SyncContract [dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", contractLines=" + contractLines + "]";
+	}
 
 	public Date getDateFrom()
 	{

@@ -2,7 +2,6 @@ package de.metas.procurement.base.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,20 +13,22 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.i18n.IModelTranslation;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_AD_User;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
@@ -77,9 +78,11 @@ public class SyncObjectsFactory
 
 	//
 	// services
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
-	private final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
+	private static final Logger logger = LogManager.getLogger(SyncObjectsFactory.class);
+
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
+	private final transient IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 
 	//
 	// parameters
@@ -90,15 +93,9 @@ public class SyncObjectsFactory
 
 	private final Map<Integer, I_C_BPartner> bpartners = new HashMap<>();
 
-	/** C_Partner_ID and M_Product_ID to {@link I_PMM_Product}s */
-	private Multimap<IPair<Integer, Integer>, I_PMM_Product> _key2product = null;
-
 	/** C_BPartner_ID to {@link I_C_Flatrate_Term}s */
 	private final Multimap<Integer, I_C_Flatrate_Term> _bpartnerId2contract = MultimapBuilder.hashKeys().arrayListValues().build();
 	private boolean _bpartnerId2contract_fullyLoaded = false;
-
-	// Constants
-	private static final Integer C_BPARTNER_ID_None = null;
 
 	private SyncObjectsFactory(final Date date)
 	{
@@ -127,13 +124,22 @@ public class SyncObjectsFactory
 		syncContract.setDateFrom(term.getStartDate());
 		syncContract.setDateTo(term.getEndDate());
 
-		final int bpartnerId = term.getDropShip_BPartner_ID();
-		final I_C_BPartner bpartner = getC_BPartnerById(bpartnerId);
-
-		final I_M_Product product = term.getM_Product();
-		final List<SyncProduct> syncProducts = createSyncProducts(bpartner, product);
-		for (final SyncProduct syncProduct : syncProducts)
+		//
+		// Contract Line: 1 line for our PMM_Product
 		{
+			final I_PMM_Product pmmProduct = term.getPMM_Product();
+			if (pmmProduct == null)
+			{
+				logger.warn("Contract {} has no PMM_Product. Skip exporting.", term);
+				return null;
+			}
+
+			final SyncProduct syncProduct = createSyncProduct(pmmProduct);
+			if (syncProduct == null)
+			{
+				return null;
+			}
+
 			final SyncContractLine syncContractLine = new SyncContractLine();
 			syncContractLine.setUuid(syncContract.getUuid());
 			syncContractLine.setProduct(syncProduct);
@@ -280,90 +286,14 @@ public class SyncObjectsFactory
 		return bpartnerId2contract.get(bpartnerId);
 	}
 
-	private Multimap<IPair<Integer, Integer>, I_PMM_Product> getPMM_Products_IndexedByBPartnerIdAndProductId()
-	{
-		if (_key2product == null)
-		{
-			final List<I_PMM_Product> allPmmProducts = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(date)
-					.create()
-					.list();
-			final Multimap<IPair<Integer, Integer>, I_PMM_Product> key2product = MultimapBuilder.hashKeys().arrayListValues().build();
-			for (final I_PMM_Product pmmProduct : allPmmProducts)
-			{
-				Integer bpartnerId = pmmProduct.getC_BPartner_ID();
-				if (bpartnerId <= 0)
-				{
-					bpartnerId = C_BPARTNER_ID_None;
-				}
-
-				final IPair<Integer, Integer> key = createBPartnerAndProductKey(bpartnerId, pmmProduct.getM_Product_ID());
-				key2product.put(key, pmmProduct);
-			}
-			_key2product = key2product;
-		}
-		return _key2product;
-	}
-
-	private List<I_PMM_Product> getPMM_ProductsFor(final I_C_BPartner bpartner, final I_M_Product product)
-	{
-		final List<I_PMM_Product> result = new ArrayList<>();
-
-		final Multimap<IPair<Integer, Integer>, I_PMM_Product> key2pmmProduct = getPMM_Products_IndexedByBPartnerIdAndProductId();
-
-		// Add the products linked to partner
-		{
-			final IPair<Integer, Integer> key = createBPartnerAndProductKey(bpartner.getC_BPartner_ID(), product.getM_Product_ID());
-			result.addAll(key2pmmProduct.get(key));
-		}
-
-		// Add the products which are not linked to any partner
-		{
-			final IPair<Integer, Integer> key = createBPartnerAndProductKey(C_BPARTNER_ID_None, product.getM_Product_ID());
-			result.addAll(key2pmmProduct.get(key));
-		}
-
-		return result;
-	}
-
-	private static final IPair<Integer, Integer> createBPartnerAndProductKey(final Integer bpartnerId, final int productId)
-	{
-		return ImmutablePair.of(bpartnerId, productId);
-	}
-
-	/**
-	 * Creates one SyncProduct instance for each {@link I_PMM_Product} that references the given <code>product</code> and either the given <code>bPartner</code> or no bpartner at all.
-	 *
-	 * @param bpartner
-	 * @param product
-	 * @return
-	 */
-	private List<SyncProduct> createSyncProducts(final I_C_BPartner bpartner, final I_M_Product product)
-	{
-		if (product == null || bpartner == null)
-		{
-			// this should not, but *might* happen in case of a broken/inconsistent C_Flatrate_Term
-			return Collections.emptyList();
-		}
-
-		final Collection<I_PMM_Product> pmmProducts = getPMM_ProductsFor(bpartner, product);
-
-		final List<SyncProduct> syncProducts = new ArrayList<>(pmmProducts.size());
-		for (final I_PMM_Product pmmProduct : pmmProducts)
-		{
-			final SyncProduct syncProduct = createSyncProduct(pmmProduct);
-			syncProducts.add(syncProduct);
-		}
-
-		return syncProducts;
-	}
-
 	public SyncProduct createSyncProduct(final I_PMM_Product pmmProduct)
 	{
+		final I_M_Product product = pmmProduct.getM_Product();
+
 		String productName = pmmProduct.getProductName();
 		// Fallback to M_Product.Name (shall not happen)
 		if (Check.isEmpty(productName, true))
 		{
-			final I_M_Product product = pmmProduct.getM_Product();
 			productName = product == null ? null : product.getName();
 		}
 
@@ -381,20 +311,59 @@ public class SyncObjectsFactory
 		syncProduct.setShared(pmmProduct.getC_BPartner_ID() <= 0); // share, unless it is assigned to a particular BPartner
 		syncProduct.setDeleted(!valid);
 
+		//
+		// Translations
+		{
+			final Map<String, String> syncProductNamesTrl = syncProduct.getNamesTrl();
+			final IModelTranslationMap productTrls = InterfaceWrapperHelper.getModelTranslationMap(product);
+			final PMMProductNameBuilder productNameTrlBuilder = PMMProductNameBuilder.newBuilder()
+					.setPMM_Product(pmmProduct);
+			for (final IModelTranslation productLanguageTrl : productTrls.getAllTranslations().values())
+			{
+				final String adLanguage = productLanguageTrl.getAD_Language();
+
+				final String productNamePartTrl = productLanguageTrl.getTranslation(I_M_Product.COLUMNNAME_Name);
+				if (Check.isEmpty(productNamePartTrl, true))
+				{
+					continue;
+				}
+
+				final String productNameTrl = productNameTrlBuilder
+						.setProductNamePartIfUsingMProduct(productNamePartTrl)
+						.build();
+				if (Check.isEmpty(productNameTrl, true))
+				{
+					continue;
+				}
+
+				syncProductNamesTrl.put(adLanguage, productNameTrl.trim());
+			}
+		}
+
 		return syncProduct;
 	}
 
 	public List<SyncProduct> createAllNotContractedSyncProducts()
 	{
-		final List<I_PMM_Product> allPmmProducts = Services.get(IPMMProductDAO.class).retrieveAllPMMProductsValidOnDateQuery(date)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
+		final List<I_PMM_Product> allPmmProducts = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(date)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null) // Not contracted (i.e. C_BPartner_ID is null)
+				//
+				.orderBy()
+				.addColumn(I_PMM_Product.COLUMN_PMM_Product_ID) // have a predictable order
+				.endOrderBy()
+				//
 				.create()
 				.list();
 
-		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>();
+		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>(allPmmProducts.size());
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
 		{
 			final SyncProduct syncProduct = createSyncProduct(pmmProduct);
+			if(syncProduct == null)
+			{
+				continue;
+			}
+			
 			syncProducts.add(syncProduct);
 		}
 		return syncProducts;

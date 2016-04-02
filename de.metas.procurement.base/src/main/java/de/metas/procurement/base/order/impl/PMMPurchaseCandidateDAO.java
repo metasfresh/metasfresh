@@ -5,6 +5,7 @@ import java.util.Date;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -12,6 +13,7 @@ import org.compiere.model.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
+import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 
 /*
  * #%L
@@ -55,14 +57,23 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 	}
 
 	@Override
-	public I_PMM_PurchaseCandidate retrieveFor(final int bpartnerId, final int productId, final Date day)
+	public I_PMM_PurchaseCandidate retrieveFor(final PMMPurchaseCandidateSegment pmmSegment, final Date day)
 	{
+		Check.assumeNotNull(pmmSegment, "pmmSegment not null");
+		Check.assumeNotNull(day, "day not null");
+
 		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, productId)
+				//
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID())
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, pmmSegment.getM_Product_ID())
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, pmmSegment.getM_AttributeSetInstance_ID() > 0 ? pmmSegment.getM_AttributeSetInstance_ID() : null)
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_HU_PI_Item_Product_ID, pmmSegment.getM_HU_PI_Item_Product_ID() > 0 ? pmmSegment.getM_HU_PI_Item_Product_ID() : null)
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_Flatrate_DataEntry_ID, pmmSegment.getC_Flatrate_DataEntry_ID())
+				//
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_DatePromised, day)
+				//
 				.create()
 				.firstOnly(I_PMM_PurchaseCandidate.class);
 	}

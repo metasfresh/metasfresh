@@ -7,6 +7,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -107,6 +108,16 @@ public final class PurchaseCandidate
 		return model.getM_Product_ID();
 	}
 
+	public I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return model.getM_AttributeSetInstance();
+	}
+
+	public int getM_AttributeSetInstance_ID()
+	{
+		return model.getM_AttributeSetInstance_ID() > 0 ? model.getM_AttributeSetInstance_ID() : 0;
+	}
+
 	public I_C_UOM getC_UOM()
 	{
 		return model.getC_UOM();
@@ -168,7 +179,9 @@ public final class PurchaseCandidate
 	 */
 	public final Object getLineAggregationKey()
 	{
-		return Util.mkKey(getM_Product_ID(),
+		return Util.mkKey(
+				getM_Product_ID(),
+				getM_AttributeSetInstance_ID(),
 				getC_UOM_ID(),
 				getM_HU_PI_Item_Product_ID(),
 				getPrice());

@@ -1,5 +1,7 @@
 package de.metas.procurement.base.order.model;
 
+import org.compiere.model.I_M_AttributeSetInstance;
+
 /*
  * #%L
  * de.metas.procurement.base
@@ -24,11 +26,20 @@ package de.metas.procurement.base.order.model;
 
 public interface I_C_OrderLine extends de.metas.handlingunits.model.I_C_OrderLine
 {
+	//@formatter:off
 	int getC_Flatrate_DataEntry_ID();
-
 	void setC_Flatrate_DataEntry_ID(final int C_Flatrate_DataEntry_ID);
+	//@formatter:on
 
+	//@formatter:off
 	boolean isMFProcurement();
-
 	void setIsMFProcurement(boolean IsMFProcurement);
+	//@formatter:on
+	
+	//@formatter:off
+	int getPMM_Contract_ASI_ID();
+	I_M_AttributeSetInstance getPMM_Contract_ASI();
+	void setPMM_Contract_ASI_ID(int PMM_Contract_ASI_ID);
+	void setPMM_Contract_ASI(I_M_AttributeSetInstance PMM_Contract_ASI);
+	//@formatter:on
 }

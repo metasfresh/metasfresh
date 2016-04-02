@@ -3,7 +3,6 @@ package de.metas.procurement.base.impl;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -45,23 +44,25 @@ public class PMMProductDAO implements IPMMProductDAO
 	public IQueryBuilder<I_PMM_Product> retrieveAllPMMProductsValidOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, null)
+				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_Warehouse_ID, null);
 
-		final ICompositeQueryFilter<I_PMM_Product> validToIsAfterOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
-				.setJoinOr()
-				.addCompareFilter(I_PMM_Product.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, date)
-				.addEqualsFilter(I_PMM_Product.COLUMN_ValidTo, null);
-
-		final ICompositeQueryFilter<I_PMM_Product> validFromIsOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
+		//
+		// ValidFrom
+		queryBuilder.addCompositeQueryFilter()
 				.setJoinOr()
 				.addCompareFilter(I_PMM_Product.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addEqualsFilter(I_PMM_Product.COLUMN_ValidFrom, null);
 
-		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.filter(validFromIsOrNull)
-				.filter(validToIsAfterOrNull)
-				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, null)
-				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_Warehouse_ID, null);
+		//
+		// ValidTo
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addCompareFilter(I_PMM_Product.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, date)
+				.addEqualsFilter(I_PMM_Product.COLUMN_ValidTo, null);
+
 		return queryBuilder;
 	}
 

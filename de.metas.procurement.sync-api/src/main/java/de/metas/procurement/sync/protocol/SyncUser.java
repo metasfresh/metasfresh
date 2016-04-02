@@ -28,6 +28,15 @@ public class SyncUser extends AbstractSyncModel
 	private String password;
 	private String language;
 
+	@Override
+	public String toString()
+	{
+		return "SyncUser [email=" + email
+				+ ", password=" + (password != null && !password.isEmpty() ? "********" : "(none)")
+				+ ", language=" + language
+				+ "]";
+	}
+
 	public String getEmail()
 	{
 		return email;

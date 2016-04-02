@@ -91,6 +91,10 @@ import org.w3c.dom.Element;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.i18n.IModelTranslation;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.i18n.impl.POInfoModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
@@ -2300,7 +2304,7 @@ public abstract class PO
 	 * @return translated string
 	 * @throws IllegalArgumentException if columnName or AD_Language is null or model has multiple PK
 	 */
-	public final String get_Translation (String columnName, String AD_Language)
+	public final String get_Translation (final String columnName, final String AD_Language)
 	{
 		//
 		// Check if columnName, AD_Language is valid or table support translation (has 1 PK) => error
@@ -2323,29 +2327,21 @@ public abstract class PO
 		{
 			// Load translation from database
 			// metas: begin
-			final Map<String, String> trlMap = get_TranslationMap(AD_Language);
-			if (trlMap.containsKey(columnName))
+			final IModelTranslation trlMap = get_ModelTranslation(AD_Language);
+			if(trlMap.isTranslated(columnName))
 			{
-				retValue = trlMap.get(columnName);
+				retValue = trlMap.getTranslation(columnName);
 				// Case: is possible that the translation in one language to be empty
 				// and we don't want to fallback to original value (where is possible to not be empty)
 				if (retValue == null)
 					retValue = "";
 			}
-			// metas: original
-			/*
-			int ID = ((Integer)m_IDs[0]).intValue();
-			StringBuilder sql = new StringBuilder ("SELECT ").append(columnName)
-									.append(" FROM ").append(p_info.getTableName()).append("_Trl WHERE ")
-									.append(m_KeyColumns[0]).append("=?")
-									.append(" AND AD_Language=?");
-			retValue = DB.getSQLValueString(get_TrxName(), sql.toString(), ID, AD_Language);
-			*/
-			// metas: end
 		}
+		
 		//
 		// If no translation found or not translated, fallback to original:
-		if (retValue == null) {
+		if (retValue == null)
+		{
 			Object val = get_Value(columnName);
 			retValue = (val != null ? val.toString() : null);
 		}
@@ -4913,69 +4909,33 @@ public abstract class PO
 	 * @param AD_Language
 	 * @return map of columnName->translatedValue pairs
 	 */
-	private Map<String,String> get_TranslationMap(String AD_Language)
+	private IModelTranslation get_ModelTranslation(final String AD_Language)
+	{
+		final IModelTranslationMap modelTranslationMap = get_ModelTranslationMap();
+		if (modelTranslationMap instanceof POInfoModelTranslationMap)
+		{
+			return ((POInfoModelTranslationMap)modelTranslationMap).getTranslation(get_ID(), AD_Language);
+		}
+		else
+		{
+			return modelTranslationMap.getTranslation(AD_Language);
+		}
+	}
+	
+	public IModelTranslationMap get_ModelTranslationMap()
 	{
 		final int id = get_ID();
 		if (id <= 0)
-			return new HashMap<String, String>();
-
+			return NullModelTranslationMap.instance;
+		
 		if (m_translations == null)
-			m_translations = new HashMap<String, Map<String,String>>();
-
-		Map<String, String> trl = m_translations.get(AD_Language);
-		if (trl != null)
-			return trl;
-
-		trl = new HashMap<String, String>();
-
-		List<String> columnNames = new ArrayList<String>();
-		StringBuilder sqlColumns = new StringBuilder();
-		for(int i = 0; i < p_info.getColumnCount(); i++)
 		{
-			if (!p_info.isColumnTranslated(i))
-				continue;
-			final String columnName = p_info.getColumnName(i);
-			if (sqlColumns.length() > 0)
-				sqlColumns.append(",");
-			sqlColumns.append(columnName);
-			columnNames.add(columnName);
+			m_translations = POInfoModelTranslationMap.of(p_info, id);
 		}
-		StringBuilder sql = new StringBuilder ("SELECT ").append(sqlColumns)
-								.append(" FROM ").append(p_info.getTableName()).append("_Trl WHERE ")
-								.append(m_KeyColumns[0]).append("=?")
-								.append(" AND AD_Language=?");
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final Object[] params = new Object[]{id, AD_Language};
-		try
-		{
-			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-			DB.setParameters(pstmt, params);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				trl = new HashMap<String, String>();
-				for (String columnName : columnNames)
-				{
-					String value = rs.getString(columnName);
-					trl.put(columnName, value);
-				}
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql.toString(), params);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-
-		m_translations.put(AD_Language, trl);
-		return trl;
+		return m_translations;
 	}
-	private Map<String,Map<String, String>> m_translations = null;
+	
+	private POInfoModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
 	{

@@ -1,5 +1,6 @@
 package de.metas.procurement.base.balance;
 
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -30,6 +31,5 @@ import de.metas.procurement.base.model.I_PMM_Balance;
 
 public interface IPMMBalanceDAO extends ISingletonService
 {
-	List<I_PMM_Balance> retriveForAllDateSegments(PMMBalanceChangeEvent event);
-
+	List<I_PMM_Balance> retriveForAllDateSegments(PMMBalanceSegment event, Date date);
 }

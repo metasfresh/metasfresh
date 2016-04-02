@@ -5,9 +5,11 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
+import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -38,16 +40,35 @@ import de.metas.procurement.base.model.I_PMM_Product;
 public class PMM_Product
 {
 	public static final PMM_Product instance = new PMM_Product();
+	
+	private static final String MSG_ProductChangeNotAllowedForRunningContracts = "de.metas.procurement.ProductChangeNotAllowedForRunningContracts";
 
 	private PMM_Product()
 	{
+	}
+	
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_PMM_Product.COLUMNNAME_M_Product_ID,
+					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
+					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID
+					})
+	public void preventChangesIfContractActive(final I_PMM_Product pmmProduct)
+	{
+		if (Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
+		{
+			throw new AdempiereException("@" + MSG_ProductChangeNotAllowedForRunningContracts + "@");
+		}
 	}
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
+					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID
+			})
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct)
 	{
 		Services.get(IPMMProductBL.class).update(pmmProduct);
@@ -56,7 +77,9 @@ public class PMM_Product
 
 	@CalloutMethod(columnNames = {
 			I_PMM_Product.COLUMNNAME_M_Product_ID,
-			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
+			I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
+			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID
+	})
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct, final ICalloutField unused)
 	{
 		Services.get(IPMMProductBL.class).update(pmmProduct);
@@ -67,6 +90,7 @@ public class PMM_Product
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_IsActive,
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
+					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
 					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
 					I_PMM_Product.COLUMNNAME_M_Warehouse_ID, } //
 			, afterCommit = true)

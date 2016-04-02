@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
@@ -39,8 +37,12 @@ import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.logging.LogManager;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -229,6 +231,14 @@ public class POWrapper implements InvocationHandler
 
 		final boolean useOldValues = false;
 		return create(po, cl, useOldValues, trlAdLanguage);
+	}
+
+	public static IModelTranslationMap getModelTranslationMap(final Object model)
+	{
+		final PO po = getPO(model);
+		Check.assumeNotNull(po, "po not null for {0}", model);
+		
+		return po.get_ModelTranslationMap();
 	}
 
 	/**

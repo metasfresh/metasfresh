@@ -176,6 +176,35 @@ public interface I_PMM_WeekReport_Event
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeSetInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_M_AttributeSetInstance>(I_PMM_WeekReport_Event.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: Search
@@ -230,6 +259,33 @@ public interface I_PMM_WeekReport_Event
     public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_M_Product>(I_PMM_WeekReport_Event.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPMM_Product_ID (int PMM_Product_ID);
+
+	/**
+	 * Get Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPMM_Product_ID();
+
+	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product();
+
+	public void setPMM_Product(de.metas.procurement.base.model.I_PMM_Product PMM_Product);
+
+    /** Column definition for PMM_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, de.metas.procurement.base.model.I_PMM_Product> COLUMN_PMM_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, de.metas.procurement.base.model.I_PMM_Product>(I_PMM_WeekReport_Event.class, "PMM_Product_ID", de.metas.procurement.base.model.I_PMM_Product.class);
+    /** Column name PMM_Product_ID */
+    public static final String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
 
 	/**
 	 * Set Trend.
