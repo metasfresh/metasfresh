@@ -84,6 +84,14 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
+	public String getInfoMessage()
+	{
+		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
+		logger.debug("Returning: {}", infoMessage);
+		return infoMessage;
+	}
+
+	@Override
 	public void reportProductSupplies(final SyncProductSuppliesRequest request)
 	{
 		logger.debug("Got request: {}", request);
@@ -365,5 +373,4 @@ public class ServerSyncBL implements IServerSyncBL
 			});
 		}
 	}
-
 }

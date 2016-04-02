@@ -59,6 +59,10 @@ public interface IServerSync
 	@GET
 	@Path("allNotContractedProducts")
 	public List<SyncProduct> getAllNotContractedProducts();
+	
+	@GET
+	@Path("infoMessage")
+	public String getInfoMessage();
 
 	/**
 	 * Report a product supply to metasfresh. Create <code>PMM_QtyReport_Event</code>.

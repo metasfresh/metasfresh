@@ -54,4 +54,6 @@ public interface IWebuiPush extends ISingletonService
 
 	void pushProduct(I_PMM_Product pmmProduct);
 
+	void pushInfoMessages();
+
 }

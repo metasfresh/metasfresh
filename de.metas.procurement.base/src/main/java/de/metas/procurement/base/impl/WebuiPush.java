@@ -15,6 +15,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
@@ -52,7 +53,7 @@ public class WebuiPush implements IWebuiPush
 	 */
 	private IAgentSync getAgentSyncOrNull()
 	{
-		//if (true) return NullAgentSync.instance; // DEBUGGING: mock the agent sync
+		// if (true) return NullAgentSync.instance; // DEBUGGING: mock the agent sync
 
 		final IAgentSyncBL agentSyncBL = Services.get(IAgentSyncBL.class);
 		if (agentSyncBL == null)
@@ -147,5 +148,18 @@ public class WebuiPush implements IWebuiPush
 		final SyncProductsRequest syncProductsRequest = SyncProductsRequest.of(syncProduct);
 
 		agent.syncProducts(syncProductsRequest);
+	}
+
+	@Override
+	public void pushInfoMessages()
+	{
+		final IAgentSync agent = getAgentSyncOrNull();
+		if (agent == null)
+		{
+			return;
+		}
+
+		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
+		agent.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
 	}
 }

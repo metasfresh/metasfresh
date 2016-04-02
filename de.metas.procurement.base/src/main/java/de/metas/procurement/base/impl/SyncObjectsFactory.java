@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -26,6 +27,7 @@ import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMMContractsDAO;
+import de.metas.procurement.base.IPMMMessageDAO;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -103,6 +105,11 @@ public class SyncObjectsFactory
 
 		Check.assumeNotNull(date, "date not null");
 		this.date = (Date)date.clone();
+	}
+	
+	private Properties getCtx()
+	{
+		return Env.getCtx();
 	}
 
 	public List<SyncBPartner> createAllSyncBPartners()
@@ -268,7 +275,7 @@ public class SyncObjectsFactory
 		I_C_BPartner bpartner = bpartners.get(bpartnerId);
 		if (bpartner == null)
 		{
-			bpartner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
+			bpartner = InterfaceWrapperHelper.create(getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 			bpartners.put(bpartnerId, bpartner);
 		}
 		return bpartner;
@@ -367,5 +374,10 @@ public class SyncObjectsFactory
 			syncProducts.add(syncProduct);
 		}
 		return syncProducts;
+	}
+	
+	public String createSyncInfoMessage()
+	{
+		return Services.get(IPMMMessageDAO.class).retrieveMessagesAsString(getCtx());
 	}
 }

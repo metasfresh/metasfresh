@@ -85,6 +85,8 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner_Product.instance, client);
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Product.instance, client);
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance, client);
+		// Master data: messages
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Message.instance, client);
 	}
 
 	@Override
