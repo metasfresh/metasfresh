@@ -43,7 +43,7 @@ public class PMMWeekDAO implements IPMMWeekDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PMM_Week.COLUMN_C_BPartner_ID, segment.getC_BPartner_ID())
 				.addEqualsFilter(I_PMM_Week.COLUMN_M_Product_ID, segment.getM_Product_ID())
-				.addEqualsFilter(I_PMM_Week.COLUMN_M_AttributeSetInstance_ID, segment.getM_AttributeSetInstance_ID())
+				.addEqualsFilter(I_PMM_Week.COLUMN_M_AttributeSetInstance_ID, segment.getM_AttributeSetInstance_ID() > 0 ? segment.getM_AttributeSetInstance_ID() : null)
 				//.addEqualsFilter(I_PMM_Week.COLUMN_M_HU_PI_Item_Product_ID, segment.getM_HU_PI_Item_Product_ID() > 0 ? segment.getM_HU_PI_Item_Product_ID() : null)
 				.addEqualsFilter(I_PMM_Week.COLUMN_WeekDate, weekDate)
 				.create()

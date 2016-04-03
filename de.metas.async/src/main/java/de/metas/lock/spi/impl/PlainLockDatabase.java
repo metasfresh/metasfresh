@@ -23,6 +23,7 @@ package de.metas.lock.spi.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -136,8 +137,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		int countLocked = 0;
 		for (final ITableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
 		{
-			final boolean unlocked = lockRecord(lockCommand, record);
-			if (unlocked)
+			final boolean locked = lockRecord(lockCommand, record);
+			if (locked)
 			{
 				countLocked++;
 			}
@@ -147,15 +148,48 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	/**
-	 * TODO: Implement
-	 *
-	 * @throws UnsupportedOperationException allways.
 	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	@Override
 	protected int lockByFilters(ILockCommand lockCommand)
 	{
-		throw new UnsupportedOperationException();
+		@SuppressWarnings("unchecked")
+		final IQueryFilter<Object> selectionToLockFilters = (IQueryFilter<Object>)lockCommand.getSelectionToLock_Filters();
+
+		final LockOwner lockOwner = lockCommand.getOwner();
+		assertValidLockOwner(lockOwner);
+		
+		//
+		// Retrieve records to lock
+		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final String tableName = adTableDAO.retrieveTableName(adTableId);
+		Comparator<Object> orderByComparator = null; // don't care
+		final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, selectionToLockFilters, orderByComparator);
+		
+		int countLocked = 0;
+		for (final Object recordToLock : recordsToLock)
+		{
+			final ITableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
+			final boolean locked = lockRecord(lockCommand, recordToLockRef);
+			if(!locked)
+			{
+				throw new LockFailedException("Record already locked: "+recordToLock)
+				.setLockCommand(lockCommand);
+			}
+			
+			if (locked)
+			{
+				countLocked++;
+			}
+		}
+		
+		if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
+		{
+			throw new LockFailedException("Nothing locked for selection");
+		}
+		
+		return countLocked;
 	}
 
 	@Override
@@ -434,9 +468,35 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
+	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final ILock lock)
+	{
+		return new IQueryFilter<T>()
+		{
+			@Override
+			public boolean accept(final T model)
+			{
+				return isLocked(model, lock);
+			}
+		};
+	}
+
+	@Override
+	public <T> IQueryFilter<T> getNotLockedFilter(final Class<T> modelClass)
+	{
+		return new IQueryFilter<T>()
+		{
+			@Override
+			public boolean accept(final T model)
+			{
+				return !isLocked(model, ILock.NULL);
+			}
+		};
+	}
+
+	@Override
 	public String getNotLockedWhereClause(final String tableName, final String joinColumnName)
 	{
-		throw new UnsupportedOperationException("not supported");
+		throw new UnsupportedOperationException("not supported (tableName=" + tableName + ", joinColumnName=" + joinColumnName + ")");
 	}
 
 	@Override

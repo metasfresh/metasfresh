@@ -3,6 +3,8 @@ package de.metas.procurement.base.impl;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.util.UUIDs;
@@ -29,7 +31,8 @@ import de.metas.procurement.sync.util.UUIDs;
  * #L%
  */
 
-final class SyncUUIDs
+@VisibleForTesting
+public final class SyncUUIDs
 {
 	public static final String toUUIDString(final I_C_BPartner bpartner)
 	{

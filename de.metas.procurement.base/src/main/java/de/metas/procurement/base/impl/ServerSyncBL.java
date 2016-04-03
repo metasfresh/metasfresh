@@ -317,8 +317,16 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setAD_Org_ID(bpartner.getAD_Org_ID());
 
 		// Product
+		event.setPMM_Product(pmmProduct);
 		event.setM_Product_ID(pmmProduct.getM_Product_ID());
-		event.setM_HU_PI_Item_Product_ID(pmmProduct.getM_HU_PI_Item_Product_ID());
+		if (pmmProduct.getM_HU_PI_Item_Product_ID() > 0)
+		{
+			event.setM_HU_PI_Item_Product_ID(pmmProduct.getM_HU_PI_Item_Product_ID());
+		}
+		if (pmmProduct.getM_AttributeSetInstance_ID() > 0)
+		{
+			event.setM_AttributeSetInstance_ID(pmmProduct.getM_AttributeSetInstance_ID());
+		}
 
 		// WeekDate
 		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
@@ -329,6 +337,8 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setPMM_Trend(trend);
 
 		// Save
+		event.setProcessed(false);
+		event.setIsActive(true);
 		InterfaceWrapperHelper.save(event);
 		
 		logger.debug("Imported {} to {}:\n{}", syncWeeklySupply, event);

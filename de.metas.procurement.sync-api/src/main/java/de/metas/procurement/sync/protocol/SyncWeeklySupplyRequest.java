@@ -30,6 +30,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "SyncWeekSupplyRequest")
 public class SyncWeeklySupplyRequest
 {
+	public static final SyncWeeklySupplyRequest of(SyncWeeklySupply syncWeeklySupply)
+	{
+		if(syncWeeklySupply == null)
+		{
+			throw new IllegalArgumentException("syncWeeklySupply is null");
+		}
+		
+		final SyncWeeklySupplyRequest request = new SyncWeeklySupplyRequest();
+		request.getWeeklySupplies().add(syncWeeklySupply);
+		
+		return request;
+	}
+	
 	private List<SyncWeeklySupply> weeklySupplies = new ArrayList<>();
 
 	@Override

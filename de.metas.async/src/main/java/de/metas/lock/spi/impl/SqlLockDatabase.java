@@ -35,6 +35,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBUniqueConstraintException;
@@ -520,6 +521,29 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				.insert(0, "NOT EXISTS (SELECT 1 FROM " + I_T_Lock.Table_Name + " zz WHERE 1=1 ").append(")")
 				.toString();
 	}
+	
+	@Override
+	public <T> IQueryFilter<T> getNotLockedFilter(final Class<T> modelClass)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final String joinColumnNameFQ = tableName + "." + keyColumnName;
+		final String sqlWhereClause = getNotLockedWhereClause(tableName, joinColumnNameFQ);
+		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<T>(sqlWhereClause);
+		return filter;
+	}
+	
+	@Override
+	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final ILock lock)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final String joinColumnNameFQ = tableName + "." + keyColumnName;
+		final String sqlWhereClause = getLockedWhereClause(modelClass, joinColumnNameFQ, lock);
+		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<T>(sqlWhereClause);
+		return filter;
+	}
+
 
 	@Override
 	protected String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final ILock lock)

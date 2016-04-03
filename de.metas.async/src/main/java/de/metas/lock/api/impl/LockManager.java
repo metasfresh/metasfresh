@@ -25,8 +25,6 @@ package de.metas.lock.api.impl;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
@@ -139,12 +137,7 @@ public class LockManager implements ILockManager
 	@Override
 	public final <T> IQueryFilter<T> getNotLockedFilter(final Class<T> modelClass)
 	{
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final String joinColumnNameFQ = tableName + "." + keyColumnName;
-		final String sqlWhereClause = getNotLockedWhereClause(tableName, joinColumnNameFQ);
-		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<T>(sqlWhereClause);
-		return filter;
+		return getLockDatabase().getNotLockedFilter(modelClass);
 	}
 	
 	@Override
@@ -156,12 +149,7 @@ public class LockManager implements ILockManager
 	@Override
 	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final ILock lock)
 	{
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final String joinColumnNameFQ = tableName + "." + keyColumnName;
-		final String sqlWhereClause = getLockedWhereClause(modelClass, joinColumnNameFQ, lock);
-		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<T>(sqlWhereClause);
-		return filter;
+		return getLockDatabase().getLockedByFilter(modelClass, lock);
 	}
 
 	@Override

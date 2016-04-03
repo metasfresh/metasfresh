@@ -41,7 +41,7 @@ import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_WeekReport_Event, Void>
 {
 	// services
-	private final transient IPMMWeekDAO purchaseCandidateDAO = Services.get(IPMMWeekDAO.class);
+	private final transient IPMMWeekDAO pmmWeekDAO = Services.get(IPMMWeekDAO.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	private static final String ERRORMSG_None = null;
@@ -63,7 +63,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		
 		//
 		// Get aggregate
-		I_PMM_Week aggregate = purchaseCandidateDAO.retrieveFor(segment, weekDate);
+		I_PMM_Week aggregate = pmmWeekDAO.retrieveFor(segment, weekDate);
 
 		//
 		// If candidate is currently locked, skip processing this event for now

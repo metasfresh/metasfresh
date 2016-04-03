@@ -24,6 +24,7 @@ package de.metas.lock.spi;
 
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 
 import de.metas.lock.api.ILock;
@@ -51,6 +52,10 @@ public interface ILockDatabase
 	int unlock(IUnlockCommand unlockCommand);
 
 	<T> T retrieveAndLock(IQuery<T> query, Class<T> clazz);
+
+	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock);
+	
+	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
 
 	String getNotLockedWhereClause(String tableName, String joinColumnNameFQ);
 

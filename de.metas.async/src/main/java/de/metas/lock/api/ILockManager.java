@@ -108,11 +108,14 @@ public interface ILockManager extends ISingletonService
 	 * @param tableName
 	 * @param joinColumnName fully qualified record id column name
 	 * @return SQL where clause
+	 * 
+	 * @deprecated Please consider using {@link #getNotLockedFilter(Class)}.
 	 */
+	@Deprecated
 	String getNotLockedWhereClause(String tableName, String joinColumnNameFQ);
 
 	/**
-	 * @see #getNotLockedWhereClause(String, String)
+	 * @return filter which accepts only the NOT locked records of given model class.
 	 */
 	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
 
@@ -123,11 +126,16 @@ public interface ILockManager extends ISingletonService
 	 * @param joinColumnNameFQ
 	 * @param lock may <b>not</b> be <code>null</code>
 	 * @return SQL where clause
+	 * 
+	 * @deprecated Please consider using {@link #getLockedByFilter(Class, ILock)}. Only keep in mind, while this method accepts a null <code>lock</code>, the {@link #getLockedByFilter(Class, ILock)} enforces a mandatory lock.
 	 */
+	@Deprecated
 	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, ILock lock);
 
 	/**
-	 * @see #getLockedWhereClause(Class, String, ILock)
+	 * @param modelClass
+	 * @param lock lock (mandatory)
+	 * @return filter which accepts only those records which were locked by given {@link ILock}.
 	 */
 	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock);
 
