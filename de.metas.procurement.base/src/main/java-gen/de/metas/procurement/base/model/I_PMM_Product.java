@@ -338,6 +338,31 @@ public interface I_PMM_Product
     public static final String COLUMNNAME_ProductName = "ProductName";
 
 	/**
+	 * Set Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getProductValue();
+
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

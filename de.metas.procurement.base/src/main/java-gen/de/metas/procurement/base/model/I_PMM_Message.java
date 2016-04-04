@@ -127,7 +127,7 @@ public interface I_PMM_Message
 	 * Set Message Text.
 	 * Textual Informational, Menu or Error Message
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -137,7 +137,7 @@ public interface I_PMM_Message
 	 * Get Message Text.
 	 * Textual Informational, Menu or Error Message
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

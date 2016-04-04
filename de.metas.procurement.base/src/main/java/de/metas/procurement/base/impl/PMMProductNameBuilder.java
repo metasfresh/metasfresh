@@ -90,22 +90,21 @@ public class PMMProductNameBuilder
 	{
 		if (_bpartnerProduct == null)
 		{
+			I_C_BPartner_Product bpartnerProduct = null;
 			if (pmmProduct.getC_BPartner_ID() > 0 && pmmProduct.getM_Product_ID() > 0)
 			{
 				final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 				final I_C_BPartner bpartner = pmmProduct.getC_BPartner();
 				final I_M_Product product = pmmProduct.getM_Product();
-				final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product), I_C_BPartner_Product.class);
+				bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product), I_C_BPartner_Product.class);
 				if (bpartnerProduct != null && !Check.isEmpty(bpartnerProduct.getProductName(), true))
 				{
-					_bpartnerProduct = Optional.of(bpartnerProduct);
-				}
-				else
-				{
-					_bpartnerProduct = Optional.absent();
+					bpartnerProduct = null;
 				}
 			}
+			
+			_bpartnerProduct = Optional.fromNullable(bpartnerProduct);
 		}
 
 		return _bpartnerProduct.orNull();

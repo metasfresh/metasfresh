@@ -36,8 +36,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.text.JTextComponent;
 
@@ -196,7 +194,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 				}
 				else
 				{
-					sqlWhere.append(DBConstants.FUNC_unaccent_string(tableName+"."+searchColumnSQL));
+					sqlWhere.append(DBConstants.FUNC_unaccent_string(searchColumnSQL));
 				}
 				sqlWhere.append(") LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ") ");
 				paramsTemplate.add(VLookupAutoCompleterValidationRule.SEARCHSQL_PLACEHOLDER);

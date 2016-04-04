@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1495682491L;
+	private static final long serialVersionUID = -1505030657L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -280,6 +280,24 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	public java.lang.String getProductName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		throw new IllegalArgumentException ("ProductValue is virtual column");	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
 	/** Set Gültig ab.
