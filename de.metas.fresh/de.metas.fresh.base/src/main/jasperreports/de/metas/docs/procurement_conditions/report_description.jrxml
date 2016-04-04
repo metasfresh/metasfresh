@@ -22,7 +22,6 @@
 	<field name="bpartnervalue" class="java.lang.String"/>
 	<field name="username" class="java.lang.String"/>
 	<field name="productname" class="java.lang.String"/>
-	<field name="productvalue" class="java.lang.String"/>
 	<field name="uom" class="java.lang.String"/>
 	<field name="note" class="java.lang.String"/>
 	<field name="startdate" class="java.lang.String"/>
