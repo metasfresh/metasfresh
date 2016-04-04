@@ -21,12 +21,17 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (Upcoming Release)  
+# metasfresh 4.12.11 (Upcoming Release)  
 
 ## Features
+ - FRESH-55 Add ASI-support to procurement contracts
+ - FRESH-71 extend metasfresh and provide Product-TRLs to the webUI
+ - FRESH-81 PMM purchase candidate: qty aggregation this/next week shall be on BP, product, ASI but NOT hupiitemproduct
+ - FRESH-83 webui: another button called "Info" which displays a plain text which was configured in metasfresh
 
 ## Fixes
-	
+ - FRESH-78 In webui user is reporting in Qty CU and not Qty TU
+ 
 ## Instructions
 
 
