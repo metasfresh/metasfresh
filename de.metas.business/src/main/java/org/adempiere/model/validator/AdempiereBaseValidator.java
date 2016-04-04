@@ -37,6 +37,7 @@ import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
@@ -209,6 +210,10 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_OrgInfo.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Image.Table_Name); // mainly for logos
 
+		// not 100% sure they are cached, but if we fix something in AD_Process, it shall be propagated
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Process.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Process_Para.Table_Name);
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_SysConfig.Table_Name); // also broadcast sysconfig changes
 
 		// task 09509: changes in the pricing data shall also be propagated to other hosts
@@ -225,3 +230,4 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
 	}
 }
+
