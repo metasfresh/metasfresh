@@ -1,4 +1,4 @@
-drop function if exists de_metas_procurement.getMonthlyQtyDelivered
+drop function if exists de_metas_procurement.getMonthlyQtyPromisedTU
 (
 	p_MonthDate timestamp -- 1
 	, p_C_BPartner_ID numeric -- 2
@@ -7,7 +7,7 @@ drop function if exists de_metas_procurement.getMonthlyQtyDelivered
 	, p_C_Flatrate_DataEntry_ID numeric -- 5
 );
 
-create or replace function de_metas_procurement.getMonthlyQtyDelivered
+create or replace function de_metas_procurement.getMonthlyQtyPromisedTU
 (
 	p_MonthDate timestamp -- 1
 	, p_C_BPartner_ID numeric -- 2
@@ -18,7 +18,7 @@ create or replace function de_metas_procurement.getMonthlyQtyDelivered
 returns numeric
 as
 $BODY$
-	select COALESCE(SUM(QtyDelivered), 0)
+	select COALESCE(SUM(qtypromised_tu), 0)
 	from PMM_Balance b
 	where true
 	and b.C_BPartner_ID=$2
@@ -43,19 +43,19 @@ select * from (
 		,b.M_Product_ID
 		,b.M_AttributeSetInstance_ID
 		,b.C_Flatrate_DataEntry_ID
-		, b.QtyDelivered
-		, de_metas_procurement.getMonthlyQtyDelivered(
+		, b.qtypromised_tu
+		, de_metas_procurement.getMonthlyQtyPromisedTU(
 			p_MonthDate := b.MonthDate
 			, p_C_BPartner_ID := b.C_BPartner_ID
 			, p_M_Product_ID := b.M_Product_ID
 			, p_M_AttributeSetInstance_ID := b.M_AttributeSetInstance_ID
 			, p_C_Flatrate_DataEntry_ID := b.C_Flatrate_DataEntry_ID
-		) as QtyDelivered_Calc
+		) as QtyPromisedTU_Calc
 	from PMM_Balance b
 	where true
 	and b.WeekDate is null
 ) t
 where true
-and t.QtyDelivered is distinct from t.QtyDelivered_Calc
+and t.qtypromised_tu is distinct from t.QtyPromisedTU_Calc
 ;
 */

@@ -24,6 +24,9 @@ The actual release notes
 # metasfresh 4.12.11 (Upcoming Release)  
 
 ## Features
+ - FRESH-82 Adapt PMM Balance reports to respect our new aggregations
+ - FRESH-95 Modify the report C_Flatrate_Term_Create_ProcurementContract
+    * now displaying the PMM_Product's Name which can also contain ASI-Information
  - FRESH-55 Add ASI-support to procurement contracts
  - FRESH-71 extend metasfresh and provide Product-TRLs to the webUI
  - FRESH-81 PMM purchase candidate: qty aggregation this/next week shall be on BP, product, ASI but NOT hupiitemproduct
@@ -38,8 +41,6 @@ The actual release notes
 # metasfresh 4.11.10
 
 ## Features
- - FRESH-95 Modify the report C_Flatrate_Term_Create_ProcurementContract
-    * now displaying the PMM_Product's Name which can also contain ASI-Information
  - FRESH-47	Don't create oracle migration scripts
     * removing another legacy piece of code
  - FRESH-37: 09955 excel Report Procurement Statistics (105226320154)
