@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS de_metas_procurement.docs_flatrate_term_all_procurements_conditions_report(IN C_BPartner_ID numeric, IN M_Product_ID numeric);
 CREATE OR REPLACE FUNCTION de_metas_procurement.docs_flatrate_term_all_procurements_conditions_report(IN C_BPartner_ID numeric, IN M_Product_ID numeric)
 RETURNS TABLE
