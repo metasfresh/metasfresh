@@ -73,193 +73,193 @@
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<detail>
-		<band height="91" splitType="Stretch">
+		<band height="109" splitType="Stretch">
 			<textField>
 				<reportElement uuid="d83013db-3843-4165-a17b-77f36fc61558" x="37" y="0" width="76" height="13"/>
 				<textElement markup="none">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{month}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="113" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="147" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="181" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month3}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="215" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month4}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="249" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month5}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="283" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month6}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="317" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month7}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="351" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month8}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="385" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month9}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="419" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month10}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="453" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month11}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="487" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month12}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="14dadf8d-042d-4f38-880e-883f5d7a7cae" x="37" y="26" width="76" height="13"/>
 				<textElement markup="none">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="010f7071-1df4-4674-8e89-b138df887687" x="113" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="362b3695-eb02-4db6-a4ed-f9ee0196ae70" x="147" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="f5de310e-db80-4743-89cf-801199b641bf" x="181" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned3}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="75ddad38-bcc8-45b6-92ac-bf692a65aeb1" x="215" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned4}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="6bade683-3509-4489-8bdb-008ff000b786" x="249" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned5}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="fc930c16-2413-4654-b181-67e2028923ff" x="283" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned6}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="4065419c-4d32-4bdd-af73-b52c85f11b1d" x="317" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned7}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="95e05cdb-466a-490c-93c0-651817c08ba3" x="351" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned8}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="a2392012-0199-4e3a-9330-2cd2b5dc0e83" x="385" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned9}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="9e86f2f4-2af8-4892-a451-16b44a532fcc" x="419" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned10}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="59089b75-26d8-45da-8464-150b1ff841ae" x="453" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned11}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="c92269b3-88ee-4688-b738-1be6662050bb" x="487" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_planned12}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="38784dc2-4354-472c-93c1-233d4db40044" stretchType="RelativeToBandHeight" x="37" y="39" width="76" height="26"/>
 				<textElement markup="none">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uomprice}]]></textFieldExpression>
 			</textField>
@@ -268,7 +268,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom1}.signum()>0|| $F{flatrateamtperuom1}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom1}]]></textFieldExpression>
 			</textField>
@@ -277,7 +277,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom2}.signum()>0|| $F{flatrateamtperuom2}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom2}]]></textFieldExpression>
 			</textField>
@@ -286,7 +286,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom3}.signum()>0|| $F{flatrateamtperuom3}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom3}]]></textFieldExpression>
 			</textField>
@@ -295,7 +295,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom4}.signum()>0|| $F{flatrateamtperuom4}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom4}]]></textFieldExpression>
 			</textField>
@@ -304,7 +304,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom5}.signum()>0|| $F{flatrateamtperuom5}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom5}]]></textFieldExpression>
 			</textField>
@@ -313,7 +313,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom6}.signum()>0|| $F{flatrateamtperuom6}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom6}]]></textFieldExpression>
 			</textField>
@@ -322,7 +322,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom7}.signum()>0|| $F{flatrateamtperuom7}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom7}]]></textFieldExpression>
 			</textField>
@@ -331,7 +331,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom8}.signum()>0|| $F{flatrateamtperuom8}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom8}]]></textFieldExpression>
 			</textField>
@@ -340,7 +340,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom9}.signum()>0|| $F{flatrateamtperuom9}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom9}]]></textFieldExpression>
 			</textField>
@@ -349,7 +349,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom10}.signum()>0|| $F{flatrateamtperuom10}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom10}]]></textFieldExpression>
 			</textField>
@@ -358,35 +358,35 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom11}.signum()>0|| $F{flatrateamtperuom11}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom11}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="178" height="13"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="125" height="26"/>
 				<textElement markup="none">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="215" y="77" width="343" height="13"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="162" y="77" width="395" height="26"/>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="9817b1d0-9e46-4320-bf96-6306d6615895" x="522" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="f9de5dfa-46b4-481c-bb8e-a21b7b5ddf2e" x="522" y="26" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 			</textField>
@@ -395,7 +395,7 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{flatrateamtperuom12}.signum()>0|| $F{flatrateamtperuom12}.signum()<0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom12}]]></textFieldExpression>
 			</textField>
