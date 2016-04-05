@@ -57,6 +57,7 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
+ - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
  - 09915 procurement conditions jasper process (109344045046)
     * fix related to the contract start and end dates

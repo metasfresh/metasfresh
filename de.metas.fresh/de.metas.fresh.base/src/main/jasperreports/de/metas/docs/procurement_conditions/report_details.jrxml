@@ -363,14 +363,14 @@
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom11}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="125" height="13"/>
+				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="178" height="13"/>
 				<textElement markup="none">
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="162" y="77" width="360" height="13"/>
+				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="215" y="77" width="343" height="13"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
