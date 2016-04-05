@@ -21,7 +21,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.12.11 (Upcoming Release)  
+# metasfresh 4.x.x (Upcoming Release)  
 
 ## Features
  - FRESH-82 Adapt PMM Balance reports to respect our new aggregations
@@ -38,8 +38,24 @@ The actual release notes
  - FRESH-115 09933 InvoiceCandidates not created - Deadlock
     * had to revisit the task and fix some more
 
-## Instructions
+----------------------------------------------------------------
 
+# metasfresh 4.12.11
+
+## Features
+ - FRESH-82 Adapt PMM Balance reports to respect our new aggregations
+ - FRESH-95 Modify the report C_Flatrate_Term_Create_ProcurementContract
+    * now displaying the PMM_Product's Name which can also contain ASI-Information
+ - FRESH-55 Add ASI-support to procurement contracts
+ - FRESH-71 extend metasfresh and provide Product-TRLs to the webUI
+ - FRESH-81 PMM purchase candidate: qty aggregation this/next week shall be on BP, product, ASI but NOT hupiitemproduct
+ - FRESH-83 webui: another button called "Info" which displays a plain text which was configured in metasfresh
+
+## Fixes
+ - FRESH-78 In webui user is reporting in Qty CU and not Qty TU
+ - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
+ - FRESH-115 09933 InvoiceCandidates not created - Deadlock
+    * had to revisit the task and fix some more
 
 # metasfresh 4.11.10
 
