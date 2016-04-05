@@ -57,9 +57,9 @@ public interface IServerSync
 	public List<SyncBPartner> getAllBPartners();
 
 	@GET
-	@Path("allNotContractedProducts")
-	public List<SyncProduct> getAllNotContractedProducts();
-	
+	@Path("allProducts")
+	public List<SyncProduct> getAllProducts();
+
 	@GET
 	@Path("infoMessage")
 	public String getInfoMessage();

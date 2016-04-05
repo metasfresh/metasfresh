@@ -21,9 +21,11 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.12.12 (Upcoming Release)  
+# metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI 
+    * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract

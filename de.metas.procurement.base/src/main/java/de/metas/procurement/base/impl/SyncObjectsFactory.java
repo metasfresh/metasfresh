@@ -106,7 +106,7 @@ public class SyncObjectsFactory
 		Check.assumeNotNull(date, "date not null");
 		this.date = (Date)date.clone();
 	}
-	
+
 	private Properties getCtx()
 	{
 		return Env.getCtx();
@@ -350,10 +350,10 @@ public class SyncObjectsFactory
 		return syncProduct;
 	}
 
-	public List<SyncProduct> createAllNotContractedSyncProducts()
+	public List<SyncProduct> createAllSyncProducts()
 	{
 		final List<I_PMM_Product> allPmmProducts = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(date)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null) // Not contracted (i.e. C_BPartner_ID is null)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null) // Not bound to a particular partner (i.e. C_BPartner_ID is null)
 				//
 				.orderBy()
 				.addColumn(I_PMM_Product.COLUMN_PMM_Product_ID) // have a predictable order
@@ -370,12 +370,12 @@ public class SyncObjectsFactory
 			{
 				continue;
 			}
-			
+
 			syncProducts.add(syncProduct);
 		}
 		return syncProducts;
 	}
-	
+
 	public String createSyncInfoMessage()
 	{
 		return Services.get(IPMMMessageDAO.class).retrieveMessagesAsString(getCtx());

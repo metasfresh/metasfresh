@@ -1,15 +1,23 @@
 package de.metas.procurement.base.impl;
 
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IAgentSyncBL;
+import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.IAgentSync;
@@ -41,6 +49,8 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * #L%
  */
 
+@Service
+@ManagedResource(objectName = "de.metas.procurement:type=WebuiPush", description = "Allows to push data from emtasfresh to the procurement webUI")
 public class WebuiPush implements IWebuiPush
 {
 	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
@@ -65,6 +75,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
+	@ManagedOperation
 	public boolean checkAvailable()
 	{
 		return getAgentSyncOrNull() != null;
@@ -124,7 +135,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushBPartnerForContact(I_AD_User contact)
+	public void pushBPartnerForContact(final I_AD_User contact)
 	{
 		final I_C_BPartner bpartner = contact.getC_BPartner();
 		if (bpartner == null)
@@ -133,6 +144,31 @@ public class WebuiPush implements IWebuiPush
 		}
 
 		pushBPartnerWithoutContracts(bpartner);
+	}
+
+	@Override
+	@ManagedOperation
+	public void pushAllProducts()
+	{
+		final IAgentSync agent = getAgentSyncOrNull();
+		if (agent == null)
+		{
+			return;
+		}
+
+		final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
+
+		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(SystemTime.asTimestamp());
+		final List<I_PMM_Product> allPMMProducts = allPMMProductsQuery.create().list();
+		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
+
+		for (final I_PMM_Product pmmProduct : allPMMProducts)
+		{
+			final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
+			syncProductsRequest.getProducts().add(syncProduct);
+		}
+
+		agent.syncProducts(syncProductsRequest);
 	}
 
 	@Override
@@ -151,6 +187,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
+	@ManagedOperation
 	public void pushInfoMessages()
 	{
 		final IAgentSync agent = getAgentSyncOrNull();

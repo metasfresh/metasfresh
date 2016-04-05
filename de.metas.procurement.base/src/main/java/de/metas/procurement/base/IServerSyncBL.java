@@ -78,7 +78,7 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * </ul>
 	 */
 	@Override
-	public List<SyncProduct> getAllNotContractedProducts();
+	public List<SyncProduct> getAllProducts();
 
 	/**
 	 * Create {@link I_PMM_QtyReport_Event}s from the given <code>request</code>'s {@link SyncProductSupply} instances.<br>

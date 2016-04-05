@@ -76,9 +76,9 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public List<SyncProduct> getAllNotContractedProducts()
+	public List<SyncProduct> getAllProducts()
 	{
-		List<SyncProduct> syncProducts = SyncObjectsFactory.newFactory().createAllNotContractedSyncProducts();
+		List<SyncProduct> syncProducts = SyncObjectsFactory.newFactory().createAllSyncProducts();
 		logger.debug("Returning: {}", syncProducts);
 		return syncProducts;
 	}
