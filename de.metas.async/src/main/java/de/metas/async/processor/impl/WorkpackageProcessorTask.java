@@ -51,7 +51,6 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 
@@ -73,6 +72,7 @@ import de.metas.async.spi.IWorkpackageProcessor2;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 
 /* package */class WorkpackageProcessorTask implements Runnable
@@ -181,6 +181,25 @@ import de.metas.notification.INotificationBL;
 				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for " + workPackage);
 			}
 		}
+		catch (final DBDeadLockDetectedException e)
+		{
+			if (retryOnDeadLock)
+			{
+				// task 08999: if there is a deadlock, retry in five seconds
+				// task 09933: allow retry-on-deadlock for all tasks
+				final int retryms = 5000;
+				final String msg = "Deadlock detected; Will retry in " + retryms + " ms. Deadlock-Message: " + e.getMessage();
+				loggable.addLog(msg);
+
+				final WorkpackageSkipRequestException skipRequest = WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
+				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
+				markSkipped(workPackage, skipRequest, loggable);
+			}
+			else
+			{
+				markError(workPackage, e, loggable);
+			}
+		}
 		catch (final Exception e)
 		{
 			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(e);
@@ -246,27 +265,7 @@ import de.metas.notification.INotificationBL;
 
 		//
 		// Execute the processor
-		final Result result;
-		try
-		{
-			result = workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
-		}
-		catch (DBDeadLockDetectedException e)
-		{
-			if (retryOnDeadLock)
-			{
-				// task 08999: if there is a deadlock, retry in five seconds
-				// task 09933: allow retry-on-deadlock for all tasks
-				final int retryms = 5000;
-				final String msg = "Deadlock detected; Will retry in " + retryms + " ms. Deadlock-Message: " + e.getMessage();
-				ILoggable.THREADLOCAL.getLoggable().addLog(msg);
-				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
-			}
-			else
-			{
-				throw e;
-			}
-		}
+		final Result result = workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
 		return result;
 	}
 

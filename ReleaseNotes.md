@@ -34,7 +34,10 @@ The actual release notes
 
 ## Fixes
  - FRESH-78 In webui user is reporting in Qty CU and not Qty TU
- 
+ - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
+ - FRESH-115 09933 InvoiceCandidates not created - Deadlock
+    * had to revisit the task and fix some more
+
 ## Instructions
 
 
@@ -57,7 +60,6 @@ The actual release notes
 	* also replacing the JUL-based CLogger with slf4j
 
 ## Fixes
- - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
  - 09915 procurement conditions jasper process (109344045046)
     * fix related to the contract start and end dates
