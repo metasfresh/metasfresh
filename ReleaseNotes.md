@@ -28,6 +28,7 @@ The actual release notes
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
+ - FRESH-126 Procurement WebUI: Qty 4 digits needed
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - FRESH-132 Assumption failure when trying to change the payment method in an invoice
 
