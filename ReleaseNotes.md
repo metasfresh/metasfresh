@@ -29,7 +29,8 @@ The actual release notes
 
 ## Fixes
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
- 
+ - FRESH-132 Assumption failure when trying to change the payment method in an invoice
+
 ----------------------------------------------------------------
 
 # metasfresh 4.12.11

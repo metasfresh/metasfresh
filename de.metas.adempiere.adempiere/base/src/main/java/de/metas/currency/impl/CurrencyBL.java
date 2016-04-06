@@ -10,12 +10,12 @@ package de.metas.currency.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -173,11 +173,17 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public final ICurrencyConversionContext createCurrencyConversionContext(final Date ConvDate, final int ConversionType_ID, final int AD_Client_ID, final int AD_Org_ID)
+	public final ICurrencyConversionContext createCurrencyConversionContext(
+			final Date ConvDate,
+			final int ConversionType_ID,
+			final int AD_Client_ID,
+			final int AD_Org_ID)
 	{
 		final CurrencyConversionContext.Builder conversionCtx = CurrencyConversionContext.builder();
 		conversionCtx.setAD_Client_ID(AD_Client_ID);
 		conversionCtx.setAD_Org_ID(AD_Org_ID);
+
+		final Date convDateToUse = ConvDate != null ? ConvDate : SystemTime.asDate();
 
 		// Conversion Type
 		if (ConversionType_ID > 0)
@@ -186,19 +192,12 @@ public class CurrencyBL implements ICurrencyBL
 		}
 		else
 		{
-			final int defaultConversionTypeId = retrieveDefaultConversionTypeId(ConvDate, AD_Client_ID, AD_Org_ID);
+			final int defaultConversionTypeId = retrieveDefaultConversionTypeId(convDateToUse, AD_Client_ID, AD_Org_ID);
 			conversionCtx.setC_ConversionType_ID(defaultConversionTypeId);
 		}
 
 		// Conversion Date
-		if (ConvDate != null)
-		{
-			conversionCtx.setConversionDate(ConvDate);
-		}
-		else
-		{
-			conversionCtx.setConversionDate(SystemTime.asDate());
-		}
+		conversionCtx.setConversionDate(convDateToUse);
 
 		return conversionCtx.build();
 	}
@@ -210,7 +209,7 @@ public class CurrencyBL implements ICurrencyBL
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 		final I_C_ConversionType conversionTypeDef = currencyDAO.retrieveConversionType(Env.getCtx(), ConversionType.Spot);
 		final int conversionTypeId = conversionTypeDef.getC_ConversionType_ID();
-		
+
 		return createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
 	}
 
@@ -276,6 +275,6 @@ public class CurrencyBL implements ICurrencyBL
 		result.setC_ConversionType_ID(conversionCtx.getC_ConversionType_ID());
 		return result;
 	}
-	
-	
+
+
 }
