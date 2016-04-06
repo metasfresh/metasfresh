@@ -32,7 +32,8 @@ The actual release notes
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - FRESH-132 Assumption failure when trying to change the payment method in an invoice
  - FRESH-119 Setup wizard does not update field C BPartner Location.address
- 
+ - FRESH-125 Default User Record is on Wrong Org *
+
 ----------------------------------------------------------------
 
 # metasfresh 4.12.11

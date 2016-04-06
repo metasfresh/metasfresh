@@ -1,0 +1,5 @@
+
+
+UPDATE AD_User 
+SET AD_Org_ID = 1000000
+WHERE AD_User_ID = 1000000;
