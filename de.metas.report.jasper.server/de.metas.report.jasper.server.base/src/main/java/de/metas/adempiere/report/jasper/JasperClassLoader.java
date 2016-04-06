@@ -177,7 +177,7 @@ public final class JasperClassLoader extends ClassLoader
 		}
 		catch (org.apache.commons.vfs2.FileNotFoundException e)
 		{
-			logger.info("Resource not found. Skipping.", e);
+			logger.debug("Resource not found. Skipping.", e);
 			return getParent().getResourceAsStream(name);
 		}
 		catch (FileSystemException e)
