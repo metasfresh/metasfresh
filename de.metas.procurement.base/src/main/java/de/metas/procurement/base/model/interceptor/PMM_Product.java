@@ -40,19 +40,20 @@ import de.metas.procurement.base.model.I_PMM_Product;
 public class PMM_Product
 {
 	public static final PMM_Product instance = new PMM_Product();
-	
+
 	private static final String MSG_ProductChangeNotAllowedForRunningContracts = "de.metas.procurement.ProductChangeNotAllowedForRunningContracts";
 
 	private PMM_Product()
 	{
 	}
-	
+
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
 					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID
+					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_PMM_Product.COLUMNNAME_IsActive
 					})
 	public void preventChangesIfContractActive(final I_PMM_Product pmmProduct)
 	{

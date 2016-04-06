@@ -4,15 +4,6 @@
 This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
 
 In this document, we sort of lean on http://www.semanticreleasenotes.org/, 
-but since that spec doesn't (yet?) support multiple releases in one file, 
-we only adhere to it as far as it's convenient in term of the documents structuring
-
-Meanings of the categories we currently use:
- * it: was developed in the it baseline
- * uat: was developed in the uat baseline (important: this baseline is discontinued!)
- * prod: was deveoped in the prod baseline
- * fix: a bugfix
- * feature: a new feature
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
@@ -33,7 +24,8 @@ The actual release notes
  - FRESH-132 Assumption failure when trying to change the payment method in an invoice
  - FRESH-119 Setup wizard does not update field C BPartner Location.address
  - FRESH-125 Default User Record is on Wrong Org *
-
+ - FRESH-30 09628 Procurement vendor-webUI purchasing and contract management
+    * make sure that a PMM_Product can't be deactivated if it is part of a contract
 ----------------------------------------------------------------
 
 # metasfresh 4.12.11
