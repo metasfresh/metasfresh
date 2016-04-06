@@ -31,7 +31,8 @@ The actual release notes
  - FRESH-126 Procurement WebUI: Qty 4 digits needed
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - FRESH-132 Assumption failure when trying to change the payment method in an invoice
-
+ - FRESH-119 Setup wizard does not update field C BPartner Location.address
+ 
 ----------------------------------------------------------------
 
 # metasfresh 4.12.11
