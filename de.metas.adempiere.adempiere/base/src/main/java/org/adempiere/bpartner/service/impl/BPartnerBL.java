@@ -158,14 +158,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
-
-		final String address = Services.get(ILocationBL.class).mkAddress(bpLocation.getC_Location_ID(),
-				"", // bPartnerBlock
-				"", // userBlock
-				trxName);
+		final String address = Services.get(ILocationBL.class).mkAddress(bpLocation.getC_Location(),
+				"",  // bPartnerBlock
+				"" // userBlock
+		);
 
 		bpLocation.setAddress(address);
+
 	}
 
 	@Override

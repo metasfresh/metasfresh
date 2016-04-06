@@ -403,8 +403,7 @@ public class AddressBuilder
 		{
 			return "";
 		}
-		int locationId = location.getC_Location_ID();
-
+		
 		final String bPartnerBlock = buildBPartnerBlock(bPartner, user);
 
 		final Properties ctx = Env.getCtx();
@@ -416,7 +415,7 @@ public class AddressBuilder
 		String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
 
 		// Addressblock
-		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(locationId, bPartnerBlock, userBlock, trxName);
+		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(location.getC_Location(), bPartnerBlock, userBlock);
 
 		return fullAddressBlock;
 	}

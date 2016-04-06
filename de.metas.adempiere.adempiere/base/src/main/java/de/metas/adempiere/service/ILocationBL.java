@@ -22,7 +22,6 @@ package de.metas.adempiere.service;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
@@ -72,23 +71,26 @@ public interface ILocationBL extends ISingletonService
 
 	/**
 	 * Build address string based on given locationId and bpartner and user blocks
-	 * @param locationId
+	 * 
+	 * task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
+	 * 
+	 * @param location
 	 * @param bPartnerBlock
 	 * @param userBlock
-	 * @param trxName
 	 * @return address string
 	 */
-	String mkAddress(int locationId, String bPartnerBlock, String userBlock, String trxName);
-	
+	String mkAddress(I_C_Location location, String bPartnerBlock, String userBlock);
+
 	I_C_Postal getC_Postal(com.akunagroup.uk.postcode.AddressInterface address);
 
 	/**
 	 * location to string
+	 * 
 	 * @param location
 	 * @return
 	 */
 	String toString(I_C_Location location);
-	
+
 	/**
 	 * Fetch an exact match for city. If there are multiple matches, the method will return <code>null</code>.
 	 * 

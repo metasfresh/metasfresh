@@ -654,10 +654,9 @@ public class LocationBL implements ILocationBL
 	
 	
 	@Override
-	public String mkAddress(final int locationId, String bPartnerBlock, String userBlock, final String trxName)
+	public String mkAddress(final I_C_Location location, String bPartnerBlock, String userBlock)
 	{
 		final Properties ctx = Env.getCtx();
-		final I_C_Location location = InterfaceWrapperHelper.create(ctx, locationId, I_C_Location.class, trxName);
 
 		final I_C_Country countryLocal = Services.get(ICountryDAO.class).getDefault(ctx);
 		final boolean isLocalAddress = location.getC_Country_ID() == countryLocal.getC_Country_ID();
