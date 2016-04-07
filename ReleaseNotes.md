@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-128 Provide Basic CRM Features
+    * adding a simple tabl to the business partner window that displays related documents etc in cronological order
  - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI 
     * exposing a JMX operation to push all products and translations to the webUI
 
