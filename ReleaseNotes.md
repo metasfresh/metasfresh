@@ -15,7 +15,7 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
- - FRESH-141: Procurement: Procurement Candidates initial qtyToOrder 0
+ - FRESH-141 Procurement: Procurement Candidates initial qtyToOrder 0
  - FRESH-128 Provide Basic CRM Features
     * adding a simple table to the business partner window that displays related documents etc in cronological order
  - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI 
