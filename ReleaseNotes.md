@@ -15,12 +15,15 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-141: Procurement: Procurement Candidates initial qtyToOrder 0
  - FRESH-128 Provide Basic CRM Features
-    * adding a simple tabl to the business partner window that displays related documents etc in cronological order
+    * adding a simple table to the business partner window that displays related documents etc in cronological order
  - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI 
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
+ - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
+    * adding an SQL based process that allows us to identify, fix and log occasional stale ICs
  - FRESH-126 Procurement WebUI: Qty 4 digits needed
  - FRESH-108 Fix Summary in C_Flatrate_Term_Create_ProcurementContract
  - FRESH-132 Assumption failure when trying to change the payment method in an invoice
