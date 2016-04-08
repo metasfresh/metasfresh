@@ -23,6 +23,7 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 
 /*
  * #%L
@@ -99,7 +100,14 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final Timestamp date = qtyOnHand.getDateDoc();
 			return new MRPProdcutInfoSelector(asiAware, date, model);
 		}
+		else if (InterfaceWrapperHelper.isInstanceOf(model, I_PMM_PurchaseCandidate.class))
+		{
+			final I_PMM_PurchaseCandidate purchaseCandidate = InterfaceWrapperHelper.create(model, I_PMM_PurchaseCandidate.class);
+			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
+			final Timestamp date = purchaseCandidate.getDatePromised();
+			return new MRPProdcutInfoSelector(asiAware, date, model);
+		}
 		return null;
 	}
 
@@ -211,14 +219,14 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		{
 			return ObjectUtils.toString(this);
 		}
-		
+
 		@Override
 		public String toStringForRegularLogging()
 		{
 			return InterfaceWrapperHelper.getModelTableName(getModel())
 					+ "[Date=" + getDate()
 					+ ",M_Product_ID=" + getM_Product_ID()
-					+ ",M_AttributeSetInstance_ID=" + getM_AttributeSetInstance_ID() 
+					+ ",M_AttributeSetInstance_ID=" + getM_AttributeSetInstance_ID()
 					+ "]";
 		}
 

@@ -8,6 +8,7 @@ RETURNS TABLE(
 	value text, ispurchased character(1), issold character(1), m_product_category_id numeric, isactive character(1),
 	DateGeneral date,
 	GroupName text,
+	PMM_QtyPromised_OnDate numeric, -- FRESH-86
 	qtyreserved_ondate numeric, 
 	qtyordered_ondate numeric, 
 	qtymaterialentnahme numeric, 
@@ -21,6 +22,7 @@ SELECT
 	value, ispurchased, issold, m_product_category_id, isactive,
 	DateGeneral,
 	GroupName,
+	SUM(PMM_QtyPromised_OnDate) AS PMM_QtyPromised_OnDate, -- FRESH-86
 	SUM(qtyreserved_ondate) AS qtyreserved_ondate, 
 	SUM(qtyordered_ondate) AS qtyordered_ondate, 
 	SUM(qtymaterialentnahme) AS qtymaterialentnahme, 
@@ -37,6 +39,7 @@ FROM (
 		p.value, p.ispurchased, p.issold, p.m_product_category_id, p.isactive,
 		$1::date,
 		dim.GroupName,
+		0::numeric, -- FRESH-86 PMM_QtyPromised_OnDate
 		0::numeric,
 		0::numeric,
 		0::numeric,

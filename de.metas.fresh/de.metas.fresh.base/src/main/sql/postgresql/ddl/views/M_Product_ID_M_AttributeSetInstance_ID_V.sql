@@ -21,10 +21,12 @@ FROM (
 	SELECT qohl.M_Product_ID, qohl.M_AttributeSetInstance_ID, qoh.DateDoc::date, 'Fresh_QtyOnHand_Line'
 	FROM Fresh_QtyOnHand qoh
 		JOIN Fresh_QtyOnHand_Line qohl ON qoh.fresh_qtyonhand_id = qohl.Fresh_qtyonhand_id
-	WHERE qoh.Processed='Y'
---	UNION
---	SELECT mrp.bl_M_Product_ID, mrp.bl_M_AttributeSetInstance_ID, NULL:date
---	FROM "de.metas.Fresh".PP_Product_Bom_And_Component mrp
+	WHERE qoh.Processed='Y' AND qoh.IsActive='Y' AND qohl.IsActive='Y'
+	UNION -- FRESH-86
+	SELECT pc.M_Product_ID, pc.M_AttributeSetInstance_ID, pc.DatePromised::Date
+	
+	FROM PMM_PurchaseCandidate pc
+	WHERE pc.IsActive='Y'
 ) data
 WHERE true
 	AND M_Product_ID IS NOT NULL

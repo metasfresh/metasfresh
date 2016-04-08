@@ -18,6 +18,7 @@ $BODY$
     	m_product_id,
 		dategeneral,
 		asikey,
+		PMM_QtyPromised_OnDate, -- FRESH-86
 		qtyreserved_ondate,
 		qtyordered_ondate,
 		qtyordered_sale_ondate,
@@ -30,6 +31,7 @@ $BODY$
     	m_product_id,
 		dategeneral,
 		asikey,
+		PMM_QtyPromised_OnDate, -- FRESH-86: Qty from PMM_PurchaseCandidate
 		qtyreserved_ondate,
 		qtyordered_ondate,
 		qtyordered_sale_ondate,

@@ -5,6 +5,7 @@ CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_Fallback_V(IN DateFrom date)
 	  m_product_id numeric(10,0),
 	  dategeneral date,
 	  asikey text,
+	  PMM_QtyPromised_OnDate numeric, -- FRESH-86
 	  qtyreserved_ondate numeric,
 	  qtyordered_ondate numeric,
 	  qtyordered_sale_ondate numeric,
@@ -22,6 +23,7 @@ FROM
 		p_fallback.M_Product_ID
 		,$1 AS DateGeneral
 		,'' AS ASIKey
+		,0::numeric AS PMM_QtyPromised_OnDate -- FRESH-86
 		,0::numeric AS QtyReserved_OnDate
 		,0::numeric AS QtyOrdered_OnDate
 		,0::numeric AS QtyOrdered_Sale_OnDate
@@ -39,6 +41,7 @@ FROM
 		v.bl_M_Product_ID as M_Product_ID
 		,mv.DateGeneral 
 		,GenerateHUStorageASIKey(v.bl_M_AttributeSetInstance_ID, '') as ASIKey
+		,0::numeric -- FRESH-86
 		,0::numeric
 		,0::numeric
 		,0::numeric

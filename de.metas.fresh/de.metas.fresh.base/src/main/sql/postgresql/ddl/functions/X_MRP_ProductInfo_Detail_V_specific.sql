@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_V(
 	  m_product_id numeric(10,0),
 	  dategeneral date,
 	  asikey text,
+	  PMM_QtyPromised_OnDate numeric, -- FRESH-86
 	  qtyreserved_ondate numeric,
 	  qtyordered_ondate numeric,
 	  qtyordered_sale_ondate numeric,
@@ -24,7 +25,7 @@ SELECT
 	p.M_Product_ID as M_Product_ID
 	,p.DateGeneral::date AS DateGeneral
 	,GenerateHUStorageASIKey(p.M_AttributeSetInstance_ID,'') as ASIKey
-	
+	,CEIL(SUM(COALESCE(qp.PMM_QtyPromised_OnDate, 0))) AS PMM_QtyPromised_OnDate -- FRESH-86
 	,CEIL(SUM(COALESCE(ol_d.QtyReserved_Sale, 0))) AS QtyReserved_OnDate
 	,CEIL(SUM(COALESCE(ol_d.QtyReserved_Purchase, 0))) AS QtyOrdered_OnDate
 	,CEIL(SUM(COALESCE(ol_d.QtyOrdered_Sale, 0))) AS QtyOrdered_Sale_OnDate
@@ -63,6 +64,15 @@ FROM
 	) qohl ON qohl.datedoc = p.DateGeneral::date AND qohl.m_product_id = p.M_Product_ID 
 		AND COALESCE(qohl.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
 
+	-- FRESH-86
+	-- qp = "quantity promised"
+	LEFT JOIN (
+		SELECT SUM(pc.QtyPromised) AS PMM_QtyPromised_OnDate, pc.DatePromised::Date, pc.M_Product_ID, pc.M_AttributesetInstance_ID
+		FROM pmm_purchasecandidate pc
+		GROUP BY pc.DatePromised::date, pc.M_Product_ID, pc.M_AttributesetInstance_ID 
+	) qp ON qp.DatePromised = p.DateGeneral::date AND qp.M_Product_ID = p.M_Product_ID 
+		 AND COALESCE(qp.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
+		
 	LEFT JOIN (	
 		SELECT SUM(qohl.QtyCount) AS QtyCountSum, qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID
 		FROM Fresh_qtyonhand qoh
@@ -84,7 +94,7 @@ FROM
 		GROUP BY qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID 
 	) qohl_i ON qohl_i.datedoc = p.DateGeneral::date AND qohl_i.m_product_id = p.M_Product_ID 
 		AND COALESCE(qohl_i.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
-
+	
 WHERE true
 	AND p.DateGeneral::Date=$1::Date 
 	AND p.M_Product_ID=$2

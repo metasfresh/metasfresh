@@ -9,6 +9,7 @@ SELECT
 	p.value, p.ispurchased, p.issold, p.m_product_category_id, p.isactive,
 	v.DateGeneral,
 	dim.GroupName,
+	SUM(v.PMM_QtyPromised_OnDate) AS PMM_QtyPromised_OnDate, -- FRESH-86
 	SUM(v.qtyreserved_ondate) AS qtyreserved_ondate, 
 	SUM(v.qtyordered_ondate) AS qtyordered_ondate, 
 	SUM(v.qtymaterialentnahme) AS qtymaterialentnahme, 

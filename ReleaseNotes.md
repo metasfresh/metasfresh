@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-86 Procurement Show aggregation of reported Qty in MRP Product Info
+    * adding a column for the (offered) vendor supply quantity to the MRP product info window
  - FRESH-134 Make syncing on the webUI side more robust
     * refactored how we import the data, make it fail only bpartner level, product level
  - FRESH-139 webui log: show user's ip address and email as part of the log line
