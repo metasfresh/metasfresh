@@ -89,6 +89,8 @@ UPDATE AD_InfoColumn_Trl SET IsTranslated='N' WHERE AD_InfoColumn_ID=540134
 DELETE FROM AD_Scheduler WHERE AD_Scheduler_ID=550022
 ;
 
+DELETE FROM AD_Menu WHERE AD_Process_ID=540539;
+
 -- 08.04.2016 15:05
 -- URL zum Konzept
 DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540539
