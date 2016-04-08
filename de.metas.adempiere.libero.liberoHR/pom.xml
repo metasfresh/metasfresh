@@ -8,8 +8,8 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-	<relativePath>../de.metas.parent/pom.xml</relativePath>
-</parent>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
 
 	<groupId>de.metas.adempiere.libero</groupId>
 	<artifactId>de.metas.adempiere.libero.liberoHR</artifactId>
@@ -18,28 +18,29 @@
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>extension/eevolution/libero/src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>extension/eevolution/libero/src/main/resources</directory>
+			</resource>
+		</resources>
 	</build>
 </project>
