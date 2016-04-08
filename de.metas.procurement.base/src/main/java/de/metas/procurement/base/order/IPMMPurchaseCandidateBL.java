@@ -31,15 +31,19 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 public interface IPMMPurchaseCandidateBL extends ISingletonService
 {
 	/**
-	 * Sets QtyPromised fields and update QtyToOrder fields.
+	 * Sets QtyPromised fields.
 	 *
-	 * NOTE: this method is not saving the candidate
+	 * NOTE:
+	 * <ul>
+	 * <li>this method is NOT saving the candidate
+	 * <li>this method is NOT changing the QtyToOrder fields
+	 * </ul>
 	 *
 	 * @param candidate
 	 * @param qtyPromised
 	 * @param qtyPromisedTU
 	 */
-	void setQtyPromisedAndUpdate(I_PMM_PurchaseCandidate candidate, BigDecimal qtyPromised, BigDecimal qtyPromisedTU);
+	void setQtyPromised(I_PMM_PurchaseCandidate candidate, BigDecimal qtyPromised, BigDecimal qtyPromisedTU);
 
 	/**
 	 * Adds QtyOrdered/QtyOrderedTU and update the QtyToOrder fields.
@@ -65,6 +69,7 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 
 	/**
 	 * Updates QtyToOrder = QtyToOrderTU x TU capacity
+	 * 
 	 * @param candidate
 	 */
 	void updateQtyToOrderFromQtyToOrderTU(I_PMM_PurchaseCandidate candidate);

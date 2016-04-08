@@ -156,7 +156,8 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 			//
 			// Update the candidate with the values from event
-			purchaseCandidateBL.setQtyPromisedAndUpdate(candidate, event.getQtyPromised(), event.getQtyPromised_TU());
+			purchaseCandidateBL.setQtyPromised(candidate, event.getQtyPromised(), event.getQtyPromised_TU());
+			// NOTE: as per FRESH-141 we shall not touch the QtyToOrder fields
 			InterfaceWrapperHelper.save(candidate);
 
 			//

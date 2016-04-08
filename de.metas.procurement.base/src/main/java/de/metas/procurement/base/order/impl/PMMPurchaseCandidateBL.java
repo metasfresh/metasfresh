@@ -31,11 +31,10 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 {
 	@Override
-	public void setQtyPromisedAndUpdate(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyPromised, final BigDecimal qtyPromisedTU)
+	public void setQtyPromised(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyPromised, final BigDecimal qtyPromisedTU)
 	{
 		candidate.setQtyPromised(qtyPromised);
 		candidate.setQtyPromised_TU(qtyPromisedTU);
-		updateQtyToOrder(candidate);
 	}
 
 	@Override
