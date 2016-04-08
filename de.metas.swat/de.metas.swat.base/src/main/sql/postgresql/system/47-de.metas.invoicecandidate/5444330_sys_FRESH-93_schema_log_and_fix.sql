@@ -44,6 +44,8 @@ UPDATE AD_Process SET SqlStatement='SELECT de_metas_invoicecandidate.C_Invoice_C
 -- DDL
 
 
+CREATE SCHEMA de_metas_invoicecandidate;
+
 -- ICs that reference only an inoutLine (no orderline)
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.C_Invoice_Candidate_Wrong_QtyDelivered_iol_v AS
 SELECT ic.C_Invoice_Candidate_ID, ic.Created, ic.Updated, dt.Name, COALESCE(DateToInvoice_Override, DateToInvoice),
