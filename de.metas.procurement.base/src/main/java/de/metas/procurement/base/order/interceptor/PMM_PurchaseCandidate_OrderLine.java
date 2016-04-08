@@ -51,7 +51,7 @@ public class PMM_PurchaseCandidate_OrderLine
 			final I_PMM_PurchaseCandidate candidate = alloc.getPMM_PurchaseCandidate();
 			final BigDecimal qtyOrdered = alloc.getQtyOrdered();
 			final BigDecimal qtyOrderedTU = alloc.getQtyOrdered_TU();
-			Services.get(IPMMPurchaseCandidateBL.class).addQtyOrderedAndUpdate(candidate, qtyOrdered, qtyOrderedTU);
+			Services.get(IPMMPurchaseCandidateBL.class).addQtyOrderedAndResetQtyToOrder(candidate, qtyOrdered, qtyOrderedTU);
 			InterfaceWrapperHelper.save(candidate);
 		}
 
@@ -69,7 +69,7 @@ public class PMM_PurchaseCandidate_OrderLine
 			final I_PMM_PurchaseCandidate candidate = alloc.getPMM_PurchaseCandidate();
 			final BigDecimal qtyOrdered = alloc.getQtyOrdered();
 			final BigDecimal qtyOrderedTU = alloc.getQtyOrdered_TU();
-			Services.get(IPMMPurchaseCandidateBL.class).subtractQtyOrderedAndUpdate(candidate, qtyOrdered, qtyOrderedTU);
+			Services.get(IPMMPurchaseCandidateBL.class).subtractQtyOrdered(candidate, qtyOrdered, qtyOrderedTU);
 			InterfaceWrapperHelper.save(candidate);
 		}
 

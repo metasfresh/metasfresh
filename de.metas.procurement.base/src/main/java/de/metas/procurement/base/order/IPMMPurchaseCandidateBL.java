@@ -46,26 +46,31 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 	void setQtyPromised(I_PMM_PurchaseCandidate candidate, BigDecimal qtyPromised, BigDecimal qtyPromisedTU);
 
 	/**
-	 * Adds QtyOrdered/QtyOrderedTU and update the QtyToOrder fields.
+	 * Adds QtyOrdered/QtyOrderedTU and reset the QtyToOrder fields.
 	 *
 	 * NOTE: this method is not saving the candidate
 	 *
 	 * @param candidate
 	 * @param qtyOrdered
 	 * @param qtyOrderedTU
+	 * @see #resetQtyToOrder(I_PMM_PurchaseCandidate)
 	 */
-	void addQtyOrderedAndUpdate(I_PMM_PurchaseCandidate candidate, BigDecimal qtyOrdered, BigDecimal qtyOrderedTU);
+	void addQtyOrderedAndResetQtyToOrder(I_PMM_PurchaseCandidate candidate, BigDecimal qtyOrdered, BigDecimal qtyOrderedTU);
 
 	/**
-	 * Subtracts QtyOrdered/QtyOrderedTU and update the QtyToOrder fields.
+	 * Subtracts from QtyOrdered/QtyOrderedTU.
 	 *
-	 * NOTE: this method is not saving the candidate
+	 * NOTE
+	 * <ul>
+	 * <li>this method is NOT saving the candidate
+	 * <li>this method is NOT changing the QtyToOrder fields
+	 * </ul>
 	 *
 	 * @param candidate
 	 * @param qtyOrdered
 	 * @param qtyOrderedTU
 	 */
-	void subtractQtyOrderedAndUpdate(I_PMM_PurchaseCandidate candidate, BigDecimal qtyOrdered, BigDecimal qtyOrderedTU);
+	void subtractQtyOrdered(I_PMM_PurchaseCandidate candidate, BigDecimal qtyOrdered, BigDecimal qtyOrderedTU);
 
 	/**
 	 * Updates QtyToOrder = QtyToOrderTU x TU capacity
@@ -73,4 +78,11 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 	 * @param candidate
 	 */
 	void updateQtyToOrderFromQtyToOrderTU(I_PMM_PurchaseCandidate candidate);
+
+	/**
+	 * Sets QtyToOrder fields to ZERO.
+	 * 
+	 * @param candidate
+	 */
+	void resetQtyToOrder(final I_PMM_PurchaseCandidate candidate);
 }

@@ -38,62 +38,19 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 	}
 
 	@Override
-	public void addQtyOrderedAndUpdate(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyOrdered, final BigDecimal qtyOrderedTU)
+	public void addQtyOrderedAndResetQtyToOrder(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyOrdered, final BigDecimal qtyOrderedTU)
 	{
 		candidate.setQtyOrdered(candidate.getQtyOrdered().add(qtyOrdered));
 		candidate.setQtyOrdered_TU(candidate.getQtyOrdered_TU().add(qtyOrderedTU));
 
-		updateQtyToOrder(candidate);
+		resetQtyToOrder(candidate);
 	}
 
 	@Override
-	public void subtractQtyOrderedAndUpdate(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyOrdered, final BigDecimal qtyOrderedTU)
+	public void subtractQtyOrdered(final I_PMM_PurchaseCandidate candidate, final BigDecimal qtyOrdered, final BigDecimal qtyOrderedTU)
 	{
 		candidate.setQtyOrdered(candidate.getQtyOrdered().subtract(qtyOrdered));
 		candidate.setQtyOrdered_TU(candidate.getQtyOrdered_TU().subtract(qtyOrderedTU));
-
-		// Update QtyToOrder
-		{
-			final BigDecimal qtyToOrderNew = candidate.getQtyToOrder().add(qtyOrdered);
-			candidate.setQtyToOrder(qtyToOrderNew);
-
-			final BigDecimal qtyToOrderTUNew = candidate.getQtyToOrder_TU().add(qtyOrderedTU);
-			candidate.setQtyToOrder_TU(qtyToOrderTUNew);
-		}
-	}
-
-	private void updateQtyToOrder(final I_PMM_PurchaseCandidate candidate)
-	{
-		candidate.setQtyToOrder(calculateQtyToOrder(candidate));
-		candidate.setQtyToOrder_TU(calculateQtyToOrderTU(candidate));
-	}
-
-	private BigDecimal calculateQtyToOrder(final I_PMM_PurchaseCandidate candidate)
-	{
-		final BigDecimal qtyPromised = candidate.getQtyPromised();
-		final BigDecimal qtyOrdered = candidate.getQtyOrdered();
-
-		final BigDecimal qtyToOrder = qtyPromised.subtract(qtyOrdered);
-		if (qtyToOrder.signum() < 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return qtyToOrder;
-	}
-
-	private BigDecimal calculateQtyToOrderTU(final I_PMM_PurchaseCandidate candidate)
-	{
-		final BigDecimal qtyPromisedTU = candidate.getQtyPromised_TU();
-		final BigDecimal qtyOrderedTU = candidate.getQtyOrdered_TU();
-
-		final BigDecimal qtyToOrderTU = qtyPromisedTU.subtract(qtyOrderedTU);
-		if (qtyToOrderTU.signum() < 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return qtyToOrderTU;
 	}
 
 	@Override
@@ -111,6 +68,13 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		{
 			candidate.setQtyOrdered(candidate.getQtyToOrder_TU());
 		}
+	}
+
+	@Override
+	public void resetQtyToOrder(I_PMM_PurchaseCandidate candidate)
+	{
+		candidate.setQtyToOrder(BigDecimal.ZERO);
+		candidate.setQtyToOrder_TU(BigDecimal.ZERO);
 	}
 
 }
