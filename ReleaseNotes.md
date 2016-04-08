@@ -15,6 +15,9 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-134 Make syncing on the webUI side more robust
+    * refactored how we import the data, make it fail only bpartner level, product level
+ - FRESH-139 webui log: show user's ip address and email as part of the log line
  - FRESH-141 Procurement: Procurement Candidates initial qtyToOrder 0
  - FRESH-128 Provide Basic CRM Features
     * adding a simple table to the business partner window that displays related documents etc in cronological order
