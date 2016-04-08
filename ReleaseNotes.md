@@ -25,6 +25,7 @@ The actual release notes
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
+ - FRESH-129 contact email in jaspers only after setting the user created as sales contact
  - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
     * adding an SQL based process that allows us to identify, fix and log occasional stale ICs
  - FRESH-126 Procurement WebUI: Qty 4 digits needed
@@ -34,6 +35,7 @@ The actual release notes
  - FRESH-125 Default User Record is on Wrong Org *
  - FRESH-30 09628 Procurement vendor-webUI purchasing and contract management
     * make sure that a PMM_Product can't be deactivated if it is part of a contract
+
 ----------------------------------------------------------------
 
 # metasfresh 4.12.11

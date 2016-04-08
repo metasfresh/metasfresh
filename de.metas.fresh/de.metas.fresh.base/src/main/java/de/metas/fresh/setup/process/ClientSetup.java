@@ -202,6 +202,12 @@ class ClientSetup
 		//
 		// ESR
 		ESRConstants.setEnabled(getCtx(), false);
+		
+		// task FRESH-129
+		// Make sure the org contact is both sales and purchase contact
+		
+		orgContact.setIsSalesContact(true);
+		orgContact.setIsPurchaseContact(true);
 	}
 
 	private Properties getCtx()
