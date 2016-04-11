@@ -66,11 +66,11 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
 				//
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID())
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, pmmSegment.getM_Product_ID())
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID() > 0 ? pmmSegment.getC_BPartner_ID() : null)
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, pmmSegment.getM_Product_ID() > 0 ? pmmSegment.getM_Product_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, pmmSegment.getM_AttributeSetInstance_ID() > 0 ? pmmSegment.getM_AttributeSetInstance_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_HU_PI_Item_Product_ID, pmmSegment.getM_HU_PI_Item_Product_ID() > 0 ? pmmSegment.getM_HU_PI_Item_Product_ID() : null)
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_Flatrate_DataEntry_ID, pmmSegment.getC_Flatrate_DataEntry_ID())
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_Flatrate_DataEntry_ID, pmmSegment.getC_Flatrate_DataEntry_ID() > 0 ? pmmSegment.getC_Flatrate_DataEntry_ID() : null)
 				//
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_DatePromised, day)
 				//

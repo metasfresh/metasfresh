@@ -35,5 +35,12 @@
 			<artifactId>de.metas.util</artifactId>
 		</dependency>
 	</dependencies>
-	
+	<build>
+		<sourceDirectory>extension/eevolution/libero/src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>extension/eevolution/libero/src/main/resources</directory>
+			</resource>
+		</resources>
+	</build>
 </project>
