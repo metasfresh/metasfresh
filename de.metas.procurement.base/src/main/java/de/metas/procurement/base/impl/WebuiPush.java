@@ -91,10 +91,14 @@ public class WebuiPush implements IWebuiPush
 		}
 
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
-		if (!syncFactory.hasRunningContracts(bpartner))
-		{
-			return;
-		}
+// @formatter:off
+// FRESH-168: all users with IsMfProcurementUser='Y' are allowed to record a supply via procurement-webui,
+// even if they don't have a contract/flatrate term.
+//		if (!syncFactory.hasRunningContracts(bpartner))
+//		{
+//			return;
+//		}
+// @formatter:on
 
 		// Validate
 		if (!bpartner.isVendor())

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +27,7 @@ import com.google.common.collect.MultimapBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.procurement.base.IPMMBPartnerDAO;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMMessageDAO;
 import de.metas.procurement.base.IPMMProductDAO;
@@ -85,6 +87,7 @@ public class SyncObjectsFactory
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
 	private final transient IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
+	private final transient IPMMBPartnerDAO pmmbPartnerDAO = Services.get(IPMMBPartnerDAO.class);
 
 	//
 	// parameters
@@ -155,11 +158,6 @@ public class SyncObjectsFactory
 		}
 
 		return syncContract;
-	}
-
-	public boolean hasRunningContracts(final I_C_BPartner bpartner)
-	{
-		return pmmContractsDAO.hasRunningContract(bpartner);
 	}
 
 	public SyncBPartner createSyncBPartner(final int bpartnerId)
@@ -266,8 +264,13 @@ public class SyncObjectsFactory
 
 	private Set<Integer> getAllBPartnerIds()
 	{
-		final boolean fullyLoadedRequired = true;
-		return getC_Flatrate_Terms_IndexedByBPartnerId(fullyLoadedRequired).keySet();
+		final Set<Integer> result = new HashSet<>();
+		final List<I_C_BPartner> bPartners = pmmbPartnerDAO.retrieveAllPartnersWithProcurementUsers();
+		for (final I_C_BPartner bPartner : bPartners)
+		{
+			result.add(bPartner.getC_BPartner_ID());
+		}
+		return result;
 	}
 
 	private I_C_BPartner getC_BPartnerById(final int bpartnerId)
@@ -366,7 +369,7 @@ public class SyncObjectsFactory
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
 		{
 			final SyncProduct syncProduct = createSyncProduct(pmmProduct);
-			if(syncProduct == null)
+			if (syncProduct == null)
 			{
 				continue;
 			}

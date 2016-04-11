@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.13.12 (Upcoming Release)  
 
 ## Features
+ - FRESH-168 Procurement: Support logon for vendors with no contract
  - FRESH-86 Procurement Show aggregation of reported Qty in MRP Product Info
     * adding a column for the (offered) vendor supply quantity to the MRP product info window
  - FRESH-134 Make syncing on the webUI side more robust

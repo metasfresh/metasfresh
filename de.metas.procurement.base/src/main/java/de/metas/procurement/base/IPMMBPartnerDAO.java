@@ -1,15 +1,11 @@
 package de.metas.procurement.base;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.base.model.I_AD_User;
 
 /*
  * #%L
@@ -33,17 +29,15 @@ import de.metas.procurement.base.model.I_PMM_Product;
  * #L%
  */
 
-public interface IPMMContractsDAO extends ISingletonService
+public interface IPMMBPartnerDAO extends ISingletonService
 {
-
-	List<I_C_Flatrate_Term> retrieveAllRunningContractsOnDate(Date date);
-
-	List<I_C_Flatrate_Term> retrieveRunningContractsOnDateForBPartner(Date date, int bpartnerId);
-
-	boolean hasRunningContract(I_C_BPartner bpartner);
-
-	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, Timestamp date);
-
-	boolean hasRunningContracts(I_PMM_Product pmmProduct);
-
+	/**
+	 * Retrieve all active bPartners which have at least one <code>AD_User</code> with {@link I_AD_User#COLUMNNAME_IsMFProcurementUser} <code>='Y'</code>.
+	 * <p>
+	 * Note that as of FRESH-168, we also allow vendors that have no contract to log on to the procurement webui and offer unsupported products.
+	 *
+	 * @return
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-168
+	 */
+	List<I_C_BPartner> retrieveAllPartnersWithProcurementUsers();
 }
