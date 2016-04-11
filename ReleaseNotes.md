@@ -27,6 +27,7 @@ The actual release notes
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
+ - FRESH-164 Procurement: multiple Purchase Candidates after reporting qty for same day
  - FRESH-129 contact email in jaspers only after setting the user created as sales contact
  - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
     * adding an SQL based process that allows us to identify, fix and log occasional stale ICs

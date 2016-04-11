@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
@@ -102,14 +100,17 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.MSort;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Search Information and return selection - Base Class.
@@ -626,7 +627,7 @@ public abstract class Info extends Component
 	/**
 	 * Execute our query and load the data, using a worker thread.<br>
 	 * If the loading is already in progress then the method makes sure that the load will be repeated.
-	 * 
+	 *
 	 * @see #isWorkerRepeatLoadData()
 	 * @task 08755
 	 */
@@ -661,7 +662,7 @@ public abstract class Info extends Component
 
 	/**
 	 * Lock used to synchronize the access to {@link #_workerIsRunning} and {@link #_workerShallRunAgain} which are accessed by both the worker thread and UI threads.
-	 * 
+	 *
 	 * @see #isWorkerRepeatLoadData()
 	 * @see #executeQuery()
 	 * @task 08775
@@ -698,7 +699,7 @@ public abstract class Info extends Component
 	 * <p>
 	 * 3. if the value of {@link #_workerShallRunAgain} is <code>false</code>, then this method sets {@link #_workerIsRunning} to <code>false</code>, because the worker thread did the actual work and
 	 * because it is not requested to repeat the work, it will soon finish.
-	 * 
+	 *
 	 * @return
 	 * @task 08775
 	 */
@@ -1839,6 +1840,7 @@ public abstract class Info extends Component
 			catch (final SQLException e)
 			{
 				log.error(dataSql, e);
+				throw AdempiereException.wrapIfNeeded(e);
 			}
 			finally
 			{
@@ -1935,7 +1937,7 @@ public abstract class Info extends Component
 
 	/**
 	 * task 09961
-	 * 
+	 *
 	 * Method to tell which row is to be selected after loading.
 	 * By default, the selected row will be the first one
 	 */
@@ -2111,10 +2113,10 @@ public abstract class Info extends Component
 
 	/**
 	 * Injects the tree panel component in Info window layout.
-	 * 
+	 *
 	 * Under the hood, this method will create a split pane, will add the grid table in it's right component and it will add the tree panel in it's left component. We are creating the split pane only
 	 * when we know that we have to display something in it's left side (i.e. the tree panel) because else it will draw some borders which are not looking nice.
-	 * 
+	 *
 	 * @param treePanel tree panel component to be set in the left side of the split pane.
 	 * @param dividerLocation split pane's divider location
 	 */
