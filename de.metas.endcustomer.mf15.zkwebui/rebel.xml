@@ -2,18 +2,18 @@
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.zeroturnaround.com" xsi:schemaLocation="http://www.zeroturnaround.com http://www.zeroturnaround.com/alderaan/rebel-2_0.xsd">
 
 	<classpath>
-		<dir name="${workspace.dir}/de.metas.fresh/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.zkwebui/target/classes">
+		<dir name="${rebel.project.path}/target/classes">
 		</dir>
 	</classpath>
 
 	<web>
 		<link target="/">
-			<dir name="${workspace.dir}/de.metas.fresh/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.zkwebui/target/m2e-wtp/web-resources">
+			<dir name="${rebel.project.path}/target/m2e-wtp/web-resources">
 				<exclude name="/"/>
 			</dir>
 		</link>
 		<link target="/">
-			<dir name="${workspace.dir}/de.metas.fresh/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.zkwebui/src/main/webapp">
+			<dir name="${rebel.project.path}/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.zkwebui/src/main/webapp">
 			</dir>
 		</link>
 	</web>
