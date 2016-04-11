@@ -27,8 +27,6 @@ The actual release notes
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
- - FRESH-55 Add ASI-support to procurement contracts
-    * fix: not all UOMs were eligible anymore
  - FRESH-167: Procurement: Provide Trend also when qty reported = 0
  - FRESH-164 Procurement: multiple Purchase Candidates after reporting qty for same day
  - FRESH-129 contact email in jaspers only after setting the user created as sales contact

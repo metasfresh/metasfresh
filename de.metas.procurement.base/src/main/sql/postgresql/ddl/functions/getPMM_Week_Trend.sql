@@ -1,7 +1,7 @@
 drop function if exists de_metas_procurement.getPMM_Week_Trend(p_candidate PMM_PurchaseCandidate, p_WeekOffset integer);
 
 create or replace function de_metas_procurement.getPMM_Week_Trend(p_candidate PMM_PurchaseCandidate, p_WeekOffset integer default 0)
-returns PMM_PurchaseCandidate_Weekly
+returns char
 as
 $BODY$
 	select w.PMM_Trend
