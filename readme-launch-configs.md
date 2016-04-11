@@ -1,5 +1,5 @@
 
-# Launch config de.metas.procurement.webui.launch
+# config de.metas.procurement.webui.launch
 
 this launch config starts the procurementUI with
 
@@ -19,3 +19,7 @@ So the application's embedded jms-broker will attempt to connect another locally
 
 Rationale: the metasfresh server is there by default, so it may run with the default ports. 
 The webui-server only runs while we develop particular procurement tasks, so we give it non-standard ports to avoid colisions.
+
+# de.metas.procurement.webui_jrebel.launch
+
+like de.metas.procurement.webui.launch, but starts the webUI with jrebel
