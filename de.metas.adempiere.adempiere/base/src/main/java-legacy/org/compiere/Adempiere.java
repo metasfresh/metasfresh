@@ -74,7 +74,7 @@ import de.metas.logging.LogManager;
  * @version $Id: Adempiere.java,v 1.8 2006/08/11 02:58:14 jjanke Exp $
  *
  */
-public final class Adempiere
+public class Adempiere
 {
 	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
 
