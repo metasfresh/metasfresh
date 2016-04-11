@@ -39,6 +39,7 @@ import org.compiere.util.TimeUtil;
 public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 {
 	public static final DateTruncQueryFilterModifier DAY = new DateTruncQueryFilterModifier(TimeUtil.TRUNC_DAY);
+	public static final DateTruncQueryFilterModifier WEEK = new DateTruncQueryFilterModifier(TimeUtil.TRUNC_WEEK);
 	public static final DateTruncQueryFilterModifier MONTH = new DateTruncQueryFilterModifier(TimeUtil.TRUNC_MONTH);
 	public static final DateTruncQueryFilterModifier YEAR = new DateTruncQueryFilterModifier(TimeUtil.TRUNC_YEAR);
 
@@ -53,6 +54,10 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 		if (TimeUtil.TRUNC_DAY.equals(trunc))
 		{
 			return DAY;
+		}
+		else if (TimeUtil.TRUNC_WEEK.equals(trunc))
+		{
+			return WEEK;
 		}
 		else if (TimeUtil.TRUNC_MONTH.equals(trunc))
 		{
@@ -101,11 +106,15 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	 * @param trunc
 	 * @return
 	 */
-	public static String getTruncSql(final String trunc)
+	private static String getTruncSql(final String trunc)
 	{
 		if (TimeUtil.TRUNC_DAY.equals(trunc))
 		{
 			return "DD";
+		}
+		else if (TimeUtil.TRUNC_WEEK.equals(trunc))
+		{
+			return "WW";
 		}
 		else if (TimeUtil.TRUNC_MONTH.equals(trunc))
 		{

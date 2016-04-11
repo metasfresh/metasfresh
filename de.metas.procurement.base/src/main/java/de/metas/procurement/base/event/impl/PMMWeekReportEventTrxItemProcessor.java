@@ -1,5 +1,6 @@
 package de.metas.procurement.base.event.impl;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,9 +13,14 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMWeekDAO;
+import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.balance.PMMBalanceSegment;
+import de.metas.procurement.base.impl.SyncUUIDs;
+import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.model.I_PMM_Week;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.procurement.sync.protocol.SyncProductSupply;
 
 /*
  * #%L
@@ -60,7 +66,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
 				.build();
 		final Timestamp weekDate = TimeUtil.trunc(event.getWeekDate(), TimeUtil.TRUNC_WEEK);
-		
+
 		//
 		// Get aggregate
 		I_PMM_Week aggregate = pmmWeekDAO.retrieveFor(segment, weekDate);
@@ -95,7 +101,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 			{
 				aggregate.setM_AttributeSetInstance_ID(segment.getM_AttributeSetInstance_ID());
 			}
-			
+
 			// Time dimension
 			aggregate.setWeekDate(weekDate);
 
@@ -107,6 +113,10 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		// Update the candidate with the values from event
 		aggregate.setPMM_Trend(event.getPMM_Trend());
 		InterfaceWrapperHelper.save(aggregate);
+
+		//
+		//
+		createWeeklyPlanningQtyReportEvents(event);
 
 		//
 		// Mark the event as processed
@@ -156,6 +166,31 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		}
 
 		return false;
+	}
+
+	/**
+	 * Create an planning {@link I_PMM_QtyReport_Event}, for 2 weeks ago.
+	 * 
+	 * The main reason for doing this is because when the user is reporting a trend, we want to see that trend in PMM Purchase Candidates window. So we are creating an ZERO planning QtyReport event
+	 * which will trigger the candidate creation if is not already there. And yes, we report for 2 weeks ago because in the candidates window we display the planning for next 2 weeks.
+	 * 
+	 * @param weekReportEvent
+	 * @task FRESH-167
+	 */
+	private final void createWeeklyPlanningQtyReportEvents(final I_PMM_WeekReport_Event weekReportEvent)
+	{
+		final SyncProductSupply syncProductSupply_TwoWeeksAgo = new SyncProductSupply();
+		syncProductSupply_TwoWeeksAgo.setBpartner_uuid(SyncUUIDs.toUUIDString(weekReportEvent.getC_BPartner()));
+		syncProductSupply_TwoWeeksAgo.setProduct_uuid(SyncUUIDs.toUUIDString(weekReportEvent.getPMM_Product()));
+		syncProductSupply_TwoWeeksAgo.setContractLine_uuid(null); // unknown
+		syncProductSupply_TwoWeeksAgo.setQty(BigDecimal.ZERO);
+		syncProductSupply_TwoWeeksAgo.setWeekPlanning(true);
+
+		final Timestamp dateWeek = TimeUtil.trunc(weekReportEvent.getWeekDate(), TimeUtil.TRUNC_WEEK);
+		final Timestamp dateTwoWeeksAgo = TimeUtil.addDays(dateWeek, -2 * 7);
+		syncProductSupply_TwoWeeksAgo.setDay(dateTwoWeeksAgo);
+
+		Services.get(IServerSyncBL.class).reportProductSupplies(SyncProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));
 	}
 
 	private final ILoggable getLoggable()

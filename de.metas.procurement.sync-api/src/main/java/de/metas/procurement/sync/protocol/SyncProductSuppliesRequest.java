@@ -30,6 +30,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "SyncProductSuppliesRequest")
 public class SyncProductSuppliesRequest
 {
+	public static final SyncProductSuppliesRequest of(final SyncProductSupply syncProductSupply)
+	{
+		if (syncProductSupply == null)
+		{
+			throw new NullPointerException("syncProductSupply is null");
+		}
+		
+		final SyncProductSuppliesRequest request = new SyncProductSuppliesRequest();
+		request.getProductSupplies().add(syncProductSupply);
+		
+		return request;
+	}
+	
 	private List<SyncProductSupply> productSupplies = new ArrayList<>();
 	
 	@Override

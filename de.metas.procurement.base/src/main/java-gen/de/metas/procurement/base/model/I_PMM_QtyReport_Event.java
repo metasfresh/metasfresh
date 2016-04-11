@@ -361,6 +361,29 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set Anbauplanung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPlanning (boolean IsPlanning);
+
+	/**
+	 * Get Anbauplanung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPlanning();
+
+    /** Column definition for IsPlanning */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_IsPlanning = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "IsPlanning", null);
+    /** Column name IsPlanning */
+    public static final String COLUMNNAME_IsPlanning = "IsPlanning";
+
+	/**
 	 * Set Ausprägung Merkmals-Satz.
 	 * Instanz des Merkmals-Satzes zum Produkt
 	 *

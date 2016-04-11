@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -78,8 +79,8 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		Check.assumeNotNull(operator, "operator not null");
 		this.operator = operator;
 
-		this.operand1Modifier = modifier;
-		this.operand2Modifier = modifier;
+		this.operand1Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);
+		this.operand2Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);
 
 	}
 

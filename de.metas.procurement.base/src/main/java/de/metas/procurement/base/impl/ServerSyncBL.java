@@ -24,6 +24,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -161,13 +162,16 @@ public class ServerSyncBL implements IServerSyncBL
 			}
 
 			// QtyPromised(CU)
-			final BigDecimal qtyPromised = syncProductSupply.getQty();
+			final BigDecimal qtyPromised = Util.coalesce(syncProductSupply.getQty(), BigDecimal.ZERO);
 			qtyReportEvent.setQtyPromised(qtyPromised);
 
 			// DatePromised
 			final Timestamp datePromised = TimeUtil.asTimestamp(syncProductSupply.getDay());
 			qtyReportEvent.setDatePromised(datePromised);
-
+			
+			// Is a weekly planning record?
+			qtyReportEvent.setIsPlanning(syncProductSupply.isWeekPlanning());
+			
 			//
 			// Update the QtyReport event
 			updateFromPMMProduct(qtyReportEvent, errors);

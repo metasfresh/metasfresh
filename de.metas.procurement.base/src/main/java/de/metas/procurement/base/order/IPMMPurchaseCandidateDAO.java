@@ -38,4 +38,7 @@ public interface IPMMPurchaseCandidateDAO extends ISingletonService
 	void deletePurchaseCandidateOrderLines(I_C_Order order);
 
 	I_PMM_PurchaseCandidate retrieveFor(PMMPurchaseCandidateSegment pmmSegment, Date day);
+
+	/** @return true if there are any records for given segment in given week */
+	boolean hasRecordsForWeek(PMMPurchaseCandidateSegment pmmSegment, Date weekDate);
 }

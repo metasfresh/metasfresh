@@ -86,9 +86,27 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
 				.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID())
 				.build();
+		
+		final Timestamp datePromised = event.getDatePromised();
+		I_PMM_PurchaseCandidate candidate;
+		
 		//
-		// Get candidate
-		I_PMM_PurchaseCandidate candidate = purchaseCandidateDAO.retrieveFor(pmmSegment, event.getDatePromised());
+		// Weekly planning
+		if (event.isPlanning())
+		{
+			candidate = null;
+			if (purchaseCandidateDAO.hasRecordsForWeek(pmmSegment, datePromised))
+			{
+				markProcessed(event, candidate);
+				return;
+			}
+		}
+		//
+		// Concrete QtyReport
+		else
+		{
+			candidate = purchaseCandidateDAO.retrieveFor(pmmSegment, datePromised);
+		}
 
 		//
 		// If candidate is currently locked, skip processing this event for now
@@ -128,7 +146,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				}
 
 				candidate.setC_UOM_ID(event.getC_UOM_ID());
-				candidate.setDatePromised(event.getDatePromised());
+				candidate.setDatePromised(datePromised);
 
 				candidate.setAD_Org_ID(event.getAD_Org_ID());
 

@@ -32,6 +32,7 @@ public class SyncProductSupply extends AbstractSyncModel
 	private String contractLine_uuid;
 	private BigDecimal qty;
 	private Date day;
+	private boolean weekPlanning = false;
 	private int version;
 
 	@Override
@@ -43,6 +44,7 @@ public class SyncProductSupply extends AbstractSyncModel
 				+ ", contractLine_uuid=" + contractLine_uuid 
 				+ ", qty=" + qty 
 				+ ", day=" + day
+				+ ", weekPlanning=" + weekPlanning
 				+ ", version=" + version
 				+ ", uuid="+getUuid()
 				+ "]";
@@ -106,5 +108,15 @@ public class SyncProductSupply extends AbstractSyncModel
 	public void setVersion(int version)
 	{
 		this.version = version;
+	}
+
+	public boolean isWeekPlanning()
+	{
+		return weekPlanning;
+	}
+
+	public void setWeekPlanning(boolean weekPlanning)
+	{
+		this.weekPlanning = weekPlanning;
 	}
 }

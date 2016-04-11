@@ -4,6 +4,9 @@ import java.util.Date;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -59,6 +62,21 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 	@Override
 	public I_PMM_PurchaseCandidate retrieveFor(final PMMPurchaseCandidateSegment pmmSegment, final Date day)
 	{
+		return queryFor(pmmSegment, day, NullQueryFilterModifier.instance)
+				.create()
+				.firstOnly(I_PMM_PurchaseCandidate.class);
+	}
+
+	@Override
+	public boolean hasRecordsForWeek(final PMMPurchaseCandidateSegment pmmSegment, final Date weekDate)
+	{
+		return queryFor(pmmSegment, weekDate, DateTruncQueryFilterModifier.WEEK)
+				.create()
+				.match();
+	}
+	
+	private final IQueryBuilder<I_PMM_PurchaseCandidate> queryFor(final PMMPurchaseCandidateSegment pmmSegment, final Date day, final IQueryFilterModifier dayModifier)
+	{
 		Check.assumeNotNull(pmmSegment, "pmmSegment not null");
 		Check.assumeNotNull(day, "day not null");
 
@@ -66,15 +84,14 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
 				//
+				// Segment
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID() > 0 ? pmmSegment.getC_BPartner_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, pmmSegment.getM_Product_ID() > 0 ? pmmSegment.getM_Product_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, pmmSegment.getM_AttributeSetInstance_ID() > 0 ? pmmSegment.getM_AttributeSetInstance_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_HU_PI_Item_Product_ID, pmmSegment.getM_HU_PI_Item_Product_ID() > 0 ? pmmSegment.getM_HU_PI_Item_Product_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_Flatrate_DataEntry_ID, pmmSegment.getC_Flatrate_DataEntry_ID() > 0 ? pmmSegment.getC_Flatrate_DataEntry_ID() : null)
 				//
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_DatePromised, day)
-				//
-				.create()
-				.firstOnly(I_PMM_PurchaseCandidate.class);
+				// Date
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_DatePromised, day, dayModifier);
 	}
 }

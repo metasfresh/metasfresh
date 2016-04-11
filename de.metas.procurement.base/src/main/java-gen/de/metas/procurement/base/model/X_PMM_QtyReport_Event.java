@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1321296545L;
+	private static final long serialVersionUID = -1074837733L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -25,6 +25,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
       /** if (PMM_QtyReport_Event_ID == 0)
         {
 			setIsError (false);
+// N
+			setIsPlanning (false);
 // N
 			setM_AttributeSetInstance_ID (0);
 // 0
@@ -302,6 +304,29 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	public boolean isError () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsError);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Anbauplanung.
+		@param IsPlanning Anbauplanung	  */
+	@Override
+	public void setIsPlanning (boolean IsPlanning)
+	{
+		set_Value (COLUMNNAME_IsPlanning, Boolean.valueOf(IsPlanning));
+	}
+
+	/** Get Anbauplanung.
+		@return Anbauplanung	  */
+	@Override
+	public boolean isPlanning () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPlanning);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
