@@ -12,12 +12,12 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (Upcoming Release)  
+# metasfresh 4.x.13 (Upcoming Release)  
 
 ## Features
 
 ## Fixes
-
+ - FRESH-37 09955 excel Report Procurement Statistics (105226320154)
 
 # metasfresh 4.13.12
 
