@@ -261,6 +261,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
@@ -309,6 +310,7 @@
 
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
 				<executions>
 					<!-- ensure fresly compiled widgetset to jar, TODO check vaadin plugin 
 						configuration could get rid of this -->
