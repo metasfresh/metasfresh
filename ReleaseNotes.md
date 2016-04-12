@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.x.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-59 09915 procurement conditions jasper process (109344045046)FRESH-59 09915 procurement conditions jasper process (109344045046)
+    * adding french translations
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
