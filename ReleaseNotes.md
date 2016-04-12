@@ -12,9 +12,18 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.13.12 (Upcoming Release)  
+# metasfresh 4.x.x (Upcoming Release)  
 
 ## Features
+
+## Fixes
+
+
+# metasfresh 4.13.12
+
+## Features
+ - FRESH-70 Model interceptor to prevent deactivating PMM_Products that are unter contract
+    * and making sure that activating a record is still allowed
  - FRESH-170 Laufender Vertrag, show Lieferprodukt also on Tab "Liefersatz"
  - FRESH-168 Procurement: Support logon for vendors with no contract
  - FRESH-86 Procurement Show aggregation of reported Qty in MRP Product Info
