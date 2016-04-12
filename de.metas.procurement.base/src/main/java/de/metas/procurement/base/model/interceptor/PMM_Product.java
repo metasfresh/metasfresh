@@ -52,12 +52,24 @@ public class PMM_Product
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
 					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
-					I_PMM_Product.COLUMNNAME_IsActive
+					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID
 					})
 	public void preventChangesIfContractActive(final I_PMM_Product pmmProduct)
 	{
 		if (Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
+		{
+			throw new AdempiereException("@" + MSG_ProductChangeNotAllowedForRunningContracts + "@");
+		}
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_PMM_Product.COLUMNNAME_IsActive
+					})
+	public void preventDeactivateIfContractActive(final I_PMM_Product pmmProduct)
+	{
+		if (!pmmProduct.isActive() && Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
 		{
 			throw new AdempiereException("@" + MSG_ProductChangeNotAllowedForRunningContracts + "@");
 		}
