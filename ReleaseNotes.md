@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.x.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
  - FRESH-37 09955 excel Report Procurement Statistics (105226320154)
