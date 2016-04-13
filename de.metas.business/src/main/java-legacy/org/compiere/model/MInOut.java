@@ -1377,7 +1377,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		{
 			approveIt();
 		}
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		final StringBuilder info = new StringBuilder();
 
 		// For all lines

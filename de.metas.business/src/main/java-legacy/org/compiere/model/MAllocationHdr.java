@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
@@ -39,13 +37,15 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Payment Allocation Model.
@@ -553,7 +553,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		{
 			approveIt();
 		}
-		log.info(toString());
+		log.debug("Completed: {}", this);
 
 		// Link
 		final MAllocationLine[] lines = getLines(false);

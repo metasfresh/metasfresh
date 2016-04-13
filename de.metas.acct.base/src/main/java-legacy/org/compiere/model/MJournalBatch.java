@@ -24,8 +24,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -417,7 +415,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 	@Override
 	public String completeIt()
 	{
-		log.info("completeIt - " + toString());
+		log.debug("Completed: {}", this);
 		//	Re-Check
 		if (!m_justPrepared)
 		{

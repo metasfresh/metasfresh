@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -197,6 +195,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Set Approved
 	 *	@param IsApproved approval
 	 */
+	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		if (IsApproved && !isApproved())
@@ -217,6 +216,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		return Msg.getElement(getCtx(), "M_MovementConfirm_ID") + " " + getDocumentNo();
@@ -226,6 +226,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Create PDF
 	 *	@return File or null
 	 */
+	@Override
 	public File createPDF ()
 	{
 		try
@@ -259,6 +260,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 *	@param processAction document action
 	 *	@return true if performed
 	 */
+	@Override
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
@@ -274,6 +276,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Unlock Document.
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean unlockIt()
 	{
 		log.info("unlockIt - " + toString());
@@ -285,6 +288,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Invalidate Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean invalidateIt()
 	{
 		log.info("invalidateIt - " + toString());
@@ -296,6 +300,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 *	Prepare Document
 	 * 	@return new status (In Progress or Invalid) 
 	 */
+	@Override
 	public String prepareIt()
 	{
 		log.info(toString());
@@ -341,6 +346,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Approve Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean  approveIt()
 	{
 		log.info("approveIt - " + toString());
@@ -352,6 +358,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Reject Approval
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean rejectIt()
 	{
 		log.info("rejectIt - " + toString());
@@ -363,6 +370,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		//	Re-Check
@@ -380,7 +388,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info("completeIt - " + toString());
+		log.debug("Completed: {}", this);
 		//
 		MMovement move = new MMovement (getCtx(), getM_Movement_ID(), get_TrxName());
 		MMovementLineConfirm[] lines = getLines(false);
@@ -538,6 +546,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Void Document.
 	 * 	@return false 
 	 */
+	@Override
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
@@ -558,6 +567,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Cancel not delivered Qunatities
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info("closeIt - " + toString());
@@ -580,6 +590,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Reverse Correction
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reverseCorrectIt()
 	{
 		log.info("reverseCorrectIt - " + toString());
@@ -600,6 +611,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Reverse Accrual - none
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reverseAccrualIt()
 	{
 		log.info("reverseAccrualIt - " + toString());
@@ -620,6 +632,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Re-activate
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
@@ -641,6 +654,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Get Summary
 	 *	@return Summary of Document
 	 */
+	@Override
 	public String getSummary()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -659,6 +673,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Get Process Message
 	 *	@return clear text error message
 	 */
+	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
@@ -668,6 +683,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
@@ -677,6 +693,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	 * 	Get Document Currency
 	 *	@return C_Currency_ID
 	 */
+	@Override
 	public int getC_Currency_ID()
 	{
 	//	MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());

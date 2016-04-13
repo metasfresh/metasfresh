@@ -36,8 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoAddressException;
@@ -52,11 +50,11 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
@@ -66,6 +64,8 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.tax.api.ITaxBL;
 
@@ -1074,7 +1074,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		finally {
 			DB.close(rs);
 		}
-		s_log.info("#" + counter);
+		s_log.debug("Updated IsPaid flag for {} invoices.", counter);
 		/**/
 	}	//	setIsPaid
 
@@ -1223,7 +1223,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
+		log.debug("unlockIt - " + toString());
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
@@ -1235,7 +1235,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info("invalidateIt - " + toString());
+		log.debug("invalidateIt - " + toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
@@ -1247,7 +1247,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
@@ -1536,7 +1536,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean  approveIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
@@ -1548,7 +1548,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean rejectIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
@@ -1583,7 +1583,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		StringBuffer info = new StringBuffer();
 
 		// POS supports multiple payments
@@ -1857,7 +1857,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		MBPartner counterBP = new MBPartner (getCtx(), counterC_BPartner_ID, get_TrxName()); // metas: load BP in transaction
 //		MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
-		log.info("Counter BP=" + counterBP.getName());
+		log.debug("Counter BP=" + counterBP.getName());
 
 		//	Document Type
 		int C_DocTypeTarget_ID = 0;
@@ -1932,7 +1932,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -2011,7 +2011,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -2036,7 +2036,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	{
 		Services.get(IPrepayOrderAllocationBL.class).invoiceBeforeReverseCorrectIt(this);
 
-		log.info(toString());
+		log.debug("{}", toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2203,7 +2203,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -2224,7 +2224,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
+		log.debug("{}", toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)

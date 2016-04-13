@@ -18,8 +18,6 @@ package org.compiere.process;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -38,9 +36,6 @@ import org.compiere.model.I_AD_Role;
  */
 public class RoleAccessUpdate extends SvrProcess
 {
-	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(RoleAccessUpdate.class);
-
 	/** Update Role */
 	private int p_AD_Role_ID = 0;
 	/** Update Roles of Client */
@@ -126,6 +121,6 @@ public class RoleAccessUpdate extends SvrProcess
 	private static void updateRole(final I_AD_Role role, final ILoggable loggable)
 	{
 		final String result = Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-		loggable.addLog(role.getName() + ": " + result);
+		loggable.addLog("Role access updated: " + role.getName() + ": " + result);
 	}	// updateRole
 }

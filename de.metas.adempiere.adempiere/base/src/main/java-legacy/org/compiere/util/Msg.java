@@ -24,8 +24,6 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,8 +34,11 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Message;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Reads all Messages and stores them in a HashMap
@@ -180,10 +181,7 @@ public final class Msg
 			return null;
 		}
 		
-		if (s_log.isInfoEnabled())
-		{
-			s_log.info("Records=" + msg.size() + " - " + adLanguage);
-		}
+		s_log.debug("Loaded {} for '{}' language", msg.size(), adLanguage);
 		return msg;
 	}	//	initMsg
 
@@ -312,7 +310,7 @@ public final class Msg
 		
 		if (message == null)
 		{
-			s_log.warn("AD_Message not found: " + adMessage);
+			s_log.warn("AD_Message not found: {}", adMessage);
 			return Message.ofMissingADMessage(adMessage);
 		}
 
@@ -449,7 +447,7 @@ public final class Msg
 		}
 		catch (ClassNotFoundException e)
 		{
-			s_log.trace("Class not found: " + className);
+			s_log.trace("Class not found: {}", className);
 		}
 		catch (Exception e)
 		{
@@ -519,7 +517,7 @@ public final class Msg
 				}
 				else
 				{
-					s_log.warn("Unknow element field "+display+" in "+ColumnName, new Exception());
+					s_log.warn("Unknow element field {} in {}", display, ColumnName, new Exception());
 				}
 				ColumnName = ColumnName.substring(0, idx);
 			}
@@ -656,7 +654,7 @@ public final class Msg
 
 		//	Nothing found
 		if (!text.startsWith("*"))
-			s_log.warn("NOT found: " + text);
+			s_log.warn("NOT found: {}", text);
 		return text;
 	}	//	translate
 

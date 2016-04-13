@@ -36,7 +36,6 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
@@ -48,6 +47,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 
 /**
  * Adempiere Cache Management
@@ -294,10 +294,7 @@ public final class CacheMgt
 			cacheResetRunning.set(false);
 		}
 
-		if (log.isInfoEnabled())
-		{
-			log.info("" + counter + " cache instances invalidated (" + total + " cached items invalidated)");
-		}
+		log.info("Reset all: {} cache instances invalidated ({} cached items invalidated)", counter, total);
 
 		return total;
 	}	// reset
@@ -388,7 +385,7 @@ public final class CacheMgt
 						final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 						if (itemsRemoved > 0)
 						{
-							log.debug("Rest cache instance: {0}", cacheInstance);
+							log.debug("Rest cache instance: {}", cacheInstance);
 							total += itemsRemoved;
 							counter++;
 						}
@@ -396,11 +393,7 @@ public final class CacheMgt
 				}
 			}
 			//
-			if (log.isDebugEnabled())
-			{
-				log.debug(tableName + ": " + counter + " cache interfaces checked (" + total + " records invalidated)");
-			}
-
+			log.debug("Reset {}: {} cache interfaces checked ({} records invalidated)", tableName, counter, total);
 
 			//
 			// Broadcast cache invalidation.
@@ -517,7 +510,7 @@ public final class CacheMgt
 		catch (Exception e)
 		{
 			// log but don't fail
-			log.warn("Error while reseting " + cacheInstance, e);
+			log.warn("Error while reseting {}", cacheInstance, e);
 			return 0;
 		}
 	}
@@ -610,10 +603,7 @@ public final class CacheMgt
 			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
 					.postEvent(event);
-			if (log.isDebugEnabled())
-			{
-				log.debug("Broadcasting cache invalidation of " + tableName + "/" + recordId + ", event=" + event);
-			}
+			log.debug("Broadcasting cache invalidation of {}/{}, event={}", tableName, recordId, event);
 		}
 
 		/**
@@ -634,7 +624,7 @@ public final class CacheMgt
 			final String tableName = event.getProperty(EVENT_PROPERTY_TableName);
 			if (Check.isEmpty(tableName, true))
 			{
-				log.info("Ignored event without tableName set: {}", event);
+				log.debug("Ignored event without tableName set: {}", event);
 				return;
 			}
 			// NOTE: we try to invalidate the local cache even if the tableName is not in our tableNames to broadcast list.
@@ -649,10 +639,7 @@ public final class CacheMgt
 
 			//
 			// Reset cache for TableName/Record_ID
-			if (log.isDebugEnabled())
-			{
-				log.debug("Reseting cache for " + tableName + "/" + recordId + " because we got remote event: " + event);
-			}
+			log.debug("Reseting cache for {}/{} because we got remote event: {}", tableName, recordId, event);
 			final boolean broadcast = false; // don't broadcast it anymore because else we would introduce recursion
 			CacheMgt.get().reset(tableName, recordId, broadcast);
 		}
@@ -712,7 +699,7 @@ public final class CacheMgt
 			final TableRecordReference record = new TableRecordReference(tableName, recordId);
 			records.add(record);
 			
-			log.debug("Scheduled cache invalidation on transaction commit: {0}", record);
+			log.debug("Scheduled cache invalidation on transaction commit: {}", record);
 		}
 
 		/** Reset the cache for all enqueued records */

@@ -121,6 +121,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MRequisition[");
@@ -134,6 +135,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Document Info
 	 *	@return document info
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		return Msg.getElement(getCtx(), "M_Requisition_ID") + " " + getDocumentNo();
@@ -143,6 +145,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Create PDF
 	 *	@return File or null
 	 */
+	@Override
 	public File createPDF ()
 	{
 		try
@@ -187,6 +190,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getM_PriceList_ID() == 0)
@@ -207,6 +211,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 *	@param processAction document action
 	 *	@return true if performed
 	 */
+	@Override
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
@@ -222,6 +227,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Unlock Document.
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean unlockIt()
 	{
 		log.info("unlockIt - " + toString());
@@ -233,6 +239,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Invalidate Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean invalidateIt()
 	{
 		log.info("invalidateIt - " + toString());
@@ -243,6 +250,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 *	Prepare Document
 	 * 	@return new status (In Progress or Invalid) 
 	 */
+	@Override
 	public String prepareIt()
 	{
 		log.info(toString());
@@ -300,6 +308,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Approve Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean  approveIt()
 	{
 		log.info("approveIt - " + toString());
@@ -311,6 +320,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Reject Approval
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean rejectIt()
 	{
 		log.info("rejectIt - " + toString());
@@ -322,6 +332,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		//	Re-Check
@@ -339,7 +350,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -384,6 +395,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Same as Close.
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
@@ -408,6 +420,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Cancel not delivered Qunatities
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info("closeIt - " + toString());
@@ -461,6 +474,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Reverse Correction
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean reverseCorrectIt()
 	{
 		log.info("reverseCorrectIt - " + toString());
@@ -481,6 +495,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Reverse Accrual - none
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean reverseAccrualIt()
 	{
 		log.info("reverseAccrualIt - " + toString());
@@ -501,6 +516,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Re-activate
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
@@ -525,6 +541,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Summary
 	 *	@return Summary of Document
 	 */
+	@Override
 	public String getSummary()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -545,6 +562,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Process Message
 	 *	@return clear text error message
 	 */
+	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
@@ -554,6 +572,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Document Owner
 	 *	@return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getAD_User_ID();
@@ -563,6 +582,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Document Currency
 	 *	@return C_Currency_ID
 	 */
+	@Override
 	public int getC_Currency_ID()
 	{
 		MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), get_TrxName());
@@ -573,6 +593,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 * 	Get Document Approval Amount
 	 *	@return amount
 	 */
+	@Override
 	public BigDecimal getApprovalAmt()
 	{
 		return getTotalLines();

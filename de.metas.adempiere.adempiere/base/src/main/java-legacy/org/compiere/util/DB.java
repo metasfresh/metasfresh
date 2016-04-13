@@ -25,11 +25,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,12 +35,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
-import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -60,10 +54,8 @@ import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
@@ -75,7 +67,9 @@ import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -159,13 +153,13 @@ public final class DB
 			return false;
 
 		// Role update
-		log.info("Role");
+		log.info("After migration: running role access update for all roles");
 		String sql = "SELECT * FROM AD_Role";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -175,15 +169,15 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error("(1)", e);
+			log.error("Role access update failed. Ignored.", e);
 		}
 		finally
 		{
-			close(rs);
-			close(pstmt);
+			close(rs, pstmt);
 			rs = null;
 			pstmt = null;
 		}
+		
 		// Release Specif stuff & Print Format
 		try
 		{
@@ -192,19 +186,19 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error("Data", e);
+			log.error("After migration: migrate data failed", e);
 		}
 
 		// Language check
-		log.info("Language");
+		log.info("After migration: Language maintainance");
 		MLanguage.maintain(ctx);
 
 		// Sequence check
-		log.info("Sequence");
+		log.info("After migration: Sequence check");
 		SequenceCheck.validate(ctx);
 
 		// Costing Setup
-		log.info("Costing");
+		log.info("After migration: Product costing check");
 		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, 0);
 		for (int i = 0; i < ass.length; i++)
 		{
@@ -322,7 +316,7 @@ public final class DB
 			// Set the new connection
 			s_connection = cc;
 			s_connection.setDataSource();
-			log.info("Connection: {}", s_connection);
+			log.info("Target database set: {}", s_connection);
 			
 			// Reset the cache, else we could have cached records from old database, which does not exist in our new database
 			CacheMgt.get().reset();
@@ -355,7 +349,7 @@ public final class DB
 			s_connectionLock.unlock();
 		}
 		if (closed)
-			log.debug("closed");
+			log.debug("Target database closed");
 	}	// closeTarget
 
 	/**
@@ -1293,7 +1287,7 @@ public final class DB
 			if (rs.next())
 				retValue = rs.getInt(1);
 			else
-				log.info("No Value " + sql);
+				log.debug("Got no integer value for {}", sql);
 		}
 		catch (SQLException e)
 		{
@@ -1379,7 +1373,7 @@ public final class DB
 			if (rs.next())
 				retValue = rs.getString(1);
 			else
-				log.info("No Value " + sql);
+				log.debug("Got no string value for {}", sql);
 		}
 		catch (SQLException e)
 		{
@@ -1425,7 +1419,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error("Error while executing: {}", sql, DBException.getSQLException(e));
 		}
 		return retValue;
 	}
@@ -1465,7 +1459,7 @@ public final class DB
 			if (rs.next())
 				retValue = rs.getBigDecimal(1);
 			else
-				log.info("No Value " + sql);
+				log.debug("Got no BigDecimal value for {}", sql);
 		}
 		catch (SQLException e)
 		{
@@ -1551,7 +1545,7 @@ public final class DB
 			if (rs.next())
 				retValue = rs.getTimestamp(1);
 			else
-				log.info("No Value " + sql);
+				log.debug("Got no Timestamp value for {}", sql);
 		}
 		catch (SQLException e)
 		{
@@ -1737,7 +1731,7 @@ public final class DB
 				catch (Exception ee)
 				{
 					ee = DBException.getSQLException(ee);
-					log.trace(sql + " - " + e.getMessage(), ee);
+					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
 				}
 				finally
 				{
@@ -1748,7 +1742,7 @@ public final class DB
 			}
 			else
 			{
-				log.trace(TableName + " - No SOTrx", e);
+				log.trace("Table {} has no IsSOTrx column", TableName, e);
 			}
 		}
 		finally
@@ -1831,31 +1825,6 @@ public final class DB
 	{
 		return false;
 	}	// isRemoteProcess
-
-	/**************************************************************************
-	 * Print SQL Warnings. <br>
-	 * Usage: DB.printWarning("comment", rs.getWarnings());
-	 * 
-	 * @param comment comment
-	 * @param warning warning
-	 */
-	public static void printWarning(String comment, SQLWarning warning)
-	{
-		if (comment == null || warning == null || comment.length() == 0)
-			throw new IllegalArgumentException("Required parameter missing");
-		log.warn(comment);
-		//
-		SQLWarning warn = warning;
-		while (warn != null)
-		{
-			StringBuffer buffer = new StringBuffer();
-			buffer.append(warn.getMessage())
-					.append("; State=").append(warn.getSQLState())
-					.append("; ErrorCode=").append(warn.getErrorCode());
-			log.warn(buffer.toString());
-			warn = warn.getNextWarning();
-		}
-	}	// printWarning
 
 	/**
 	 * Converts given parameter object to SQL code.
@@ -2453,12 +2422,14 @@ public final class DB
 
 	public static boolean isUseNativeSequences(int AD_Client_ID, String TableName)
 	{
+		log.debug("Checking if we shall use native sequences for {} (AD_Client_ID={})", TableName, AD_Client_ID);
+		
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
 		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
 				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
 		{
-			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", new Object[] { TableName, Ini.P_LOGMIGRATIONSCRIPT });
+			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
 			return false;
 		}
 
@@ -2475,13 +2446,13 @@ public final class DB
 		// Check: if we shall use an external ID System (e.g. Dictionary/Project ID server) then don't use native sequences
 		if (MSequence.isUseExternalIDSystem(TableName, AD_Client_ID)) // metas: 01558
 		{
-			log.debug("Returning 'false' because MSequence.isUseExternalIDSystem() returned 'true' for TableName {} and AD_Client_ID {}", new Object[] { TableName, AD_Client_ID });
+			log.debug("Returning 'false' because MSequence.isUseExternalIDSystem() returned 'true' for TableName {} and AD_Client_ID {}", TableName, AD_Client_ID);
 			return false;
 		}
 		//
 		// Default: use native sequences if activated
 		final boolean useNativeSequences = isUseNativeSequences();
-		log.trace("Returning the result of isUseNativeSequences: {}", useNativeSequences);
+		log.debug("Returning the result of isUseNativeSequences: {}", useNativeSequences);
 		return useNativeSequences;
 	}
 

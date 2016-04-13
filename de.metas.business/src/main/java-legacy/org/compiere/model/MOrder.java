@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
@@ -1245,7 +1243,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
+		log.debug("unlockIt - " + toString());
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -1258,7 +1256,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -1271,7 +1269,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
@@ -1779,7 +1777,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
+		log.debug("approveIt - " + toString());
 		setIsApproved(true);
 		return true;
 	}	// approveIt
@@ -1792,7 +1790,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
+		log.debug("rejectIt - " + toString());
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
@@ -1864,7 +1862,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (!isApproved())
 			approveIt();
 		getLines(true, null);
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		StringBuffer info = new StringBuffer();
 
 		boolean realTimePOS = false;
@@ -1959,7 +1957,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	private MInOut createShipment(MDocType dt, Timestamp movementDate)
 	{
-		log.info("For " + dt);
+		log.debug("For " + dt);
 		MInOut shipment = new MInOut(this, dt.getC_DocTypeShipment_ID(), movementDate);
 		// shipment.setDateAcct(getDateAcct());
 		if (!shipment.save(get_TrxName()))
@@ -2029,7 +2027,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	private MInvoice createInvoice(MDocType dt, MInOut shipment, Timestamp invoiceDate)
 	{
-		log.info(dt.toString());
+		log.debug(dt.toString());
 		MInvoice invoice = new MInvoice(this, dt.getC_DocTypeInvoice_ID(), invoiceDate);
 		if (!invoice.save(get_TrxName()))
 		{
@@ -2118,7 +2116,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -2190,7 +2188,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (!isSOTrx())
 			return true;
 
-		log.info("createReversals");
+		log.debug("createReversals");
 		StringBuffer info = new StringBuffer();
 
 		// Reverse All *Shipments*
@@ -2272,7 +2270,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -2316,7 +2314,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	public String reopenIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		if (!MOrder.DOCSTATUS_Closed.equals(getDocStatus()))
 		{
 			return "Not closed - can't reopen";
@@ -2372,7 +2370,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2394,7 +2392,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -2416,7 +2414,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
+		log.debug(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -2447,7 +2445,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 		// PO - just re-open
 		if (!isSOTrx())
-			log.info("Existing documents not modified - " + dt);
+			log.debug("Existing documents not modified - " + dt);
 		// Reverse Direct Documents
 		else if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)	// (W)illCall(I)nvoice
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
@@ -2458,7 +2456,7 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 		else
 		{
-			log.info("Existing documents not modified - SubType=" + DocSubType);
+			log.debug("Existing documents not modified - SubType=" + DocSubType);
 		}
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */

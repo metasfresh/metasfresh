@@ -10,7 +10,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Ini;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -65,12 +64,12 @@ public final class LogManager
 			SLF4JBridgeHandler.install();
 		}
 
-		setLevel(s_currentLevel);
+		setLevel(Level.INFO);
 	}
 
 	private static final AtomicBoolean s_initialized = new AtomicBoolean(false);
 	/** Current Log Level */
-	private static Level s_currentLevel = Level.INFO;
+	private static Level s_currentLevel = null;
 
 	/** Logger */
 	private static Logger log = LoggerFactory.getLogger(LogManager.class);
@@ -129,7 +128,8 @@ public final class LogManager
 		initialize(true);
 
 		//
-		if (level.toInt() == s_currentLevel.toInt())
+		final Level levelOld = s_currentLevel;
+		if (levelOld != null && level.toInt() == levelOld.toInt())
 		{
 			return;
 		}
@@ -140,20 +140,15 @@ public final class LogManager
 		//
 		// SLF4J (logback)
 		int countChangedLoggers = 0;
-		final ILoggerFactory slf4j_Factory = LoggerFactory.getILoggerFactory();
-		if (slf4j_Factory instanceof ch.qos.logback.classic.LoggerContext)
+		for (String ownRootLoggerName : OWNLOGGERS_NAME_PREFIXES)
 		{
-			final ch.qos.logback.classic.LoggerContext logback_loggerContext = (ch.qos.logback.classic.LoggerContext)slf4j_Factory;
-			for (final ch.qos.logback.classic.Logger logback_logger : logback_loggerContext.getLoggerList())
+			final Logger ownRootLogger = LoggerFactory.getLogger(ownRootLoggerName);
+			if (setLoggerLevel(ownRootLogger, level))
 			{
-				if (setLoggerLevel(logback_logger, level))
-				{
-					countChangedLoggers++;
-				}
+				countChangedLoggers++;
 			}
 		}
-
-		System.out.println("Changing log level " + s_currentLevel + "->" + level + " (" + countChangedLoggers + " loggers affected)");
+		System.out.println("Changing log level " + levelOld + "->" + level + " (" + countChangedLoggers + " root loggers affected)");
 
 		s_currentLevel = level;
 	}
@@ -222,8 +217,7 @@ public final class LogManager
 		return false;
 	}
 
-	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of(
-			"de.metas", "org.adempiere", "org.compiere");
+	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
 
 	/**
 	 * Set JDBC Debug
@@ -242,6 +236,7 @@ public final class LogManager
 		}
 	}	// setJDBCDebug
 
+	/** @return current log level or <code>null</code> if not initialized */
 	public static final Level getLevel()
 	{
 		return s_currentLevel;
@@ -259,7 +254,14 @@ public final class LogManager
 		{
 			return false;
 		}
-		return level.toInt() >= s_currentLevel.toInt();
+		
+		final Level currentLevel = getLevel();
+		if (currentLevel == null)
+		{
+			return false;
+		}
+		
+		return level.toInt() >= currentLevel.toInt();
 	}	// isLevel
 
 	/**
@@ -269,7 +271,7 @@ public final class LogManager
 	 */
 	public static boolean isLevelFinest()
 	{
-		return Level.TRACE_INT >= s_currentLevel.toInt();
+		return isLevel(Level.TRACE);
 	}	// isLevelFinest
 
 	/**
@@ -289,7 +291,7 @@ public final class LogManager
 	 */
 	public static boolean isLevelFine()
 	{
-		return Level.DEBUG_INT >= s_currentLevel.toInt();
+		return isLevel(Level.DEBUG);
 	}
 
 	/**

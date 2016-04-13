@@ -33,7 +33,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -42,6 +41,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
+import de.metas.logging.LogManager;
 
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
@@ -88,7 +88,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(ctx, adClientId, adPInstanceId, updateOnlyLocked, trxName);
 
-			logger.info("Invoking shipmentScheduleBL to update " + collectResult.size() + " shipment schedule entries.");
+			logger.debug("Invoking shipmentScheduleBL to update {} shipment schedule entries.", collectResult.size());
 			final CachedObjects cachedObjects = new CachedObjects();
 			final boolean saveSchedules = true;
 			shipmentScheduleBL.updateSchedules(ctx, collectResult, saveSchedules, SystemTime.asTimestamp(), cachedObjects, trxName);
@@ -97,7 +97,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			shipmentSchedulePA.deleteRecomputeMarkers(adPInstanceId, trxName); // if updateOnlyLocked, then there is nothing to delete..but still making this call, it should finish rather quickly
 			shipmentSchedulePA.deleteProcessedShipmentRunIds(processedShipmentRunIds, trxName);
 
-			logger.info("Done");
+			logger.debug("Done");
 			return collectResult.size();
 		}
 		finally
@@ -135,22 +135,22 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		if (olsAndScheds.isEmpty())
 		{
-			logger.info("There are no shipment schedule entries to update");
+			logger.debug("There are no shipment schedule entries to update");
 			return Collections.emptyList();
 		}
 
-		logger.info("Found " + olsAndScheds.size() + " invalid shipment schedule entries");
+		logger.debug("Found {} invalid shipment schedule entries", olsAndScheds.size());
 
 		final CachedObjects cachedObjects = new CachedObjects();
 
 		// TODO: decide if we should invoke the collector if retrieveOnlyLocked==true
-		logger.info("Collecting additional schedule entries to update");
+		logger.debug("Collecting additional schedule entries to update");
 		final IUpdatableSchedulesCollector updatableSchedulesCollector = Services.get(IUpdatableSchedulesCollector.class);
 
 		final List<OlAndSched> collectResult = new ArrayList<OlAndSched>();
 		collectResult.addAll(updatableSchedulesCollector.collectUpdatableLines(ctx, olsAndScheds, cachedObjects, trxName));
 
-		logger.info("Found additional " + (collectResult.size() - olsAndScheds.size()) + " schedule entries to update");
+		logger.debug("Found additional {} schedule entries to update", (collectResult.size() - olsAndScheds.size()));
 		return collectResult;
 	}
 }

@@ -145,7 +145,7 @@ import de.metas.logging.LogManager;
 						, Throwables.getRootCause(e));
 			}
 
-			logger.info("Initializer " + init + " executed successfully.");
+			logger.debug("Initializer {} executed successfully.", init);
 		}
 	}
 
@@ -369,7 +369,7 @@ import de.metas.logging.LogManager;
 		}
 		list.add(pointcut);
 
-		logger.info("Loaded " + pointcut);
+		logger.debug("Loaded {}", pointcut);
 	}
 
 	private void bindPointcuts(IModelValidationEngine engine)
@@ -379,7 +379,7 @@ import de.metas.logging.LogManager;
 			return;
 		}
 
-		logger.info("Binding pointcuts for " + annotatedClass);
+		logger.debug("Binding pointcuts for {}", annotatedClass);
 		for (Map.Entry<PointcutKey, List<Pointcut>> e : mapPointcuts.entrySet())
 		{
 			final List<Pointcut> list = e.getValue();
@@ -389,7 +389,7 @@ import de.metas.logging.LogManager;
 			}
 
 			final PointcutKey key = e.getKey();
-			logger.info("Binding pointcuts for " + annotatedClass + " on " + key);
+			logger.debug("Binding pointcuts for {} on {}", annotatedClass, key);
 
 			switch (key.getType())
 			{
@@ -403,7 +403,7 @@ import de.metas.logging.LogManager;
 					throw new AdempiereException("Unknown PointcutType " + key.getType());
 			}
 		}
-		logger.info("Binding pointcuts for " + annotatedClass + " done.");
+		logger.debug("Binding pointcuts for {} done.", annotatedClass);
 	}
 
 	@Override

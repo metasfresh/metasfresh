@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
@@ -45,6 +43,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramaticCalloutProvider
 {
@@ -108,7 +109,7 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 		}
 
 		callouts.add(callout);
-		logger.info("Callout '{}' registered on {}.{}", new Object[] { callout, tableName, columnName });
+		logger.debug("Callout '{}' registered on {}.{}", new Object[] { callout, tableName, columnName });
 
 		// Make sure this provider is registered to ICalloutFactory
 		registerCalloutProviderToCalloutFactory();

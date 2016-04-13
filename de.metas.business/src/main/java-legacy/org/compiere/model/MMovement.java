@@ -382,7 +382,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		
 		//
 		MMovementLine[] lines = getLines(true); // NOTE: we need to load the lines again in case some model validator created/changed some lines 

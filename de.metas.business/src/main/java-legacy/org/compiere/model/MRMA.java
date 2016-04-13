@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -187,6 +185,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -197,6 +196,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Create PDF
 	 *	@return File or null
 	 */
+	@Override
 	public File createPDF ()
 	{
 		try
@@ -231,6 +231,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (newRecord)
@@ -275,6 +276,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 *	@param processAction document action
 	 *	@return true if performed
 	 */
+	@Override
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
@@ -290,6 +292,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Unlock Document.
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean unlockIt()
 	{
 		log.info("unlockIt - " + toString());
@@ -301,6 +304,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Invalidate Document
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean invalidateIt()
 	{
 		log.info("invalidateIt - " + toString());
@@ -350,6 +354,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Approve Document
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean  approveIt()
 	{
 		log.info("approveIt - " + toString());
@@ -361,6 +366,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Reject Approval
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean rejectIt()
 	{
 		log.info("rejectIt - " + toString());
@@ -372,6 +378,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		//	Re-Check
@@ -389,7 +396,7 @@ public class MRMA extends X_M_RMA implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info("completeIt - " + toString());
+		log.debug("Completed: {}", this);
 		//
 		/*
 		Flow for the creation of the credit memo document changed
@@ -628,6 +635,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Void Document.
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
@@ -664,6 +672,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Cancel not delivered Qunatities
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info("closeIt - " + toString());
@@ -683,6 +692,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Reverse Correction
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reverseCorrectIt()
 	{
 		log.info("reverseCorrectIt - " + toString());
@@ -703,6 +713,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Reverse Accrual - none
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reverseAccrualIt()
 	{
 		log.info("reverseAccrualIt - " + toString());
@@ -723,6 +734,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Re-activate
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
@@ -744,7 +756,8 @@ public class MRMA extends X_M_RMA implements DocAction
      *  Propagate to Lines
      *  @param processed processed
      */
-    public void setProcessed (boolean processed)
+    @Override
+	public void setProcessed (boolean processed)
     {
         super.setProcessed (processed);
         if (get_ID() <= 0)
@@ -799,6 +812,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Get Summary
 	 *	@return Summary of Document
 	 */
+	@Override
 	public String getSummary()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -860,6 +874,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Get Process Message
 	 *	@return clear text error message
 	 */
+	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
@@ -869,6 +884,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getSalesRep_ID();
@@ -878,6 +894,7 @@ public class MRMA extends X_M_RMA implements DocAction
 	 * 	Get Document Approval Amount
 	 *	@return amount
 	 */
+	@Override
 	public BigDecimal getApprovalAmt()
 	{
 		return getAmt();

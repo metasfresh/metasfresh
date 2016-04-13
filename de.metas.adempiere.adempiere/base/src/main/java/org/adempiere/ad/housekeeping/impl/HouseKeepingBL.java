@@ -31,9 +31,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.LoggerLoggable;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 public class HouseKeepingBL implements IHouseKeepingBL
 {
@@ -64,9 +64,11 @@ public class HouseKeepingBL implements IHouseKeepingBL
 			}
 			catch (Exception e)
 			{
-				logger.warn("Failed to execute task " + task + ". Skipped", e);
+				logger.warn("Failed to execute task {}. Skipped", task, e);
 			}
 		}
+		
+		logger.info("Finished executing the house keeping tasks");
 	}
 
 }

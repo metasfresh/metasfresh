@@ -227,7 +227,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				final long elapsedMillis = SystemTime.millis() - startTS;
 				if (elapsedMillis >= timeoutMillis)
 				{
-					logger.info("Poll waiting time exceeded. Returning null");
+					logger.debug("Poll waiting time exceeded. Returning null");
 					return null;
 				}
 			}
@@ -246,7 +246,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			}
 
 			// Try fetching the workpackage again
-			logger.debug("Retry retrieving next workpackage");
+			logger.trace("Retry retrieving next workpackage");
 			workPackage = retrieveAndLock(query);
 		}
 

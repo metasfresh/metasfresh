@@ -47,7 +47,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.concurrent.Threads;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -58,6 +57,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.logging.LogManager;
 
 /**
  * Default implementation of queue processor executor
@@ -139,7 +139,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			final QueueProcessorDescriptor descriptor = new QueueProcessorDescriptor(queueProcessorId, processor, future);
 			queueProcessorDescriptors.put(queueProcessorId, descriptor);
 
-			logger.info("Registered " + descriptor);
+			logger.info("Registered {}", descriptor);
 
 			//
 			// Register MBean
@@ -212,22 +212,22 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		final Future<?> future = descriptor.getFuture();
 		if (future.isDone())
 		{
-			logger.info("Unregistered " + descriptor + " (already done)");
+			logger.info("Unregistered {} (already done)", descriptor);
 			return true;
 		}
 		if (future.isCancelled())
 		{
-			logger.info("Unregistered " + descriptor + " (already canceled)");
+			logger.info("Unregistered {} (already canceled)", descriptor);
 			return true;
 		}
 
 		if (future.cancel(true))
 		{
-			logger.info("Unregistered " + descriptor + " (canceled now)");
+			logger.info("Unregistered {} (canceled now)", descriptor);
 			return true;
 		}
 
-		logger.warn("Could not unregister " + descriptor + " (canceling failed)");
+		logger.warn("Could not unregister {} (canceling failed)", descriptor);
 		return false;
 	}
 

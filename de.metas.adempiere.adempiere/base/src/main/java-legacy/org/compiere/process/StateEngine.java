@@ -17,6 +17,7 @@
 package org.compiere.process;
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 
@@ -293,7 +294,7 @@ public final class StateEngine
 		if (isRunning())
 		{
 			m_state = STATE_Completed;
-			log.info("completing ...");
+			log.debug("completing ...");
 			return true;
 		}
 		String msg = "complete failed: Not Running (" + getState() + ")";

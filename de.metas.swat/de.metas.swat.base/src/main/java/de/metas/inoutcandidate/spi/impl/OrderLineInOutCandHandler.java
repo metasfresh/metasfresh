@@ -40,9 +40,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -50,6 +49,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductBL;
 
@@ -272,7 +272,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 				.setOrderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.list(I_C_OrderLine.class);
 
-		logger.info("Identified " + ols.size() + " C_OrderLines that need a shipment schedule");
+		logger.debug("Identified {} C_OrderLines that need a shipment schedule", ols.size());
 
 		return new ArrayList<Object>(ols);
 	}

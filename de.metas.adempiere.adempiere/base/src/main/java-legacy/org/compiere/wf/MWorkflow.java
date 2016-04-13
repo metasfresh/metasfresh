@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
@@ -40,6 +38,9 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	WorkFlow Model
@@ -88,7 +89,7 @@ public class MWorkflow extends X_AD_Workflow
 			, String trxName //Bug 1568766 Trx should be kept all along the road		
 	)
 	{
-		String key = "C" + AD_Client_ID + "T" + AD_Table_ID;
+		final String key = "C" + AD_Client_ID + "T" + AD_Table_ID;
 		//	Reload
 		if (s_cacheDocValue.isReset())
 		{
@@ -127,7 +128,7 @@ public class MWorkflow extends X_AD_Workflow
 				// NOTE: if no workflows were found, mark it anyway as used to prevent forever loading
 				s_cacheDocValue.setUsed();
 			}
-			s_log.info("#" + s_cacheDocValue.size());
+			s_log.debug("#{} doc value workflows loaded for {}", s_cacheDocValue.size(), key);
 		}
 		//	Look for Entry
 		MWorkflow[] retValue = s_cacheDocValue.get(key);
@@ -150,7 +151,7 @@ public class MWorkflow extends X_AD_Workflow
 	/**	Document Value Cache			*/
 	private static CCache<String,MWorkflow[]>	s_cacheDocValue = new CCache<String,MWorkflow[]> ("AD_Workflow", 5);
 	/**	Static Logger	*/
-	private static Logger	s_log	= LogManager.getLogger(MWorkflow.class);
+	private static final Logger s_log = LogManager.getLogger(MWorkflow.class);
 	
 	
 	/**************************************************************************
@@ -243,7 +244,7 @@ public class MWorkflow extends X_AD_Workflow
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		log.debug("Translated=" + m_translated);
+		log.debug("Translated={}", m_translated);
 	}	//	loadTrl
 
 	/**
@@ -253,7 +254,7 @@ public class MWorkflow extends X_AD_Workflow
 	{
 		final List<I_AD_WF_Node> nodes = Services.get(IADWorkflowDAO.class).retrieveNodes(this);
 		m_nodes = LegacyAdapters.convertToPOList(nodes);
-		log.debug("#" + m_nodes.size());
+		log.debug("#{} nodes loaded", m_nodes.size());
 	}	//	loadNodes
 
 	
@@ -375,7 +376,7 @@ public class MWorkflow extends X_AD_Workflow
 					}
 					if (!found)
 					{
-						log.warn("Added Node w/o transition: " + node);
+						log.warn("Added Node w/o transition: {}", node);
 						list.add(node);
 					}
 				}
@@ -604,7 +605,6 @@ public class MWorkflow extends X_AD_Workflow
 	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
-		log.debug("Success=" + success);
 		if (!success)
 		{
 			return false;
@@ -741,7 +741,7 @@ public class MWorkflow extends X_AD_Workflow
 		{
 			if (loops > MAXLOOPS)
 			{
-				log.warn("Timeout after sec " + ((SLEEP*MAXLOOPS)/1000));
+				log.warn("startWait: Timeout after {} seconds", ((SLEEP*MAXLOOPS)/1000));
 				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
 				pi.setIsTimeout(true);
 				return process;
@@ -754,7 +754,7 @@ public class MWorkflow extends X_AD_Workflow
 			}
 			catch (InterruptedException e)
 			{
-				log.error("startWait interrupted", e);
+				log.error("startWait: interrupted", e);
 				pi.setThrowable(e); // 03152
 				pi.setSummary("Interrupted");
 				return process;
@@ -766,7 +766,7 @@ public class MWorkflow extends X_AD_Workflow
 		if (summary == null || summary.trim().length() == 0)
 			summary = state.toString();
 		pi.setSummary(summary, state.isTerminated() || state.isAborted());
-		log.debug(summary);
+		log.debug("startWait done: {}", summary);
 		return process;
 	}	//	startWait
 	

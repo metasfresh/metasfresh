@@ -405,7 +405,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 
 		MInventoryLine[] lines = getLines(false);
 		for (MInventoryLine line : lines)

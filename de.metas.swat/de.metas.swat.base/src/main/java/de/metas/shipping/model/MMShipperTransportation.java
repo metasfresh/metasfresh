@@ -118,6 +118,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean approveIt()
 	{
 		log.info(toString());
@@ -130,6 +131,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info(toString());
@@ -170,7 +172,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		// Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		MMShippingPackage[] lines = getLines(false);
 
 		// All lines

@@ -25,14 +25,15 @@ package org.adempiere.ad.dao.impl;
 
 import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -79,10 +80,7 @@ import org.compiere.util.DB;
 				throw new DBException("Query does not have ORDER BY and we could not build one for given table because there are no key columns: " + query);
 			}
 
-			if (logger.isTraceEnabled())
-			{
-				logger.info("Using default build-in ORDER BY: " + orderBy);
-			}
+			logger.trace("Using default build-in ORDER BY: {}", orderBy);
 			this.query.setOrderBy(orderBy);
 		}
 
@@ -162,9 +160,9 @@ import org.compiere.util.DB;
 		final int bufferSizeActual = buffer.size();
 		bufferFullyLoaded = bufferSizeActual >= bufferSize;
 
-		if (logger.isInfoEnabled())
+		if (logger.isDebugEnabled())
 		{
-			logger.info("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " => " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
+			logger.debug("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " => " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
 		}
 
 		offset += bufferSizeActual;

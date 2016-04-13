@@ -175,7 +175,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 				+ "' WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
 		m_lines = null;
-		log.debug("setProcessed - " + processed + " - Lines=" + noLine);
+		log.debug("setProcessed - {} - Lines={}", processed, noLine);
 	}	// setProcessed
 
 	/**
@@ -204,7 +204,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		}
 		catch (Exception e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF", e);
 		}
 		return null;
 	}	// getPDF
@@ -250,7 +250,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
+		log.debug("unlockIt - {}", this);
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -263,7 +263,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info("invalidateIt - " + toString());
+		log.debug("invalidateIt - {}", this);
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -276,7 +276,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
+		log.debug("Prepare: {}", this);
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
@@ -325,7 +325,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
+		log.debug("approveIt - {}", this);
 		setIsApproved(true);
 		return true;
 	}	// approveIt
@@ -338,7 +338,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
+		log.debug("rejectIt - {}", this);
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
@@ -366,7 +366,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		// Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info("completeIt - " + toString());
+		log.debug("Completed: {}", this);
 
 		// Set Payment reconciled
 		MBankStatementLine[] lines = getLines(false);
@@ -430,7 +430,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.info("{}", this);
+		log.debug("{}", this);
 		
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
@@ -530,7 +530,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean closeIt()
 	{
-		log.info("closeIt - " + toString());
+		log.debug("closeIt - {}", this);
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -553,7 +553,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info("reverseCorrectIt - " + toString());
+		log.debug("reverseCorrectIt - {}", this);
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -575,7 +575,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info("reverseAccrualIt - " + toString());
+		log.debug("reverseAccrualIt - {}", this);
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -597,7 +597,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info("reActivateIt - " + toString());
+		log.debug("reActivateIt - {}", this);
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)

@@ -64,7 +64,7 @@ public final class AdempiereServerMgr
 				{
 					m_serverMgr = new AdempiereServerMgr();
 					m_serverMgr.startServers();
-					m_serverMgr.log.info(m_serverMgr.toString());
+					m_serverMgr.log.info("Created and started: {}", m_serverMgr);
 				}
 			}
 		}
@@ -100,7 +100,7 @@ public final class AdempiereServerMgr
 	 */
 	private boolean startEnvironment()
 	{
-		log.info("");
+		log.info("Starting environment");
 
 		// Set Session
 		MSession session = MSession.get(getCtx(), true);
@@ -127,7 +127,7 @@ public final class AdempiereServerMgr
 	 */
 	private boolean startServers()
 	{
-		log.info("");
+		log.info("Starting servers");
 
 		final Properties ctx = getCtx();
 
@@ -203,7 +203,7 @@ public final class AdempiereServerMgr
 			m_servers.add(server);
 		}
 
-		log.debug("#" + noServers);
+		log.debug("#{} servers started.", noServers);
 		return startAll();
 	}	// startEnvironment
 
@@ -240,7 +240,7 @@ public final class AdempiereServerMgr
 	 */
 	public boolean startAll()
 	{
-		log.info("");
+		log.info("Starting all servers");
 		AdempiereServer[] servers = getInActive();
 		for (int i = 0; i < servers.length; i++)
 		{
@@ -260,7 +260,7 @@ public final class AdempiereServerMgr
 					{
 						if (maxWait-- == 0)
 						{
-							log.error("Wait timeout for interruped " + server);
+							log.error("Wait timeout for interrupted {}", server);
 							break;
 						}
 						try
@@ -269,7 +269,7 @@ public final class AdempiereServerMgr
 						}
 						catch (InterruptedException e)
 						{
-							log.error("While sleeping", e);
+							log.error("Error while sleeping", e);
 						}
 					}
 				}
@@ -288,7 +288,7 @@ public final class AdempiereServerMgr
 			}
 			catch (Exception e)
 			{
-				log.error("Server: " + server, e);
+				log.error("Error while starting server: {}", server, e);
 			}
 		}	// for all servers
 
@@ -302,22 +302,22 @@ public final class AdempiereServerMgr
 			{
 				if (server.isAlive())
 				{
-					log.info("Alive: " + server);
+					log.info("Alive: {}", server);
 					noRunning++;
 				}
 				else
 				{
-					log.warn("Dead: " + server);
+					log.warn("Dead: {}", server);
 					noStopped++;
 				}
 			}
 			catch (Exception e)
 			{
-				log.error("(checking) - " + server, e);
+				log.error("Error while checking server status: {}", server, e);
 				noStopped++;
 			}
 		}
-		log.debug("Running=" + noRunning + ", Stopped=" + noStopped);
+		log.debug("All servers started: Running={}, Stopped={}", noRunning, noStopped);
 		AdempiereServerGroup.get().dump();
 		return noStopped == 0;
 	}	// startAll

@@ -467,7 +467,7 @@ public class MCash extends X_C_Cash implements DocAction
 		if (!isApproved())
 			approveIt();
 		//
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		
 		MCashLine[] lines = getLines(false);
 		for (int i = 0; i < lines.length; i++)

@@ -17,7 +17,9 @@
 package org.compiere.util;
 
 import java.util.Properties;
+
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -193,7 +195,7 @@ public class SecureEngine
 			throw new IllegalStateException(realClass 
 				+ ": " + TEST
 				+ "->" + testE + "->" + testC);
-		log.info(realClass + " initialized - " + implementation);
+		log.info("{} initialized - {}", realClass, implementation);
 	}	//	SecureEngine
 
 	

@@ -31,8 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -42,6 +40,9 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Inspects a given annotated callout object and creates {@link AnnotatedCalloutInstance}s.
@@ -281,7 +282,7 @@ public class AnnotatedCalloutInstanceFactory
 			columnNames.add(columnName);
 		}
 
-		logger.info("Loaded {}", pointcut);
+		logger.debug("Loaded {}", pointcut);
 	}
 
 	private final CalloutMethodPointcutKey mkKey(final CalloutMethodPointcut pointcut, final String columnName)

@@ -55,11 +55,11 @@ import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_AD_Role;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -154,7 +154,7 @@ public class Login
 		// }
 		// else
 		// {
-		log.info(msg.toString());
+		log.debug("Using java version: {}", msg);
 		// }
 
 		return true;
@@ -294,7 +294,7 @@ public class Login
 	 */
 	private KeyNamePair[] getRoles(final String app_user, String app_pwd, final boolean force)
 	{
-		log.info("User=" + app_user);
+		log.debug("User={}", app_user);
 		long start = System.currentTimeMillis();
 		if (app_user == null)
 		{
@@ -495,7 +495,7 @@ public class Login
 			//
 			retValue = new KeyNamePair[list.size()];
 			list.toArray(retValue);
-			log.debug("User=" + app_user + " - roles #" + retValue.length);
+			log.debug("User={} - roles #{}", app_user, retValue.length);
 		}
 		catch (Exception ex)
 		{
@@ -762,8 +762,8 @@ public class Login
 			final java.sql.Timestamp timestamp,
 			final String printerName)
 	{
-		if (log.isInfoEnabled())
-			log.info("Org: " + org.toStringX());
+		if (log.isDebugEnabled())
+			log.debug("Org: " + org.toStringX());
 
 		if (m_ctx == null || org == null)
 			throw new IllegalArgumentException("Required parameter missing");
@@ -947,7 +947,7 @@ public class Login
 			}
 
 			// Default Values
-			log.info("Default Values ...");
+			log.debug("Default Values ...");
 			final String sqlDefaulValues = "SELECT t.TableName, c.ColumnName "
 					+ "FROM AD_Column c "
 					+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "

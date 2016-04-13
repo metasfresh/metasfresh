@@ -42,7 +42,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
@@ -58,6 +57,7 @@ import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -202,7 +202,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 				.setOrderBy(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID)
 				.list(I_C_SubscriptionProgress.class);
 
-		logger.info("Identified " + subscriptionLines.size() + " C_SubscriptionProgress that need a shipment schedule");
+		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
 
 		return new ArrayList<Object>(subscriptionLines);
 	}

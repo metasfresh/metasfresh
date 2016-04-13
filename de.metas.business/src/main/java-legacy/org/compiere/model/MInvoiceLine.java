@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,16 +29,18 @@ import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -456,7 +456,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (getM_Product_ID() == 0 || isDescription())
 			return;
 		//
-		log.debug("M_PriceList_ID=" + M_PriceList_ID);
+		log.debug("M_PriceList_ID={}", M_PriceList_ID);
 		m_productPricing = new MProductPricing(getM_Product_ID(), C_BPartner_ID,
 				getQtyInvoiced(), m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
@@ -470,14 +470,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		
 		if(m_productPricing.isManualPrice())
 		{
-			log.info("Do not calculate the prices for " + m_productPricing + " because they were already manually set");
+			log.debug("Do not calculate the prices for " + m_productPricing + " because they were already manually set");
 			return;
 		}
 		//
 		// metas: begin: US1184
 		if (!m_productPricing.calculatePrice())
 		{
-			log.info("Cannot calculate prices for " + m_productPricing + " [SKIP]");
+			log.debug("Cannot calculate prices for " + m_productPricing + " [SKIP]");
 			return;
 		}
 		// metas: end
@@ -1230,7 +1230,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		String sql = "DELETE FROM C_LandedCostAllocation WHERE C_InvoiceLine_ID=" + getC_InvoiceLine_ID();
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
-			log.info("Deleted #" + no);
+			log.debug("Deleted #" + no);
 
 		int inserted = 0;
 		// *** Single Criteria ***
@@ -1285,7 +1285,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 						return "Cannot save line Allocation = " + lca;
 					inserted++;
 				}
-				log.info("Inserted " + inserted);
+				log.debug("Inserted " + inserted);
 				allocateLandedCostRounding();
 				return "";
 			}
@@ -1395,7 +1395,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			inserted++;
 		}
 
-		log.info("Inserted " + inserted);
+		log.debug("Inserted " + inserted);
 		allocateLandedCostRounding();
 		return "";
 	}	// allocate Costs
@@ -1422,7 +1422,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			largestAmtAllocation.setAmt(largestAmtAllocation.getAmt().add(difference));
 			largestAmtAllocation.save();
-			log.info("Difference=" + difference
+			log.debug("Difference=" + difference
 					+ ", C_LandedCostAllocation_ID=" + largestAmtAllocation.getC_LandedCostAllocation_ID()
 					+ ", Amt" + largestAmtAllocation.getAmt());
 		}

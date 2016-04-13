@@ -21,11 +21,16 @@ import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 /**
  * Security Services.
@@ -180,6 +185,7 @@ public class Secure implements SecureInterface
 	 *  @param value clear value
 	 *  @return encrypted String
 	 */
+	@Override
 	public String encrypt (String value)
 	{
 		String clearText = value;
@@ -216,6 +222,7 @@ public class Secure implements SecureInterface
 	 *  @param value encrypted value
 	 *  @return decrypted String
 	 */
+	@Override
 	public String decrypt (String value)
 	{
 		if (value == null || value.length() == 0)
@@ -268,6 +275,7 @@ public class Secure implements SecureInterface
 	 *  @param value clear value
 	 *  @return encrypted String
 	 */
+	@Override
 	public Integer encrypt (Integer value)
 	{
 		return value;
@@ -279,6 +287,7 @@ public class Secure implements SecureInterface
 	 *  @param value encrypted value
 	 *  @return decrypted String
 	 */
+	@Override
 	public Integer decrypt (Integer value)
 	{
 		return value;
@@ -290,6 +299,7 @@ public class Secure implements SecureInterface
 	 *  @param value clear value
 	 *  @return encrypted String
 	 */
+	@Override
 	public BigDecimal encrypt (BigDecimal value)
 	{
 		return value;
@@ -301,6 +311,7 @@ public class Secure implements SecureInterface
 	 *  @param value encrypted value
 	 *  @return decrypted String
 	 */
+	@Override
 	public BigDecimal decrypt (BigDecimal value)
 	{
 		return value;
@@ -312,6 +323,7 @@ public class Secure implements SecureInterface
 	 *  @param value clear value
 	 *  @return encrypted String
 	 */
+	@Override
 	public Timestamp encrypt (Timestamp value)
 	{
 		return value;
@@ -323,6 +335,7 @@ public class Secure implements SecureInterface
 	 *  @param value encrypted value
 	 *  @return decrypted String
 	 */
+	@Override
 	public Timestamp decrypt (Timestamp value)
 	{
 		return value;
@@ -336,6 +349,7 @@ public class Secure implements SecureInterface
 	 *  @param value message
 	 *  @return HexString of message (length = 32 characters)
 	 */
+	@Override
 	public String getDigest (String value)
 	{
 		if (m_md == null)
@@ -369,6 +383,7 @@ public class Secure implements SecureInterface
 	 *  @param value digest string
 	 *  @return true if valid digest
 	 */
+	@Override
 	public boolean isDigest (String value)
 	{
 		if (value == null || value.length() != 32)
@@ -381,12 +396,12 @@ public class Secure implements SecureInterface
 	 * 	String Representation
 	 *	@return info
 	 */
-	public String toString ()
+	@Override
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("Secure[");
-		sb.append(m_cipher)
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+		return MoreObjects.toStringHelper(this)
+				.add("cipher", m_cipher)
+				.toString();
+	}
 	
 }   //  Secure

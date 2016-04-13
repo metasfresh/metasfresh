@@ -730,7 +730,18 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		if (m_pi != null)
 			m_pi.addLog(id, date, number, msg);
-		log.info(id + " - " + date + " - " + number + " - " + msg);
+		
+		if (log.isDebugEnabled())
+		{
+			if (id == 0 && date == null && number == null)
+			{
+				log.debug("Log: {} - {} - {} - {}", id, date, number, msg);
+			}
+			else
+			{
+				log.debug("Log: {}", msg);
+			}
+		}
 	}	// addLog
 
 	/**
@@ -795,7 +806,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 		catch (Exception e)
 		{
-			log.error("Lock failed: " + e.getLocalizedMessage(), e);
+			log.error("Lock failed", e);
 		}
 	}   // lock
 
@@ -825,7 +836,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		{
 			// NOTE: it's very important this method to never throw exception.
 
-			log.error("Unlock failed: " + e.getLocalizedMessage(), e);
+			log.error("Unlock failed", e);
 		}
 	}   // unlock
 

@@ -69,6 +69,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -576,7 +577,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				.execute();
 
-		logger.info("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
+		logger.debug("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
 
 		//
 		// Schedule an update for invalidated invoice candidates
@@ -860,7 +861,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getAD_PInstance_ID())
 				.execute();
-		logger.info("Marked {} {} records with recompute tag={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
+		logger.debug("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
 		logger.debug("Query: {}", query);
 		logger.debug("Tagger: {}", tagRequest);
 
@@ -905,8 +906,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
-		logger.info("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag,
-				onlyInvoiceCandidateIds });
+		logger.debug("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
 	}
 
@@ -926,7 +926,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.execute();
 
-		logger.info("Un-tag {} {} records with were tagged with recompute tag={}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
+		logger.debug("Un-tag {} {} records with were tagged with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
 		logger.debug("Query: {}", query);
 		logger.debug("Tagger: {}", tagger);
 

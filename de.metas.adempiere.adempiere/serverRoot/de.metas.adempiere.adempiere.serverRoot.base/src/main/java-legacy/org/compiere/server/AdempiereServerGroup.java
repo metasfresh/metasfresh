@@ -17,6 +17,7 @@
 package org.compiere.server;
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -82,14 +83,21 @@ public final class AdempiereServerGroup extends ThreadGroup
 	/**
 	 * 	Dump Info
 	 */
-	public void dump ()
+	public void dump()
 	{
+		if (!log.isDebugEnabled())
+		{
+			return;
+		}
+		
 		log.debug(getName() + (isDestroyed() ? " (destroyed)" : ""));
 		log.debug("- Parent=" + getParent());
 		Thread[] list = new Thread[activeCount()];
 		log.debug("- Count=" + enumerate(list, true));
 		for (int i = 0; i < list.length; i++)
+		{
 			log.debug("-- " + list[i]);
+		}
 	}	//	dump
 
 }	//	AdempiereServerGroup

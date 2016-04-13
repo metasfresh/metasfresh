@@ -62,6 +62,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
+import com.google.common.base.Stopwatch;
+
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.notification.INotificationBL;
 import it.sauronsoftware.cron4j.Predictor;
@@ -238,7 +240,7 @@ public class Scheduler extends AdempiereServer
 					@Override
 					public boolean doCatch(final Throwable e) throws Throwable
 					{
-						log.warn("Failed running process/report: " + process, e);
+						log.warn("Failed running process/report: {}", process, e);
 						m_summary.append(e.toString());
 						return ROLLBACK;
 					}
@@ -246,6 +248,7 @@ public class Scheduler extends AdempiereServer
 
 				//
 				// Execute the process runner
+				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
 				if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
 				{
@@ -255,6 +258,7 @@ public class Scheduler extends AdempiereServer
 				{
 					trxManager.run(processRunner);
 				}
+				log.debug("Executed {} in {}", process, stopwatch);
 			}
 			else
 			{
@@ -342,7 +346,7 @@ public class Scheduler extends AdempiereServer
 	 */
 	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.info("{}", process);
+		log.debug("Run report: {}", process);
 
 		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
 		{
@@ -396,7 +400,7 @@ public class Scheduler extends AdempiereServer
 	 */
 	private final String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.info("{}", process);
+		log.debug("Run process: {}", process);
 
 		final ITrx trx = getThreadInheritedTrx();
 		final boolean ok = process.processIt(pi, trx);
@@ -515,7 +519,7 @@ public class Scheduler extends AdempiereServer
 				if (iPara.getParameterName().equals(sPara.getColumnName()))
 				{
 					final String variable = sPara.getParameterDefault();
-					log.debug(sPara.getColumnName() + " = " + variable);
+					log.debug("Filling parameter: {} = {}", sPara.getColumnName(), variable);
 					// Value - Constant/Variable
 					Object value = variable;
 					if (variable == null
@@ -552,7 +556,7 @@ public class Scheduler extends AdempiereServer
 					// No Value
 					if (value == null)
 					{
-						log.debug(sPara.getColumnName() + " - empty");
+						log.debug("{} - empty", sPara.getColumnName());
 						break;
 					}
 

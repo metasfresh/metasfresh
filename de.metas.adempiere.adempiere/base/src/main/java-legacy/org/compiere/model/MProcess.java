@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -213,7 +214,7 @@ public class MProcess extends X_AD_Process
 	{
 		int AD_PInstance_ID = processInfo.getAD_PInstance_ID();
 		//  execute on this thread/connection
-		log.info(ProcedureName + "(" + AD_PInstance_ID + ")");
+		log.debug("Starting process: {} ({})", ProcedureName, AD_PInstance_ID);
 
 		return ProcessUtil.startDatabaseProcedure(processInfo, ProcedureName, trx);
 	}   //  startProcess
@@ -234,7 +235,7 @@ public class MProcess extends X_AD_Process
 	 */
 	private boolean startClass (ProcessInfo pi, ITrx trx)
 	{
-		log.info(pi.getClassName());
+		log.debug("Starting class: {}", pi.getClassName());
 
 		return ProcessUtil.startJavaProcess(getCtx(), pi, trx);
 	}   //  startClass
@@ -331,7 +332,6 @@ public class MProcess extends X_AD_Process
 	 */
 	public void copyFrom (MProcess source)
 	{
-
 		log.debug("Copying from:" + source + ", to: " + this);
 		setAccessLevel(source.getAccessLevel());
 		setAD_Form_ID(source.getAD_Form_ID());
@@ -421,7 +421,7 @@ public class MProcess extends X_AD_Process
 	 */
 	private boolean startClassWithoutTrxClose (ProcessInfo pi, Trx trx)
 	{
-		log.info(pi.getClassName());
+		log.debug("Starting class without transaction close: {}", pi.getClassName());
 		return ProcessUtil.startJavaProcessWithoutTrxClose(getCtx(), pi, trx);
 	}   //  startClassWithoutTrxClose
 

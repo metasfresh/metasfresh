@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
@@ -691,7 +692,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 
 		// Starting user
 		I_AD_User user = userDAO.retrieveUser(getCtx(), AD_User_ID);
-		log.info("For User=" + user
+		log.debug("For User=" + user
 				+ ", Amt=" + amount
 				+ ", Own=" + ownDocument);
 
@@ -700,7 +701,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			if (user.equals(oldUser))
 			{
-				log.info("Loop - " + user.getName());
+				log.debug("Loop - {}", user.getName());
 				return -1;
 			}
 			oldUser = user;
@@ -791,7 +792,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	@Override
 	public void run()
 	{
-		log.info("Node=" + getNode());
+		log.debug("Node={}", getNode());
 		m_newValue = null;
 
 		// m_trx = Trx.get(, true);
@@ -914,7 +915,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	private boolean performWork(Trx trx) throws Exception
 	{
-		log.info(m_node + " [" + trx.getTrxName() + "]");
+		log.debug("Performing work for {} [{}]", m_node, trx);
 		m_docStatus = null;
 		if (m_node.getPriority() != 0)		// overwrite priority if defined
 			setPriority(m_node.getPriority());
@@ -1686,7 +1687,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				}
 			}
 			else
-				log.info("No EMail for User " + user.getName());
+			{
+				log.debug("No EMail for User {}", user.getName());
+			}
 		}
 		else if (email != null && email.length() > 0)
 		{

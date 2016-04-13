@@ -297,7 +297,7 @@ public final class Ini implements Serializable
 			log.error("Cannot save Properties to " + fileName + " - " + t.toString());
 			return;
 		}
-		log.trace(fileName);
+		log.info("Saved properties to {}", fileName);
 
 	}	// save
 
@@ -332,22 +332,22 @@ public final class Ini implements Serializable
 		}
 		catch (FileNotFoundException e)
 		{
-			log.warn(filename + " not found");
+			log.warn("{} not found", filename);
 			loadOK = false;
 		}
 		catch (Exception e)
 		{
-			log.error(filename + " - " + e.toString());
+			log.error("Error while loading {}", filename, e);
 			loadOK = false;
 		}
 		catch (Throwable t)
 		{
-			log.error(filename + " - " + t.toString());
+			log.error("Error while loading {}", filename, t);
 			loadOK = false;
 		}
-		if (!loadOK || s_prop.getProperty(P_TODAY, "").equals(""))
+		if (!loadOK || "".equals(s_prop.getProperty(P_TODAY, "")))
 		{
-			log.info(filename);
+			log.info("Properties file {} is missing. Asking for license approval.", filename);
 			firstTime = true;
 			if (isShowLicenseDialog())
 				if (!IniDialog.accept())
@@ -362,7 +362,7 @@ public final class Ini implements Serializable
 			saveProperties();
 		}
 		s_loaded = true;
-		log.info(filename + " #" + s_prop.size());
+		log.info("Loaded {} properties from {}", s_prop.size(), filename);
 		s_propertyFileName = filename;
 
 		return firstTime;
@@ -410,11 +410,11 @@ public final class Ini implements Serializable
 				if (!file.delete())
 					file.deleteOnExit();
 				s_prop = new Properties();
-				log.info(fileName);
+				log.info("Deleted properties file: {}", fileName);
 			}
 			catch (Exception e)
 			{
-				log.warn("Cannot delete Property file", e);
+				log.warn("Cannot delete properties file: {}", fileName, e);
 			}
 		}
 	}	// deleteProperties

@@ -149,7 +149,7 @@ public abstract class PO
 	public static void setDocWorkflowMgr (DocWorkflowMgr docWFMgr)
 	{
 		s_docWFMgr = docWFMgr;
-		s_log.info(s_docWFMgr.toString());
+		s_log.info("Document workflow manager set to {}", s_docWFMgr);
 	}	//	setDocWorkflowMgr
 
 	/** Document Value Workflow Manager		*/
@@ -560,7 +560,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.warn("Index invalid - " + index, new Exception()); // metas: tsa: added exeption to trace it
+			log.warn("Index invalid - {}", index, new Exception()); // metas: tsa: added exeption to trace it
 			return null;
 		}
 		if (m_newValues[index] != null)
@@ -1079,7 +1079,7 @@ public abstract class PO
 							+ value + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
 				}
 			}
-			if (LogManager.isLevelFinest())
+			if (log.isTraceEnabled())
 				log.trace(ColumnName + " = " + m_newValues[index] + " (OldValue="+m_oldValues[index]+")");
 		}
 		set_Keys (ColumnName, m_newValues[index]);
@@ -1171,8 +1171,12 @@ public abstract class PO
 				}
 			}
 		}
-		log.trace(get_ColumnName(index) + " = " + m_newValues[index]
-				+ " (" + (m_newValues[index]==null ? "-" : m_newValues[index].getClass().getName()) + ")");
+		
+		if (log.isTraceEnabled())
+		{
+			log.trace(get_ColumnName(index) + " = " + m_newValues[index] + " (" + (m_newValues[index]==null ? "-" : m_newValues[index].getClass().getName()) + ")");
+		}
+		
 		set_Keys (get_ColumnName(index), m_newValues[index]);
 		return true;
 	}   //  set_ValueNoCheck
@@ -1285,7 +1289,7 @@ public abstract class PO
 		else //	if (value instanceof String)
 			valueString = DB.TO_STRING(value.toString());
 		//	Save it
-		log.info(columnName + "=" + valueString);
+		log.debug("Set custom column: {}={}", columnName, valueString);
 		m_custom.put(columnName, valueString);
 		return true;
 	}	//	set_CustomColumn
@@ -1441,7 +1445,7 @@ public abstract class PO
 	public static void copyValues (PO from, PO to, final boolean honorIsCalculated)
 	{
 // metas: end
-		s_log.debug("From ID=" + from.get_ID() + " - To ID=" + to.get_ID());
+		s_log.debug("Copy values: From ID={}, To ID={}", from.get_ID(), to.get_ID());
 
 		//
 		// Make sure "from" and "to" objects are not stale (01537)
@@ -1585,7 +1589,7 @@ public abstract class PO
 	 */
 	protected final void load (final int ID, final String trxName)
 	{
-		log.trace("ID={}", ID);
+		log.trace("Loading ID={}", ID);
 		if (ID > 0)
 		{
 			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {0} shall have one single primary key but it has: {1}", this, m_KeyColumns);
@@ -1630,9 +1634,9 @@ public abstract class PO
 		final int columnsCount = get_ColumnCount();
 
 		//
-		if (LogManager.isLevelFinest())
+		if (log.isTraceEnabled())
 		{
-			log.trace(get_WhereClause(true));
+			log.trace("Loading: {}", get_WhereClause(true));
 		}
 
 		PreparedStatement pstmt = null;
@@ -1712,7 +1716,7 @@ public abstract class PO
 		int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
-		log.trace("(rs)");
+		log.trace("Loading from ResultSet");
 		//  load column values
 		for (index = 0; index < size; index++)
 		{
@@ -1762,13 +1766,14 @@ public abstract class PO
 			m_valueLoaded[index] = true; // mark the column as loaded
 			//
 			if (log.isTraceEnabled())
-				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index)
-					+ "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 		}
 		catch (SQLException e)
 		{
 			if (p_info.isVirtualColumn(index))	//	if rs constructor used
-				log.trace("Virtual Column not loaded: " + columnName);
+			{
+				log.trace("Virtual Column not loaded: {}", columnName);
+			}
 			else
 			{
 				log.error("(rs) - " + String.valueOf(index)
@@ -1825,7 +1830,7 @@ public abstract class PO
 		int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
-		log.trace("(hm)");
+		log.trace("Loading from HashMap");
 		//  load column values
 		for (index = 0; index < size; index++)
 		{
@@ -1853,13 +1858,14 @@ public abstract class PO
 					m_oldValues[index] = null;	// loadSpecial(rs, index);
 				//
 				if (log.isTraceEnabled())
-					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index)
-						+ "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 			}
 			catch (Exception e)
 			{
 				if (p_info.isVirtualColumn(index))	//	if rs constructor used
-					log.trace("Virtual Column not loaded: " + columnName);
+				{
+					log.trace("Virtual Column not loaded: {}", columnName);
+				}
 				else
 				{
 					log.error("(ht) - " + String.valueOf(index)
@@ -2011,7 +2017,11 @@ public abstract class PO
 	 */
 	protected Object loadSpecial (ResultSet rs, int index) throws SQLException
 	{
-		log.trace("(NOP) - " + p_info.getColumnName(index));
+		if(log.isTraceEnabled())
+		{
+			log.trace("Loading special column {}: (NOP)", p_info.getColumnName(index));
+		}
+		
 		return null;
 	}   //  loadSpecial
 
@@ -2140,7 +2150,7 @@ public abstract class PO
 					continue;
 				if (get_Value(i) == null || get_Value(i).equals(Null.NULL))
 				{
-					log.info(p_info.getColumnName(i));
+					//log.info(p_info.getColumnName(i));
 					return false;
 				}
 			}
@@ -2604,7 +2614,7 @@ public abstract class PO
 		catch (Exception e)
 		{
 			success = false;
-			log.error("Error while saving " + this, e);
+			log.error("Error while saving {}", this, e);
 
 			// task 08596: w need to save the error in case po.save() was called from the gridtab.
 			// It will want to show the result of CLogger.retrieveError() to the user.
@@ -2672,7 +2682,7 @@ public abstract class PO
 		final boolean newRecord = is_new();	//	save locally as load resets
 		if (!newRecord && !is_Changed())
 		{
-			log.debug("Nothing changed - {}", this);
+			log.debug("Save prepare: nothing changed - {}", this);
 			return false; // no save is needed
 		}
 
@@ -2695,7 +2705,7 @@ public abstract class PO
 			}
 			if (reset)
 			{
-				log.warn("Set Org to 0");
+				log.warn("Save prepare: Set AD_Org_ID to 0 for {}", this);
 				setAD_Org_ID(0);
 			}
 		}
@@ -3149,7 +3159,7 @@ public abstract class PO
 
 			//
 			// Execute UPDATE SQL
-			log.trace(sql.toString());
+			log.trace("Save update: SQL={}", sql);
 			final int no;
 			if (isUseTimeoutForUpdate())
 				no = DB.executeUpdateEx(sql.toString(), m_trxName, QUERY_TIME_OUT);
@@ -3985,7 +3995,7 @@ public abstract class PO
 			.append("_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.")
 			.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		int no = DB.executeUpdateEx(sql.toString(), m_trxName);
-		log.debug("#" + no);
+		log.debug("Inserted {} translation records for {}", no, this);
 		m_translations = null; // metas
 		return no > 0;
 	}	//	insertTranslations
@@ -4053,7 +4063,7 @@ public abstract class PO
 		sql.append(" WHERE ")
 			.append(keyColumn).append("=").append(get_ID());
 		int no = DB.executeUpdate(sql.toString(), m_trxName);
-		log.debug("#" + no);
+		log.debug("Updated {} translation records for {}", no, this);
 		m_translations = null; // metas
 		return no >= 0;
 	}	//	updateTranslations
@@ -4078,7 +4088,7 @@ public abstract class PO
 			.append(tableName).append("_Trl WHERE ")
 			.append(keyColumn).append("=").append(get_ID());
 		int no = DB.executeUpdate(sql.toString(), trxName);
-		log.debug("#" + no);
+		log.debug("Deleted {} translation records for {}", no, this);
 		m_translations = null; // metas
 		return no >= 0;
 	}	//	deleteTranslations
@@ -4166,7 +4176,7 @@ public abstract class PO
 		final int no = DB.executeUpdate(sb.toString(), get_TrxName());
 		if (no > 0)
 		{
-			log.debug("#" + no);
+			log.debug("Inserted {} accounting records for {}", no, this);
 		}
 		else
 		{
@@ -4275,9 +4285,9 @@ public abstract class PO
 			else
 				success = DB.executeUpdate(sql, trxName) == 1;
 			if (success)
-				log.debug("success" + (trxName == null ? "" : "[" + trxName + "]"));
+				log.debug("Locked {} (trxName={})", this, trxName);
 			else
-				log.warn("failed" + (trxName == null ? "" : " [" + trxName + "]"));
+				log.warn("Failed locking {} (trxName={})", this, trxName);
 			return success;
 		}
 		return true;
@@ -4363,7 +4373,8 @@ public abstract class PO
 		{
 			if (m_attachment.getEntryName(i).endsWith(extension))
 			{
-				log.debug("#" + i + ": " + m_attachment.getEntryName(i));
+				if (log.isDebugEnabled())
+					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
 				return true;
 			}
 		}
@@ -4384,7 +4395,8 @@ public abstract class PO
 		{
 			if (m_attachment.getEntryName(i).endsWith(extension))
 			{
-				log.debug("#" + i + ": " + m_attachment.getEntryName(i));
+				if(log.isDebugEnabled())
+					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
 				return m_attachment.getEntryData(i);
 			}
 		}
@@ -4516,7 +4528,7 @@ public abstract class PO
 	 */
 	private Object get_LOB (Object value)
 	{
-		log.debug("Value=" + value);
+		log.debug("Getting LOB for Value={}", value);
 		if (value == null)
 			return null;
 		//
@@ -4574,7 +4586,7 @@ public abstract class PO
 	 */
 	private void lobAdd (Object value, int index, int displayType)
 	{
-		log.trace("Value=" + value);
+		log.trace("Adding LOB: Value={}", value);
 		PO_LOB lob = new PO_LOB (p_info.getTableName(), get_ColumnName(index),
 			get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
@@ -4891,7 +4903,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column not found: {}", columnName);
 			return "";
 		}
 		return get_ValueOldAsString (index);

@@ -22,18 +22,18 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Shipment Confirmation Model
@@ -190,6 +190,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MInOutConfirm[");
@@ -202,6 +203,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		return Msg.getElement(getCtx(), "M_InOutConfirm_ID") + " " + getDocumentNo();
@@ -211,6 +213,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Create PDF
 	 *	@return File or null
 	 */
+	@Override
 	public File createPDF ()
 	{
 		try
@@ -242,6 +245,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Set Approved
 	 *	@param IsApproved approval
 	 */
+	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		if (IsApproved && !isApproved())
@@ -263,6 +267,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 *	@param processAction document action
 	 *	@return true if performed
 	 */
+	@Override
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
@@ -278,6 +283,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Unlock Document.
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean unlockIt()
 	{
 		log.info(toString());
@@ -289,6 +295,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Invalidate Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean invalidateIt()
 	{
 		log.info(toString());
@@ -300,6 +307,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 *	Prepare Document
 	 * 	@return new status (In Progress or Invalid) 
 	 */
+	@Override
 	public String prepareIt()
 	{
 		log.info(toString());
@@ -350,6 +358,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Approve Document
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean  approveIt()
 	{
 		log.info(toString());
@@ -361,6 +370,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Reject Approval
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean rejectIt()
 	{
 		log.info(toString());
@@ -372,6 +382,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		//	Re-Check
@@ -389,7 +400,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
-		log.info(toString());
+		log.debug("Completed: {}", this);
 		//
 		MInOut inout = new MInOut (getCtx(), getM_InOut_ID(), get_TrxName());
 		MInOutLineConfirm[] lines = getLines(false);
@@ -641,6 +652,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Void Document.
 	 * 	@return false 
 	 */
+	@Override
 	public boolean voidIt()
 	{
 		log.info(toString());
@@ -660,6 +672,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Close Document.
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info(toString());
@@ -681,6 +694,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Reverse Correction
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reverseCorrectIt()
 	{
 		log.info(toString());
@@ -701,6 +715,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Reverse Accrual - none
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reverseAccrualIt()
 	{
 		log.info(toString());
@@ -721,6 +736,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Re-activate
 	 * 	@return false 
 	 */
+	@Override
 	public boolean reActivateIt()
 	{
 		log.info(toString());
@@ -742,6 +758,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Get Summary
 	 *	@return Summary of Document
 	 */
+	@Override
 	public String getSummary()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -760,6 +777,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Get Process Message
 	 *	@return clear text error message
 	 */
+	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
@@ -769,6 +787,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
@@ -778,6 +797,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	 * 	Get Document Currency
 	 *	@return C_Currency_ID
 	 */
+	@Override
 	public int getC_Currency_ID()
 	{
 	//	MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());

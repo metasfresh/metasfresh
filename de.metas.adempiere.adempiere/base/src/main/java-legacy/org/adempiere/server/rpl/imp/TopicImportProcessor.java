@@ -41,6 +41,7 @@ import org.compiere.model.I_IMP_ProcessorParameter;
 //import org.compiere.model.MIMPProcessor;
 //import org.compiere.model.X_IMP_ProcessorParameter;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -73,8 +74,7 @@ public class TopicImportProcessor implements IImportProcessor
 	@Override
 	public void start(Properties ctx, IReplicationProcessor replicationProcessor, String trxName) throws Exception
 	{
-		log.info("replicationProcessor = " + replicationProcessor);
-		log.info("replicationProcessor.getMImportProcessor() = " + replicationProcessor.getMImportProcessor());
+		log.info("Starting {} ({})", replicationProcessor, replicationProcessor.getMImportProcessor());
 
 		final I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
 		final List<I_IMP_ProcessorParameter> processorParameters = Services.get(IIMPProcessorDAO.class).retrieveParameters(impProcessor, trxName);
@@ -94,25 +94,26 @@ public class TopicImportProcessor implements IImportProcessor
 
 		for (final I_IMP_ProcessorParameter processorParameter : processorParameters)
 		{
-			log.info("ProcesParameter          Value = " + processorParameter.getValue());
-			log.info("ProcesParameter ParameterValue = " + processorParameter.getParameterValue());
-			if (processorParameter.getValue().equals(PARAM_topicName))
+			final String parameterName = processorParameter.getValue();
+			log.debug("Parameters: {} = {}" + parameterName, processorParameter.getParameterValue());
+			
+			if (parameterName.equals(PARAM_topicName))
 			{
 				topicName = processorParameter.getParameterValue();
 			}
-			else if (processorParameter.getValue().equals(PARAM_protocol))
+			else if (parameterName.equals(PARAM_protocol))
 			{
 				protocol = processorParameter.getParameterValue();
 			}
-			else if (processorParameter.getValue().equals(PARAM_isDurableSubscription))
+			else if (parameterName.equals(PARAM_isDurableSubscription))
 			{
 				isDurableSubscription = Boolean.parseBoolean(processorParameter.getParameterValue());
 			}
-			else if (processorParameter.getValue().equals(PARAM_subscriptionName))
+			else if (parameterName.equals(PARAM_subscriptionName))
 			{
 				subscriptionName = processorParameter.getParameterValue();
 			}
-			else if (processorParameter.getValue().equals(PARAM_clientID))
+			else if (parameterName.equals(PARAM_clientID))
 			{
 				clientID = processorParameter.getParameterValue();
 			}
@@ -154,7 +155,7 @@ public class TopicImportProcessor implements IImportProcessor
 				trxName);
 
 		topicListener.run();
-		log.info("Started topicListener = " + topicListener);
+		log.info("Topic listener started: {}", topicListener);
 	}
 
 	@Override
@@ -164,7 +165,7 @@ public class TopicImportProcessor implements IImportProcessor
 		if (topicListener != null)
 		{
 			topicListener.stop();
-			log.info("Stoped topicListener.");
+			log.info("Topic listener stopped: {}", topicListener);
 		}
 		topicListener = null;
 	}
