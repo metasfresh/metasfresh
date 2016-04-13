@@ -2,3 +2,8 @@
 /.classpath
 /.project
 /.settings/
+/activemq-data/
+/src/main/webapp/VAADIN/widgetsets/
+*.cache
+*.diff
+
