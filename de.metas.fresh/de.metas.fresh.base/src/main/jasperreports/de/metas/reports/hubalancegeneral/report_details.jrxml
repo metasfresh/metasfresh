@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624327"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="175"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -24,6 +24,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="IsRefundableConditions" class="java.lang.String"/>
+	<parameter name="showdetails" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
 	*
@@ -83,6 +84,7 @@ FROM
 		<groupExpression><![CDATA[$F{name}]]></groupExpression>
 		<groupHeader>
 			<band height="15">
+				<printWhenExpression><![CDATA[new Boolean("Y".equals($P{showdetails}))]]></printWhenExpression>
 				<staticText>
 					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000"/>
 					<textElement markup="none">
@@ -98,18 +100,28 @@ FROM
 					<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000"/>
+					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000">
+						<printWhenExpression><![CDATA[$F{carryincoming}
+.subtract($F{carryoutgoing})
+.floatValue() >= 0]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{carryincoming}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{carryincoming}
+.subtract($F{carryoutgoing})]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000"/>
+					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000">
+						<printWhenExpression><![CDATA[$F{carryoutgoing}
+.subtract($F{carryincoming})
+.floatValue() >= 0]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{carryoutgoing}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{carryoutgoing}
+.subtract($F{carryincoming})]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
@@ -123,18 +135,36 @@ FROM
 		<groupFooter>
 			<band height="27">
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="2" width="82" height="12" forecolor="#000000"/>
+					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="2" width="82" height="12" forecolor="#000000">
+						<printWhenExpression><![CDATA[$F{carryoutgoing}
+.add($V{outgoingtotal})
+.subtract(
+    $F{carryincoming}
+    .add($V{incomingtotal})
+    )
+.floatValue() >= 0]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )
+.subtract($V{incomingtotal}.add( $F{carryincoming} ) )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="2" width="92" height="12" forecolor="#000000"/>
+					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="2" width="92" height="12" forecolor="#000000">
+						<printWhenExpression><![CDATA[$F{carryincoming}
+.add($V{incomingtotal})
+.subtract(
+    $F{carryoutgoing}
+    .add($V{outgoingtotal})
+    )
+.floatValue() >= 0]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )
+.subtract( $V{outgoingtotal}.add($F{carryoutgoing}))]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="2" width="101" height="12" forecolor="#000000"/>
@@ -234,7 +264,9 @@ FROM
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="93" y="33" width="101" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0 )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
+&& "Y".equals($P{showdetails})
+)]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false" isItalic="true"/>
@@ -243,25 +275,50 @@ FROM
 			</staticText>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="33" width="92" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0 )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
+&& "Y".equals($P{showdetails})
+&&
+$F{carryincoming}
+.add($V{incomingtotal})
+.subtract(
+    $F{carryoutgoing}
+    .add($V{outgoingtotal})
+    )
+.floatValue() >= 0
+
+)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )
+.subtract( $V{outgoingtotal}.add($F{carryoutgoing}))]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="33" width="82" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0 )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
+&& "Y".equals($P{showdetails})
+&&
+$F{carryoutgoing}
+.add($V{outgoingtotal})
+.subtract(
+    $F{carryincoming}
+    .add($V{incomingtotal})
+    )
+.floatValue() >= 0
+)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )
+.subtract($V{incomingtotal}.add( $F{carryincoming} ) )]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="33" width="53" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0 )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
+&& "Y".equals($P{showdetails})
+)]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false" isItalic="true"/>
@@ -270,7 +327,9 @@ FROM
 			</textField>
 			<textField>
 				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="33" width="135" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0 )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
+&& "Y".equals($P{showdetails})
+)]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false" isItalic="true"/>
@@ -283,6 +342,7 @@ FROM
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($F{documentno} != null &&
     ($F{outgoing}.floatValue()!= 0 || $F{incoming}.floatValue() != 0 )
+    && "Y".equals($P{showdetails})
 )]]></printWhenExpression>
 			<textField>
 				<reportElement uuid="cffcd330-5b17-4607-9de0-acf76f94cc32" key="textField-16" x="39" y="0" width="54" height="12" forecolor="#000000"/>

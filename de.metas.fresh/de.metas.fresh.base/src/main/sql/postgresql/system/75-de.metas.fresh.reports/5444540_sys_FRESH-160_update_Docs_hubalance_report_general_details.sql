@@ -59,7 +59,6 @@ FROM
 		FROM	M_Material_Balance_Detail mbd
 			INNER JOIN M_Material_Balance_Config mbc ON mbd.M_Material_Balance_Config_ID = mbc.M_Material_Balance_Config_ID
 		WHERE	MovementDate::date < $6 AND ( mbd.IsReset = 'N' OR ( mbd.IsReset = 'Y' AND mbd.ResetDateEffective > $7 ))
-		
 		GROUP BY  mbd.C_BPartner_ID, mbd.M_Product_ID
 	) carry
 	
@@ -159,21 +158,6 @@ GROUP BY
 	JOIN M_Product p ON carry.M_Product_ID = p.M_Product_ID
 	JOIN C_UOM uom on p.C_UOM_ID = uom.C_UOM_ID
 
-	WHERE 1=1 
-	AND (
-			case when $2 > 0 
-			then carry.C_BPartner_ID = $2
-			else
-			1=1
-			end
-			)
-		AND (
-			case when $3 > 0
-			then $3 = (Select bp.C_BP_Group_ID from C_BPartner bp where bp.C_BPartner_ID = carry.C_BPartner_ID)
-			else 1=1
-			end
-			)
-		and case when  $4 >0 then p.M_Product_ID = $4 else 1=1 end
 
 Order by 
 

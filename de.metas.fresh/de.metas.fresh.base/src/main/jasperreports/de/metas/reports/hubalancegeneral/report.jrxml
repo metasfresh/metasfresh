@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000005"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="61"/>
+	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,6 +18,7 @@
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<parameter name="IsRefundableConditions" class="java.lang.String"/>
+	<parameter name="showdetails" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select '';]]>
 	</queryString>
@@ -31,23 +32,26 @@
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement uuid="57fee363-fabe-49b7-9652-20fecfd01700" key="subreport-8" x="0" y="86" width="595" height="153"/>
-				<subreportParameter name="M_Material_Balance_Config_ID">
-					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="EndDate">
 					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Material_Balance_Config_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="StartDate">
 					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="showdetails">
+					<subreportParameterExpression><![CDATA[$P{showdetails}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="M_Product_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="IsRefundableConditions">
-					<subreportParameterExpression><![CDATA[$P{IsRefundableConditions}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsRefundableConditions">
+					<subreportParameterExpression><![CDATA[$P{IsRefundableConditions}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BP_Group_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
@@ -77,23 +81,26 @@
 		<band height="14" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement uuid="f4aecc68-d647-409b-bde5-65f943103dc3" key="subreport-3" x="0" y="0" width="595" height="14"/>
-				<subreportParameter name="EndDate">
-					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="M_Material_Balance_Config_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="EndDate">
+					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="StartDate">
 					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="showdetails">
+					<subreportParameterExpression><![CDATA[$P{showdetails}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="M_Product_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="IsRefundableConditions">
 					<subreportParameterExpression><![CDATA[$P{IsRefundableConditions}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BP_Group_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
