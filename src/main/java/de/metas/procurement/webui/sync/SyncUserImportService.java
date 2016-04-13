@@ -88,7 +88,7 @@ public class SyncUserImportService extends AbstractSyncImportService
 			user.setBpartner(bpartner);
 		}
 
-		user.setDeleted(false);
+		user.markNotDeleted();
 		user.setEmail(syncUser.getEmail());
 		// only sync the PW if not already set, e.g. by the forgot-password feature
 		if (user.getPassword() == null || user.getPassword().trim().isEmpty())
@@ -108,7 +108,7 @@ public class SyncUserImportService extends AbstractSyncImportService
 		{
 			return;
 		}
-		user.setDeleted(true);
+		user.markDeleted();
 		usersRepo.save(user);
 
 		logger.debug("Deleted: {}", user);

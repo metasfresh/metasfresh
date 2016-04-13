@@ -2,11 +2,13 @@ package de.metas.procurement.webui.model;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import com.google.gwt.thirdparty.guava.common.annotations.VisibleForTesting;
 import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
 
 /*
@@ -33,7 +35,11 @@ import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
 
 @Entity
 @Table(name = "bpartner_user" //
-, uniqueConstraints = @UniqueConstraint(name = "bpartner_user_email", columnNames = { "email" })  //
+, uniqueConstraints = @UniqueConstraint(name = "bpartner_user_email", columnNames = {
+		"email" //
+		, "deleted_id" // FRESH-176: use it as part of the unique index just to emulate partial indexes on JPA
+})   //
+, indexes = @Index(name = "bpartner_user_email_idx", columnList = "email, deleted ") // index mainly used on login via UserRepository.findByEmailAndDeletedFalse
 )
 @SuppressWarnings("serial")
 public class User extends AbstractEntity
@@ -50,6 +56,8 @@ public class User extends AbstractEntity
 	private String language;
 
 	private String passwordResetKey;
+
+	private Long deleted_id;
 
 	public User()
 	{
@@ -111,5 +119,23 @@ public class User extends AbstractEntity
 	public void setPasswordResetKey(String passwordResetKey)
 	{
 		this.passwordResetKey = passwordResetKey;
+	}
+
+	public void markDeleted()
+	{
+		setDeleted(true);
+		deleted_id = getId(); // FRESH-176: set the delete_id to current ID just to avoid the unique constraint
+	}
+
+	public void markNotDeleted()
+	{
+		setDeleted(false);
+		deleted_id = null; // FRESH-176: set the delete_id to NULL just to make sure the the unique index is enforced
+	}
+
+	@VisibleForTesting
+	public Long getDeleted_id()
+	{
+		return deleted_id;
 	}
 }
