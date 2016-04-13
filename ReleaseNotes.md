@@ -21,6 +21,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-176: Allow switch enabled users between BPartners
  - FRESH-160 Fix Report "Gebindesaldo all"
  - FRESH-177 MRP Product Info Window with empty columns: removing obsolete DB-functions
  - FRESH-37 09955 excel Report Procurement Statistics (105226320154)
