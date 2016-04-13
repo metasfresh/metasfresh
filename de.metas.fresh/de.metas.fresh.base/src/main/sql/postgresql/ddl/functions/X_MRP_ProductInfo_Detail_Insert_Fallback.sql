@@ -36,5 +36,5 @@ FROM X_MRP_ProductInfo_Detail_Fallback_V($1);
 
 $BODY$
 LANGUAGE sql VOLATILE;
-COMMENT ON FUNCTION X_MRP_ProductInfo_Detail_Fallback_V(date) 
+COMMENT ON FUNCTION X_MRP_ProductInfo_Detail_Insert_Fallback(date) 
 IS 'Calls X_MRP_ProductInfo_Detail_V(date) and directly inserts the result into X_MRP_ProductInfo_Detail_MV for a given day.';

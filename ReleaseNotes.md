@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.13 (Upcoming Release)  
+# metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
  - FRESH-59 09915 procurement conditions jasper process (109344045046)FRESH-59 09915 procurement conditions jasper process (109344045046)
@@ -20,6 +20,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-177 MRP Product Info Window with empty columns: removing obsolete DB-functions
  - FRESH-37 09955 excel Report Procurement Statistics (105226320154)
 
 # metasfresh 4.13.12
