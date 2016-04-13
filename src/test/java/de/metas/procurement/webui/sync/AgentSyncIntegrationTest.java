@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.IntegrationTest;
@@ -15,6 +18,8 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -25,15 +30,18 @@ import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
+import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.AgentSyncIntegrationTest.AgentSyncTestConfig;
 import de.metas.procurement.webui.util.DateUtils;
@@ -65,6 +73,7 @@ import de.metas.procurement.webui.util.DummyDataProducer;
 @SpringApplicationConfiguration(classes = { AgentSyncTestConfig.class })
 @WebAppConfiguration
 @IntegrationTest("server.port:0")
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AgentSyncIntegrationTest
 {
 	@Configuration
@@ -77,6 +86,16 @@ public class AgentSyncIntegrationTest
 			return new NullServerSync();
 		}
 	}
+
+	@Rule
+	public TestWatcher testWatcher = new TestWatcher()
+	{
+		@Override
+		protected void failed(final Throwable e, final Description description)
+		{
+			dumpAll("After " + description + " failed");
+		}
+	};
 
 	//
 	// Services
@@ -92,6 +111,8 @@ public class AgentSyncIntegrationTest
 	@Autowired
 	BPartnerRepository bpartnerRepo;
 	@Autowired
+	UserRepository usersRepo;
+	@Autowired
 	ProductRepository productsRepo;
 	@Autowired
 	ContractRepository contractsRepo;
@@ -104,7 +125,7 @@ public class AgentSyncIntegrationTest
 	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
 
 	@Test
-	public void test() throws Exception
+	public void test_ImportContracts_ReportQty() throws Exception
 	{
 		//
 		// Master data
@@ -188,18 +209,99 @@ public class AgentSyncIntegrationTest
 		// dump("Contract lines", contractLinesRepo.findAll());
 	}
 
+	@Test
+	public void test_ImportUser_DeleteUser_and_ImportAnotherOneWithSameEmail()
+	{
+		final String email = "email1";
+		
+		final SyncBPartner syncBPartner = new SyncBPartner();
+		syncBPartner.setUuid(newUUID());
+		syncBPartner.setName("Test");
+		syncBPartner.setSyncContracts(false);
+
+		//
+		// Import the BPartner with a User
+		final SyncUser syncUser1 = new SyncUser();
+		{
+			syncUser1.setUuid(newUUID());
+			syncUser1.setEmail(email);
+			syncUser1.setDeleted(false);
+			syncBPartner.getUsers().add(syncUser1);
+
+			agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
+
+			final User user1 = usersRepo.findByUuid(syncUser1.getUuid());
+			Assert.assertNotNull("User1 was imported", user1);
+			Assert.assertEquals("User1 - BPartner", syncBPartner.getUuid(), user1.getBpartner().getUuid());
+			Assert.assertEquals("User1 - Deleted", false, user1.isDeleted());
+			Assert.assertEquals("User1 - Deleted_ID", null, user1.getDeleted_id());
+			Assert.assertEquals("User1 - EMail", email, user1.getEmail());
+			//
+			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1) , usersRepo.findAll());
+		}
+		
+		//
+		// Delete the first user and import another one with same email
+		final SyncUser syncUser2 = new SyncUser();
+		{
+			syncUser1.setDeleted(true);
+			
+			syncUser2.setUuid(newUUID());
+			syncUser2.setEmail(email);
+			syncUser2.setDeleted(false);
+			syncBPartner.getUsers().clear();
+			syncBPartner.getUsers().add(syncUser1);
+			syncBPartner.getUsers().add(syncUser2);
+
+			agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
+			
+			final User user1 = usersRepo.findByUuid(syncUser1.getUuid());
+			Assert.assertNotNull("User1 was imported", user1);
+			Assert.assertEquals("User1 - BPartner", syncBPartner.getUuid(), user1.getBpartner().getUuid());
+			Assert.assertEquals("User1 - Deleted", true, user1.isDeleted());
+			Assert.assertEquals("User1 - Deleted_ID", user1.getId(), user1.getDeleted_id());
+			Assert.assertEquals("User1 - EMail", email, user1.getEmail());
+			//
+			final User user2 = usersRepo.findByUuid(syncUser2.getUuid());
+			Assert.assertNotNull("User2 was imported", user2);
+			Assert.assertEquals("User2 - BPartner", syncBPartner.getUuid(), user2.getBpartner().getUuid());
+			Assert.assertEquals("User2 - Deleted", false, user2.isDeleted());
+			Assert.assertEquals("User1 - Deleted_ID", null, user2.getDeleted_id());
+			Assert.assertEquals("User2 - EMail", email, user1.getEmail());
+			//
+			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1, user2) , usersRepo.findAll());
+			
+		}
+
+	}
+
 	private static final String newUUID()
 	{
 		return UUID.randomUUID().toString();
 	}
 
-	@SuppressWarnings("unused")
 	private final void dump(final String msg, final List<?> entries)
 	{
 		System.out.println(msg + ": ");
-		for (final Object entry : entries)
+		if (entries == null || entries.isEmpty())
 		{
-			System.out.println("\n\t" + entry);
+			System.out.println("\n\t (no entries)");
 		}
+		else
+		{
+			for (final Object entry : entries)
+			{
+				System.out.println("\n\t" + entry);
+			}
+		}
+	}
+
+	private final void dumpAll(final String msg)
+	{
+		dump(msg + " - BPartners", bpartnerRepo.findAll());
+		dump(msg + " - Users", usersRepo.findAll());
+		dump(msg + " - Contracts", contractsRepo.findAll());
+		dump(msg + " - Products", productsRepo.findAll());
+
 	}
 }
