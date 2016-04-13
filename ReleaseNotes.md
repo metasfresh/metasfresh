@@ -16,6 +16,8 @@ The actual release notes
 
 ## Features
  - FRESH-97 Improve metas fresh server and client logging
+ - FRESH-59 09915 procurement conditions jasper process (109344045046)
+    * finetuning
  - FRESH-59 09915 procurement conditions jasper process (109344045046)FRESH-59 09915 procurement conditions jasper process (109344045046)
     * adding french translations
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up

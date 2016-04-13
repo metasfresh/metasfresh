@@ -363,14 +363,14 @@
 				<textFieldExpression><![CDATA[$F{flatrateamtperuom11}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="125" height="26"/>
+				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="133" height="26"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="162" y="77" width="395" height="26"/>
+				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="170" y="77" width="386" height="26"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
