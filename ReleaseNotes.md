@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-183 Price editable in Procurement Candidates
  - FRESH-97 Improve metas fresh server and client logging
  - FRESH-59 09915 procurement conditions jasper process (109344045046)
     * finetuning
@@ -32,7 +33,6 @@ The actual release notes
 # metasfresh 4.13.12
 
 ## Features
- - FRESH-183 Price editable in Procurement Candidates
  - FRESH-70 Model interceptor to prevent deactivating PMM_Products that are unter contract
     * and making sure that activating a record is still allowed
  - FRESH-170 Laufender Vertrag, show Lieferprodukt also on Tab "Liefersatz"
