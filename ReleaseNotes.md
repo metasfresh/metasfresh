@@ -31,6 +31,7 @@ The actual release notes
 # metasfresh 4.13.12
 
 ## Features
+ - FRESH-183 Price editable in Procurement Candidates
  - FRESH-70 Model interceptor to prevent deactivating PMM_Products that are unter contract
     * and making sure that activating a record is still allowed
  - FRESH-170 Laufender Vertrag, show Lieferprodukt also on Tab "Liefersatz"
