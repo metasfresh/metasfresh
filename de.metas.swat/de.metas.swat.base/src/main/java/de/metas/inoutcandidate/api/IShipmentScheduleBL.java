@@ -124,7 +124,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * 
 	 * <strike>Return the UOM of the orderLine, which is also the UOM of both the order line's and the shipment line's QtyEntered.</strike>
 	 * 
-	 * Return the UOM of the prospective shipment line's QtyEntered. Note that currently this is the internal stocking-UOM because that's what our EDI-customer migros expects the UOM to be. they order
+	 * Return the UOM of the prospective shipment line's QtyEntered. Note that currently this is the internal stocking-UOM because that's what our EDI-customer expects the UOM to be. they order
 	 * in UOM "TU", but want a CU-UOM to be returned.
 	 * 
 	 * @param sched

@@ -24,8 +24,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -58,12 +56,12 @@ import org.compiere.util.TrxRunnable;
 public class VAllocation extends Allocation
 	implements FormPanel, ActionListener, TableModelListener, VetoableChangeListener
 {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5322824600164192235L;
-	
+
 	private CPanel panel = new CPanel();
 
 	/**
@@ -71,6 +69,7 @@ public class VAllocation extends Allocation
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -130,7 +129,7 @@ public class VAllocation extends Allocation
 	private JCheckBox autoWriteOff = new JCheckBox();
 	private JLabel organizationLabel = new JLabel();
 	private VLookup organizationPick = null;
-	
+
 	/**
 	 *  Static Init
 	 *  @throws Exception
@@ -176,14 +175,14 @@ public class VAllocation extends Allocation
 		invoiceScrollPane.setPreferredSize(new Dimension(200, 200));
 		paymentScrollPane.setPreferredSize(new Dimension(200, 200));
 		mainPanel.add(parameterPanel, BorderLayout.NORTH);
-		
+
 		//org filter
 		organizationLabel.setText(Msg.translate(Env.getCtx(), "AD_Org_ID"));
 		parameterPanel.add(organizationLabel, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0
 				,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
 		parameterPanel.add(organizationPick, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0
 				,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
-		
+
 		parameterPanel.add(bpartnerLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
 		parameterPanel.add(bpartnerSearch, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
@@ -233,6 +232,7 @@ public class VAllocation extends Allocation
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -244,6 +244,7 @@ public class VAllocation extends Allocation
 	 *  Dynamic Init (prepare dynamic fields)
 	 *  @throws Exception if Lookups cannot be initialized
 	 */
+	@Override
 	public void dynInit() throws Exception
 	{
 		//  Currency
@@ -274,13 +275,14 @@ public class VAllocation extends Allocation
 		dateField.setValue(Env.getContextAsDate(Env.getCtx(), "#Date"));
 		dateField.addVetoableChangeListener(this);
 	}   //  dynInit
-	
+
 	/**************************************************************************
 	 *  Action Listener.
 	 *  - MultiCurrency
 	 *  - Allocate
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		log.info("");
@@ -301,6 +303,7 @@ public class VAllocation extends Allocation
 	 *  - Recalculate Totals
 	 *  @param e event
 	 */
+	@Override
 	public void tableChanged(TableModelEvent e)
 	{
 		boolean isUpdate = (e.getType() == TableModelEvent.UPDATE);
@@ -310,16 +313,16 @@ public class VAllocation extends Allocation
 			calculate();
 			return;
 		}
-		
+
 		int row = e.getFirstRow();
 		int col = e.getColumn();
 		boolean isInvoice = (e.getSource().equals(invoiceTable.getModel()));
 		boolean isAutoWriteOff = autoWriteOff.isSelected();
-		
+
 		String msg = writeOff(row, col, isInvoice, paymentTable, invoiceTable, isAutoWriteOff);
 		if(msg != null && msg.length() > 0)
 			ADialog.warn(m_WindowNo, panel, "AllocationWriteOffWarn");
-		
+
 		calculate();
 	}   //  tableChanged
 
@@ -330,15 +333,16 @@ public class VAllocation extends Allocation
 	 * 	- Date
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange (PropertyChangeEvent e)
 	{
 		String name = e.getPropertyName();
 		Object value = e.getNewValue();
 		log.info(name + "=" + value);
-		
+
 		if (value == null)
 			return;
-		
+
 		// Organization
 		if (name.equals("AD_Org_ID"))
 		{
@@ -346,7 +350,7 @@ public class VAllocation extends Allocation
 				m_AD_Org_ID = 0;
 			else
 				m_AD_Org_ID = ((Integer) value).intValue();
-			
+
 			loadBPartner();
 		}
 
@@ -367,17 +371,17 @@ public class VAllocation extends Allocation
 		else if (name.equals("Date") && multiCurrency.isSelected())
 			loadBPartner();
 	}   //  vetoableChange
-	
+
 	public void loadBPartner()
 	{
 		checkBPartner();
-		
+
 		Vector<Vector<Object>> data = getPaymentData(multiCurrency.isSelected(), dateField.getValue(), paymentTable);
 		Vector<String> columnNames = getPaymentColumnNames(multiCurrency.isSelected());
-		
+
 		//  Remove previous listeners
 		paymentTable.getModel().removeTableModelListener(this);
-		
+
 		//  Set Model
 		DefaultTableModel modelP = new DefaultTableModel(data, columnNames);
 		modelP.addTableModelListener(this);
@@ -387,30 +391,30 @@ public class VAllocation extends Allocation
 
 		data = getInvoiceData(multiCurrency.isSelected(), dateField.getValue(), invoiceTable);
 		columnNames = getInvoiceColumnNames(multiCurrency.isSelected());
-		
+
 		//  Remove previous listeners
 		invoiceTable.getModel().removeTableModelListener(this);
-		
+
 		//  Set Model
-		DefaultTableModel modelI = new DefaultTableModel(data, columnNames);
-		modelI.addTableModelListener(this);
-		invoiceTable.setModel(modelI);
+		DefaultTableModel model = new DefaultTableModel(data, columnNames);
+		model.addTableModelListener(this);
+		invoiceTable.setModel(model);
 		setInvoiceColumnClass(invoiceTable, multiCurrency.isSelected());
 		//
-		
+
 		calculate(multiCurrency.isSelected());
-		
+
 		//  Calculate Totals
 		calculate();
 	}
-	
+
 	public void calculate()
 	{
 		allocDate = null;
-		
+
 		paymentInfo.setText(calculatePayment(paymentTable, multiCurrency.isSelected()));
 		invoiceInfo.setText(calculateInvoice(invoiceTable, multiCurrency.isSelected()));
-		
+
 		//	Set AllocationDate
 		if (allocDate != null)
 			dateField.setValue(allocDate);
@@ -419,13 +423,13 @@ public class VAllocation extends Allocation
 		//  Difference
 		totalDiff = totalPay.subtract(totalInv);
 		differenceField.setText(format.format(totalDiff));
-		
+
 		if (totalDiff.compareTo(new BigDecimal(0.0)) == 0)
 			allocateButton.setEnabled(true);
 		else
 			allocateButton.setEnabled(false);
 	}
-	
+
 	/**************************************************************************
 	 *  Save Data
 	 */
@@ -433,8 +437,9 @@ public class VAllocation extends Allocation
 	{
 		try
 		{
-			Trx.run(new TrxRunnable() 
+			Trx.run(new TrxRunnable()
 			{
+				@Override
 				public void run(String trxName)
 				{
 					statusBar.setStatusLine(saveData(m_WindowNo, dateField.getValue(), paymentTable, invoiceTable, trxName));
