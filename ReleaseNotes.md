@@ -27,6 +27,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-191 Procurement Excel: Although received no qties does not shows
  - FRESH-184 Saldobilanz report year switching saldo for R+E Accounts
  - FRESH-176: Allow switch enabled users between BPartners
  - FRESH-160 Fix Report "Gebindesaldo all"

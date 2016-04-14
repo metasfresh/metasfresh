@@ -9,6 +9,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -50,12 +51,27 @@ public class C_OrderLine
 	{
 		super();
 	}
+	
+	private boolean isEligibleForTrackingQtyDelivered(final I_C_OrderLine orderLine)
+	{
+		// NOTE: according to FRESH-191, we shall track the QtyDelivered no matter what.
+		//if (!orderLine.isMFProcurement()) return false;
+		
+		// Track only purchase orders (FRESH-191)
+		final I_C_Order order = orderLine.getC_Order();
+		if (order == null || order.isSOTrx())
+		{
+			return false;
+		}
+		
+		return true;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyDelivered)
 	public void onQtyDeliveredChanged(final I_C_OrderLine orderLine)
 	{
-		// Do nothing if it's not an MFProcurement order
-		if (!orderLine.isMFProcurement())
+		// Do nothing if it's not eligible
+		if (!isEligibleForTrackingQtyDelivered(orderLine))
 		{
 			return;
 		}
@@ -73,7 +89,8 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void onDelete(final I_C_OrderLine orderLine)
 	{
-		if (!orderLine.isMFProcurement())
+		// Do nothing if it's not eligible
+		if (!isEligibleForTrackingQtyDelivered(orderLine))
 		{
 			return;
 		}
