@@ -18,13 +18,17 @@
 	<parameter name="M_Material_Balance_Config_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="IsRefundableConditions" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day
 ( $P{Date},
   $P{C_BPartner_ID},
   $P{C_BP_Group_ID},
   $P{M_Product_ID},
-  $P{M_Material_Balance_Config_ID})
+  $P{M_Material_Balance_Config_ID},
+  $P{IsRefundableConditions})
 ;]]>
 	</queryString>
 	<field name="bpartnerno" class="java.lang.String"/>
@@ -41,7 +45,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="111" splitType="Stretch">
+		<band height="131" splitType="Stretch">
 			<textField>
 				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="0" width="426" height="20"/>
 				<textElement>
@@ -104,6 +108,18 @@
 					<font size="10" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="104" width="187" height="20"/>
+				<textElement>
+					<font size="10" isBold="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{IsRefundableConditions}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="625172f2-b7f8-4624-b28d-1722ca1ae1bf" x="187" y="104" width="239" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$P{IsRefundableConditions} !=null ? $P{IsRefundableConditions} : $R{all}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -229,18 +245,28 @@
 				<textFieldExpression><![CDATA[$F{art_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="183b3899-3759-4972-af3a-7c9596baea5f" x="639" y="0" width="90" height="20"/>
+				<reportElement uuid="183b3899-3759-4972-af3a-7c9596baea5f" x="639" y="0" width="90" height="20">
+					<printWhenExpression><![CDATA[$F{incoming}
+.subtract($F{outgoing})
+.floatValue() >= 0]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{incoming}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{incoming}
+.subtract($F{outgoing})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="8841ec60-f4c1-4f7e-b9a9-65c5c67f6464" x="729" y="0" width="75" height="20"/>
+				<reportElement uuid="8841ec60-f4c1-4f7e-b9a9-65c5c67f6464" x="729" y="0" width="75" height="20">
+					<printWhenExpression><![CDATA[$F{outgoing}
+.subtract($F{incoming})
+.floatValue() >= 0]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{outgoing}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{outgoing}
+ .subtract($F{incoming})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

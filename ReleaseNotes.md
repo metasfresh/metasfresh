@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-186 change gebindeubersicht to show all until selected date
  - ME-30 09951 Move code to github (108691256234)
 	* switching from our internal mercurial server to actually work with and on github
  - FRESH-183 Price editable in Procurement Candidates
