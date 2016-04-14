@@ -1,0 +1,151 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>de.metas</groupId>
+	<artifactId>de.metas.parent.general</artifactId>
+	<version>1.0_IT-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+
+	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
+
+	<url>http://www.metasfresh.com/</url>
+
+	<organization>
+		<name>metas GmbH</name>
+		<url>http://www.metasfresh.com/</url>
+	</organization>
+
+	<inceptionYear>2015</inceptionYear>
+
+	<developers>
+		<developer>
+			<name>metas developer</name>
+			<organizationUrl>http://www.metasfresh.com/</organizationUrl>
+			<email>info@metas.de</email>
+		</developer>
+	</developers>
+	
+	<repositories>
+		<!-- The repositories that we relate on are defined in this parent POM, 
+			because whether an artifact is found should not depend on a specific user's 
+			settings.xml -->
+		<repository>
+			<id>metas-mvn-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+
+	</repositories>
+
+	<pluginRepositories>
+		<!-- We define our repos also as plugin repos, because at least the maven-assembly-plugin 
+			depends on our shared assembly descriptors, which are not in http://repository.apache.org -->
+		<pluginRepository>
+			<id>metas-mvn-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.8.1</version>
+				<configuration>
+					<!-- defining our nexus as sole remote repo, to omit mvn site plugin trying a lot of invalid repo URLs -->
+					<remoteRepositories>
+						<remoteRepository>http://dedep901:8081/nexus/content/groups/public/</remoteRepository>
+					</remoteRepositories>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>dependencies</report>
+							<report>license</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+	
+	<distributionManagement>
+
+		<repository>
+			<id>metas-nexus-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
+		</repository>
+
+		<!-- Publish the versioned releases here -->
+		<snapshotRepository>
+			<id>metas-nexus-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+
+	</distributionManagement>
+	
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.vaadin</groupId>
+										<artifactId>
+											vaadin-maven-plugin
+										</artifactId>
+										<versionRange>
+											[7.6.1,)
+										</versionRange>
+										<goals>
+											<goal>compile-theme</goal>
+											<goal>resources</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	
+</project>
