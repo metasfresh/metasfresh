@@ -94,7 +94,7 @@ public class HUCapacityBL implements IHUCapacityBL
 				if (itemDefProduct_ProductId > 0 && itemDefProduct_ProductId != product.getM_Product_ID())
 				{
 					throw new HUException("CU-TU assignment not compatible with required product"
-							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription()
+							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription() + " (ID=" + itemDefProduct.getM_HU_PI_Item_Product_ID() + ")"
 							+ "\n@M_HU_PI_Item_Product_ID@ @M_Product_ID@: " + piipProduct.getValue() + " (" + piipProduct.getName() + ")"
 							+ "\n@M_Product_ID@: " + product.getValue() + "(" + product.getName() + ")");
 				}

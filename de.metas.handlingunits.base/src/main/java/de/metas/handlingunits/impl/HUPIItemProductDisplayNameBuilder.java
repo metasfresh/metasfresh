@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 	private BigDecimal _qtyTUPlanned;
 	private BigDecimal _qtyTUMoved;
 	private BigDecimal _qtyCapacity;
+	private boolean _showAnyProductIndicator = false; // default false for backward compatibility
 
 	public HUPIItemProductDisplayNameBuilder()
 	{
@@ -142,6 +143,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 			{
 				sb.append(" ").append(qtyCapacityUOMSymbol);
 			}
+		}
+		
+		//
+		// Show "Any product allowed" indicator
+		if (isShowAnyProductIndicator() && isAnyProductAllowed())
+		{
+			sb.append(" ").append("*");
 		}
 
 		return sb.toString();
@@ -271,5 +279,22 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 	{
 		_qtyCapacity = qtyCapacity;
 		return this;
+	}
+
+	@Override
+	public IHUPIItemProductDisplayNameBuilder setShowAnyProductIndicator(boolean showAnyProductIndicator)
+	{
+		this._showAnyProductIndicator = showAnyProductIndicator;
+		return this;
+	}
+	
+	private boolean isShowAnyProductIndicator()
+	{
+		return _showAnyProductIndicator;
+	}
+	
+	private boolean isAnyProductAllowed()
+	{
+		return getM_HU_PI_Item_Product().isAllowAnyProduct();
 	}
 }

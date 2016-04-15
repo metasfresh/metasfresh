@@ -72,4 +72,6 @@ public interface IHUPIItemProductDisplayNameBuilder
 	 */
 	IHUPIItemProductDisplayNameBuilder setQtyCapacity(BigDecimal qtyPerHU);
 
+	IHUPIItemProductDisplayNameBuilder setShowAnyProductIndicator(boolean showAnyProductIndicator);
+
 }

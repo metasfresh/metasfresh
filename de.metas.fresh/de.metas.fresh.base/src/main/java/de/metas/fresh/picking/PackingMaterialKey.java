@@ -81,6 +81,7 @@ public class PackingMaterialKey extends TerminalKey
 		displayName = piItemProductBL
 				.buildDisplayName()
 				.setM_HU_PI_Item_Product(itemProduct)
+				.setShowAnyProductIndicator(true)
 				.buildItemProductDisplayName();
 		value = new KeyNamePair(piItemProductId, displayName);
 	}

@@ -27,6 +27,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-194 Picking: Uncompatible CU-TU Issue
  - FRESH-179 Remove customer specifics from jasper and DB functions
  - FRESH-193 problems after temporary JMS link outage
  - FRESH-184 Saldobilanz report year switching saldo for R+E Accounts

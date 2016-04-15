@@ -37,6 +37,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -53,6 +54,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 
@@ -65,6 +67,7 @@ import de.metas.picking.terminal.Utils.PackingStates;
 public class PickingSlotKey extends TerminalKey
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(PickingSlotKey.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
@@ -339,7 +342,11 @@ public class PickingSlotKey extends TerminalKey
 	 * @param product
 	 * @param uom
 	 * 
-	 * @return total capacity definition or null
+	 * @return
+	 * 		<ul>
+	 *         <li>total capacity definition
+	 *         <li>or <code>null</code> if the capacity information is not available
+	 *         </ul>
 	 */
 	public IHUCapacityDefinition getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
 	{
@@ -348,6 +355,20 @@ public class PickingSlotKey extends TerminalKey
 		{
 			return null;
 		}
+		
+		// Corner case (FRESH-194):
+		// * picking slot contains an HU which was previously loaded with a different product, i.e. M_HU.M_HU_PI_Item_Product_ID is about a different product
+		// * now user wants to load another product on that HU, so M_HU.M_HU_PI_Item_Product_ID.M_Product_ID will not match given "product"
+		//
+		// HOTFIX: just skip calculating the capacity and return null. In this case, it is assumed that the caller will skip enforcing the capacity.
+		if (product != null
+				&& !piItemProduct.isAllowAnyProduct()
+				&& piItemProduct.getM_Product_ID() != product.getM_Product_ID())
+		{
+			logger.info("Product {} is not matching {}. Returning null capacity.", product, piItemProduct);
+			return null;
+		}
+		
 		return huCapacityBL.getCapacity(piItemProduct, product, uom);
 	}
 
