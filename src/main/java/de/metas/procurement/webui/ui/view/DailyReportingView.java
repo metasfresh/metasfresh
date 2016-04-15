@@ -196,7 +196,9 @@ public class DailyReportingView extends MFProcurementNavigationView
 
 		//
 		// Initialize
-		datePanel.setDate(DateUtils.getToday());
+		final Date today = DateUtils.getToday();
+		final Date date = DateUtils.addDays(today, +1); // tomorrow (FRESH-196)
+		datePanel.setDate(date);
 	}
 
 	private void onLogout()
