@@ -1,6 +1,7 @@
 package de.metas.procurement.webui.service.impl;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +21,7 @@ import org.vaadin.spring.i18n.I18N;
 
 import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 import com.google.gwt.thirdparty.guava.common.base.Strings;
+import com.google.gwt.thirdparty.guava.common.hash.Hashing;
 
 import de.metas.procurement.webui.exceptions.LoginFailedException;
 import de.metas.procurement.webui.exceptions.PasswordResetFailedException;
@@ -120,12 +122,23 @@ public class LoginService implements ILoginService
 			// empty user passwords are considered as no password was set
 			throw new LoginFailedException(email);
 		}
-		if (!Objects.equals(userPassword, password))
+		if (!Objects.equals(userPassword, password)
+				&& !Objects.equals(createPasswordHash(userPassword), password) // support for hashed password (also used by remember-me functionality
+			)
 		{
 			throw new LoginFailedException(email);
 		}
 
 		return user;
+	}
+	
+	@Override
+	public final String createPasswordHash(final String password)
+	{
+		return Hashing.sha256()
+				.hashString(password, StandardCharsets.UTF_8)
+				.toString();
+		
 	}
 
 	@Override

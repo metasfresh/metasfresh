@@ -2,6 +2,7 @@ package de.metas.procurement.webui.service;
 
 import java.net.URI;
 
+import de.metas.procurement.webui.exceptions.LoginFailedException;
 import de.metas.procurement.webui.model.User;
 
 /*
@@ -28,6 +29,12 @@ import de.metas.procurement.webui.model.User;
 
 public interface ILoginService
 {
+	/**
+	 * @param email
+	 * @param password
+	 * @return logged in user
+	 * @throws LoginFailedException in case of failure
+	 */
 	User login(String email, String password);
 
 	/**
@@ -53,4 +60,6 @@ public interface ILoginService
 	 * @return user of which password was reset.
 	 */
 	User resetPassword(String resetKey);
+
+	String createPasswordHash(String password);
 }

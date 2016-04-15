@@ -34,6 +34,8 @@ import de.metas.procurement.webui.event.UserLoggedInEvent;
 import de.metas.procurement.webui.exceptions.PasswordResetFailedException;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
+import de.metas.procurement.webui.service.impl.LoginRememberMeService;
+import de.metas.procurement.webui.service.impl.LoginRememberMeService.RememberMeToken;
 
 /*
  * #%L
@@ -68,22 +70,29 @@ public class LoginView extends NavigationView implements View
 	private static final String STYLE_ForgotPasswordButton = "forgot-password-button";
 	private static final String STYLE_PoweredBy = "powered-by";
 
+	// private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
+
 	@Autowired
-    private I18N i18n;
+	private I18N i18n;
 
 	@Autowired(required = true)
-	ILoginService loginService;
-	
+	private ILoginService loginService;
+	@Autowired(required = true)
+	private LoginRememberMeService rememberMeService;
+
 	@Value("${mfprocurement.poweredby.url:}")
 	private String poweredByLogoUrl;
 	@Value("${mfprocurement.poweredby.link.url:}")
 	private String poweredByLinkUrl;
 
+	private final EmailField email;
+	private final PasswordField password;
+
 	public LoginView()
 	{
 		super();
 		Application.autowire(this);
-		
+
 		addStyleName(STYLE);
 
 		//
@@ -95,12 +104,12 @@ public class LoginView extends NavigationView implements View
 			logo.addStyleName(STYLE_Logo);
 			content.addComponent(logo);
 
-			final EmailField email = new EmailField(i18n.get("LoginView.fields.email"));
+			this.email = new EmailField(i18n.get("LoginView.fields.email"));
 			email.addStyleName(STYLE_LoginEmail);
 			email.setIcon(FontAwesome.USER);
 			content.addComponent(email);
 
-			final PasswordField password = new PasswordField(i18n.get("LoginView.fields.password"));
+			this.password = new PasswordField(i18n.get("LoginView.fields.password"));
 			password.addStyleName(STYLE_LoginPassword);
 			password.setIcon(FontAwesome.LOCK);
 			content.addComponent(password);
@@ -149,8 +158,7 @@ public class LoginView extends NavigationView implements View
 			{
 				poweredByLogoResource = Constants.RESOURCE_PoweredBy;
 			}
-			
-			
+
 			//
 			// Powered-by component:
 			final Component poweredByComponent;
@@ -176,12 +184,27 @@ public class LoginView extends NavigationView implements View
 	@Override
 	public void enter(final ViewChangeEvent event)
 	{
-		// nothing
+		loadFromRememberMeToken();
+	}
+
+	private void loadFromRememberMeToken()
+	{
+		final RememberMeToken token = rememberMeService.getRememberMeTokenIfEnabled();
+		if (token == null)
+		{
+			return;
+		}
+		email.setValue(token.getUser());
+		password.setValue(token.getToken());
 	}
 
 	private void onUserLogin(final String email, final String password)
 	{
 		final User user = loginService.login(email, password);
+
+		// Create remember me cookie (FRESH-197)
+		rememberMeService.createRememberMeCookieIfEnabled(user);
+
 		UIEventBus.post(UserLoggedInEvent.of(user));
 	}
 

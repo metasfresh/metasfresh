@@ -68,7 +68,10 @@ public class User extends AbstractEntity
 	protected void toString(final ToStringHelper toStringHelper)
 	{
 		toStringHelper
-				.add("email", email);
+				.add("email", email)
+				.add("language", language)
+				// WARNING: never ever output the password
+				;
 	}
 
 	public BPartner getBpartner()
