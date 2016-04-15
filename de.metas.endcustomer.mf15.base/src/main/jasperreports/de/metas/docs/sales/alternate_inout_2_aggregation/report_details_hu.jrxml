@@ -16,10 +16,12 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Migros_InOut_Neuenburg_Aggregation_Details_HU( $P{m_inout_id}, $P{ad_language} )]]>
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_1_Aggregation_Details_HU( $P{m_inout_id}, $P{ad_language} )]]>
 	</queryString>
-	<field name="movementqty" class="java.math.BigDecimal"/>
+	<field name="value" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
+	<field name="ean" class="java.lang.String"/>
+	<field name="movementqty" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>

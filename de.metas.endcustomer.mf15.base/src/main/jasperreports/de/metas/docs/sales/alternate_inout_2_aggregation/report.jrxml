@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/migrosinout_neuenburg_aggregation/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/alternate_inout_2_aggregation/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="384"/>
+	<property name="ireport.y" value="144"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -68,7 +68,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/migrosinout_neuenburg_aggregation/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/alternate_inout_2_aggregation/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement uuid="f0dba1f8-f917-47ea-9696-72b5c74d1757" key="subreport-4" x="0" y="31" width="595" height="85"/>
@@ -128,7 +128,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/migrosinout_neuenburg_aggregation/report_page_header.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/alternate_inout_2_aggregation/report_page_header.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -146,7 +146,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/migrosinout_neuenburg_aggregation/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/alternate_inout_2_aggregation/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="24">
@@ -160,7 +160,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/migrosinout_neuenburg_aggregation/report_details_hu.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/alternate_inout_2_aggregation/report_details_hu.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="36">
@@ -170,7 +170,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/migrosinout_neuenburg_aggregation/report_details_hu_bal.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/alternate_inout_2_aggregation/report_details_hu_bal.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

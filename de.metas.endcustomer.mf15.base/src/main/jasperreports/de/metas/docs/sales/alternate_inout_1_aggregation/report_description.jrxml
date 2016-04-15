@@ -12,7 +12,7 @@
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_MigrosInOut_Aggregation_Description( $P{RECORD_ID}, $P{ad_language} )
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_1_Aggregation_Description( $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
 	<field name="documentno" class="java.lang.String"/>
@@ -20,6 +20,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_MigrosInOut_Aggregation_Desc
 	<field name="movementdate" class="java.sql.Timestamp"/>
 	<field name="reference" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
+	<field name="bp_value" class="java.lang.String"/>
 	<variable name="BP_Value" class="java.lang.String">
 		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
 $P{ad_language}.equals("fr_CH")?"N° du partenaire":
