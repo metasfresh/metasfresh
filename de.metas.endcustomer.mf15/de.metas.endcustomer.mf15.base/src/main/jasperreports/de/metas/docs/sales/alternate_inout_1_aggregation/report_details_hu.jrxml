@@ -15,9 +15,8 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[
-SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_MigrosInOut_Aggregation_Details_HU( $P{m_inout_id}, $P{ad_language} )
+		<![CDATA[SELECT 	*
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_1_Aggregation_Details_HU( $P{m_inout_id}, $P{ad_language} )
 ;]]>
 	</queryString>
 	<field name="value" class="java.lang.String"/>
