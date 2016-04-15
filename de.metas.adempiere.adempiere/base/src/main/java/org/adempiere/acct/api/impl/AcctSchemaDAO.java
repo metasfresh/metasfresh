@@ -10,12 +10,12 @@ package org.adempiere.acct.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,8 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -51,11 +49,13 @@ import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -78,7 +78,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", ad_Client_ID, ad_Org_ID);
 		if (acctSchemaId <= -1)
 		{
-			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={} and AD_Org_ID={}", ad_Client_ID, ad_Org_ID));
+			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={0} and AD_Org_ID={1}", ad_Client_ID, ad_Org_ID));
 		}
 		return InterfaceWrapperHelper.create(ctx, acctSchemaId, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 	}

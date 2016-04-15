@@ -5,6 +5,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -31,7 +32,7 @@ import de.metas.logging.LogManager;
 
 public final class JmsConstants
 {
-	public static final String TCP_HOSTNAME_PORT = "tcp://{}:{}";
+	public static final String TCP_HOSTNAME_PORT = "tcp://{0}:{1}";
 
 	public static Logger getLogger(final Class<?> clazz)
 	{

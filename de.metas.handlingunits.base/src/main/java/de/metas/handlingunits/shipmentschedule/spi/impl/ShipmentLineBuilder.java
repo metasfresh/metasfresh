@@ -228,7 +228,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
+			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 

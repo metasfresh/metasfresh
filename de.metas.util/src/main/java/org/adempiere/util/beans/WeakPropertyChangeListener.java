@@ -10,12 +10,12 @@ package org.adempiere.util.beans;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,7 +67,7 @@ import org.adempiere.util.StringUtils;
 	 * This equal method basically compares <code>this</code> instance's delegate to the given <code>obj</code>'s deleget (ofc only if that given object is also a WeakpropertyChangeListener).
 	 * <p>
 	 * NOTE: please pay attention to this method because based on this, the Listener will be removed or not
-	 * 
+	 *
 	 * @see org.adempiere.util.beans.WeakPropertyChangeSupport#removePropertyChangeListener(PropertyChangeListener)
 	 * @see org.adempiere.util.beans.WeakPropertyChangeSupport#removePropertyChangeListener(String, PropertyChangeListener)
 	 */
@@ -126,7 +126,7 @@ import org.adempiere.util.StringUtils;
 	public void propertyChange(final PropertyChangeEvent evt)
 	{
 		final boolean DEBUG = false;
-		
+
 		final PropertyChangeListener delegate = getDelegate();
 		if (delegate == null)
 		{
@@ -134,7 +134,7 @@ import org.adempiere.util.StringUtils;
 			if (DEBUG)
 			{
 				// TODO remove before integrating into base line!!
-				System.out.println(StringUtils.formatMessage("delegate of {} is expired", this));
+				System.out.println(StringUtils.formatMessage("delegate of {0} is expired", this));
 			}
 			return;
 		}
@@ -152,7 +152,7 @@ import org.adempiere.util.StringUtils;
 				if (DEBUG)
 				{
 				// TODO remove before integrating into base line!!
-				System.out.println(StringUtils.formatMessage("sourceObj of {} is expired", this));
+				System.out.println(StringUtils.formatMessage("sourceObj of {0} is expired", this));
 				}
 				return;
 			}

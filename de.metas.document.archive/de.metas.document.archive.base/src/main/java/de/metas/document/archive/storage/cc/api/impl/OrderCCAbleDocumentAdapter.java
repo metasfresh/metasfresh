@@ -31,7 +31,7 @@ public class OrderCCAbleDocumentAdapter implements ICCAbleDocument
 {
 	private final String fileName;
 
-	private static final String FILENAME_PATTERN = "{}@F201 {}@@F211 {}@.pdf"; // TODO hard-coded
+	private static final String FILENAME_PATTERN = "{0}@F201 {1}@@F211 {2}@.pdf"; // TODO hard-coded
 
 	public OrderCCAbleDocumentAdapter(
 			final String documentTitle,

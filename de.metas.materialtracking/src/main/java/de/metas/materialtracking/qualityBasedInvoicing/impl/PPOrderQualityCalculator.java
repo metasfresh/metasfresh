@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -42,8 +40,10 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
@@ -84,7 +84,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {}", qiOrder.getPP_Order());
+			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw

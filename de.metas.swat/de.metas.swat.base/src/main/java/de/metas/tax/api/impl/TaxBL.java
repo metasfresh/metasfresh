@@ -10,12 +10,12 @@ package de.metas.tax.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,8 +31,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -54,11 +53,13 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
@@ -130,8 +131,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final AdempiereException ex =
 				new AdempiereException(StringUtils.formatMessage(
 						"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-								+ "model= {}, taxCategoryId={}, productId={}, chargeId={}, billDate={}, shipDate={}, adOrgId={}, "
-								+ "warehouse={}, billC_BPartner_Location_ID={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
+								+ "model= {0}, taxCategoryId={1}, productId={2}, chargeId={3}, billDate={4}, shipDate={5}, adOrgId={6}, "
+								+ "warehouse={7}, billC_BPartner_Location_ID={8}, shipC_BPartner_Location_ID={9}, isSOTrx={10}, trxName={11}",
 						model,
 						taxCategoryId,
 						productId,
@@ -158,7 +159,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * <ul>
 	 * <li>You are inside the EU</li>
 	 * </ul>
-	 */	
+	 */
 	@Override
 	public int retrieveTaxIdForCategory(final Properties ctx,
 			final int countryFromId,
@@ -167,7 +168,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
-			final String trxName, 
+			final String trxName,
 			final boolean throwEx)
 	{
 		Check.assumeNotNull(bpLocTo, "bpLocTo not null");
@@ -451,7 +452,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.adempiere.tax.api.ITaxBL#get(java.util.Properties, int, int, java.sql.Timestamp, java.sql.Timestamp, int, int, int, int, boolean)
 	 */
 	@Override

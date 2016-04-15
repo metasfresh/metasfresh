@@ -90,8 +90,8 @@ public class FactAcctLogBL implements IFactAcctLogBL
 		// Delete all processed logs
 		logs.deleteAll();
 
-		loggable.addLog("Processed {} {} records", factAcctSummaryUpdater.getItemsCount(), I_Fact_Acct_Log.Table_Name);
-		loggable.addLog("Created/Updated {} {} records", factAcctSummaryUpdater.getGroupsCount(), I_Fact_Acct_Summary.Table_Name);
+		loggable.addLog("Processed {0} {1} records", factAcctSummaryUpdater.getItemsCount(), I_Fact_Acct_Log.Table_Name);
+		loggable.addLog("Created/Updated {0} {1} records", factAcctSummaryUpdater.getGroupsCount(), I_Fact_Acct_Summary.Table_Name);
 	}
 
 	private static class FactAcctSummaryUpdater extends MapReduceAggregator<FactAcctGroup, I_Fact_Acct_Log>

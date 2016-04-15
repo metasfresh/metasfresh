@@ -47,7 +47,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 
 /**
  * Processes all activity change requests.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */

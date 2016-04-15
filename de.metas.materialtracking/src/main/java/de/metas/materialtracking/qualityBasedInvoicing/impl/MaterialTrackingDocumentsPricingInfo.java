@@ -254,7 +254,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
 			if (!priceLists.hasNext())
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a priceList for pricingSystem {} and country {}.", pricingSystem, country);
+				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, country);
 				return null;
 			}
 
@@ -264,7 +264,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 			if (plv == null)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {} and movementDate {}.", priceList, movementDate);
+				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
 			}
 			return plv;
 		}

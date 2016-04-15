@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,10 +36,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -186,7 +186,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.getPriceListVersions();
 		if (plvs.isEmpty())
 		{
-			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {}; ppOrder {}", materialTrackingDocuments, ppOrder);
+			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {0}; ppOrder {1}", materialTrackingDocuments, ppOrder);
 		}
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();

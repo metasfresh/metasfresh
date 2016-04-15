@@ -75,11 +75,11 @@ public class JaxRsBL implements IJaxRsBL
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
-			+ "jms:jndi:dynamicQueues/{}"
+			+ "jms:jndi:dynamicQueues/{0}"
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/{}"
-			+ "&jndiURL={}"
-			+ "&receiveTimeout={}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
+			+ "&replyToName=dynamicQueues/{1}"
+			+ "&jndiURL={2}"
+			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	/**

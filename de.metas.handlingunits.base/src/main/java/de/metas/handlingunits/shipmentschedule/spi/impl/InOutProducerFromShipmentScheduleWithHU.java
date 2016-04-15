@@ -372,11 +372,11 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				// save the shipment schedule using current transaction
 				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 			}
-			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {} was created;\nIShipmentScheduleWithHUs: {}", currentShipment, currentCandidates);
+			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {0} was created;\nIShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 		}
 		else
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {} would be empty, so deleting it again", currentShipment);
+			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 

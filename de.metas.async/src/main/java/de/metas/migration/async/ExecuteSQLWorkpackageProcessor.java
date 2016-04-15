@@ -64,7 +64,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		final String sqlRaw = params.getParameterAsString(PARAM_Code);
 		Check.assumeNotEmpty(sqlRaw, "Missing parameter: {}", PARAM_Code);
 		final String sql = parseSql(sqlRaw, workPackage);
-		loggable.addLog("SQL to execute: {}", sql);
+		loggable.addLog("SQL to execute: {0}", sql);
 
 		//
 		// Extract param: ReEnqueue
@@ -73,7 +73,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		//
 		// Execute the SQL update
 		final int updateCount = executeSql(sql, localTrxName);
-		loggable.addLog("Updated {} records", updateCount);
+		loggable.addLog("Updated {0} records", updateCount);
 
 		//
 		// Re-enqueue the Workpackage if there was something updated and if we are asked to do so
@@ -97,11 +97,11 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 						// Build & enqueue
 						.build();
 
-				loggable.addLog("New workpackage enqueued: {}", nextWorkpackage);
+				loggable.addLog("New workpackage enqueued: {0}", nextWorkpackage);
 			}
 			else
 			{
-				loggable.addLog("No new workpackages will be reenqueued because parameter {} is false", PARAM_ReEnqueue);
+				loggable.addLog("No new workpackages will be reenqueued because parameter {0} is false", PARAM_ReEnqueue);
 			}
 		}
 		else
