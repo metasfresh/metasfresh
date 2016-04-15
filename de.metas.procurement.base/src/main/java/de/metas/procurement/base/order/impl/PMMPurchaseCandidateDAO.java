@@ -83,6 +83,7 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
+				.addOnlyActiveRecordsFilter()
 				//
 				// Segment
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID() > 0 ? pmmSegment.getC_BPartner_ID() : null)
