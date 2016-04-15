@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624327"/>
-	<property name="ireport.x" value="175"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -71,7 +71,7 @@ FROM
 					<text><![CDATA[Geschäftspartner]]></text>
 				</staticText>
 				<textField>
-					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="195" y="0" width="187" height="12" forecolor="#000000"/>
+					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="194" y="0" width="364" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -93,7 +93,7 @@ FROM
 					<text><![CDATA[Saldo]]></text>
 				</staticText>
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="195" y="0" width="52" height="12" forecolor="#000000"/>
+					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="0" width="55" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -124,7 +124,7 @@ FROM
 .subtract($F{carryincoming})]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
+					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="249" y="0" width="134" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -174,14 +174,14 @@ FROM
 					<text><![CDATA[Saldo]]></text>
 				</staticText>
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="2" width="53" height="12" forecolor="#000000"/>
+					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="2" width="55" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="2" width="135" height="12" forecolor="#000000"/>
+					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="249" y="2" width="134" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -214,14 +214,14 @@ FROM
 				<text><![CDATA[Belegart]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
+				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="194" y="0" width="55" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="249" y="0" width="134" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -315,7 +315,7 @@ $F{carryoutgoing}
 .subtract($V{incomingtotal}.add( $F{carryincoming} ) )]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="33" width="53" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
+				<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="33" width="55" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
 					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
 && "Y".equals($P{showdetails})
 )]]></printWhenExpression>
@@ -326,7 +326,7 @@ $F{carryoutgoing}
 				<textFieldExpression><![CDATA[$V{MaxStartDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="33" width="135" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
+				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="249" y="33" width="134" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
 					<printWhenExpression><![CDATA[new Boolean ( $V{Gebinde Group_COUNT} != 0
 && "Y".equals($P{showdetails})
 )]]></printWhenExpression>
@@ -352,14 +352,14 @@ $F{carryoutgoing}
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="249" y="0" width="134" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="0cf8dfcc-a972-406a-a213-67de086a92ca" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
+				<reportElement uuid="0cf8dfcc-a972-406a-a213-67de086a92ca" key="textField-16" x="194" y="0" width="55" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
