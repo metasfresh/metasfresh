@@ -172,7 +172,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				existingRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(existingRecord);
 				ILoggable.THREADLOCAL.getLoggable().addLog(
-						"Reactived AD_JavaClass record {0} for AD_JavaClass_Type {1} and class {2}",
+						"Reactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						existingRecord, javaClassType, existingRecord.getClassname());
 			}
 			else if (existingRecord == null)
@@ -188,7 +188,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				InterfaceWrapperHelper.save(newJavaClassRecord);
 
 				ILoggable.THREADLOCAL.getLoggable().addLog(
-						"Created new AD_JavaClass record {0} for AD_JavaClass_Type {1} and class {2}",
+						"Created new AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						newJavaClassRecord, javaClassType, clazzName);
 			}
 		}
@@ -200,7 +200,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 			staleClassRecord.setIsActive(false);
 			InterfaceWrapperHelper.save(staleClassRecord);
 			ILoggable.THREADLOCAL.getLoggable().addLog(
-					"Deactived AD_JavaClass record {0} for AD_JavaClass_Type {1} and class {2}",
+					"Deactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 					staleClassRecord, javaClassType, staleClassRecord.getClassname());
 		}
 	}

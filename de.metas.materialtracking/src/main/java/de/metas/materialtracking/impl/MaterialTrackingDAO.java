@@ -256,7 +256,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		// TODO: optimize a lot here!
 
 		final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking = retrieveMaterialTrackingForModel(ppOrder);
-		Check.assumeNotNull(materialTracking, "Inspection order has material tracking: {0}", ppOrder);
+		Check.assumeNotNull(materialTracking, "Inspection order has material tracking: {}", ppOrder);
 
 		final List<I_M_Material_Tracking_Ref> references = retrieveMaterialTrackingRefForType(materialTracking, I_PP_Order.class);
 

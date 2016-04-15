@@ -119,13 +119,13 @@ public class InventoryHUEditorModel extends HUEditorModel
 			// guard: verify the the HU's current warehouse matches the selected warehouseFrom
 			final int huWarehouseID = hu.getM_Locator().getM_Warehouse_ID();
 			Check.errorUnless(huWarehouseID == warehouseFrom.getM_Warehouse_ID(),
-					"The selected HU {0} has a M_Locator {1} with M_Warehouse_ID {2} which is != the M_Warehouse_ID {3} of warehouse {4}",
+					"The selected HU {} has a M_Locator {} with M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
 					hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
 		}
 
 		// make the movement-creating API call
 		final List<I_M_Movement> movements = huMovementBL.generateMovementsToWarehouse(warehouseTo, hus, getTerminalContext());
-		Check.assume(movements.size() <= 1, "We called the API with HUs {0} that are all in the same warehouse {1}, so there is just one movement created", hus, warehouseFrom);
+		Check.assume(movements.size() <= 1, "We called the API with HUs {} that are all in the same warehouse {}, so there is just one movement created", hus, warehouseFrom);
 
 		if (movements.isEmpty())
 		{

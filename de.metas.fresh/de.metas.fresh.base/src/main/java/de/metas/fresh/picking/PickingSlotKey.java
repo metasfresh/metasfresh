@@ -251,7 +251,7 @@ public class PickingSlotKey extends TerminalKey
 
 	public void setM_HU(final I_M_HU hu)
 	{
-		Check.assume(hu == null || hu.getM_HU_ID() > 0, "HU {0} shall be saved", hu);
+		Check.assume(hu == null || hu.getM_HU_ID() > 0, "HU {} shall be saved", hu);
 		pickingSlot.setM_HU(hu);
 		InterfaceWrapperHelper.save(pickingSlot);
 
@@ -508,7 +508,7 @@ public class PickingSlotKey extends TerminalKey
 			return;
 		}
 
-		Check.assume(!hasOpenHU(), "Picking slot '{0}' shall not have open HUs", getName());
+		Check.assume(!hasOpenHU(), "Picking slot '{}' shall not have open HUs", getName());
 
 		for (final I_M_HU hu : hus)
 		{

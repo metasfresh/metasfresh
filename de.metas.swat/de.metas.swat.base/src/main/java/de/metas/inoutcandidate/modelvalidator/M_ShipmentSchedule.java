@@ -79,10 +79,10 @@ public class M_ShipmentSchedule
 
 		// task 07355: we allow QtyOrdered == 0, because an order could be closed before a delivery was made
 		Check.errorIf(qtyOrderedEffective.signum() < 0,
-				"M_ShipmentSchedule {0} has QtyOrderedEffective {1} (less than 0!)", schedule, qtyOrderedEffective);
+				"M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
 
 		Check.errorIf(schedule.getQtyReserved().signum() < 0,
-				"M_ShipmentSchedule {0} has QtyReserved {1} (less than 0!)", schedule, schedule.getQtyReserved());
+				"M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

@@ -137,7 +137,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public ReportEngine (Properties ctx, MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
 	{
 		Check.errorIf(pf == null, "ReportEngine - no PrintFormat"); // emulating old code, throwing same error msg as before.
-		Check.assumeNotNull(pf.getLanguage(), "Param {0} has a language set", pf);
+		Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
 
 		m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us319
 

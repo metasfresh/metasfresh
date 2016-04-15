@@ -118,7 +118,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		final int precision = uom.getStdPrecision();
 		// NOTE: negative precision is not supported atm
-		Check.assume(precision >= 0, "UOM {0} shall have positive precision", uom);
+		Check.assume(precision >= 0, "UOM {} shall have positive precision", uom);
 
 		// NOTE: it seems that ZERO is a special case of BigDecimal, so we are computing it right away
 		if (qty == null || qty.signum() == 0)
@@ -185,7 +185,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// NOTE: we check the result first and then we gather more debug info
 		if (result == null)
 		{
-			Check.errorIf(true, "Failed to convert Qty={0} of product={1} from UOM={2} to UOM={3}",
+			Check.errorIf(true, "Failed to convert Qty={} of product={} from UOM={} to UOM={}",
 					qty, product.getValue(), uomFrom.getName(), uomTo.getName());
 		}
 

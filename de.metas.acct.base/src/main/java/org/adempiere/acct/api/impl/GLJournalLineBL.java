@@ -165,7 +165,7 @@ public class GLJournalLineBL implements IGLJournalLineBL
 		Check.assume(account.getC_ValidCombination_ID() > 0, "account exists");
 
 		final I_C_ElementValue accountEV = account.getAccount();
-		Check.assumeNotNull(accountEV, "accountEV not null for {0}", account);
+		Check.assumeNotNull(accountEV, "accountEV not null for {}", account);
 
 		Check.assumeNotNull(glJournalLine, "line not null");
 		final int lineNo = glJournalLine.getLine();

@@ -282,8 +282,8 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 		if (countDeleted != 0 || countErrors != 0)
 		{
 			logger.info("MRP documents deleted #{} (with errors #{})"
-					+ "\nModelClass: {2}"
-					+ "\nQuery: {3}"
+					+ "\nModelClass: {}"
+					+ "\nQuery: {}"
 					, new Object[] { countDeleted, countErrors, modelClass, modelsQuery });
 		}
 

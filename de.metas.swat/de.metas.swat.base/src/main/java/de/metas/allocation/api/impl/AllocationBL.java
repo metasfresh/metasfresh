@@ -124,7 +124,7 @@ public class AllocationBL implements IAllocationBL
 			dateAcct = TimeUtil.max(dateAcct, payment.getDateAcct());
 			dateTrx = TimeUtil.max(dateTrx, payment.getDateTrx());
 
-			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{0} and {1} have the same C_BPartner_ID", invoice, payment);
+			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
 			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
 					.setAD_Org_ID(invoice.getAD_Org_ID())
 					.setC_BPartner_ID(invoice.getC_BPartner_ID())
@@ -229,7 +229,7 @@ public class AllocationBL implements IAllocationBL
 
 			sumAmt = sumAmt.add(currentAmt);
 
-			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{0} and {1} have the same C_BPartner_ID", invoice, payment);
+			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
 
 			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
 					.setAD_Org_ID(invoice.getAD_Org_ID())

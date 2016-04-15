@@ -61,7 +61,7 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 		final I_C_Payment linePayment = line.getC_Payment();
 		InterfaceWrapperHelper.refresh(linePayment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		
-		Check.assumeNotNull(linePayment, "Null payment for line {0}", line.getESR_ImportLine_ID());
+		Check.assumeNotNull(linePayment, "Null payment for line {}", line.getESR_ImportLine_ID());
 
 		final BigDecimal transferedBackAmt;
 		if (linePayment.getC_Invoice_ID() > 0)
@@ -69,7 +69,7 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 			// If there is an invoice, then OverUnderAmt for transfer needs to be positive.
 			Check.errorIf(
 					linePayment.getOverUnderAmt().signum() < 0
-					, "PayAmt for line {0} needs to be greater zero, but is {1}.", line.getESR_ImportLine_ID(), linePayment.getOverUnderAmt());
+					, "PayAmt for line {} needs to be greater zero, but is {}.", line.getESR_ImportLine_ID(), linePayment.getOverUnderAmt());
 
 			// we only transfered back the money which is more than invoiced
 			transferedBackAmt = linePayment.getOverUnderAmt();

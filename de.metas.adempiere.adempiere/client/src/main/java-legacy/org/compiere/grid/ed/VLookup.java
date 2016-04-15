@@ -507,7 +507,7 @@ public class VLookup extends JComponent
 	public void loadFirstItem() throws AdempiereException
 	{
 		Check.assumeNotNull(m_combo, "m_combo not null");
-		Check.assume(isComboBox(), "comboBox lookup expected for {0}", this);
+		Check.assume(isComboBox(), "comboBox lookup expected for {}", this);
 
 		final Lookup lookup = getLookup();
 		if (lookup == null)

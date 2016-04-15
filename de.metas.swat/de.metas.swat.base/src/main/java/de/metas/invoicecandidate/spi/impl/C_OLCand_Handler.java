@@ -136,7 +136,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olc);
 
-		Check.assume(Env.getAD_Client_ID(ctx) == olc.getAD_Client_ID(), "AD_Client_ID of {0} and of its Ctx are the same", olc);
+		Check.assume(Env.getAD_Client_ID(ctx) == olc.getAD_Client_ID(), "AD_Client_ID of {} and of its Ctx are the same", olc);
 
 		final I_C_Invoice_Candidate ic = POWrapper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 

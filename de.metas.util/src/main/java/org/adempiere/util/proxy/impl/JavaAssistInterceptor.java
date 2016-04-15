@@ -234,7 +234,7 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 // @formatter:off
 // this only works with a recent javassist version which we can't use because of jboss-aop
 //				Check.errorUnless(serviceInstance instanceof Proxy,
-//						"Generated proxy class is not instanceof {0}, which means that we still have an old javaassist implementation somewhere in the classpath", Proxy.class.getName());
+//						"Generated proxy class is not instanceof {}, which means that we still have an old javaassist implementation somewhere in the classpath", Proxy.class.getName());
 //				((Proxy)serviceInstance).setHandler(handler);
 // @formatter:on
 				return serviceInstanceInterceptedClass;

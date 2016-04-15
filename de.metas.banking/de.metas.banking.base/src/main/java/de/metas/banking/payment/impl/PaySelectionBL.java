@@ -66,7 +66,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			final I_C_PaySelection paySelection)
 	{
 		Check.errorIf(bankStatement.getC_BP_BankAccount_ID() != paySelection.getC_BP_BankAccount_ID(),
-				"C_BankStatement {0} with C_BP_BankAccount_ID={1} and C_PaySelection {2} with C_BP_BankAccount_ID={3} need to have the same C_BP_BankAccount_ID",
+				"C_BankStatement {} with C_BP_BankAccount_ID={} and C_PaySelection {} with C_BP_BankAccount_ID={} need to have the same C_BP_BankAccount_ID",
 				bankStatement, bankStatement.getC_BP_BankAccount_ID(), paySelection, paySelection.getC_BP_BankAccount_ID());
 
 		// services
@@ -317,7 +317,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
 		Check.assumeNotNull(bankStatementLine, "bankStatementLine not null");
-		Check.assume(bankStatementLine.getC_BankStatementLine_ID() > 0, "bankStatementLine is saved: {0}", bankStatementLine);
+		Check.assume(bankStatementLine.getC_BankStatementLine_ID() > 0, "bankStatementLine is saved: {}", bankStatementLine);
 
 		psl.setC_BankStatementLine(bankStatementLine);
 		psl.setC_BankStatementLine_Ref(bankStatementLineRef);

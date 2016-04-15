@@ -166,7 +166,7 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 		}
 		else
 		{
-			Check.errorIf(true, "Unsupported purchaseQtySource={0}", purchaseQtySource);
+			Check.errorIf(true, "Unsupported purchaseQtySource={}", purchaseQtySource);
 			purchaseQty = null; // won't be reached
 		}
 

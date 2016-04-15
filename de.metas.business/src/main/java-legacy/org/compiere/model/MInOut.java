@@ -391,7 +391,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		// 04579 fixing this problem so i can create a shipment for a PO order
 		final I_M_Warehouse wh = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {0}", order);
+		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
 		setM_Warehouse_ID(wh.getM_Warehouse_ID());
 
 		setIsSOTrx(order.isSOTrx());

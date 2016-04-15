@@ -71,7 +71,7 @@ public class BottomUpHUAttributePropagator extends AbstractHUAttributePropagator
 	{
 		final IHUAttributePropagator ctxPropagator = propagationContext.getPropagator();
 		Check.assume(ctxPropagator.isCompatible(this),
-				"Propagator {0} is compatible with {1}", this.getClass(), ctxPropagator.getClass());
+				"Propagator {} is compatible with {}", this.getClass(), ctxPropagator.getClass());
 
 		setValue(propagationContext, attributeSet, value);
 	}

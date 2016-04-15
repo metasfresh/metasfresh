@@ -55,7 +55,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ctx, M_Attribute_Value_MaterialTracking, I_M_Attribute.class);
-		Check.assumeNotNull(attribute, "attribute shall exist for {0}", M_Attribute_Value_MaterialTracking);
+		Check.assumeNotNull(attribute, "attribute shall exist for {}", M_Attribute_Value_MaterialTracking);
 
 		return attribute;
 	}
@@ -239,7 +239,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		final I_M_AttributeSetInstance documentLineASI;
 		final IAttributeSetInstanceAware documentLineASIAware = attributeSetInstanceAwareFactoryService.createOrNull(documentLine);
-		Check.assumeNotNull(documentLineASIAware, "IAttributeSetInstanceAwareFactoryService.createOrNull() does not return null for {0}", documentLine);
+		Check.assumeNotNull(documentLineASIAware, "IAttributeSetInstanceAwareFactoryService.createOrNull() does not return null for {}", documentLine);
 
 		if (documentLineASIAware.getM_AttributeSetInstance_ID() > 0)
 		{
@@ -320,7 +320,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(context.getCtx(), materialTrackingId, I_M_Material_Tracking.class, context.getTrxName());
 		Check.assume(materialTracking != null && materialTracking.getM_Material_Tracking_ID() == materialTrackingId,
-				"Material tracking record shall exist for ID={0}", materialTrackingId);
+				"Material tracking record shall exist for ID={}", materialTrackingId);
 
 		return materialTracking;
 	}

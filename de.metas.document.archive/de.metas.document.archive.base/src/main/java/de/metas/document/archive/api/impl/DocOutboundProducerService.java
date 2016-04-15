@@ -75,7 +75,7 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 		Check.assumeNotNull(producer, "producer not null");
 
 		final I_C_Doc_Outbound_Config config = producer.getC_Doc_Outbound_Config();
-		Check.assumeNotNull(config, "Producer {0} shall have a config", producer);
+		Check.assumeNotNull(config, "Producer {} shall have a config", producer);
 
 		unregisterProducerByConfig0(config);
 

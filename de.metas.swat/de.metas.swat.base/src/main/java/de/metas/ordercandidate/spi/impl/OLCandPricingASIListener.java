@@ -99,7 +99,7 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(olCand);
 		Check.assumeNotNull(asiAware,
-				"We have an asiAware for C_OLCand {0}, because we implemented and registered the factory {1}",
+				"We have an asiAware for C_OLCand {}, because we implemented and registered the factory {}",
 				olCand, OLCandASIAwareFactory.class.getName());
 
 		asiAware.setM_AttributeSetInstance(null); // reset, because we want getCreateASI to give us a new ASI

@@ -259,7 +259,7 @@ public final class ListUtils
 			}
 		}
 
-		Check.assume(result.size() == 1, "One and only one matching element was expected but we got more or none: {0}", result);
+		Check.assume(result.size() == 1, "One and only one matching element was expected but we got more or none: {}", result);
 		return result.get(0);
 	}
 
@@ -274,7 +274,7 @@ public final class ListUtils
 	public static <T> T singleElement(final Collection<T> collection)
 	{
 		Check.assumeNotNull(collection, "collection not null");
-		Check.assume(collection.size() == 1, "One and only one was expected for: {0}", collection);
+		Check.assume(collection.size() == 1, "One and only one was expected for: {}", collection);
 		return collection.iterator().next();
 	}
 

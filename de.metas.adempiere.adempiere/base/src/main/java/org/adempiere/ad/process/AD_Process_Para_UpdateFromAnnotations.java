@@ -99,7 +99,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends SvrProcess
 			processParamModel.setSeqNo(lastSeqNo + 10);
 
 			final M_Element adElement = M_Element.get(getCtx(), paramInfo.getParameterName());
-			Check.assumeNotNull(adElement, "adElement not null for ColumnName={0}", paramInfo.getParameterName());
+			Check.assumeNotNull(adElement, "adElement not null for ColumnName={}", paramInfo.getParameterName());
 			processParamModel.setAD_Element(adElement);
 			processParamModel.setColumnName(paramInfo.getParameterName());
 			processParamModel.setName(adElement.getName());

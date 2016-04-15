@@ -93,8 +93,8 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		final String trxType = importLine.getESRTrxType();
 
 		// make sure we are called with the correct type of line
-		Check.assume(!ESRConstants.ESRTRXTYPE_Receipt.equals(trxType), "{0} does not have ERS trx type {1}", importLine, ESRConstants.ESRTRXTYPE_Receipt);
-		Check.assume(!ESRConstants.ESRTRXTYPE_Payment.equals(trxType), "{0} does not have ERS trx type {1}", importLine, ESRConstants.ESRTRXTYPE_Payment);
+		Check.assume(!ESRConstants.ESRTRXTYPE_Receipt.equals(trxType), "{} does not have ERS trx type {}", importLine, ESRConstants.ESRTRXTYPE_Receipt);
+		Check.assume(!ESRConstants.ESRTRXTYPE_Payment.equals(trxType), "{} does not have ERS trx type {}", importLine, ESRConstants.ESRTRXTYPE_Payment);
 
 		// Getting ctx with importLine's AD_Client_ID and AD_Org_ID because we want to retrieve the correct C_ReferenceNo_Doc further below
 		final Properties localCtx = Env.deriveCtx(InterfaceWrapperHelper.getCtx(importLine, true));

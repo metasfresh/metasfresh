@@ -563,7 +563,7 @@ public abstract class AbstractMRPSuppliesPool implements IMRPSuppliesPool
 				return;
 			}
 
-			Check.assume(score >= 0 && score <= 9, "score shall be between 0 and 9 but it was {0}", score);
+			Check.assume(score >= 0 && score <= 9, "score shall be between 0 and 9 but it was {}", score);
 			if (score == SCORE_NotMatch)
 			{
 				totalScore = 0;

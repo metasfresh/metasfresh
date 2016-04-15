@@ -155,7 +155,7 @@ public class HUMovementBL implements IHUMovementBL
 
 			if (throwEx)
 			{
-				Check.errorIf(true, "Missing AD_SysConfig record with Name = {0} for AD_Client_ID={1} and AD_Org_ID={2}",
+				Check.errorIf(true, "Missing AD_SysConfig record with Name = {} for AD_Client_ID={} and AD_Org_ID={}",
 						SYSCONFIG_DirectMove_Warehouse_ID, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 			}
 			return null;

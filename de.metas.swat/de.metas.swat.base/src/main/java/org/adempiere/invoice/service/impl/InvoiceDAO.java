@@ -162,7 +162,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	public Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(final I_AD_Org adOrg)
 	{
 		final int adOrgID = adOrg.getAD_Org_ID();
-		Check.assume(adOrgID > 0, "Valid transactional Org: {0}", adOrg);
+		Check.assume(adOrgID > 0, "Valid transactional Org: {}", adOrg);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(adOrg);
 		final String trxName = InterfaceWrapperHelper.getTrxName(adOrg);

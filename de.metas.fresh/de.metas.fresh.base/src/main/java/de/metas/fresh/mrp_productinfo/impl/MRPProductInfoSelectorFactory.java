@@ -133,7 +133,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		{
 			date = order.getDatePromised();
 		}
-		Check.errorIf(date == null, "Unable to obtain a date for order line {0}", orderLine);
+		Check.errorIf(date == null, "Unable to obtain a date for order line {}", orderLine);
 		return date;
 	}
 

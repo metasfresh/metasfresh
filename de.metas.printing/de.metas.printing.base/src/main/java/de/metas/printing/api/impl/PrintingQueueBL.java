@@ -173,7 +173,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final Properties ctx, final IPrintingQueueQuery query)
 	{
 		Check.assumeNotNull(query, "Param query shall not be null");
-		Check.assumeNotNull(query.getAggregationKey(), "IPrintingQueueQuery {0} shall have an aggregation key", query);
+		Check.assumeNotNull(query.getAggregationKey(), "IPrintingQueueQuery {} shall have an aggregation key", query);
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 		final I_C_Printing_Queue firstItem = printingDAO
@@ -284,7 +284,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		//
 		// Make sure the item is not null and it was not already printed (i.e. processed)
 		Check.assumeNotNull(item, "item not null");
-		Check.assume(!item.isProcessed(), "item not already printed: {0}", item);
+		Check.assume(!item.isProcessed(), "item not already printed: {}", item);
 
 		//
 		// Build a list of valid user to print IDs
@@ -311,7 +311,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		// Create new recipients
 		// Make sure the item was saved.
 		// We are not saving it here, because that shall be the responsibility of the caller.
-		Check.errorIf(item.getC_Printing_Queue_ID() < 0, "Item shall be saved: {0}", item);
+		Check.errorIf(item.getC_Printing_Queue_ID() < 0, "Item shall be saved: {}", item);
 
 		item.setIsPrintoutForOtherUser(true);
 		for (final int userToPrintId : userToPrintIdsActual)

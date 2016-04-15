@@ -251,7 +251,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 				.convertQty(product, qty, uom, storageUOM);
 
 		Check.assumeNotNull(qtyConverted,
-				"qtyConverted not null (Qty={0}, FromUOM={1}, ToUOM={2}, Product={3}",
+				"qtyConverted not null (Qty={}, FromUOM={}, ToUOM={}, Product={}",
 				qty, uom, storageUOM);
 
 		return qtyConverted;

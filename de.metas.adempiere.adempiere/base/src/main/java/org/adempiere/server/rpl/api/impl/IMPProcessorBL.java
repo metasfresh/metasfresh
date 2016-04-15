@@ -379,7 +379,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	{
 		Check.errorUnless(
 				X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()) || X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(line.getType()),
-				"Given {0} has wrong type {1}", line.getType()); 
+				"Given {} has wrong type {}", line.getType()); 
 		
 		// start 03203 case handling for different replication linking
 		// almost copy-paste from ExportHelper
@@ -423,7 +423,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		else if (DisplayType.isLookup(displayType, true))
 		{
 			embeddedTableName = DisplayType.getTableName(displayType);
-			Check.assumeNotNull(embeddedTableName, "TableName found for DisplayType={0}", displayType);
+			Check.assumeNotNull(embeddedTableName, "TableName found for DisplayType={}", displayType);
 			final MTable embeddedTable = MTable.get(ctx, embeddedTableName);
 			final String[] embeddedKeyColumns = embeddedTable.getKeyColumns();
 			if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)

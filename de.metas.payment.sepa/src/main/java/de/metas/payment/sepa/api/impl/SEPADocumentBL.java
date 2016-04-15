@@ -158,7 +158,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		final I_SEPA_Export header = InterfaceWrapperHelper.create(ctx, I_SEPA_Export.class, trxName);
 		final I_C_BPartner orgBP = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
 		final I_C_BP_BankAccount sepaBankAccount = Services.get(ISEPADocumentDAO.class).retrieveSEPABankAccount(orgBP);
-		Check.assumeNotNull(sepaBankAccount, "No bank account for BPartner {0}", orgBP);
+		Check.assumeNotNull(sepaBankAccount, "No bank account for BPartner {}", orgBP);
 
 		final String swiftCode = Services.get(ISEPABankAccountBL.class).getSwiftCode(sepaBankAccount);
 
@@ -254,7 +254,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	public String createDefaultSepaExportFileName(final Properties ctx, final String fileNamePrefix, final ILoggable log)
 	{
 		final String defaultPath = Services.get(ISysConfigBL.class).getValue(CFG_DEFAULT_PATH);
-		Check.errorIf(Check.isEmpty(defaultPath, true), "Missing AD_Sysconfig record for {0}" + CFG_DEFAULT_PATH);
+		Check.errorIf(Check.isEmpty(defaultPath, true), "Missing AD_Sysconfig record for {}" + CFG_DEFAULT_PATH);
 
 		// make sure the directory exists and show a nice user-friendly message if not, so that the user can turn to the local admin (e.g. if a windows share is unavailable)
 		final File f = new File(defaultPath);

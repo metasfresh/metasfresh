@@ -447,7 +447,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		loader.setAllowPartialLoads(false);
 		loader.setAllowPartialUnloads(false);
 		final IAllocationResult result = loader.load(request);
-		Check.assume(result.isCompleted(), "Result shall be completed: {0}", result);
+		Check.assume(result.isCompleted(), "Result shall be completed: {}", result);
 
 		// NOTE: at this point we shall have QtyPicked records with M_LU_HU_ID set
 	}

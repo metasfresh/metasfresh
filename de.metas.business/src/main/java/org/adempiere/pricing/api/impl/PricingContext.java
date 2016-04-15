@@ -465,7 +465,7 @@ class PricingContext implements IEditablePricingContext
 	public <T> T getProperty(final String propertyName, final Class<T> clazz)
 	{
 		final Object object = properties.get(propertyName);
-		Check.assume(clazz.isInstance(object), "The property {0}={1} is assumed to be an instance of clazz {1}", propertyName, object, clazz);
+		Check.assume(clazz.isInstance(object), "The property {}={} is assumed to be an instance of clazz {}", propertyName, object, clazz);
 
 		return (T)object;
 	}

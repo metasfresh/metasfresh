@@ -172,7 +172,7 @@ public class ASyncExporterWrapper implements IExporter
 
 	public void executeAsync(final OutputStream out)
 	{
-		Check.assume(executorService == null, "No other execution started: {0}", executorService);
+		Check.assume(executorService == null, "No other execution started: {}", executorService);
 
 		prepareDataSource();
 

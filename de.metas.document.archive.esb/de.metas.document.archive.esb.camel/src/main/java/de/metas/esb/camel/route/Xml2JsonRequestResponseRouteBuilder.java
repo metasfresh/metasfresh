@@ -110,7 +110,7 @@ public abstract class Xml2JsonRequestResponseRouteBuilder<JIT, JOT, XOT> extends
 		//
 		// Setup Exception and Dead Letter Channel route
 		{
-			Check.assumeNotNull(exceptionEndpoint, "exceptionEndpoint not null for {0}", getClass());
+			Check.assumeNotNull(exceptionEndpoint, "exceptionEndpoint not null for {}", getClass());
 			onException(Exception.class)
 					.handled(true)
 					.transform(exceptionMessage())

@@ -235,7 +235,7 @@ public class PaymentAllocationBuilder
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
-			Check.assume(line.getAmount().signum() == 0, "zero amount: {0}", line);
+			Check.assume(line.getAmount().signum() == 0, "zero amount: {}", line);
 		}
 		//
 		// Outgoing payment - Incoming payment

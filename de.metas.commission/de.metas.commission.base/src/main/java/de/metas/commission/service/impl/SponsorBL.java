@@ -181,14 +181,14 @@ public class SponsorBL implements ISponsorBL
 		for (final I_C_Sponsor_SalesRep ssr : ssrs)
 		{
 			// note: we could return the firs ssr's C_AdvComSystem, but while we're at it, we might as well do some consistency verifications.
-			Check.errorIf(ssr.getC_AdvComSystem_ID() <= 0, "{0} has no C_AdvComSystem_ID", ssr);
+			Check.errorIf(ssr.getC_AdvComSystem_ID() <= 0, "{} has no C_AdvComSystem_ID", ssr);
 			if (result == null)
 			{
 				result = ssr.getC_AdvComSystem();
 			}
 			else
 			{
-				Check.errorIf(result.getC_AdvComSystem_ID() != ssr.getC_AdvComSystem_ID(), "The C_Sponsor_SalesRep records {0} for {1} have different C_AdvComSystem_IDs", ssrs, comCtx);
+				Check.errorIf(result.getC_AdvComSystem_ID() != ssr.getC_AdvComSystem_ID(), "The C_Sponsor_SalesRep records {} for {} have different C_AdvComSystem_IDs", ssrs, comCtx);
 			}
 		}
 		return result;
@@ -346,7 +346,7 @@ public class SponsorBL implements ISponsorBL
 	public I_C_Period retrieveCommissionPeriod(final Properties ctx, final I_C_AdvCommissionCondition contract, final Timestamp date, final String trxName)
 	{
 		final int calendarId = contract.getC_Calendar_ID();
-		Check.assume(calendarId > 0, "Calendar shall be set for contract {0}", contract);
+		Check.assume(calendarId > 0, "Calendar shall be set for contract {}", contract);
 
 		final I_C_Period period = Services.get(ICalendarDAO.class).findByCalendar(ctx, date, calendarId, trxName);
 
@@ -886,7 +886,7 @@ public class SponsorBL implements ISponsorBL
 	{
 		final List<I_C_Sponsor_SalesRep> parents = Services.get(ISponsorDAO.class).retrieveParentLinks(ctx, sponsor.getC_Sponsor_ID(), ts, ts, trxName);
 
-		Check.errorIf(parents.size() > 1, "{0} has more than one parent: {1} at {2}", sponsor, parents, ts);
+		Check.errorIf(parents.size() > 1, "{} has more than one parent: {} at {}", sponsor, parents, ts);
 
 		if (parents.isEmpty())
 		{

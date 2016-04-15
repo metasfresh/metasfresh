@@ -52,10 +52,10 @@ import org.reflections.ReflectionUtils;
 		final Class<? extends Object> interceptorImplClass = interceptorImpl.getClass();
 		@SuppressWarnings("unchecked")
 		final Set<Method> aroundInvokeMethods = ReflectionUtils.getAllMethods(interceptorImplClass, ReflectionUtils.withAnnotation(AroundInvoke.class));
-		Check.errorIf(aroundInvokeMethods.size() != 1, "Class {0} needs to have exactly one method annotated with @AroundInvoke. It has:{1}", interceptorImpl, aroundInvokeMethods);
+		Check.errorIf(aroundInvokeMethods.size() != 1, "Class {} needs to have exactly one method annotated with @AroundInvoke. It has:{}", interceptorImpl, aroundInvokeMethods);
 
 		this.aroundInvokeMethod = aroundInvokeMethods.iterator().next();
-		Check.assumeNotNull(aroundInvokeMethod, "aroundInvokeMethod not null for {0}", interceptorImplClass);
+		Check.assumeNotNull(aroundInvokeMethod, "aroundInvokeMethod not null for {}", interceptorImplClass);
 	}
 
 	@Override

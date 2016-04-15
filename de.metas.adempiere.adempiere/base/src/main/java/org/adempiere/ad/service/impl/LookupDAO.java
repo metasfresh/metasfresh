@@ -467,7 +467,7 @@ public class LookupDAO implements ILookupDAO
 						autoComplete);
 			}
 
-			Check.assume(!rs.next(), "Only one row in result set was expected for: {0} (AD_Reference_Value_ID={1})", sql, AD_Reference_ID);
+			Check.assume(!rs.next(), "Only one row in result set was expected for: {} (AD_Reference_Value_ID={})", sql, AD_Reference_ID);
 		}
 		catch (SQLException e)
 		{
@@ -530,7 +530,7 @@ public class LookupDAO implements ILookupDAO
 			{
 				autoComplete = "Y".equals(rs.getString(I_AD_Table.COLUMNNAME_IsAutocomplete));
 			}
-			Check.assume(!rs.next(), "Only one row in result set was expected for: {0} (TableName={1})", sql, tableName);
+			Check.assume(!rs.next(), "Only one row in result set was expected for: {} (TableName={})", sql, tableName);
 		}
 		catch (SQLException e)
 		{

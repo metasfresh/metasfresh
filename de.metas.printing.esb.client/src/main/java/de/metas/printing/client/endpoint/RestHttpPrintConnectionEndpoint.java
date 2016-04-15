@@ -101,7 +101,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		//
 		// HTTP Client connection
 		final int socketTimeout = Context.getContext().getPropertyAsInt(CTX_SocketTimeoutMillis, DEFAULT_SocketTimeoutMillis);
-		log.log(Level.FINEST, "socketTimeout: {0}", socketTimeout);
+		log.log(Level.FINEST, "socketTimeout: {}", socketTimeout);
 
 		httpclient = new HttpClient();
 		httpclient.getParams().setSoTimeout(socketTimeout);
@@ -130,7 +130,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	private int executeHttpPost(final PostMethod httpPost) throws HttpException, IOException
 	{
 		final int result = httpclient.executeMethod(httpPost);
-		log.log(Level.FINEST, "Result code: {0}", result);
+		log.log(Level.FINEST, "Result code: {}", result);
 
 		// final DefaultMethodRetryHandler retryHandler = new DefaultMethodRetryHandler();
 		// retryHandler.setRetryCount(3);

@@ -1249,7 +1249,7 @@ public class MCostDetail extends X_M_CostDetail
 			throw new AdempiereException("Cannot reverse " + cd + "."
 					+ "\nCheck console for more details.");
 		}
-		Check.assume(cdPO.isProcessed(), "Cost detail {0} shall be processed at this point", cdPO); // shall not happen
+		Check.assume(cdPO.isProcessed(), "Cost detail {} shall be processed at this point", cdPO); // shall not happen
 
 		cdPO.setProcessed(false);
 		InterfaceWrapperHelper.delete(cdPO);

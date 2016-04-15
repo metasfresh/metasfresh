@@ -164,7 +164,7 @@ import de.metas.lock.api.LockOwner;
 	private final ICNetAmtToInvoiceChecker getICNetAmtToInvoiceChecker(final IWorkPackageBuilder group)
 	{
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = group2netAmtToInvoiceChecker.get(group);
-		Check.assumeNotNull(netAmtToInvoiceChecker, "netAmtToInvoiceChecker not null for {0}", group);
+		Check.assumeNotNull(netAmtToInvoiceChecker, "netAmtToInvoiceChecker not null for {}", group);
 		return netAmtToInvoiceChecker;
 	}
 

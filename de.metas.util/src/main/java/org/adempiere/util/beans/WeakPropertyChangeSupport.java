@@ -132,7 +132,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 			else
 			{
 				listenerToWrap = weakListener.getDelegate();
-				Check.assumeNotNull(listenerToWrap, "Listener already expired: {0}", weakListener);
+				Check.assumeNotNull(listenerToWrap, "Listener already expired: {}", weakListener);
 			}
 		}
 		else if (listener instanceof PropertyChangeListenerProxy)

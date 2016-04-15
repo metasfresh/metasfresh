@@ -143,7 +143,7 @@ public class C_Invoice_DiscountAllocation_Process extends SvrProcess
 					//@formatter:on
 
 					InterfaceWrapperHelper.refresh(invoice);
-					Check.errorIf(!invoice.isPaid(), "C_Invoice {0} still has IsPaid='N' after having created {1} with discountAmt={2}", invoice, allocationHdr, discountAmount);
+					Check.errorIf(!invoice.isPaid(), "C_Invoice {} still has IsPaid='N' after having created {} with discountAmt={}", invoice, allocationHdr, discountAmount);
 				}
 
 				@Override

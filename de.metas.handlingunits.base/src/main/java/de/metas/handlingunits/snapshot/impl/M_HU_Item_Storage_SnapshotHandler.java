@@ -123,9 +123,9 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 
 		//
 		// Make sure we did not changed values which we are not supporting to be changed
-		Check.assume(modelOld.getM_Product_ID() == model.getM_Product_ID(), "Product has not changed between {0} and {1}", model, modelOld);
-		Check.assume(modelOld.getC_UOM_ID() == model.getC_UOM_ID(), "UOM has not changed between {0} and {1}", model, modelOld);
-		Check.assume(modelOld.getM_HU_Item_ID() == model.getM_HU_Item_ID(), "M_HU_Item_ID has not changed between {0} and {1}", model, modelOld);
+		Check.assume(modelOld.getM_Product_ID() == model.getM_Product_ID(), "Product has not changed between {} and {}", model, modelOld);
+		Check.assume(modelOld.getC_UOM_ID() == model.getC_UOM_ID(), "UOM has not changed between {} and {}", model, modelOld);
+		Check.assume(modelOld.getM_HU_Item_ID() == model.getM_HU_Item_ID(), "M_HU_Item_ID has not changed between {} and {}", model, modelOld);
 
 		final I_M_HU_Item vhuItem = model.getM_HU_Item();
 		final I_M_HU vhu = vhuItem.getM_HU();

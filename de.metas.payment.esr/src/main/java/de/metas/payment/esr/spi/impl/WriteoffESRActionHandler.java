@@ -73,8 +73,8 @@ public class WriteoffESRActionHandler extends AbstractESRActionHandler
 		
 		InterfaceWrapperHelper.refresh(payment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		InterfaceWrapperHelper.refresh(writeoffInvoice, trxName); // refresh the payment : very important; otherwise the over amount is not seen
-		Check.assumeNotNull(payment, "Null payment for line {0}", line.getESR_ImportLine_ID());
-		Check.errorIf(payment.getOverUnderAmt().signum() > 0, "Exces payment for line {0}. Can't write this off", line.getESR_ImportLine_ID());
+		Check.assumeNotNull(payment, "Null payment for line {}", line.getESR_ImportLine_ID());
+		Check.errorIf(payment.getOverUnderAmt().signum() > 0, "Exces payment for line {}. Can't write this off", line.getESR_ImportLine_ID());
 
 		final BigDecimal writeOffAmt = invoiceDAO.retrieveOpenAmt(writeoffInvoice);
 		

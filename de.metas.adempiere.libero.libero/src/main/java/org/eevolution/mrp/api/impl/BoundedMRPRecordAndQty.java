@@ -75,7 +75,7 @@ public class BoundedMRPRecordAndQty implements IMutableMRPRecordAndQty
 
 		//
 		// Calculate how much quantity we shall reverve (and not allow to go beyond) on delegate
-		Check.assume(qtyToSubtractMax != null && qtyToSubtractMax.signum() >= 0, "qtyToSubtractMax >= 0: {0}", qtyToSubtractMax);
+		Check.assume(qtyToSubtractMax != null && qtyToSubtractMax.signum() >= 0, "qtyToSubtractMax >= 0: {}", qtyToSubtractMax);
 		BigDecimal qtyReserved = _delegateQty.subtract(qtyToSubtractMax);
 		if (qtyReserved.signum() < 0)
 		{
@@ -136,7 +136,7 @@ public class BoundedMRPRecordAndQty implements IMutableMRPRecordAndQty
 	public void setQty(final BigDecimal qty)
 	{
 		Check.assumeNotNull(qty, LiberoException.class, "qty not null");
-		Check.assume(qty.signum() >= 0, LiberoException.class, "qty >= 0 but it was {0}", qty);
+		Check.assume(qty.signum() >= 0, LiberoException.class, "qty >= 0 but it was {}", qty);
 		assertDelegateNotChanged();
 
 		final BigDecimal delegateQtyNew = qty.add(qtyReserved);
@@ -155,7 +155,7 @@ public class BoundedMRPRecordAndQty implements IMutableMRPRecordAndQty
 	@Override
 	public void subtractQty(final BigDecimal qtyToRemove)
 	{
-		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove >= 0: {0}", qtyToRemove);
+		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove >= 0: {}", qtyToRemove);
 		final BigDecimal qty = getQty();
 		final BigDecimal qtyNew = qty.subtract(qtyToRemove);
 		setQty(qtyNew);
@@ -164,7 +164,7 @@ public class BoundedMRPRecordAndQty implements IMutableMRPRecordAndQty
 	@Override
 	public void addQty(final BigDecimal qtyToAdd)
 	{
-		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd >= 0: {0}", qtyToAdd);
+		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd >= 0: {}", qtyToAdd);
 		final BigDecimal qty = getQty();
 		final BigDecimal qtyNew = qty.add(qtyToAdd);
 		setQty(qtyNew);

@@ -79,7 +79,7 @@ public final class MProductColumn extends AbstractTreeTableColumn<IHUTreeNode>
 			return null;
 		}
 
-		Check.assume(value instanceof IHUTreeNodeProduct, "{0} instanceof {1}", value, IHUTreeNodeProduct.class);
+		Check.assume(value instanceof IHUTreeNodeProduct, "{} instanceof {}", value, IHUTreeNodeProduct.class);
 		final IHUTreeNodeProduct itemProduct = (IHUTreeNodeProduct)value;
 
 		final I_M_Product product = itemProduct.getM_Product();

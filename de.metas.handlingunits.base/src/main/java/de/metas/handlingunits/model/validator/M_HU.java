@@ -279,7 +279,7 @@ public class M_HU
 		//
 		// Get VHU Storage
 		final List<I_M_HU_Item> vhuItems = handlingUnitsDAO.retrieveItems(vhu);
-		Check.errorUnless(vhuItems.size() == 1, "VHUs shall have exactly 1 material item, but vhu={0} has {1} item(s): {2}", vhu, vhuItems.size(), vhuItems);
+		Check.errorUnless(vhuItems.size() == 1, "VHUs shall have exactly 1 material item, but vhu={} has {} item(s): {}", vhu, vhuItems.size(), vhuItems);
 		final I_M_HU_Item vhuItem = vhuItems.iterator().next();
 
 		final IHUStorage vhuStorage = huStorageFactory.getStorage(vhu);

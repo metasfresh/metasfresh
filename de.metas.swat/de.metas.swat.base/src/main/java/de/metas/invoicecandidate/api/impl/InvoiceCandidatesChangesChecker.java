@@ -213,7 +213,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 			final InvoiceCandidateInfo infoBeforeChange = this;
 
 			Check.assume(infoAfterChange.getC_Invoice_Candidate_ID() == infoBeforeChange.getC_Invoice_Candidate_ID(),
-					"Old info {0} and New info {1} shall share the same C_Invoice_Candidate_ID", infoBeforeChange, infoAfterChange);
+					"Old info {} and New info {} shall share the same C_Invoice_Candidate_ID", infoBeforeChange, infoAfterChange);
 			boolean hasChanges = false;
 			final TokenizedStringBuilder changesInfo = new TokenizedStringBuilder(", ");
 			if (infoAfterChange.getLineNetAmt().compareTo(infoBeforeChange.getLineNetAmt()) != 0)

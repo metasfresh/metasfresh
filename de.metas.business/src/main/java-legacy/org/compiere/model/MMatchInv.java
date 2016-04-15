@@ -103,7 +103,7 @@ public class MMatchInv extends X_M_MatchInv
 //	{
 //		this (iLine.getCtx(), 0, iLine.get_TrxName());
 //		
-//		Check.assume(iLine.getM_InOutLine_ID() > 0, "Param iLine={0} has M_InOutLine_ID > 0", iLine);
+//		Check.assume(iLine.getM_InOutLine_ID() > 0, "Param iLine={} has M_InOutLine_ID > 0", iLine);
 //		final I_M_InOutLine inOutLine = iLine.getM_InOutLine();
 //		final I_M_InOut inOut = inOutLine.getM_InOut();
 //		

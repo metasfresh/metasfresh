@@ -173,7 +173,7 @@ public final class HUAndItemsDAO implements IHUAndItemsDAO
 		Check.assumeNotNull(hu, "hu not null");
 		Check.assumeNotNull(piItem, "piItem not null");
 		Check.assume(hu.getM_HU_PI_Version_ID() == piItem.getM_HU_PI_Version_ID(),
-				"Incompatible HU's PI Version ({0}) and Item PI Version ({1})", hu, piItem);
+				"Incompatible HU's PI Version ({}) and Item PI Version ({})", hu, piItem);
 
 		final I_M_HU_Item item = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);
 		item.setAD_Org_ID(hu.getAD_Org_ID());

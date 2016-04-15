@@ -236,7 +236,7 @@ public class POWrapper implements InvocationHandler
 	public static IModelTranslationMap getModelTranslationMap(final Object model)
 	{
 		final PO po = getPO(model);
-		Check.assumeNotNull(po, "po not null for {0}", model);
+		Check.assumeNotNull(po, "po not null for {}", model);
 		
 		return po.get_ModelTranslationMap();
 	}
@@ -947,7 +947,7 @@ public class POWrapper implements InvocationHandler
 	public static boolean isRecordChanged(final Object model)
 	{
 		final PO po = getPO(model);
-		Check.assumeNotNull(po, "po not null for {0}", model);
+		Check.assumeNotNull(po, "po not null for {}", model);
 
 		return po.is_Changed();
 	}
@@ -955,7 +955,7 @@ public class POWrapper implements InvocationHandler
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
 		final PO po = getPO(model);
-		Check.assumeNotNull(po, "po not null for {0}", model);
+		Check.assumeNotNull(po, "po not null for {}", model);
 		return isPOValueChanged(po, columnName);
 	}
 
@@ -967,7 +967,7 @@ public class POWrapper implements InvocationHandler
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
 		final PO po = getPO(model);
-		Check.assumeNotNull(po, "po not null for {0}", model);
+		Check.assumeNotNull(po, "po not null for {}", model);
 		for (final String columnName : columnNames)
 		{
 			if (isPOValueChanged(po, columnName))

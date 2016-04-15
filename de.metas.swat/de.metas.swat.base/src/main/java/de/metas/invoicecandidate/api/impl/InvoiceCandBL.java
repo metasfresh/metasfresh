@@ -582,7 +582,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		// Util.errorUnless(ic.isManual(), "Setting NetAmtToInvoice is only allowed for manual candidates, but {0} is not manual", ic);
+		// Util.errorUnless(ic.isManual(), "Setting NetAmtToInvoice is only allowed for manual candidates, but {} is not manual", ic);
 		Services.get(IInvoiceCandidateHandlerBL.class).setNetAmtToInvoice(ic);
 	}
 
@@ -972,14 +972,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
 		final BigDecimal splitAmt = ic.getSplitAmt();
-		Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {0}", ic);
+		Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {}", ic);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
 		final I_C_Invoice_Candidate splitCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		// splitCand.setAD_Client_ID(ic.getAD_Client_ID());
-		Check.assume(splitCand.getAD_Client_ID() == ic.getAD_Client_ID(), "Same AD_Client_ID (split's AD_Client_ID={0}, IC's AD_Client_ID={1}", splitCand.getAD_Client_ID(), ic.getAD_Client_ID());
+		Check.assume(splitCand.getAD_Client_ID() == ic.getAD_Client_ID(), "Same AD_Client_ID (split's AD_Client_ID={}, IC's AD_Client_ID={}", splitCand.getAD_Client_ID(), ic.getAD_Client_ID());
 		splitCand.setAD_Org_ID(ic.getAD_Org_ID());
 
 		splitCand.setRecord_ID(ic.getRecord_ID()); // even if 0, we can't leave it empty, as the column is mandatory
@@ -1235,7 +1235,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final int reversalInvoiceId = invoice.getReversal_ID();
-		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {0} shall be the original invoice and not it's reversal", invoice);
+		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -1262,7 +1262,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			//
 			// generate reversal C_Invoice_Line_Alloc records (the reversal MatchInv records are created by InvoiceBL)
 			final I_C_InvoiceLine reversalLine = invoiceDAO.retrieveReversalLine(il, reversalInvoiceId);
-			Check.assumeNotNull(reversalLine, "C_InvoiceLine {0} is expected to have a reversal line, like every other line of C_Invoice {1}", il, invoice);
+			Check.assumeNotNull(reversalLine, "C_InvoiceLine {} is expected to have a reversal line, like every other line of C_Invoice {}", il, invoice);
 
 			for (final I_C_Invoice_Line_Alloc ilaToReverse : invoiceCandDAO.retrieveIlaForIl(il))
 			{

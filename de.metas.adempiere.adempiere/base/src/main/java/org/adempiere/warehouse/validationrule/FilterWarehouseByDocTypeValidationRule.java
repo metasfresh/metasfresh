@@ -72,7 +72,7 @@ public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidati
 		final int docTypeId = StringUtils.toIntegerOrZero(docType);
 		final int docTypeTargetId = StringUtils.toIntegerOrZero(docTypeTarget);
 
-		Check.assume(warehouseId > 0, "Invalid warehouse {0}", item.getID());
+		Check.assume(warehouseId > 0, "Invalid warehouse {}", item.getID());
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None;

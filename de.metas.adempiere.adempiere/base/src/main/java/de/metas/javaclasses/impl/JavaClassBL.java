@@ -36,7 +36,7 @@ public class JavaClassBL implements IJavaClassBL
 	public <T> T newInstance(final I_AD_JavaClass javaClassDef)
 	{
 		Check.assumeNotNull(javaClassDef, "Param 'javaClassdef' is not null");
-		Check.errorIf(javaClassDef.isInterface(), "Param {0} may not be an interface", javaClassDef);
+		Check.errorIf(javaClassDef.isInterface(), "Param {} may not be an interface", javaClassDef);
 
 		final Class<?> javaClass = verifyClassName(javaClassDef);
 		final String className = javaClass.getName();

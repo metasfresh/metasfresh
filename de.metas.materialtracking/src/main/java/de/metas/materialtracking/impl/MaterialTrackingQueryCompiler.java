@@ -101,7 +101,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 		final int productId = queryVO.getM_Product_ID();
 		final String lot = queryVO.getLot();
-		Check.assume(productId > 0 || !Check.isEmpty(lot, true), "Either productId or lot has to be set, but is: productId={0}, lot={1}", productId, lot);
+		Check.assume(productId > 0 || !Check.isEmpty(lot, true), "Either productId or lot has to be set, but is: productId={}, lot={}", productId, lot);
 
 		//
 		// M_Product_ID

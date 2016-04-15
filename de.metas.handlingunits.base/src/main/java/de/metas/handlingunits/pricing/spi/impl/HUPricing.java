@@ -149,7 +149,7 @@ public class HUPricing extends AttributePricing
 //		if (productPriceAttribute.isHUPrice())
 //		{
 //			Check.assume(productPriceAttribute.getM_HU_PI_Item_Product_ID() > 0,
-//					"{0} has a pip assigned, because otherwise we would not be where", productPriceAttribute);
+//					"{} has a pip assigned, because otherwise we would not be where", productPriceAttribute);
 //			final I_M_HU_PI_Item_Product pip = productPriceAttribute.getM_HU_PI_Item_Product();
 //
 //			final BigDecimal divisor = pip.getQty();

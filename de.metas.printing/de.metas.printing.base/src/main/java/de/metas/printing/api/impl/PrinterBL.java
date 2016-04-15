@@ -193,8 +193,8 @@ public class PrinterBL implements IPrinterBL
 		}
 		else
 		{
-			Check.assumeNotNull(defaultHWTray, "{0} has at least one tray", printerMatching.getAD_Printer());
-			Check.assume(!existingPrinterTrayMatchings.isEmpty(), "{0} has at least one tray matching", printerMatching);
+			Check.assumeNotNull(defaultHWTray, "{} has at least one tray", printerMatching.getAD_Printer());
+			Check.assume(!existingPrinterTrayMatchings.isEmpty(), "{} has at least one tray matching", printerMatching);
 
 			for (final I_AD_PrinterTray_Matching trayMatching : existingPrinterTrayMatchings)
 			{

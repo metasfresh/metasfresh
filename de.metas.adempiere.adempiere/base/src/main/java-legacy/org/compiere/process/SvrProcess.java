@@ -270,7 +270,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			{
 				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix);
 				m_trx = trxManager.get(trxNameLocal, true);
-				Check.assumeNotNull(m_trx, "Local transaction shall be created for {0}", trxNameLocal); // shall not happen
+				Check.assumeNotNull(m_trx, "Local transaction shall be created for {}", trxNameLocal); // shall not happen
 			}
 			else
 			{

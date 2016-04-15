@@ -264,7 +264,7 @@ import de.metas.logging.LogManager;
 			// If MRP code not found, use MRP-999 - unknown error
 			adMessage = adMessageDAO.retrieveByValue(ctx, IMRPExecutor.MRP_ERROR_999_Unknown);
 		}
-		Check.assumeNotNull(adMessage, LiberoException.class, "adMessage not null (MRPCode: {0})", mrpCode);
+		Check.assumeNotNull(adMessage, LiberoException.class, "adMessage not null (MRPCode: {})", mrpCode);
 		return adMessage;
 	}
 

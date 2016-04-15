@@ -51,7 +51,7 @@ public final class CurrencyConversionContext implements ICurrencyConversionConte
 		Check.assumeNotNull(builder.conversionDate, "builder.conversionDate not null");
 		this.conversionDate = (Date)builder.conversionDate.clone();
 		
-		Check.assume(builder.conversionTypeId != null && builder.conversionTypeId > 0, "valid conversionTypeId but it was {0}", builder.conversionTypeId);
+		Check.assume(builder.conversionTypeId != null && builder.conversionTypeId > 0, "valid conversionTypeId but it was {}", builder.conversionTypeId);
 		this.conversionTypeId = builder.conversionTypeId;
 
 		Check.assumeNotNull(builder.adClientId, "builder.adClientId not null");

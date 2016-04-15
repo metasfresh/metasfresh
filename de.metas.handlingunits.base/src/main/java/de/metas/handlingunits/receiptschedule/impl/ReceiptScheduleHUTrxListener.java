@@ -104,7 +104,7 @@ public final class ReceiptScheduleHUTrxListener extends HUTrxListenerAdapter
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			// Make sure this is just a dummy transaction used to LU assignments, attribute transfers etc
-			Check.assume(qtyToAllocateOnHU.signum() == 0, "Transactions about LUs shall always have Qty=0: {0}", trxLine);
+			Check.assume(qtyToAllocateOnHU.signum() == 0, "Transactions about LUs shall always have Qty=0: {}", trxLine);
 			// tuHU = null;
 			// luHU = hu;
 			return;

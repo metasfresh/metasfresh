@@ -101,7 +101,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	/**
 	 * Cannot fully load qty to handling unit. Qty Not Loaded:
 	 */
-	private static final String ERR_CANNOT_FULLY_LOAD_QTY_TO_HANDLING_UNIT = "@CannotFullyLoadQtyToHandlingUnit@ {0}";
+	private static final String ERR_CANNOT_FULLY_LOAD_QTY_TO_HANDLING_UNIT = "@CannotFullyLoadQtyToHandlingUnit@ {}";
 
 	public static final String ACTION_CloseCurrentHU = "Close_HU";
 	private ITerminalButton bCloseCurrentHU;
@@ -561,7 +561,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			{
 				if (item.getGroupingKey() == pckItem.getGroupingKey())
 				{
-					Check.assumeNull(itemUnpacked, "Item with grouping key {0} shall exist only once in the list", item.getGroupingKey());
+					Check.assumeNull(itemUnpacked, "Item with grouping key {} shall exist only once in the list", item.getGroupingKey());
 					itemUnpacked = item;
 				}
 			}
@@ -571,7 +571,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final int key = pickingSlot.getM_PickingSlot_ID();
 		// we need to remove the recently unpacked item from packed
 		final List<AbstractPackingItem> itemsPacked = packItems.remove(key);
-		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={0}", key);
+		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
 
 		final List<AbstractPackingItem> itemsPackedRemaining = new ArrayList<AbstractPackingItem>();
 

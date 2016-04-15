@@ -697,7 +697,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				}
 				else if (trxPropagation == TrxPropagation.NESTED)
 				{
-					Check.assume(savepoint != null, IllegalTrxRunStateException.class, "A savepoint was created ({0})", cfg); // shall not happen
+					Check.assume(savepoint != null, IllegalTrxRunStateException.class, "A savepoint was created ({})", cfg); // shall not happen
 
 					try
 					{
@@ -978,7 +978,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public void assertTrxNameNull(final String trxName)
 	{
-		Check.assume(isNull(trxName), "trxName shall be null but it was {0}", trxName);
+		Check.assume(isNull(trxName), "trxName shall be null but it was {}", trxName);
 	}
 
 	@Override
@@ -987,7 +987,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 
 		final String trxName = contextProvider.getTrxName();
-		Check.assume(!isNull(trxName), TrxException.class, "trxName shall not be null in {0}", contextProvider);
+		Check.assume(!isNull(trxName), TrxException.class, "trxName shall not be null in {}", contextProvider);
 	}
 
 	@Override
@@ -996,7 +996,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 
 		final String trxName = contextProvider.getTrxName();
-		Check.assume(isNull(trxName), "trxName shall be null in {0}", contextProvider);
+		Check.assume(isNull(trxName), "trxName shall be null in {}", contextProvider);
 	}
 
 	@Override
@@ -1036,7 +1036,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		Check.assumeNotNull(model, "model not null");
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		Check.assume(!isNull(trxName), "trxName shall not be null for {0}", model);
+		Check.assume(!isNull(trxName), "trxName shall not be null for {}", model);
 	}
 
 	@Override

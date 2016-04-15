@@ -95,7 +95,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	/** Asserts this aggregator is still in "configurable" state */
 	protected final void assertConfigurable()
 	{
-		Check.assume(_configurable, "Aggregator {0} is in configurable state", this);
+		Check.assume(_configurable, "Aggregator {} is in configurable state", this);
 	}
 
 	/** Make this aggregator not configurable. Mainly this method is called when processing is started. */

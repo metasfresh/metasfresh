@@ -78,7 +78,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", ad_Client_ID, ad_Org_ID);
 		if (acctSchemaId <= -1)
 		{
-			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={0} and AD_Org_ID={1}", ad_Client_ID, ad_Org_ID));
+			throw new AccountingException(StringUtils.formatMessage("Found no C_AcctSchema_ID for AD_Client_ID={} and AD_Org_ID={}", ad_Client_ID, ad_Org_ID));
 		}
 		return InterfaceWrapperHelper.create(ctx, acctSchemaId, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 	}

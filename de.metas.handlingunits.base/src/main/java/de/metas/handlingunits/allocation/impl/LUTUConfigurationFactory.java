@@ -253,7 +253,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (luPIItemId > 0)
 		{
 			final int luPIId = lutuConfiguration.getM_LU_HU_PI_ID();
-			Check.assume(luPIId > 0, "LU PI ID shall be set for {0}", lutuConfiguration);
+			Check.assume(luPIId > 0, "LU PI ID shall be set for {}", lutuConfiguration);
 
 			keyItems.add(luPIItemId); // LU M_HU_PI_Item_ID
 			keyItems.add(luPIId); // LU M_HU_PI_ID
@@ -515,7 +515,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return;
 		}
 
-		Check.assume(!lutuConfiguration.isInfiniteQtyCU(), "Infinite QtyCU not allowed for {0}", lutuConfiguration);
+		Check.assume(!lutuConfiguration.isInfiniteQtyCU(), "Infinite QtyCU not allowed for {}", lutuConfiguration);
 		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
 
 		//
@@ -523,7 +523,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (!lutuConfiguration.isInfiniteQtyTU())
 		{
 			final BigDecimal qtyTUsPerLU = lutuConfiguration.getQtyTU();
-			Check.assume(qtyTUsPerLU.signum() > 0, "QtyTU shall be positive: {0}", qtyTUsPerLU);
+			Check.assume(qtyTUsPerLU.signum() > 0, "QtyTU shall be positive: {}", qtyTUsPerLU);
 
 			//
 			// Calculate how many LUs we will have based on Order's QtyTU
@@ -554,7 +554,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		// Case: QtyTUs/LU is infinite
 		else
 		{
-			Check.assume(!lutuConfiguration.isInfiniteQtyLU(), "LU cannot be infinite when TU already is infinite for {0}", lutuConfiguration);
+			Check.assume(!lutuConfiguration.isInfiniteQtyLU(), "LU cannot be infinite when TU already is infinite for {}", lutuConfiguration);
 
 			final BigDecimal qtyTUs_Effective = qtyTUsTotal;
 			final BigDecimal qtyCUs_Effective = qtyCUsPerTU.min(qtyCUsTotal);

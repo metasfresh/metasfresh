@@ -134,7 +134,7 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 		// final Properties ctx = parent.getCtx();
 		// final int windowNo = parent.getWindowNo();
 		final int displayType = infoColumn.getAD_Reference_ID();
-		Check.assume(DisplayType.isDate(displayType), "displayType is Date or DateTime, but was {0}", displayType);
+		Check.assume(DisplayType.isDate(displayType), "displayType is Date or DateTime, but was {}", displayType);
 
 		final String columnName = infoColumn.getAD_Element().getColumnName();
 

@@ -158,7 +158,7 @@ public class LegacyCalloutAdapter implements ICallout
 
 	protected GridField getGridField(final ICalloutField field)
 	{
-		Check.assume(field instanceof GridField, "Cannot get GridField from {0}", field);
+		Check.assume(field instanceof GridField, "Cannot get GridField from {}", field);
 		final GridField gridField = (GridField)field;
 		return gridField;
 	}

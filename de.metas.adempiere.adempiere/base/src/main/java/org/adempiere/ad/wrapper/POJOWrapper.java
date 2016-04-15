@@ -372,7 +372,7 @@ public class POJOWrapper implements InvocationHandler
 	public static void setTrxName(final Object model, final String trxName)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
-		Check.assumeNotNull(wrapper, "Wrapper for model {0} is not null", model);
+		Check.assumeNotNull(wrapper, "Wrapper for model {} is not null", model);
 		wrapper.setTrxName(trxName);
 	}
 
@@ -452,7 +452,7 @@ public class POJOWrapper implements InvocationHandler
 	{
 		super();
 
-		Check.assumeNotNull(tableName, "tableName not null (interfaceClass={0})", interfaceClass);
+		Check.assumeNotNull(tableName, "tableName not null (interfaceClass={})", interfaceClass);
 
 		this.instanceId = nextInstanceId.incrementAndGet();
 		this.ctx = ctx;
@@ -510,10 +510,10 @@ public class POJOWrapper implements InvocationHandler
 		}
 		else
 		{
-			Check.assume(interfaceTableName.equals(parentWrapper.tableName), "Parent wrapper must use tablename '{0}' instead of '{1}'", interfaceTableName, parentWrapper.tableName);
+			Check.assume(interfaceTableName.equals(parentWrapper.tableName), "Parent wrapper must use tablename '{}' instead of '{}'", interfaceTableName, parentWrapper.tableName);
 			this.tableName = interfaceTableName;
 		}
-		Check.assumeNotNull(this.tableName, "No TableName found for {0} using {1}", interfaceClass, parentWrapper);
+		Check.assumeNotNull(this.tableName, "No TableName found for {} using {}", interfaceClass, parentWrapper);
 
 		this.idColumnName = parentWrapper.idColumnName;
 
@@ -1518,7 +1518,7 @@ public class POJOWrapper implements InvocationHandler
 	public static boolean isValueChanged(final Object model, final String propertyName)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
-		Check.assumeNotNull(wrapper, "wrapper not null for model {0}", model);
+		Check.assumeNotNull(wrapper, "wrapper not null for model {}", model);
 		return isWrapperValueChanged(wrapper, propertyName);
 	}
 
@@ -1530,7 +1530,7 @@ public class POJOWrapper implements InvocationHandler
 	public static boolean isValueChanged(final Object model, final Set<String> propertyNames)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
-		Check.assumeNotNull(wrapper, "wrapper not null for model {0}", model);
+		Check.assumeNotNull(wrapper, "wrapper not null for model {}", model);
 
 		for (final String propertyName : propertyNames)
 		{
@@ -1558,7 +1558,7 @@ public class POJOWrapper implements InvocationHandler
 	public static boolean isRecordChanged(Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
-		Check.assumeNotNull(wrapper, "wrapper not null for model {0}", model);
+		Check.assumeNotNull(wrapper, "wrapper not null for model {}", model);
 
 		return wrapper.isRecordChanged();
 	}

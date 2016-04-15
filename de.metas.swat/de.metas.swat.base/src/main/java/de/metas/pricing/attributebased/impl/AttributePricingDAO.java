@@ -159,7 +159,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 			if (strictDefaultFirstTry != null)
 			{
 				logger.debug(
-						"Returning M_ProductPrice_Attribute {0} with IsDefault='Y' for M_ProductPrice {1} (param 'strictDefault'==true).",
+						"Returning M_ProductPrice_Attribute {} with IsDefault='Y' for M_ProductPrice {} (param 'strictDefault'==true).",
 						new Object[] { strictDefaultFirstTry, productPriceEx });
 				return strictDefaultFirstTry;
 			}
@@ -171,7 +171,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 					.create()
 					.first(I_M_ProductPrice_Attribute.class);
 			logger.debug(
-					"Returning M_ProductPrice_Attribute {0} for M_ProductPrice {1} (param 'strictDefault'==false).",
+					"Returning M_ProductPrice_Attribute {} for M_ProductPrice {} (param 'strictDefault'==false).",
 					new Object[] { nonStrictTry, productPriceEx });
 			return nonStrictTry;
 		}
@@ -186,7 +186,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 				.create()
 				.firstOnlyOrNull(I_M_ProductPrice_Attribute.class);
 		logger.debug(
-				"Returning *the only active* M_ProductPrice_Attribute {0} for M_ProductPrice {1} as default despite it has IsDefault='N' (param 'strictDefault'==true).",
+				"Returning *the only active* M_ProductPrice_Attribute {} for M_ProductPrice {} as default despite it has IsDefault='N' (param 'strictDefault'==true).",
 				new Object[] { strictDefaultSecondTry, productPriceEx });
 		return strictDefaultSecondTry;
 

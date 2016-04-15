@@ -555,7 +555,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			{
 				continue;
 			}
-			Check.errorIf(result != null, "We can have only one non-sim term for {0}, but we have the following terms with at least two being non-sim: {1}", ic, terms);
+			Check.errorIf(result != null, "We can have only one non-sim term for {}, but we have the following terms with at least two being non-sim: {}", ic, terms);
 			result = term;
 		}
 		return result;

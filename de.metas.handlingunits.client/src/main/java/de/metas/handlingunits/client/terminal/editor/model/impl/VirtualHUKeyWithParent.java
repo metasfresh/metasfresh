@@ -41,7 +41,7 @@ public class VirtualHUKeyWithParent extends HUKey
 	{
 		super(keyFactory, hu, documentLine);
 
-		Check.assume(hu.getM_HU_Item_Parent_ID() > 0, "hu has a parent ({0})", hu);
+		Check.assume(hu.getM_HU_Item_Parent_ID() > 0, "hu has a parent ({})", hu);
 	}
 
 	@Override

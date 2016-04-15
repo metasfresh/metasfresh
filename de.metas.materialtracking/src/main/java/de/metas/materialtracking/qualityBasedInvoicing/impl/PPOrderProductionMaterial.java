@@ -53,8 +53,8 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		this.ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
 
-		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {0}", this);
-		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {0}", this);
+		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {}", this);
+		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {}", this);
 	}
 
 	@Override

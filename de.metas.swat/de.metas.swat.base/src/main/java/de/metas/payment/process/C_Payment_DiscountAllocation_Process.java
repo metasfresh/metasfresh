@@ -144,7 +144,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 
 				// Make sure the payment was fully allocated
 				InterfaceWrapperHelper.refresh(payment, localTrxName);
-				Check.errorIf(!payment.isAllocated(), "C_Payment {0} still has isAllocated='N' after having created {1} with paymentWriteOffAmt={2}", payment, allocationHdr, amtToWriteOff);
+				Check.errorIf(!payment.isAllocated(), "C_Payment {} still has isAllocated='N' after having created {} with paymentWriteOffAmt={}", payment, allocationHdr, amtToWriteOff);
 
 				// Log the success and increase the counter
 				addLog("@Processed@: @C_Payment_ID@ " + payment.getDocumentNo() + "; @PaymentWriteOffAmt@=" + amtToWriteOff);

@@ -63,7 +63,7 @@ public class FixedOrderComparator<T> implements Comparator<T>
 		// this.notMatchedMarker = notMatchedMarker;
 
 		notMatchedMarkerIndex = fixedOrderList.indexOf(notMatchedMarker);
-		Check.assume(notMatchedMarkerIndex >= 0, "notMatchedMarker '{0}' shall be present in fixed order list: {1}", notMatchedMarker, fixedOrderList);
+		Check.assume(notMatchedMarkerIndex >= 0, "notMatchedMarker '{}' shall be present in fixed order list: {}", notMatchedMarker, fixedOrderList);
 	}
 
 	public FixedOrderComparator(final T notMatchedMarker, final T... fixedOrderElements)

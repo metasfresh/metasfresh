@@ -262,7 +262,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		//
 		// Change status to Running
 			case Running:
-				Check.errorIf(listener == null, "listener member of {0} may not be null", this);
+				Check.errorIf(listener == null, "listener member of {} may not be null", this);
 				_status = HUIteratorStatus.Running;
 				activeListener = listener;
 				activeListener.setHUIterator(this);
@@ -386,7 +386,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 					throw new AdempiereException("Unsupported before result: " + beforeResult);
 					// break;
 			}
-			Check.assumeNotNull(nodeToUse, "Mutable node was set to null but returned result is {0}", beforeResult);
+			Check.assumeNotNull(nodeToUse, "Mutable node was set to null but returned result is {}", beforeResult);
 
 			//
 			// Iterate downstream

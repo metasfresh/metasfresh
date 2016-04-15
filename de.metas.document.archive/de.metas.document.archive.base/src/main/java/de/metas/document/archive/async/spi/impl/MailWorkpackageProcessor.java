@@ -84,7 +84,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
 			final I_AD_Archive archive = logLine.getAD_Archive();
-			Check.assumeNotNull(archive, "archive not null for C_Doc_Outbound_Log_Line={0}", logLine);
+			Check.assumeNotNull(archive, "archive not null for C_Doc_Outbound_Log_Line={}", logLine);
 
 			final I_C_Doc_Outbound_Log log = logLine.getC_Doc_Outbound_Log();
 
@@ -134,7 +134,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
-		Check.assumeNotNull(partner, "partner not null for {0}", log);
+		Check.assumeNotNull(partner, "partner not null for {}", log);
 
 		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, partner.getAD_Client_ID(), I_AD_Client.class, trxName);
 
@@ -144,10 +144,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
 		final I_AD_User userTo = Services.get(IBPartnerBL.class).retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-		Check.assumeNotNull(userTo, "userTo not null for {0}", log);
+		Check.assumeNotNull(userTo, "userTo not null for {}", log);
 
 		final String mailTo = userTo.getEMail();
-		Check.assumeNotEmpty(mailTo, "email not empty for {0}", log);
+		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);
 
 		//
 		// Create and send email

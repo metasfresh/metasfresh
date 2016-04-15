@@ -201,7 +201,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 		this.qtyNetReqRemaining = qtyNetReqRemaining.subtract(qtySupplied);
 
 		// enforce class invariant: qtyNetReqRemaining >= 0 !
-		Check.assume(qtyNetReqRemaining.signum() >= 0, "qtyNetReqRemaining >= 0 but it was {0} after subtracting {1}", qtyNetReqRemaining, qtySupplied);
+		Check.assume(qtyNetReqRemaining.signum() >= 0, "qtyNetReqRemaining >= 0 but it was {} after subtracting {}", qtyNetReqRemaining, qtySupplied);
 	}
 
 	/**

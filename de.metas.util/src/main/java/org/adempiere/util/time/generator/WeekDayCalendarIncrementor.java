@@ -46,10 +46,10 @@ public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 	{
 		super();
 
-		Check.assume(weeksAmount >= 0, "weeksAmount({0}) >= 0", weeksAmount);
+		Check.assume(weeksAmount >= 0, "weeksAmount({}) >= 0", weeksAmount);
 		this.weeksAmount = weeksAmount;
 
-		Check.assume(DAYS_OF_WEEK.contains(dayOfWeek), "dayOfWeek({0}) shall have one of the following values: {1}", dayOfWeek, DAYS_OF_WEEK);
+		Check.assume(DAYS_OF_WEEK.contains(dayOfWeek), "dayOfWeek({}) shall have one of the following values: {}", dayOfWeek, DAYS_OF_WEEK);
 		this.dayOfWeek = dayOfWeek;
 	}
 

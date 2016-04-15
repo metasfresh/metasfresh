@@ -144,7 +144,7 @@ public class HierarchyDiffCommission extends HierarchyCommission
 	private BigDecimal subtractAlreadyGranted(final Map<String, Object> contextInfo, final BigDecimal fullCommission)
 	{
 
-		Check.errorIf(fullCommission.signum() < 0, "Param fullCommission={0} may not be < 0", fullCommission);
+		Check.errorIf(fullCommission.signum() < 0, "Param fullCommission={} may not be < 0", fullCommission);
 
 		final BigDecimal alreadyGrantedCommission = (BigDecimal)contextInfo.get(HierarchyDiffCommission.CTX_COMMISSION_GRANTED);
 

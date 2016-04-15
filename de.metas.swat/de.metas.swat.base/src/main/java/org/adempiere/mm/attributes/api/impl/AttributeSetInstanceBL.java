@@ -224,7 +224,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		// M_Attribute_ID
 		final int attributeId = attributeValue.getM_Attribute_ID();
-		Check.assume(attributeId > 0, "attributeId > 0 for {0}", attributeValue);
+		Check.assume(attributeId > 0, "attributeId > 0 for {}", attributeValue);
 
 		//
 		// Get/Create/Update Attribute Instance

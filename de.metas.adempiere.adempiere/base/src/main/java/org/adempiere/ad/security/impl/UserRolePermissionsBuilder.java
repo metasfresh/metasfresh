@@ -277,7 +277,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		{
 			final int adRoleId = getAD_Role_ID();
 			_role = Services.get(IRoleDAO.class).retrieveRole(Env.getCtx(), adRoleId);
-			Check.assumeNotNull(_role, "AD_Role shall exist for {0}", adRoleId);
+			Check.assumeNotNull(_role, "AD_Role shall exist for {}", adRoleId);
 		}
 		return _role;
 	}
@@ -285,7 +285,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	@Override
 	public final int getAD_Role_ID()
 	{
-		Check.assumeNotNull(_adRoleId != null && _adRoleId >= 0, "AD_Role_ID shall be set but it was {0}", _adRoleId);
+		Check.assumeNotNull(_adRoleId != null && _adRoleId >= 0, "AD_Role_ID shall be set but it was {}", _adRoleId);
 		return _adRoleId;
 	}
 
@@ -314,7 +314,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	@Override
 	public final int getAD_User_ID()
 	{
-		Check.assume(_userId != null && _userId >= 0, "userId shall be set but it was {0}", _userId);
+		Check.assume(_userId != null && _userId >= 0, "userId shall be set but it was {}", _userId);
 		return _userId;
 	}
 

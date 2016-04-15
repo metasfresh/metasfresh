@@ -364,7 +364,7 @@ public class PrintJobBL implements IPrintJobBL
 		// Create print job detail
 		for (final I_AD_PrinterRouting printerRouting : findPrinterRoutings(item))
 		{
-			Check.assumeNotNull(printerRouting, "AD_PrinterRouting {0} found for C_Printing_Queue {1}", printerRouting, item);
+			Check.assumeNotNull(printerRouting, "AD_PrinterRouting {} found for C_Printing_Queue {}", printerRouting, item);
 			createPrintJobDetail(printJobLine, printerRouting);
 		}
 		return printJobLine;
@@ -380,7 +380,7 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		Check.assumeNotNull(firstLine, "firstLine not null");
 		Check.assumeNotNull(lastLine, "lastLine not null");
-		Check.assume(firstLine.getSeqNo() <= lastLine.getSeqNo(), "First line's sequence({0}) <= Last line's sequence({1})", firstLine.getSeqNo(), lastLine.getSeqNo());
+		Check.assume(firstLine.getSeqNo() <= lastLine.getSeqNo(), "First line's sequence({}) <= Last line's sequence({})", firstLine.getSeqNo(), lastLine.getSeqNo());
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
@@ -409,7 +409,7 @@ public class PrintJobBL implements IPrintJobBL
 				final int userToPrintIdToUse;
 				final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(ctx), hostKey, userToPrintId);
 				Check.errorIf(printerConfig == null,
-						"Missing AD_Printer_Config record for hostKey={0}, userToPrintId={1}, ctx={2}",
+						"Missing AD_Printer_Config record for hostKey={}, userToPrintId={}, ctx={}",
 						hostKey, userToPrintId, ctx);
 
 				if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
@@ -463,7 +463,7 @@ public class PrintJobBL implements IPrintJobBL
 	private List<I_C_Print_Job_Detail> createPrintJobDetails(final I_C_Print_Job_Line printJobLine, final I_C_Printing_Queue item)
 	{
 		final List<I_AD_PrinterRouting> printerRoutings = findPrinterRoutings(item);
-		Check.errorIf(printerRoutings.isEmpty(), "Found no AD_PrinterRouting record(s) for C_Printing_Queue {0}", item);
+		Check.errorIf(printerRoutings.isEmpty(), "Found no AD_PrinterRouting record(s) for C_Printing_Queue {}", item);
 		if (printerRoutings.isEmpty())
 		{
 			return Collections.emptyList(); // just for the case that we configured Check not to throw an exception
@@ -472,7 +472,7 @@ public class PrintJobBL implements IPrintJobBL
 		final List<I_C_Print_Job_Detail> printJobDetails = new ArrayList<I_C_Print_Job_Detail>(printerRoutings.size());
 		for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 		{
-			Check.assumeNotNull(printerRouting, "AD_PrinterRouting {0} found for C_Printing_Queue {1}", printerRouting, item);
+			Check.assumeNotNull(printerRouting, "AD_PrinterRouting {} found for C_Printing_Queue {}", printerRouting, item);
 			final I_C_Print_Job_Detail printJobDetail = createPrintJobDetail(printJobLine, printerRouting);
 			if (printJobDetail != null)
 			{

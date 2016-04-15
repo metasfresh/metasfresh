@@ -118,12 +118,12 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(ic.getAD_Table_ID());
-		Check.assume(I_C_Flatrate_Term.Table_Name.equals(tableName), "AD_Table_ID for {0} shall be {1} but it was {2}", ic, I_C_Flatrate_Term.Table_Name, tableName);
+		Check.assume(I_C_Flatrate_Term.Table_Name.equals(tableName), "AD_Table_ID for {} shall be {} but it was {}", ic, I_C_Flatrate_Term.Table_Name, tableName);
 
-		Check.assume(ic.getRecord_ID() > 0, "Record_ID shall be filled for {0}", ic);
+		Check.assume(ic.getRecord_ID() > 0, "Record_ID shall be filled for {}", ic);
 
 		final I_C_Flatrate_Term term = InterfaceWrapperHelper.create(ctx, ic.getRecord_ID(), I_C_Flatrate_Term.class, trxName);
-		Check.assume(term != null, "Term found for {0}", ic);
+		Check.assume(term != null, "Term found for {}", ic);
 
 		return term.getAD_User_InCharge_ID();
 	}
@@ -325,7 +325,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 	{
 		Check.assumeNotNull(ic, "Param 'ic' not null");
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		Check.assume(ic.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), "{0} has AD_Table_ID={1}", ic, adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
+		Check.assume(ic.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), "{} has AD_Table_ID={}", ic, adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
 
 		final I_C_Flatrate_Term term = TableRecordCacheLocal.getReferencedValue(ic, I_C_Flatrate_Term.class);
 		return term;

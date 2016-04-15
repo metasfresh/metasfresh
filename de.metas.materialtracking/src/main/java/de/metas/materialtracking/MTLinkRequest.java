@@ -187,8 +187,8 @@ public class MTLinkRequest
 
 		public MTLinkRequest build()
 		{
-			Check.assumeNotNull(model, "model is not null in MaterialTrackingEventBuilder {0}", this);
-			Check.assumeNotNull(materialTracking, "materialTracking is not null in MaterialTrackingEventBuilder {0}", this);
+			Check.assumeNotNull(model, "model is not null in MaterialTrackingEventBuilder {}", this);
+			Check.assumeNotNull(materialTracking, "materialTracking is not null in MaterialTrackingEventBuilder {}", this);
 
 			return new MTLinkRequest(model, materialTracking, params, assumeNotAlreadyAssigned);
 		}

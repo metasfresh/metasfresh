@@ -784,6 +784,6 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private final void assertAlternative(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		Check.assume(isAlternative(orderBOMLine), LiberoException.class, "BOM Order Line shall be an alternative BOM Line: {0}", orderBOMLine);
+		Check.assume(isAlternative(orderBOMLine), LiberoException.class, "BOM Order Line shall be an alternative BOM Line: {}", orderBOMLine);
 	}
 }

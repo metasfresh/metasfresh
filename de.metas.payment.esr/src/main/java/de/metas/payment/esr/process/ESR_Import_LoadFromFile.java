@@ -181,7 +181,7 @@ public class ESR_Import_LoadFromFile extends SvrProcess
 		InterfaceWrapperHelper.save(esrImport);
 
 		// 04582: making sure we will use the trxName of this process in our business logic
-		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {0} of {1} is equal to the process-TrxName {2}",
+		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {} of {} is equal to the process-TrxName {}",
 				InterfaceWrapperHelper.getTrxName(esrImport),
 				esrImport,
 				get_TrxName());

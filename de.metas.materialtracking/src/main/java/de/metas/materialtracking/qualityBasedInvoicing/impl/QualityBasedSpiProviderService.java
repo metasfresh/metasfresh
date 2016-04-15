@@ -79,7 +79,7 @@ public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderS
 	private final <T> T getInstance(final String sysConfigName, final Class<T> interfaceClass)
 	{
 		final String classname = Services.get(ISysConfigBL.class).getValue(sysConfigName);
-		Check.assumeNotEmpty(classname, "AD_Sysconfig {0} shall be set", sysConfigName);
+		Check.assumeNotEmpty(classname, "AD_Sysconfig {} shall be set", sysConfigName);
 
 		final T instance = Util.getInstance(interfaceClass, classname);
 		return instance;

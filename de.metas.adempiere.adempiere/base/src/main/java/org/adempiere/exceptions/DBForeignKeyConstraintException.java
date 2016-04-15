@@ -53,7 +53,7 @@ public class DBForeignKeyConstraintException extends DBException
 		// TODO:
 		// * extract the foreign key name
 		// * find the local and foreign table and column names
-		// * display a nice error message: Datensatz {0} kann nicht gelöscht werden, weil er von anderen Datensätzen referenziert wird
+		// * display a nice error message: Datensatz {} kann nicht gelöscht werden, weil er von anderen Datensätzen referenziert wird
 
 		// NOTE:
 		// * here is how others extracted the foreign key name: org.hibernate.dialect.new TemplatedViolatedConstraintNameExtracter() {...}.extractConstraintName(SQLException)

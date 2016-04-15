@@ -130,8 +130,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final AdempiereException ex =
 				new AdempiereException(StringUtils.formatMessage(
 						"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-								+ "model= {0}, taxCategoryId={1}, productId={2}, chargeId={3}, billDate={4}, shipDate={5}, adOrgId={6}, "
-								+ "warehouse={7}, billC_BPartner_Location_ID={8}, shipC_BPartner_Location_ID={9}, isSOTrx={10}, trxName={11}",
+								+ "model= {}, taxCategoryId={}, productId={}, chargeId={}, billDate={}, shipDate={}, adOrgId={}, "
+								+ "warehouse={}, billC_BPartner_Location_ID={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
 						model,
 						taxCategoryId,
 						productId,

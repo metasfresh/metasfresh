@@ -65,7 +65,7 @@ public class PackingService implements IPackingService
 	/**
 	 * Cannot fully unload: hu. Result is: result
 	 */
-	private static final String ERR_CANNOT_FULLY_UNLOAD_RESULT = "@CannotFullyUnload@ {0} @ResultIs@ {1}";
+	private static final String ERR_CANNOT_FULLY_UNLOAD_RESULT = "@CannotFullyUnload@ {} @ResultIs@ {}";
 
 	@Override
 	public void removeProductQtyFromHU(final Properties ctx, final I_M_HU hu, final Map<I_M_ShipmentSchedule, BigDecimal> schedules2qty)

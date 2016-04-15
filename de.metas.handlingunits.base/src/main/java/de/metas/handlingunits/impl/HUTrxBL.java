@@ -121,7 +121,7 @@ public class HUTrxBL implements IHUTrxBL
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
 		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-				"mtrx shall be inbound transaction: {0}", mtrx);
+				"mtrx shall be inbound transaction: {}", mtrx);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);

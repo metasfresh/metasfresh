@@ -444,7 +444,7 @@ public class FieldAccessBL implements IFieldAccessBL
 			return BigDecimal.ZERO;
 		}
 
-		Check.assume(priceList.signum() >= 0, "PriceList {0} shall be >= 0 for {1}", priceList, model);
+		Check.assume(priceList.signum() >= 0, "PriceList {} shall be >= 0 for {}", priceList, model);
 		// assert priceList.signum() >= 0 : po;
 
 		final BigDecimal discount;

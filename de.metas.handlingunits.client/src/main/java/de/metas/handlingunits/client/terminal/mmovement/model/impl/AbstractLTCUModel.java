@@ -401,7 +401,7 @@ public abstract class AbstractLTCUModel extends AbstractMaterialMovementModel im
 	protected void rebuildRootKey(final IHUKey rootKey)
 	{
 		Check.assumeNotNull(rootKey, "rootKey not null");
-		Check.assume(rootKey.getParent() == null, "rootKey shall have no children: {0}", rootKey);
+		Check.assume(rootKey.getParent() == null, "rootKey shall have no children: {}", rootKey);
 
 		//
 		// Reset Key Factories cache

@@ -111,7 +111,7 @@ public class DefaultAggregator implements IAggregator
 		//
 		final String lineAggregationKeyStr = ic.getLineAggregationKey();
 		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || ic.isToRecompute(),
-				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {0}", ic);
+				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 

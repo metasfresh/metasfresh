@@ -106,12 +106,12 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		//
 		// Make sure that we're using a saved parent HU item
-		Check.assume(parentItem.getM_HU_PI_Item_ID() > 0, "parentHUItem already saved ({0}) for HU={1}", parentItem, hu);
+		Check.assume(parentItem.getM_HU_PI_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
 		final I_M_HU parentHU = parentItem.getM_HU();
 
 		//
 		// Ensure that the parentItem is actually attached to an HU
-		Check.assumeNotNull(parentHU, "An M_HU_Item (parentHUItem) {0} is linked to a handling unit for child HU={1}", parentItem, hu);
+		Check.assumeNotNull(parentHU, "An M_HU_Item (parentHUItem) {} is linked to a handling unit for child HU={}", parentItem, hu);
 
 		final IAttributeStorageFactory storageFactory = getHUAttributeStorageFactory();
 		final IAttributeStorage parentAttributeSetStorage = storageFactory.getAttributeStorage(parentHU);

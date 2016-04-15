@@ -82,7 +82,7 @@ public class AttributeDAO implements IAttributeDAO
 				.create()
 				.firstOnly(clazz);
 
-		Check.errorIf(attribute == null, "There is no attribute defined for the value {0}", value);
+		Check.errorIf(attribute == null, "There is no attribute defined for the value {}", value);
 
 		return attribute;
 	}

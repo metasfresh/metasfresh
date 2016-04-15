@@ -68,16 +68,16 @@ public class HUSplitDefinition implements IHUSplitDefinition
 		this.cuUOM = cuUOM;
 
 		Check.assumeNotNull(cuPerTU, "cuPerTU not null");
-		Check.assumeNotNull(cuPerTU.signum() > 0, "cuPerTU > 0 but it was {0}", cuPerTU);
+		Check.assumeNotNull(cuPerTU.signum() > 0, "cuPerTU > 0 but it was {}", cuPerTU);
 		this.cuPerTU = cuPerTU;
 
 		Check.assumeNotNull(tuPerLU, "tuPerLU not null");
-		Check.assumeNotNull(tuPerLU.signum() > 0, "tuPerLU > 0 but it was {0}", tuPerLU);
+		Check.assumeNotNull(tuPerLU.signum() > 0, "tuPerLU > 0 but it was {}", tuPerLU);
 		this.tuPerLU = tuPerLU;
 
 		Check.assumeNotNull(maxLUToAllocate, "maxLUToAllocate not null");
 		// MaxLUToAllocate can be 0, if, and only if, we only want products allocated to TUs
-		Check.assume(maxLUToAllocate.signum() >= 0, "maxLUToAllocate >= 0 but it was {0}", maxLUToAllocate);
+		Check.assume(maxLUToAllocate.signum() >= 0, "maxLUToAllocate >= 0 but it was {}", maxLUToAllocate);
 		this.maxLUToAllocate = maxLUToAllocate;
 	}
 

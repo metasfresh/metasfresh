@@ -227,7 +227,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			return performLockSQLInsert(lockCommand, sqlParams, sql);
 		}
 
-		Check.errorIf(true, "Currently we just support ISqlQueryFilters. This filter is not supported: {0}", selectionToLockFilters);
+		Check.errorIf(true, "Currently we just support ISqlQueryFilters. This filter is not supported: {}", selectionToLockFilters);
 		return -1; // not reached
 	}
 
@@ -509,7 +509,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		{
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-			Check.assume(adTableId > 0, "Table {0} exists", tableName);
+			Check.assume(adTableId > 0, "Table {} exists", tableName);
 
 			Check.assumeNotEmpty(joinColumnNameFQ, "joinColumnNameFQ not empty");
 
@@ -555,7 +555,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		{
 			Check.assumeNotNull(modelClass, "modelClass not null");
 			final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
-			Check.assume(adTableId > 0, "Table {0} exists", modelClass);
+			Check.assume(adTableId > 0, "Table {} exists", modelClass);
 
 			Check.assumeNotEmpty(joinColumnNameFQ, "joinColumnNameFQ not empty");
 
@@ -578,7 +578,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	public final ILock retrieveLockForOwner(final LockOwner lockOwner)
 	{
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
-		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {0}", lockOwner);
+		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
 		final String sql = "SELECT "
 				+ " " + I_T_Lock.COLUMNNAME_IsAutoCleanup

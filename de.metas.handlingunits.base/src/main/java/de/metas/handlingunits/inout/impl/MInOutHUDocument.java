@@ -44,7 +44,7 @@ import de.metas.handlingunits.document.impl.AbstractHUDocument;
 		super();
 
 		Check.assumeNotNull(inOut, "inOut not null");
-		Check.assume(inOut.getM_InOut_ID() > 0, "{0} is saved", inOut);
+		Check.assume(inOut.getM_InOut_ID() > 0, "{} is saved", inOut);
 		this.inOut = inOut;
 
 		Check.assumeNotNull(lines, "lines not null");

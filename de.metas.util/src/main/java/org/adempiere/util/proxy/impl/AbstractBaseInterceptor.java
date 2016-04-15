@@ -43,7 +43,7 @@ public abstract class AbstractBaseInterceptor implements IServiceInterceptor
 		Check.errorIf(annotation2Interceptor.size() > 0, "our Current implementation can support only one insterceptor!");
 
 		final Class<? extends Object> implClass = impl.getClass();
-		Check.errorIf(!implClass.isAnnotationPresent(annotationClass), "Given interceptor impl {0} needs to be annotated with {1}", annotationClass);
+		Check.errorIf(!implClass.isAnnotationPresent(annotationClass), "Given interceptor impl {} needs to be annotated with {}", annotationClass);
 
 		final IInterceptorInstance interceptorInstance = createInterceptorInstance(annotationClass, impl);
 

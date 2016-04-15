@@ -112,7 +112,7 @@ public class MRPContextFactory implements IMRPContextFactory
 		//
 		// Make sure we are dealing with a Demand MRP record
 		final IMRPBL mrpBL = Services.get(IMRPBL.class);
-		Check.assume(mrpBL.isDemand(mrpDemand), LiberoException.class, "MRP record shall be a Demand: {0}", mrpDemand);
+		Check.assume(mrpBL.isDemand(mrpDemand), LiberoException.class, "MRP record shall be a Demand: {}", mrpDemand);
 
 		final IMutableMRPContext mrpContext = createInitialMRPContext();
 

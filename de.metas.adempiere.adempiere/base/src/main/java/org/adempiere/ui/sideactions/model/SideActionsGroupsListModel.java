@@ -72,7 +72,7 @@ public class SideActionsGroupsListModel implements ISideActionsGroupsListModel
 	public final ISideActionsGroupModel getGroupById(final String id)
 	{
 		final ISideActionsGroupModel group = getGroupByIdOrNull(id);
-		Check.assumeNotNull(group, "group shall exist for ID={0}", id);
+		Check.assumeNotNull(group, "group shall exist for ID={}", id);
 		return group;
 	}
 }

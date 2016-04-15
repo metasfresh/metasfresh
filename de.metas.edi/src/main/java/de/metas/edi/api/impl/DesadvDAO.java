@@ -241,7 +241,7 @@ public class DesadvDAO implements IDesadvDAO
 		}
 		catch (NumberFormatException e)
 		{
-			Check.errorIf(true, "AD_SysConfig {0} = {1} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
+			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
 			return null; // shall not be reached
 		}
 	}

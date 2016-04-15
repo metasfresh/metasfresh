@@ -61,7 +61,7 @@ public class InAus_LandAttributeGenerator extends AbstractAttributeValueGenerato
 	{
 		final ITableRecordReference record = new TableRecordReference(tableId, recordId);
 		Check.errorUnless(I_C_Country.Table_Name.equals(record.getTableName()),
-				"Only C_Country table is supported. Given param 'tableId' is the ID of AD_Table {0}", record.getTableName());
+				"Only C_Country table is supported. Given param 'tableId' is the ID of AD_Table {}", record.getTableName());
 		final int countryId = record.getRecord_ID();
 
 		final I_M_Attribute inAusLandAttribute = Services.get(IInAusLandAttributeDAO.class).retrieveInAusLandAttribute(ctx);

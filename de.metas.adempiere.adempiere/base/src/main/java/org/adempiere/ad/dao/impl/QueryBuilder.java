@@ -516,7 +516,7 @@ import com.google.common.collect.ImmutableMap;
 			final Class<CollectedBaseType> fieldType = column.getColumnModelType();
 			tableName = InterfaceWrapperHelper.getTableName(fieldType);
 		}
-		Check.assumeNotEmpty(tableName, "TableName not found for column={0} and collectedType={1}", column, collectedType);
+		Check.assumeNotEmpty(tableName, "TableName not found for column={} and collectedType={}", column, collectedType);
 
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String columnName = column.getColumnName();

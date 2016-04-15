@@ -176,7 +176,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		if (candidate.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Invoice.Table_Name))
 		{
 			final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_C_Invoice.class, trxName);
-			Check.assumeNotNull(invoice, "No invoice found for candidate {0}", candidate);
+			Check.assumeNotNull(invoice, "No invoice found for candidate {}", candidate);
 			
 			invoiceBL.writeOffInvoice(invoice, candidate.getOpenAmt(), writeOffDescription);
 

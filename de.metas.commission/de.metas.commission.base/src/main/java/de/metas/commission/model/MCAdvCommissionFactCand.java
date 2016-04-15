@@ -97,7 +97,7 @@ public class MCAdvCommissionFactCand extends X_C_AdvCommissionFactCand implement
 	{
 		super(InterfaceWrapperHelper.getCtx(po, true), 0, InterfaceWrapperHelper.getTrxName(po));
 
-		Check.assumeNotNull(relevantPO, "Param 'relevantPO' is not null; po={0}", po);
+		Check.assumeNotNull(relevantPO, "Param 'relevantPO' is not null; po={}", po);
 
 		if (InterfaceWrapperHelper.getId(po) <= 0)
 		{
@@ -117,7 +117,7 @@ public class MCAdvCommissionFactCand extends X_C_AdvCommissionFactCand implement
 
 	public static MCAdvCommissionFactCand createNoSave(final Object po, final I_C_AdvCommissionRelevantPO relevantPO)
 	{
-		Check.errorUnless(relevantPO != null, "relevantPO may not be null; po={0}", po);
+		Check.errorUnless(relevantPO != null, "relevantPO may not be null; po={}", po);
 		return new MCAdvCommissionFactCand(po, relevantPO);
 	}
 

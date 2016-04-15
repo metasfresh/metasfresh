@@ -78,7 +78,7 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 		final ITrx trx = trxManager.getTrx(trxName);
-		Check.assumeNotNull(trx, "Transaction shall exist: {0}", trxName);
+		Check.assumeNotNull(trx, "Transaction shall exist: {}", trxName);
 
 		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, new Supplier<SaveDecoupledHUStorageDAO>()
 		{

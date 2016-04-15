@@ -149,7 +149,7 @@ public class TerminalContextFactory
 			if (!terminalContextUnwrapped.isDisposed())
 			{
 				logger.warn("Cannot remove {} from internal terminal contexts list because it was not found."
-						+ "\nCurrent contexts are: {1}"
+						+ "\nCurrent contexts are: {}"
 						, new Object[] { terminalContext, terminalContexts });
 			}
 		}

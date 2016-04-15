@@ -124,7 +124,7 @@ import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 	 */
 	private final void assertNotDisposed()
 	{
-		Check.assume(!_disposed, "Collector shall not be disposed: {0}", this);
+		Check.assume(!_disposed, "Collector shall not be disposed: {}", this);
 	}
 
 	/**

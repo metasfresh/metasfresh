@@ -42,7 +42,7 @@ public class PaymentStringParserFactory implements IPaymentStringParserFactory
 		Check.assumeNotEmpty(type, "type not empty");
 		Check.assumeNotNull(parser, "parser not null");
 
-		Check.assume(!type2Parser.containsKey(type), "Type {0} is bound only once for {1}, but an attempt was made to bind {2}", type, type2Parser.get(type), parser);
+		Check.assume(!type2Parser.containsKey(type), "Type {} is bound only once for {}, but an attempt was made to bind {}", type, type2Parser.get(type), parser);
 
 		type2Parser.put(type, parser);
 	}

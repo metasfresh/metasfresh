@@ -327,7 +327,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	public BigDecimal calculateTotalNetAmtFromLines()
 	{
 		final List<IInvoiceCandAggregate> lines = getLines();
-		Check.assume(lines != null && !lines.isEmpty(), "Invoice {0} was not aggregated yet", this);
+		Check.assume(lines != null && !lines.isEmpty(), "Invoice {} was not aggregated yet", this);
 
 		BigDecimal totalNetAmt = BigDecimal.ZERO;
 		for (final IInvoiceCandAggregate lineAgg : lines)

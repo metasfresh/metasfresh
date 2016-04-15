@@ -66,7 +66,7 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 	public void assertQualityInspectionOrder(final I_PP_Order ppOrder)
 	{
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
-		Check.assume(isQualityInspection(ppOrder), "Order shall be Quality Inspection Order: {0}", ppOrder);
+		Check.assume(isQualityInspection(ppOrder), "Order shall be Quality Inspection Order: {}", ppOrder);
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 		{
 			dateOfProduction = ppOrder.getDateFinishSchedule();
 		}
-		Check.assumeNotNull(dateOfProduction, "dateOfProduction not null for PP_Order {0}", ppOrder);
+		Check.assumeNotNull(dateOfProduction, "dateOfProduction not null for PP_Order {}", ppOrder);
 		return dateOfProduction;
 	}
 

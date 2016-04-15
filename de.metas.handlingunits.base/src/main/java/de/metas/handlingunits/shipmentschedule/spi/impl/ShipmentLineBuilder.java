@@ -221,14 +221,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 	private void append(final IShipmentScheduleWithHU candidate)
 	{
-		Check.assume(canAdd(candidate), "candidate {0} can be added to shipment line builder", candidate);
+		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
 
 		final I_M_ShipmentSchedule sched = candidate.getM_ShipmentSchedule();
 
 		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
+			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 

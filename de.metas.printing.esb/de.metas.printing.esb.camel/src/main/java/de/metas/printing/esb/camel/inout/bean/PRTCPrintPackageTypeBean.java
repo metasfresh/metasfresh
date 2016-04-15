@@ -53,13 +53,13 @@ public class PRTCPrintPackageTypeBean extends PRTCPrintPackageTypeConverter
 		final Integer sessionId = (Integer)inMessage.getHeader(PRTRestServiceConstants.PARAM_SessionId);
 		final String transactionId = (String)inMessage.getHeader(PRTRestServiceConstants.PARAM_TransactionId);
 
-		logger.log(Level.FINE, "IN transactionId={0}", transactionId);
+		logger.log(Level.FINE, "IN transactionId={}", transactionId);
 
 		final PRTCPrintPackageType printPackage = createPRTCPrintPackageTypeRequest(sessionId, transactionId);
 
 		final JAXBElement<PRTCPrintPackageType> outBody = factory.createPRTCPrintPackage(printPackage);
 
-		logger.log(Level.FINE, "OUT body: {0}", outBody);
+		logger.log(Level.FINE, "OUT body: {}", outBody);
 
 		exchange.getOut().setBody(outBody);
 
@@ -72,7 +72,7 @@ public class PRTCPrintPackageTypeBean extends PRTCPrintPackageTypeConverter
 		
 		final PrintPackage printPckgPC = createPackageTypeResponse(printPckgAD);
 
-		logger.log(Level.FINE, "OUT body: {0}", printPckgPC);
+		logger.log(Level.FINE, "OUT body: {}", printPckgPC);
 
 		exchange.getOut().setBody(printPckgPC, PrintPackage.class);
 

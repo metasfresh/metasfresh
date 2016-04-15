@@ -210,7 +210,7 @@ import de.metas.lock.api.ILock;
 		//
 		// Log the result
 		final ILoggable loggable = getLoggable();
-		loggable.addLog("Update invalid result: {0}", result.getSummary());
+		loggable.addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)
@@ -363,7 +363,7 @@ import de.metas.lock.api.ILock;
 
 	private final void assertNotExecuted()
 	{
-		Check.assume(!executed, "Updater not executed: {0}", this);
+		Check.assume(!executed, "Updater not executed: {}", this);
 	}
 
 	private final void markAsExecuted()

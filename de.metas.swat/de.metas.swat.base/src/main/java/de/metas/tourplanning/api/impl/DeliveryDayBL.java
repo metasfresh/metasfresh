@@ -184,7 +184,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 
 	private I_M_DeliveryDay_Alloc createDeliveryDayAlloc(final IContextAware context, final I_M_DeliveryDay deliveryDay, final IDeliveryDayAllocable deliveryDayAllocable)
 	{
-		Check.assume(!deliveryDay.isProcessed(), "Delivery day shall not be processed: {0}", deliveryDay);
+		Check.assume(!deliveryDay.isProcessed(), "Delivery day shall not be processed: {}", deliveryDay);
 		
 		final String tableName = deliveryDayAllocable.getTableName();
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);

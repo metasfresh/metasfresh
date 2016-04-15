@@ -58,7 +58,7 @@ public class AD_Ref_List_GenerateJavaConstants
 			throw new AdempiereException("Provide AD_Reference_ID parameter");
 		}
 		final String adReferenceIdStr = args[0];
-		Check.assumeNotEmpty(adReferenceIdStr, "Valid AD_Reference_ID parameter: {0}", adReferenceIdStr);
+		Check.assumeNotEmpty(adReferenceIdStr, "Valid AD_Reference_ID parameter: {}", adReferenceIdStr);
 		final int adReferenceId = Integer.parseInt(adReferenceIdStr.trim());
 
 		//

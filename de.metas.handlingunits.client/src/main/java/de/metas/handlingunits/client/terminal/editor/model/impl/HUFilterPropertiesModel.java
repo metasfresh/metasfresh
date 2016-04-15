@@ -187,7 +187,7 @@ public class HUFilterPropertiesModel extends AbstractPropertiesPanelModel
 	private final HUFilterModel getHUFilter(final String propertyName)
 	{
 		final HUFilterModel huFilter = _columnNames2Filters.get(propertyName);
-		Check.assumeNotNull(huFilter, "{0} contains {1}", _columnNames2Filters, propertyName);
+		Check.assumeNotNull(huFilter, "{} contains {}", _columnNames2Filters, propertyName);
 		return huFilter;
 	}
 

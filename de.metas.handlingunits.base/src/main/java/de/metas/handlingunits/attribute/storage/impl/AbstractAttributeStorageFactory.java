@@ -140,7 +140,7 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 	@Override
 	public IHUStorageFactory getHUStorageFactory()
 	{
-		Check.assumeNotNull(huStorageFactory, "IHUStorageFactory member of AbstractAttributeStorageFactory {0} is not null", this);
+		Check.assumeNotNull(huStorageFactory, "IHUStorageFactory member of AbstractAttributeStorageFactory {} is not null", this);
 		return huStorageFactory;
 	}
 

@@ -62,7 +62,7 @@ public abstract class AnnotatedTableAction extends AbstractAction
 
 	public final JTable getTable()
 	{
-		Check.assumeNotNull(_table, "table configured for action {0}", this);
+		Check.assumeNotNull(_table, "table configured for action {}", this);
 		return _table;
 	}
 

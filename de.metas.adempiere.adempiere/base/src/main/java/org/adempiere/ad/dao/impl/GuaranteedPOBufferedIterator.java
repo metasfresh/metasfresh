@@ -146,7 +146,7 @@ import com.google.common.collect.PeekingIterator;
 		final Class<ET> clazzToUse;
 		if (clazz == null)
 		{
-			Check.errorIf(Check.isEmpty(tableName, true), "If, class is null, then at least the tableName has to be != null in this={0}", this);
+			Check.errorIf(Check.isEmpty(tableName, true), "If, class is null, then at least the tableName has to be != null in this={}", this);
 			@SuppressWarnings("unchecked")
 			final Class<ET> clazzForTableName = (Class<ET>)TableModelClassLoader.instance.getClass(tableName);
 			clazzToUse = clazzForTableName;

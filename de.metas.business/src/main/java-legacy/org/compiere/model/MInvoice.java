@@ -1461,7 +1461,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			{
 				return false;
 			}
-			Check.assume(iTax.isActive(), "InvoiceTax shall be active: {0}", iTax);
+			Check.assume(iTax.isActive(), "InvoiceTax shall be active: {}", iTax);
 			InterfaceWrapperHelper.save(iTax);
 			taxIds.add(taxId);
 		}

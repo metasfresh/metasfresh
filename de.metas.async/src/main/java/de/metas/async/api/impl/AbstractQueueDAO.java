@@ -130,7 +130,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		Check.assumeNotNull(packageProcessorClass, "packageProcessorClass not null");
 
 		final String classname = packageProcessorClass.getCanonicalName();
-		Check.assumeNotNull(classname, "Classname not null for {0}", packageProcessorClass);
+		Check.assumeNotNull(classname, "Classname not null for {}", packageProcessorClass);
 
 		final Collection<I_C_Queue_PackageProcessor> packageProcessors = retrieveWorkpackageProcessorsMap(ctx).values();
 		for (final I_C_Queue_PackageProcessor packageProcessor : packageProcessors)
@@ -156,7 +156,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			return packageProcessorNew;
 		}
 
-		Check.errorIf(true, "Missing C_Queue_PackageProcessor for classname {0}", classname);
+		Check.errorIf(true, "Missing C_Queue_PackageProcessor for classname {}", classname);
 		return null; // won't be reached
 	}
 
@@ -195,7 +195,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	public void saveInLocalTrx(final Object model)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		Check.assume(Services.get(ITrxManager.class).isNull(trxName), "Model {0} shall be loaded/saved out of transaction", model);
+		Check.assume(Services.get(ITrxManager.class).isNull(trxName), "Model {} shall be loaded/saved out of transaction", model);
 
 		DB.saveConstraints();
 		DB.getConstraints().addAllowedTrxNamePrefix("POSave");
@@ -295,7 +295,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			try
 			{
 				final T item = retrieveItem(e, clazz, trxName); // if the item can't be retrieved, a PackageItemNotAvailableException is thrown
-				Check.assumeNotNull(item, "Item for {0} is not null", e);
+				Check.assumeNotNull(item, "Item for {} is not null", e);
 				result.add(item);
 
 			}

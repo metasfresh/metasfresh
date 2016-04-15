@@ -56,7 +56,7 @@ public class OrderReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 		Check.assumeNotNull(model, "model not null");
 
 		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
-		Check.assume(!order.isSOTrx(), "Only purchase orders are handled: {0}", order);
+		Check.assume(!order.isSOTrx(), "Only purchase orders are handled: {}", order);
 
 		return order;
 

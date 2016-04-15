@@ -214,7 +214,7 @@ public class MRPExecutorService implements IMRPExecutorService
 			//
 			// Make sure there is no other executor which is running at the moment
 			final IMRPExecutor currentMRPExecutorOld = getCurrentMRPExecutor();
-			Check.assumeNull(currentMRPExecutorOld, LiberoException.class, "No IMRPExecutor shall be running at this moment but it is: {0}", currentMRPExecutorOld);
+			Check.assumeNull(currentMRPExecutorOld, LiberoException.class, "No IMRPExecutor shall be running at this moment but it is: {}", currentMRPExecutorOld);
 
 			//
 			// Run MRP

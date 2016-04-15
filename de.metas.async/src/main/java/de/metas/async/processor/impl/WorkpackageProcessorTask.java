@@ -403,7 +403,7 @@ import de.metas.notification.INotificationBL;
 
 		// log error to console (for later audit):
 		logger.info("Skipped while processing workpackage: " + workPackage, skipException);
-		loggable.addLog("Skipped while processing workpackage: {0}", workPackage);
+		loggable.addLog("Skipped while processing workpackage: {}", workPackage);
 	}
 
 	private void markError(final I_C_Queue_WorkPackage workPackage,
@@ -437,7 +437,7 @@ import de.metas.notification.INotificationBL;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
 		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: " + workPackage, ex);
-		loggable.addLog("Error while processing workpackage: {0}", workPackage);
+		loggable.addLog("Error while processing workpackage: {}", workPackage);
 
 		// 09700: notify the user in charge, if one was set
 		if (workPackage.getAD_User_InCharge_ID() > 0)

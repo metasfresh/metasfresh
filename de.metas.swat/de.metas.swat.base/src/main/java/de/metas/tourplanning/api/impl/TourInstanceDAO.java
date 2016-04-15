@@ -56,7 +56,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 		if (tour != null)
 		{
 			final int tourId = tour.getM_Tour_ID();
-			Check.assume(tourId > 0, "Tour shall be saved: {0}", tour);
+			Check.assume(tourId > 0, "Tour shall be saved: {}", tour);
 			filters.addEqualsFilter(I_M_Tour_Instance.COLUMN_M_Tour_ID, tourId);
 		}
 
@@ -97,7 +97,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 		// Filter by M_ShipperTransportation_ID
 		if (params.getM_ShipperTransportation_ID() > 0)
 		{
-			Check.assume(!Boolean.TRUE.equals(genericTourInstanceObj), "When filtering by M_ShipperTransportation_ID, genericTourInstance shall not be true: {0}", params);
+			Check.assume(!Boolean.TRUE.equals(genericTourInstanceObj), "When filtering by M_ShipperTransportation_ID, genericTourInstance shall not be true: {}", params);
 			filters.addEqualsFilter(I_M_Tour_Instance.COLUMN_M_ShipperTransportation_ID, params.getM_ShipperTransportation_ID());
 		}
 

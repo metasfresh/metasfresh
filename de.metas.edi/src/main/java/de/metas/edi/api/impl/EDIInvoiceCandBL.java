@@ -73,7 +73,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 		{
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_C_OrderLine.class, trxName);
 
-			Check.assumeNotNull(orderLine, "Invoice candidate {0} has a record ID that points to an invalid order line", candidate);
+			Check.assumeNotNull(orderLine, "Invoice candidate {} has a record ID that points to an invalid order line", candidate);
 
 			final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), de.metas.edi.model.I_C_Order.class);
 
@@ -85,7 +85,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 		{
 			final I_C_OLCand olcand = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_C_OLCand.class, trxName);
 
-			Check.assumeNotNull(olcand, "Invoice candidate {0} has a record ID that points to an invalid order candidate", candidate);
+			Check.assumeNotNull(olcand, "Invoice candidate {} has a record ID that points to an invalid order candidate", candidate);
 
 			final I_AD_InputDataSource inputDataSource = olcand.getAD_InputDataSource();
 			isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(inputDataSource);
@@ -96,7 +96,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 		{
 			final I_M_InOut inout = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOut.class, trxName);
 
-			Check.assumeNotNull(inout, "Invoice candidate {0} has a record ID that points to an invalid inout", candidate);
+			Check.assumeNotNull(inout, "Invoice candidate {} has a record ID that points to an invalid inout", candidate);
 
 			isEdiEnabled = inout.isEdiEnabled();
 		}
@@ -105,11 +105,11 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 		{
 			final I_M_InOutLine ioline =  InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
 			
-			Check.assumeNotNull(ioline,  "Invoice candidate {0} has a record ID that points to an invalid inout line", candidate);
+			Check.assumeNotNull(ioline,  "Invoice candidate {} has a record ID that points to an invalid inout line", candidate);
 			
 			final I_M_InOut inout = InterfaceWrapperHelper.create(ioline.getM_InOut(), de.metas.edi.model.I_M_InOut.class);
 			
-			Check.assumeNotNull(inout, "Inout Line {0}  cannot have M_InOut =  null", ioline);
+			Check.assumeNotNull(inout, "Inout Line {}  cannot have M_InOut =  null", ioline);
 			
 			isEdiEnabled = inout.isEdiEnabled();
 		}

@@ -113,10 +113,10 @@ public class WarehouseBL implements IWarehouseBL
 		Check.assumeNotNull(warehouse, "warehouse not null");
 		
 		final I_C_BPartner_Location bpLocation = warehouse.getC_BPartner_Location();
-		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {0}", warehouse);
+		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
 		
 		final I_C_Location location = bpLocation.getC_Location();
-		Check.assumeNotNull(location, "C_Location_ID not null for {0}, {1}", bpLocation, warehouse);
+		Check.assumeNotNull(location, "C_Location_ID not null for {}, {}", bpLocation, warehouse);
 		
 		return location;
 	}

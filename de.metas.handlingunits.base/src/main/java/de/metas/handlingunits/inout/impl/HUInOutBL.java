@@ -191,7 +191,7 @@ public class HUInOutBL implements IHUInOutBL
 	public void updateEffectiveValues(final I_M_InOutLine shipmentLine)
 	{
 		// avoid a huge development mistake
-		Check.assume(shipmentLine.getM_InOut().isSOTrx(), "{0} is a shipment line and not a receipt line", shipmentLine);
+		Check.assume(shipmentLine.getM_InOut().isSOTrx(), "{} is a shipment line and not a receipt line", shipmentLine);
 
 		// Skip packing materials line
 		if (shipmentLine.isPackagingMaterial())

@@ -46,8 +46,8 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	{
 		super();
 		Check.assumeNotNull(purchasePayableDoc, "purchasePayableDoc not null");
-		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {0}", purchasePayableDoc);
-		Check.assume(purchasePayableDoc.isVendorDocument(), "is vendor document: {0}", purchasePayableDoc);
+		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);
+		Check.assume(purchasePayableDoc.isVendorDocument(), "is vendor document: {}", purchasePayableDoc);
 		this.purchaseInvoicePayableDoc = purchasePayableDoc;
 	}
 

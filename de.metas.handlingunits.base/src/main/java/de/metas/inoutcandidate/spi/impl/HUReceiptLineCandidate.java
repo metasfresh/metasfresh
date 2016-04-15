@@ -163,7 +163,7 @@ import de.metas.inout.model.I_M_InOutLine;
 	 */
 	private final void init(final HUReceiptLinePartCandidate receiptLinePart)
 	{
-		Check.assume(isNew(), "this candidate shall be new in order to be able to initialize it: {0}", this);
+		Check.assume(isNew(), "this candidate shall be new in order to be able to initialize it: {}", this);
 
 		_subProducerBPartnerId = receiptLinePart.getSubProducer_BPartner_ID();
 		_asiAggregationKey = receiptLinePart.getAttributeStorageAggregationKey();

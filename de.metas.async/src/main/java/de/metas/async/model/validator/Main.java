@@ -58,7 +58,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		Check.assumeNull(client, "Registering async module on client level ({0}) is not allowed", client);
+		Check.assumeNull(client, "Registering async module on client level ({}) is not allowed", client);
 
 		super.onInit(engine, client);
 

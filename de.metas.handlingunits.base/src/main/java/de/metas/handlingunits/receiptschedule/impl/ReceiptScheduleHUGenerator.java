@@ -97,12 +97,12 @@ public class ReceiptScheduleHUGenerator
 
 	private final void assertConfigurable()
 	{
-		Check.assume(_configurable, "{0} is still configurable", this);
+		Check.assume(_configurable, "{} is still configurable", this);
 	}
 
 	private final void assertNotConfigurable()
 	{
-		Check.assume(!_configurable, "{0} is not configurable anymore", this);
+		Check.assume(!_configurable, "{} is not configurable anymore", this);
 	}
 
 	private final void markNotConfigurable()
@@ -124,7 +124,7 @@ public class ReceiptScheduleHUGenerator
 	private final Quantity getQtyToAllocateTarget()
 	{
 		Check.assumeNotNull(_qtyToAllocateTarget, "_qtyToAllocateTarget not null");
-		Check.assume(_qtyToAllocateTarget.signum() > 0, "qtyToAllocateTarget > 0 but it was {0}", _qtyToAllocateTarget);
+		Check.assume(_qtyToAllocateTarget.signum() > 0, "qtyToAllocateTarget > 0 but it was {}", _qtyToAllocateTarget);
 		return _qtyToAllocateTarget;
 	}
 
@@ -137,7 +137,7 @@ public class ReceiptScheduleHUGenerator
 	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
 		Check.assumeNotEmpty(receiptSchedules, "_receiptSchedules not empty");
-		Check.assume(receiptSchedules.size() == 1, "Only one receipt schedule but there were {0}", receiptSchedules);
+		Check.assume(receiptSchedules.size() == 1, "Only one receipt schedule but there were {}", receiptSchedules);
 		return receiptSchedules.get(0);
 	}
 
@@ -163,7 +163,7 @@ public class ReceiptScheduleHUGenerator
 	{
 		assertConfigurable();
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
-		Check.assume(!receiptSchedule.isPackagingMaterial(), "receipt schedule shall not be about packing materials: {0}", receiptSchedule);
+		Check.assume(!receiptSchedule.isPackagingMaterial(), "receipt schedule shall not be about packing materials: {}", receiptSchedule);
 		if (_receiptSchedules.contains(receiptSchedule))
 		{
 			return;
@@ -584,7 +584,7 @@ public class ReceiptScheduleHUGenerator
 		createInitialLUTUConfiguration(schedule);
 
 		final BigDecimal qtyToOrderCUs = schedule.getQtyOrdered(); // whole receipt schedule ordered Qty
-		Check.assume(schedule.getQtyMoved().signum() == 0, "No quantity was moved on {0}", schedule);
+		Check.assume(schedule.getQtyMoved().signum() == 0, "No quantity was moved on {}", schedule);
 		final I_C_UOM qtyToOrderCUsUOM = schedule.getC_UOM();
 		final BigDecimal qtyToRequestCUsPerChunk = calculateQtyToRequestPerChunk(qtyToOrderCUs, qtyToOrderCUsUOM);
 

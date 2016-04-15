@@ -63,7 +63,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 		Check.assumeNotNull(cc, "cc not null");
 		_costCollector = cc;
 
-		Check.assume(cc.getPP_Order_BOMLine_ID() > 0, "Order BOM Line shall be set to cost collector when receiving co/bu products: {0}", cc);
+		Check.assume(cc.getPP_Order_BOMLine_ID() > 0, "Order BOM Line shall be set to cost collector when receiving co/bu products: {}", cc);
 		_ppOrderBOMLine = InterfaceWrapperHelper.create(cc.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
 		Check.assumeNotNull(_ppOrderBOMLine, "ppOrderBOMLine not null");
 	}

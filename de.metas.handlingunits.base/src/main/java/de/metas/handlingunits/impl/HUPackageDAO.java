@@ -133,8 +133,8 @@ public class HUPackageDAO implements IHUPackageDAO
 		else if (mpackages.size() > 1)
 		{
 			Check.errorIf(true, HUException.class, "More than one package was found for HU."
-					+ "\n@M_HU_ID@: {0}"
-					+ "\n@M_Package_ID@: {1}", hu, mpackages);
+					+ "\n@M_HU_ID@: {}"
+					+ "\n@M_Package_ID@: {}", hu, mpackages);
 			return mpackages.get(0); // in case the system is configured to just log
 		}
 		else

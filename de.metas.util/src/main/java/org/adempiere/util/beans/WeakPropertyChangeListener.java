@@ -134,7 +134,7 @@ import org.adempiere.util.StringUtils;
 			if (DEBUG)
 			{
 				// TODO remove before integrating into base line!!
-				System.out.println(StringUtils.formatMessage("delegate of {0} is expired", this));
+				System.out.println(StringUtils.formatMessage("delegate of {} is expired", this));
 			}
 			return;
 		}
@@ -152,7 +152,7 @@ import org.adempiere.util.StringUtils;
 				if (DEBUG)
 				{
 				// TODO remove before integrating into base line!!
-				System.out.println(StringUtils.formatMessage("sourceObj of {0} is expired", this));
+				System.out.println(StringUtils.formatMessage("sourceObj of {} is expired", this));
 				}
 				return;
 			}

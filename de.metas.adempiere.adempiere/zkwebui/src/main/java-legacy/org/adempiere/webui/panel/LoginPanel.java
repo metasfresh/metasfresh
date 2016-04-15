@@ -504,7 +504,7 @@ public class LoginPanel extends Window implements EventListener
 		if (!Adempiere.getDatabaseVersion().equals(version))
 		{
             String AD_Message = "DatabaseVersionError";
-            //  Code assumes Database version {0}, but Database has Version {1}.
+            //  Code assumes Database version {}, but Database has Version {}.
             String msg = Msg.getMsg(ctx, AD_Message);   //  complete message
 			msg = MessageFormat.format(msg, new Object[] { Adempiere.getDatabaseVersion(), version });
             throw new ApplicationException(msg);

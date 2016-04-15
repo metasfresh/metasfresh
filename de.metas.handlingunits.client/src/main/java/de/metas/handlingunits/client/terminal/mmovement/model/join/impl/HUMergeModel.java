@@ -297,7 +297,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 		// Selected CUs (must be one and only one):
 		// for the time being, we want to merge one CU at a time. This may be changed in future
 		final List<ITerminalKey> selectedCUs = selectedChildrenKeys;
-		Check.assume(selectedCUs.size() == 1, "Only one selected CU to be merged at once ({0})", selectedCUs);
+		Check.assume(selectedCUs.size() == 1, "Only one selected CU to be merged at once ({})", selectedCUs);
 
 		final ITerminalKey selectedCU = selectedCUs.get(0);
 		Check.assumeInstanceOf(selectedCU, HUKey.class, "selectedCU");

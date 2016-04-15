@@ -61,7 +61,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
 
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
-		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {0}", lockOwner);
+		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
 	}
 
 	/** @return true if <code>lockOwnerActual</code> is matching the required one */

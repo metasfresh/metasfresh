@@ -73,11 +73,11 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 
 		final int adClientId = Env.getAD_Client_ID(ctx);
 
-		Check.assumeNotNull(context.getDunningDate(), "Context shall have DunningDate set: {0}", context);
+		Check.assumeNotNull(context.getDunningDate(), "Context shall have DunningDate set: {}", context);
 		final Date dunningDate = TimeUtil.getDay(context.getDunningDate());
 
 		final I_C_DunningLevel dunningLevel = context.getC_DunningLevel();
-		Check.assumeNotNull(dunningLevel, "Context shall have DuningLevel set: {0}", context);
+		Check.assumeNotNull(dunningLevel, "Context shall have DuningLevel set: {}", context);
 
 		final List<Object> params = new ArrayList<Object>();
 		final StringBuilder whereClause = new StringBuilder();

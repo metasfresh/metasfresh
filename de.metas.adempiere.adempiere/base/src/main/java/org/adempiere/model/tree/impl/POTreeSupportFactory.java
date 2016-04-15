@@ -83,7 +83,7 @@ public class POTreeSupportFactory implements IPOTreeSupportFactory
 		}
 		catch (NoSuchMethodException e)
 		{
-			Check.assume(false, "Param 'clazz' = {0} has a default constructor", clazz);
+			Check.assume(false, "Param 'clazz' = {} has a default constructor", clazz);
 		}
 		
 		// register

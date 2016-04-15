@@ -156,14 +156,14 @@ public class CalendarBL implements ICalendarBL
 	@Override
 	public void checkCorrectCalendar(final I_C_Calendar calendar)
 	{
-		Check.errorUnless(isCalendarNoOverlaps(calendar), "{0} has overlaps", calendar);
-		Check.errorUnless(isCalendarNoGaps(calendar), "{0} has gaps", calendar);
+		Check.errorUnless(isCalendarNoOverlaps(calendar), "{} has overlaps", calendar);
+		Check.errorUnless(isCalendarNoGaps(calendar), "{} has gaps", calendar);
 
 		final List<I_C_Year> years = Services.get(ICalendarDAO.class).retrieveYearsOfCalendar(calendar);
 
 		for (final I_C_Year year : years)
 		{
-			Check.errorUnless(isLengthOneYear(year), "{0} doesn't have the length 1 year", year);
+			Check.errorUnless(isLengthOneYear(year), "{} doesn't have the length 1 year", year);
 		}
 
 	}

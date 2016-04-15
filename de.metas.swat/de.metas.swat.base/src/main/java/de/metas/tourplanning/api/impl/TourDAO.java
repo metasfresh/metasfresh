@@ -126,7 +126,7 @@ public class TourDAO implements ITourDAO
 	{
 		Check.assumeNotNull(dateFrom, "dateFrom not null");
 		Check.assumeNotNull(dateTo, "dateTo not null");
-		Check.assume(dateFrom.compareTo(dateTo) <= 0, "dateFrom({0}) <= dateTo({1})", dateFrom, dateTo);
+		Check.assume(dateFrom.compareTo(dateTo) <= 0, "dateFrom({}) <= dateTo({})", dateFrom, dateTo);
 
 		//
 		// Retrieve all tour versions in our scope

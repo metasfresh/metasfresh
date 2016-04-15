@@ -47,7 +47,7 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 
 	public MutableAllocationResult(final BigDecimal qtyToAllocate)
 	{
-		Check.assume(qtyToAllocate.signum() >= 0, "qty >= 0 ({0})");
+		Check.assume(qtyToAllocate.signum() >= 0, "qty >= 0 ({})");
 
 		qtyToAllocateInitial = qtyToAllocate;
 		this.qtyToAllocate = qtyToAllocate;
@@ -129,7 +129,7 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 	{
 		final BigDecimal qtyToAllocateNew = qtyToAllocate.subtract(qtyAllocated);
 		Check.assume(qtyToAllocateNew.signum() >= 0,
-				"Cannot allocate {0} when qtyToAllocate is {1}", qtyAllocated, qtyToAllocate);
+				"Cannot allocate {} when qtyToAllocate is {}", qtyAllocated, qtyToAllocate);
 
 		qtyToAllocate = qtyToAllocateNew;
 	}

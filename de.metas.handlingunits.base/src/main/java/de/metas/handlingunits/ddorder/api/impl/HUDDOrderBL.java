@@ -60,7 +60,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(ddOrderLine);
 
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(ddOrderLine);
-		Check.assumeNotEmpty(hus, "Exist HUs assigned to {0}", ddOrderLine);
+		Check.assumeNotEmpty(hus, "Exist HUs assigned to {}", ddOrderLine);
 
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();

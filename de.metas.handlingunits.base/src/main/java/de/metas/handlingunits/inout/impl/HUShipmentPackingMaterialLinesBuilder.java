@@ -90,7 +90,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	public void setM_InOut(final I_M_InOut shipment)
 	{
 		Check.assumeNotNull(shipment, "shipment not null");
-		Check.assume(shipment.isSOTrx(), "InOut shall be a shipment: {0}", shipment);
+		Check.assume(shipment.isSOTrx(), "InOut shall be a shipment: {}", shipment);
 		assertConfigurable();
 
 		_shipment = shipment;
@@ -233,7 +233,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	private final void collectHUs(final I_M_InOutLine shipmentLine)
 	{
-		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {0}", packingMaterialsCollector);
+		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
 
 		final boolean initializeOverrides = isUpdateOverrideValues();
 

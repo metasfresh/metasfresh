@@ -114,7 +114,7 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 				(String)null, // defaultValue
 				Env.getAD_Client_ID(Env.getCtx()) // AD_Client_ID
 				);
-		Check.assumeNotNull(serverUrl, "SysConfig {0} is set", RestHttpArchiveEndpoint.SYSCONFIG_ServerUrl);
+		Check.assumeNotNull(serverUrl, "SysConfig {} is set", RestHttpArchiveEndpoint.SYSCONFIG_ServerUrl);
 		return serverUrl;
 	}
 

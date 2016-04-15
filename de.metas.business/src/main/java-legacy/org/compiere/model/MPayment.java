@@ -622,14 +622,14 @@ public final class MPayment extends X_C_Payment
 			{
 				final I_C_Invoice inv = getC_Invoice();
 				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {0} has C_BPartner_ID={1}, but invoice {2} has C_BPartner_ID={3}",
+						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
 						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
 			}
 			if (getC_Order_ID() != 0)
 			{
 				final I_C_Order ord = getC_Order();
 				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {0} has C_BPartner_ID={1}, but order {2} has C_BPartner_ID={3}",
+						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
 						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
 			}
 		}
@@ -2134,8 +2134,8 @@ public final class MPayment extends X_C_Payment
 		final BigDecimal invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, false);
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do
-		Check.errorIf(invoiceOpenAmt.signum() < 0, "{0} has a negative open amount = {1}", invoice, invoiceOpenAmt);
-		Check.errorIf(getPayAmt().signum() < 0, "{0} has a negative PayAmt = {1}", this, getPayAmt());
+		Check.errorIf(invoiceOpenAmt.signum() < 0, "{} has a negative open amount = {}", invoice, invoiceOpenAmt);
+		Check.errorIf(getPayAmt().signum() < 0, "{} has a negative PayAmt = {}", this, getPayAmt());
 
 		final BigDecimal allocationAmt = getPayAmt().min(invoiceOpenAmt);
 

@@ -73,7 +73,7 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
 	{
-		Check.assumeNotEmpty(order.getPOReference(), "C_Order {0} has a not-empty POReference", order);
+		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -95,7 +95,7 @@ public class DesadvBL implements IDesadvBL
 			final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadv, orderLine);
 			Check.errorIf(
 					desadvLine.getM_Product_ID() != orderLine.getM_Product_ID(),
-					"EDI_DesadvLine {0} of EDI_Desadv {1} has M_Product_ID {2} and C_OrderLine {3} of C_Order {4} has M_Product_ID {5}, but both have POReference {6} and Line {7} ",
+					"EDI_DesadvLine {} of EDI_Desadv {} has M_Product_ID {} and C_OrderLine {} of C_Order {} has M_Product_ID {}, but both have POReference {} and Line {} ",
 					desadvLine, desadv, desadvLine.getM_Product_ID(),
 					orderLine, order, orderLine.getM_Product_ID(),
 					order.getPOReference(), orderLine.getLine()
@@ -155,7 +155,7 @@ public class DesadvBL implements IDesadvBL
 
 		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
 		// instead, just don't set the values and let the user fix it in the DESADV window later on
-		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {0} and M_Product {1}", inOut.getC_BPartner(), inOutLine.getM_Product());
+		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {} and M_Product {}", inOut.getC_BPartner(), inOutLine.getM_Product());
 		if (bPartnerProduct != null)
 		{
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
@@ -279,7 +279,7 @@ public class DesadvBL implements IDesadvBL
 			final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine);
 
 			// don't throw an error; it might prevent users from creating shipments
-			// Check.errorIf(topLevelHUs.size() != 1, "Expecting one top level HU for M_InOutLine {0}, but got this: {1}", inOutLine, topLevelHUs);
+			// Check.errorIf(topLevelHUs.size() != 1, "Expecting one top level HU for M_InOutLine {}, but got this: {}", inOutLine, topLevelHUs);
 			if (topLevelHUs.size() == 1)
 			{
 				final I_M_HU hu = topLevelHUs.get(0);
@@ -289,7 +289,7 @@ public class DesadvBL implements IDesadvBL
 
 				final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18Attribute);
 				// don't throw an error; it might prevent users from creating shipments
-				// Check.errorIf(sscc18HUAttribute == null, "M_HU {0} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {2})", hu, sscc18Attribute);
+				// Check.errorIf(sscc18HUAttribute == null, "M_HU {} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {})", hu, sscc18Attribute);
 				if (sscc18HUAttribute != null)
 				{
 					desadvLine.setIPA_SSCC18(sscc18HUAttribute.getValue());

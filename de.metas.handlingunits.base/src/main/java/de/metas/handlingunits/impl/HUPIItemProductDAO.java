@@ -385,7 +385,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		}
 		else
 		{
-			Check.assume(!queryVO.isAllowDifferentCapacities(), "'AllowDifferentCapacities' shall be false when 'IsOneConfigurationPerPI' is false: {0}", queryVO);
+			Check.assume(!queryVO.isAllowDifferentCapacities(), "'AllowDifferentCapacities' shall be false when 'IsOneConfigurationPerPI' is false: {}", queryVO);
 		}
 
 		return filters;

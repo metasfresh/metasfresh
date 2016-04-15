@@ -58,7 +58,7 @@ public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 
 		if (pricingCtx.getM_PriceList_ID() <= 0)
 		{
-			final String msg = "pricingCtx {0} contains no priceList";
+			final String msg = "pricingCtx {} contains no priceList";
 			ILoggable.THREADLOCAL.getLoggable().addLog(msg, pricingCtx);
 			log.error(msg, pricingCtx);
 			Trace.printStack();

@@ -191,7 +191,7 @@ public class PricingBL implements IPricingBL
 	
 				// while we are at it, do a little sanity check and also set the PLV-ID
 				Check.assume(pricingCtxToUse.getM_PriceList_Version_ID()<=0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
-						"Given PricingContext {0} has M_PriceList_Version={1}, but from M_PricingSystem={2}, Product={3}, Country={4} and IsSOTrx={5}, we computed a different M_PriceList_Version={6}",
+						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtxToUse, // 0
 						pricingCtxToUse.getM_PriceList_Version(), // 1
 						pricingCtxToUse.getM_PricingSystem(), // 2

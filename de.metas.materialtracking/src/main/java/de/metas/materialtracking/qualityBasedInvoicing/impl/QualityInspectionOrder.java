@@ -112,7 +112,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		{
 			final I_PP_Order ppOrder = getPP_Order();
 			_materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
-			Check.assumeNotNull(_materialTracking, "material tracking exists for {0}", ppOrder);
+			Check.assumeNotNull(_materialTracking, "material tracking exists for {}", ppOrder);
 		}
 
 		return _materialTracking;
@@ -331,7 +331,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 				continue;
 			}
 
-			Check.assumeNull(productionMaterialFound, "Only one production material shall be for product {0}", product);
+			Check.assumeNull(productionMaterialFound, "Only one production material shall be for product {}", product);
 			productionMaterialFound = productionMaterial;
 		}
 

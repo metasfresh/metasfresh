@@ -49,7 +49,7 @@ import de.metas.handlingunits.storage.impl.MTransactionProductStorage;
 		);
 
 		Check.assumeNotNull(ioLine, "ioLine not null");
-		Check.assume(ioLine.getM_InOutLine_ID() > 0, "ioLine({0}) is saved", ioLine);
+		Check.assume(ioLine.getM_InOutLine_ID() > 0, "ioLine({}) is saved", ioLine);
 		this.ioLine = InterfaceWrapperHelper.create(ioLine, I_M_InOutLine.class);
 	}
 

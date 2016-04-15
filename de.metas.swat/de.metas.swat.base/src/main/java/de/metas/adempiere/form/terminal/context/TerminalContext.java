@@ -270,7 +270,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	{
 		Check.assumeNotNull(clazz, "Param 'clazz' not null");
 		Check.assumeNotNull(implementation, "Param 'implementation' not null");
-		Check.assume(clazz.isInterface(), "Param 'clazz' shall be an interface: {0}", clazz);
+		Check.assume(clazz.isInterface(), "Param 'clazz' shall be an interface: {}", clazz);
 
 		//
 		// If our service is an ITerminalContextService, configure it
@@ -298,7 +298,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public <T> T getService(final Class<T> clazz)
 	{
 		Check.assumeNotNull(clazz, "Param 'clazz' not null");
-		Check.assume(clazz.isInterface(), "Param 'clazz' shall be an interface: {0}", clazz);
+		Check.assume(clazz.isInterface(), "Param 'clazz' shall be an interface: {}", clazz);
 
 		//
 		// Get service implementation from already registered services

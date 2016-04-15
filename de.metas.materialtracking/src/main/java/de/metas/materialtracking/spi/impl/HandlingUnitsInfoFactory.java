@@ -82,7 +82,7 @@ public class HandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			@Override
 			public IHandlingUnitsInfo add(IHandlingUnitsInfo infoToAdd)
 			{
-				Check.assume(Check.equals(infoToAdd.getTUName(), this.getTUName()), "infoToAdd {0} has a TUName that differs from ours {1}", infoToAdd, this);
+				Check.assume(Check.equals(infoToAdd.getTUName(), this.getTUName()), "infoToAdd {} has a TUName that differs from ours {}", infoToAdd, this);
 
 				return new PlainHandlingUnitsInfo(
 						ingored.getTUName(),

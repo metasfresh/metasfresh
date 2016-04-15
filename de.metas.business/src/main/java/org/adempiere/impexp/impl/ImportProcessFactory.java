@@ -68,7 +68,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcess(final Class<ImportRecordType> modelImportClass)
 	{
 		final IImportProcess<ImportRecordType> importProcess = newImportProcessOrNull(modelImportClass);
-		Check.assumeNotNull(importProcess, "importProcess not null for {0}", modelImportClass);
+		Check.assumeNotNull(importProcess, "importProcess not null for {}", modelImportClass);
 		return importProcess;
 	}
 
@@ -116,14 +116,14 @@ public class ImportProcessFactory implements IImportProcessFactory
 	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(final String tableName)
 	{
 		final IImportProcess<ImportRecordType> importProcess = newImportProcessForTableNameOrNull(tableName);
-		Check.assumeNotNull(importProcess, "importProcess not null for {0}", tableName);
+		Check.assumeNotNull(importProcess, "importProcess not null for {}", tableName);
 		return importProcess;
 	}
 
 	@Override
 	public IAsyncImportProcessBuilder newAsyncImportProcessBuilder()
 	{
-		Check.assumeNotNull(asyncImportProcessBuilderSupplier, "A supplier for {0} shall be registered first", IAsyncImportProcessBuilder.class);
+		Check.assumeNotNull(asyncImportProcessBuilderSupplier, "A supplier for {} shall be registered first", IAsyncImportProcessBuilder.class);
 		return asyncImportProcessBuilderSupplier.get();
 	}
 

@@ -167,7 +167,7 @@ public class C_Order implements ModelValidator
 
 		Check.assume(
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
-				"{0} has DocStatus={1}", newSc, newSc.getDocStatus());
+				"{} has DocStatus={}", newSc, newSc.getDocStatus());
 		logger.info("Created and completed {}", newSc);
 	}
 

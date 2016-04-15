@@ -103,7 +103,7 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 
 	protected void setQtyTUInner(final int qtyTU)
 	{
-		Check.errorIf(!_isQtyWritable, "This instance {0} is read-only", this);
+		Check.errorIf(!_isQtyWritable, "This instance {} is read-only", this);
 		_qtyTU = qtyTU;
 	}
 

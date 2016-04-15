@@ -122,7 +122,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 					break;
 				default:
 					// shouldn't happen as long as the AD and code are in sync
-					Check.errorIf(true, "Unexpected M_QualityInsp_LagerKonf_Month_Adj.QualityAdjustmentMonth={0}", adj.getQualityAdjustmentMonth());
+					Check.errorIf(true, "Unexpected M_QualityInsp_LagerKonf_Month_Adj.QualityAdjustmentMonth={}", adj.getQualityAdjustmentMonth());
 					monthNumber = -1;
 			}
 			final BigDecimal fee = adj.getQualityAdj_Amt_Per_UOM();

@@ -74,7 +74,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor
 								return true;
 							}
 						}));
-		Check.assume(poolSize > 0, "poolSize={0} > 0", poolSize);
+		Check.assume(poolSize > 0, "poolSize={} > 0", poolSize);
 	}
 
 	@Override

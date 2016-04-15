@@ -116,7 +116,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		_materialTrackingDocuments = materialTrackingdocuments;
 
 		_qiOrder = materialTrackingdocuments.getQualityInspectionOrderOrNull();
-		Check.assumeNotNull(_qiOrder, "qiOrder of {0} is not null", materialTrackingdocuments);
+		Check.assumeNotNull(_qiOrder, "qiOrder of {} is not null", materialTrackingdocuments);
 	}
 
 	@Override
@@ -162,16 +162,16 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		//
 		// Validate the invoiceable line
 		final IQualityInvoiceLine invoiceableLine = invoiceLineGroup.getInvoiceableLine();
-		Check.assumeNotNull(invoiceableLine, "invoiceLineGroup shall have invoiceable line set: {0}", invoiceLineGroup);
-		Check.assumeNotNull(invoiceableLine.getM_Product(), "invoiceable line's product not null: {0}", invoiceLineGroup);
-		Check.assumeNotNull(invoiceableLine.getC_UOM(), "invoiceable line's uom not null: {0}", invoiceLineGroup);
-		Check.assumeNotNull(invoiceableLine.getQty(), "invoiceable line's quantity not null: {0}", invoiceLineGroup);
+		Check.assumeNotNull(invoiceableLine, "invoiceLineGroup shall have invoiceable line set: {}", invoiceLineGroup);
+		Check.assumeNotNull(invoiceableLine.getM_Product(), "invoiceable line's product not null: {}", invoiceLineGroup);
+		Check.assumeNotNull(invoiceableLine.getC_UOM(), "invoiceable line's uom not null: {}", invoiceLineGroup);
+		Check.assumeNotNull(invoiceableLine.getQty(), "invoiceable line's quantity not null: {}", invoiceLineGroup);
 
 		//
 		// Validate the invoiceable line pricing
 		final IPricingResult pricingResult = invoiceableLine.getPrice();
-		Check.assumeNotNull(pricingResult, "invoiceable line's price not null: {0}", invoiceLineGroup);
-		Check.assumeNotNull(pricingResult.isCalculated(), "invoiceable line's price shall be calculated: {0}", invoiceLineGroup);
+		Check.assumeNotNull(pricingResult, "invoiceable line's price not null: {}", invoiceLineGroup);
+		Check.assumeNotNull(pricingResult.isCalculated(), "invoiceable line's price shall be calculated: {}", invoiceLineGroup);
 
 		//
 		// Add it to the list
@@ -350,7 +350,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IQualityInspectionOrder qualityInspectionOrder = _materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// if qualityInspectionOrder was null, we shouldn't be here
-		Check.assumeNotNull(qualityInspectionOrder, "the IQualityInspectionOrder of IMAterialTrackingDocuments {0} are not null", _materialTrackingDocuments);
+		Check.assumeNotNull(qualityInspectionOrder, "the IQualityInspectionOrder of IMAterialTrackingDocuments {} are not null", _materialTrackingDocuments);
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
@@ -452,7 +452,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 						.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
 
 		// this check is mostly a guard against poorly set up AITs
-		Check.errorIf(allProductionOrders.isEmpty(), "MaterialTrackingDocuments {0} contains no IQualityInspectionOrders for plv {1}",
+		Check.errorIf(allProductionOrders.isEmpty(), "MaterialTrackingDocuments {} contains no IQualityInspectionOrders for plv {}",
 				_materialTrackingDocuments, getPricingContext().getM_PriceList_Version());
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
@@ -546,7 +546,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			}
 
 			final QualityInvoiceLineGroup invoiceLineGroup = date2InvoiceLineGroup.get(dateOfProduction); // not null because we just created them
-			Check.errorIf(invoiceLineGroup == null, "Missing invoiceLineGroup for date {0}", dateOfProduction);
+			Check.errorIf(invoiceLineGroup == null, "Missing invoiceLineGroup for date {}", dateOfProduction);
 
 			final boolean firstItem = lastInvoiceLineGroup == null;
 			if (firstItem && isInvoiceRegularOrderForDate(dateOfProduction))
@@ -1159,7 +1159,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 
 		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getC_TaxCategory_ID() <= 0,
-				"pricingResult {0} which was created from pricingCtx {1} has calculated=false and/or least contains no C_TaxCategory_ID; the referenced model is {2}",
+				"pricingResult {} which was created from pricingCtx {} has calculated=false and/or least contains no C_TaxCategory_ID; the referenced model is {}",
 				pricingResult, pricingCtx, pricingCtx.getReferencedObject());
 
 		final int pricePrecision = pricingResult.getPrecision();
@@ -1195,7 +1195,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IPricingResult pricingResult = line.getPrice();
 		Check.assumeNotNull(pricingResult, "pricingResult not null");
-		Check.assume(pricingResult.isCalculated(), "Price is calculated for {0}", line);
+		Check.assume(pricingResult.isCalculated(), "Price is calculated for {}", line);
 
 		final BigDecimal price = pricingResult.getPriceStd();
 		final int pricePrecision = pricingResult.getPrecision();

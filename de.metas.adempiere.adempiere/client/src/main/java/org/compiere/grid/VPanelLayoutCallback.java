@@ -68,7 +68,7 @@ class VPanelLayoutCallback extends LayoutCallback
 	public static final VPanelLayoutCallback forContainer(final JComponent container)
 	{
 		final VPanelLayoutCallback layoutCallback = (VPanelLayoutCallback)container.getClientProperty(PROPERTYNAME_LayoutCallback);
-		Check.assumeNotNull(layoutCallback, "layoutCallback shall be configured for {0}", container);
+		Check.assumeNotNull(layoutCallback, "layoutCallback shall be configured for {}", container);
 		return layoutCallback;
 	}
 
@@ -80,7 +80,7 @@ class VPanelLayoutCallback extends LayoutCallback
 	 */
 	public static final void setup(final JComponent container, final VPanelLayoutCallback layoutCallback)
 	{
-		Check.assumeNull(container.getClientProperty(PROPERTYNAME_LayoutCallback), "layoutCallback not already configured for {0}", container);
+		Check.assumeNull(container.getClientProperty(PROPERTYNAME_LayoutCallback), "layoutCallback not already configured for {}", container);
 		final MigLayout layout = (MigLayout)container.getLayout();
 		layout.addLayoutCallback(layoutCallback);
 		container.putClientProperty(PROPERTYNAME_LayoutCallback, layoutCallback);

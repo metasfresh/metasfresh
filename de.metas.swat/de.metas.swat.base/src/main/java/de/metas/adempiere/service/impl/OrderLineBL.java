@@ -449,7 +449,7 @@ public class OrderLineBL implements IOrderLineBL
 			final BigDecimal qtyEntered,
 			final BigDecimal factor)
 	{
-		Check.assumeNotNull(qtyEntered, "Param qtyEntered not null. Param ol={0}", ol);
+		Check.assumeNotNull(qtyEntered, "Param qtyEntered not null. Param ol={}", ol);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final I_C_Order order = ol.getC_Order();
@@ -638,9 +638,9 @@ public class OrderLineBL implements IOrderLineBL
 			else
 			{
 				// checks to avoid unexplained NPEs
-				Check.errorIf(orderLine.getC_Order_ID() <= 0, "Optional 'precision' param was not set but param 'orderLine' {0} has no order", orderLine);
+				Check.errorIf(orderLine.getC_Order_ID() <= 0, "Optional 'precision' param was not set but param 'orderLine' {} has no order", orderLine);
 				final I_C_Order order = orderLine.getC_Order();
-				Check.errorIf(order.getM_PriceList_ID() <= 0, "Optional 'precision' param was not set but the order of param 'orderLine' {0} has no price list", orderLine);
+				Check.errorIf(order.getM_PriceList_ID() <= 0, "Optional 'precision' param was not set but the order of param 'orderLine' {} has no price list", orderLine);
 
 				precisionToUse = order.getM_PriceList().getPricePrecision();
 			}

@@ -951,7 +951,7 @@ public class InterfaceWrapperHelper
 		else if (POJOWrapper.isHandled(from) && POJOWrapper.isHandled(to))
 		{
 			// NOTE: commented out because some tests are failing because of this
-			// Check.assume(!honorIsCalculated, "honorIsCalculated=true not supported by {0}", POJOWrapper.class);
+			// Check.assume(!honorIsCalculated, "honorIsCalculated=true not supported by {}", POJOWrapper.class);
 
 			final POJOWrapper fromWrapper = POJOWrapper.getWrapper(from);
 			final POJOWrapper toWrapper = POJOWrapper.getWrapper(to);
@@ -1821,7 +1821,7 @@ public class InterfaceWrapperHelper
 
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		Check.assumeNotNull(poInfo, "poInfo not null for {0}", tableName); // shall not happen
+		Check.assumeNotNull(poInfo, "poInfo not null for {}", tableName); // shall not happen
 
 		return poInfo.getColumnNames();
 	}

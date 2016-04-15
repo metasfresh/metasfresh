@@ -131,7 +131,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		final OrderLinePackingMaterialDocumentLineSource orderLineSource = toImpl(source);
 		final I_C_OrderLine orderLine = orderLineSource.getC_OrderLine();
 		Check.assume(order.getC_Order_ID() == orderLine.getC_Order_ID(),
-				"Order line {0} shall be part of {1}",
+				"Order line {} shall be part of {}",
 				orderLine, order);
 
 	}
@@ -190,7 +190,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		final OrderLinePackingMaterialDocumentLine orderLinePMLine = toImpl(pmLine);
 
 		final I_C_OrderLine regularOrderLine = orderLineSource.getC_OrderLine();
-		Check.assume(regularOrderLine.getC_OrderLine_ID() > 0, "Regular order line shall be already saved: {0}", regularOrderLine);
+		Check.assume(regularOrderLine.getC_OrderLine_ID() > 0, "Regular order line shall be already saved: {}", regularOrderLine);
 
 		final I_C_OrderLine pmOrderLine;
 		if (orderLinePMLine == null)

@@ -101,12 +101,12 @@ public class InOutBL implements IInOutBL
 
 		final int pricingSystemId = pricingSystem.getM_PricingSystem_ID();
 
-		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={0}", inOut.getM_InOut_ID());
+		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
 		final I_M_PriceList priceList = Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx, trxName);
 
 		Check.errorIf(priceList == null,
-				"No price list found for M_InOutLine_ID {0}; M_InOut.M_PricingSystem_ID={1}, M_InOut.C_BPartner_Location_ID={2}, M_InOut.IsSOTrx={3}",
+				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.IsSOTrx={}",
 				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx);
 
 		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
@@ -195,7 +195,7 @@ public class InOutBL implements IInOutBL
 			return false;
 		}
 
-		Check.assume(recordId != recordReversalId, "record id({0}) and reversal record id({1}) shall not be the same", recordId, recordReversalId);
+		Check.assume(recordId != recordReversalId, "record id({}) and reversal record id({}) shall not be the same", recordId, recordReversalId);
 
 		if (recordId < recordReversalId)
 		{

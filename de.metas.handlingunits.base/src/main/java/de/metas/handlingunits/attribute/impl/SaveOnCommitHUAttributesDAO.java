@@ -78,7 +78,7 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 		final ITrx trx = trxManager.getTrx(trxName);
-		Check.assumeNotNull(trx, "trx not null for trxName={0}", trxName);
+		Check.assumeNotNull(trx, "trx not null for trxName={}", trxName);
 
 		//
 		// Get an existing storage DAO from transaction.

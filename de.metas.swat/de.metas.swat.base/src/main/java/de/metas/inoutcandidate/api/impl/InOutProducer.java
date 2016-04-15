@@ -408,7 +408,7 @@ public class InOutProducer implements IInOutProducer
 	{
 		final I_M_InOut currentReceipt = getCurrentReceipt();
 		final String headerAggregationKey = InterfaceWrapperHelper.getDynAttribute(currentReceipt, DYNATTR_HeaderAggregationKey);
-		Check.assumeNotEmpty(headerAggregationKey, "HeaderAggregationKey should be set for {0}", currentReceipt);
+		Check.assumeNotEmpty(headerAggregationKey, "HeaderAggregationKey should be set for {}", currentReceipt);
 		return headerAggregationKey;
 	}
 

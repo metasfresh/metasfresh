@@ -56,13 +56,13 @@ public class PRTCPrintPackageDataTypeBean extends PRTCPrintPackageDataTypeConver
 		final Integer sessionId = (Integer)inMessage.getHeader(PRTRestServiceConstants.PARAM_SessionId);
 		final String transactionId = (String)inMessage.getHeader(PRTRestServiceConstants.PARAM_TransactionId);
 
-		logger.log(Level.FINE, "IN transactionId={0}", transactionId);
+		logger.log(Level.FINE, "IN transactionId={}", transactionId);
 
 		final PRTCPrintPackageDataType printPackage = createPRTCPrintPackageDataTypeRequest(sessionId, transactionId);
 
 		final JAXBElement<PRTCPrintPackageDataType> outBody = factory.createPRTCPrintPackageData(printPackage);
 
-		logger.log(Level.FINE, "OUT body: {0}", outBody);
+		logger.log(Level.FINE, "OUT body: {}", outBody);
 
 		exchange.getOut().setBody(outBody);
 
@@ -95,7 +95,7 @@ public class PRTCPrintPackageDataTypeBean extends PRTCPrintPackageDataTypeConver
 				.withSeparator("\r\n", 76)
 				.encode(printData);
 
-		logger.log(Level.FINE, "OUT body: {0}", encodedPrintData);
+		logger.log(Level.FINE, "OUT body: {}", encodedPrintData);
 
 		exchange
 				.getOut()

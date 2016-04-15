@@ -91,7 +91,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		@Override
 		public void onCommand(Object command)
 		{
-			logger.trace("Transport command: {0}", command);
+			logger.trace("Transport command: {}", command);
 		}
 
 		@Override
@@ -263,7 +263,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final Session session = getSession();
 		final Topic topic = session.createTopic(topicName);
 		final MessageConsumer consumer = session.createConsumer(topic);
-		logger.debug("Message consumer for topic {0} created: {1}", new Object[] { topicName, consumer });
+		logger.debug("Message consumer for topic {} created: {}", new Object[] { topicName, consumer });
 		return consumer;
 	}
 
@@ -323,7 +323,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final Session session = getSession();
 		final Topic topic = session.createTopic(topicName);
 		final MessageProducer producer = session.createProducer(topic);
-		logger.debug("Message producer created: {0}", producer);
+		logger.debug("Message producer created: {}", producer);
 		return producer;
 	}
 
@@ -381,7 +381,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			final MessageProducer jmsProducer = getTopicProducer(topicName);
 			jmsProducer.send(jmsMessage);
 
-			logger.debug("JMS: send event: {0}", event);
+			logger.debug("JMS: send event: {}", event);
 		}
 		catch (final JMSException e)
 		{
@@ -483,14 +483,14 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 				}
 
 				eventAsString = extractText(jmsMessage);
-				logger.trace("Received message(text): \n{0}", eventAsString);
+				logger.trace("Received message(text): \n{}", eventAsString);
 
 				final Event event = eventSerializer.fromString(eventAsString);
-				logger.trace("Received event: {0}", event);
+				logger.trace("Received event: {}", event);
 
 				// Flag the event that it was received by JMS
 				event.markReceivedByEventBusId(eventBusId);
-				logger.debug("JMS: received event: {0}", event);
+				logger.debug("JMS: received event: {}", event);
 
 				// Forward the event to bus
 				eventBus.postEvent(event);

@@ -62,7 +62,7 @@ import de.metas.lock.spi.ILockDatabase;
 		this.lockDatabase = lockDatabase;
 
 		Check.assumeNotNull(owner, "owner not null");
-		Check.assume(owner.isRealOwnerOrNoOwner(), "owner shall be a real owner or no owner: {0}", owner);
+		Check.assume(owner.isRealOwnerOrNoOwner(), "owner shall be a real owner or no owner: {}", owner);
 		this.owner = owner;
 
 		this.isAutoCleanup = isAutoCleanup;
@@ -176,7 +176,7 @@ import de.metas.lock.spi.ILockDatabase;
 	private final void assertHasRealOwner()
 	{
 		final LockOwner owner = getOwner();
-		Check.assume(owner.isRealOwner(), "lock {0} shall have an owner", this);
+		Check.assume(owner.isRealOwner(), "lock {} shall have an owner", this);
 	}
 
 	@Override

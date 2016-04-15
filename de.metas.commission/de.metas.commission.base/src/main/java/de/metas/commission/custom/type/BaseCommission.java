@@ -187,7 +187,7 @@ public abstract class BaseCommission implements ICommissionType
 		}
 
 
-		Check.assume(X_C_AdvComSystem_Type.USEGROSSORNETPOINTS_Netto.equals(comSystemType.getUseGrossOrNetPoints()), "C_AdvComSystem_Type='NET' (not {0})", comSystemType.getUseGrossOrNetPoints());
+		Check.assume(X_C_AdvComSystem_Type.USEGROSSORNETPOINTS_Netto.equals(comSystemType.getUseGrossOrNetPoints()), "C_AdvComSystem_Type='NET' (not {})", comSystemType.getUseGrossOrNetPoints());
 
 		final BigDecimal discount = fieldAccessBL.getDiscount(po, true);
 		return Services.get(IOrderLineBL.class).subtractDiscount(grossCommissionPoints, discount, 2);

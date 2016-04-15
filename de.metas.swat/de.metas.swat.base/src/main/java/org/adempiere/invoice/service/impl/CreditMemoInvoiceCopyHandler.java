@@ -183,11 +183,11 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			}
 			else
 			{
-				Check.errorIf(true, "On evaluating {0}, we have creditMemoGrandTotal={1} and openAmt={2}", invoiceTax, creditMemoGrandTotal, openAmt);
+				Check.errorIf(true, "On evaluating {}, we have creditMemoGrandTotal={} and openAmt={}", invoiceTax, creditMemoGrandTotal, openAmt);
 			}
 		}
 
-		Check.assume(creditMemoGrandTotal.compareTo(openAmt) == 0, "{0} = {1}", creditMemoGrandTotal, openAmt);
+		Check.assume(creditMemoGrandTotal.compareTo(openAmt) == 0, "{} = {}", creditMemoGrandTotal, openAmt);
 
 		//
 		// Now that we have computed the tax values where we need to end up with our credit memo,
@@ -246,7 +246,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 				}
 				else
 				{
-					Check.errorIf(true, "invoiceTax {0} has has targetSum={1}, but the credit memo lines for this tax have sumPerTax={2} (difference may not be more than {3})",
+					Check.errorIf(true, "invoiceTax {} has has targetSum={}, but the credit memo lines for this tax have sumPerTax={} (difference may not be more than {})",
 							invoiceTax, targetSum, sumPerTax, smallestAmt);
 				}
 			}
@@ -278,14 +278,14 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		if (!creditCtx.completeAndAllocate())
 		{
 			Services.get(IDocActionBL.class).processEx(creditMemo, DocAction.ACTION_Prepare, DocAction.STATUS_InProgress);
-			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{0} has GrandTotal={1}", creditMemo, openAmt);
+			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
 			// nothing left to do
 			return;
 		}
 		
 		// make sure the grand total of the credit memo equals the open AMT of the invoice
-		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{0} has GrandTotal={1}", creditMemo, openAmt);
+		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
 		Services.get(IDocActionBL.class).processEx(creditMemo, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 

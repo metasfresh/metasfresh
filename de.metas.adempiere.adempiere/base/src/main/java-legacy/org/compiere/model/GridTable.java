@@ -2306,7 +2306,7 @@ public class GridTable extends AbstractTableModel
 		if (multiRowWHERE != null)
 			return multiRowWHERE.toString();
 		
-		log.warn("No key Found on {0}. Returning NULL.", this);
+		log.warn("No key Found on {}. Returning NULL.", this);
 		return null;
 	}	//	getWhereClause
 	

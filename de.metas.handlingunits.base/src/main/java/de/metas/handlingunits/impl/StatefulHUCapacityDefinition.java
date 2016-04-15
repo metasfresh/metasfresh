@@ -163,7 +163,7 @@ import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 	public Quantity addQty(final Quantity qtyToAdd, final Boolean allowCapacityOverload)
 	{
 		Check.assumeNotNull(qtyToAdd, "qtyToAdd not null");
-		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd({0}) >= 0", qtyToAdd);
+		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd({}) >= 0", qtyToAdd);
 
 		final BigDecimal qtyToAdd_Qty = qtyToAdd.getQty();
 		final I_C_UOM qtyToAdd_UOM = qtyToAdd.getUOM();
@@ -237,7 +237,7 @@ import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 	{
 		// if (true) throw new RuntimeException("STOP!");
 		Check.assumeNotNull(qtyToRemove, "qtyToRemove not null");
-		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove({0}) >= 0", qtyToRemove);
+		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove({}) >= 0", qtyToRemove);
 
 		final BigDecimal qtyToRemove_Qty = qtyToRemove.getQty();
 		final I_C_UOM qtyToRemove_UOM = qtyToRemove.getUOM();

@@ -69,31 +69,31 @@ public class HTMLMessenger {
 	final protected String PRODUCT_TOOLTIP = 	
 		"<html><H1 align=\"CENTER\">"+Msg.translate(Env.getCtx(), "M_Product_ID")+"</H1>"+
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Description")+":</b></td><td>{0}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Description")+":</b></td><td>{}</td></tr>"+
 		"</table></html>";
 
 	final protected String LENGTHTRANSFORM_INFO_PATTERN = 	
 		"<html>" +
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
-		"<tr><td><b>{0}</b></td></tr>"+
-		"<tr><td>{1}</td></tr>"+
-		"<tr><td>{2}</td></tr>"+
+		"<tr><td><b>{}</b></td></tr>"+
+		"<tr><td>{}</td></tr>"+
+		"<tr><td>{}</td></tr>"+
 		"</table></html>";	
 	
 	final protected String PP_ORDER_INFO_PATTERN = 	
 			"<html><H1 align=\"CENTER\">"+Msg.translate(Env.getCtx(), "PP_Order_ID")+"</H1>"+
 			"<table cellpadding=\"5\" cellspacing=\"5\">"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DocumentNo")+":</b></td><td>{0}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DateStartSchedule")+":</b></td><td>{1}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DateFinishSchedule")+":</b></td><td>{2}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "C_Project_ID")+":</b></td><td>{3}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{4}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "QtyOrdered")+":</b></td><td>{5}</td></tr>"+
-			"<tr><td><b>"+Msg.translate(Env.getCtx(), "QtyDelivered")+":</b></td><td>{6}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DocumentNo")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DateStartSchedule")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "DateFinishSchedule")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "C_Project_ID")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "QtyOrdered")+":</b></td><td>{}</td></tr>"+
+			"<tr><td><b>"+Msg.translate(Env.getCtx(), "QtyDelivered")+":</b></td><td>{}</td></tr>"+
 			"</table></html>";
 	
 	final protected String PP_ORDER_HEADER_INFO_PATTERN = 	
-		"<html><H1 align=\"LEFT\">{0}</H1>"+
+		"<html><H1 align=\"LEFT\">{}</H1>"+
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
 		"<tr>"+
 		"<td><b>"+Msg.translate(Env.getCtx(), "DocumentNo")+"</b></td>"+
@@ -110,27 +110,27 @@ public class HTMLMessenger {
 		"<html>"+
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
 		"<tr>"+
-		"<td>{0}</td>"+
-		"<td>{1}</td>"+
-		"<td>{2}</td>"+
-		"<td>{3}</td>"+
-		"<td>{4}</td>"+
-		"<td>{5}</td>"+
-		"<td>{6}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
+		"<td>{}</td>"+
 		"</tr>"+
 		"</table></html>";
 	
 	final protected String BOM_INFO_PATTERN = 	
 		"<html><H1 align=\"CENTER\">"+Msg.translate(Env.getCtx(), "PP_Product_BOM_ID")+"</H1>"+
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "DocumentNo")+":</b></td><td>{0}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "PP_Product_BOM_ID")+":</b></td><td>{1}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ValidFrom")+":</b></td><td>{2} - {3}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Value")+":</b></td><td>{4}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{5}</td></tr>"+
-		"<tr><td></td><td>{6}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "DocumentNo")+":</b></td><td>{}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "PP_Product_BOM_ID")+":</b></td><td>{}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ValidFrom")+":</b></td><td>{} - {}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Value")+":</b></td><td>{}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{}</td></tr>"+
+		"<tr><td></td><td>{}</td></tr>"+
 		"</table>"+
-		"<p>{7}</p>"+
+		"<p>{}</p>"+
 		"</html>";
 	
 	final protected String BOM_HEADER_INFO_PATTERN =
@@ -143,22 +143,22 @@ public class HTMLMessenger {
 	
 	final protected String BOM_LINE_INFO_PATTERN =
 		"<tr>"
-		+"<td align=RIGHT>{0}</td>"
-		+"<td align=RIGHT>{1}</td>"
-		+"<td>{2}</td>"
-		+"<td>{3}</td>"
+		+"<td align=RIGHT>{}</td>"
+		+"<td align=RIGHT>{}</td>"
+		+"<td>{}</td>"
+		+"<td>{}</td>"
 		+"</tr>";
 
 	final protected String BOMLINE_INFO_PATTERN = 	
-		"<html><H1 align=\"CENTER\">"+Msg.translate(Env.getCtx(), "Line")+":&nbsp;{0}</H1>"+
+		"<html><H1 align=\"CENTER\">"+Msg.translate(Env.getCtx(), "Line")+":&nbsp;{}</H1>"+
 		"<table cellpadding=\"5\" cellspacing=\"5\">"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ComponentType")+":</b></td><td>{1}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ValidFrom")+":</b></td><td>{2} - {3}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Qty")+":</b></td><td>{4}</td></tr>"+
-		"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{5}</td></tr>"+
-		"<tr><td></td><td>{6}</td></tr>" +
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ComponentType")+":</b></td><td>{}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "ValidFrom")+":</b></td><td>{} - {}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "Qty")+":</b></td><td>{}</td></tr>"+
+		"<tr><td><b>"+Msg.translate(Env.getCtx(), "M_Product_ID")+":</b></td><td>{}</td></tr>"+
+		"<tr><td></td><td>{}</td></tr>" +
 		"</table>"+
-		"<p>{7}</p>"+
+		"<p>{}</p>"+
 		"</html>";
 
 	final protected String STORAGE_HEADER_INFO_PATTERN =
@@ -173,22 +173,22 @@ public class HTMLMessenger {
 
 	final protected String STORAGE_LINE_INFO_PATTERN =
 		"<tr>"
-		+"<td>{0}</td>"
-		+"<td>{1}</td>"
-		+"<td align=RIGHT>{2}</td>"
-		+"<td align=RIGHT>{3}</td>"
-		+"<td align=RIGHT>{4}</td>"
-		+"<td align=RIGHT>{5}</td>"
+		+"<td>{}</td>"
+		+"<td>{}</td>"
+		+"<td align=RIGHT>{}</td>"
+		+"<td align=RIGHT>{}</td>"
+		+"<td align=RIGHT>{}</td>"
+		+"<td align=RIGHT>{}</td>"
 		+"</tr>";
 
 	final protected String STORAGE_SUM_LINE_INFO_PATTERN =
 		"<tr>"
 		+"<td></td>"
 		+"<td></td>"
-		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{0}</td>"
-		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{1}</td>"
-		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{2}</td>"
-		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{3}</td>"
+		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{}</td>"
+		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{}</td>"
+		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{}</td>"
+		+"<td align=RIGHT><hr size=\"1\" noshade=\"NOSHADE\">{}</td>"
 		+"</tr>";
 
 	final protected String STORAGE_NOINVENTORY_INFO_PATTERN =
@@ -198,7 +198,7 @@ public class HTMLMessenger {
 	
 	final protected String STORAGE_FOOTER_INFO_PATTERN = "</table>";
 
-	final protected String ATTRIBUTE_INFO_PATTERN = "{0}&nbsp;=&nbsp;<i>{1}</i>";
+	final protected String ATTRIBUTE_INFO_PATTERN = "{}&nbsp;=&nbsp;<i>{}</i>";
 	
 	public String getProductInfo(MProduct p) {
 

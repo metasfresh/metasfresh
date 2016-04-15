@@ -86,12 +86,12 @@ public abstract class AbstractExport<T extends I_EDI_Document> implements IExpor
 				.setParameters(recordId)
 				.firstOnly(documentType);
 		final PO viewToExportPO = InterfaceWrapperHelper.getPO(viewToExport);
-		Check.errorIf(viewToExportPO == null, "Views {0} has no record for document {1}", tableName, document);
+		Check.errorIf(viewToExportPO == null, "Views {} has no record for document {}", tableName, document);
 
 		final MEXPFormat exportFormat = fetchExportFormat(ctx, exportFormatName, trxName);
 		final ExportHelper exportHelper = new ExportHelper(ctx, expClientId);
 
-		Check.errorIf(exportHelper.getAD_ReplicationStrategy() == null, "Client {0} has no AD_ReplicationStrategy");
+		Check.errorIf(exportHelper.getAD_ReplicationStrategy() == null, "Client {} has no AD_ReplicationStrategy");
 
 		exportHelper.exportRecord(viewToExportPO,
 				exportFormat,

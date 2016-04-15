@@ -361,7 +361,7 @@ public class FormFrame extends CFrame
 	 */
 	public <T extends FormPanel> T getFormPanel(final Class<T> formPanelClass)
 	{
-		Check.assumeNotNull(formPanelClass, "Given class not null when attempting to convert {0}", m_panel);
+		Check.assumeNotNull(formPanelClass, "Given class not null when attempting to convert {}", m_panel);
 		Check.assumeInstanceOf(m_panel, formPanelClass, "panel");
 		final T panelConv = formPanelClass.cast(m_panel);
 		return panelConv;

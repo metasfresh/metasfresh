@@ -90,7 +90,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	public IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Invoice_Candidate_Agg agg = ic.getC_Invoice_Candidate_Agg();
-		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {0}", ic);
+		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {}", ic);
 
 		final StringBuilder sb = new StringBuilder();
 
@@ -194,7 +194,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{
 		final I_C_BPartner_Location billBPLocation = ic.getBill_Location();
-		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {0}", ic);
+		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {}", ic);
 
 		// We use the language of the bill location to determine the number format.
 		// using the ic's context's language make no sense, because it basically amounts to the login language and can change a lot.

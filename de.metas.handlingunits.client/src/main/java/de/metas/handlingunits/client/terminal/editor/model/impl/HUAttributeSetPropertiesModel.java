@@ -362,7 +362,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		final IndexedAttributeStorage indexedAttributeStorage = getIndexedAttributeStorage();
 
 		final I_M_Attribute attribute = indexedAttributeStorage.getM_Attribute(propertyName);
-		Check.assumeNotNull(attribute, "attribute exists for propertyName={0}", propertyName);
+		Check.assumeNotNull(attribute, "attribute exists for propertyName={}", propertyName);
 
 		final IAttributeValue av = indexedAttributeStorage.getAttributeValue(attribute);
 		final List<? extends NamePair> availableValues = av.getAvailableValues();

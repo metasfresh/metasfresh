@@ -115,10 +115,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final I_C_Invoice creditInvoice(final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
 	{
 		Check.assumeNotNull(invoice, "Param 'invoice' is not null");
-		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={0} may not be a credit memo");
-		Check.errorIf(invoice.isPaid(), "Param 'invoice'={0} may not yet be paid");
+		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
+		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 
-		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {0}", invoice);
+		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -129,7 +129,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				false); // creditMemoAdjusted = false
 
 		// 'invoice' is not paid, so the open amount won't be zero
-		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {0}", invoice);
+		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
 
 		final int targetDocTypeID = getTarget_DocType_ID(ctx, invoice, creditCtx.getC_DocType_ID());
 		//
@@ -210,8 +210,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		Services.get(ICopyHandlerBL.class).copyPreliminaryValues(from, to);
 
-		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={0}, to.AD_Client_ID={1}", from.getAD_Client_ID(), to.getAD_Client_ID());
-		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={0}, to.AD_Org_ID={1}", from.getAD_Org_ID(), to.getAD_Org_ID());
+		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={}, to.AD_Client_ID={}", from.getAD_Client_ID(), to.getAD_Client_ID());
+		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={}, to.AD_Org_ID={}", from.getAD_Org_ID(), to.getAD_Org_ID());
 
 		to.setDocStatus(DocAction.STATUS_Drafted);		// Draft
 		to.setDocAction(DocAction.ACTION_Complete);
@@ -866,9 +866,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final void setQtys(final I_C_InvoiceLine invoiceLine, final BigDecimal qtyInvoiced)
 	{
 		// for now we are lenient, because i'm not sure because strict doesn't break stuff
-		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {0} has M_Product_ID > 0", invoiceLine);
-		// Check.assume(invoiceLine.getC_UOM_ID() > 0, "invoiceLine {0} has C_UOM_ID > 0", invoiceLine);
-		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {0} has Price_UOM_ID > 0", invoiceLine);
+		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {} has M_Product_ID > 0", invoiceLine);
+		// Check.assume(invoiceLine.getC_UOM_ID() > 0, "invoiceLine {} has C_UOM_ID > 0", invoiceLine);
+		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {} has Price_UOM_ID > 0", invoiceLine);
 
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 
@@ -1304,7 +1304,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final int reversalInvoiceId = invoice.getReversal_ID();
-		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {0} shall be the original invoice and not it's reversal", invoice);
+		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
 
 		// services

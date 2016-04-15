@@ -220,7 +220,7 @@ public final class Check
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName, final Class<? extends RuntimeException> exceptionClass)
 	{
-		assumeNotNull(obj, exceptionClass, "{0} ({1}) is not null", objectName, obj);
+		assumeNotNull(obj, exceptionClass, "{} ({}) is not null", objectName, obj);
 		assumeInstanceOfOrNull(obj, interfaceClass, objectName, exceptionClass);
 	}
 

@@ -430,7 +430,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
-		Check.assumeNotNull(piVersion, HUException.class, "No current version found for {0}", pi);
+		Check.assumeNotNull(piVersion, HUException.class, "No current version found for {}", pi);
 
 		return piVersion;
 	}
@@ -624,7 +624,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
 				Check.assumeNull(itemPM,
-						"There shall be only one packing material line for {0} but we found: {1}, {2}",
+						"There shall be only one packing material line for {} but we found: {}, {}",
 						piVersion, itemPM, item);
 				itemPM = item;
 			}
@@ -756,11 +756,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 
 			logger.warn("More then one parent PI Item found. Returing the first one."
-					+ "\n huPI={0}"
-					+ "\n huUnitType={1}"
-					+ "\n bpartner={2}"
-					+ "\n HU PI Items with DefaultLU={3}"
-					+ "\n => parent HU PI Items={4}",
+					+ "\n huPI={}"
+					+ "\n huUnitType={}"
+					+ "\n bpartner={}"
+					+ "\n HU PI Items with DefaultLU={}"
+					+ "\n => parent HU PI Items={}",
 					new Object[] { huPI, huUnitType, bpartner, defaultLUPIItems, parentPIItems });
 
 			return parentPIItems.get(0);
@@ -800,7 +800,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_Status huStatusRecord = huStatuses.get(huStatus);
 
 		// NOTE: commented out to not break the current automated tests
-		// Check.assumeNotNull(huStatusRecord, "huStatusRecord shall exist for {0}", huStatus);
+		// Check.assumeNotNull(huStatusRecord, "huStatusRecord shall exist for {}", huStatus);
 
 		return huStatusRecord;
 	}

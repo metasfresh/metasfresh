@@ -66,7 +66,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
 		if (Check.isEmpty(paymentString.getBPValue()))
 		{
-			Check.assume(bpartnerId > 0, "If this instance's paymentString has no BPValue, then we assume the bPartnerId to be greater than 0. This={0}", this);
+			Check.assume(bpartnerId > 0, "If this instance's paymentString has no BPValue, then we assume the bPartnerId to be greater than 0. This={}", this);
 			bpBankAccount.setC_BPartner_ID(bpartnerId);
 		}
 		else

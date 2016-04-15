@@ -126,7 +126,7 @@ public abstract class AbstractExporter implements IExporter
 		final IExportDataSource dataSource = getDataSource();
 		Check.assumeNotNull(dataSource, "dataSource not null");
 
-		Check.assume(ExportStatus.NotStarted.equals(getExportStatus()), "ExportStatus shall be " + ExportStatus.NotStarted + " and not {0}", getExportStatus());
+		Check.assume(ExportStatus.NotStarted.equals(getExportStatus()), "ExportStatus shall be " + ExportStatus.NotStarted + " and not {}", getExportStatus());
 
 		IExportDataDestination dataDestination = null;
 		try

@@ -114,16 +114,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 	 */
 	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_PP_Order ppOrder)
 	{
-		Check.assumeNotNull(_qualityInspectionHandlerRecord, "Field _ilCandHandler of {0} is not null", this);
-		Check.assumeNotNull(qualityInspectionHandler, "Field qualityInspectionHandler of {0} is not null", this);
+		Check.assumeNotNull(_qualityInspectionHandlerRecord, "Field _ilCandHandler of {} is not null", this);
+		Check.assumeNotNull(qualityInspectionHandler, "Field qualityInspectionHandler of {} is not null", this);
 
 		//
 		// Validate the model
 		Check.assumeNotNull(ppOrder, "Param 'model' is not null");
 		final IClientOrgAware clientOrgAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IClientOrgAware.class);
-		Check.assumeNotNull(clientOrgAware, "Param model={0} is a IClientOrgAware", ppOrder);
+		Check.assumeNotNull(clientOrgAware, "Param model={} is a IClientOrgAware", ppOrder);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
-		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {0} and of its Ctx are the same", ppOrder);
+		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {} and of its Ctx are the same", ppOrder);
 
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
@@ -131,7 +131,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		// Check if given manufacturing order is eligible. It might be not eligible anymore, because it was already processed earlier this run
 		if (!qualityInspectionHandler.isInvoiceable(ppOrder))
 		{
-			final String msg = "Skip invoice candidates creation because model {0} is not invoiceable according to handler {1}";
+			final String msg = "Skip invoice candidates creation because model {} is not invoiceable according to handler {}";
 			logger.info(msg, ppOrder, qualityInspectionHandler);
 			loggable.addLog(msg, ppOrder, qualityInspectionHandler);
 			return Collections.emptyList(); // nothing to do here
@@ -143,7 +143,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		if (materialTrackingDocuments == null)
 		{
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
-			final String msg = "Skip invoice candidates creation because model {0} is not assigned to a material tracking";
+			final String msg = "Skip invoice candidates creation because model {} is not assigned to a material tracking";
 			loggable.addLog(msg, ppOrder);
 			logger.info(msg, ppOrder);
 			return Collections.emptyList();
@@ -154,7 +154,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		if (qiOrder == null)
 		{
-			final String msg = "Skip invoice candidates creation because there is no quality inspection for model {0}";
+			final String msg = "Skip invoice candidates creation because there is no quality inspection for model {}";
 			loggable.addLog(msg, ppOrder);
 			logger.info(msg, ppOrder);
 			return Collections.emptyList();
@@ -172,7 +172,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 			if (!downPaymentICs.isEmpty())
 			{
 				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
-				final String msg = "Skip invoice candidates creation because {0} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {1} for it";
+				final String msg = "Skip invoice candidates creation because {} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {} for it";
 				loggable.addLog(msg, qiOrder.getPP_Order(), firstDownPaymentIC);
 				logger.info(msg, ppOrder, firstDownPaymentIC);
 				return Collections.emptyList();
@@ -186,7 +186,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.getPriceListVersions();
 		if (plvs.isEmpty())
 		{
-			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {0}; ppOrder {1}", materialTrackingDocuments, ppOrder);
+			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {}; ppOrder {}", materialTrackingDocuments, ppOrder);
 		}
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
@@ -248,12 +248,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 	{
 		Check.assumeNotNull(materialTrackingDocuments, "materialTrackingDocuments not null");
 		Check.assumeNotNull(vendorReceipt,
-				"vendorReceipt not null;\nmaterialTrackingDocuments={0}",
+				"vendorReceipt not null;\nmaterialTrackingDocuments={}",
 				materialTrackingDocuments);
 
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// we can be sure it's not null because if it was then this method would not be called.
-		Check.assumeNotNull(qiOrder, "qiOrder of materialTrackingDocuments {0} is not null", materialTrackingDocuments);
+		Check.assumeNotNull(qiOrder, "qiOrder of materialTrackingDocuments {} is not null", materialTrackingDocuments);
 
 		final IQualityInvoiceLineGroupsBuilder invoiceLineGroupsBuilder = qualityBasedSpiProviderService
 				.getQualityInvoiceLineGroupsBuilderProvider()

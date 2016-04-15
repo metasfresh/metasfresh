@@ -51,7 +51,7 @@ final class MRPResultDocumentStatistics
 
 	public void addCountCreated(final int countToAdd)
 	{
-		Check.assumeNotNull(countToAdd >= 0, LiberoException.class, "countToAdd >= 0 but it was {0}", countToAdd);
+		Check.assumeNotNull(countToAdd >= 0, LiberoException.class, "countToAdd >= 0 but it was {}", countToAdd);
 		countCreated += countToAdd;
 	}
 
@@ -62,7 +62,7 @@ final class MRPResultDocumentStatistics
 
 	public void addCountDeleted(final int countToAdd)
 	{
-		Check.assumeNotNull(countToAdd >= 0, LiberoException.class, "countToAdd >= 0 but it was {0}", countToAdd);
+		Check.assumeNotNull(countToAdd >= 0, LiberoException.class, "countToAdd >= 0 but it was {}", countToAdd);
 		countDeleted += countToAdd;
 	}
 

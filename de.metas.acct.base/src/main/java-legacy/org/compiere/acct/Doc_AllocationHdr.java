@@ -125,7 +125,7 @@ public class Doc_AllocationHdr extends Doc
 				continue;
 			}
 			final DocLine_Allocation counterDocLine = id2docLine.get(counterAllocationLineId);
-			Check.assumeNotNull(counterDocLine, "counterDocLine shall exist for ID={0} in {1}", counterAllocationLineId, docLines);
+			Check.assumeNotNull(counterDocLine, "counterDocLine shall exist for ID={} in {}", counterAllocationLineId, docLines);
 			docLine.setCounterDocLine(counterDocLine);
 		}
 
@@ -307,7 +307,7 @@ public class Doc_AllocationHdr extends Doc
 		}
 
 		final I_C_Payment payment = line.getC_Payment();
-		Check.assumeNotNull(payment, "payment not null for {0}", line); // shall not happen
+		Check.assumeNotNull(payment, "payment not null for {}", line); // shall not happen
 
 		final MAcctSchema as = fact.getAcctSchema();
 		final MAccount paymentAcct = line.getPaymentAcct(as);
@@ -682,7 +682,7 @@ public class Doc_AllocationHdr extends Doc
 
 		//
 		// Make sure the line is valid compensation line
-		Check.assume(!line.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {0}", line);
+		Check.assume(!line.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", line);
 
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
 		if (compensationAmtSource.signum() == 0)
@@ -712,7 +712,7 @@ public class Doc_AllocationHdr extends Doc
 
 		//
 		// Make sure the counter line is valid compensation line
-		Check.assume(!counterLine.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {0}", counterLine);
+		Check.assume(!counterLine.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", counterLine);
 
 		//
 		// Make sure it's not cash based accounting => we are not supporting that case.

@@ -155,7 +155,7 @@ final class EventBus implements IEventBus
 			return;
 		}
 
-		logger.debug("Posting event: {0}", event);
+		logger.debug("Posting event: {}", event);
 		eventBus.post(event);
 	}
 

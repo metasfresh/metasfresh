@@ -145,7 +145,7 @@ public final class CConnection implements Serializable, Cloneable
 			cc.setAttributes(attributes);
 		}
 
-		log.debug("Created: {0}", cc);
+		log.debug("Created: {}", cc);
 		return cc;
 	}
 
@@ -1323,7 +1323,7 @@ public final class CConnection implements Serializable, Cloneable
 	public static void setStatusServiceEndPointProvider(final IStatusServiceEndPointProvider provider)
 	{
 		Check.errorIf(m_statusServiceEndpointProvider != null,
-				"CConnection already has m_statusServiceEndpointProvider={1}",
+				"CConnection already has m_statusServiceEndpointProvider={}",
 				m_statusServiceEndpointProvider);
 
 		m_statusServiceEndpointProvider = provider;

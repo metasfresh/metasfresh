@@ -139,7 +139,7 @@ public class DeviceBL implements IDeviceBL
 
 		final String deviceClass = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, host, "DeviceClass", ad_Client_ID, ad_Org_ID);
 
-		Check.errorIf(deviceClass == null, "Missing AD_SysConfig record {0}", CFG_DEVICE_PREFIX + "." + deviceName + ".<host-identifier '" + host + "'>.DeviceClass");
+		Check.errorIf(deviceClass == null, "Missing AD_SysConfig record {}", CFG_DEVICE_PREFIX + "." + deviceName + ".<host-identifier '" + host + "'>.DeviceClass");
 
 		final IDevice device = Util.getInstance(IDevice.class, deviceClass);
 

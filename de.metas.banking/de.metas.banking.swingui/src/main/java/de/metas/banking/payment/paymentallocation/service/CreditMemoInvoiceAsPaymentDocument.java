@@ -49,7 +49,7 @@ public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	{
 		super();
 		Check.assumeNotNull(creditMemoPayableDoc, "creditMemoPayableDoc not null");
-		Check.assume(creditMemoPayableDoc.isCreditMemo(), "is credit memo: {0}", creditMemoPayableDoc);
+		Check.assume(creditMemoPayableDoc.isCreditMemo(), "is credit memo: {}", creditMemoPayableDoc);
 		this.creditMemoPayableDoc = creditMemoPayableDoc;
 	}
 

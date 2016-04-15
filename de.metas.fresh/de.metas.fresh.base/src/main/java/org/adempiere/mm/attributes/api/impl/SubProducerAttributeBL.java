@@ -85,7 +85,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 			// If there is no BPartner we have to set the ADR attribute to null
 			if (partner == null)
 			{
-				Check.assume(!subProducerJustInitialized, "partner=null for attributeSet={0}, therefore subProducerJustInitialized is false", attributeSet);
+				Check.assume(!subProducerJustInitialized, "partner=null for attributeSet={}, therefore subProducerJustInitialized is false", attributeSet);
 				attributeStorage.setValueToNull(attr_MarkeADR);
 				return;
 			}

@@ -125,7 +125,7 @@ import org.eevolution.model.I_PP_MRP;
 	public void setQty(BigDecimal qty)
 	{
 		Check.assumeNotNull(qty, LiberoException.class, "qty not null");
-		Check.assume(qty.signum() >= 0, LiberoException.class, "qty >= 0 but it was {0}", qty);
+		Check.assume(qty.signum() >= 0, LiberoException.class, "qty >= 0 but it was {}", qty);
 		this._qty = qty;
 	}
 

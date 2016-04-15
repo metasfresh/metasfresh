@@ -435,7 +435,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 				defaultValue,
 				selectedReceiptSchedule.getAD_Client_ID(),
 				selectedReceiptSchedule.getAD_Org_ID());
-		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {0}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
+		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
 
 		final int reportProcessId = Integer.parseInt(reportConfigValue);
 		final I_AD_Process reportProcess = InterfaceWrapperHelper.create(getCtx(), reportProcessId, I_AD_Process.class, ITrx.TRXNAME_None);

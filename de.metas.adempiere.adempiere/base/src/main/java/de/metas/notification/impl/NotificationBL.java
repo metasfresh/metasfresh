@@ -88,7 +88,7 @@ public class NotificationBL implements INotificationBL
 			final I_AD_User userIncharge =
 					InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
 							.getAD_User_InCharge();
-			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {0}", userIds);
+			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {}", userIds);
 			notifyUser0(userIncharge, adMessage, messageText, referencedRecord, userIds);
 		}
 		if (userBL.isNotificationEMail(recipient))
@@ -150,7 +150,7 @@ public class NotificationBL implements INotificationBL
 				0, // AD_Process_ID
 				null, // customType
 				null); // sender
-		Check.assumeNotNull(mailBox, "IMailbox for adClient={0}, AD_Org_ID={1}", adClient, recipient.getAD_Org_ID());
+		Check.assumeNotNull(mailBox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, recipient.getAD_Org_ID());
 
 		final StringBuilder mailBody = new StringBuilder();
 		mailBody.append("\n" + messageText + "\n");

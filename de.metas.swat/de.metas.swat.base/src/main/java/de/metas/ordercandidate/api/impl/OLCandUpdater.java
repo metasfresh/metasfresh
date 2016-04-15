@@ -59,7 +59,7 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 		}
 
 		final IParams params = processorCtx.getParams();
-		Check.errorIf(params == null, "Given processorCtx {0} needs to contain params", processorCtx);
+		Check.errorIf(params == null, "Given processorCtx {} needs to contain params", processorCtx);
 
 		// Partner
 		final int bpartnerId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID);

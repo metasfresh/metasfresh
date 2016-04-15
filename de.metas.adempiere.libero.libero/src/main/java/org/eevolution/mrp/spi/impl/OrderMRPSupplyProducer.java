@@ -366,7 +366,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 			return ol.getM_Warehouse();
 		}
 		final I_M_Warehouse suggestedWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(ol);
-		Check.assumeNotNull(suggestedWarehouse, LiberoException.class, "Warehouse shall be found for {0}", ol);
+		Check.assumeNotNull(suggestedWarehouse, LiberoException.class, "Warehouse shall be found for {}", ol);
 		return suggestedWarehouse;
 	}
 

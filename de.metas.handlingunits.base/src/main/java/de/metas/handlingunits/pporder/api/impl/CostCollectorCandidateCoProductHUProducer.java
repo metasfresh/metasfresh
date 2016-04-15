@@ -58,7 +58,7 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 
 		_costCollectorCandidate = cand;
 
-		Check.assumeNotNull(cand.getPP_Order_BOMLine(), "Order BOM Line shall be set to cost collector  candidate when receiving co/bu products: {0}", cand);
+		Check.assumeNotNull(cand.getPP_Order_BOMLine(), "Order BOM Line shall be set to cost collector  candidate when receiving co/bu products: {}", cand);
 		_ppOrderBOMLine = InterfaceWrapperHelper.create(cand.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
 		Check.assumeNotNull(_ppOrderBOMLine, "ppOrderBOMLine not null");
 	}

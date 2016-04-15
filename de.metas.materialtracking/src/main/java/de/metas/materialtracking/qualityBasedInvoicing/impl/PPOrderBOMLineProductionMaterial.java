@@ -73,8 +73,8 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 			type = ProductionMaterialType.RAW;
 		}
 
-		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {0}", this);
-		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {0}", this);
+		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {}", this);
+		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {}", this);
 	}
 
 	@Override

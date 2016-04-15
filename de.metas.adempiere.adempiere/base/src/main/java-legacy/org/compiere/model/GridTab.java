@@ -2647,7 +2647,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			return;
 		}
 
-		log.debug("Event: {0}", e);
+		log.debug("Event: {}", e);
 		// WHO Info
 		if (e.getCurrentRow() >= 0)
 		{
@@ -4144,7 +4144,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	public <T> IQueryFilter<T> createCurrentRecordsQueryFilter(final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		Check.assume(tableName.equals(getTableName()), "{0}'s table is not compatible with {1}'s table", modelClass, this);
+		Check.assume(tableName.equals(getTableName()), "{}'s table is not compatible with {}'s table", modelClass, this);
 		
 		final String sqlWhereClause = getMTable().getSelectWhereClauseFinal();
 		

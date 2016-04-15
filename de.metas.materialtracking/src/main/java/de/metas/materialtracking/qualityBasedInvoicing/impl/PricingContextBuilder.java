@@ -57,12 +57,12 @@ public class PricingContextBuilder
 		// these checks are also intended to guard against poorly set up AITs
 		final I_M_PriceList_Version plv = vendorInvoicingInfo.getM_PriceList_Version();
 		Check.assumeNotNull(plv,
-				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class);
 		Check.assumeNotNull(pl,
-				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 		Check.assumeNotNull(pl.getM_PricingSystem(),
-				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList.M_PricingSystem' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList.M_PricingSystem' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
 		_vendorInvoicingInfo = vendorInvoicingInfo;
 		return this;

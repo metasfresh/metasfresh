@@ -88,7 +88,7 @@ public class PrintingEngine
 	 */
 	public PrintJobInstructionsConfirm print(final PrintPackage printPackage, final InputStream in)
 	{
-		logger.log(Level.INFO, "Printing {0}", printPackage);
+		logger.log(Level.INFO, "Printing {}", printPackage);
 
 		final String printJobInstructionsId = printPackage.getPrintJobInstructionsID();
 
@@ -154,7 +154,7 @@ public class PrintingEngine
 			final PrintPackageInfo printPackageInfo,
 			final PrintablePDF printable) throws PrinterException
 	{
-		logger.log(Level.FINE, "Printing {0}", printPackageInfo);
+		logger.log(Level.FINE, "Printing {}", printPackageInfo);
 
 		final PrintPackageRequest printRequest = new PrintPackageRequest(printPackage, printPackageInfo);
 		printRequest.setPrintJobName("adempiere-job-" + printPackageInfo.toString());
@@ -168,7 +168,7 @@ public class PrintingEngine
 		final Copies copies = (Copies)printRequest.getAttributes().get(Copies.class);
 		if (copies != null && copies.getValue() != 1)
 		{
-			logger.log(Level.INFO, "Local printer setting: {0} = {1} ", new Object[] { copies.getName(), copies.getValue() });
+			logger.log(Level.INFO, "Local printer setting: {} = {} ", new Object[] { copies.getName(), copies.getValue() });
 			// printRequest.getAttributes().add(new Copies(1)); don't discard the local printer setting because this is just what the user might want.
 		}
 
@@ -224,7 +224,7 @@ public class PrintingEngine
 
 	private void print(final PrintPackageRequest request) throws PrinterException
 	{
-		logger.log(Level.FINE, "Printing request {0}", request);
+		logger.log(Level.FINE, "Printing request {}", request);
 
 		// Create Print Job
 		final PrinterJob pjob = PrinterJob.getPrinterJob();
@@ -249,7 +249,7 @@ public class PrintingEngine
 		final String alwaysReturnError = Context.getContext().getProperty(Context.CTX_Testing_AlwaysReturnError, Context.DEFAULT_AlwaysReturnError);
 		if (Boolean.parseBoolean(alwaysReturnError))
 		{
-			logger.log(Level.INFO, "{0} is true, so we report an error, despite the print was OK", Context.CTX_Testing_AlwaysReturnError);
+			logger.log(Level.INFO, "{} is true, so we report an error, despite the print was OK", Context.CTX_Testing_AlwaysReturnError);
 
 			final String errorMsg = Context.getContext().getProperty(Context.CTX_Testing_ErrorMessage, Context.DEFAULT_ErrorMessage);
 			throw new PrinterException(errorMsg);

@@ -71,10 +71,10 @@ public class WorkPackageBL implements IWorkPackageBL
 		}
 
 		final I_C_Queue_Block block = workPackage.getC_Queue_Block();
-		Check.assumeNotNull(block, "C_Queue_Block is not null for param 'workPackage'={0}", workPackage);
+		Check.assumeNotNull(block, "C_Queue_Block is not null for param 'workPackage'={}", workPackage);
 
 		final I_C_Queue_PackageProcessor packageProcessor = block.getC_Queue_PackageProcessor();
-		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for block={0} of param 'workPackage'={1}",
+		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for block={} of param 'workPackage'={}",
 				block, workPackage);
 
 		if (Check.isEmpty(packageProcessor.getInternalName()))

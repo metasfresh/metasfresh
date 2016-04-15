@@ -154,7 +154,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 		Check.assumeNotNull(order, "Param order is not null");
 		Check.assumeNotEmpty(purchaseQtySource, "Param purchaseQtySource is not empty");
 		Check.assume(I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource) || I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource),
-				"Param purchaseQtySource={0} needs to be either {1} or {2}",
+				"Param purchaseQtySource={} needs to be either {} or {}",
 				purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
 				);
 

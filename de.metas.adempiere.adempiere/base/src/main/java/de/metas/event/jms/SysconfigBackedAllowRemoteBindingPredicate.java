@@ -166,7 +166,7 @@ class SysconfigBackedAllowRemoteBindingPredicate implements Predicate<IEventBus>
 		}
 
 		final boolean allowed = DisplayType.toBoolean(map.get(selector), false);
-		logger.debug("Rule matched {0} => allow={1}", new Object[] { selector, allowed });
+		logger.debug("Rule matched {} => allow={}", new Object[] { selector, allowed });
 		return allowed;
 	}
 

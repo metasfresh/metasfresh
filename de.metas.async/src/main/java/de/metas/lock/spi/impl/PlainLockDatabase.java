@@ -509,7 +509,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	public ILock retrieveLockForOwner(final LockOwner lockOwner)
 	{
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
-		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {0}", lockOwner);
+		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
 		final List<LockInfo> lockInfosForOwner = new ArrayList<>();
 		final Set<Boolean> autoCleanups = new HashSet<>();

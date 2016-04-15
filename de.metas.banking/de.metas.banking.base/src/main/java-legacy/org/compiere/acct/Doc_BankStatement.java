@@ -240,8 +240,8 @@ public class Doc_BankStatement extends Doc
 	{
 		//
 		// Make sure it's a valid bank transfer line
-		Check.assume(line.isBankTransfer(), "Line is bank transfer: {0}", line);
-		Check.assume(line.getReferences().isEmpty(), "Line has no referenced payments: {0}", line);
+		Check.assume(line.isBankTransfer(), "Line is bank transfer: {}", line);
+		Check.assume(line.getReferences().isEmpty(), "Line has no referenced payments: {}", line);
 
 		//
 		// Get the transferred amount.
@@ -253,7 +253,7 @@ public class Doc_BankStatement extends Doc
 		}
 		// NOTE: atm we support only the case when StmtAmt=TrxAmt because we also have to calculate the currency gain and loss (i.e. BankAsset minus BankInTransit),
 		// and the factLine_BankAsset is booking the StmtAmt.
-		Check.assume(trxAmt.compareTo(line.getStmtAmt()) == 0, "StmtAmt equals = TrxAmt for line {0}", line);
+		Check.assume(trxAmt.compareTo(line.getStmtAmt()) == 0, "StmtAmt equals = TrxAmt for line {}", line);
 
 		//
 		// Book the transfer to/from BankInTransit.

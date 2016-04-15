@@ -84,7 +84,7 @@ public class GLDistributionBuilder
 		GLDistributionResultLine resultLine_ZeroPercent = null;
 		for (final I_GL_DistributionLine glDistributionLine : glDistributionLines)
 		{
-			Check.assume(glDistributionLine.isActive(), "Distribution line is active: {0}", glDistributionLine);
+			Check.assume(glDistributionLine.isActive(), "Distribution line is active: {}", glDistributionLine);
 
 			final GLDistributionResultLine resultLine = createResultLine(glDistributionLine);
 			resultLines.add(resultLine);

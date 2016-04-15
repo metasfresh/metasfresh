@@ -96,7 +96,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 	protected final void assumeTableName(final String tableName)
 	{
 		Check.assume(this.tableName.equals(tableName),
-				"Invalid tableName {0}. Expected {1}.", tableName, this.tableName);
+				"Invalid tableName {}. Expected {}.", tableName, this.tableName);
 	}
 
 	@Override
@@ -168,7 +168,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 		final Properties ctx = pi.getCtx();
 
 		final int recordId = pi.getRecord_ID();
-		Check.assume(recordId > 0, "No Record_ID found in {0}", pi);
+		Check.assume(recordId > 0, "No Record_ID found in {}", pi);
 
 		final T model = InterfaceWrapperHelper.create(ctx, recordId, modelClass, ITrx.TRXNAME_None);
 		return new SingletonIterator<T>(model);

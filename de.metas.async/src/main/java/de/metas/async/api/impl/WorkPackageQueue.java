@@ -116,7 +116,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		Check.assumeNotNull(ctx, "ctx is not null");
 		Check.assumeNotNull(packageProcessorIds, "packageProcessorIds not null");
 		Check.assume(!packageProcessorIds.isEmpty(), "packageProcessorIds not empty");
-		// Check.assume(retryTimeoutMillis >= 0, "retryTimeoutMillis={0} >= 0", retryTimeoutMillis);
+		// Check.assume(retryTimeoutMillis >= 0, "retryTimeoutMillis={} >= 0", retryTimeoutMillis);
 
 		this.dao = Services.get(IQueueDAO.class);
 
@@ -428,7 +428,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
 
 		Check.assume(block != null, "block not null");
-		Check.assume(priority != null, "Param 'priority' not null. Use {0} to indicate 'no specific priority'", NullWorkpackagePrio.class);
+		Check.assume(priority != null, "Param 'priority' not null. Use {} to indicate 'no specific priority'", NullWorkpackagePrio.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
 		final String trxName = InterfaceWrapperHelper.getTrxName(block);
@@ -438,7 +438,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// Make sure we are not registering on other AD_Client_ID
 		final int blockClientId = block.getAD_Client_ID();
 		final int workPackageClientId = workPackage.getAD_Client_ID();
-		Check.assume(blockClientId == workPackageClientId, "WorkPackage's AD_Client_ID({0}) shall be the same as Block's AD_Client_ID({1})", workPackageClientId, blockClientId);
+		Check.assume(blockClientId == workPackageClientId, "WorkPackage's AD_Client_ID({}) shall be the same as Block's AD_Client_ID({})", workPackageClientId, blockClientId);
 
 		workPackage.setC_Queue_Block(block);
 		workPackage.setAD_Org_ID(block.getAD_Org_ID());
@@ -507,7 +507,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// Make sure we are not registering on other AD_Client_ID
 		final int elementClientId = element.getAD_Client_ID();
 		final int workPackageClientId = workPackage.getAD_Client_ID();
-		Check.assume(elementClientId == workPackageClientId, "Element's AD_Client_ID({0}) shall be the same as WorkPackage's AD_Client_ID({1})", elementClientId, workPackageClientId);
+		Check.assume(elementClientId == workPackageClientId, "Element's AD_Client_ID({}) shall be the same as WorkPackage's AD_Client_ID({})", elementClientId, workPackageClientId);
 
 		element.setC_Queue_Block(workPackage.getC_Queue_Block());
 		element.setC_Queue_WorkPackage(workPackage);
@@ -801,7 +801,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		Check.errorIf(Check.isEmpty(enquingPackageProcessorInternalName, true),
 				UnsupportedOperationException.class,
-				"Queue {0} has no EnqueuingProcessorInternalName. It was problably not intended for enqueuing, but for queue processing",
+				"Queue {} has no EnqueuingProcessorInternalName. It was problably not intended for enqueuing, but for queue processing",
 				this);
 
 		return enquingPackageProcessorInternalName;

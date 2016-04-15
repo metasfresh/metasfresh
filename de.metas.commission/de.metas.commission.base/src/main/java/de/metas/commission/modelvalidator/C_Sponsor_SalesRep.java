@@ -64,7 +64,7 @@ public class C_Sponsor_SalesRep
 				final I_C_BPartner bp = rep.getC_BPartner();
 				
 				final I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bp, I_AD_User.class);
-				Check.assume(defaultContact != null, "Partner {0} has no default contact!", bp);
+				Check.assume(defaultContact != null, "Partner {} has no default contact!", bp);
 				defaultContact.setLogin(bp.getValue());
 				defaultContact.setIsSystemUser(true);
 				

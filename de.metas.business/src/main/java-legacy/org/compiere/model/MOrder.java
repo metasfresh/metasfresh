@@ -1714,7 +1714,7 @@ public class MOrder extends X_C_Order implements DocAction
 				{
 					return false;
 				}
-				Check.assume(oTax.isActive(), "OrderTax shall be active: {0}", oTax);
+				Check.assume(oTax.isActive(), "OrderTax shall be active: {}", oTax);
 
 				InterfaceWrapperHelper.save(oTax);
 

@@ -93,7 +93,7 @@ public final class AllocationUtils
 			final IHUTransaction unloadTrx)
 	{
 		final Quantity qtyAbs = unloadTrx.getQuantity();
-		Check.assume(qtyAbs.signum() <= 0, "Qty <= 0 ({0})", unloadTrx);
+		Check.assume(qtyAbs.signum() <= 0, "Qty <= 0 ({})", unloadTrx);
 
 		final Quantity qty = qtyAbs.negate();
 

@@ -208,7 +208,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 		private final void assertNotProcessed()
 		{
-			Check.assume(!processed, "Not processed: {0}", this);
+			Check.assume(!processed, "Not processed: {}", this);
 		}
 
 		private final void markAsProcessed()

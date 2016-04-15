@@ -86,7 +86,7 @@ public class StaticAttributeValuesProvider implements IAttributeValuesProvider
 			// Null placeholder value (if defined)
 			if (av.isNullFieldValue())
 			{
-				Check.assumeNull(nullAttributeValueNP, "Only one null value shall be defined for {0}, but we found: {1}, {2}",
+				Check.assumeNull(nullAttributeValueNP, "Only one null value shall be defined for {}, but we found: {}, {}",
 						attribute.getName(), nullAttributeValueNP, av);
 				nullAttributeValueNP = vnp;
 			}

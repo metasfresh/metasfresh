@@ -634,7 +634,7 @@ public abstract class Packing extends MvcGenForm
 	private ProcessCtl invokeProcess0(final IPackingDetailsModel model, final String trxName)
 	{
 		final ITrx trx = trxManager.get(trxName, false);
-		Check.assumeNotNull(trx, "Transaction shall be created for trxName={0}", trxName);
+		Check.assumeNotNull(trx, "Transaction shall be created for trxName={}", trxName);
 
 		getModel().setTrx(trx);
 

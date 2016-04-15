@@ -114,7 +114,7 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 		final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 
-		final Pattern esrReferenceNumberPattern = Pattern.compile("^[0-9]{6}([0-9]*)[0-9]{1}$");
+		final Pattern esrReferenceNumberPattern = Pattern.compile("^[0-9]{}([0-9]*)[0-9]{}$");
 
 		return db.getFirstOnly(I_C_ReferenceNo.class, new IQueryFilter<I_C_ReferenceNo>()
 		{

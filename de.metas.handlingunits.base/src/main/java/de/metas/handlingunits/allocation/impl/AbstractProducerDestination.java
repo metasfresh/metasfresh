@@ -435,7 +435,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		currentHUCursor.closeCurrent(); // close the current position of this cursor
 
 		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
-		Check.assume(removedFromCreatedHUs, "Cannot destroy {0} because it wasn't created by us", hu);
+		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
 
 		afterHURemovedFromCreatedList(hu);
 

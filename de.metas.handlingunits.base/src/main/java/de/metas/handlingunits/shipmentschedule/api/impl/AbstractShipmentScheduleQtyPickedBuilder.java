@@ -146,7 +146,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		assertConfigurable();
 
 		Check.assumeNotNull(qtyToPack, "qtyToPack not null");
-		Check.assume(qtyToPack.signum() > 0, "qtyToPack > 0 but it was {0}", qtyToPack);
+		Check.assume(qtyToPack.signum() > 0, "qtyToPack > 0 but it was {}", qtyToPack);
 
 		_qtyToPackRemaining = qtyToPack;
 		_qtyToPackEnforced = true;
@@ -230,7 +230,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	protected final void assertConfigurable()
 	{
 		final boolean configurable = _huContext == null; // i.e. processing HUContext was not already set
-		Check.assume(configurable, "Builder is in configurable mode: {0}", this);
+		Check.assume(configurable, "Builder is in configurable mode: {}", this);
 	}
 
 	/**

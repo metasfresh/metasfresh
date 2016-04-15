@@ -378,12 +378,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void assertReceipt(final I_PP_Order_BOMLine bomLine)
 	{
-		Check.assume(isReceipt(bomLine), LiberoException.class, "BOM Line shall be of type receipt: {0}", bomLine);
+		Check.assume(isReceipt(bomLine), LiberoException.class, "BOM Line shall be of type receipt: {}", bomLine);
 	}
 
 	public void assertIssue(final I_PP_Order_BOMLine bomLine)
 	{
-		Check.assume(!isReceipt(bomLine), LiberoException.class, "BOM Line shall be of type issue: {0}", bomLine);
+		Check.assume(!isReceipt(bomLine), LiberoException.class, "BOM Line shall be of type issue: {}", bomLine);
 	}
 
 	@Override

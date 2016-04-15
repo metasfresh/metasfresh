@@ -142,7 +142,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 		}
 		else
 		{
-			throw new AdempiereException("Action not recognized: {0}", new Object[] { action });
+			throw new AdempiereException("Action not recognized: {}", new Object[] { action });
 		}
 		return queryBuilder;
 	}

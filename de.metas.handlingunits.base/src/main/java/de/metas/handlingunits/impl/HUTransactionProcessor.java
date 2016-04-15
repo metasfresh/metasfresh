@@ -104,9 +104,9 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 	private final I_M_HU_Trx_Line createTrxLine(final I_M_HU_Trx_Hdr trxHdr, final IHUTransaction trxLineCandidate)
 	{
 		Check.assumeNotNull(trxLineCandidate.getCounterpart(),
-				"TrxLine shall have a parent set: {0}", trxLineCandidate);
+				"TrxLine shall have a parent set: {}", trxLineCandidate);
 		Check.assume(trxLineCandidate != trxLineCandidate.getCounterpart(),
-				"TrxLine shall not self reference: {0}", trxLineCandidate);
+				"TrxLine shall not self reference: {}", trxLineCandidate);
 
 		final I_M_HU_Trx_Line trxLine = InterfaceWrapperHelper.newInstance(I_M_HU_Trx_Line.class, trxHdr);
 		if (trxLineCandidate.isSkipProcessing())
@@ -310,7 +310,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 			}
 
 			final I_M_HU_Trx_Line trxLine = trxCandidate2trxLine.get(trxCandidate);
-			Check.assumeNotNull(trxLine, "trxLine shall exist for {0}", trxCandidate);
+			Check.assumeNotNull(trxLine, "trxLine shall exist for {}", trxCandidate);
 
 			trxLine.setParent_HU_Trx_Line(counterpartTrxLine);
 
@@ -351,12 +351,12 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		{
 			final int trxLineId = id2trxLine.keySet().iterator().next();
 			final I_M_HU_Trx_Line trxLine = id2trxLine.remove(trxLineId);
-			Check.assumeNotNull(trxLine, "Trx line for ID={0} shall exist in {1}", trxLineId, id2trxLine);
+			Check.assumeNotNull(trxLine, "Trx line for ID={} shall exist in {}", trxLineId, id2trxLine);
 
 			final int counterpartTrxLineId = trxLine.getParent_HU_Trx_Line_ID();
 			final I_M_HU_Trx_Line counterpartTrxLine = id2trxLine.remove(counterpartTrxLineId);
 			Check.assumeNotNull(counterpartTrxLine,
-					"Counterpart trx line with ID={0} for trx line {1} not found in {2}",
+					"Counterpart trx line with ID={} for trx line {} not found in {}",
 					counterpartTrxLineId, trxLine, id2trxLine);
 
 			final I_M_HU_Trx_Line reversalTrxLine = createTrxLineReversal(reversalTrxHdrRef, trxLine);

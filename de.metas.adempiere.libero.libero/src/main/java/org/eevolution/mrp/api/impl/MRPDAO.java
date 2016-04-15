@@ -82,7 +82,7 @@ public class MRPDAO implements IMRPDAO
 	public IMRPQueryBuilder retrieveQueryBuilder(final Object model, final String typeMRP, final String orderType)
 	{
 		final Optional<Integer> adClientId = InterfaceWrapperHelper.getValue(model, "AD_Client_ID");
-		Check.assume(adClientId.isPresent(), "param 'model'={0} has an AD_Client_ID", model);
+		Check.assume(adClientId.isPresent(), "param 'model'={} has an AD_Client_ID", model);
 
 		final IMRPQueryBuilder queryBuilder = createMRPQueryBuilder()
 				.setContextProvider(model) // use context from model

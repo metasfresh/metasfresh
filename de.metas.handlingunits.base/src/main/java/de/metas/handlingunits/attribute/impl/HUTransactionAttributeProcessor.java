@@ -222,7 +222,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		}
 
 		final Object referencedObject = InterfaceWrapperHelper.getDynAttribute(huTrxAttribute, DYNATTR_ReferencedObject);
-		Check.assumeNotNull(referencedObject, "referencedObject shall be set for {0}", huTrxAttribute);
+		Check.assumeNotNull(referencedObject, "referencedObject shall be set for {}", huTrxAttribute);
 		verifyReferenceObjectTrxName(huTrxAttribute, referencedObject);
 
 		return referencedObject;
@@ -234,7 +234,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		// final String huTrxAttrTrxName = InterfaceWrapperHelper.getTrxName(huTrxAttribute);
 
 		// Check.errorUnless(Check.equals(refObjTrxName, huTrxAttrTrxName),
-		// "The two objects have different trxNames: 'referencedObject'=>{0}, 'huTrxAttribute'=>{1}",
+		// "The two objects have different trxNames: 'referencedObject'=>{}, 'huTrxAttribute'=>{}",
 		// refObjTrxName, huTrxAttrTrxName);
 	}
 

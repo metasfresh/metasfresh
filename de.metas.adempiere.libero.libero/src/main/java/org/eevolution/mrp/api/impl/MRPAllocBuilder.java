@@ -84,13 +84,13 @@ import org.eevolution.mrp.api.IMRPBL;
 	{
 		// Validate MRP Supply record
 		Check.assumeNotNull(mrpSupply, "mrpSupply not null");
-		Check.assume(mrpBL.isSupply(mrpSupply), "MRP record shall be a supply: {0}", mrpSupply);
+		Check.assume(mrpBL.isSupply(mrpSupply), "MRP record shall be a supply: {}", mrpSupply);
 
 		// Validate MRP Demand records
 		Check.assumeNotEmpty(mrpDemands, "mrpDemands not empty");
 		for (final I_PP_MRP mrpDemand : mrpDemands)
 		{
-			Check.assume(mrpBL.isDemand(mrpDemand), "MRP record shall be a demand: {0}", mrpDemand);
+			Check.assume(mrpBL.isDemand(mrpDemand), "MRP record shall be a demand: {}", mrpDemand);
 		}
 
 		//

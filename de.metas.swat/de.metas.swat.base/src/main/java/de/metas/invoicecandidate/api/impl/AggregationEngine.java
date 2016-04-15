@@ -106,8 +106,8 @@ public class AggregationEngine implements IAggregationEngine
 	@Override
 	public IAggregationEngine addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 	{
-		Check.assume(!ic.isToClear(), "{0} has IsToClear='N'", ic);
-		Check.assume(!ic.isProcessed(), "{0} not processed", ic);
+		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
+		Check.assume(!ic.isProcessed(), "{} not processed", ic);
 
 		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic);
 
@@ -410,7 +410,7 @@ public class AggregationEngine implements IAggregationEngine
 		if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
 			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
-			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={0} shall match document type {1}", invoiceIsSOTrx, invoiceDocType);
+			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
 			docBaseType = invoiceDocType.getDocBaseType();
 		}

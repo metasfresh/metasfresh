@@ -160,7 +160,7 @@ public class C_Invoice_Candidate
 			{
 				// Required to ommit
 				// "MOrderLine.set_Value: Column not updateable - QtyInvoiced - NewValue=5.00 - OldValue=0 [62]"
-				Check.errorUnless(ol instanceof X_C_OrderLine || Adempiere.isUnitTestMode(), "We need to set QtyInvoiced via the model class, not directly on the PO (class={0}).", ol.getClass());
+				Check.errorUnless(ol instanceof X_C_OrderLine || Adempiere.isUnitTestMode(), "We need to set QtyInvoiced via the model class, not directly on the PO (class={}).", ol.getClass());
 				ol.setQtyInvoiced(ic.getQtyInvoiced());
 			}
 			InterfaceWrapperHelper.save(ol);

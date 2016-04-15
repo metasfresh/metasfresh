@@ -197,7 +197,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{0} shall be a TU", tuHU);
+		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{} shall be a TU", tuHU);
 
 		//
 		// Get the LU
@@ -234,7 +234,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// Validate
-		Check.assume(handlingUnitsBL.isVirtual(vhu), "{0} shall be VirtualHU", vhu);
+		Check.assume(handlingUnitsBL.isVirtual(vhu), "{} shall be VirtualHU", vhu);
 
 		return queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, vhu)
 				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())

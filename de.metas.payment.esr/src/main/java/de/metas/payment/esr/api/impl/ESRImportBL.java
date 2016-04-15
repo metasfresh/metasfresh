@@ -165,7 +165,7 @@ public class ESRImportBL implements IESRImportBL
 		// attaching the file first, so that it's available for our support, if anything goes wrong
 		final I_AD_Attachment attachment = Services.get(IAttachmentBL.class).createAttachment(esrImport, file);
 
-		Check.errorUnless(attachment != null, "File {0} not attached to {1}", file, esrImport);
+		Check.errorUnless(attachment != null, "File {} not attached to {}", file, esrImport);
 
 		// enqueue for imporitng async
 		enqueESRImport(esrImport, asyncBatch);
@@ -651,7 +651,7 @@ public class ESRImportBL implements IESRImportBL
 					}
 
 					final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
-					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {0}", line);
+					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
 					final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.create(ctx, line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, trxName);
 
@@ -665,7 +665,7 @@ public class ESRImportBL implements IESRImportBL
 					}
 					InterfaceWrapperHelper.save(paym);
 					// guard; there was some crappy beforeSave() code in MPayment, there might be more
-					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {0}", line);
+					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
 					line.setC_Payment(payment);
 
@@ -695,7 +695,7 @@ public class ESRImportBL implements IESRImportBL
 	private I_C_Payment createUnlinkedPaymentForLine(final I_ESR_ImportLine line, final BigDecimal payAmt)
 	{
 		// 04607
-		Check.errorIf(line.getC_Payment_ID() > 0, "ESR_ImportLine {0} has already C_Payment_ID {1}", line, line.getC_Payment_ID());
+		Check.errorIf(line.getC_Payment_ID() > 0, "ESR_ImportLine {} has already C_Payment_ID {}", line, line.getC_Payment_ID());
 
 		return Services.get(IPaymentBL.class).newBuilder(line)
 				.setDocbaseType(X_C_DocType.DOCBASETYPE_ARReceipt)
@@ -812,7 +812,7 @@ public class ESRImportBL implements IESRImportBL
 					if (withPayment)
 					{
 
-						Check.assumeNotNull(payment, "{0} has a payment", importLine);
+						Check.assumeNotNull(payment, "{} has a payment", importLine);
 					}
 					else
 					{
@@ -829,13 +829,13 @@ public class ESRImportBL implements IESRImportBL
 						}
 					}
 
-					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {0}", importLine);
+					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
 					final I_C_Invoice invoice = importLine.getC_Invoice();
-					Check.assumeNotNull(invoice, "{0} has an invoice", importLine);
+					Check.assumeNotNull(invoice, "{} has an invoice", importLine);
 
 					// make sure that we don't end up with inter-org allocations
-					Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {0} and payment {1} have the same AD_Org_ID");
+					Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {} and payment {} have the same AD_Org_ID");
 
 					payment.setC_Currency_ID(invoice.getC_Currency_ID());
 
@@ -855,7 +855,7 @@ public class ESRImportBL implements IESRImportBL
 					InterfaceWrapperHelper.save(payment);
 
 					// guard; there was some crappy code in MPayment, there might be more
-					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {0}", importLine);
+					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
 					Services.get(IDocActionBL.class).processEx(payment, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 					final boolean ignoreProcessed = false;
@@ -877,15 +877,15 @@ public class ESRImportBL implements IESRImportBL
 	{
 		final I_C_Payment payment = importLine.getC_Payment();
 
-		Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {0}", importLine);
+		Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
 		Check.assume(!Check.equals(payment.getDocStatus(), DocAction.STATUS_Drafted), "Payment shoould not be drafted}");
 
 		final I_C_Invoice invoice = importLine.getC_Invoice();
-		Check.assumeNotNull(invoice, "{0} has an invoice", importLine);
+		Check.assumeNotNull(invoice, "{} has an invoice", importLine);
 
 		// make sure that we don't end up with inter-org allocations
-		Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {0} and payment {1} have the same AD_Org_ID");
+		Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {} and payment {} have the same AD_Org_ID");
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 

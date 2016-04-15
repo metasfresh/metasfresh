@@ -253,10 +253,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	private static MQuery createMQuery(final PO po)
 	{
 		final int recordId = po.get_ID();
-		Check.assume(recordId >= 0, "Object {0} has an ID", po);
+		Check.assume(recordId >= 0, "Object {} has an ID", po);
 
 		final String keyColumnName = po.getPOInfo().getKeyColumnName();
-		Check.assumeNotNull(keyColumnName, "Object {0} has a simple primary key", po);
+		Check.assumeNotNull(keyColumnName, "Object {} has a simple primary key", po);
 
 		final MQuery query = MQuery.getEqualQuery(keyColumnName, recordId);
 		query.setTableName(po.get_TableName());

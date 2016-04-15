@@ -60,11 +60,11 @@ final class FactAcctSummaryKey implements IFactAcctSummaryKey
 		C_AcctSchema_ID = log.getC_AcctSchema_ID();
 		postingType = log.getPostingType();
 		C_Period_ID = log.getC_Period_ID();
-		
+
 		final Date dateAcct = log.getDateAcct();
-		Check.assumeNotNull(dateAcct, "dateAcct not null for {0}", log);
+		Check.assumeNotNull(dateAcct, "dateAcct not null for {}", log);
 		dateAcctMs = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY).getTime();
-		
+
 		AD_Client_ID = log.getAD_Client_ID();
 		AD_Org_ID = Env.CTXVALUE_AD_Org_ID_System;
 		PA_ReportCube_ID = -1;

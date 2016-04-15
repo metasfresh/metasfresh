@@ -530,7 +530,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCand(final I_C_Invoice_Candidate ic)
 	{
 		final int invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
-		Check.assume(invoiceCandidateId > 0, "ic has an ID>0; ic={0}", ic);
+		Check.assume(invoiceCandidateId > 0, "ic has an ID>0; ic={}", ic);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 
 		invalidateCands(Collections.singleton(ic), trxName);

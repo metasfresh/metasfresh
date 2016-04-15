@@ -141,7 +141,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 				final int bpartnerId = upcProductCand.getC_BPartner_ID();
 				final Integer productIdOld = bpartnerId2productId.put(bpartnerId, productIdNew);
 				Check.assume(productIdOld == null || productIdNew == productIdOld,
-						"Different products found for same bpartner {0}/upc {1} combination: {2}, {3}",
+						"Different products found for same bpartner {}/upc {} combination: {}, {}",
 						bpartnerId, barcode, productIdOld, productIdNew);
 			}
 		}

@@ -187,7 +187,7 @@ public class SalesVolumeCommission extends BaseCommission
 					continue; // for now, we don't give this kind of commission "for everything"
 				}
 
-				Check.assume(term.getM_Product_ID() == product.getM_Product_ID() || term.getM_Product_Category_ID() == product.getM_Product_Category_ID(), "{0} matches {1}", term, product);
+				Check.assume(term.getM_Product_ID() == product.getM_Product_ID() || term.getM_Product_Category_ID() == product.getM_Product_Category_ID(), "{} matches {}", term, product);
 
 				final List<I_C_Sponsor_SalesRep> salesRepSSRs = Services.get(ISponsorDAO.class).retrieveSponsorSalesRepsForCondition(ctx, term.getC_AdvCommissionCondition(), trxName);
 

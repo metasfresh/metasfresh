@@ -122,7 +122,7 @@ public class ADProcessDAO implements IADProcessDAO
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		Check.assume(adTableId > 0, "adTableId > 0 (TableName={0})", tableName);
+		Check.assume(adTableId > 0, "adTableId > 0 (TableName={})", tableName);
 
 		registerTableProcess(adTableId, adProcessId);
 	}

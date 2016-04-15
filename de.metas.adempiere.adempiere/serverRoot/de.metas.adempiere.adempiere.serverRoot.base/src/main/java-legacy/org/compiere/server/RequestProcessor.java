@@ -365,7 +365,7 @@ public class RequestProcessor extends AdempiereServer
 	 */
 	private boolean sendEmail (MRequest request, String AD_Message)
 	{
-		//  Alert: Request {0} overdue
+		//  Alert: Request {} overdue
 		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, 
 			new String[] {request.getDocumentNo()});
 		return m_client.sendEMail(request.getSalesRep_ID(), 
@@ -387,7 +387,7 @@ public class RequestProcessor extends AdempiereServer
 		if (supervisor_ID != 0 && supervisor_ID != request.getAD_User_ID())
 			supervisor = MUser.get(getCtx(), supervisor_ID);
 		
-		//  Escalated: Request {0} to {1}
+		//  Escalated: Request {} to {}
 		String subject = Msg.getMsg(m_client.getAD_Language(), "RequestEscalate", 
 			new String[] {request.getDocumentNo(), supervisor.getName()});
 		String to = request.getSalesRep().getEMail();

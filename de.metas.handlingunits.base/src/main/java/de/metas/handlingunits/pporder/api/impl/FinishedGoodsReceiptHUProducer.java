@@ -59,7 +59,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 		super(cc);
 
 		Check.assumeNotNull(cc, "cc not null");
-		Check.assume(cc.getPP_Order_BOMLine_ID() <= 0, "No Order BOM Line shall be set to cost collector when receiving finished goods: {0}", cc);
+		Check.assume(cc.getPP_Order_BOMLine_ID() <= 0, "No Order BOM Line shall be set to cost collector when receiving finished goods: {}", cc);
 		_costCollector = cc;
 
 		_ppOrder = InterfaceWrapperHelper.create(cc.getPP_Order(), I_PP_Order.class);

@@ -99,7 +99,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		{
 			// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
 			Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID(),
-					"ppOrder {0} is already assinged to materialtracking {1} and therefore cannot be additionally assigned to materialtracking {2}",
+					"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
 					ppOrder,ppOrder.getM_Material_Tracking(), materialTracking);
 		}
 

@@ -132,7 +132,7 @@ class UserRolePermissions implements IUserRolePermissions
 		this.AD_User_ID = builder.getAD_User_ID();
 
 		this.AD_Client_ID = builder.getAD_Client_ID();
-		Check.assume(AD_Client_ID >= 0, "AD_Client_ID shall be set but it was {0}", AD_Client_ID);
+		Check.assume(AD_Client_ID >= 0, "AD_Client_ID shall be set but it was {}", AD_Client_ID);
 
 		this.userLevel = builder.getUserLevel();
 
@@ -548,7 +548,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
 		if (roleAccessLevel == null)
 		{
-			logger.debug("NO - No AccessLevel - AD_Table_ID={0}", AD_Table_ID);
+			logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
 			return false;
 		}
 
@@ -830,7 +830,7 @@ class UserRolePermissions implements IUserRolePermissions
 			if (recordWhere.length() > 0)
 			{
 				retSQL.append(" AND ").append(recordWhere);
-				logger.trace("Record access: {0}", recordWhere);
+				logger.trace("Record access: {}", recordWhere);
 			}
 		}	// for all table info
 
@@ -841,7 +841,7 @@ class UserRolePermissions implements IUserRolePermissions
 		// ORDER BY
 		retSQL.append(orderBy);
 
-		logger.trace("Final SQL: {0}", retSQL.toString());
+		logger.trace("Final SQL: {}", retSQL.toString());
 		return retSQL.toString();
 	}	// addAccessSQL
 

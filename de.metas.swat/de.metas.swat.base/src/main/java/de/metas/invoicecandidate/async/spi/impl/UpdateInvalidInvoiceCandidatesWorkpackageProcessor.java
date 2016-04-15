@@ -124,7 +124,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
 				schedule(request);
 				
-				getLoggable().addLog("Scheduled another workpackage for {0} remaining recompute records", countRemaining);
+				getLoggable().addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
 			}
 		}
 

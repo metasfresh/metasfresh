@@ -1027,7 +1027,7 @@ public final class Fact
 		private final MAccount getAccount()
 		{
 			// TODO: check if we can enforce it all the time
-			// Check.assumeNotNull(account, "account not null for {0}", this);
+			// Check.assumeNotNull(account, "account not null for {}", this);
 			return account;
 		}
 

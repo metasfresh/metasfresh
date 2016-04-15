@@ -138,7 +138,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			final String printPackageTrxName = InterfaceWrapperHelper.getTrxName(printPackage);
 			Check.assume(
 					Check.equals(printPackageTrxName, trxName),
-					"printPackage shall have the same trxName {0} as the local instance {1}",
+					"printPackage shall have the same trxName {} as the local instance {}",
 					printPackageTrxName, trxName);
 		}
 		printPackageToUse = printPackage;
@@ -834,7 +834,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			Check.assumeNotNull(routing, "routing not null");
 			final int pageFrom = routing.getPageFrom();
 			final int pageTo = routing.getPageTo();
-			Check.assume(pageFrom <= pageTo, "pageFrom={0} is less or equal to pageTo={1} for {2}", pageFrom, pageTo, archiveData);
+			Check.assume(pageFrom <= pageTo, "pageFrom={} is less or equal to pageTo={} for {}", pageFrom, pageTo, archiveData);
 
 			this.routing = routing;
 		}

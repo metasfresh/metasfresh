@@ -112,7 +112,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		Check.errorIf(true, "Shall not be called, because we have getOnInvalidateForModelAction()=RECREATE_ASYNC; model: {0}", model);
+		Check.errorIf(true, "Shall not be called, because we have getOnInvalidateForModelAction()=RECREATE_ASYNC; model: {}", model);
 	}
 
 	@Override

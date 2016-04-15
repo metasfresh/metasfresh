@@ -531,7 +531,7 @@ public class ExportHelper
 					|| displayType == DisplayType.Search && column.getAD_Reference_Value_ID() > 0)
 			{
 				final int referenceId = column.getAD_Reference_Value_ID();
-				Check.assume(referenceId > 0, "AD_Reference_Value_ID > 0 for column {0} (table {1})", column, column.getAD_Table().getTableName());
+				Check.assume(referenceId > 0, "AD_Reference_Value_ID > 0 for column {} (table {})", column, column.getAD_Table().getTableName());
 
 				final MRefTable refTable = MRefTable.get(masterPO.getCtx(), referenceId);
 				final MColumn embeddedKeyColumn = MColumn.get(masterPO.getCtx(), refTable.getAD_Key());
@@ -556,7 +556,7 @@ public class ExportHelper
 			else if (DisplayType.isLookup(displayType, true)) // includeHardcodedLookups=true
 			{
 				embeddedTableName = DisplayType.getTableName(displayType);
-				Check.assumeNotNull(embeddedTableName, "TableName found for DisplayType={0}", displayType);
+				Check.assumeNotNull(embeddedTableName, "TableName found for DisplayType={}", displayType);
 
 				embeddedTable = MTable.get(masterPO.getCtx(), embeddedTableName);
 				final String[] embeddedKeyColumns = embeddedTable.getKeyColumns();

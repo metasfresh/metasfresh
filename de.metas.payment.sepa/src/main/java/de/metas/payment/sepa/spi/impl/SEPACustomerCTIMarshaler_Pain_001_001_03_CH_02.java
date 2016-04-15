@@ -424,7 +424,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			instdAmt.setCcy(currencyIsoCode);
 
 			final BigDecimal amount = line.getAmt();
-			Check.assume(amount != null && amount.signum() > 0, "Invalid amount {0} for {1}", amount, line);
+			Check.assume(amount != null && amount.signum() > 0, "Invalid amount {} for {}", amount, line);
 			instdAmt.setValue(amount);
 
 			amt.setInstdAmt(instdAmt);
@@ -484,7 +484,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 				final String bankName = getBankNameIfAny(line);
 
 				Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
-						"Zahlart={0}, but line {1} has no information about the bank name",
+						"Zahlart={}, but line {} has no information about the bank name",
 						paymentMode, createInfo(line));
 
 				finInstnId.setNm(bankName);
@@ -574,7 +574,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true) || paymentMode == ZAHLUNGS_ART_5)
 			{
 				Check.errorIf(paymentMode == ZAHLUNGS_ART_1, SepaMarshallerException.class,
-						"SEPA_ExportLine {0} has to have StructuredRemittanceInfo", createInfo(line));
+						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
 				// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 				// because it's much less complicated
@@ -701,7 +701,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		Check.errorIf(ibanToUse.length() < bcEndIdx,
 				SepaMarshallerException.class,
-				"Given IBAN {0} for line {1} is to short. Pls verify that it's actually an IBAN at all",
+				"Given IBAN {} for line {} is to short. Pls verify that it's actually an IBAN at all",
 				iban, createInfo(line));
 		return ibanToUse.substring(bcStartIdx, bcEndIdx);
 	}
@@ -802,7 +802,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
 				Check.errorIf(!"EUR".equals(currencyIso) && !"CHF".equals(currencyIso),
 						SepaMarshallerException.class,
-						"line {0} has a swizz IBAN, but the currency is {1} instead of 'CHF' or 'EUR'",
+						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
 						createInfo(line), currencyIso);
 
 				paymentMode = ZAHLUNGS_ART_3; // we can go with zahlart 2.2
@@ -810,13 +810,13 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			else
 			{
 				Check.errorIf(Check.isEmpty(iban, true), SepaMarshallerException.class,
-						"line {0} has a non-ESR bank account, and no IBAN",
+						"line {} has a non-ESR bank account, and no IBAN",
 						createInfo(line));
 
 				// international IBAN
 				Check.errorIf(!"EUR".equals(currencyIso),
 						SepaMarshallerException.class,
-						"line {0} has a non-IBAN {1}, but the currency is {2} instead of 'EUR'",
+						"line {} has a non-IBAN {}, but the currency is {} instead of 'EUR'",
 						line, iban, currencyIso);
 				paymentMode = ZAHLUNGS_ART_5; //
 			}

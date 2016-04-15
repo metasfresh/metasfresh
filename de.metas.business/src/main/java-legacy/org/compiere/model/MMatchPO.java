@@ -1032,7 +1032,7 @@ public class MMatchPO extends X_M_MatchPO
 					if (rate == null)
 					{
 						Check.errorIf(rate == null, 
-								"Unable to convert from currency {0} (purchase order {1}) to currency {2} (accounting schema {3}), ", 
+								"Unable to convert from currency {} (purchase order {}) to currency {} (accounting schema {}), ", 
 								order.getC_Currency().getCurSymbol(), order.getDocumentNo(), as.getC_Currency().getCurSymbol(), as.getName());						
 						return "Purchase Order not convertible - " + as.getName(); // won't usually be reached
 					}

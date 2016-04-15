@@ -82,7 +82,7 @@ public class ShipmentScheduleListAllocationSource extends GenericListAllocationS
 	public IAllocationResult unload(final IAllocationRequest request)
 	{
 		// Make sure that request has no referenced object because we will use the shipment schedules are referenced objects.
-		Check.assumeNull(request.getReference(), "Request shall have no referenced object: {0}", request);
+		Check.assumeNull(request.getReference(), "Request shall have no referenced object: {}", request);
 
 		return super.unload(request);
 	}

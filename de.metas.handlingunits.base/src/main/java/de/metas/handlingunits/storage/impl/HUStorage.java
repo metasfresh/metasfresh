@@ -73,7 +73,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		Check.assumeNotNull(dao, "dao not null");
 
 		Check.assumeNotNull(hu, "HU not null");
-		Check.assumeNotNull(hu.getM_HU_ID() > 0, "HU is saved: {0}", hu);
+		Check.assumeNotNull(hu.getM_HU_ID() > 0, "HU is saved: {}", hu);
 		this.hu = hu;
 		virtualHU = Services.get(IHandlingUnitsBL.class).isVirtual(hu);
 	}

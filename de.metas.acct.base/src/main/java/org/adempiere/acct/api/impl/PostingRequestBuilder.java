@@ -381,7 +381,7 @@ import de.metas.session.jaxrs.IServerService;
 		final Properties ctx = InterfaceWrapperHelper.getCtx(document);
 		final String trxName = InterfaceWrapperHelper.getTrxName(document);
 		final Optional<Integer> adClientId = InterfaceWrapperHelper.getValue(document, "AD_Client_ID");
-		Check.assume(adClientId.isPresent(), "document={0} has an AD_Client_ID value", document);
+		Check.assume(adClientId.isPresent(), "document={} has an AD_Client_ID value", document);
 
 		final ITableRecordReference documentRef = TableRecordReference.of(document);
 

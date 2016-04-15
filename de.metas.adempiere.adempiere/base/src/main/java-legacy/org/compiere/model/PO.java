@@ -1592,7 +1592,7 @@ public abstract class PO
 		log.trace("Loading ID={}", ID);
 		if (ID > 0)
 		{
-			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {0} shall have one single primary key but it has: {1}", this, m_KeyColumns);
+			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {} shall have one single primary key but it has: {}", this, m_KeyColumns);
 			m_IDs = new Object[] {ID};
 			load(trxName);
 		}
@@ -2229,7 +2229,7 @@ public abstract class PO
 	protected final void setClientOrgFromModel(final Object model)
 	{
 		final PO po = POWrapper.getPO(model, false); // checkOtherWrapper=false
-		Check.assumeNotNull(po, "po not null for {0}", model);
+		Check.assumeNotNull(po, "po not null for {}", model);
 		setClientOrg(po);
 	}
 

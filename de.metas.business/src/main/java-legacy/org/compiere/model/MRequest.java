@@ -837,7 +837,7 @@ public class MRequest extends X_R_Request
 				oldSalesRep_ID = ((Integer)oo).intValue();
 			if (oldSalesRep_ID != 0)
 			{
-				//  RequestActionTransfer - Request {0} was transfered by {1} from {2} to {3}
+				//  RequestActionTransfer - Request {} was transfered by {} from {} to {}
 				Object[] args = new Object[] {getDocumentNo(), 
 					MUser.getNameOfUser(AD_User_ID), 
 					MUser.getNameOfUser(oldSalesRep_ID),
@@ -976,7 +976,7 @@ public class MRequest extends X_R_Request
 //		if (realSalesRep_ID != getSalesRep_ID())
 //			setSalesRep_ID(realSalesRep_ID);
 
-		//  RequestActionEMailInfo - EMail from {0} to {1}
+		//  RequestActionEMailInfo - EMail from {} to {}
 //		Object[] args = new Object[] {emailFrom, emailTo};
 //		String msg = Msg.getMsg(getCtx(), "RequestActionEMailInfo", args);
 //		setLastResult(msg);
@@ -1074,7 +1074,7 @@ public class MRequest extends X_R_Request
 		if (oo instanceof Integer)
 			oldSalesRep_ID = ((Integer)oo).intValue();
 
-		//  RequestActionTransfer - Request {0} was transfered by {1} from {2} to {3}
+		//  RequestActionTransfer - Request {} was transfered by {} from {} to {}
 		Object[] args = new Object[] {getDocumentNo(), 
 			MUser.getNameOfUser(AD_User_ID), 
 			MUser.getNameOfUser(oldSalesRep_ID),

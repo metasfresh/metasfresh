@@ -74,7 +74,7 @@ public class C_Print_Job_TestPrintQueueItem extends AbstractPrintJobCreate
 		final String trxName = ITrx.TRXNAME_None;
 
 		final I_C_Printing_Queue item = InterfaceWrapperHelper.create(ctxToUse, p_C_Printing_Queue_ID, I_C_Printing_Queue.class, trxName);
-		Check.assumeNotNull(item, "C_Printing_Queue for {0} exists", p_C_Printing_Queue_ID);
+		Check.assumeNotNull(item, "C_Printing_Queue for {} exists", p_C_Printing_Queue_ID);
 
 		final int adUserToPrintId = Env.getAD_User_ID(ctxToUse); // logged in user
 

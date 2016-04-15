@@ -79,7 +79,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		Check.assumeNotNull(aggregation, "aggregation not null");
 
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
-		Check.assume(modelTableName.equals(aggregation.getTableName()), "Aggregation's model {0} shall match {1}", aggregation, modelClass);
+		Check.assume(modelTableName.equals(aggregation.getTableName()), "Aggregation's model {} shall match {}", aggregation, modelClass);
 
 		this.aggregation = aggregation;
 

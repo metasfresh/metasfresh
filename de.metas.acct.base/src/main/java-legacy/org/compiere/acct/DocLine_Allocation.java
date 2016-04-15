@@ -260,7 +260,7 @@ class DocLine_Allocation extends DocLine
 	{
 		Check.assumeNotNull(counterDocLine, "counterDocLine not null");
 		final int counterDocLineId = getCounter_AllocationLine_ID();
-		Check.assume(counterDocLine.get_ID() == counterDocLineId, "Counter docline shall have ID={0}: {1}", counterDocLineId, counterDocLine);
+		Check.assume(counterDocLine.get_ID() == counterDocLineId, "Counter docline shall have ID={}: {}", counterDocLineId, counterDocLine);
 		this.counterDocLine = counterDocLine;
 	}
 	
@@ -315,7 +315,7 @@ class DocLine_Allocation extends DocLine
 	public void markAsSalesPurchaseInvoiceCompensated(final MAcctSchema as)
 	{
 		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getC_AcctSchema_ID());
-		Check.assume(added, "Line should not be already compensated: {0}", this);
+		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
 	public boolean hasInvoiceDocument()

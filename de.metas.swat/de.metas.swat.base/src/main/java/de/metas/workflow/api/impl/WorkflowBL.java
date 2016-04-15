@@ -115,7 +115,7 @@ public class WorkflowBL implements IWorkflowBL
 		if (isInvoker(wfResponsible) || isHuman(wfResponsible))
 		{
 			final I_AD_User userResponsible = docResponsible.getAD_User_Responsible();
-			Util.assumeNotNull(userResponsible, "No AD_User_Responsible found for {0}", docResponsible);
+			Util.assumeNotNull(userResponsible, "No AD_User_Responsible found for {}", docResponsible);
 
 			docResponsible.setAD_WF_Responsible_Name(userResponsible.getName());
 		}

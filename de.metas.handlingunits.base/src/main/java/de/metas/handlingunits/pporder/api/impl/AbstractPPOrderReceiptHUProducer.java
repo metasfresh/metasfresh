@@ -163,7 +163,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 		loader.setAllowPartialUnloads(false);
 		loader.setAllowPartialLoads(false);
 		final IAllocationResult allocationResult = loader.load(allocationRequest);
-		Check.assume(allocationResult.isCompleted(), "Result shall be completed: {0}", allocationResult);
+		Check.assume(allocationResult.isCompleted(), "Result shall be completed: {}", allocationResult);
 
 		//
 		// Assign created HUs to Receipt Cost Collector

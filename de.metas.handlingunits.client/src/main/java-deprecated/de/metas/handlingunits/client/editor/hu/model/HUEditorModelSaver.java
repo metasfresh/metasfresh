@@ -126,7 +126,7 @@ public class HUEditorModelSaver
 	private void save0()
 	{
 		Check.assumeNotNull(context, "context shall not be null");
-		Check.assume(!Services.get(ITrxManager.class).isNull(context.getTrxName()), "Invalid transaction: {0}", context.getTrxName());
+		Check.assume(!Services.get(ITrxManager.class).isNull(context.getTrxName()), "Invalid transaction: {}", context.getTrxName());
 
 		//
 		// Save the HU structure & Attributes
@@ -383,7 +383,7 @@ public class HUEditorModelSaver
 			final List<IHUDocumentTreeNode> lineNodes = node.getChildren();
 			for (final IHUDocumentTreeNode lineNode : lineNodes)
 			{
-				Check.assume(lineNode instanceof HUDocumentLineTreeNode, "{0} instanceof HUDocumentLineTreeNode", lineNode);
+				Check.assume(lineNode instanceof HUDocumentLineTreeNode, "{} instanceof HUDocumentLineTreeNode", lineNode);
 				final IHUDocumentLine documentLine = ((HUDocumentLineTreeNode)lineNode).getHUDocumentLine();
 
 				documentLines.add(documentLine);

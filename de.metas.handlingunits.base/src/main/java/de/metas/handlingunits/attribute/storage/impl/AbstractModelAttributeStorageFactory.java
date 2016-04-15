@@ -94,7 +94,7 @@ extends AbstractAttributeStorageFactory
 	public final IAttributeStorage getAttributeStorage(final Object modelObj)
 	{
 		final ModelType model = getModelFromObject(modelObj);
-		Check.assume(!isNullModel(model), "model not \"conceptually\" (depending on implementation) null for modelObj={0} (model={1})", modelObj, model);
+		Check.assume(!isNullModel(model), "model not \"conceptually\" (depending on implementation) null for modelObj={} (model={})", modelObj, model);
 
 		return getAttributeStorageForModel(model);
 	}

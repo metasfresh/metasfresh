@@ -91,14 +91,14 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 	@Override
 	public boolean isAllowNegativeCapacity()
 	{
-		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {0}", this);
+		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
 		return allowNegativeCapacity;
 	}
 
 	@Override
 	public BigDecimal getCapacity()
 	{
-		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {0}", this);
+		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
 		return capacity;
 	}
 

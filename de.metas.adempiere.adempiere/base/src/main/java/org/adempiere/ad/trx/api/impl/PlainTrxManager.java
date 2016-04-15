@@ -76,6 +76,6 @@ public class PlainTrxManager extends AbstractTrxManager
 	public void assertNoActiveTransactions()
 	{
 		final List<ITrx> activeTrxs = getActiveTransactionsList();
-		Check.assume(activeTrxs.isEmpty(), "Expected no active transactions but got: {0}", activeTrxs);
+		Check.assume(activeTrxs.isEmpty(), "Expected no active transactions but got: {}", activeTrxs);
 	}
 }

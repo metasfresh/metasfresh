@@ -135,7 +135,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 	@Override
 	public String docValidate(final PO po, final int timing)
 	{
-		Check.assume(isDocument(), "PO '{0}' is a document", po);
+		Check.assume(isDocument(), "PO '{}' is a document", po);
 
 		if (timing != ModelValidator.TIMING_AFTER_COMPLETE)
 		{

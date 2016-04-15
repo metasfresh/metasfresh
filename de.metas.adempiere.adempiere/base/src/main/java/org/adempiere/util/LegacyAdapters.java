@@ -90,7 +90,7 @@ public class LegacyAdapters
 		@SuppressWarnings("unchecked")
 		final TT po = (TT)InterfaceWrapperHelper.getPO(model);
 
-		Check.assumeNotNull(po, "po created from {0} is not null", model);
+		Check.assumeNotNull(po, "po created from {} is not null", model);
 		return po;
 	}
 }

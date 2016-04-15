@@ -77,7 +77,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 	public I_C_Invoice_Clearing_Alloc retrieveInitialInvoiceClearingAlloc(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate invoiceCandidate)
 	{
 		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
-		Check.assume(invoiceCandidate.isToClear(), "Invoice Candidate shall have IsToClear flag set: {0}", invoiceCandidate);
+		Check.assume(invoiceCandidate.isToClear(), "Invoice Candidate shall have IsToClear flag set: {}", invoiceCandidate);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_C_Invoice_Clearing_Alloc invoiceClearingAlloc = queryBL
@@ -89,7 +89,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 				.create()
 				.firstOnly(I_C_Invoice_Clearing_Alloc.class);
 
-		Check.assumeNotNull(invoiceClearingAlloc, "invoiceClearingAlloc shall not be null for {0}", invoiceCandidate);
+		Check.assumeNotNull(invoiceClearingAlloc, "invoiceClearingAlloc shall not be null for {}", invoiceCandidate);
 
 		return invoiceClearingAlloc;
 	}

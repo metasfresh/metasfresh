@@ -31,7 +31,7 @@ import de.metas.logging.LogManager;
 
 public final class JmsConstants
 {
-	public static final String TCP_HOSTNAME_PORT = "tcp://{0}:{1}";
+	public static final String TCP_HOSTNAME_PORT = "tcp://{}:{}";
 
 	public static Logger getLogger(final Class<?> clazz)
 	{

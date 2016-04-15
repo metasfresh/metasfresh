@@ -71,12 +71,12 @@ public class HUTrxDAO implements IHUTrxDAO
 
 		if (huTrxQuery.getAD_Table_ID() > 0)
 		{
-			Check.assume(huTrxQuery.getRecord_ID() > 0, "Record_ID > 0 for {0}", huTrxQuery);
+			Check.assume(huTrxQuery.getRecord_ID() > 0, "Record_ID > 0 for {}", huTrxQuery);
 			filters.addEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_AD_Table_ID, huTrxQuery.getAD_Table_ID());
 		}
 		if (huTrxQuery.getRecord_ID() > 0)
 		{
-			Check.assume(huTrxQuery.getAD_Table_ID() > 0, "AD_Table_ID > 0 for {0}", huTrxQuery);
+			Check.assume(huTrxQuery.getAD_Table_ID() > 0, "AD_Table_ID > 0 for {}", huTrxQuery);
 			filters.addEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_Record_ID, huTrxQuery.getRecord_ID());
 		}
 

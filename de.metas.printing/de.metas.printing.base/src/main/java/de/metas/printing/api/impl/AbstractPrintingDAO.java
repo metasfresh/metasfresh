@@ -73,11 +73,11 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
 	{
-		Check.assume(fromSeqNo == SEQNO_First || fromSeqNo > 0, "Valid fromSeqNo: {0}", fromSeqNo);
-		Check.assume(toSeqNo == SEQNO_Last || fromSeqNo > 0, "Valid toSeqNo: {0}", toSeqNo);
+		Check.assume(fromSeqNo == SEQNO_First || fromSeqNo > 0, "Valid fromSeqNo: {}", fromSeqNo);
+		Check.assume(toSeqNo == SEQNO_Last || fromSeqNo > 0, "Valid toSeqNo: {}", toSeqNo);
 		if (fromSeqNo != SEQNO_First && toSeqNo != SEQNO_Last)
 		{
-			Check.assume(fromSeqNo <= toSeqNo, "fromSeqNo({0}) < toSeqNo({1})", fromSeqNo, toSeqNo);
+			Check.assume(fromSeqNo <= toSeqNo, "fromSeqNo({}) < toSeqNo({})", fromSeqNo, toSeqNo);
 		}
 		return retrievePrintJobLines0(job, fromSeqNo, toSeqNo);
 	}
@@ -123,7 +123,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	{
 		final List<I_C_Print_Job_Detail> details = retrievePrintJobDetailsIfAny(jobLine);
 
-		Check.errorIf(details.isEmpty(), "Couldn't retrieve print job details for {0}", jobLine);
+		Check.errorIf(details.isEmpty(), "Couldn't retrieve print job details for {}", jobLine);
 
 		return details;
 	}
@@ -333,7 +333,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			return newInstance;
 		}
 
-		Check.errorUnless(result != null, "Missing AD_PrinterHW_MediaSize with name {0} for printer {1}",
+		Check.errorUnless(result != null, "Missing AD_PrinterHW_MediaSize with name {} for printer {}",
 				mediaSizeName,
 				hwPrinter.getName());
 		return result;

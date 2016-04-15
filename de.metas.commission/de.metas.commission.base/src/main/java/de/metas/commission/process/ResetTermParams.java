@@ -47,7 +47,7 @@ public class ResetTermParams extends SvrProcess
 	{
 		final int commissionTermTableId = MTable.getTable_ID(I_C_AdvCommissionTerm.Table_Name);
 
-		Check.errorIf(getTable_ID() != commissionTermTableId, "Wrong Table_ID: {0} instead of expected {1}",
+		Check.errorIf(getTable_ID() != commissionTermTableId, "Wrong Table_ID: {} instead of expected {}",
 				getTable_ID(),
 				commissionTermTableId);
 

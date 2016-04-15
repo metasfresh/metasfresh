@@ -614,7 +614,7 @@ public final class DB
 //		final IMsgBL msgBL = Services.get(IMsgBL.class);
 //		final String AD_Message = "DatabaseVersionError";
 //		final String title = org.compiere.Adempiere.getName() + " " + msgBL.getMsg(ctx, AD_Message, true);
-//		// Code assumes Database version {0}, but Database has Version {1}.
+//		// Code assumes Database version {}, but Database has Version {}.
 //		String msg = msgBL.getMsg(ctx, AD_Message);   // complete message
 //		msg = MessageFormat.format(msg, new Object[] { Adempiere.getDatabaseVersion(), version });
 //		Object[] options = { UIManager.get("OptionPane.noButtonText"), "Migrate" };
@@ -677,7 +677,7 @@ public final class DB
 //		final IMsgBL msgBL = Services.get(IMsgBL.class);
 //		final String AD_Message = "BuildVersionError";
 //		final String title = org.compiere.Adempiere.getName() + " " + msgBL.getMsg(ctx, AD_Message, true);
-//		// The program assumes build version {0}, but database has build Version {1}.
+//		// The program assumes build version {}, but database has build Version {}.
 //		String msg = msgBL.getMsg(ctx, AD_Message);   // complete message
 //		msg = MessageFormat.format(msg, new Object[] { buildClient, buildDatabase });
 //		if (!failOnBuild)
@@ -2460,7 +2460,7 @@ public final class DB
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
-		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {0} configuration, but it was {1}",
+		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
 				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		final int adOrgId = 0;

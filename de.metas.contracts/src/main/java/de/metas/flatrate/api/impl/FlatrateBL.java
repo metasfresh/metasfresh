@@ -1189,7 +1189,7 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Conditions nextConditions;
 
 			Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
-					"{0} has C_FlatrateTerm_Next_ID = {1} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
+					"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
 
 			if (currentTransition.getC_Flatrate_Conditions_Next_ID() > 0)
 			{
@@ -1316,7 +1316,7 @@ public class FlatrateBL implements IFlatrateBL
 			transition = term.getC_Flatrate_Conditions().getC_Flatrate_Transition();
 		}
 
-		Check.errorUnless(transition != null, "{0} shall have transition set", term);
+		Check.errorUnless(transition != null, "{} shall have transition set", term);
 
 		term.setIsAutoRenew(transition.isAutoRenew());
 		updateEndDate(transition, term);
@@ -1362,8 +1362,8 @@ public class FlatrateBL implements IFlatrateBL
 								, currentFirstDay
 								, InterfaceWrapperHelper.getTrxName(transition));
 
-				Check.errorUnless(periodContainingDay.size() != 0, "Date {0} does not exist in calendar", currentFirstDay);
-				Check.errorUnless(periodContainingDay.size() == 1, "Date {0} is contained in more than one period: {1}", currentFirstDay, periodContainingDay);
+				Check.errorUnless(periodContainingDay.size() != 0, "Date {} does not exist in calendar", currentFirstDay);
+				Check.errorUnless(periodContainingDay.size() == 1, "Date {} is contained in more than one period: {}", currentFirstDay, periodContainingDay);
 				final I_C_Period period = periodContainingDay.get(0);
 				final I_C_Year year = period.getC_Year();
 

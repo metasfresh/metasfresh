@@ -125,7 +125,7 @@ public class LocalJasperServer implements IJasperServer
 		//
 		// Get report template's file extension
 		final String reportTemplatePath = reportContext.getReportTemplatePath();
-		Check.assumeNotEmpty(reportTemplatePath, "reportTemplatePath not empty for {0}", reportContext);
+		Check.assumeNotEmpty(reportTemplatePath, "reportTemplatePath not empty for {}", reportContext);
 		final String reportFileExtension = Files.getFileExtension(reportTemplatePath);
 		
 		if (JasperEngine.REPORT_FILE_EXTENSIONS.contains(reportFileExtension))

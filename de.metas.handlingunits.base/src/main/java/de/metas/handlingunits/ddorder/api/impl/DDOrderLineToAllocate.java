@@ -167,7 +167,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			//
 			// Shall not happen; developer error
-			throw new AdempiereException("Invalid I_DD_OrderLine_Or_Alternative implementation passed; Expected {0} or {1}, but was {2}",
+			throw new AdempiereException("Invalid I_DD_OrderLine_Or_Alternative implementation passed; Expected {} or {}, but was {}",
 					new Object[] { I_DD_OrderLine.class, I_DD_OrderLine_Alternative.class, ddOrderLineOrAlt });
 		}
 		return ddOrderLine;

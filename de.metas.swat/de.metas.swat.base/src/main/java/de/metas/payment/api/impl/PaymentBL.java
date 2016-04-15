@@ -461,7 +461,7 @@ public class PaymentBL implements IPaymentBL
 	public I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date)
 	{
 		Check.assumeNotNull(payment, "payment not null");
-		Check.assume(writeOffAmt != null && writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {0}", writeOffAmt);
+		Check.assume(writeOffAmt != null && writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 		Check.assumeNotNull(date, "date not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);

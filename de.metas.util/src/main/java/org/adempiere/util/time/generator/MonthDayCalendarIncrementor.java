@@ -52,10 +52,10 @@ import org.adempiere.util.Check;
 	{
 		super();
 
-		Check.assume(monthsAmount >= 0, "monthsAmount({0}) >= 0", monthsAmount);
+		Check.assume(monthsAmount >= 0, "monthsAmount({}) >= 0", monthsAmount);
 		this.monthsAmount = monthsAmount;
 
-		Check.assume(dayOfMonth > 0, "dayOfMonth({0}) > 0", dayOfMonth);
+		Check.assume(dayOfMonth > 0, "dayOfMonth({}) > 0", dayOfMonth);
 		this.dayOfMonth = dayOfMonth;
 	}
 

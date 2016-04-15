@@ -216,7 +216,7 @@ import org.eevolution.mrp.api.IMRPSegmentBL;
 
 	private final void assertFullyDefined(final IMRPSegment mrpSegment)
 	{
-		Check.assume(mrpSegmentBL.isFullyDefined(mrpSegment), LiberoException.class, "MRP Segment is fully defined: {0}", mrpSegment);
+		Check.assume(mrpSegmentBL.isFullyDefined(mrpSegment), LiberoException.class, "MRP Segment is fully defined: {}", mrpSegment);
 	}
 
 	/**

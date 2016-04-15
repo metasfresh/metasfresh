@@ -55,7 +55,7 @@ public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 
 	private final void assumeTableName(final String tableName)
 	{
-		Check.assume(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name.equals(tableName), "Invalid tableName {0}", tableName);
+		Check.assume(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name.equals(tableName), "Invalid tableName {}", tableName);
 	}
 
 	@Override

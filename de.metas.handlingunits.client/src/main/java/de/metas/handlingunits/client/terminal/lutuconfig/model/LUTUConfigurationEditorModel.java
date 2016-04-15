@@ -694,7 +694,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		}
 
 		final I_M_HU_PI luPI = lutuConfiguration.getM_LU_HU_PI();
-		Check.assume(luPI != null && luPI.getM_HU_PI_ID() > 0, "LU PI exists for {0}", lutuConfiguration);
+		Check.assume(luPI != null && luPI.getM_HU_PI_ID() > 0, "LU PI exists for {}", lutuConfiguration);
 
 		final LUKey luKey = createLUKey(luPIItem, luPI);
 		return luKey;

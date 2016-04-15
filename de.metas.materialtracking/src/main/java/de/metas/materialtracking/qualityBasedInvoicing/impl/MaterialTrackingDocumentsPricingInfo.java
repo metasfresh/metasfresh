@@ -224,7 +224,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			for (final I_M_InOutLine inOutLine : issuedInOutLinesForPPOrder)
 			{
 				final I_M_PriceList_Version inOutLinePLV = retrivePLV(inOutLine);
-				Check.errorIf(inOutLinePLV == null, "Unable to retrieve a plv for inOutLine {0} and pricingSystem {1}.", inOutLine, getM_PricingSystem());
+				Check.errorIf(inOutLinePLV == null, "Unable to retrieve a plv for inOutLine {} and pricingSystem {}.", inOutLine, getM_PricingSystem());
 
 				if (plv == null)
 				{
@@ -235,7 +235,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 					// note that this shall actually be prevented by the system in the first place
 					Check.errorIf(
 							true,
-							"For an earlier inOutLine the priceListVersion {0} was retreived, but for inOutLine {1}, the priceListVersion {2} was retrieved;\npricingSystem: {3};\nppOrder",
+							"For an earlier inOutLine the priceListVersion {} was retreived, but for inOutLine {}, the priceListVersion {} was retrieved;\npricingSystem: {};\nppOrder",
 							plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder);
 				}
 			}
@@ -254,7 +254,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
 			if (!priceLists.hasNext())
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, country);
+				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a priceList for pricingSystem {} and country {}.", pricingSystem, country);
 				return null;
 			}
 
@@ -264,7 +264,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 			if (plv == null)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
+				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {} and movementDate {}.", priceList, movementDate);
 			}
 			return plv;
 		}

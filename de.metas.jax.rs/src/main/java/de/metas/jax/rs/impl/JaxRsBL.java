@@ -75,11 +75,11 @@ public class JaxRsBL implements IJaxRsBL
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
-			+ "jms:jndi:dynamicQueues/{0}"
+			+ "jms:jndi:dynamicQueues/{}"
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/{1}"
-			+ "&jndiURL={2}"
-			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
+			+ "&replyToName=dynamicQueues/{}"
+			+ "&jndiURL={}"
+			+ "&receiveTimeout={}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	/**
@@ -227,7 +227,7 @@ public class JaxRsBL implements IJaxRsBL
 							: X_AD_JAXRS_Endpoint.ENDPOINTTYPE_Server);
 					InterfaceWrapperHelper.save(newEp);
 					ILoggable.THREADLOCAL.getLoggable().addLog(
-							"Created new AD_JAXRS_Endpoint record {0} for AD_JavaClass {1} (class {2})",
+							"Created new AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							newEp, epClass, epClass.getClassname());
 				}
 				else if (!existingEp.isActive())
@@ -236,7 +236,7 @@ public class JaxRsBL implements IJaxRsBL
 					existingEp.setIsActive(true);
 					InterfaceWrapperHelper.save(existingEp);
 					ILoggable.THREADLOCAL.getLoggable().addLog(
-							"Reactived AD_JAXRS_Endpoint record {0} for AD_JavaClass {1} (class {2})",
+							"Reactived AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
 			}
@@ -247,7 +247,7 @@ public class JaxRsBL implements IJaxRsBL
 					existingEp.setIsActive(false);
 					InterfaceWrapperHelper.save(existingEp);
 					ILoggable.THREADLOCAL.getLoggable().addLog(
-							"Deactived AD_JAXRS_Endpoint record {0} for inactive AD_JavaClass {1} (class {2})",
+							"Deactived AD_JAXRS_Endpoint record {} for inactive AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
 			}
@@ -259,7 +259,7 @@ public class JaxRsBL implements IJaxRsBL
 			staleEp.setIsActive(false);
 			InterfaceWrapperHelper.save(staleEp);
 			ILoggable.THREADLOCAL.getLoggable().addLog(
-					"Deactived AD_JAXRS_Endpoint record {0}",
+					"Deactived AD_JAXRS_Endpoint record {}",
 					staleEp);
 		}
 	}

@@ -1993,7 +1993,7 @@ public abstract class Info extends Component
 				modelColumnIndex = p_table.getColumnModelIndex(columnName);
 				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1)  // make sure index is right
 				{
-					final Exception ex = new AdempiereException("Model column out of bounds: {0}", new Object[] { columnName });
+					final Exception ex = new AdempiereException("Model column out of bounds: {}", new Object[] { columnName });
 					log.warn(ex.getLocalizedMessage(), ex);
 					continue;
 				}

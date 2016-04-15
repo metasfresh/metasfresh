@@ -305,7 +305,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 			final POInfo modelPOInfo = POInfo.getPOInfo(ctx, modelTableId);
 			final String modelTableName = modelPOInfo.getTableName();
 			final String modelKeyColumName = modelPOInfo.getKeyColumnName();
-			Check.assumeNotEmpty(modelKeyColumName, "No single primary key column found for {0}", modelPOInfo);
+			Check.assumeNotEmpty(modelKeyColumName, "No single primary key column found for {}", modelPOInfo);
 
 			final ISqlQueryFilter modelFilter = queueQuery.getModelFilter();
 

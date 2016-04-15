@@ -98,7 +98,7 @@ public class X_C_Greeting extends PO implements I_C_Greeting, I_Persistent
 
 	/** Set Greeting.
 		@param Greeting 
-		For letters, e.g. "Dear {0}" or "Dear Mr. {0}" - At runtime, "{0}" is replaced by the name
+		For letters, e.g. "Dear {}" or "Dear Mr. {}" - At runtime, "{}" is replaced by the name
 	  */
 	public void setGreeting (String Greeting)
 	{
@@ -106,7 +106,7 @@ public class X_C_Greeting extends PO implements I_C_Greeting, I_Persistent
 	}
 
 	/** Get Greeting.
-		@return For letters, e.g. "Dear {0}" or "Dear Mr. {0}" - At runtime, "{0}" is replaced by the name
+		@return For letters, e.g. "Dear {}" or "Dear Mr. {}" - At runtime, "{}" is replaced by the name
 	  */
 	public String getGreeting () 
 	{

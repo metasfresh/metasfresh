@@ -57,7 +57,7 @@ public final class CurrentAttributeValueContextProvider
 	public static void assertNoCurrentContext()
 	{
 		final IAttributeValueContext currentAttributesContext = getCurrentAttributesContextOrNull();
-		Check.assumeNull(currentAttributesContext, "currentAttributesContext shall be null but it was {0}", currentAttributesContext);
+		Check.assumeNull(currentAttributesContext, "currentAttributesContext shall be null but it was {}", currentAttributesContext);
 	}
 
 }

@@ -363,7 +363,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			}
 
 			final Date dunningDateEffective = candidate.getDunningDateEffective();
-			Check.assumeNotNull(dunningDateEffective, "DunningDateEffective shall be available for candidate with dunning docs processed: {0}", candidate);
+			Check.assumeNotNull(dunningDateEffective, "DunningDateEffective shall be available for candidate with dunning docs processed: {}", candidate);
 
 			if (lastDunningDateEffective == null)
 			{

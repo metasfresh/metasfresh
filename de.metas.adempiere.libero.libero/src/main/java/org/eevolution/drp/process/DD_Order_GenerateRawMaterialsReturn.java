@@ -220,7 +220,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends SvrProcess
 
 	private I_DD_Order createDD_Order(final RawMaterialsReturnDDOrderLineCandidate candidate)
 	{
-		Check.assume(candidate.isValid(), "candidate is valid: {0}", candidate);
+		Check.assume(candidate.isValid(), "candidate is valid: {}", candidate);
 
 		final IContextAware context = new PlainContextAware(getCtx(), ITrx.TRXNAME_ThreadInherited);
 		final Timestamp dateOrdered = candidate.getDateOrdered();
@@ -261,7 +261,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends SvrProcess
 
 	private void createDD_OrderLine(final I_DD_Order ddOrder, final RawMaterialsReturnDDOrderLineCandidate candidate)
 	{
-		Check.assume(candidate.isValid(), "candidate is valid: {0}", candidate);
+		Check.assume(candidate.isValid(), "candidate is valid: {}", candidate);
 
 		final I_M_Product product = candidate.getM_Product();
 		final I_C_UOM uom = candidate.getC_UOM();

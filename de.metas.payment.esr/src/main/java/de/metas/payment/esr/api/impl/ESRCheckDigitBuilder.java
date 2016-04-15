@@ -55,7 +55,7 @@ public final class ESRCheckDigitBuilder
 		{
 			// NumberFormatException can be thrown from Integer.parseInt
 			
-			Check.errorIf(true, "Failed to compute ESR check digit; invalid ESR-String \"{0}\"", text); // will throw an exception
+			Check.errorIf(true, "Failed to compute ESR check digit; invalid ESR-String \"{}\"", text); // will throw an exception
 
 		}
 

@@ -140,7 +140,7 @@ public class Services
 	public static <T extends IService> T get(final Class<T> serviceInterfaceClass)
 	{
 		Check.assumeNotNull(serviceInterfaceClass, "Param 'clazz' not null");
-		Check.assume(serviceInterfaceClass.isInterface(), "Param 'clazz' shall be an interface: {0}", serviceInterfaceClass);
+		Check.assume(serviceInterfaceClass.isInterface(), "Param 'clazz' shall be an interface: {}", serviceInterfaceClass);
 
 		if (IMultitonService.class.isAssignableFrom(serviceInterfaceClass))
 		{
@@ -480,7 +480,7 @@ public class Services
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		final Set<Constructor> defaultConstructors = ReflectionUtils.getConstructors(serviceInstanceClass, ReflectionUtils.withParametersCount(0));
 		final boolean hasNoDefaultConstructor = defaultConstructors.isEmpty();
-		Check.errorIf(hasNoDefaultConstructor, "Param 'serviceInstanceClass' = {0} has no default constructor", serviceInstanceClass);
+		Check.errorIf(hasNoDefaultConstructor, "Param 'serviceInstanceClass' = {} has no default constructor", serviceInstanceClass);
 
 		@SuppressWarnings("unchecked")
 		final Constructor<T> defaultConstructor = defaultConstructors.iterator().next();

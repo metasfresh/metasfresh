@@ -98,9 +98,9 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		final String filename = document.getFileName();
-		Check.assumeNotEmpty(filename, "filename shall not be empty for {0}", document);
+		Check.assumeNotEmpty(filename, "filename shall not be empty for {}", document);
 		final String filenameFixed = FileUtils.stripIllegalCharacters(filename);
-		Check.assumeNotEmpty(filenameFixed, "filename shall be valid: {0}", filename);
+		Check.assumeNotEmpty(filenameFixed, "filename shall be valid: {}", filename);
 		
 		final File ccFile = new File(ccPathDir, filenameFixed);
 

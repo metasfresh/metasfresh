@@ -209,7 +209,7 @@ public class MRPBL implements IMRPBL
 		Check.assumeNotNull(mrp, "mrp not null");
 
 		final I_M_Product product = mrp.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP record shall have the Product set: {0}", mrp);
+		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP record shall have the Product set: {}", mrp);
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
 		return productUOM;
 	}
@@ -219,7 +219,7 @@ public class MRPBL implements IMRPBL
 	{
 		Check.assumeNotNull(mrpAlternative, "mrpAlternative not null");
 		final I_M_Product product = mrpAlternative.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP alternative record shall have the Product set: {0}", mrpAlternative);
+		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP alternative record shall have the Product set: {}", mrpAlternative);
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
 		return productUOM;
 	}

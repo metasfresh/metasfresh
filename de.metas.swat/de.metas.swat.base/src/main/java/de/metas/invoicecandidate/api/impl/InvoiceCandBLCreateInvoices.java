@@ -186,7 +186,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final String invoiceTrxName = InterfaceWrapperHelper.getTrxName(invoice);
 			Check.assume(
 					trxManager.isSameTrxName(trxName, invoiceTrxName),
-					"Invoice {0} (TrxName='{1}') has TrxName={2}",
+					"Invoice {} (TrxName='{}') has TrxName={}",
 					invoice, invoiceTrxName, trxName);
 
 			//

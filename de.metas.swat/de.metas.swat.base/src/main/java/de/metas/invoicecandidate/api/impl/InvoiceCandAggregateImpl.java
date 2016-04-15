@@ -241,10 +241,10 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		Check.assumeNotNull(qtyAllocatedToAdd, "qtyAllocatedToAdd not null");
 
 		final Map<IInvoiceLineRW, BigDecimal> il2Qty = candIdAndLine2AllocatedQty.get(icId);
-		Check.assumeNotNull(il2Qty, "{0} has no associations to invoice lines yet", ic);
+		Check.assumeNotNull(il2Qty, "{} has no associations to invoice lines yet", ic);
 
 		final BigDecimal qtyAllocatedOld = il2Qty.get(il);
-		Check.assumeNotNull(qtyAllocatedOld, "{0} has no associations to {1}", il, ic);
+		Check.assumeNotNull(qtyAllocatedOld, "{} has no associations to {}", il, ic);
 
 		final BigDecimal qtyAllocatedNew = qtyAllocatedOld.add(qtyAllocatedToAdd);
 		il2Qty.put(il, qtyAllocatedNew);

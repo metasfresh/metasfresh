@@ -53,7 +53,7 @@ public class C_Order_MFGWarehouse_ReportLine
 		final int headerOrderId = line.getC_Order_MFGWarehouse_Report().getC_Order_ID();
 		Check.errorIf(
 				lineOrderId != headerOrderId,
-				"line.getC_OrderLine().getC_Order_ID() = {0}, but line.getC_Order_MFGWarehouse_Report().getC_Order_ID() = {1}. "
+				"line.getC_OrderLine().getC_Order_ID() = {}, but line.getC_Order_MFGWarehouse_Report().getC_Order_ID() = {}. "
 						+ "Make sure that the AD_Column of C_Order_MFGWarehouse_ReportLine.C_OrderLine_ID has IsParentLine='N'",
 				lineOrderId, headerOrderId);
 

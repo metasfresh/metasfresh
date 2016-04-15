@@ -106,7 +106,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 	 */
 	public final void setMaxTUs(final int maxTUs)
 	{
-		Check.assume(maxTUs > 0, "maxTUs > 0 but it was {0}", maxTUs);
+		Check.assume(maxTUs > 0, "maxTUs > 0 but it was {}", maxTUs);
 		this.maxTUs = maxTUs;
 	}
 

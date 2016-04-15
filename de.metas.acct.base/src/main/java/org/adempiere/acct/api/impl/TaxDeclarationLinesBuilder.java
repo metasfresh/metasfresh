@@ -286,7 +286,7 @@ public class TaxDeclarationLinesBuilder
 			final int taxId = invoiceTax.getC_Tax_ID();
 			final I_C_TaxDeclarationLine taxDeclarationLine = createTaxDeclarationLine(invoice, invoiceTax);
 			final I_C_TaxDeclarationLine taxDeclarationLineOld = taxId2taxDeclarationLine.put(taxId, taxDeclarationLine);
-			Check.assumeNull(taxDeclarationLineOld, "More than one invoice tax line for {0}, taxId={1}", invoice, taxId);
+			Check.assumeNull(taxDeclarationLineOld, "More than one invoice tax line for {}, taxId={}", invoice, taxId);
 		}
 
 		//

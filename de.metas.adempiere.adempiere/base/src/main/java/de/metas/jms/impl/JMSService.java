@@ -225,7 +225,7 @@ public class JMSService implements IJMSService
 		return jmsUrl;
 
 		// final String jmsURL = Services.get(ISysConfigBL.class).getValue(JmsConstants.SYSCONFIG_JMS_URL, ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL);
-		// Check.assumeNotEmpty(jmsURL, "sysconfig '{0}' shall not be empty", JmsConstants.SYSCONFIG_JMS_URL);
+		// Check.assumeNotEmpty(jmsURL, "sysconfig '{}' shall not be empty", JmsConstants.SYSCONFIG_JMS_URL);
 		// return jmsURL;
 	}
 }

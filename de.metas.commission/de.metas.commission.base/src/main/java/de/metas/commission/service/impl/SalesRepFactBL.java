@@ -106,7 +106,7 @@ public class SalesRepFactBL implements ISalesRepFactBL
 
 			final I_C_AdvCommissionSalaryGroup starterRank = Services.get(ICommissionRankDAO.class).retrieveLowest(ctx, rankCollection, trxName);
 
-			Check.assumeNotNull(starterRank, "starterRank not null for sponsor {0}", sponsor);
+			Check.assumeNotNull(starterRank, "starterRank not null for sponsor {}", sponsor);
 			// assert starterRank != null : sponsor;
 
 			final I_C_AdvCommissionCondition contract = sponsorBL.retrieveContract(ctx, sponsor, comSystem, date, trxName);

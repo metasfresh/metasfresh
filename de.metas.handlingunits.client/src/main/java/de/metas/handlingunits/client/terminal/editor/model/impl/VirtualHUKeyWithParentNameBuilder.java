@@ -41,7 +41,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	{
 		super(huKey);
 
-		Check.assume(huKey.isVirtualPI(), "huKey is a virtualPI: {0}", huKey);
+		Check.assume(huKey.isVirtualPI(), "huKey is a virtualPI: {}", huKey);
 	}
 
 	@Override

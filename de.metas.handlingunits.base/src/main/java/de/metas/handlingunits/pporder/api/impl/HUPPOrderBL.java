@@ -71,7 +71,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		// Case: we are receiving finished goods from a BOM Order Line
 		else
 		{
-			Check.assume(cc.getPP_Order_BOMLine_ID() <= 0, "No Order BOM Line shall be set to cost collector when receiving finished goods: {0}", cc);
+			Check.assume(cc.getPP_Order_BOMLine_ID() <= 0, "No Order BOM Line shall be set to cost collector when receiving finished goods: {}", cc);
 			return new FinishedGoodsReceiptHUProducer(cc);
 		}
 	}

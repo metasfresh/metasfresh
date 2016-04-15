@@ -64,7 +64,7 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends SvrProcess im
 	@Override
 	protected String doIt() throws Exception
 	{
-		Check.errorIf(getRecord_ID() <= 0, "Process {0} needs to be run with a Record_ID", this);
+		Check.errorIf(getRecord_ID() <= 0, "Process {} needs to be run with a Record_ID", this);
 
 		final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(getCtx(), p_C_PaySelection_ID, I_C_PaySelection.class, getTrxName());
 		final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_BankStatement.class, getTrxName());

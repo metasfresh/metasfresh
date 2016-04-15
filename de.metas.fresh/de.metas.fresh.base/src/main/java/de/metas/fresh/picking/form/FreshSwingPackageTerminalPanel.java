@@ -226,7 +226,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		{
 			// NOTE: guard against inconsistencies. i think we can safely remove this in future
 			Check.assume(productKey == productsKeyPanel.getSelectedProduct(),
-					"Invalid selected product key (current key pressed={0}, current selected key={1}",
+					"Invalid selected product key (current key pressed={}, current selected key={}",
 					productKey, productsKeyPanel.getSelectedProduct());
 
 			final boolean hasOpenHU = pickingSlotKey.hasOpenHU();

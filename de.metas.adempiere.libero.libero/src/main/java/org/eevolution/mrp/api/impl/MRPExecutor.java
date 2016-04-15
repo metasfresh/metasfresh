@@ -355,10 +355,10 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 		//
 		// Validate MRP Context (i.e. MRP Planning Segment is fully defined)
 		Check.assumeNotNull(mrpContext0, "mrpContext0 not null");
-		Check.assume(mrpContext0.getAD_Client_ID() > 0, LiberoException.class, "Invalid AD_Client_ID in {0}", mrpContext0);
-		Check.assumeNotNull(mrpContext0.getAD_Org(), LiberoException.class, "Invalid Organization in {0}", mrpContext0);
-		Check.assumeNotNull(mrpContext0.getM_Warehouse(), LiberoException.class, "Invalid Warehouse in {0}", mrpContext0);
-		Check.assumeNotNull(mrpContext0.getPlant(), LiberoException.class, "Invalid Plant in {0}", mrpContext0);
+		Check.assume(mrpContext0.getAD_Client_ID() > 0, LiberoException.class, "Invalid AD_Client_ID in {}", mrpContext0);
+		Check.assumeNotNull(mrpContext0.getAD_Org(), LiberoException.class, "Invalid Organization in {}", mrpContext0);
+		Check.assumeNotNull(mrpContext0.getM_Warehouse(), LiberoException.class, "Invalid Warehouse in {}", mrpContext0);
+		Check.assumeNotNull(mrpContext0.getPlant(), LiberoException.class, "Invalid Plant in {}", mrpContext0);
 
 		//
 		// Get commons settings from given MRP Context and initialize this MRP Executor
@@ -577,7 +577,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 	 */
 	private final boolean isMRPDemandAvailable(final IMRPContext mrpContext, final I_PP_MRP mrpDemand)
 	{
-		Check.assume(mrpBL.isDemand(mrpDemand), LiberoException.class, "MRP record shall be a Demand: {0}", mrpDemand);
+		Check.assume(mrpBL.isDemand(mrpDemand), LiberoException.class, "MRP record shall be a Demand: {}", mrpDemand);
 		final String OrderType = mrpDemand.getOrderType();
 
 		//
@@ -1034,7 +1034,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 
 		//
 		// Create supply documents
-		Check.assume(ordersCount > 0, "ordersCount > 0 but it was {0} (internal error)", ordersCount);
+		Check.assume(ordersCount > 0, "ordersCount > 0 but it was {} (internal error)", ordersCount);
 		for (int orderNo = 1; orderNo <= ordersCount; orderNo++)
 		{
 			try

@@ -53,7 +53,7 @@ public final class WindowMaxQueryRecordsConstraint extends Constraint
 
 		// NOTE: instead of throw exception it's better to fallback to default. Else, all our roles on will fail now.
 		// Before changing thise, please make sure u check AD_Role.ConfirmQueryRecords.
-		// Check.assume(confirmQueryRecords > 0, "confirmQueryRecords > 0 but it was {0}", confirmQueryRecords);
+		// Check.assume(confirmQueryRecords > 0, "confirmQueryRecords > 0 but it was {}", confirmQueryRecords);
 		this.confirmQueryRecords = confirmQueryRecords <= 0 ? DEFAULT_ConfirmQueryRecords : confirmQueryRecords;
 	}
 

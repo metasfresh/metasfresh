@@ -66,7 +66,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		//
 		// Validate the given receipt
 		Check.assumeNotNull(receipt, "inOut not null");
-		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {0}", receipt);
+		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
 		trxManager.assertTrxNameNotNull(InterfaceWrapperHelper.getTrxName(receipt));
 
@@ -189,7 +189,7 @@ public class InOutMovementBL implements IInOutMovementBL
 	private void generateMovementLines(final I_M_Movement movement, final I_M_Warehouse warehouseTo, final List<I_M_InOutLine> inoutLines)
 	{
 		final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
-		Check.assumeNotNull(locatorTo, "Destination warehouse {0} has a default locator", warehouseTo);
+		Check.assumeNotNull(locatorTo, "Destination warehouse {} has a default locator", warehouseTo);
 
 		for (final I_M_InOutLine inoutLine : inoutLines)
 		{

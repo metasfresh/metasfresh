@@ -57,7 +57,7 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 		Check.assumeNotNull(validTo, "validTo not null");
 		this.validTo = validTo;
 
-		Check.assume(validFrom.compareTo(validTo) <= 0, "ValidFrom({0}) <= ValidTo({0})", validFrom, validTo);
+		Check.assume(validFrom.compareTo(validTo) <= 0, "ValidFrom({}) <= ValidTo({})", validFrom, validTo);
 	}
 
 	@Override

@@ -76,8 +76,8 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
 		final Object model = request.getModel();
 
-		Check.assumeNotNull(model, "model not null in MTLinkRequest {0}", request);
-		Check.assumeNotNull(materialTracking, "materialTracking not null in MTLinkRequest {0}", request);
+		Check.assumeNotNull(model, "model not null in MTLinkRequest {}", request);
+		Check.assumeNotNull(materialTracking, "materialTracking not null in MTLinkRequest {}", request);
 
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 

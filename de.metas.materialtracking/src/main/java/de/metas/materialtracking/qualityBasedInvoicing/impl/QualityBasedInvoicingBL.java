@@ -50,7 +50,7 @@ public class QualityBasedInvoicingBL implements IQualityBasedInvoicingBL
 	public void assumeQualityInspectionOrder(final I_PP_Order ppOrder)
 	{
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
-		Check.assume(isQualityInspection(ppOrder), "Order shall be a quality inspection order: {0}", ppOrder);
+		Check.assume(isQualityInspection(ppOrder), "Order shall be a quality inspection order: {}", ppOrder);
 	}
 
 	@Override

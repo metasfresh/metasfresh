@@ -92,7 +92,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 		}
 
 		final ITrx trx = trxManager.getTrx(trxName);
-		Check.assumeNotNull(trx, "trx not null for trxName={0}", trxName);
+		Check.assumeNotNull(trx, "trx not null for trxName={}", trxName);
 
 		return trx;
 	}

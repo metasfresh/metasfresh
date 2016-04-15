@@ -131,7 +131,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	public List<I_M_ShipmentSchedule> createMissingCandidates(final Properties ctx, final String trxName)
 	{
 		Check.errorIf(Check.isEmpty(trxName), "Param 'trxName' may not be empty");
-		Check.errorIf(trxName.startsWith("POSave"), "Param 'trxName'={0} may not start with 'POSave'", trxName);
+		Check.errorIf(trxName.startsWith("POSave"), "Param 'trxName'={} may not start with 'POSave'", trxName);
 
 		final List<I_M_ShipmentSchedule> result = new ArrayList<I_M_ShipmentSchedule>();
 
@@ -253,7 +253,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
 		final IInOutCandHandler inOutCandHandler = tableName2Handler.get(tableName);
-		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {0} with table name {1} is not null", sched, tableName);
+		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
 
 		return inOutCandHandler.createDeliverReques(sched);
 	}

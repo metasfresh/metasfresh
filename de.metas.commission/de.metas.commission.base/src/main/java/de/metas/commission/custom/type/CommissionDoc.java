@@ -65,7 +65,7 @@ public class CommissionDoc implements ICommissionType
 			final int adPinstanceId)
 	{
 		final PO po = Services.get(ICommissionFactCandBL.class).retrievePO(candidate);
-		Check.assume(InterfaceWrapperHelper.isInstanceOf(po, I_C_AdvComDoc.class), "Expecting po to be instanceof MCAdvComDoc; po={0}", po);
+		Check.assume(InterfaceWrapperHelper.isInstanceOf(po, I_C_AdvComDoc.class), "Expecting po to be instanceof MCAdvComDoc; po={}", po);
 
 		final MCAdvComDoc comDoc = (MCAdvComDoc)po;
 		if (!X_C_AdvComDoc.DOCSTATUS_Fertiggestellt.equals(comDoc.getDocStatus()))

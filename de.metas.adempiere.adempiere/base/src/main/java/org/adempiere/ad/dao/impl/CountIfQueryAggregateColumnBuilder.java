@@ -64,7 +64,7 @@ import org.adempiere.util.lang.IAggregator;
 	public String getSql(final Properties ctx, final List<Object> sqlParamsOut)
 	{
 		final List<IQueryFilter<SourceModelType>> nonSqlFilters = filters.getNonSqlFilters();
-		Check.assume(nonSqlFilters == null || nonSqlFilters.isEmpty(), "Non-SQL filters are not supported: {0}", nonSqlFilters);
+		Check.assume(nonSqlFilters == null || nonSqlFilters.isEmpty(), "Non-SQL filters are not supported: {}", nonSqlFilters);
 
 		final String sqlWhereClause = filters.getSqlFiltersWhereClause();
 

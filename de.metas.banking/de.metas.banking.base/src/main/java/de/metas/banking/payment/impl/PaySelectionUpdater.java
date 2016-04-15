@@ -155,7 +155,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			{
 				final int invoiceId = paySelectionLine.getC_Invoice_ID();
 				final I_C_PaySelectionLine paySelectionLineOld = invoiceId2paySelectionLine.put(invoiceId, paySelectionLine);
-				Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {0}, {1}", paySelectionLine, paySelectionLineOld); // shall not happen
+				Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", paySelectionLine, paySelectionLineOld); // shall not happen
 			}
 
 			return invoiceId2paySelectionLine;

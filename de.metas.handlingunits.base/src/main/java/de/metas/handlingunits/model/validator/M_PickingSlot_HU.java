@@ -56,7 +56,7 @@ public class M_PickingSlot_HU
 		if (isUserAction)
 		{
 			final IHUPickingSlotBL.IQueueActionResult result = pickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
-			Check.assumeNotNull(result.getM_PickingSlot_Trx(), "The result of addToPickingSlotQueue contains a M_PickingSlot_Trx for {0} and {1} ", pickingSlot, hu);
+			Check.assumeNotNull(result.getM_PickingSlot_Trx(), "The result of addToPickingSlotQueue contains a M_PickingSlot_Trx for {} and {} ", pickingSlot, hu);
 
 			result.getM_PickingSlot_Trx().setIsUserAction(true);
 			InterfaceWrapperHelper.save(result.getM_PickingSlot_Trx());
@@ -81,7 +81,7 @@ public class M_PickingSlot_HU
 			final IHUPickingSlotBL.IQueueActionResult result = pickingSlotBL.removeFromPickingSlotQueue(pickingSlot, hu);
 			final I_M_PickingSlot_Trx pickingSlotTrx = result.getM_PickingSlot_Trx();
 
-			Check.assumeNotNull(pickingSlotTrx, "The result of addToPickingSlotQueue contains a M_PickingSlot_Trx for {0} and {1} ", pickingSlot, hu);
+			Check.assumeNotNull(pickingSlotTrx, "The result of addToPickingSlotQueue contains a M_PickingSlot_Trx for {} and {} ", pickingSlot, hu);
 
 			pickingSlotTrx.setIsUserAction(true);
 			InterfaceWrapperHelper.save(pickingSlotTrx);

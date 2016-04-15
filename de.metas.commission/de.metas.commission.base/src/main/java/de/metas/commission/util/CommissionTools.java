@@ -97,7 +97,7 @@ public final class CommissionTools
 			{
 				// TODO translate
 				throw new CommissionException(
-						"Fehlende Preislistenversion fuer Preisliste {0} zum Zeitpunkt {1}",
+						"Fehlende Preislistenversion fuer Preisliste {} zum Zeitpunkt {}",
 						new Object[] { pl.getName(), time });
 			}
 			final MProductPrice[] pps =

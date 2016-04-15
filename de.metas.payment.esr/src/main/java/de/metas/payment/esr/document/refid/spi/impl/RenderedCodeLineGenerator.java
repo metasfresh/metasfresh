@@ -95,7 +95,7 @@ public class RenderedCodeLineGenerator implements IReferenceNoGenerator
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 		final IReferenceNoGeneratorInstance instance = Services.get(IReferenceNoBL.class).getReferenceNoGeneratorInstance(ctx, refNoType);
 		final String invoiceReferenceNoStr = instance.generateReferenceNo(source);
-		Check.assume(IReferenceNoGenerator.REFERENCENO_None != invoiceReferenceNoStr, "Instance {0} shall generate a reference number for source {1}", instance, source);
+		Check.assume(IReferenceNoGenerator.REFERENCENO_None != invoiceReferenceNoStr, "Instance {} shall generate a reference number for source {}", instance, source);
 
 		//
 		final StringBuilder renderedCodeLine = new StringBuilder();

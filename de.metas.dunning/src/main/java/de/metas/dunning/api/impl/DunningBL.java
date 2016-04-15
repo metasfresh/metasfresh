@@ -94,7 +94,7 @@ public class DunningBL implements IDunningBL
 			if (_dunningConfigurator != null)
 			{
 				this._config = _dunningConfigurator.configure(new DunningConfig());
-				Check.assumeNotNull(_config, "Configurator {0} shall return a not null config", _dunningConfigurator);
+				Check.assumeNotNull(_config, "Configurator {} shall return a not null config", _dunningConfigurator);
 			}
 			else
 			{

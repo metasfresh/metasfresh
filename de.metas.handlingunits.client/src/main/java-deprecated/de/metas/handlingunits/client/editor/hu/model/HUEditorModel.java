@@ -239,7 +239,7 @@ public class HUEditorModel extends AbstractHUTreeTableModel<IHUTreeNode>
 				@Override
 				public boolean evaluate(final IHUTreeNode node)
 				{
-					Check.assume(node instanceof HUTreeNode, "{0} instanceof HUTreeNode", node);
+					Check.assume(node instanceof HUTreeNode, "{} instanceof HUTreeNode", node);
 					final I_M_HU hu = ((HUTreeNode)node).getM_HU();
 					return finalTopLevelHU.getM_HU_ID() == hu.getM_HU_ID();
 				}

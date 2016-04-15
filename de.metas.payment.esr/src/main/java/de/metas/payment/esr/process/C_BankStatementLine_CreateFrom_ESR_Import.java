@@ -116,7 +116,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 	@Override
 	protected String doIt() throws Exception
 	{
-		Check.errorIf(getRecord_ID() <= 0, "Process {0} needs to be run with a Record_ID", this);
+		Check.errorIf(getRecord_ID() <= 0, "Process {} needs to be run with a Record_ID", this);
 
 		//
 		// Import ESR_ImportLines to bank statement line references
@@ -169,7 +169,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 		final I_ESR_Import esrImport = getESR_Import();
 
 		Check.errorIf(bankStatement.getC_BP_BankAccount_ID() != esrImport.getC_BP_BankAccount_ID(),
-				"C_BankStatement {0} with C_BP_BankAccount_ID={1} and ESR_Import {2} with C_BP_BankAccount_ID={3} need to have the same C_BP_BankAccount_ID",
+				"C_BankStatement {} with C_BP_BankAccount_ID={} and ESR_Import {} with C_BP_BankAccount_ID={} need to have the same C_BP_BankAccount_ID",
 				bankStatement, bankStatement.getC_BP_BankAccount_ID(), esrImport, esrImport.getC_BP_BankAccount_ID());
 
 		//

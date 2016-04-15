@@ -303,7 +303,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public boolean isDestroyedRefreshFirst(final I_M_HU hu) throws AdempiereException
 	{
-		Check.assume(!InterfaceWrapperHelper.hasChanges(hu), "hu was saved: {0}", hu);
+		Check.assume(!InterfaceWrapperHelper.hasChanges(hu), "hu was saved: {}", hu);
 		InterfaceWrapperHelper.refresh(hu);
 
 		return isDestroyed(hu);

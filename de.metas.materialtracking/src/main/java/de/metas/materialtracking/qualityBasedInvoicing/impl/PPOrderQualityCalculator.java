@@ -84,7 +84,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw

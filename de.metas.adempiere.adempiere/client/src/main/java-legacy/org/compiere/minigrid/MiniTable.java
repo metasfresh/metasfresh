@@ -541,14 +541,14 @@ public class MiniTable extends CTable implements IMiniTable
 			m_minWidth.add(new Integer(30));
 
 			Check.assume(displayType <= 0 || displayType == DisplayType.YesNo,
-					"Invalid DisplayType={0}. Only YesNo is allowed", displayType);
+					"Invalid DisplayType={}. Only YesNo is allowed", displayType);
 			tc.setHeaderRenderer(new VHeaderRenderer(DisplayType.YesNo));
 		}
 		// Date
 		else if (c == Timestamp.class)
 		{
 			Check.assume(displayType <= 0 || DisplayType.isDate(displayType),
-					"Invalid DisplayType={0}. Date/Time type allowed", displayType);
+					"Invalid DisplayType={}. Date/Time type allowed", displayType);
 			final int displayTypeToUse = displayType > 0 ? displayType : DisplayType.Date;
 
 			tc.setCellRenderer(new VCellRenderer(displayTypeToUse));
@@ -565,7 +565,7 @@ public class MiniTable extends CTable implements IMiniTable
 		else if (c == BigDecimal.class)
 		{
 			Check.assume(displayType <= 0 || DisplayType.isNumeric(displayType),
-					"Invalid DisplayType={0}. Numeric type allowed", displayType);
+					"Invalid DisplayType={}. Numeric type allowed", displayType);
 			final int displayTypeToUse = displayType > 0 ? displayType : DisplayType.Amount;
 
 			final VCellRenderer cellRenderer = new VCellRenderer(displayTypeToUse);
@@ -597,7 +597,7 @@ public class MiniTable extends CTable implements IMiniTable
 		else if (c == Double.class)
 		{
 			Check.assume(displayType <= 0 || DisplayType.isNumeric(displayType),
-					"Invalid DisplayType={0}. Numeric type allowed", displayType);
+					"Invalid DisplayType={}. Numeric type allowed", displayType);
 			final int displayTypeToUse = displayType > 0 ? displayType : DisplayType.Number;
 
 			tc.setCellRenderer(new VCellRenderer(displayTypeToUse));
@@ -619,7 +619,7 @@ public class MiniTable extends CTable implements IMiniTable
 		else if (c == Integer.class)
 		{
 			Check.assume(displayType <= 0 || DisplayType.isNumeric(displayType) || DisplayType.isID(displayType),
-					"Invalid DisplayType={0}. Numeric type allowed", displayType);
+					"Invalid DisplayType={}. Numeric type allowed", displayType);
 			final int displayTypeToUse = displayType > 0 ? displayType : DisplayType.Integer;
 
 			tc.setCellRenderer(new VCellRenderer(displayTypeToUse));
@@ -650,7 +650,7 @@ public class MiniTable extends CTable implements IMiniTable
 		{
 			// NOTE: don't validate because here we can get TableDir but it will be displayed as String
 			// Check.assume(displayType <= 0 || DisplayType.isText(displayType),
-			// "Invalid DisplayType={0}. Text type allowed", displayType);
+			// "Invalid DisplayType={}. Text type allowed", displayType);
 			final int displayTypeToUse = displayType > 0 && DisplayType.isText(displayType) ? displayType : DisplayType.String;
 
 			tc.setCellRenderer(new VCellRenderer(displayTypeToUse));

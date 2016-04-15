@@ -365,7 +365,7 @@ public class WorkflowProcessor extends AdempiereServer
 			pdf = ((DocAction)po).createPDF();
 		}
 		
-		//  Inactivity Alert: Workflow Activity {0}
+		//  Inactivity Alert: Workflow Activity {}
 		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, 
 			new Object[] {subjectVar});
 		

@@ -140,7 +140,7 @@ public class Inbound2OutboundPaymentAllocationBuilder
 		Check.assumeNotNull(row, "row not null");
 
 		final int paymentId = row.getC_Payment_ID();
-		Check.assume(paymentId > 0, "paymentId > 0: {0}", row);
+		Check.assume(paymentId > 0, "paymentId > 0: {}", row);
 
 		// Get inbound payment's open amount.
 		// NOTE: the amount shall NOT be AP adjusted because the BL depends on it.
@@ -192,7 +192,7 @@ public class Inbound2OutboundPaymentAllocationBuilder
 		paymentOut.setDocStatus(DocAction.STATUS_Drafted);
 		paymentOut.setDocAction(DocAction.ACTION_Complete);
 		InterfaceWrapperHelper.save(paymentOut);
-		Check.assume(!paymentOut.isReceipt(), "payment is not receipt: {0}", paymentOut);
+		Check.assume(!paymentOut.isReceipt(), "payment is not receipt: {}", paymentOut);
 		docActionBL.processEx(paymentOut, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 		
 		

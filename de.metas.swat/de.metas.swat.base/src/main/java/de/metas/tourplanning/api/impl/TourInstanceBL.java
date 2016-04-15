@@ -196,7 +196,7 @@ public class TourInstanceBL implements ITourInstanceBL
 	public void assignToTourInstance(final I_M_DeliveryDay deliveryDay, final I_M_Tour_Instance tourInstance)
 	{
 		Check.assumeNotNull(tourInstance, "tourInstance not null");
-		Check.assume(tourInstance.getM_Tour_Instance_ID() > 0, "tourInstance shall be saved: {0}", tourInstance);
+		Check.assume(tourInstance.getM_Tour_Instance_ID() > 0, "tourInstance shall be saved: {}", tourInstance);
 
 		deliveryDay.setM_Tour_Instance(tourInstance);
 		// NOTE: please don't save it because it could be that is not the only change or we are in a before/after save model interceptor

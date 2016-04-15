@@ -193,7 +193,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 	 */
 	private ILUTUCUKey autoDetectKeyForSelection(final IKeyLayout keyLayout, final I_M_HU hu)
 	{
-		Check.assume(keyLayout.getKeysCount() > 0, "keyLayout {0} shall be loaded with keys", keyLayout);
+		Check.assume(keyLayout.getKeysCount() > 0, "keyLayout {} shall be loaded with keys", keyLayout);
 
 		final boolean virtual = handlingUnitsBL.isVirtual(hu);
 		final I_M_HU_PI huPI = hu.getM_HU_PI_Version().getM_HU_PI();
@@ -306,7 +306,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 	private void calculateForExistingTradingUnit(final ILTCUModel model, final I_M_HU tuHU)
 	{
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "HU is Transport Unit ({0})", tuHU);
+		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "HU is Transport Unit ({})", tuHU);
 
 		final boolean isTopLevelHU = handlingUnitsBL.isTopLevel(tuHU);
 		if (isTopLevelHU)
@@ -326,8 +326,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 	private void calculateForExistingLoadingUnit(final ILTCUModel model, final I_M_HU luHU)
 	{
-		Check.assume(handlingUnitsBL.isLoadingUnit(luHU), "HU is Loading Unit ({0})", luHU);
-		Check.assume(handlingUnitsBL.isTopLevel(luHU), "HU is top-level ({0})", luHU);
+		Check.assume(handlingUnitsBL.isLoadingUnit(luHU), "HU is Loading Unit ({})", luHU);
+		Check.assume(handlingUnitsBL.isTopLevel(luHU), "HU is top-level ({})", luHU);
 
 		final TUKey tuKey = model.getTUKeyLayout().getKeyLayoutSelectionModel().getSelectedKey(TUKey.class, AbstractLTCUModel.ERR_SELECT_TU_KEY);
 		final I_M_HU_PI selectedTUPI = tuKey.getM_HU_PI();
@@ -381,7 +381,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 			// Reason why we're doing this and not directly throwing an exception in the user's face:
 			// Due to the high number of test cases and low-to-none GUI test coverage, there are cases where auto-detection does not work.
 			// Therefore, we want to skip the initial qty calculation and not interfere with the user's work (albeit a bit annoying that the qtys are not calculated)
-			final AdempiereException ex = new AdempiereException("Developer error: tuKey was null (not detected) for huToSplit value={0}", new Object[] { huToSplit.getValue() });
+			final AdempiereException ex = new AdempiereException("Developer error: tuKey was null (not detected) for huToSplit value={}", new Object[] { huToSplit.getValue() });
 			logger.error(ex.getLocalizedMessage(), ex);
 
 			return; // protection: log the exception message and do not attempt to calculate any further.

@@ -50,10 +50,10 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 	public IReplRequestHandler getRequestHandlerInstance(I_IMP_RequestHandler requestHandlerDef)
 	{
 		Util.assume(requestHandlerDef != null, "requestHandlerDef is not null");
-		Util.assume(requestHandlerDef.isActive(), "Request handler {0} is active", requestHandlerDef);
+		Util.assume(requestHandlerDef.isActive(), "Request handler {} is active", requestHandlerDef);
 
 		final I_IMP_RequestHandlerType requestHandlerType = requestHandlerDef.getIMP_RequestHandlerType();
-		Util.assume(requestHandlerType.isActive(), "Request handler type {0} is active", requestHandlerType);
+		Util.assume(requestHandlerType.isActive(), "Request handler type {} is active", requestHandlerType);
 
 		final String classname = requestHandlerType.getClassname();
 		final IReplRequestHandler requestHandler = Util.getInstance(IReplRequestHandler.class, classname);

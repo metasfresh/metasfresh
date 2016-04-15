@@ -156,7 +156,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 		log.info("Adempiere JNLP: " + adempiereJNLP);
 
 		final String title = org.compiere.Adempiere.getName() + " " + Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ErrorMessage, true);
-		// Client version {1} is available (current version is {0}).
+		// Client version {} is available (current version is {}).
 		String msg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ErrorMessage);   // complete message
 		msg = MessageFormat.format(msg, new Object[] { clientVersion, newVersion });
 		JOptionPane.showMessageDialog(null,

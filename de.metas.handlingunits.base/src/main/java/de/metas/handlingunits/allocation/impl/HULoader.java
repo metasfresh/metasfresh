@@ -226,7 +226,7 @@ public class HULoader
 	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		Check.assume(!trxManager.isNull(huContext.getTrxName()),
-				"HU Context shall not have null transaction: {0}", huContext);
+				"HU Context shall not have null transaction: {}", huContext);
 
 		final IHUTransactionAttributeBuilder trxAttributesBuilder = getTrxAttributesBuilder();
 		Check.assumeNotNull(trxAttributesBuilder, "Attribute Transactions Collector shall be configured at this point");

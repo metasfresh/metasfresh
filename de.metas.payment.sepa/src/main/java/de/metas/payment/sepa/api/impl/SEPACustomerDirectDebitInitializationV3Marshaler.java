@@ -362,7 +362,7 @@ public class SEPACustomerDirectDebitInitializationV3Marshaler
 			instdAmt.setCcy(ActiveOrHistoricCurrencyCodeEUR.fromValue("EUR")); // Hard-coded value of EUR
 
 			final BigDecimal amount = line.getAmt();
-			Check.assume(amount != null && amount.signum() > 0, "Invalid amount '{0}' for {1}'", amount, line);
+			Check.assume(amount != null && amount.signum() > 0, "Invalid amount '{}' for {}'", amount, line);
 			instdAmt.setValue(amount);
 
 			directDebitTrxInfo.setInstdAmt(instdAmt);

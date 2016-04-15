@@ -58,7 +58,7 @@ import de.metas.lock.api.ILock;
 		Check.assume(invoiceCandidateEnqueuedCount >= 0, "invoiceCandidateEnqueuedCount > 0");
 		this.invoiceCandidateEnqueuedCount = invoiceCandidateEnqueuedCount;
 
-		Check.assume(enqueuedWorkpackageCount >= 0, "Expected positive amount of enqueuedWorkpackageCount, but got {0}", enqueuedWorkpackageCount);
+		Check.assume(enqueuedWorkpackageCount >= 0, "Expected positive amount of enqueuedWorkpackageCount, but got {}", enqueuedWorkpackageCount);
 		this.workpackageEnqueuedCount = enqueuedWorkpackageCount;
 
 		this.workpackageQueueSizeBeforeEnqueueing = workpackageQueueSizeBeforeEnqueueing;

@@ -71,8 +71,8 @@ public class HUPackageBL implements IHUPackageBL
 		Check.assumeNotNull(hu, HUException.class, "hu not null");
 		Check.assumeNotNull(shipper, HUException.class, "shipper not null");
 
-		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {0} has C_BPartner_ID <= 0", hu);
-		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {0} has C_BPartner_Location_ID <= 0", hu);
+		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
+		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
 		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class, contextProvider);
 		mpackage.setM_Shipper_ID(shipper.getM_Shipper_ID());
@@ -106,7 +106,7 @@ public class HUPackageBL implements IHUPackageBL
 		if (!huShipperTransportationBL.isEligibleForAddingToShipperTransportation(hu))
 		{
 			Check.errorIf(true, HUException.class,
-					"Internal error: The HU used to search the M_Package is not eligible for shipper transportation." + "\n @M_InOut_ID@: {0}", hu);
+					"Internal error: The HU used to search the M_Package is not eligible for shipper transportation." + "\n @M_InOut_ID@: {}", hu);
 		}
 
 		final List<I_M_Package> mpackages = huPackageDAO.retrievePackages(hu, trxName);

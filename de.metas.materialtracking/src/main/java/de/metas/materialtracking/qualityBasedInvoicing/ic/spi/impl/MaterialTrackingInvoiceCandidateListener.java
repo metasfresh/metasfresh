@@ -92,7 +92,7 @@ public class MaterialTrackingInvoiceCandidateListener extends InvoiceCandidateLi
 					de.metas.materialtracking.model.I_C_Invoice_Candidate.class);
 			final int materialTrackingID = materialTracking == null ? 0 : materialTracking.getM_Material_Tracking_ID();
 			Check.assume(materialTrackingID == invoicecandExt.getM_Material_Tracking_ID(),
-					"All I_C_InvoiceCandidates from the list have the same M_Material_Tracking_ID: {0}", invoiceCandidates);
+					"All I_C_InvoiceCandidates from the list have the same M_Material_Tracking_ID: {}", invoiceCandidates);
 		}
 
 		return materialTracking;

@@ -93,7 +93,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			valueType = _attributeValuesProvider.getAttributeValueType();
 			Check.assume(!X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(valueType),
-					"Provider {0} shall not return attribute value type List", _attributeValuesProvider);
+					"Provider {} shall not return attribute value type List", _attributeValuesProvider);
 		}
 		else
 		{

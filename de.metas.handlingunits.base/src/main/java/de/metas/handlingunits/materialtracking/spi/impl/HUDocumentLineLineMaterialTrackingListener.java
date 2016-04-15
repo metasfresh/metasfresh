@@ -67,7 +67,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 		if (!request.getParams().getParameterAsBool(HUConstants.PARAM_CHANGE_HU_MAterial_Tracking_ID))
 		{
 			logger.debug(
-					"request {0} has no Params or has {1} == false; nothing to do",
+					"request {} has no Params or has {} == false; nothing to do",
 					new Object[] { request, HUConstants.PARAM_CHANGE_HU_MAterial_Tracking_ID });
 			return;
 		}

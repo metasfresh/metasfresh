@@ -224,7 +224,7 @@ public class HUs2DDOrderProducer
 		//
 		// Organization BPartner & Location
 		orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
-		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {0}", org);
+		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
 		orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, org.getAD_Org_ID(), ITrx.TRXNAME_None);
 
 		//
@@ -234,7 +234,7 @@ public class HUs2DDOrderProducer
 		//
 		// InTransit warehouse
 		warehouseInTrasit = warehouseDAO.retrieveWarehouseInTransitForOrg(ctx, org.getAD_Org_ID());
-		Check.assumeNotNull(warehouseInTrasit, "Warehouse in Trasit shall exist for {0}", org);
+		Check.assumeNotNull(warehouseInTrasit, "Warehouse in Trasit shall exist for {}", org);
 
 		//
 		// DD_Order document type
@@ -528,7 +528,7 @@ public class HUs2DDOrderProducer
 		
 		public void addDDOrderLineCandidate(final DDOrderLineCandidate candidateToAdd)
 		{
-			Check.assume(Check.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {0} \nBut it was: {1}", this.aggregationKey, candidateToAdd.getAggregationKey());
+			Check.assume(Check.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", this.aggregationKey, candidateToAdd.getAggregationKey());
 			
 			this.hus.addAll(candidateToAdd.getM_HUs());
 

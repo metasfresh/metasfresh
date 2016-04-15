@@ -96,7 +96,7 @@ public class OLCandIssueSolverProcess extends SvrProcess
 		final IReplicationIssueSolver<? extends IReplicationIssueAware> issueSolver = new NoOpIssueSolver<I_C_OLCand>();
 
 		final I_EXP_ReplicationTrx rplTrx = InterfaceWrapperHelper.create(getCtx(), p_EXP_ReplicationTrx_ID, I_EXP_ReplicationTrx.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(rplTrx, "@EXP_ReplicationTrx_ID@ exists for ID={0}", p_EXP_ReplicationTrx_ID);
+		Check.assumeNotNull(rplTrx, "@EXP_ReplicationTrx_ID@ exists for ID={}", p_EXP_ReplicationTrx_ID);
 
 		//
 		// task 08072: verify that all candidates have proper pricing

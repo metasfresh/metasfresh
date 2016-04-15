@@ -112,20 +112,20 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		//
 		// Retrieve and validate ManufacturerCode
 		final String manufacturerCode_SysConfig = getManufacturerCode(ctx);
-		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {0} is not a number", manufacturerCode_SysConfig);
+		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
 		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
-		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {0}", manufacturerCode_SysConfig);
+		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
 
 		//
 		// Validate serialNumber and adjust serialNumber and manufacturerCode paddings
 		final String serialNumberStr = String.valueOf(serialNumber);
 		final int serialNumberSize = serialNumberStr.length();
-		Check.assume(serialNumberSize <= 9, "Serial number too long: {0}", serialNumberStr);
+		Check.assume(serialNumberSize <= 9, "Serial number too long: {}", serialNumberStr);
 		final String finalManufacturerCode;
 		final String finalSerialNumber;
 		if (manufacturerCodeSize == 8)
 		{
-			Check.assume(serialNumberSize <= 8, "Serial number too long: {0}", serialNumberStr);
+			Check.assume(serialNumberSize <= 8, "Serial number too long: {}", serialNumberStr);
 			finalSerialNumber = Util.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
 
 			finalManufacturerCode = manufacturerCode_SysConfig;

@@ -132,7 +132,7 @@ public class PrintPackageBL implements IPrintPackageBL
 			final String trxName)
 	{
 		final String jobInstructionsTrxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
-		Check.assume(Check.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {0}, jobInstructions' trxName: {1}; jobInstructions={2})",
+		Check.assume(Check.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
 				trxName, jobInstructionsTrxName, jobInstructions);
 
 		printPackage.setCopies(jobInstructions.getCopies());
@@ -149,7 +149,7 @@ public class PrintPackageBL implements IPrintPackageBL
 		}
 
 		final I_C_Print_Package printPackageCreated = aggregator.createPrintPackage();
-		Check.assumeNotNull(printPackageCreated, "Print package created for {0}", jobInstructions);
+		Check.assumeNotNull(printPackageCreated, "Print package created for {}", jobInstructions);
 
 		InterfaceWrapperHelper.save(printPackage);
 	}
@@ -173,7 +173,7 @@ public class PrintPackageBL implements IPrintPackageBL
 		logger.debug("Session: {}", session);
 
 		final String hostKey = session.getHostKey();
-		Check.assumeNotEmpty(hostKey, "{0} has a hostKey", session);
+		Check.assumeNotEmpty(hostKey, "{} has a hostKey", session);
 
 		printCtx.setHostKey(hostKey);
 

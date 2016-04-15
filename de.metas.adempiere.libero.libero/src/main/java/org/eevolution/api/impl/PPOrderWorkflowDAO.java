@@ -249,7 +249,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	{
 		final I_PP_Order_Workflow orderWorkflow = Services.get(IPPOrderWorkflowDAO.class).retrieveOrderWorkflow(order);
 		final I_PP_Order_Node startNode = orderWorkflow.getPP_Order_Node();
-		Check.assumeNotNull(startNode, LiberoException.class, "Start node shall exist for {0}", order);
+		Check.assumeNotNull(startNode, LiberoException.class, "Start node shall exist for {}", order);
 
 		return startNode.getS_Resource();
 	}

@@ -603,7 +603,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		//
 		// Get M_Product_ID
 		final int productId = imp.getM_Product_ID();
-		Check.assume(productId > 0, "M_Product shall be set in {0}", imp);
+		Check.assume(productId > 0, "M_Product shall be set in {}", imp);
 
 		//
 		// Get prices

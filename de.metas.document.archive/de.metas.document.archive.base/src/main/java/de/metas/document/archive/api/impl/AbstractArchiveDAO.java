@@ -60,12 +60,12 @@ public abstract class AbstractArchiveDAO implements IArchiveDAO
 			{
 				if (c.getAD_Client_ID() == adClientId)
 				{
-					Check.assume(config == null, "Only one configuration shall exist for tableId '{0}' on client '{1}' but we found: {2}, {3}", tableId, adClientId, config, c);
+					Check.assume(config == null, "Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}", tableId, adClientId, config, c);
 					config = c;
 				}
 				else if (c.getAD_Client_ID() == 0) // system
 				{
-					Check.assume(configSys == null, "Only one configuration shall exist for tableId '{0}' on client '{1}' but we found: {2}, {3}", tableId, 0, configSys, c);
+					Check.assume(configSys == null, "Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}", tableId, 0, configSys, c);
 					configSys = c;
 				}
 			}

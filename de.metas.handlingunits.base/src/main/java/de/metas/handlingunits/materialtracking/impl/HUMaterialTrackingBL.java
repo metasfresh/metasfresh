@@ -52,7 +52,7 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ctx, ATTRIBUTENAME_IsQualityInspection, I_M_Attribute.class);
-		Check.assumeNotNull(attribute, "attribute shall exist for {0}", ATTRIBUTENAME_IsQualityInspection);
+		Check.assumeNotNull(attribute, "attribute shall exist for {}", ATTRIBUTENAME_IsQualityInspection);
 
 		return attribute;
 	}

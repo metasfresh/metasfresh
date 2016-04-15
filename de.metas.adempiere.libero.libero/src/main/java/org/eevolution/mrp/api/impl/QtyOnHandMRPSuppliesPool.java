@@ -148,7 +148,7 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 	{
 		final IMRPContext mrpContext = getMRPContext();
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
-		Check.assume(qtyProjectedOnHandToReserve.signum() > 0, "qtyProjectedOnHandToReserve > 0 but it was {0}", qtyProjectedOnHandToReserve);
+		Check.assume(qtyProjectedOnHandToReserve.signum() > 0, "qtyProjectedOnHandToReserve > 0 but it was {}", qtyProjectedOnHandToReserve);
 		trxManager.assertTrxNotNull(mrpContext);
 
 		final I_PP_MRP mrpDemandRecord = mrpDemand.getPP_MRP();

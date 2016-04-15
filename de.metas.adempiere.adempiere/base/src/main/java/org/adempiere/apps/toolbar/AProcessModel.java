@@ -72,7 +72,7 @@ public class AProcessModel
 		}
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-		Check.assumeNotNull(role, "No role found for {0}", ctx);
+		Check.assumeNotNull(role, "No role found for {}", ctx);
 
 		final int AD_Table_ID = gridTab.getAD_Table_ID();
 		final List<I_AD_Process> list = Services.get(IADProcessDAO.class).retrieveProcessesForTable(ctx, AD_Table_ID);

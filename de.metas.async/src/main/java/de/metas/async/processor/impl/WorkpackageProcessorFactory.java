@@ -111,7 +111,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	public void validateWorkpackageProcessor(final I_C_Queue_PackageProcessor packageProcessorDef)
 	{
 		final IWorkpackageProcessor packageProcessor = getWorkpackageProcessor(packageProcessorDef, false); // checkBlacklist=false
-		Check.assumeNotNull(packageProcessor, "No " + IWorkpackageProcessor.class + " could be loaded for {0}", packageProcessorDef);
+		Check.assumeNotNull(packageProcessor, "No " + IWorkpackageProcessor.class + " could be loaded for {}", packageProcessorDef);
 
 		// If everything is ok, make sure to remove it from list
 		blacklist.removeFromBlacklist(packageProcessorDef.getC_Queue_PackageProcessor_ID());

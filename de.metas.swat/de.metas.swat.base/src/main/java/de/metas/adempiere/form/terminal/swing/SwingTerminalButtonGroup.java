@@ -185,7 +185,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			return null;
 		}
 		final T value = buttonModel2value.get(buttonModel);
-		Check.assumeNotNull(value, "value shall exist for {0}", buttonModel);
+		Check.assumeNotNull(value, "value shall exist for {}", buttonModel);
 		return value;
 	}
 

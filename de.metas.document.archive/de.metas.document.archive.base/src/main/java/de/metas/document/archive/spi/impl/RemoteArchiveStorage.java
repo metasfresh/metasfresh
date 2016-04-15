@@ -132,7 +132,7 @@ public class RemoteArchiveStorage extends AbstractArchiveStorage
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 		final I_AD_Archive tempArchive = InterfaceWrapperHelper.create(ctx, fromTempArchiveId, I_AD_Archive.class, trxName);
-		Check.assumeNotNull(tempArchive, "Temporary archive not found for AD_Archive_ID={0}", fromTempArchiveId);
+		Check.assumeNotNull(tempArchive, "Temporary archive not found for AD_Archive_ID={}", fromTempArchiveId);
 
 		transferData(archive, tempArchive);
 
@@ -141,7 +141,7 @@ public class RemoteArchiveStorage extends AbstractArchiveStorage
 
 	private void transferData(final I_AD_Archive archive, final I_AD_Archive fromTempArchive)
 	{
-		Check.assume(fromTempArchive.isFileSystem(), "Temporary archive {0} shall be saved in filesystem", fromTempArchive);
+		Check.assume(fromTempArchive.isFileSystem(), "Temporary archive {} shall be saved in filesystem", fromTempArchive);
 
 		archive.setIsFileSystem(fromTempArchive.isFileSystem());
 		archive.setBinaryData(fromTempArchive.getBinaryData());

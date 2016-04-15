@@ -143,7 +143,7 @@ import de.metas.invoice.MatchInvException;
 
 	private final void assertNotBuilt()
 	{
-		Check.assume(!_built, "Not already built: {0}", this);
+		Check.assume(!_built, "Not already built: {}", this);
 	}
 
 	private final void markBuilt()

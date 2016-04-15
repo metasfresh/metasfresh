@@ -74,7 +74,7 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	/*package*/ void setGroup(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
 		Check.errorIf(this.qualityInvoiceLineGroup != null,
-				"This instance {0} was already added to qualityInvoiceLineGroup {1}; can't be added to {2}",
+				"This instance {} was already added to qualityInvoiceLineGroup {}; can't be added to {}",
 				this, this.qualityInvoiceLineGroup, qualityInvoiceLineGroup);
 		this.qualityInvoiceLineGroup = qualityInvoiceLineGroup;
 	}

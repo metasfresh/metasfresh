@@ -68,8 +68,8 @@ public class M_InOut_Receipt
 			}
 
 			final I_M_InOutLine reversalLine = line.getReversalLine();
-			Check.assumeNotNull(reversalLine, "reversalLine not null (original line: {0})", line);
-			Check.assume(reversalLine.getM_InOutLine_ID() > 0, "reversalLine not null (original line: {0})", line);
+			Check.assumeNotNull(reversalLine, "reversalLine not null (original line: {})", line);
+			Check.assume(reversalLine.getM_InOutLine_ID() > 0, "reversalLine not null (original line: {})", line);
 
 			reverseAllocations(lineAllocs, reversalLine);
 		}

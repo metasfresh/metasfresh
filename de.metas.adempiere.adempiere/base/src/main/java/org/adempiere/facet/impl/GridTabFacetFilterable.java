@@ -85,7 +85,7 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		Check.assume(InterfaceWrapperHelper.getTableName(modelClass).equals(gridTab.getTableName()),
-				"{0} and {1} shall have the same TableName", gridTab, modelClass);
+				"{} and {} shall have the same TableName", gridTab, modelClass);
 
 		this.gridTab = gridTab;
 

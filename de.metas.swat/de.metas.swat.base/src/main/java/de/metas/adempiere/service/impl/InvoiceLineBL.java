@@ -183,10 +183,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 
 			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
-			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
+			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
-			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {0}", invoiceLine);
+			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
 			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
 
@@ -210,10 +210,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final I_M_PriceList priceList = order.getM_PriceList();
 
 			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
-			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
+			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
-			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {0}", invoiceLine);
+			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
 			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
 
@@ -251,20 +251,20 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_C_UOM priceUOM = invoiceLine.getPrice_UOM();
 		if (invoiceLine.getPrice_UOM_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {0} has no Price_UOM and param throwErrorIfNotPossible=true", invoiceLine);
+			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has no Price_UOM and param throwErrorIfNotPossible=true", invoiceLine);
 
 			return qty;
 		}
 		if (invoiceLine.getM_Product_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {0} has no M_Product and param throwErrorIfNotPossible=true", invoiceLine);
+			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has no M_Product and param throwErrorIfNotPossible=true", invoiceLine);
 			return qty;
 		}
 
 		final I_M_Product product = invoiceLine.getM_Product();
 		if (product.getC_UOM_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {0} has M_Product {1} with no C_UOM and param throwErrorIfNotPossible=true", invoiceLine, product);
+			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has M_Product {} with no C_UOM and param throwErrorIfNotPossible=true", invoiceLine, product);
 			return qty;
 		}
 

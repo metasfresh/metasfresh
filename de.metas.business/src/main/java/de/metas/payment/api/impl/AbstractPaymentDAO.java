@@ -43,7 +43,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public BigDecimal getInvoiceOpenAmount(I_C_Payment payment,final boolean creditMemoAdjusted)
 	{
 		final I_C_Invoice invoice = payment.getC_Invoice();
-		Check.assumeNotNull(invoice, "Invoice available for {0}", payment);
+		Check.assumeNotNull(invoice, "Invoice available for {}", payment);
 		
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 		

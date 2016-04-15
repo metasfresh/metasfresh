@@ -110,14 +110,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		//
 		// Retrieve VHU, TU and LU
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{0} shall be a TU or a VirtualHU", tuOrVHU);
+		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
 		final I_M_HU vhu;
 		final I_M_HU tuHU;
 		if (handlingUnitsBL.isVirtual(tuOrVHU))
 		{
 			vhu = tuOrVHU;
 			tuHU = handlingUnitsBL.getTransportUnitHU(tuOrVHU);
-			Check.assumeNotNull(tuHU, "TU shall exist for virtual HU: {0}", vhu);
+			Check.assumeNotNull(tuHU, "TU shall exist for virtual HU: {}", vhu);
 		}
 		else
 		{
@@ -173,7 +173,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{0} shall be a TU", tuHU);
+		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{} shall be a TU", tuHU);
 
 		final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(tuHU);
 
@@ -379,7 +379,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final int shipmentCount = shipments.size();
 		if (shipmentCount > 1)
 		{
-			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {0}. Returning the first one (out of {2}).",
+			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {}. Returning the first one (out of {}).",
 					new Object[] { shipmentSchedule, shipmentCount });
 			logger.warn(ex.getLocalizedMessage());
 		}

@@ -71,7 +71,7 @@ final class AllocationLineCandidate
 
 		payableDocumentRef = builder.getPayableDocumentRef();
 		paymentDocumentRef = builder.getPaymentDocumentRef();
-		Check.errorIf(Check.equals(payableDocumentRef, paymentDocumentRef), "payable and payment shall not be the same but there are: {0}", payableDocumentRef);
+		Check.errorIf(Check.equals(payableDocumentRef, paymentDocumentRef), "payable and payment shall not be the same but there are: {}", payableDocumentRef);
 		if (amount.signum() != 0)
 		{
 			Check.assumeNotNull(paymentDocumentRef, "paymentDocumentRef not null when amount is not zero");

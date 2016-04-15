@@ -86,7 +86,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	/**
 	 * Cannot fully load:
 	 */
-	private static final String ERR_CANNOT_FULLY_LOAD = "@CannotFullyLoad@ {0}";
+	private static final String ERR_CANNOT_FULLY_LOAD = "@CannotFullyLoad@ {}";
 
 	//
 	// Parameters

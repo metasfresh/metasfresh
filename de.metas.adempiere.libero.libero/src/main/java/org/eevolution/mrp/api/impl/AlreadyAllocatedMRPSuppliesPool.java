@@ -262,7 +262,7 @@ public class AlreadyAllocatedMRPSuppliesPool implements IMRPSuppliesPool
 	private final IMRPDemandToSupplyAllocation allocate(final IMutableMRPRecordAndQty mrpDemand, final I_PP_MRP mrpSupplyRecord, final BigDecimal qtyToAllocate)
 	{
 		Check.assumeNotNull(qtyToAllocate, "qtyToAllocate not null");
-		Check.assume(qtyToAllocate.signum() > 0, "qtyToAllocate > 0 but it was {0}", qtyToAllocate);
+		Check.assume(qtyToAllocate.signum() > 0, "qtyToAllocate > 0 but it was {}", qtyToAllocate);
 
 		// mrpSupply.subtractQty(qtyToAllocate);
 		mrpDemand.subtractQty(qtyToAllocate);
@@ -280,7 +280,7 @@ public class AlreadyAllocatedMRPSuppliesPool implements IMRPSuppliesPool
 
 	private final I_PP_MRP createMRPSupplyForQtyOnHandInTransit(final IMRPRecordAndQty mrpDemand, final BigDecimal qtyInTransit)
 	{
-		Check.assume(qtyInTransit.signum() > 0, "qtyInTransit > 0 but it was {0}", qtyInTransit);
+		Check.assume(qtyInTransit.signum() > 0, "qtyInTransit > 0 but it was {}", qtyInTransit);
 
 		final IMRPContext mrpContext = getMRPContext();
 		Check.assumeNotNull(mrpContext, "mrpContext not null");

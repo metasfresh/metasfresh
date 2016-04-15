@@ -160,7 +160,7 @@ public class MailBL implements IMailBL
 			final I_AD_User user)
 	{
 		IMailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, customType);
-		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={0}, AD_Org_ID={1}, AD_Process_ID={2}, customeType={3}",
+		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
 				client, AD_Org_ID, AD_Process_ID, customType);
 		if (user != null)
 		{

@@ -85,7 +85,7 @@ public class CalloutInOut extends CalloutEngine {
 			
 			// 05251 begin: we need to use the advisor; code taken from MInOut(MOrder...) constructor
 			final I_M_Warehouse wh =  Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-			Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {0}", order);
+			Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
 			mTab.setValue("M_Warehouse_ID", new Integer(wh.getM_Warehouse_ID()));
 			// 05251 end
 			

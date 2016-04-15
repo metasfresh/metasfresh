@@ -104,7 +104,7 @@ public class AD_User_Login
 			throw new AdempiereException("User has more than one role assigned.");
 		}
 		final KeyNamePair userRole = userRoles[0];
-		Check.assume(userRole != null && userRole.getKey() > 0, "Role shall exist: {0}", userRole);
+		Check.assume(userRole != null && userRole.getKey() > 0, "Role shall exist: {}", userRole);
 		final int adSessionId = Env.getAD_Session_ID(loginCtx);
 		if (adSessionId <= 0)
 		{

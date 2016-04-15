@@ -132,7 +132,7 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 		{
 			if (storage.getM_Product_ID() == productId)
 			{
-				Check.assumeNull(result, "There shall be only one storage for productId={0}", productId);
+				Check.assumeNull(result, "There shall be only one storage for productId={}", productId);
 				result = storage;
 			}
 		}

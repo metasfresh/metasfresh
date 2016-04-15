@@ -67,7 +67,7 @@ public class SEPA_Export_Line
 			final String checkDigitStr = Integer.toString(checkDigit);
 			final String lastcharStr = esrAccountNo.substring(8);
 
-			Check.errorUnless(checkDigitStr.equals(lastcharStr), "EsrAccountNo {0} has 9 digits and should end with {1}, but ends with {2}; C_BP_BankAccount={3}",
+			Check.errorUnless(checkDigitStr.equals(lastcharStr), "EsrAccountNo {} has 9 digits and should end with {}, but ends with {}; C_BP_BankAccount={}",
 					esrAccountNo, checkDigitStr, lastcharStr, bpBankAccount);
 
 			otherAccountIdentification = esrAccountNo;

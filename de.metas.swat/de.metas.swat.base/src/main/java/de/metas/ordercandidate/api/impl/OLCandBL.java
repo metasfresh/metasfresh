@@ -433,7 +433,7 @@ public class OLCandBL implements IOLCandBL
 
 		// task 08839: attach the olCand's IProductPriceAttributeAware to the new order line, so that the rest of the system can know if it is supposed to guess an ASI and PIIP or not.
 		final IAttributeSetInstanceAware orderLineASIAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(resultOrderLinePO);
-		Check.assumeNotNull(orderLineASIAware, "We can allways obtain a not-null ASI aware for C_OrderLine {0} ", resultOrderLine);
+		Check.assumeNotNull(orderLineASIAware, "We can allways obtain a not-null ASI aware for C_OrderLine {} ", resultOrderLine);
 
 		final Optional<IProductPriceAttributeAware> ppaAware = ProductPriceAttributeAware.ofModel(candToProcess);
 		Services.get(IAttributePricingBL.class).setDynAttrProductPriceAttributeAware(orderLineASIAware, ppaAware);

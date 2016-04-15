@@ -122,7 +122,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 			_flatrateTerm = materialTracking.getC_Flatrate_Term();
 
 			// shouldn't be null because we prevent even material-tracking purchase orders without a flatrate term.
-			Check.errorIf(_flatrateTerm == null, "M_Material_Tracking {0} has no flatrate term", materialTracking);
+			Check.errorIf(_flatrateTerm == null, "M_Material_Tracking {} has no flatrate term", materialTracking);
 		}
 		return _flatrateTerm;
 	}
@@ -139,7 +139,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 					.getC_Flatrate_Conditions()
 					.getInvoiceRule();
 
-			Check.assumeNotEmpty(invoiceRule, "Unable to retrieve invoiceRule from materialTracking {0}", materialTracking);
+			Check.assumeNotEmpty(invoiceRule, "Unable to retrieve invoiceRule from materialTracking {}", materialTracking);
 			_invoiceRule = invoiceRule;
 			_invoiceRuleSet = true;
 		}

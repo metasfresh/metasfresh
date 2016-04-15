@@ -62,10 +62,10 @@ public class CurrencyBL implements ICurrencyBL
 		Check.assume(adClientId >= 0, "adClientId >= 0");
 
 		final I_C_AcctSchema ac = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx, adClientId, adOrgId);
-		Check.assumeNotNull(ac, "Missing C_AcctSchema for AD_Client_ID={0} and AD_Org_ID={1}", adClientId, adOrgId);
+		Check.assumeNotNull(ac, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
 		final I_C_Currency currency = ac.getC_Currency();
-		Check.assumeNotNull(currency, "C_AcctSchema {0} has no currency", ac);
+		Check.assumeNotNull(currency, "C_AcctSchema {} has no currency", ac);
 
 		return currency;
 	}
@@ -233,9 +233,9 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
-		Check.assume(conversionTypeId > 0, "C_ConversionType_ID is set in {0}", conversionCtx);
+		Check.assume(conversionTypeId > 0, "C_ConversionType_ID is set in {}", conversionCtx);
 		final Date conversionDate = conversionCtx.getConversionDate();
-		Check.assumeNotNull(conversionDate, "C_ConversionType_ID is set in {0}", conversionCtx);
+		Check.assumeNotNull(conversionDate, "C_ConversionType_ID is set in {}", conversionCtx);
 
 		final int currencyPrecision = getCurrencyPrecision(CurTo_ID);
 

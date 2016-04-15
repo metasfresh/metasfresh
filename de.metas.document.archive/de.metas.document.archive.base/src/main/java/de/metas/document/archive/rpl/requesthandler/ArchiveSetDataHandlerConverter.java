@@ -60,9 +60,9 @@ public class ArchiveSetDataHandlerConverter implements Converter<I_AD_Archive, I
 		final int expectedTableId = MTable.getTable_ID(org.compiere.model.I_AD_Archive.Table_Name);
 		final int adTableId = tempArchive.getAD_Table_ID();
 		Check.assume(adTableId == expectedTableId,
-				"AD_Table_ID shall be {0} (AD_Archive) and not {1} for {2}",
+				"AD_Table_ID shall be {} (AD_Archive) and not {} for {}",
 				expectedTableId, adTableId, tempArchive);
 
-		Check.assume(!tempArchive.isFileSystem(), "Archive {0} shall NOT be a filesystem archive", tempArchive);
+		Check.assume(!tempArchive.isFileSystem(), "Archive {} shall NOT be a filesystem archive", tempArchive);
 	}
 }

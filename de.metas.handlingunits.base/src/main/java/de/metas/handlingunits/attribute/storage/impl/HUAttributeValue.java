@@ -78,7 +78,7 @@ class HUAttributeValue extends AbstractHUAttributeValue
 		{
 			final String trxName = InterfaceWrapperHelper.getTrxName(huAttribute);
 			Check.assume(Services.get(ITrxManager.class).isSameTrxName(ITrx.TRXNAME_ThreadInherited, trxName) || Services.get(ITrxManager.class).isNull(trxName),
-					"TrxName shall be null or thread-inherited in case we want to activate 'saveOnChange' option, but it was {0}", trxName);
+					"TrxName shall be null or thread-inherited in case we want to activate 'saveOnChange' option, but it was {}", trxName);
 		}
 
 		this.saveOnChange = saveOnChange;

@@ -328,7 +328,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_003_03 implements ISEPAMarshaller
 		{
 			final String currencyIsoCode = line.getC_Currency().getISO_Code();
 			Check.errorUnless(ActiveOrHistoricCurrencyCodeEUR.EUR.name().equals(currencyIsoCode),
-					"SEPA_Export_Line {0} has an invalid currency {1}. This marshaller supports only 'EUR'",
+					"SEPA_Export_Line {} has an invalid currency {}. This marshaller supports only 'EUR'",
 					line, currencyIsoCode);
 
 			final AmountTypeSEPA instdAmount = new AmountTypeSEPA();
@@ -336,7 +336,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_003_03 implements ISEPAMarshaller
 			activeAmt.setCcy(ActiveOrHistoricCurrencyCodeEUR.EUR);
 
 			final BigDecimal amount = line.getAmt();
-			Check.errorIf(amount != null && amount.signum() > 0, "Invalid amount '{0}' for {1}'", amount, line);
+			Check.errorIf(amount != null && amount.signum() > 0, "Invalid amount '{}' for {}'", amount, line);
 			activeAmt.setValue(amount);
 
 			instdAmount.setInstdAmt(activeAmt);
@@ -377,7 +377,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_003_03 implements ISEPAMarshaller
 			creditorAcct.setId(id);
 			final String iban = line.getIBAN();
 			Check.errorIf(Check.isEmpty(iban, true),
-					"marshaler {0} requireds a IBAN in line {1}. (Note: this marshaller/pain does not support GenericAccountIdentification)",
+					"marshaler {} requireds a IBAN in line {}. (Note: this marshaller/pain does not support GenericAccountIdentification)",
 					this, line);
 			id.setIBAN(iban);
 		}

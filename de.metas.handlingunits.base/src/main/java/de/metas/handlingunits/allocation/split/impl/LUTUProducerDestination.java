@@ -202,7 +202,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	public void setMaxTUsForRemainingQty(final int maxTUsForRemainingQty)
 	{
 		assertConfigurable();
-		Check.assume(maxTUsForRemainingQty > 0, "maxTUsForRemainingQty > 0 but it was {0}", maxTUsForRemainingQty);
+		Check.assume(maxTUsForRemainingQty > 0, "maxTUsForRemainingQty > 0 but it was {}", maxTUsForRemainingQty);
 		this.maxTUsForRemainingQty = maxTUsForRemainingQty;
 	}
 
@@ -271,7 +271,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	public void setMaxTUsPerLU(final int maxTUsPerLU)
 	{
 		assertConfigurable();
-		Check.assume(maxTUsPerLU > 0, "maxTUsPerLU > 0 but it was {0}", maxTUsPerLU);
+		Check.assume(maxTUsPerLU > 0, "maxTUsPerLU > 0 but it was {}", maxTUsPerLU);
 		this.maxTUsPerLU = maxTUsPerLU;
 	}
 
@@ -291,7 +291,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	public void setMaxLUs(final int maxLUs)
 	{
 		assertConfigurable();
-		Check.assume(maxLUs >= 0, "maxLUs >= 0 but it was {0}", maxLUs);
+		Check.assume(maxLUs >= 0, "maxLUs >= 0 but it was {}", maxLUs);
 		this.maxLUs = maxLUs;
 	}
 
@@ -465,7 +465,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	{
 		Check.assumeNotNull(cuProduct, "cuProduct not null");
 		Check.assumeNotNull(qtyCUPerTU, "qtyCUPerTU not null");
-		Check.assume(qtyCUPerTU.signum() > 0, "qtyCUPerTU > 0, but it was {0}", qtyCUPerTU);
+		Check.assume(qtyCUPerTU.signum() > 0, "qtyCUPerTU > 0, but it was {}", qtyCUPerTU);
 		Check.assumeNotNull(cuUOM, "cuUOM not null");
 		return huCapacityBL.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
 	}
@@ -768,7 +768,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	public Quantity calculateTotalQtyCU(final I_M_Product cuProduct)
 	{
 		final IHUCapacityDefinition tuCapacity = getTUCapacity(cuProduct);
-		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {0}", cuProduct);
+		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProduct);
 
 		return calculateTotalQtyCU(tuCapacity);
 	}
@@ -784,7 +784,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		{
 			return Quantity.infinite(cuUOM);
 		}
-		Check.assume(qtyCUsPerTU != null && qtyCUsPerTU.signum() > 0, "Valid QtyCUsPerTU: {0}", qtyCUsPerTU);
+		Check.assume(qtyCUsPerTU != null && qtyCUsPerTU.signum() > 0, "Valid QtyCUsPerTU: {}", qtyCUsPerTU);
 
 		//
 		// Case: No LU
@@ -821,10 +821,10 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 			}
 
 			final BigDecimal qtyLUs = BigDecimal.valueOf(getMaxLUs());
-			Check.assume(qtyLUs.signum() >= 0, "Valid QtyLUs: {0}", qtyLUs);
+			Check.assume(qtyLUs.signum() >= 0, "Valid QtyLUs: {}", qtyLUs);
 
 			final BigDecimal qtyTUsPerLU = BigDecimal.valueOf(getMaxTUsPerLU_Effective());
-			Check.assume(qtyTUsPerLU.signum() >= 0, "Valid QtyTUsPerLU: {0}", qtyTUsPerLU);
+			Check.assume(qtyTUsPerLU.signum() >= 0, "Valid QtyTUsPerLU: {}", qtyTUsPerLU);
 
 			final BigDecimal qtyCUsTotal = qtyCUsPerTU.multiply(qtyTUsPerLU).multiply(qtyLUs);
 			return new Quantity(qtyCUsTotal, cuUOM);

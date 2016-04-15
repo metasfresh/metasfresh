@@ -55,7 +55,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-		Check.assume(!this.orderLine.isPackagingMaterial(), "Orderline shall have PackingMaterial flag not set: {0}", this.orderLine);
+		Check.assume(!this.orderLine.isPackagingMaterial(), "Orderline shall have PackingMaterial flag not set: {}", this.orderLine);
 
 		final I_M_HU_PI_Item_Product piItemProduct = this.orderLine.getM_HU_PI_Item_Product();
 		if (piItemProduct != null && piItemProduct.getM_HU_PI_Item_Product_ID() > 0)

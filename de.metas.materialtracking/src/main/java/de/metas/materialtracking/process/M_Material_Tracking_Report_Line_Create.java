@@ -164,7 +164,7 @@ public class M_Material_Tracking_Report_Line_Create
 		{
 			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
 			ILoggable.THREADLOCAL.getLoggable().addLog(
-					"Skipping {0} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {1}",
+					"Skipping {} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {}",
 					materialTrackingAware, materialTracking);
 			return false;
 		}
@@ -174,7 +174,7 @@ public class M_Material_Tracking_Report_Line_Create
 			final I_PP_Order ppOrder = tableRecordReference.getModel(reportCtx, I_PP_Order.class);
 
 			// shall never happen
-			Check.assumeNotNull(ppOrder, "PP_Order not null in M_Material_Tracking_Ref: {0}", ref);
+			Check.assumeNotNull(ppOrder, "PP_Order not null in M_Material_Tracking_Ref: {}", ref);
 
 			// only closed pp_Orders are eligible
 			if (!docActionBL.isStatusClosed(ppOrder))
@@ -196,7 +196,7 @@ public class M_Material_Tracking_Report_Line_Create
 			final I_M_InOutLine iol = tableRecordReference.getModel(reportCtx, I_M_InOutLine.class);
 
 			// shall never happen
-			Check.assumeNotNull(iol, "M_InOutLine not null in M_Material_Tracking_Ref: {0}", ref);
+			Check.assumeNotNull(iol, "M_InOutLine not null in M_Material_Tracking_Ref: {}", ref);
 
 			final I_M_InOut io = iol.getM_InOut();
 

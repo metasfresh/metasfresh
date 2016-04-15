@@ -52,7 +52,7 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws InstantiationException, IllegalAccessException
 	{
 		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz),
-				"Class {0} doesn't implement {1}",
+				"Class {} doesn't implement {}",
 				instanceClazz.getName(), interfaceClazz.getName());
 
 		return instanceClazz

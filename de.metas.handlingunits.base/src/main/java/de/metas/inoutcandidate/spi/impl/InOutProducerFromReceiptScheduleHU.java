@@ -119,7 +119,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				true, // complete=true
 				createReceiptWithDatePromised);
 
-		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {0}", selectedHUIds);
+		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
 		this.selectedHUIds = selectedHUIds;
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
@@ -510,7 +510,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocs)
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
-			Check.assume(tuHUId > 0, "tuHUId > 0 ({0})", rsa);
+			Check.assume(tuHUId > 0, "tuHUId > 0 ({})", rsa);
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 
 			//

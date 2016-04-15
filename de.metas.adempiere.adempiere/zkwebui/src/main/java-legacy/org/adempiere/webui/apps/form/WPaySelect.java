@@ -353,7 +353,7 @@ public class WPaySelect extends PaySelect
 	{
 		if (miniTable.getRowCount() == 0)
 			return;
-		miniTable.setSelectedIndices(new int[]{0});
+		miniTable.setSelectedIndices(new int[]{});
 		calculateSelection();
 		if (m_noSelected == 0)
 			return;

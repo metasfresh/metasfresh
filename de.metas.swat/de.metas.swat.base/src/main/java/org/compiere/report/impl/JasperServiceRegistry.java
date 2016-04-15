@@ -39,7 +39,7 @@ public class JasperServiceRegistry implements IJasperServiceRegistry
 	public IJasperService getJasperService(final ServiceType serviceType)
 	{
 		final IJasperService jasperService = type2service.get(serviceType);
-		Check.errorIf(jasperService == null, "Missing IJasperService implementation for ServiceType={0}", serviceType);
+		Check.errorIf(jasperService == null, "Missing IJasperService implementation for ServiceType={}", serviceType);
 		
 		return jasperService;
 	}

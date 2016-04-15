@@ -271,7 +271,7 @@ public class InvoiceCandidateWriter
 	public InvoiceCandidateWriter setQualityInspectionOrder(final IQualityInspectionOrder qualityInspectionOrder)
 	{
 		Check.assume(qualityInspectionOrder.isQualityInspection(),
-				"Given qualityInspectionOrder {0} is a *real* quality inspection order", qualityInspectionOrder);
+				"Given qualityInspectionOrder {} is a *real* quality inspection order", qualityInspectionOrder);
 		_qualityInspectionOrder = qualityInspectionOrder;
 		return this;
 	}
@@ -374,7 +374,7 @@ public class InvoiceCandidateWriter
 		final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
 		final I_M_PriceList_Version priceListVersion = vendorInvoicingInfo.getM_PriceList_Version();
 		Check.errorUnless(priceListVersion.getM_PriceList_Version_ID() == pricingResult.getM_PriceList_Version_ID(),
-				"The plv of vendorInvoicingInfo {0} shall have the same M_PriceList_Version_ID as the pricingResult {1} of the current invoiceableLine {2}",
+				"The plv of vendorInvoicingInfo {} shall have the same M_PriceList_Version_ID as the pricingResult {} of the current invoiceableLine {}",
 				vendorInvoicingInfo, pricingResult, invoiceableLine);
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, getContext());
@@ -484,7 +484,7 @@ public class InvoiceCandidateWriter
 		final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
 		final int priceListVersionID = vendorInvoicingInfo.getM_PriceList_Version().getM_PriceList_Version_ID();
 
-		Check.errorUnless(this.invoiceDocTypeId > 0, "{0} needs to have the invoiceDocTypeId set to >0 when we delete old ICs", this);
+		Check.errorUnless(this.invoiceDocTypeId > 0, "{} needs to have the invoiceDocTypeId set to >0 when we delete old ICs", this);
 		final int invoiceDocTypeId = this.invoiceDocTypeId; // copy it, who knows that the value will be at the time we invoice the listener
 
 		//
@@ -572,8 +572,8 @@ public class InvoiceCandidateWriter
 		final List<I_C_Invoice_Candidate> invoiceCandidates = queryBuilder.create().list(I_C_Invoice_Candidate.class);
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			Check.assume(!ic.isProcessed(), "Invoice candidate not already processed: {0}", ic);
-			Check.assume(ic.getQtyInvoiced().signum() == 0, "Invoice candidate's QtyInvoiced is zero: {0}", ic);
+			Check.assume(!ic.isProcessed(), "Invoice candidate not already processed: {}", ic);
+			Check.assume(ic.getQtyInvoiced().signum() == 0, "Invoice candidate's QtyInvoiced is zero: {}", ic);
 
 			invoiceCandDAO.deleteAndAvoidRecreateScheduling(ic);
 		}

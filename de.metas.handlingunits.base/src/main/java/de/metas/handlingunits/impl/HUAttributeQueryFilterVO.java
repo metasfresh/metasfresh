@@ -285,7 +285,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 
 		Check.assume(
 				Check.equals(this.attributeValueType, attributeValueType),
-				"Invalid attributeValueType for {0}. Expected: {1}",
+				"Invalid attributeValueType for {}. Expected: {}",
 				this, attributeValueType
 				);
 

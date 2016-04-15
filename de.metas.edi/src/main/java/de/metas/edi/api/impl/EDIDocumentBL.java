@@ -305,7 +305,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 				iolMissingFields.add(org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty);
 			}
 
-			Check.assumeNotNull(inOutLine.getC_OrderLine_ID() > 0, "C_OrderLine_ID of {0} should not be null", inOutLine);
+			Check.assumeNotNull(inOutLine.getC_OrderLine_ID() > 0, "C_OrderLine_ID of {} should not be null", inOutLine);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(),
 					de.metas.handlingunits.model.I_C_OrderLine.class);
 

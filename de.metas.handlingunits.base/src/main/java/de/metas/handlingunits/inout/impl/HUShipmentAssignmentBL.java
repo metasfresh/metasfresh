@@ -83,7 +83,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	private final void assertShipment(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "shipment not null");
-		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {0}", inout);
+		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
 	}
 
 	@Override

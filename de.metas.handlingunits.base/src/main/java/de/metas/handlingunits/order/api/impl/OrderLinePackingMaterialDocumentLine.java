@@ -45,7 +45,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
 
-		Check.assume(this.orderLine.isPackagingMaterial(), "Orderline shall have PackingMaterial flag set: {0}", this.orderLine);
+		Check.assume(this.orderLine.isPackagingMaterial(), "Orderline shall have PackingMaterial flag set: {}", this.orderLine);
 	}
 
 	public I_C_OrderLine getC_OrderLine()

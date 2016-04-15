@@ -39,7 +39,7 @@ public class C_Payment
 	{
 		if (payment.isAutoAllocateAvailableAmt())
 		{
-			Check.errorIf(!(payment.isReceipt()), " Payment {0} with IsAutoAllocateAvailableAmt=Y is not a receipt.", payment);
+			Check.errorIf(!(payment.isReceipt()), " Payment {} with IsAutoAllocateAvailableAmt=Y is not a receipt.", payment);
 		}
 	}
 }

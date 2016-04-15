@@ -128,7 +128,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
-		Check.assume(hasAtLeastOneValidICS(), "Aggregation shall contain at least one valid IC-IOL: {0}", this);
+		Check.assume(hasAtLeastOneValidICS(), "Aggregation shall contain at least one valid IC-IOL: {}", this);
 
 		final IInvoiceLineRW invoiceLine = aggregationBL.mkInvoiceLine();
 		final int invoiceLineNo = getInvoiceLineNo();
@@ -427,7 +427,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		else
 		{
 			Check.assume(_priceActual.compareTo(candPriceActual) == 0,
-					"All invoice candidates from this aggregation shall have the same PriceActual={0} but got PriceActual={1}",
+					"All invoice candidates from this aggregation shall have the same PriceActual={} but got PriceActual={}",
 					_priceActual, candPriceActual);
 		}
 	}
@@ -448,7 +448,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		else
 		{
 			Check.assume(_priceEntered.compareTo(candPriceEntered) == 0,
-					"All invoice candidates from this aggregation shall have the same PriceEntered={0}",
+					"All invoice candidates from this aggregation shall have the same PriceEntered={}",
 					_priceEntered);
 		}
 	}
@@ -469,7 +469,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		else
 		{
 			Check.assume(_discount.compareTo(candDiscount) == 0,
-					"All invoice candidates from this aggregation shall have the same Discount={0}",
+					"All invoice candidates from this aggregation shall have the same Discount={}",
 					_discount);
 		}
 	}
@@ -503,7 +503,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 	private void setPrinted(final boolean candPrinted)
 	{
 		// Validate Printed flag
-		Check.assume(_printed == candPrinted, "All invoice candidates shall have the same Printed={0}", _printed);
+		Check.assume(_printed == candPrinted, "All invoice candidates shall have the same Printed={}", _printed);
 	}
 
 	private boolean isPrinted()
@@ -514,7 +514,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 	private void setInvoiceLineNo(final int candInvoiceLineNo)
 	{
 		// Validate LineNo
-		Check.assume(_invoiceLineNo == candInvoiceLineNo, "All invoice candidates shall have the same InvoiceLineNo={0}", _invoiceLineNo);
+		Check.assume(_invoiceLineNo == candInvoiceLineNo, "All invoice candidates shall have the same InvoiceLineNo={}", _invoiceLineNo);
 	}
 
 	private final int getInvoiceLineNo()
@@ -610,7 +610,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 	private BigDecimal getQtyInvoiceable(final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyInvoiceable = _ic2QtyInvoiceable.get(ic);
-		Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {0}", ic);
+		Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);
 		return qtyInvoiceable;
 	}
 

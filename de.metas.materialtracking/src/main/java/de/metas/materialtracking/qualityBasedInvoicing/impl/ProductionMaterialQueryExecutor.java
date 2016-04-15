@@ -68,7 +68,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 		this.ppOrder = ppOrder;
 
 		types = query.getTypes();
-		Check.assumeNotEmpty(types, "Types not not empty for query: {0}", query);
+		Check.assumeNotEmpty(types, "Types not not empty for query: {}", query);
 	}
 
 	public IProductionMaterial retriveSingleProductionMaterial()
@@ -233,12 +233,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 
 			// We found our main component line.
 			// Make sure is the only one that we found.
-			Check.assumeNull(componentBOMLine, "Only one main component shall be found for variant group {0}: {1}, {2}", variantGroup, componentBOMLine, ppOrderBOMLine);
+			Check.assumeNull(componentBOMLine, "Only one main component shall be found for variant group {}: {}, {}", variantGroup, componentBOMLine, ppOrderBOMLine);
 			componentBOMLine = ppOrderBOMLine;
 		}
 
 		// Make sure we found a main component line
-		Check.assumeNotNull(componentBOMLine, "No main component line found for variant group: {0}", variantGroup);
+		Check.assumeNotNull(componentBOMLine, "No main component line found for variant group: {}", variantGroup);
 
 		// Return the main component line
 		return componentBOMLine;

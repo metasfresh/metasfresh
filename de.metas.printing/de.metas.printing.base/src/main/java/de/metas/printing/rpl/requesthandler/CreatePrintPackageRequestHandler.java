@@ -57,13 +57,13 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 		Check.assume(requestPO != null, "requestPO not null");
 
 		final I_C_Print_Package printPackage = InterfaceWrapperHelper.create(requestPO, I_C_Print_Package.class);
-		Check.assume(printPackage != null, "No print package found for {0}", requestPO);
+		Check.assume(printPackage != null, "No print package found for {}", requestPO);
 
 		final Properties envCtxToUse = ctx.getEnvCtxToUse();
 
 		// Validate requestPO context: this shall not happen because is already validated by LoadPORequestHandler
 		final Properties requestCtx = InterfaceWrapperHelper.getCtx(printPackage);
-		Check.assume(Util.same(requestCtx, envCtxToUse), "Invalid context for {0}", requestPO);
+		Check.assume(Util.same(requestCtx, envCtxToUse), "Invalid context for {}", requestPO);
 
 		final I_C_Print_Package responsePrintPackage = createResponse(printPackage);
 		if (responsePrintPackage == null)

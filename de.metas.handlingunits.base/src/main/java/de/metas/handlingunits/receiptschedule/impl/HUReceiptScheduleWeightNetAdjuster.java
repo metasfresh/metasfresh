@@ -131,7 +131,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 	public void addReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
-		Check.assume(!receiptSchedule.isProcessed(), "receiptSchedule not processed: {0}", receiptSchedule);
+		Check.assume(!receiptSchedule.isProcessed(), "receiptSchedule not processed: {}", receiptSchedule);
 		logger.debug("Adding {}", receiptSchedule);
 
 		//
@@ -192,7 +192,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			final I_M_HU vhu = rsa.getVHU();
 			Check.assumeNotNull(vhu, "vhu not null"); // shall not be null at this point
 			// final I_M_HU tuHU = rsa.getM_TU_HU();
-			// Check.assumeNotNull(tuHU, "TU HU not null for {0}", rsa); // shall not be null at this point
+			// Check.assumeNotNull(tuHU, "TU HU not null for {}", rsa); // shall not be null at this point
 
 			final int vhuId = vhu.getM_HU_ID();
 			final BigDecimal rsaQtyAllocated = rsa.getHU_QtyAllocated();
@@ -241,7 +241,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 	private void adjustHUStorageToWeightNet0(final I_M_HU vhu, final I_M_ReceiptSchedule receiptSchedule, final String trxName)
 	{
-		Check.assume(handlingUnitsBL.isVirtual(vhu), "{0} is VHU", vhu);
+		Check.assume(handlingUnitsBL.isVirtual(vhu), "{} is VHU", vhu);
 
 		final IHUContext huContext = createHUContext(trxName);
 		

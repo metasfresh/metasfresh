@@ -58,7 +58,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		final List<I_M_HU_PI_Item> itemDefs = getNestedMaterialPIItems(versionPIItems);
 		for (final I_M_HU_PI_Item itemDef : itemDefs)
 		{
-			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{0} item type is Material", itemDef);
+			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{} item type is Material", itemDef);
 			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(itemDef, product, SystemTime.asDate());
 			if (itemProduct != null && itemProduct.getM_HU_PI_Item_Product_ID() > 0)
 			{

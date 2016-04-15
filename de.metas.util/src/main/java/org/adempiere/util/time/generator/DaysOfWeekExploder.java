@@ -53,7 +53,7 @@ public class DaysOfWeekExploder implements IDateSequenceExploder
 		this.weekDays = new HashSet<>(weekDays);
 		for (final Integer weekDay : this.weekDays)
 		{
-			Check.assume(ALL_DAYS_OF_WEEK_LIST.contains(weekDay), "Week day {0} shall be valid", weekDay);
+			Check.assume(ALL_DAYS_OF_WEEK_LIST.contains(weekDay), "Week day {} shall be valid", weekDay);
 		}
 
 		this.firstDayOfTheWeek = Calendar.MONDAY;

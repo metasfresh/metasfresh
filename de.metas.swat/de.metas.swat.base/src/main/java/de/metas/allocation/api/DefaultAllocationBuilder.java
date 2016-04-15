@@ -188,7 +188,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		// If the allocation was not saved, it means it was not needed, so we stop here
 		if (allocHdr.getC_AllocationHdr_ID() <= 0)
 		{
-			Check.assume(createdLinesCount == 0, "When allocation header is not saved, we expect no lines to be created but we got {0}", createdLinesCount);
+			Check.assume(createdLinesCount == 0, "When allocation header is not saved, we expect no lines to be created but we got {}", createdLinesCount);
 			return null;
 		}
 		// If there were no lines created, but our allocation header is created and saved, we shall get rid of it.

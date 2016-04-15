@@ -76,7 +76,7 @@ public class CounterDocBL implements ICounterDocBL
 
 		final ICounterDocHandler oldHandler = handlers.put(tableName, handler);
 		Check.errorIf(oldHandler != null,
-				"Can't register ICounterDocumentHandler {0} for table name {1}, because ICounterDocumentHandler {2} was already regoistered",
+				"Can't register ICounterDocumentHandler {} for table name {}, because ICounterDocumentHandler {} was already regoistered",
 				handler, tableName, oldHandler);
 
 		final CounterDocHandlerInterceptor counterDocHandlerInterceptor = CounterDocHandlerInterceptor.builder()

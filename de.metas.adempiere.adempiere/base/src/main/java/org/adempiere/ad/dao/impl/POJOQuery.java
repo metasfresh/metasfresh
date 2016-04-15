@@ -552,7 +552,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		AT result = null;
 		if (AGGREGATE_SUM.equals(sqlFunction))
 		{
-			Check.assume(BigDecimal.class.equals(returnType), "Return type shall be {0} and not {1}", BigDecimal.class, returnType);
+			Check.assume(BigDecimal.class.equals(returnType), "Return type shall be {} and not {}", BigDecimal.class, returnType);
 
 			// Setup initial result
 			@SuppressWarnings("unchecked")
@@ -564,7 +564,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 			Check.assume(BigDecimal.class.equals(returnType)
 					|| Integer.class.equals(returnType)
-					, "Return type shall be {0}, {1} and not {2}", BigDecimal.class, Integer.class, returnType);
+					, "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
 
 			// Setup initial result
 			result = null;
@@ -822,7 +822,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	protected <ToModelType> int executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
-		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {0}", queryInserter);
+		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
 
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();

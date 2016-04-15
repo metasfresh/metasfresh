@@ -65,7 +65,7 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 				|| CConnection.isServerEmbedded())
 		{
 			logger.warn(
-					"RunMode={0}, IsUseEmbeddedBroker={1}, IsServerEmbedded={2}. Starting embedded JMS broker",
+					"RunMode={}, IsUseEmbeddedBroker={}, IsServerEmbedded={}. Starting embedded JMS broker",
 					Ini.getRunMode(),
 					JmsConstants.isUseEmbeddedBroker(),
 					CConnection.isServerEmbedded());

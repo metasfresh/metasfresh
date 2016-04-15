@@ -321,7 +321,7 @@ public class PayrollProvider implements IPayrollProvider
 						instTrxName, false);
 
 				Check.errorUnless(taxId > 0, 
-						"Missing C_Tax_ID for firstLine C_Country_ID={0}, AD_Org_ID={1}, C_BPartner_Location_ID={2}, Date={3} and trigger C_TaxCategory_ID={4}", 
+						"Missing C_Tax_ID for firstLine C_Country_ID={}, AD_Org_ID={}, C_BPartner_Location_ID={}, Date={} and trigger C_TaxCategory_ID={}", 
 						firstLineCountryId, orgId, payrollLoc.getC_BPartner_Location_ID(), date);
 			}
 			else
@@ -361,7 +361,7 @@ public class PayrollProvider implements IPayrollProvider
 						instTrxName, false);
 
 				Check.errorUnless(taxId > 0, 
-						"Missing C_Tax_ID for trigger C_Country_ID={0}, AD_Org_ID={1}, C_BPartner_Location_ID={2}, Date={3} and trigger C_TaxCategory_ID={4}", 
+						"Missing C_Tax_ID for trigger C_Country_ID={}, AD_Org_ID={}, C_BPartner_Location_ID={}, Date={} and trigger C_TaxCategory_ID={}", 
 						triggerCountryId, orgId, payrollLoc.getC_BPartner_Location_ID(), date);
 			}
 		}

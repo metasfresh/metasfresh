@@ -81,7 +81,7 @@ public class HUItemStorage implements IHUItemStorage
 		Check.assumeNotNull(dao, "dao not null");
 
 		Check.assumeNotNull(item, "item not null");
-		Check.assumeNotNull(item.getM_HU_Item_ID() > 0, "item is saved: {0}", item);
+		Check.assumeNotNull(item.getM_HU_Item_ID() > 0, "item is saved: {}", item);
 		this.item = item;
 		virtualHUItem = handlingUnitsBL.isVirtual(item);
 		pureVirtualHUItem = handlingUnitsBL.isPureVirtual(item);
@@ -274,7 +274,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		// Check: Qty shall be positive or zero
 		final BigDecimal qtyRequired = request.getQty();
-		Check.assume(qtyRequired.signum() >= 0, "qtyRequired({0}) >= 0", qtyRequired);
+		Check.assume(qtyRequired.signum() >= 0, "qtyRequired({}) >= 0", qtyRequired);
 
 		//
 		// Zero Qty Request: return the request right away, there is nothing to do (optimization)
@@ -376,7 +376,7 @@ public class HUItemStorage implements IHUItemStorage
 		// return request;
 		// }
 
-		Check.assume(qtyRequired.signum() > 0, "qtyRequired({0}) > 0", qtyRequired);
+		Check.assume(qtyRequired.signum() > 0, "qtyRequired({}) > 0", qtyRequired);
 
 		final BigDecimal qtyAvailable = getQty(request.getProduct(), request.getC_UOM());
 
@@ -397,7 +397,7 @@ public class HUItemStorage implements IHUItemStorage
 	{
 		// NOTE: we need to allow the BL to compute actual qty to allocate on a regular non-virtual HU Item
 		// Check.assume(isVirtual(), "M_HU_Item needs to be virtual in order to be able to allocate/deallocate");
-		Check.assume(allowAddRemoveQty, "Add/Remove Qty shall be allowed for {0}", this);
+		Check.assume(allowAddRemoveQty, "Add/Remove Qty shall be allowed for {}", this);
 	}
 
 	/**
@@ -414,7 +414,7 @@ public class HUItemStorage implements IHUItemStorage
 	@Override
 	public boolean requestNewHU()
 	{
-		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {0}", this);
+		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {}", this);
 
 		final int count = getHUCount();
 		final int max = getHUCapacity();
@@ -431,7 +431,7 @@ public class HUItemStorage implements IHUItemStorage
 	@Override
 	public boolean releaseHU(final I_M_HU hu)
 	{
-		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {0}", this);
+		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {}", this);
 
 		final int count = getHUCount();
 

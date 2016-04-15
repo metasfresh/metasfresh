@@ -93,7 +93,7 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 			final DocAction document = docActionBL.getDocAction(model);
 
 			final DocAction counterDocument = counterDocumentBL.createCounterDocument(document, false);
-			loggable.addLog("Document {0}: created counter document {1}", document, counterDocument);
+			loggable.addLog("Document {}: created counter document {}", document, counterDocument);
 		}
 		return Result.SUCCESS;
 	}

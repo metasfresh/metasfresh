@@ -293,7 +293,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		final int adPInstanceId = DB.getNextID(ctx, I_AD_PInstance.Table_Name, trxName);
-		Check.assume(adPInstanceId > 0, "Invalid generated AD_PInstance_ID: {0}", adPInstanceId);
+		Check.assume(adPInstanceId > 0, "Invalid generated AD_PInstance_ID: {}", adPInstanceId);
 		return adPInstanceId;
 	}
 
@@ -1294,7 +1294,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final int adUserId,
 			final String trxName) throws SQLException
 	{
-		Check.assume(!Services.get(ITrxManager.class).isNull(trxName), "Param 'trxName' shall be a not-null transaction: {0}", trxName);
+		Check.assume(!Services.get(ITrxManager.class).isNull(trxName), "Param 'trxName' shall be a not-null transaction: {}", trxName);
 
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_SHIPMENT_RUN
 				+ " (M_ShipmentSchedule_ID, AD_PInstance_ID, AD_User_ID)"
@@ -1341,7 +1341,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				//
 				// Execute lock
 				final int insertCnt = pstmt.executeUpdate();
-				Check.assume(insertCnt == 1 || insertCnt == 0, "insertCnt is either 0 or 1; sched={0}, insertCnt={1}", sched, insertCnt);
+				Check.assume(insertCnt == 1 || insertCnt == 0, "insertCnt is either 0 or 1; sched={}, insertCnt={}", sched, insertCnt);
 				final boolean aquired = insertCnt == 1;
 
 				//

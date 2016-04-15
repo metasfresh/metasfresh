@@ -95,7 +95,7 @@ public class HUDocumentFactoryService implements IHUDocumentFactoryService
 		Check.assumeNotNull(pi, "process info not null");
 
 		final String tableName = pi.getTableNameOrNull();
-		Check.assumeNotNull(tableName, "tableName not null ({0})", pi);
+		Check.assumeNotNull(tableName, "tableName not null ({})", pi);
 
 		final IHUDocumentFactory factory = getHUDocumentFactory(tableName);
 		return factory.createHUDocuments(pi);

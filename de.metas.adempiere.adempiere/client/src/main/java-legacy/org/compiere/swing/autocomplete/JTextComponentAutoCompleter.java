@@ -521,7 +521,7 @@ public class JTextComponentAutoCompleter
 			return;
 		}
 
-		Check.assume(increment == 1 || increment == -1, "Invalid increment: {0}", increment);
+		Check.assume(increment == 1 || increment == -1, "Invalid increment: {}", increment);
 
 		//
 		// Initialize index to select

@@ -288,7 +288,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public <T> T lookup(int tableId, int recordId)
 	{
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
-		Check.assumeNotEmpty(tableName, "tableName shall exist for {0}", tableId);
+		Check.assumeNotEmpty(tableName, "tableName shall exist for {}", tableId);
 
 		return lookup(tableName, recordId);
 	}

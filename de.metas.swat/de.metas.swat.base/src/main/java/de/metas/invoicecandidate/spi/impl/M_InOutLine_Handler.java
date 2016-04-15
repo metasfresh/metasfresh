@@ -412,7 +412,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public static I_M_InOutLine getM_InOutLine(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLineOrNull(ic);
-		Check.assumeNotNull(inoutLine, "Error: no inout line found for candidate {0}", ic);
+		Check.assumeNotNull(inoutLine, "Error: no inout line found for candidate {}", ic);
 		return inoutLine;
 
 	}
