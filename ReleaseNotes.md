@@ -15,6 +15,9 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-196 Procurement WebUI: Initially open with tomorrow
+ - FRESH-197 Procurement WebUI: firefox's remember password does not popup
+ - FRESH-176 Procurement WebUI: Allow switch enabled users between BPartners
  - FRESH-186 change gebindeubersicht to show all until selected date
  - ME-30 09951 Move code to github (108691256234)
 	* switching from our internal mercurial server to actually work with and on github
