@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -27,6 +28,7 @@ import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.UserProduct;
 import de.metas.procurement.webui.model.WeekSupply;
+import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.UserProductRepository;
@@ -77,6 +79,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Autowired
 	private ProductRepository productRepository;
+	
+	@Autowired
+	@Lazy
+	private BPartnerRepository bpartnersRepository;
 
 	@Autowired
 	private IServerSyncService syncService;
@@ -151,6 +157,55 @@ public class ProductSuppliesService implements IProductSuppliesService
 	{
 		final Date day = DateUtils.truncToDay(date);
 		return productSupplyRepository.findByBpartnerAndDay(bpartner, day);
+	}
+
+	@Override
+	public List<ProductSupply> getProductSupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	{
+		final BPartner bpartner;
+		if (bpartner_id > 0)
+		{
+			bpartner = bpartnersRepository.findOne(bpartner_id);
+			if(bpartner == null)
+			{
+				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
+			}
+		}
+		else
+		{
+			bpartner = null;
+		}
+
+		final Product product;
+		if (product_id > 0)
+		{
+			product = productRepository.findOne(product_id);
+			if(product == null)
+			{
+				throw new RuntimeException("No Product found for ID=" + product_id);
+			}
+		}
+		else
+		{
+			product = null;
+		}
+
+		dayFrom = DateUtils.truncToDay(dayFrom);
+		if(dayFrom == null)
+		{
+			throw new RuntimeException("No DayFrom specified");
+		}
+		dayTo = DateUtils.truncToDay(dayTo);
+		if(dayTo == null)
+		{
+			throw new RuntimeException("No DayTo specified");
+		}
+		
+		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
+		List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		logger.debug("Got {} product supplies", productSupplies.size());
+		
+		return productSupplies;
 	}
 
 	@Override

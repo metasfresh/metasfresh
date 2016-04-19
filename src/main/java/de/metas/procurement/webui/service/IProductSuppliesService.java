@@ -41,6 +41,8 @@ public interface IProductSuppliesService
 
 	List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date);
 
+	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+
 	List<Product> getUserFavoriteProducts(final User user);
 
 	void addUserFavoriteProduct(final User user, final Product product);
