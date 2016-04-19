@@ -1,9 +1,12 @@
 package de.metas.procurement.webui.repository;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import de.metas.procurement.webui.model.BPartner;
@@ -37,4 +40,13 @@ import de.metas.procurement.webui.model.WeekSupply;
 public interface WeekSupplyRepository extends AbstractRepository<WeekSupply>
 {
 	WeekSupply findByProductAndBpartnerAndDay(final Product product, final BPartner bpartner, final Date day);
+
+	@Query("select s from WeekSupply s"
+			+ " where "
+			+ " (s.deleted=false)"
+			+ " and (s.bpartner = :bpartner or :bpartner is null)"
+			+ " and (s.product = :product or :product is null)"
+			+ " and (s.day >= :dayFrom)"
+			+ " and (s.day <= :dayTo)")
+	List<WeekSupply> findBySelector(@Param("bpartner") BPartner bpartner, @Param("product") Product product, @Param("dayFrom") Date dayFrom, @Param("dayTo") Date dayTo);
 }

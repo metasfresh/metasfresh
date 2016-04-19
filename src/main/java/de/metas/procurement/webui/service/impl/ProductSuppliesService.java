@@ -258,6 +258,56 @@ public class ProductSuppliesService implements IProductSuppliesService
 		
 		return weeklySupply;
 	}
+	
+	@Override
+	public List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo)
+	{
+		final BPartner bpartner;
+		if (bpartner_id > 0)
+		{
+			bpartner = bpartnersRepository.findOne(bpartner_id);
+			if(bpartner == null)
+			{
+				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
+			}
+		}
+		else
+		{
+			bpartner = null;
+		}
+
+		final Product product;
+		if (product_id > 0)
+		{
+			product = productRepository.findOne(product_id);
+			if(product == null)
+			{
+				throw new RuntimeException("No Product found for ID=" + product_id);
+			}
+		}
+		else
+		{
+			product = null;
+		}
+
+		dayFrom = DateUtils.truncToDay(dayFrom);
+		if(dayFrom == null)
+		{
+			throw new RuntimeException("No DayFrom specified");
+		}
+		dayTo = DateUtils.truncToDay(dayTo);
+		if(dayTo == null)
+		{
+			throw new RuntimeException("No DayTo specified");
+		}
+		
+		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
+		List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		logger.debug("Got {} weekly supplies", weeklySupplies.size());
+		
+		return weeklySupplies;
+	}
+
 
 
 	private SyncAfterCommit syncAfterCommit()

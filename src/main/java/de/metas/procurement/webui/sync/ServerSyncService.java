@@ -277,6 +277,33 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
+	
+	@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
+	public void pushWeeklySuppliesForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
+	{
+		try
+		{
+			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
+			final Date dayTo = DateUtils.parseDayDate(dayToStr);
+			
+			final List<WeekSupply> weeklySupplies = productSuppliesService.getWeeklySupplies(bpartner_id, product_id, dayFrom, dayTo);
+			if (weeklySupplies.isEmpty())
+			{
+				throw new RuntimeException("No supplies found");
+			}
+			
+			final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
+			logger.debug("Pushing request: {}", request);
+			process(request);
+			logger.debug("Pushing request done");
+		}
+		catch (Exception e)
+		{
+			logger.error("Failed pushing weekly supplies for selection", e);
+			throw Throwables.propagate(e);
+		}
+	}
+
 
 	@Subscribe
 	public void process(final SyncWeeklySupplyRequest request)

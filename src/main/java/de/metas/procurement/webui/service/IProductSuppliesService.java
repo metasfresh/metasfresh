@@ -56,4 +56,6 @@ public interface IProductSuppliesService
 	Trend getNextWeekTrend(BPartner bpartner, Product product, DateRange week);
 
 	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
+
+	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
 }
