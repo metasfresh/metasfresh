@@ -8,6 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
 
 import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
@@ -39,6 +40,7 @@ import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
 , uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })   //
 )
 @SuppressWarnings("serial")
+@SelectBeforeUpdate
 public class WeekSupply extends AbstractEntity
 {
 	@ManyToOne

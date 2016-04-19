@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.procurement.sync.protocol.SyncConfirmations;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.procurement.sync.protocol.SyncProductSupplyConfirm;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
 import de.metas.procurement.webui.Application;
 
 /*
@@ -52,6 +55,10 @@ public class AgentSync implements IAgentSync
 	@Autowired
 	@Lazy
 	private SyncSettingsImportService settingsImportService;
+
+	@Autowired
+	@Lazy
+	private SyncConfirmationsImportService confirmationsImportService;
 
 	public AgentSync()
 	{
@@ -113,6 +120,36 @@ public class AgentSync implements IAgentSync
 		catch (Exception e)
 		{
 			logger.error("Failed importing {}. Skipped.", request, e);
+		}
+	}
+
+	@Override
+	public void confirm(final SyncConfirmations syncConfirmations)
+	{
+		logger.debug("Got confirmations: {}", syncConfirmations);
+		
+		for (final SyncProductSupplyConfirm syncProductSupplyConfirm : syncConfirmations.getProductSuppliesConfirmations())
+		{
+			try
+			{
+				confirmationsImportService.importProductSupplyConfirm(syncProductSupplyConfirm);
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed importing confirmation: {}", syncProductSupplyConfirm, e);
+			}
+		}
+		
+		for (final SyncWeeklySupplyConfirm syncWeeklySupplyConfirm : syncConfirmations.getWeeklySuppliesConfirmations())
+		{
+			try
+			{
+				confirmationsImportService.importWeeklySupplyConfirm(syncWeeklySupplyConfirm);
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed importing confirmation: {}", syncWeeklySupplyConfirm, e);
+			}
 		}
 	}
 }
