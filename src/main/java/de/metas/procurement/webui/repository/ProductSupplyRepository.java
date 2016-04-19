@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import de.metas.procurement.webui.model.BPartner;
@@ -40,4 +42,13 @@ public interface ProductSupplyRepository extends AbstractRepository<ProductSuppl
 	ProductSupply findByProductAndBpartnerAndDay(final Product product, final BPartner bpartner, final Date day);
 
 	List<ProductSupply> findByBpartnerAndDay(BPartner bpartner, Date day);
+
+	@Query("select s from ProductSupply s"
+			+ " where "
+			+ " (s.deleted=false)"
+			+ " and (s.bpartner = :bpartner or :bpartner is null)"
+			+ " and (s.product = :product or :product is null)"
+			+ " and (s.day >= :dayFrom)"
+			+ " and (s.day <= :dayTo)")
+	List<ProductSupply> findBySelector(@Param("bpartner") BPartner bpartner, @Param("product") Product product, @Param("dayFrom") Date dayFrom, @Param("dayTo") Date dayTo);
 }

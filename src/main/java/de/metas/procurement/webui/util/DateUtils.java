@@ -1,5 +1,6 @@
 package de.metas.procurement.webui.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -136,15 +137,49 @@ public final class DateUtils
 		final SimpleDateFormat df = new SimpleDateFormat("ww", getLocale());
 		return "KW" + df.format(date);
 	}
-	
-    private static final Locale getLocale()
-    {
-        UI currentUI = UI.getCurrent();
-        Locale locale = (currentUI == null ? null : currentUI.getLocale());
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return locale;
-    }
 
+	private static final Locale getLocale()
+	{
+		UI currentUI = UI.getCurrent();
+		Locale locale = (currentUI == null ? null : currentUI.getLocale());
+		if (locale == null)
+		{
+			locale = Locale.getDefault();
+		}
+		return locale;
+	}
+
+	/**
+	 * Parse given day string
+	 * 
+	 * @param dayStr day string (yyyy-MM-dd)
+	 * @return parsed day or null if the string is <code>null</code> or empty.
+	 */
+	public static Date parseDayDate(String dayStr)
+	{
+		if (dayStr == null)
+		{
+			return null;
+		}
+
+		dayStr = dayStr.trim();
+		if (dayStr.isEmpty())
+		{
+			return null;
+		}
+
+		final String dayPattern = "yyyy-MM-dd";
+
+		try
+		{
+			final SimpleDateFormat dateFormat = new SimpleDateFormat(dayPattern);
+			final Date date = dateFormat.parse(dayStr);
+			final Date day = truncToDay(date);
+			return day;
+		}
+		catch (ParseException e)
+		{
+			throw new RuntimeException("Failed parsing day string '" + dayStr + "' using pattern '" + dayPattern + "'");
+		}
+	}
 }

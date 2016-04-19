@@ -1,6 +1,7 @@
 package de.metas.procurement.webui.sync;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
 import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+import com.google.gwt.thirdparty.guava.common.base.Throwables;
 import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
 import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
@@ -33,6 +35,8 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
+import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 
 /*
@@ -79,6 +83,9 @@ public class ServerSyncService implements IServerSyncService
 	@Autowired
 	@Lazy
 	private ProductSupplyRepository productSuppliesRepo;
+	@Autowired
+	@Lazy
+	private IProductSuppliesService productSuppliesService;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
 
@@ -195,6 +202,32 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Pushing request: {}", request);
 		process(request);
 		logger.debug("Pushing request done");
+	}
+
+	@ManagedOperation(description = "Pushes all product supply reports, identified by selection, from webui server to metasfresh server")
+	public void pushReportProductSupplyForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
+	{
+		try
+		{
+			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
+			final Date dayTo = DateUtils.parseDayDate(dayToStr);
+			
+			final List<ProductSupply> productSupplies = productSuppliesService.getProductSupplies(bpartner_id, product_id, dayFrom, dayTo);
+			if (productSupplies.isEmpty())
+			{
+				throw new RuntimeException("No supplies found");
+			}
+			
+			final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
+			logger.debug("Pushing request: {}", request);
+			process(request);
+			logger.debug("Pushing request done");
+		}
+		catch (Exception e)
+		{
+			logger.error("Failed pushing product supplies for selection", e);
+			throw Throwables.propagate(e);
+		}
 	}
 
 	@Subscribe
