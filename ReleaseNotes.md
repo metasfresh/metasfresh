@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-206: metasfresh server shall inform the procurement webui server about what supplies were synchronized
+ - FRESH-202: Procurement: Price recalulation Procurement Candidates
  - FRESH-196 Procurement WebUI: Initially open with tomorrow
  - FRESH-197 Procurement WebUI: firefox's remember password does not popup
  - FRESH-176 Procurement WebUI: Allow switch enabled users between BPartners
@@ -30,6 +32,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-195 NPE when selecting a particular warehouse on Bereitstellung POS
  - FRESH-194 Picking: Uncompatible CU-TU Issue
  - FRESH-179 Remove customer specifics from jasper and DB functions
  - FRESH-193 problems after temporary JMS link outage
