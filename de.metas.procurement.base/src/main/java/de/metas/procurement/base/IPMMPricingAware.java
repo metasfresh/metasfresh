@@ -65,11 +65,11 @@ public interface IPMMPricingAware
 
 	BigDecimal getQty();
 
-	void setM_PricingSystem_ID(int m_PricingSystem_ID);
+	void setM_PricingSystem_ID(int M_PricingSystem_ID);
 
-	void setM_PriceList_ID(int m_PriceList_ID);
+	void setM_PriceList_ID(int M_PriceList_ID);
 
-	void setC_Currency_ID(int c_Currency_ID);
+	void setC_Currency_ID(int C_Currency_ID);
 
 	void setPrice(BigDecimal priceStd);
 }

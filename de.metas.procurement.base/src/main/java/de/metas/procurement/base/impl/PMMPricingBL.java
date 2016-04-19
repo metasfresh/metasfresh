@@ -137,6 +137,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		}
 
 		// these will be "empty" results, if the price was not calculated
+		logger.trace("Updating {} from {}", pricingAware, pricingResult);
 		pricingAware.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
 		pricingAware.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
 		pricingAware.setC_Currency_ID(pricingResult.getC_Currency_ID());

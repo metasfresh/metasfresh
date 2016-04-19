@@ -12,6 +12,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
@@ -95,7 +97,8 @@ public final class PurchaseCandidate
 
 	public BigDecimal getPrice()
 	{
-		return model.getPrice();
+		final BigDecimal price = InterfaceWrapperHelper.getValueOverrideOrValue(model, I_PMM_PurchaseCandidate.COLUMNNAME_Price);
+		return MoreObjects.firstNonNull(price, BigDecimal.ZERO);
 	}
 
 	public I_M_Product getM_Product()

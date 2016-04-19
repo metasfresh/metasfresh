@@ -556,6 +556,29 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_Price = "Price";
 
 	/**
+	 * Set Preis abweichend.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_Override (java.math.BigDecimal Price_Override);
+
+	/**
+	 * Get Preis abweichend.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrice_Override();
+
+    /** Column definition for Price_Override */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_Price_Override = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "Price_Override", null);
+    /** Column name Price_Override */
+    public static final String COLUMNNAME_Price_Override = "Price_Override";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *

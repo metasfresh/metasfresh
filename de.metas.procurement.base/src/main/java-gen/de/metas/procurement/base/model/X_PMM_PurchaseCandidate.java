@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1645824470L;
+	private static final long serialVersionUID = 910013021L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -555,7 +555,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	@Override
 	public void setPrice (java.math.BigDecimal Price)
 	{
-		set_ValueNoCheck (COLUMNNAME_Price, Price);
+		set_Value (COLUMNNAME_Price, Price);
 	}
 
 	/** Get Preis.
@@ -565,6 +565,25 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public java.math.BigDecimal getPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Preis abweichend.
+		@param Price_Override Preis abweichend	  */
+	@Override
+	public void setPrice_Override (java.math.BigDecimal Price_Override)
+	{
+		set_Value (COLUMNNAME_Price_Override, Price_Override);
+	}
+
+	/** Get Preis abweichend.
+		@return Preis abweichend	  */
+	@Override
+	public java.math.BigDecimal getPrice_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price_Override);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

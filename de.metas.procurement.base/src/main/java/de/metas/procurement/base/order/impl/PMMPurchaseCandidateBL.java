@@ -3,6 +3,7 @@ package de.metas.procurement.base.order.impl;
 import java.math.BigDecimal;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 
@@ -77,4 +78,9 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		candidate.setQtyToOrder_TU(BigDecimal.ZERO);
 	}
 
+	@Override
+	public IPMMPricingAware asPMMPricingAware(final I_PMM_PurchaseCandidate candidate)
+	{
+		return PMMPricingAware_PurchaseCandidate.of(candidate);
+	}
 }
