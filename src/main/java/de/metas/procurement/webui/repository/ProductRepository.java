@@ -37,4 +37,6 @@ public interface ProductRepository extends AbstractRepository<Product>
 	List<Product> findBySharedTrueAndDeletedFalse();
 
 	List<Product> findByDeletedFalse();
+	
+	List<Product> findByNameLike(final String nameLike);
 }

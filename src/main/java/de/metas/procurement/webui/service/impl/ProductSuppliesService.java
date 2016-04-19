@@ -83,7 +83,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Autowired
 	@Lazy
 	private BPartnerRepository bpartnersRepository;
-
+	
 	@Autowired
 	private IServerSyncService syncService;
 	
@@ -221,7 +221,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 	{
 		return productRepository.findBySharedTrueAndDeletedFalse();
 	}
-
+	
 	@Override
 	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
 	{

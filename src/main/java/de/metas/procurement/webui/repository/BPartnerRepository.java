@@ -1,5 +1,7 @@
 package de.metas.procurement.webui.repository;
 
+import java.util.List;
+
 import de.metas.procurement.webui.model.BPartner;
 
 /*
@@ -26,4 +28,5 @@ import de.metas.procurement.webui.model.BPartner;
 
 public interface BPartnerRepository extends AbstractRepository<BPartner>
 {
+	List<BPartner> findByNameLike(final String nameLike);
 }

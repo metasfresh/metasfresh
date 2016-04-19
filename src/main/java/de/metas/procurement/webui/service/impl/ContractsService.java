@@ -38,7 +38,7 @@ public class ContractsService implements IContractsService
 {
 	@Autowired
 	private ContractRepository contractRepository;
-
+	
 	@Override
 	public Contracts getContracts(final BPartner bpartner)
 	{
