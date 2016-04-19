@@ -1,5 +1,6 @@
 package de.metas.procurement.webui.sync;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.WeekSupply;
+import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 
 /*
@@ -73,6 +75,10 @@ public class ServerSyncService implements IServerSyncService
 	@Autowired(required = true)
 	@Lazy
 	private IAgentSync agentSync;
+	
+	@Autowired
+	@Lazy
+	private ProductSupplyRepository productSuppliesRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
 
@@ -174,6 +180,21 @@ public class ServerSyncService implements IServerSyncService
 		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
+	}
+	
+	@ManagedOperation(description = "Pushes a particular product supply, identified by ID, from webui server to metasfresh server")
+	public void pushReportProductSupplyById(final long product_supply_id)
+	{
+		final ProductSupply productSupply = productSuppliesRepo.findOne(product_supply_id);
+		if(productSupply == null)
+		{
+			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
+		}
+		
+		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
+		logger.debug("Pushing request: {}", request);
+		process(request);
+		logger.debug("Pushing request done");
 	}
 
 	@Subscribe
