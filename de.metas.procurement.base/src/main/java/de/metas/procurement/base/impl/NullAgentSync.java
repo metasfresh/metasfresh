@@ -4,6 +4,7 @@ import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.procurement.sync.protocol.SyncConfirmations;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
@@ -60,6 +61,12 @@ public class NullAgentSync implements IAgentSync
 	public void syncInfoMessage(SyncInfoMessageRequest request)
 	{
 		System.out.println("syncInfoMessage: " + ObjectUtils.toString(request));
+	}
+
+	@Override
+	public void confirm(SyncConfirmations syncConfirmations)
+	{
+		System.out.println("confirm: " + ObjectUtils.toString(syncConfirmations));
 	}
 
 }

@@ -311,6 +311,29 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
+	 * Set Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEvent_UUID (java.lang.String Event_UUID);
+
+	/**
+	 * Get Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEvent_UUID();
+
+    /** Column definition for Event_UUID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_Event_UUID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "Event_UUID", null);
+    /** Column name Event_UUID */
+    public static final String COLUMNNAME_Event_UUID = "Event_UUID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *

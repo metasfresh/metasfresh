@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1074837733L;
+	private static final long serialVersionUID = 962481209L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -285,6 +285,22 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	/** Set Event UUID.
+		@param Event_UUID Event UUID	  */
+	@Override
+	public void setEvent_UUID (java.lang.String Event_UUID)
+	{
+		set_ValueNoCheck (COLUMNNAME_Event_UUID, Event_UUID);
+	}
+
+	/** Get Event UUID.
+		@return Event UUID	  */
+	@Override
+	public java.lang.String getEvent_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
 	}
 
 	/** Set Fehler.

@@ -14,7 +14,7 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1765873147L;
+	private static final long serialVersionUID = -210516949L;
 
     /** Standard Constructor */
     public X_PMM_WeekReport_Event (Properties ctx, int PMM_WeekReport_Event_ID, String trxName)
@@ -94,6 +94,22 @@ public class X_PMM_WeekReport_Event extends org.compiere.model.PO implements I_P
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	/** Set Event UUID.
+		@param Event_UUID Event UUID	  */
+	@Override
+	public void setEvent_UUID (java.lang.String Event_UUID)
+	{
+		set_ValueNoCheck (COLUMNNAME_Event_UUID, Event_UUID);
+	}
+
+	/** Get Event UUID.
+		@return Event UUID	  */
+	@Override
+	public java.lang.String getEvent_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
 	}
 
 	@Override

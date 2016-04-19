@@ -135,6 +135,8 @@ public class ServerSyncBL implements IServerSyncBL
 		final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, context);
 		try
 		{
+			qtyReportEvent.setEvent_UUID(syncProductSupply.getUuid());
+			
 			// Product
 			qtyReportEvent.setProduct_UUID(syncProductSupply.getProduct_uuid());
 			qtyReportEvent.setPMM_Product(pmmProduct);
@@ -201,6 +203,14 @@ public class ServerSyncBL implements IServerSyncBL
 				InterfaceWrapperHelper.save(qtyReportEvent);
 				
 				logger.debug("Imported {} to {}:\n{}", syncProductSupply, qtyReportEvent);
+			}
+			
+			//
+			// Notify agent that we got the message
+			final boolean isInternalGenerated = syncProductSupply.getUuid() == null;
+			if (!isInternalGenerated)
+			{
+				SyncConfirmationsSender.forCurrentTransaction().confirm(qtyReportEvent);
 			}
 		}
 	}
@@ -303,6 +313,7 @@ public class ServerSyncBL implements IServerSyncBL
 		logger.debug("Creating Week Report event from {} ({})", syncWeeklySupply, pmmProduct);
 		
 		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, context);
+		event.setEvent_UUID(syncWeeklySupply.getUuid());
 
 		// BPartner
 		final int bpartnerId = SyncUUIDs.getC_BPartner_ID(syncWeeklySupply.getBpartner_uuid());
@@ -344,8 +355,12 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setProcessed(false);
 		event.setIsActive(true);
 		InterfaceWrapperHelper.save(event);
-		
+
 		logger.debug("Imported {} to {}:\n{}", syncWeeklySupply, event);
+
+		//
+		// Notify agent that we got the message
+		SyncConfirmationsSender.forCurrentTransaction().confirm(event);
 	}
 
 	/**
