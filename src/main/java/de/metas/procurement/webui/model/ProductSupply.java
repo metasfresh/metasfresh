@@ -5,7 +5,11 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
@@ -43,7 +47,7 @@ import de.metas.procurement.webui.util.DateUtils;
 
 @Entity
 @Table(name = "product_supply"//
-, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })      //
+, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })       //
 )
 @SuppressWarnings("serial")
 @SelectBeforeUpdate
@@ -85,9 +89,9 @@ public class ProductSupply extends AbstractEntity
 	private Product product;
 
 	@ManyToOne
-	@NotFound(action = NotFoundAction.IGNORE)   // don't fail if the record was not found
+	@NotFound(action = NotFoundAction.IGNORE)    // don't fail if the record was not found
 	@SuppressWarnings("deprecation")
-	@org.hibernate.annotations.ForeignKey(name = "none")    // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
+	@org.hibernate.annotations.ForeignKey(name = "none")     // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
 	private ContractLine contractLine;
 
 	@NotNull
@@ -95,6 +99,11 @@ public class ProductSupply extends AbstractEntity
 
 	@NotNull
 	private Date day;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateCreated;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateUpdated;
 
 	ProductSupply()
 	{
@@ -160,5 +169,17 @@ public class ProductSupply extends AbstractEntity
 	private void setDay(final Date day)
 	{
 		this.day = day;
+	}
+
+	@PreUpdate
+	@PrePersist
+	public void updateCreatedUpdated()
+	{
+		final Date now = new Date();
+		this.dateUpdated = now;
+		if (dateCreated == null)
+		{
+			dateCreated = now;
+		}
 	}
 }
