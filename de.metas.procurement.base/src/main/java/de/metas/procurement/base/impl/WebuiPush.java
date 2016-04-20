@@ -75,7 +75,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	@ManagedOperation
+	@ManagedOperation(description="Checks if the local connection endpoint is available")
 	public boolean checkAvailable()
 	{
 		return getAgentSyncOrNull() != null;
@@ -151,7 +151,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	@ManagedOperation
+	@ManagedOperation(description = "Pushes/synchronizes all currently valid PMM_Products to the procurement webUI.")
 	public void pushAllProducts()
 	{
 		final IAgentSync agent = getAgentSyncOrNull();
@@ -171,8 +171,25 @@ public class WebuiPush implements IWebuiPush
 			final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
 			syncProductsRequest.getProducts().add(syncProduct);
 		}
-
 		agent.syncProducts(syncProductsRequest);
+	}
+
+	@Override
+	@ManagedOperation(description="Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
+	public void pushAllBPartners()
+	{
+		final IAgentSync agent = getAgentSyncOrNull();
+		if (agent == null)
+		{
+			return;
+		}
+
+		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
+
+		final SyncBPartnersRequest request = new SyncBPartnersRequest();
+		request.getBpartners().addAll(allSyncBPartners);
+
+		agent.syncBPartners(request);
 	}
 
 	@Override
@@ -192,7 +209,7 @@ public class WebuiPush implements IWebuiPush
 
 	@Override
 	@ManagedOperation
-	public void pushInfoMessages()
+	public void pushAllInfoMessages()
 	{
 		final IAgentSync agent = getAgentSyncOrNull();
 		if (agent == null)

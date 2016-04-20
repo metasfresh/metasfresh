@@ -44,6 +44,6 @@ public class PMM_Message
 	, afterCommit = true)
 	public void pushToWebUI(final I_PMM_Message pmmProduct)
 	{
-		Services.get(IWebuiPush.class).pushInfoMessages();
+		Services.get(IWebuiPush.class).pushAllInfoMessages();
 	}
 }

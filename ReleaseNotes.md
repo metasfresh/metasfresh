@@ -32,6 +32,8 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-219 - Procurement: Contract missing in Procurement webUI
+    * adding JMX operation to send all contracts to the webui
  - FRESH-211 AD_Org_ID is not updated in C_BPartner_Location
  - FRESH-216 Error creating InvoiceCandidates for PP_Orders without issued quantities
     * the system now deals more graciously with material tracking PP_Orders that have receipts but no issues

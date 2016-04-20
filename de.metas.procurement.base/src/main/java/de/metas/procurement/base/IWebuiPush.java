@@ -53,19 +53,23 @@ public interface IWebuiPush extends ISingletonService
 	void pushBPartnerForContract(I_C_Flatrate_Term contract);
 
 	/**
-	 * Pushes/synchronizes the given all pmmProducts which are currently valid to the procurement webUI.
-	 *
-	 * @param pmmProduct
-	 */
-	void pushAllProducts();
-
-	/**
 	 * Pushes/synchronizes the given <code>pmmProduct</code> to the procurement webUI.
 	 *
 	 * @param pmmProduct
 	 */
 	void pushProduct(I_PMM_Product pmmProduct);
 
-	void pushInfoMessages();
+	/**
+	 * Pushes/synchronizes all currently valid PMM_Products to the procurement webUI.
+	 *
+	 */
+	void pushAllProducts();
+
+	void pushAllInfoMessages();
+
+	/**
+	 * Pushes/synchronizes all business partners with their contracts to the procurement webUI.
+	 */
+	void pushAllBPartners();
 
 }
