@@ -958,6 +958,10 @@ public abstract class PO
 					return true;
 				}
 			}
+			else if (oldValue != null && InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.is(this, Boolean.TRUE))
+			{
+				// ReadOnly column checking was disabled for this model => continue the execution.
+			}
 			else if (oldValue != null)
 			{
 				// task 09266: be strict but allow an admin to declare exceptions from the stric rule via AD_SysConfig

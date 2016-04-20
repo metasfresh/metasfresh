@@ -157,16 +157,24 @@ class ClientSetup
 	private final void saveInTrx()
 	{
 		setOtherDefaults();
-
+		
 		InterfaceWrapperHelper.save(adClient, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrg, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrgInfo, ITrx.TRXNAME_ThreadInherited);
+		
 		InterfaceWrapperHelper.save(orgBPartner, ITrx.TRXNAME_ThreadInherited);
+
+		InterfaceWrapperHelper.disableReadOnlyColumnCheck(orgBPartnerLocation); // disable it because AD_Org_ID is not updateable
+		orgBPartnerLocation.setAD_Org(adOrg); // FRESH-211
 		InterfaceWrapperHelper.save(orgBPartnerLocation, ITrx.TRXNAME_ThreadInherited);
+		
 		InterfaceWrapperHelper.save(orgContact, ITrx.TRXNAME_ThreadInherited);
+		
 		InterfaceWrapperHelper.save(orgBankAccount, ITrx.TRXNAME_ThreadInherited);
+		
 		InterfaceWrapperHelper.save(acctSchema, ITrx.TRXNAME_ThreadInherited);
+		
 		InterfaceWrapperHelper.save(priceList_None, ITrx.TRXNAME_ThreadInherited);
 	}
 

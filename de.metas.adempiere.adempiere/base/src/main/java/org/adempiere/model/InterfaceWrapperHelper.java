@@ -35,6 +35,7 @@ import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -1909,4 +1910,21 @@ public class InterfaceWrapperHelper
 
 		return InterfaceWrapperHelper.create(model, clazz);
 	}
+	
+	/**
+	 * Disables the read only (i.e. not updateable) columns enforcement.
+	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
+	 * 
+	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
+	 * 
+	 * @param model
+	 */
+	public static final void disableReadOnlyColumnCheck(final Object model)
+	{
+		Check.assumeNotNull(model, "model not null");
+		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
+	}
+	
+	public static final ModelDynAttributeAccessor<Object, Boolean> ATTR_ReadOnlyColumnCheckDisabled = new ModelDynAttributeAccessor<>(InterfaceWrapperHelper.class.getName(), "ReadOnlyColumnCheckDisabled", Boolean.class);
+	
 }
