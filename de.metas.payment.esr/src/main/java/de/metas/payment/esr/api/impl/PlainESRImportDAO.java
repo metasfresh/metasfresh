@@ -10,12 +10,12 @@ package de.metas.payment.esr.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 	{
 		return db;
 	}
-
+	
 	public void dumpStatus()
 	{
 		db.dumpStatus();
@@ -114,7 +114,7 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 		final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 
-		final Pattern esrReferenceNumberPattern = Pattern.compile("^[0-9]{6}([0-9]*)[0-9]{1}$");
+		final Pattern esrReferenceNumberPattern = Pattern.compile("^[0-9]{}([0-9]*)[0-9]{}$");
 
 		return db.getFirstOnly(I_C_ReferenceNo.class, new IQueryFilter<I_C_ReferenceNo>()
 		{

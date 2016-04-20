@@ -25,8 +25,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -49,11 +47,13 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Process;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Dialog to Start process.
@@ -117,6 +117,8 @@ public class ProcessDialog extends CFrame
 	private boolean _allowProcessReRun = true;
 	private int[] m_ids = null;
 	private boolean m_isLocked = false;
+	private boolean _disposed = false;
+	
 	/**
 	 * Determine if a Help Process Window is shown
 	 */
@@ -290,6 +292,10 @@ public class ProcessDialog extends CFrame
 	@Override
 	public void setVisible(boolean visible)
 	{
+		if (visible && _disposed)
+		{
+			log.warn("Marking visible an already disposed panel: {}", this, new Exception("trace"));
+		}
 		super.setVisible(visible);
 		if (visible)
 		{
@@ -303,6 +309,12 @@ public class ProcessDialog extends CFrame
 	@Override
 	public void dispose()
 	{
+		if (_disposed)
+		{
+			log.warn("Calling dispose again for {}", this, new Exception("trace"));
+		}
+		_disposed = true;
+		
 		if (parameterPanel != null)
 		{
 			parameterPanel.dispose();
@@ -498,8 +510,8 @@ public class ProcessDialog extends CFrame
 		//
 		// Close automatically
 		{
-			// If it was a report which finished successfully
-			if (m_IsReport && !pi.isError())
+			// If it was a report which finished successfully and we don't allow process re-run
+			if (m_IsReport && !pi.isError() && !_allowProcessReRun)
 			{
 				bOK.doClick();
 			}
