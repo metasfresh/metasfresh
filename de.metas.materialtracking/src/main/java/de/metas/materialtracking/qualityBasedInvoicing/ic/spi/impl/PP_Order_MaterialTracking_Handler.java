@@ -92,13 +92,13 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	@Override
 	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_PP_Order model = request.getModel(I_PP_Order.class);
+		final I_PP_Order ppOrder = request.getModel(I_PP_Order.class);
 
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
 
-		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createInvoiceCandidates(model);
+		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createInvoiceCandidates(ppOrder);
 
-		final IIsInvoiceCandidateAware isInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IIsInvoiceCandidateAware.class);
+		final IIsInvoiceCandidateAware isInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IIsInvoiceCandidateAware.class);
 		if (isInvoiceCandidateAware != null)
 		{
 			// we flag the record, no matter if we actually created an IC or not. This is fine for this handler

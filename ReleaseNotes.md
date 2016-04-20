@@ -32,6 +32,8 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-216 Error creating InvoiceCandidates for PP_Orders without issued quantities
+    * the system now deals more graciously with material tracking PP_Orders that have receipts but no issues
  - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
  - FRESH-213 Process panel's Back button not working
  - FRESH-195 NPE when selecting a particular warehouse on Bereitstellung POS

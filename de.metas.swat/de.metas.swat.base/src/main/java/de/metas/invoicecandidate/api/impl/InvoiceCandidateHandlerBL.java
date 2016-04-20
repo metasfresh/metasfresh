@@ -340,6 +340,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 					// Collect candidates (we will invalidate them all together)
 					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 				}
+				catch (final Exception e)
+				{
+					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
+
+					ILoggable.THREADLOCAL.getLoggable().addLog(msg, e.getClass(), request, requestInitial);
+					logger.error(msg, e.getClass(), request, requestInitial, e);
+				}
 			}
 		}
 
@@ -352,8 +359,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Make sure all candidates are persisted to database. It also:
 	 * <ul>
-	 * <li> {@link I_C_Invoice_Candidate#setC_ILCandHandler(I_C_ILCandHandler)}
-	 * <li> {@link I_C_Invoice_Candidate#setAD_User_InCharge_ID(int)}
+	 * <li>{@link I_C_Invoice_Candidate#setC_ILCandHandler(I_C_ILCandHandler)}
+	 * <li>{@link I_C_Invoice_Candidate#setAD_User_InCharge_ID(int)}
 	 * </ul>
 	 *
 	 * @param result invoice candidate generate result

@@ -17,8 +17,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_InOut;
@@ -156,12 +156,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			for (final IQualityInspectionOrder productionOrder : getProductionOrders())
 			{
 				final I_PP_Order ppOrder = productionOrder.getPP_Order();
-				final Pair<I_M_PriceList_Version, List<I_M_InOutLine>> plvAndIols = providePriceListVersionOrNullForPPOrder(ppOrder);
+				final ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> plvAndIols = providePriceListVersionOrNullForPPOrder(ppOrder);
 
-				// also add them if there is no PLV. In that case the iols will be an empty list, but there won't be an NPE when acessing it.
-				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getSecond());
+				// also add them if there is no PLV. In that case the iols will be an empty list, but there won't be an NPE when accessing it.
+				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getRight());
 
-				final I_M_PriceList_Version plv = plvAndIols.getFirst();
+				final I_M_PriceList_Version plv = plvAndIols.getLeft();
 				if (plv == null)
 				{
 					// this shouldn't happen, unless the PP_Order was closed without any previous issue
@@ -182,7 +182,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 				{
 					plvId2qiOrders.put(plvId, productionOrder);
 				}
-				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getSecond());
+				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getRight());
 			}
 
 			//
@@ -214,7 +214,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			return new MaterialTrackingDocumentsPricingInfo(this);
 		}
 
-		private Pair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(final I_PP_Order ppOrder)
+		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(final I_PP_Order ppOrder)
 		{
 			I_M_PriceList_Version plv = null;
 
@@ -240,7 +240,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 				}
 			}
 
-			return new Pair<I_M_PriceList_Version, List<I_M_InOutLine>>(plv, issuedInOutLinesForPPOrder);
+			return new ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>>(plv, issuedInOutLinesForPPOrder);
 		}
 
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)

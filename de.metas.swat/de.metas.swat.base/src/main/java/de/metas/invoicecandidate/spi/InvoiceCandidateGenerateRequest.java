@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -17,12 +18,12 @@ import com.google.common.collect.ImmutableList;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +32,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Request for generating invoice candidates.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -82,5 +83,11 @@ public final class InvoiceCandidateGenerateRequest
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(model, modelClass);
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }

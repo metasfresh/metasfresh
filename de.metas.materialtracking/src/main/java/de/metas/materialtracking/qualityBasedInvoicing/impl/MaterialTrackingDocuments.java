@@ -121,6 +121,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		return _notInvoicedProductionOrders;
 	}
 
+	/**
+	 *
+	 * @param allProductionOrders
+	 * @return the IQualityInspectionOrder that were not yet invoiced according to {@link IMaterialTrackingPPOrderDAO#isInvoiced(I_PP_Order)}.
+	 */
 	private List<? extends IQualityInspectionOrder> filterOutInvoicedPPOrders(final List<IQualityInspectionOrder> allProductionOrders)
 	{
 		final ArrayList<IQualityInspectionOrder> result = new ArrayList<>();
@@ -151,12 +156,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			{
 				continue; // for the invoice candidates and also for the PP_Order report lines, only closed PP_Orders matter.
 			}
-			
+
 			if (ppOrdersToBeConsideredNotClosed.contains(ppOrder.getPP_Order_ID()))
 			{
 				continue; // only closed PP_Orders matter.
 			}
-			
+
 			final QualityInspectionOrder qiOrder = new QualityInspectionOrder(ppOrder, materialTracking);
 			qualityInspectionOrders.add(qiOrder);
 		}
@@ -249,12 +254,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 					.builder()
 					.setM_Material_Tracking(getM_Material_Tracking())
 
-					// note that we give to the builder also those that were already processed into invoice candidates,
-					// because it needs that information to distinguish InOutLines that were not yet issued
-					// from those that were issued and whose issue-PP_Order already have IsInvoiceCanidate='Y'
+			// note that we give to the builder also those that were already processed into invoice candidates,
+			// because it needs that information to distinguish InOutLines that were not yet issued
+			// from those that were issued and whose issue-PP_Order already have IsInvoiceCanidate='Y'
 					.setAllProductionOrders(getAllProductionOrders())
 
-					.setNotYetInvoicedProductionOrders(getNotInvoicedProductionOrders())
+			.setNotYetInvoicedProductionOrders(getNotInvoicedProductionOrders())
 					.setM_PricingSystem(pricingSystem)
 					.build();
 		}

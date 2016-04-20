@@ -36,6 +36,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -119,9 +122,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 		//
 		// Validate the model
-		Check.assumeNotNull(ppOrder, "Param 'model' is not null");
+		Check.assumeNotNull(ppOrder, "Param 'ppOrder' is not null");
 		final IClientOrgAware clientOrgAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IClientOrgAware.class);
-		Check.assumeNotNull(clientOrgAware, "Param model={} is a IClientOrgAware", ppOrder);
+		Check.assumeNotNull(clientOrgAware, "Param ppOrder={} is a IClientOrgAware", ppOrder);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
 		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {} and of its Ctx are the same", ppOrder);
 
@@ -131,9 +134,18 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		// Check if given manufacturing order is eligible. It might be not eligible anymore, because it was already processed earlier this run
 		if (!qualityInspectionHandler.isInvoiceable(ppOrder))
 		{
-			final String msg = "Skip invoice candidates creation because model {} is not invoiceable according to handler {}";
+			final String msg = "Skip invoice candidates creation because ppOrder={} is not invoiceable according to handler {}";
 			logger.info(msg, ppOrder, qualityInspectionHandler);
 			loggable.addLog(msg, ppOrder, qualityInspectionHandler);
+			return Collections.emptyList(); // nothing to do here
+		}
+
+		if (!wasAnythingIssued(ppOrder))
+		{
+			// fresh-216: if we don't skip there will be problems later, because if nothing was issued, then we won't find a material receipt either.
+			final String msg = "Skip invoice candidates creation because nothing was acutally issued to ppOrder={}.";
+			logger.info(msg, ppOrder);
+			loggable.addLog(msg, ppOrder);
 			return Collections.emptyList(); // nothing to do here
 		}
 
@@ -143,7 +155,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		if (materialTrackingDocuments == null)
 		{
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
-			final String msg = "Skip invoice candidates creation because model {} is not assigned to a material tracking";
+			final String msg = "Skip invoice candidates creation because ppOrder={} is not assigned to a material tracking";
 			loggable.addLog(msg, ppOrder);
 			logger.info(msg, ppOrder);
 			return Collections.emptyList();
@@ -154,7 +166,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		if (qiOrder == null)
 		{
-			final String msg = "Skip invoice candidates creation because there is no quality inspection for model {}";
+			final String msg = "Skip invoice candidates creation because there is no quality inspection for ppOrder={}";
 			loggable.addLog(msg, ppOrder);
 			logger.info(msg, ppOrder);
 			return Collections.emptyList();
@@ -186,13 +198,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.getPriceListVersions();
 		if (plvs.isEmpty())
 		{
-			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {0}; ppOrder {1}", materialTrackingDocuments, ppOrder);
+			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {}; ppOrder={}", materialTrackingDocuments, ppOrder);
 		}
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 		for (final I_M_PriceList_Version plv : plvs)
 		{
 			final IVendorReceipt<I_M_InOutLine> vendorReceiptForPLV = materialTrackingDocuments.getVendorReceiptForPLV(plv);
+			Check.assumeNotNull(vendorReceiptForPLV,
+					"vendorReceiptForPLV not null for M_PriceList_Version={};\nmaterialTrackingDocuments={}",
+					plv, materialTrackingDocuments);
 
 			final IVendorInvoicingInfo vendorInvoicingInfo = materialTrackingDocuments.getVendorInvoicingInfoForPLV(plv);
 
@@ -240,11 +255,25 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		return result;
 	}
 
+	private boolean wasAnythingIssued(final I_PP_Order ppOrder)
+	{
+		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+
+		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveNotReversedForOrder(ppOrder))
+		{
+			if (ppCostCollectorBL.isMaterialIssue(cc, true) && cc.getMovementQty().signum() > 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private List<IQualityInvoiceLineGroup> createQualityInvoiceLineGroups(
 			final IMaterialTrackingDocuments materialTrackingDocuments,
-			@SuppressWarnings("rawtypes") final IVendorReceipt vendorReceipt, // only the add() and getModels methods are parametrized and the won't use them here, so it's safe to suppress
-			final IVendorInvoicingInfo vendorInvoicingInfo
-			)
+			@SuppressWarnings("rawtypes") final IVendorReceipt vendorReceipt,    // only the add() and getModels methods are parameterized and the won't use them here, so it's safe to suppress
+			final IVendorInvoicingInfo vendorInvoicingInfo)
 	{
 		Check.assumeNotNull(materialTrackingDocuments, "materialTrackingDocuments not null");
 		Check.assumeNotNull(vendorReceipt,
