@@ -89,7 +89,7 @@ public class SyncUserImportService extends AbstractSyncImportService
 		}
 
 		user.markNotDeleted();
-		user.setEmail(syncUser.getEmail());
+		user.setEmail(syncUser.getEmail().trim());
 		// only sync the PW if not already set, e.g. by the forgot-password feature
 		if (user.getPassword() == null || user.getPassword().trim().isEmpty())
 		{
