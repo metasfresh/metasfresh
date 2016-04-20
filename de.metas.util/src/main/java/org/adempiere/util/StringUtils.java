@@ -23,8 +23,12 @@ package org.adempiere.util;
  */
 
 import java.math.BigDecimal;
+import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Collection;
+
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 public final class StringUtils
 {
@@ -103,12 +107,49 @@ public final class StringUtils
 	}
 
 	/**
+	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
+	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J
+	 * formatter.
 	 *
 	 * @param message
 	 * @param params
 	 * @return
 	 */
 	public static String formatMessage(final String message, Object... params)
+	{
+		if (message.contains("{0}") && params != null && params.length > 0)
+		{
+			return formatJavaTextFormatMessage(message, params);
+		}
+
+		return formatSLF4JMessage(message, params);
+	}
+
+	/**
+	 * Formats the given message the same way our log messages are formatted. See {@link MessageFormatter} for further infos
+	 *
+	 * @param message
+	 * @param params
+	 * @return
+	 */
+	private static String formatSLF4JMessage(final String message, Object... params)
+	{
+		if (params == null)
+		{
+			return message; // i think null would also be handled by MessageFormatter, but better be save than sorry
+		}
+		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, params);
+		return arrayFormat.getMessage();
+	}
+
+	/**
+	 * Formats the given message the using {@link Format}.
+	 *
+	 * @param message
+	 * @param params
+	 * @return
+	 */
+	public static String formatJavaTextFormatMessage(final String message, Object... params)
 	{
 		String messageFormated;
 		if (params != null && params.length > 0)
@@ -157,21 +198,21 @@ public final class StringUtils
 		return s;
 		/*
 		 * JAVA6 behaviour * if (s == null) { return s; } String normStr = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
-		 * 
+		 *
 		 * StringBuffer sb = new StringBuffer(); for (int i = 0; i < normStr.length(); i++) { char ch = normStr.charAt(i); if (ch < 255) sb.append(ch); } return sb.toString(); /*
 		 */
 	}
 
 	/**
 	 * Overlays the given <code>string</code> with the given <code>overlay</code>, with the overlay's last character overylaying the string's last character.<br>
-	 * 
+	 *
 	 * <pre>
 	 * 0000000000 + 123456 => 0000123456
 	 *        000 + 123456 =>     123456
 	 * </pre>
-	 * 
+	 *
 	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
-	 * 
+	 *
 	 * @param string
 	 * @param overlay
 	 * @return

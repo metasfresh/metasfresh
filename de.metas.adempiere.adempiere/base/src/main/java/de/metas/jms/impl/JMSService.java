@@ -15,6 +15,7 @@ import org.apache.activemq.broker.TransportConnector;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.slf4j.Logger;
+
 import de.metas.jms.IJMSService;
 import de.metas.jms.JmsConstants;
 
@@ -166,16 +167,16 @@ public class JMSService implements IJMSService
 			updateConfiguration_JMSConnectionFactory();
 		}
 	}
-	
+
 	/** Updates the embedded broker configuration */
 	private final void updateConfiguration_EmbeddedBroker()
 	{
 		if (embeddedBroker == null)
 		{
-			logger.info("JMS borker not started yet. Doing nothing.");
+			logger.info("JMS broker not started yet. Doing nothing.");
 			return;
 		}
-		
+
 		try
 		{
 			createEmbeddedBrokerConnector();
@@ -185,7 +186,7 @@ public class JMSService implements IJMSService
 			logger.error("Failed updating the JMS connector", e);
 		}
 	}
-	
+
 	/** Updates configuration of released connection factories */
 	private final void updateConfiguration_JMSConnectionFactory()
 	{
