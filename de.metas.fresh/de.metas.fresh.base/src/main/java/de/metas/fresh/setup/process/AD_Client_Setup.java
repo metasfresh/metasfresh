@@ -23,9 +23,12 @@ package de.metas.fresh.setup.process;
  */
 
 import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.CacheMgt;
 
+import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
 
 /**
@@ -150,83 +153,86 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 	@Override
 	protected void prepare()
 	{
-		final ClientSetup clientSetup = getClientSetup();
-
-		for (final ProcessInfoParameter para : getParameter())
+		try (final IAutoCloseable cacheFlagRestorer = CacheInterceptor.temporaryDisableCaching())
 		{
-			if (para.getParameter() == null)
-			{
-				continue;
-			}
+			final ClientSetup clientSetup = getClientSetup();
 
-			final String name = para.getParameterName();
-			if (PARAM_CompanyName.equalsIgnoreCase(name))
+			for (final ProcessInfoParameter para : getParameter())
 			{
-				clientSetup.setCompanyName(para.getParameterAsString());
-			}
-			else if (PARAM_VATaxID.equalsIgnoreCase(name))
-			{
-				clientSetup.setCompanyTaxID(para.getParameterAsString());
-			}
-			else if (PARAM_C_Location_ID.equalsIgnoreCase(name))
-			{
-				clientSetup.setCompanyAddressByLocationId(para.getParameterAsInt());
-			}
-			else if (PARAM_Logo_ID.equalsIgnoreCase(name))
-			{
-				clientSetup.setCompanyLogoByImageId(para.getParameterAsInt());
-			}
-			else if (PARAM_AD_Language.equalsIgnoreCase(name))
-			{
-				clientSetup.setAD_Language(para.getParameterAsString());
-			}
-			else if (PARAM_C_Currency_ID.equalsIgnoreCase(name))
-			{
-				clientSetup.setC_Currency_ID(para.getParameterAsInt());
-			}
-			//
-			//
-			else if (PARAM_FirstName.equalsIgnoreCase(name))
-			{
-				clientSetup.setContactFirstName(para.getParameterAsString());
-			}
-			else if (PARAM_LastName.equalsIgnoreCase(name))
-			{
-				clientSetup.setContactLastName(para.getParameterAsString());
-			}
-			//
-			//
-			else if (PARAM_AccountNo.equalsIgnoreCase(name))
-			{
-				clientSetup.setAccountNo(para.getParameterAsString());
-			}
-			else if (PARAM_IBAN.equalsIgnoreCase(name))
-			{
-				clientSetup.setIBAN(para.getParameterAsString());
-			}
-			else if (PARAM_C_Bank_ID.equalsIgnoreCase(name))
-			{
-				clientSetup.setC_Bank_ID(para.getParameterAsInt());
-			}
-			//
-			//
-			else if (PARAM_Phone.equalsIgnoreCase(name))
-			{
-				clientSetup.setPhone(para.getParameterAsString());
-			}
-			else if (PARAM_Fax.equalsIgnoreCase(name))
-			{
-				clientSetup.setFax(para.getParameterAsString());
-			}
-			else if (PARAM_EMail.equalsIgnoreCase(name))
-			{
-				clientSetup.setEMail(para.getParameterAsString());
-			}
-			//
-			//
-			else if (PARAM_Description.equalsIgnoreCase(name))
-			{
-				clientSetup.setBPartnerDescription(para.getParameterAsString());
+				if (para.getParameter() == null)
+				{
+					continue;
+				}
+
+				final String name = para.getParameterName();
+				if (PARAM_CompanyName.equalsIgnoreCase(name))
+				{
+					clientSetup.setCompanyName(para.getParameterAsString());
+				}
+				else if (PARAM_VATaxID.equalsIgnoreCase(name))
+				{
+					clientSetup.setCompanyTaxID(para.getParameterAsString());
+				}
+				else if (PARAM_C_Location_ID.equalsIgnoreCase(name))
+				{
+					clientSetup.setCompanyAddressByLocationId(para.getParameterAsInt());
+				}
+				else if (PARAM_Logo_ID.equalsIgnoreCase(name))
+				{
+					clientSetup.setCompanyLogoByImageId(para.getParameterAsInt());
+				}
+				else if (PARAM_AD_Language.equalsIgnoreCase(name))
+				{
+					clientSetup.setAD_Language(para.getParameterAsString());
+				}
+				else if (PARAM_C_Currency_ID.equalsIgnoreCase(name))
+				{
+					clientSetup.setC_Currency_ID(para.getParameterAsInt());
+				}
+				//
+				//
+				else if (PARAM_FirstName.equalsIgnoreCase(name))
+				{
+					clientSetup.setContactFirstName(para.getParameterAsString());
+				}
+				else if (PARAM_LastName.equalsIgnoreCase(name))
+				{
+					clientSetup.setContactLastName(para.getParameterAsString());
+				}
+				//
+				//
+				else if (PARAM_AccountNo.equalsIgnoreCase(name))
+				{
+					clientSetup.setAccountNo(para.getParameterAsString());
+				}
+				else if (PARAM_IBAN.equalsIgnoreCase(name))
+				{
+					clientSetup.setIBAN(para.getParameterAsString());
+				}
+				else if (PARAM_C_Bank_ID.equalsIgnoreCase(name))
+				{
+					clientSetup.setC_Bank_ID(para.getParameterAsInt());
+				}
+				//
+				//
+				else if (PARAM_Phone.equalsIgnoreCase(name))
+				{
+					clientSetup.setPhone(para.getParameterAsString());
+				}
+				else if (PARAM_Fax.equalsIgnoreCase(name))
+				{
+					clientSetup.setFax(para.getParameterAsString());
+				}
+				else if (PARAM_EMail.equalsIgnoreCase(name))
+				{
+					clientSetup.setEMail(para.getParameterAsString());
+				}
+				//
+				//
+				else if (PARAM_Description.equalsIgnoreCase(name))
+				{
+					clientSetup.setBPartnerDescription(para.getParameterAsString());
+				}
 			}
 		}
 	}
@@ -234,8 +240,23 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ClientSetup clientSetup = getClientSetup();
-		clientSetup.save();
-		return MSG_OK;
+		try (final IAutoCloseable cacheFlagRestorer = CacheInterceptor.temporaryDisableCaching())
+		{
+			final ClientSetup clientSetup = getClientSetup();
+			clientSetup.save();
+			return MSG_OK;
+		}
+	}
+	
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success)
+		{
+			return;
+		}
+		
+		// Fully reset the cache
+		CacheMgt.get().reset();
 	}
 }

@@ -32,6 +32,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
  - FRESH-213 Process panel's Back button not working
  - FRESH-195 NPE when selecting a particular warehouse on Bereitstellung POS
  - FRESH-194 Picking: Uncompatible CU-TU Issue

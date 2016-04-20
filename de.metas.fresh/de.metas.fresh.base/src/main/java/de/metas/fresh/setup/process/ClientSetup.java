@@ -12,6 +12,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
@@ -30,6 +31,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.esr.ESRConstants;
@@ -111,27 +113,30 @@ class ClientSetup
 
 		//
 		// Load
-		final int adClientId = Env.getAD_Client_ID(getCtx());
-		adClient = clientDAO.retriveClient(getCtx(), adClientId);
-		InterfaceWrapperHelper.setTrxName(adClient, ITrx.TRXNAME_ThreadInherited);
-		//
-		adClientInfo = clientDAO.retrieveClientInfo(getCtx(), adClient.getAD_Client_ID());
-		InterfaceWrapperHelper.setTrxName(adClientInfo, ITrx.TRXNAME_ThreadInherited);
-		//
-		adOrg = orgDAO.retrieveOrg(getCtx(), AD_Org_ID_Main);
-		InterfaceWrapperHelper.setTrxName(adOrg, ITrx.TRXNAME_ThreadInherited);
-		//
-		adOrgInfo = orgDAO.retrieveOrgInfo(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited);
-		//
-		orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
-		orgBPartnerLocation = InterfaceWrapperHelper.create(partnerOrgBL.retrieveOrgBPLocation(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited), I_C_BPartner_Location.class);
-		orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
-		Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
-		orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner), I_C_BP_BankAccount.class);
-		Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
-		//
-		acctSchema = adClientInfo.getC_AcctSchema1();
-		priceList_None = InterfaceWrapperHelper.create(getCtx(), MPriceList.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
+		try (IAutoCloseable cacheFlagRestorer = CacheInterceptor.temporaryDisableCaching())
+		{
+			final int adClientId = Env.getAD_Client_ID(getCtx());
+			adClient = clientDAO.retriveClient(getCtx(), adClientId);
+			InterfaceWrapperHelper.setTrxName(adClient, ITrx.TRXNAME_ThreadInherited);
+			//
+			adClientInfo = clientDAO.retrieveClientInfo(getCtx(), adClient.getAD_Client_ID());
+			InterfaceWrapperHelper.setTrxName(adClientInfo, ITrx.TRXNAME_ThreadInherited);
+			//
+			adOrg = orgDAO.retrieveOrg(getCtx(), AD_Org_ID_Main);
+			InterfaceWrapperHelper.setTrxName(adOrg, ITrx.TRXNAME_ThreadInherited);
+			//
+			adOrgInfo = orgDAO.retrieveOrgInfo(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited);
+			//
+			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
+			orgBPartnerLocation = InterfaceWrapperHelper.create(partnerOrgBL.retrieveOrgBPLocation(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited), I_C_BPartner_Location.class);
+			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
+			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
+			orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner), I_C_BP_BankAccount.class);
+			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
+			//
+			acctSchema = adClientInfo.getC_AcctSchema1();
+			priceList_None = InterfaceWrapperHelper.create(getCtx(), MPriceList.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
+		}
 	}
 
 	public void save()

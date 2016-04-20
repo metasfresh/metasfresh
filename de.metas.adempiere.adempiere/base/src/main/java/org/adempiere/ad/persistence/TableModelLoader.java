@@ -37,8 +37,9 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -68,7 +69,14 @@ public final class TableModelLoader
 
 	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
 	{
-		final boolean checkCache = true;
+		boolean checkCache = true;
+
+		// Respect cache interceptor's temporary disabled flag
+		if (CacheInterceptor.isCacheDisabled())
+		{
+			checkCache = false;
+		}
+		
 		return getPO(ctx, tableName, Record_ID, checkCache, trxName);
 	}
 

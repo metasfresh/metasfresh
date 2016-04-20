@@ -26,25 +26,28 @@ package de.metas.adempiere.util.cache;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.proxy.AroundInvoke;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IInvocationContext;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import de.metas.logging.LogManager;
 
 public @Cached// @Interceptor
 class CacheInterceptor implements Serializable
@@ -53,6 +56,59 @@ class CacheInterceptor implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = -6740693287832574641L;
+	
+	/**
+	 * Temporary disable the caching on current thread.
+	 * 
+	 * Please keep in mind this method will disable the cache retrieval and WILL NOT disable the cache invalidation.
+	 * 
+	 * @return an auto-closeable used to re-enable the caching 
+	 */
+	public static final IAutoCloseable temporaryDisableCaching()
+	{
+		final Boolean cacheDisabled = THREADLOCAL_CacheDisabled.get();
+		if(Boolean.TRUE.equals(cacheDisabled))
+		{
+			return NullAutoCloseable.instance;
+		}
+		
+		THREADLOCAL_CacheDisabled.set(Boolean.TRUE);
+		logger.debug("Caching temporary disabled for current thread");
+		
+		return new IAutoCloseable()
+		{
+			private boolean closed = false;
+			@Override
+			public void close()
+			{
+				if(closed)
+				{
+					return;
+				}
+				closed = true;
+
+				// restore old value
+				logger.debug("Restoring cache disabled flag to {}", cacheDisabled);
+				THREADLOCAL_CacheDisabled.set(cacheDisabled);
+			}
+		};
+	}
+	
+	/** @return true if the caching is disabled for this thread */
+	public static final boolean isCacheDisabled()
+	{
+		final Boolean cacheDisabled = THREADLOCAL_CacheDisabled.get();
+		return Boolean.TRUE.equals(cacheDisabled);
+	}
+	
+	private static final ThreadLocal<Boolean> THREADLOCAL_CacheDisabled = new ThreadLocal<Boolean>()
+	{
+		@Override
+		protected Boolean initialValue()
+		{
+			return Boolean.FALSE;
+		};
+	};
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(CacheInterceptor.class);
@@ -102,6 +158,17 @@ class CacheInterceptor implements Serializable
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("Entering - invCtx: " + invCtx);
+		}
+		
+		//
+		// If caching is temporary disabled, just invoke the method directly
+		if (isCacheDisabled())
+		{
+			logger.trace("Caching is disabled for current thread. Invoking {} directly.", invCtx);
+			
+			// Invoke the cached method directly
+			final Object result = invCtx.proceed();
+			return result;
 		}
 
 		//
