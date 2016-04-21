@@ -26,8 +26,12 @@
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
 
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
-
-		<cxf.version>3.1.6_metas</cxf.version>
+		<!-- 
+		3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need.
+		Until 3.1.6 is released, we use our "own" 3.1.6_metas in the de.metas.jaxrs module.
+		2016-04-21 ts: trying 3.1.6 now 
+		-->
+		<cxf.version>3.1.6</cxf.version>
 	</properties>
 
 	<dependencyManagement>
