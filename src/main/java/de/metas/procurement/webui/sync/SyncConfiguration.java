@@ -233,6 +233,7 @@ public class SyncConfiguration
 		final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
 
 		final JMSConfiguration conf = new JMSConfiguration();
+		conf.setSubscriptionDurable(true); // FRESH-222 et al: trying to solve the problem by making sure messages are preserved
 		conf.setConnectionFactory(connectionFactory);
 		conf.setTargetDestination(webUIQueueRequest);
 		conf.setReplyToDestination(webUIQueueResponse);
