@@ -95,6 +95,9 @@ public class JaxRsBL implements IJaxRsBL
 	 */
 	private Server automaticEndpointsServer;
 
+	/**
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-87
+	 */
 	@Autowired
 	private LoggingFeature loggingFeature;
 
