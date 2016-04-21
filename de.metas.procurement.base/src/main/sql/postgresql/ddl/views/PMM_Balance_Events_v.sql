@@ -54,8 +54,12 @@ union all (
 		, ol.Updated as Updated
 		, 0 as UpdatedBy
 	from C_OrderLine ol
+	inner join C_Order o on (o.C_Order_ID=ol.C_Order_ID)
 	where true
-	and ol.IsMFProcurement='Y'
+	-- Consider all purchase orders, no matter if they were created from procurement or not (FRESH-191)
+	-- NOTE: keep in sync with de.metas.procurement.base.order.interceptor.C_OrderLine.isEligibleForTrackingQtyDelivered(I_C_OrderLine)
+	and o.IsSOTrx='N'
+	-- and ol.IsMFProcurement='Y'
 )
 ;
 

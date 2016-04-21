@@ -57,6 +57,8 @@ public class C_OrderLine
 		// NOTE: according to FRESH-191, we shall track the QtyDelivered no matter what.
 		//if (!orderLine.isMFProcurement()) return false;
 		
+		// NOTE2: keep in sync with PMM_Balance_Events_v view.
+		
 		// Track only purchase orders (FRESH-191)
 		final I_C_Order order = orderLine.getC_Order();
 		if (order == null || order.isSOTrx())
