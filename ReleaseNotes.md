@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
+ - FRESH-87 Log the JSON-Packages that are exchanged between the service endpoints
+    * enabling the cfx LoggingFeature so we can log the data that comes in or goes out via jax-rs
  - FRESH-196 Procurement WebUI: Initially open with tomorrow
  - FRESH-197 Procurement WebUI: firefox's remember password does not popup
  - FRESH-176 Procurement WebUI: Allow switch enabled users between BPartners

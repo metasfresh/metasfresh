@@ -18,6 +18,9 @@ import org.adempiere.util.ISingletonService;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.apache.cxf.endpoint.Server;
+import org.apache.cxf.feature.Feature;
+import org.apache.cxf.feature.LoggingFeature;
+import org.apache.cxf.interceptor.AbstractLoggingInterceptor;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -25,6 +28,8 @@ import org.apache.cxf.transport.jms.JMSConfigFeature;
 import org.apache.cxf.transport.jms.JMSConfiguration;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -87,6 +92,9 @@ public class JaxRsBL implements IJaxRsBL
 	 */
 	private Server automaticEndpointsServer;
 
+	@Autowired
+	private LoggingFeature loggingFeature;
+
 	/**
 	 * Registers this instance in {@link Services}, to avoid Services from creating a new instance that was not configured using spring.
 	 *
@@ -145,9 +153,11 @@ public class JaxRsBL implements IJaxRsBL
 		// svrFactory.setBus(bus); see the commented out "spring" section below
 
 		svrFactory.setProvider(jacksonJaxbJsonProvider);
-		svrFactory.getFeatures().add(setupJMSConfiguration(
+		svrFactory.getFeatures().add(createJMSConfigFeature(
 				request.getRequestQueue(),
 				request.getResponseQueue()));
+		svrFactory.getFeatures().add(loggingFeature);
+
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
 
@@ -156,7 +166,7 @@ public class JaxRsBL implements IJaxRsBL
 		logger.info("Created server {} for {}", automaticEndpointsServer, request);
 	}
 
-	private JMSConfigFeature setupJMSConfiguration(
+	private JMSConfigFeature createJMSConfigFeature(
 			final String requestQueueName,
 			final String responseQueueName)
 	{
@@ -173,6 +183,29 @@ public class JaxRsBL implements IJaxRsBL
 		jmsConfigFeature.setJmsConfig(conf);
 
 		return jmsConfigFeature;
+	}
+
+	/**
+	 *
+	 * @return
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-87
+	 */
+	@Bean
+	public LoggingFeature createLoggingFeature()
+	{
+		final boolean prettyPrint = true;
+		final boolean showBinary = true;
+
+		// see LoggingFeature.initializeProvider()...we want to make sure that showBinary is not ignored
+		final int limit = AbstractLoggingInterceptor.DEFAULT_LIMIT + 1;
+
+		final LoggingFeature loggingFeature = new LoggingFeature(
+				null, // use default
+				null, // use default
+				limit,
+				prettyPrint,
+				showBinary);
+		return loggingFeature;
 	}
 
 	@Override
@@ -311,7 +344,9 @@ public class JaxRsBL implements IJaxRsBL
 		{
 			final T client = JAXRSClientFactory.create(clientURL,
 					endPointclass,
-					Collections.singletonList(jacksonJaxbJsonProvider));
+					Collections.singletonList(jacksonJaxbJsonProvider),
+					Collections.singletonList((Feature)loggingFeature),
+					null); // not providing a particular configLocation);
 
 			WebClient.client(client)
 					.type(MediaType.APPLICATION_JSON_TYPE)
