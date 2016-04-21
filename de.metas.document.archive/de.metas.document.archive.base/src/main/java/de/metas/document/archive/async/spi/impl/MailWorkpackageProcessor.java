@@ -180,8 +180,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final String from = userTo.getName();
 			final String cc = null;
 			final String bcc = null;
+			
+			final String statusText = Services.get(IMsgBL.class).getMsg(ctx, status);
 
-			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, status);
+			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, statusText);
 		}
 	}
 

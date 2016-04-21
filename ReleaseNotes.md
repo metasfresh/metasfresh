@@ -15,8 +15,6 @@ The actual release notes
 # metasfresh 4.14.13 (Upcoming Release)  
 
 ## Features
- - FRESH-206: metasfresh server shall inform the procurement webui server about what supplies were synchronized
- - FRESH-202: Procurement: Price recalulation Procurement Candidates
  - FRESH-196 Procurement WebUI: Initially open with tomorrow
  - FRESH-197 Procurement WebUI: firefox's remember password does not popup
  - FRESH-176 Procurement WebUI: Allow switch enabled users between BPartners
@@ -32,14 +30,12 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-205 Doc Outbound: eMail sent not updated
+    * the EMail-sent counter is now correct
  - FRESH-219 - Procurement: Contract missing in Procurement webUI
     * adding JMX operation to send all contracts to the webui
- - FRESH-211 AD_Org_ID is not updated in C_BPartner_Location
  - FRESH-216 Error creating InvoiceCandidates for PP_Orders without issued quantities
     * the system now deals more graciously with material tracking PP_Orders that have receipts but no issues
- - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
- - FRESH-213 Process panel's Back button not working
- - FRESH-195 NPE when selecting a particular warehouse on Bereitstellung POS
  - FRESH-194 Picking: Uncompatible CU-TU Issue
  - FRESH-179 Remove customer specifics from jasper and DB functions
  - FRESH-193 problems after temporary JMS link outage
