@@ -30,6 +30,7 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
+ - FRESH-220 Autocomplete for entering product in Auftrag does not work
  - FRESH-205 Doc Outbound: eMail sent not updated
     * the EMail-sent counter is now correct
  - FRESH-219 - Procurement: Contract missing in Procurement webUI
