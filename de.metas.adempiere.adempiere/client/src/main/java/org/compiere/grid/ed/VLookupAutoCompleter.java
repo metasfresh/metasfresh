@@ -145,6 +145,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		final String tableName = table.getTableName();
+		final boolean isBaseLanguage = Env.isBaseLanguage(Env.getCtx(), tableName);
 
 		//
 		// Init Search Columns
@@ -160,6 +161,12 @@ import de.metas.autocomplete.model.I_AD_Table;
 					if (adTableDAO.isVirtualColumn(c))
 					{
 						searchColumnsSQL.add(c.getColumnSQL());
+					}
+					// Case: translated column (FRESH-220)
+					else if (c.isTranslated() && !isBaseLanguage)
+					{
+						// NOTE: we need to use the fully qualified name because else we will get sql errors like "ERROR: column reference "name" is ambiguous"
+						searchColumnsSQL.add(tableName + "_Trl." + c.getColumnName());
 					}
 					else
 					{
