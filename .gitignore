@@ -7,3 +7,5 @@
 *.cache
 *.diff
 
+application.properties
+logback.xml

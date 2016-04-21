@@ -10,6 +10,7 @@ import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.feature.LoggingFeature;
+import org.apache.cxf.interceptor.AbstractLoggingInterceptor;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -70,6 +71,9 @@ public class SyncConfiguration
 	@Autowired
 	private BrokerService embeddedBrokerService;
 
+	@Autowired
+	private LoggingFeature loggingFeature;
+
 	@Value("${mfprocurement.jms.webui.request:}")
 	private String webUIQueueRequest;
 
@@ -103,7 +107,7 @@ public class SyncConfiguration
 	 * @return
 	 */
 	@Bean
-	public IServerSync serverSync()
+	public IServerSync clientEndPoint()
 	{
 		if (useMockedServer)
 		{
@@ -127,13 +131,12 @@ public class SyncConfiguration
 		//
 		// Create the server binding.
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
-		final Feature loggingFeature = new LoggingFeature();
 
 		final IServerSync serverSync = JAXRSClientFactory.create(
 				serverUrl,
 				IServerSync.class,
 				Collections.singletonList(jacksonJaxbJsonProvider),
-				Collections.singletonList(loggingFeature),
+				Collections.singletonList((Feature)loggingFeature),
 				null); // not providing a particular configLocation
 		WebClient.client(serverSync)
 				.type(mediaType)
@@ -161,31 +164,21 @@ public class SyncConfiguration
 	{
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
+		final JMSConfigFeature jmsConfigFeature = createJMSConfigFeature();
+
 		final JAXRSServerFactoryBean svrFactory = new JAXRSServerFactoryBean();
 		svrFactory.setBus(bus);
 		svrFactory.setResourceClasses(AgentSync.class);
-		svrFactory.getFeatures().add(createJMSConfiguration());
+
+		svrFactory.getFeatures().add(jmsConfigFeature);
+		svrFactory.getFeatures().add(loggingFeature);
+
 		svrFactory.setProvider(jacksonJaxbJsonProvider);
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
 
 		final Server server = svrFactory.create();
 		return server;
-	}
-
-	private JMSConfigFeature createJMSConfiguration()
-	{
-		final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
-
-		final JMSConfiguration conf = new JMSConfiguration();
-		conf.setConnectionFactory(connectionFactory);
-		conf.setTargetDestination(webUIQueueRequest);
-		conf.setReplyToDestination(webUIQueueResponse);
-
-		final JMSConfigFeature jmsConfigFeature = new JMSConfigFeature();
-		jmsConfigFeature.setJmsConfig(conf);
-
-		return jmsConfigFeature;
 	}
 
 	@Bean
@@ -210,5 +203,43 @@ public class SyncConfiguration
 		final CounterRepository counterRepository = new CounterRepository();
 		counterRepository.setBus(bus);
 		return counterRepository;
+	}
+
+	/**
+	 *
+	 * @return
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-87
+	 */
+	@Bean
+	public LoggingFeature createLoggingFeature()
+	{
+		final boolean prettyPrint = true;
+		final boolean showBinary = true;
+
+		// see LoggingFeature.initializeProvider()...we want to make sure that showBinary is not ignored
+		final int limit = AbstractLoggingInterceptor.DEFAULT_LIMIT + 1;
+
+		final LoggingFeature loggingFeature = new LoggingFeature(
+				null, // use default
+				null, // use default
+				limit,
+				prettyPrint,
+				showBinary);
+		return loggingFeature;
+	}
+
+	private JMSConfigFeature createJMSConfigFeature()
+	{
+		final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
+
+		final JMSConfiguration conf = new JMSConfiguration();
+		conf.setConnectionFactory(connectionFactory);
+		conf.setTargetDestination(webUIQueueRequest);
+		conf.setReplyToDestination(webUIQueueResponse);
+
+		final JMSConfigFeature jmsConfigFeature = new JMSConfigFeature();
+		jmsConfigFeature.setJmsConfig(conf);
+
+		return jmsConfigFeature;
 	}
 }
