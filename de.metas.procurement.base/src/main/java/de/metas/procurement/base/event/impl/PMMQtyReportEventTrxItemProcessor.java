@@ -9,11 +9,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.lock.api.ILockManager;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
@@ -57,7 +59,7 @@ import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_QtyReport_Event, Void>
 {
 	// services
-	// private static final Logger logger = LogManager.getLogger(PMMQtyReportEventTrxItemProcessor.class);
+	private static final Logger logger = LogManager.getLogger(PMMQtyReportEventTrxItemProcessor.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPMMPurchaseCandidateDAO purchaseCandidateDAO = Services.get(IPMMPurchaseCandidateDAO.class);
 	private final transient IPMMPurchaseCandidateBL purchaseCandidateBL = Services.get(IPMMPurchaseCandidateBL.class);
@@ -300,7 +302,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	{
 		final BigDecimal qtyPromisedDiff = qtyReportEvent.getQtyPromised().subtract(qtyReportEvent.getQtyPromised_Old());
 		final BigDecimal qtyPromisedTUDiff = qtyReportEvent.getQtyPromised_TU().subtract(qtyReportEvent.getQtyPromised_TU_Old());
-		return PMMBalanceChangeEvent.builder()
+		final PMMBalanceChangeEvent event = PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(qtyReportEvent.getC_BPartner_ID())
 				.setM_Product_ID(qtyReportEvent.getM_Product_ID())
 				.setM_AttributeSetInstance_ID(qtyReportEvent.getM_AttributeSetInstance_ID())
@@ -312,5 +314,8 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				.setQtyPromised(qtyPromisedDiff, qtyPromisedTUDiff)
 				//
 				.build();
+		logger.trace("Created event {} from {}", event, qtyReportEvent);
+		
+		return event;
 	}
 }

@@ -8,9 +8,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -42,6 +44,8 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 @Interceptor(I_PMM_PurchaseCandidate_OrderLine.class)
 public class PMM_PurchaseCandidate_OrderLine
 {
+	private static final Logger logger = LogManager.getLogger(PMM_PurchaseCandidate_OrderLine.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onCreate(final I_PMM_PurchaseCandidate_OrderLine alloc)
 	{
@@ -91,7 +95,7 @@ public class PMM_PurchaseCandidate_OrderLine
 		final I_PMM_PurchaseCandidate candidate = alloc.getPMM_PurchaseCandidate();
 		final BigDecimal qtyOrdered = isReversal ? alloc.getQtyOrdered().negate() : alloc.getQtyOrdered();
 		final BigDecimal qtyOrderedTU = isReversal ? alloc.getQtyOrdered_TU().negate() : alloc.getQtyOrdered_TU();
-		return PMMBalanceChangeEvent.builder()
+		final PMMBalanceChangeEvent event = PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(candidate.getC_BPartner_ID())
 				.setM_Product_ID(candidate.getM_Product_ID())
 				.setM_AttributeSetInstance_ID(candidate.getM_AttributeSetInstance_ID())
@@ -103,6 +107,9 @@ public class PMM_PurchaseCandidate_OrderLine
 				.setQtyOrdered(qtyOrdered, qtyOrderedTU)
 				//
 				.build();
+		
+		logger.trace("Created {} for {}, isReversal={}", event, alloc, isReversal);
+		return event;
 	}
 
 }

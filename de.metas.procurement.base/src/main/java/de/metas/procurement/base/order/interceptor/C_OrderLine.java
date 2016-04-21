@@ -109,6 +109,7 @@ public class C_OrderLine
 		// If there is no change in qty delivered then do nothing.
 		if (qtyDeliveredDiff.signum() == 0)
 		{
+			logger.debug("Skip updating the PMM_Balance for {} because QtyDeliveredDiff is zero", orderLine);
 			return;
 		}
 
