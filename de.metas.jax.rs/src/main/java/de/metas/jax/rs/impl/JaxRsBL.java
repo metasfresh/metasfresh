@@ -77,6 +77,8 @@ public class JaxRsBL implements IJaxRsBL
 	private static final Logger logger = LogManager.getLogger(JaxRsBL.class);
 
 	/**
+	 * See http://cxf.apache.org/docs/using-the-jmsconfigfeature.html for config options
+	 *
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
@@ -85,6 +87,7 @@ public class JaxRsBL implements IJaxRsBL
 			+ "&replyToName=dynamicQueues/{1}"
 			+ "&jndiURL={2}"
 			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5 (probably also earlier), if you don't use this parameter, then, the default is 60.000 milliseconds.
+			+ "&subscriptionDurable=true" // FRESH-222 et al: trying to solve the problem by making sure messages are preserved
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	/**
@@ -175,6 +178,7 @@ public class JaxRsBL implements IJaxRsBL
 		final ConnectionFactory connectionFactory = jmsService.createConnectionFactory();
 
 		final JMSConfiguration conf = new JMSConfiguration();
+		conf.setSubscriptionDurable(true); // FRESH-222 et al: trying to solve the problem by making sure messages are preserved
 		conf.setConnectionFactory(connectionFactory);
 		conf.setTargetDestination(requestQueueName);
 		conf.setReplyToDestination(responseQueueName); //
