@@ -8,6 +8,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.endpoint.Server;
+import org.apache.cxf.feature.Feature;
+import org.apache.cxf.feature.LoggingFeature;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -125,10 +127,14 @@ public class SyncConfiguration
 		//
 		// Create the server binding.
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
+		final Feature loggingFeature = new LoggingFeature();
+
 		final IServerSync serverSync = JAXRSClientFactory.create(
 				serverUrl,
 				IServerSync.class,
-				Collections.singletonList(jacksonJaxbJsonProvider));
+				Collections.singletonList(jacksonJaxbJsonProvider),
+				Collections.singletonList(loggingFeature),
+				null); // not providing a particular configLocation
 		WebClient.client(serverSync)
 				.type(mediaType)
 				.accept(mediaType);
