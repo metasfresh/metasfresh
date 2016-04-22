@@ -9,3 +9,5 @@
 
 application.properties
 logback.xml
+
+/log/
