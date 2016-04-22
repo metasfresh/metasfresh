@@ -107,9 +107,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.MSort;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -499,21 +497,38 @@ public abstract class Info extends Component
 		p_table.setColorProvider(colorProvider);
 
 		p_layout = layout;
-		final StringBuffer sql = new StringBuffer("SELECT DISTINCT "); // metas: cg: task US780
+		final StringBuilder sql = new StringBuilder("SELECT DISTINCT "); // metas: cg: task US780
 		// add columns & sql
 		for (int i = 0; i < layout.length; i++)
 		{
 			if (i > 0)
 			{
-				sql.append(", ");
+				sql.append("\n, ");
 			}
+			
+			final boolean isIDColumn = layout[i].isIDcol();
 
+			//
+			// Info column / ID's display name 
 			sql.append(layout[i].getColSQL());
-			// adding ID column
-			if (layout[i].isIDcol())
+			if (isIDColumn)
 			{
-				sql.append(",").append(layout[i].getIDcolSQL());
+				// Make sure the display column has a column name set and don't allow databases like PG9.3 to generate one (FRESH-235)
+				String columnName = layout[i].getColumnName();
+				if(Check.isEmpty(columnName, true))
+				{
+					columnName = "Col" + i + "_DisplayName";
+				}
+				sql.append(" AS ").append(columnName).append("_DisplayName");
 			}
+			
+			//
+			// adding ID column
+			if (isIDColumn)
+			{
+				sql.append("\n, ").append(layout[i].getIDcolSQL());
+			}
+			
 			// add to model
 			p_table.addColumn(layout[i].getColHeader());
 			if (layout[i].isColorColumn())
@@ -548,8 +563,7 @@ public abstract class Info extends Component
 		p_table.setRowSelectionAllowed(true);
 		p_table.addMouseListener(this);
 		p_table.setMultiSelection(p_multiSelection);
-		p_table.setShowTotals(false); // c.ghita@metas.ro : if true can cause 'Cannot format given Object as a Number (
- // S ) String'
+		p_table.setShowTotals(false); // c.ghita@metas.ro : if true can cause 'Cannot format given Object as a Number ( S ) String'
 
 		// set editors (two steps)
 		for (int i = 0; i < layout.length; i++)
@@ -557,9 +571,9 @@ public abstract class Info extends Component
 			p_table.setColumnClass(i, layout[i]);
 		}
 
-		sql.append(" FROM ").append(from);
+		sql.append("\n FROM ").append(from);
 		//
-		sql.append(" WHERE ").append(staticWhere);
+		sql.append("\n WHERE ").append(staticWhere);
 		m_sqlMain = sql.toString();
 		m_sqlCount = "SELECT COUNT(*) FROM " + from + " WHERE " + staticWhere;
 		//
@@ -750,7 +764,7 @@ public abstract class Info extends Component
 	{
 		final long start = System.currentTimeMillis();
 		final String dynWhere = getSQLWhere();
-		final StringBuffer sql = new StringBuffer(m_sqlCount);
+		final StringBuilder sql = new StringBuilder(m_sqlCount);
 		if (dynWhere.length() > 0)
 		{
 			sql.append(dynWhere); // includes first AND
@@ -1034,7 +1048,7 @@ public abstract class Info extends Component
 			return "";
 		}
 		//
-		final StringBuffer sb = new StringBuffer(getKeyColumn());
+		final StringBuilder sb = new StringBuilder(getKeyColumn());
 		if (keys.length > 1)
 		{
 			sb.append(" IN (");
@@ -1706,16 +1720,14 @@ public abstract class Info extends Component
 			p_table.setRowCount(0);
 			//
 			final String dynWhere = getSQLWhere();
-			final StringBuffer sql = new StringBuffer(getSQLSelect()); // metas: use getter
+			final StringBuilder sql = new StringBuilder(getSQLSelect()); // metas: use getter
 			if (dynWhere.length() > 0)
 			{
 				sql.append(dynWhere); // includes first AND
 			}
 			sql.append(m_sqlOrder);
 			String dataSql = msgBL.parseTranslation(ctx, sql.toString()); // Variables
-			dataSql = Env
-					.getUserRolePermissions()
-					.addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			dataSql = Env.getUserRolePermissions().addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 			log.trace(dataSql);
 
 			//
@@ -1725,7 +1737,7 @@ public abstract class Info extends Component
 
 			try
 			{
-				final PreparedStatement m_pstmt = DB.prepareStatement(dataSql, null);
+				final PreparedStatement m_pstmt = DB.prepareStatement(dataSql, ITrx.TRXNAME_None);
 				this.m_pstmt = m_pstmt;
 				setParameters(m_pstmt, false); // no count
 
