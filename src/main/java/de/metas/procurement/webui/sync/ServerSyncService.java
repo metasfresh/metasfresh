@@ -79,10 +79,11 @@ public class ServerSyncService implements IServerSyncService
 	@Autowired(required = true)
 	@Lazy
 	private IAgentSync agentSync;
-	
+
 	@Autowired
 	@Lazy
 	private ProductSupplyRepository productSuppliesRepo;
+
 	@Autowired
 	@Lazy
 	private IProductSuppliesService productSuppliesService;
@@ -188,16 +189,16 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
-	
+
 	@ManagedOperation(description = "Pushes a particular product supply, identified by ID, from webui server to metasfresh server")
 	public void pushReportProductSupplyById(final long product_supply_id)
 	{
 		final ProductSupply productSupply = productSuppliesRepo.findOne(product_supply_id);
-		if(productSupply == null)
+		if (productSupply == null)
 		{
 			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
 		}
-		
+
 		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
 		logger.debug("Pushing request: {}", request);
 		process(request);
@@ -211,13 +212,13 @@ public class ServerSyncService implements IServerSyncService
 		{
 			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
 			final Date dayTo = DateUtils.parseDayDate(dayToStr);
-			
+
 			final List<ProductSupply> productSupplies = productSuppliesService.getProductSupplies(bpartner_id, product_id, dayFrom, dayTo);
 			if (productSupplies.isEmpty())
 			{
 				throw new RuntimeException("No supplies found");
 			}
-			
+
 			final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 			logger.debug("Pushing request: {}", request);
 			process(request);
@@ -250,6 +251,7 @@ public class ServerSyncService implements IServerSyncService
 		for (final ProductSupply productSupply : productSupplies)
 		{
 			final SyncProductSupply syncProductSupply = new SyncProductSupply();
+
 			syncProductSupply.setUuid(productSupply.getUuid());
 			syncProductSupply.setBpartner_uuid(productSupply.getBpartner().getUuid());
 			syncProductSupply.setContractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid());
@@ -257,6 +259,7 @@ public class ServerSyncService implements IServerSyncService
 			syncProductSupply.setDay(productSupply.getDay());
 			syncProductSupply.setQty(productSupply.getQty());
 			syncProductSupply.setVersion(productSupply.getVersion());
+			syncProductSupply.setSyncConfirmationId(productSupply.getSyncConfirmId());
 
 			request.getProductSupplies().add(syncProductSupply);
 		}
@@ -277,7 +280,7 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
-	
+
 	@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
 	public void pushWeeklySuppliesForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
 	{
@@ -285,13 +288,13 @@ public class ServerSyncService implements IServerSyncService
 		{
 			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
 			final Date dayTo = DateUtils.parseDayDate(dayToStr);
-			
+
 			final List<WeekSupply> weeklySupplies = productSuppliesService.getWeeklySupplies(bpartner_id, product_id, dayFrom, dayTo);
 			if (weeklySupplies.isEmpty())
 			{
 				throw new RuntimeException("No supplies found");
 			}
-			
+
 			final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
 			logger.debug("Pushing request: {}", request);
 			process(request);
@@ -303,7 +306,6 @@ public class ServerSyncService implements IServerSyncService
 			throw Throwables.propagate(e);
 		}
 	}
-
 
 	@Subscribe
 	public void process(final SyncWeeklySupplyRequest request)
@@ -329,12 +331,14 @@ public class ServerSyncService implements IServerSyncService
 			Preconditions.checkNotNull(weeklySupply.getId(), "week supply is saved");
 
 			final SyncWeeklySupply syncWeeklySupply = new SyncWeeklySupply();
+
 			syncWeeklySupply.setUuid(weeklySupply.getUuid());
 			syncWeeklySupply.setVersion(weeklySupply.getVersion());
 			syncWeeklySupply.setBpartner_uuid(weeklySupply.getBpartner().getUuid());
 			syncWeeklySupply.setProduct_uuid(weeklySupply.getProduct().getUuid());
 			syncWeeklySupply.setWeekDay(weeklySupply.getDay());
 			syncWeeklySupply.setTrend(weeklySupply.getTrend());
+			syncWeeklySupply.setSyncConfirmationId(weeklySupply.getSyncConfirmId());
 
 			request.getWeeklySupplies().add(syncWeeklySupply);
 		}

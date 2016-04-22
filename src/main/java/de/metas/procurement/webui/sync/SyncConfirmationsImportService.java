@@ -1,12 +1,15 @@
 package de.metas.procurement.webui.sync;
 
+import java.util.Date;
+
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.procurement.sync.protocol.SyncProductSupplyConfirm;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
+import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 
@@ -20,12 +23,12 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,29 +39,39 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 @Transactional
 public class SyncConfirmationsImportService extends AbstractSyncImportService
 {
+	private static final transient Logger logger = LoggerFactory.getLogger(SyncConfirmationsImportService.class);
+
 	@Autowired
 	private SyncConfirmRepository syncConfirmRepo;
 
+	/**
+	 * Loads and updates the {@link SyncConfirm} record that is identified by the given <code>syncConfirmation</code>'s {@link SyncConfirmation#getConfirmId()}.
+	 *
+	 * @param syncConfirmation
+	 */
 	@Transactional
-	public void importProductSupplyConfirm(SyncProductSupplyConfirm syncProductSupplyConfirm)
+	public void importConfirmation(final SyncConfirmation syncConfirmation)
 	{
-		final SyncConfirm confirm = new SyncConfirm();
-		confirm.setEntry_type("product_supply");
-		confirm.setEntry_uuid(syncProductSupplyConfirm.getProduct_supply_uuid());
-		confirm.setServer_event_id(syncProductSupplyConfirm.getServer_event_id());
-		confirm.setServerDateReceived(syncProductSupplyConfirm.getDateReceived());
-		syncConfirmRepo.save(confirm);
-	}
+		SyncConfirm confirmRecord = null;
+		if (syncConfirmation.getConfirmId() > 0)
+		{
+			confirmRecord = syncConfirmRepo.findOne(syncConfirmation.getConfirmId());
+		}
 
-	@Transactional
-	public void importWeeklySupplyConfirm(SyncWeeklySupplyConfirm syncWeeklySupplyConfirm)
-	{
-		final SyncConfirm confirm = new SyncConfirm();
-		confirm.setEntry_type("week_supply");
-		confirm.setEntry_uuid(syncWeeklySupplyConfirm.getWeek_supply_uuid());
-		confirm.setServer_event_id(syncWeeklySupplyConfirm.getServer_event_id());
-		confirm.setServerDateReceived(syncWeeklySupplyConfirm.getDateReceived());
-		syncConfirmRepo.save(confirm);
-	}
+		if (confirmRecord == null)
+		{
+			// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
+			// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
+			confirmRecord = new SyncConfirm();
+			confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
+			logger.error("Found no record for {}", syncConfirmation);
 
+		}
+
+		confirmRecord.setServerEventId(syncConfirmation.getServerEventId());
+		confirmRecord.setDateConfirmed(syncConfirmation.getDateConfirmed());
+		confirmRecord.setDateConfirmReceived(new Date());
+
+		syncConfirmRepo.save(confirmRecord);
+	}
 }

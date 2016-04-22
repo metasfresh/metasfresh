@@ -412,6 +412,5 @@ public class AgentSyncIntegrationTest
 		dump(msg + " - Users", usersRepo.findAll());
 		dump(msg + " - Contracts", contractsRepo.findAll());
 		dump(msg + " - Products", productsRepo.findAll());
-
 	}
 }
