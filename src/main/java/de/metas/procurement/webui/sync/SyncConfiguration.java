@@ -133,7 +133,7 @@ public class SyncConfiguration
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
 		final IServerSync serverSync = JAXRSClientFactory.create(
-				serverUrl,
+				serverUrl.trim(),
 				IServerSync.class,
 				Collections.singletonList(jacksonJaxbJsonProvider),
 				Collections.singletonList((Feature)loggingFeature),
