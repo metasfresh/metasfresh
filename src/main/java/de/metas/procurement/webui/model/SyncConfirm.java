@@ -21,39 +21,67 @@ import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * A new record shall be stored each time when an instance of {@link AbstractSyncConfirmAwareEntity} is synched with the remote endpoint.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ * @task https://metasfresh.atlassian.net/browse/FRESH-206
+ */
 @Entity
 @Table(name = "sync_confirm")
 @SuppressWarnings("serial")
 public class SyncConfirm extends AbstractEntity
 {
-	private String entry_type;
-	private String entry_uuid;
-	private String server_event_id;
-	private Date serverDateReceived;
+	private String entryType;
 
+	private long entryId;
+
+	/**
+	 * See {@link #getEntryUuid()}
+	 */
+	private String entryUuid;
+
+	private String serverEventId;
+
+	/**
+	 * See {@link #getDateCreated()}.
+	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateCreated;
+
+	/**
+	 * See {@link #getDateConfirmed()}.
+	 */
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateConfirmed;
+
+	/**
+	 * See {@link #getDateConfirmReceived()}.
+	 */
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateConfirmReceived;
 
 	@Override
 	protected void toString(final ToStringHelper toStringHelper)
 	{
 		toStringHelper
-				.add("entry_type", entry_type)
-				.add("entry_uuid", entry_uuid)
-				.add("server_event_id", server_event_id)
-				.add("serverDateReceived", serverDateReceived);
+				.add("entryType", entryType)
+				.add("entryUuid", entryUuid)
+				.add("serverEventId", serverEventId)
+				.add("dateCreated", dateCreated)
+				.add("dateConfirmReceived", dateConfirmReceived);
 	}
 
 	@PreUpdate
@@ -67,36 +95,44 @@ public class SyncConfirm extends AbstractEntity
 		}
 	}
 
-	public String getEntry_type()
+	public String getEntryType()
 	{
-		return entry_type;
+		return entryType;
 	}
 
-	public void setEntry_type(String entry_type)
+	public void setEntryType(String entryType)
 	{
-		this.entry_type = entry_type;
+		this.entryType = entryType;
 	}
 
-	public String getEntry_uuid()
+	/**
+	 *
+	 * @return the UUID of the entry this sync confirm record is about.
+	 */
+	public String getEntryUuid()
 	{
-		return entry_uuid;
+		return entryUuid;
 	}
 
-	public void setEntry_uuid(String entry_uuid)
+	public void setEntryUuid(String entry_uuid)
 	{
-		this.entry_uuid = entry_uuid;
+		this.entryUuid = entry_uuid;
 	}
 
-	public String getServer_event_id()
+	public String getServerEventId()
 	{
-		return server_event_id;
+		return serverEventId;
 	}
 
-	public void setServer_event_id(String server_event_uuid)
+	public void setServerEventId(String serverEventId)
 	{
-		this.server_event_id = server_event_uuid;
+		this.serverEventId = serverEventId;
 	}
 
+	/**
+	 *
+	 * @return the date when this record was created, which is also the date when the sync request was submitted towards the remote endpoint.
+	 */
 	public Date getDateCreated()
 	{
 		return dateCreated;
@@ -107,14 +143,42 @@ public class SyncConfirm extends AbstractEntity
 		this.dateCreated = dateCreated;
 	}
 
-	public Date getServerDateReceived()
+	/**
+	 *
+	 * @return the date when the remote endpoint actually confirmed the data receipt.
+	 */
+	public Date getDateConfirmed()
 	{
-		return serverDateReceived;
+		return dateConfirmed;
 	}
 
-	public void setServerDateReceived(Date serverDateReceived)
+	public void setDateConfirmed(Date dateConfirmed)
 	{
-		this.serverDateReceived = serverDateReceived;
+		this.dateConfirmed = dateConfirmed;
+	}
+
+	/**
+	 *
+	 * @return the date when our local endpoint received the remote endpoint's confirmation.
+	 */
+	public Date getDateConfirmReceived()
+	{
+		return dateConfirmReceived;
+	}
+
+	public void setDateConfirmReceived(Date dateConfirmReceived)
+	{
+		this.dateConfirmReceived = dateConfirmReceived;
+	}
+
+	public long getEntryId()
+	{
+		return entryId;
+	}
+
+	public void setEntryId(long entryId)
+	{
+		this.entryId = entryId;
 	}
 
 }

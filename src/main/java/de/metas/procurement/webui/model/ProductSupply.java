@@ -47,11 +47,11 @@ import de.metas.procurement.webui.util.DateUtils;
 
 @Entity
 @Table(name = "product_supply"//
-, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })       //
+, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
 )
 @SuppressWarnings("serial")
 @SelectBeforeUpdate
-public class ProductSupply extends AbstractEntity
+public class ProductSupply extends AbstractSyncConfirmAwareEntity
 {
 	public static ProductSupply build(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day)
 	{
@@ -89,9 +89,9 @@ public class ProductSupply extends AbstractEntity
 	private Product product;
 
 	@ManyToOne
-	@NotFound(action = NotFoundAction.IGNORE)    // don't fail if the record was not found
+	@NotFound(action = NotFoundAction.IGNORE)        // don't fail if the record was not found
 	@SuppressWarnings("deprecation")
-	@org.hibernate.annotations.ForeignKey(name = "none")     // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
+	@org.hibernate.annotations.ForeignKey(name = "none")         // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
 	private ContractLine contractLine;
 
 	@NotNull
@@ -182,4 +182,5 @@ public class ProductSupply extends AbstractEntity
 			dateCreated = now;
 		}
 	}
+
 }

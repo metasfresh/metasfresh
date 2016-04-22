@@ -1,5 +1,7 @@
 package de.metas.procurement.webui.sync;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +11,10 @@ import org.springframework.stereotype.Component;
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncConfirmations;
+import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSupplyConfirm;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
 import de.metas.procurement.webui.Application;
 
 /*
@@ -124,31 +124,19 @@ public class AgentSync implements IAgentSync
 	}
 
 	@Override
-	public void confirm(final SyncConfirmations syncConfirmations)
+	public void confirm(final List<SyncConfirmation> syncConfirmations)
 	{
 		logger.debug("Got confirmations: {}", syncConfirmations);
-		
-		for (final SyncProductSupplyConfirm syncProductSupplyConfirm : syncConfirmations.getProductSuppliesConfirmations())
+
+		for (final SyncConfirmation syncConfirmation : syncConfirmations)
 		{
 			try
 			{
-				confirmationsImportService.importProductSupplyConfirm(syncProductSupplyConfirm);
+				confirmationsImportService.importConfirmation(syncConfirmation);
 			}
 			catch (Exception e)
 			{
-				logger.error("Failed importing confirmation: {}", syncProductSupplyConfirm, e);
-			}
-		}
-		
-		for (final SyncWeeklySupplyConfirm syncWeeklySupplyConfirm : syncConfirmations.getWeeklySuppliesConfirmations())
-		{
-			try
-			{
-				confirmationsImportService.importWeeklySupplyConfirm(syncWeeklySupplyConfirm);
-			}
-			catch (Exception e)
-			{
-				logger.error("Failed importing confirmation: {}", syncWeeklySupplyConfirm, e);
+				logger.error("Failed importing confirmation: {}", syncConfirmation, e);
 			}
 		}
 	}

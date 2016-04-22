@@ -20,10 +20,12 @@ import org.vaadin.spring.i18n.I18N;
 
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 
+import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.UserProduct;
@@ -31,6 +33,7 @@ import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
+import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserProductRepository;
 import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
@@ -60,13 +63,19 @@ import de.metas.procurement.webui.util.DateUtils;
  * #L%
  */
 
+/**
+ * Creates/Updates both {@link ProductSupply} and {@link WeekSupply} records, and also makes sure they are synchronized with the remote endpoint, see {@link SyncAfterCommit}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Service
 public class ProductSuppliesService implements IProductSuppliesService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-    private I18N i18n;
+	private I18N i18n;
 
 	@Autowired
 	private UserProductRepository userProductRepository;
@@ -79,14 +88,17 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Autowired
 	private ProductRepository productRepository;
-	
+
 	@Autowired
 	@Lazy
 	private BPartnerRepository bpartnersRepository;
-	
+
 	@Autowired
 	private IServerSyncService syncService;
-	
+
+	@Autowired
+	private SyncConfirmRepository syncConfirmRepo;
+
 	@Override
 	public List<Product> getUserFavoriteProducts(final User user)
 	{
@@ -151,7 +163,6 @@ public class ProductSuppliesService implements IProductSuppliesService
 		syncAfterCommit().add(productSupply);
 	}
 
-
 	@Override
 	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date)
 	{
@@ -166,7 +177,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 		if (bpartner_id > 0)
 		{
 			bpartner = bpartnersRepository.findOne(bpartner_id);
-			if(bpartner == null)
+			if (bpartner == null)
 			{
 				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
 			}
@@ -180,7 +191,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 		if (product_id > 0)
 		{
 			product = productRepository.findOne(product_id);
-			if(product == null)
+			if (product == null)
 			{
 				throw new RuntimeException("No Product found for ID=" + product_id);
 			}
@@ -191,20 +202,20 @@ public class ProductSuppliesService implements IProductSuppliesService
 		}
 
 		dayFrom = DateUtils.truncToDay(dayFrom);
-		if(dayFrom == null)
+		if (dayFrom == null)
 		{
 			throw new RuntimeException("No DayFrom specified");
 		}
 		dayTo = DateUtils.truncToDay(dayTo);
-		if(dayTo == null)
+		if (dayTo == null)
 		{
 			throw new RuntimeException("No DayTo specified");
 		}
-		
+
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
 		List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
 		logger.debug("Got {} product supplies", productSupplies.size());
-		
+
 		return productSupplies;
 	}
 
@@ -221,7 +232,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 	{
 		return productRepository.findBySharedTrueAndDeletedFalse();
 	}
-	
+
 	@Override
 	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
 	{
@@ -255,10 +266,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 		weekSupplyRepository.save(weeklySupply);
 
 		syncAfterCommit().add(weeklySupply);
-		
+
 		return weeklySupply;
 	}
-	
+
 	@Override
 	public List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo)
 	{
@@ -266,7 +277,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 		if (bpartner_id > 0)
 		{
 			bpartner = bpartnersRepository.findOne(bpartner_id);
-			if(bpartner == null)
+			if (bpartner == null)
 			{
 				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
 			}
@@ -280,7 +291,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 		if (product_id > 0)
 		{
 			product = productRepository.findOne(product_id);
-			if(product == null)
+			if (product == null)
 			{
 				throw new RuntimeException("No Product found for ID=" + product_id);
 			}
@@ -291,24 +302,22 @@ public class ProductSuppliesService implements IProductSuppliesService
 		}
 
 		dayFrom = DateUtils.truncToDay(dayFrom);
-		if(dayFrom == null)
+		if (dayFrom == null)
 		{
 			throw new RuntimeException("No DayFrom specified");
 		}
 		dayTo = DateUtils.truncToDay(dayTo);
-		if(dayTo == null)
+		if (dayTo == null)
 		{
 			throw new RuntimeException("No DayTo specified");
 		}
-		
+
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
 		List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
-		
+
 		return weeklySupplies;
 	}
-
-
 
 	private SyncAfterCommit syncAfterCommit()
 	{
@@ -316,17 +325,17 @@ public class ProductSuppliesService implements IProductSuppliesService
 		{
 			throw new RuntimeException("Not in transaction");
 		}
-		
+
 		SyncAfterCommit instance = null;
 		for (final TransactionSynchronization sync : TransactionSynchronizationManager.getSynchronizations())
 		{
-			if(sync instanceof SyncAfterCommit)
+			if (sync instanceof SyncAfterCommit)
 			{
 				instance = (SyncAfterCommit)sync;
 				logger.debug("Found SyncAfterCommit instance: {}", instance);
 			}
 		}
-		
+
 		if (instance == null)
 		{
 			instance = new SyncAfterCommit();
@@ -338,6 +347,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 		return instance;
 	}
 
+	/**
+	 * Creates {@link SyncConfirm} records and invokes {@link IServerSyncService}.
+	 *
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 */
 	private final class SyncAfterCommit extends TransactionSynchronizationAdapter
 	{
 		private final List<ProductSupply> productSupplies = new ArrayList<>();
@@ -345,6 +360,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 		public SyncAfterCommit add(final ProductSupply productSupply)
 		{
+			createAndStoreSyncConfirmRecord(productSupply);
 			productSupplies.add(productSupply);
 
 			logger.debug("Enqueued {}", productSupply);
@@ -353,15 +369,36 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 		public SyncAfterCommit add(final WeekSupply weeklySupply)
 		{
+			createAndStoreSyncConfirmRecord(weeklySupply);
 			weeklySupplies.add(weeklySupply);
 			return this;
+		}
+
+		/**
+		 * Creates a new local DB record for the given <code>abstractEntity</code>.
+		 *
+		 * @param abstractEntity
+		 * @return
+		 */
+		private SyncConfirm createAndStoreSyncConfirmRecord(AbstractSyncConfirmAwareEntity abstractEntity)
+		{
+			final SyncConfirm syncConfirmRecord = new SyncConfirm();
+			syncConfirmRecord.setEntryType(abstractEntity.getClass().getSimpleName());
+			syncConfirmRecord.setEntryUuid(abstractEntity.getUuid());
+			syncConfirmRecord.setEntryId(abstractEntity.getId());
+
+			syncConfirmRepo.save(syncConfirmRecord);
+
+			abstractEntity.setSyncConfirmId(syncConfirmRecord.getId());
+
+			return syncConfirmRecord;
 		}
 
 		@Override
 		public void afterCommit()
 		{
 			logger.debug("Synchronizing: {}", this);
-			
+
 			//
 			// Sync daily product supplies
 			{
