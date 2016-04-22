@@ -96,7 +96,7 @@ public class ServerSyncBL implements IServerSyncBL
 	public void reportProductSupplies(final SyncProductSuppliesRequest request)
 	{
 		logger.debug("Got request: {}", request);
-		
+
 		final List<SyncProductSupply> syncProductSupplies = request.getProductSupplies();
 		for (final SyncProductSupply syncProductSupply : syncProductSupplies)
 		{
@@ -129,14 +129,14 @@ public class ServerSyncBL implements IServerSyncBL
 	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
 	{
 		logger.debug("Creating QtyReport event from {} ({})", syncProductSupply, pmmProduct);
-		
+
 		final List<String> errors = new ArrayList<>();
 
 		final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, context);
 		try
 		{
 			qtyReportEvent.setEvent_UUID(syncProductSupply.getUuid());
-			
+
 			// Product
 			qtyReportEvent.setProduct_UUID(syncProductSupply.getProduct_uuid());
 			qtyReportEvent.setPMM_Product(pmmProduct);
@@ -170,10 +170,10 @@ public class ServerSyncBL implements IServerSyncBL
 			// DatePromised
 			final Timestamp datePromised = TimeUtil.asTimestamp(syncProductSupply.getDay());
 			qtyReportEvent.setDatePromised(datePromised);
-			
+
 			// Is a weekly planning record?
 			qtyReportEvent.setIsPlanning(syncProductSupply.isWeekPlanning());
-			
+
 			//
 			// Update the QtyReport event
 			updateFromPMMProduct(qtyReportEvent, errors);
@@ -195,22 +195,23 @@ public class ServerSyncBL implements IServerSyncBL
 				qtyReportEvent.setErrorMsg(msgBL.translate(ctx, errorMsg));
 				qtyReportEvent.setIsError(true);
 				InterfaceWrapperHelper.save(qtyReportEvent);
-				
+
 				logger.debug("Got following errors while importing {} to {}:\n{}", syncProductSupply, qtyReportEvent, errorMsg);
 			}
 			else
 			{
 				InterfaceWrapperHelper.save(qtyReportEvent);
-				
+
 				logger.debug("Imported {} to {}:\n{}", syncProductSupply, qtyReportEvent);
 			}
-			
+
 			//
 			// Notify agent that we got the message
 			final boolean isInternalGenerated = syncProductSupply.getUuid() == null;
 			if (!isInternalGenerated)
 			{
-				SyncConfirmationsSender.forCurrentTransaction().confirm(qtyReportEvent);
+				final String serverEventId = String.valueOf(qtyReportEvent.getPMM_QtyReport_Event_ID());
+				SyncConfirmationsSender.forCurrentTransaction().confirm(syncProductSupply, serverEventId);
 			}
 		}
 	}
@@ -311,7 +312,7 @@ public class ServerSyncBL implements IServerSyncBL
 	private void createWeekReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncWeeklySupply syncWeeklySupply)
 	{
 		logger.debug("Creating Week Report event from {} ({})", syncWeeklySupply, pmmProduct);
-		
+
 		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, context);
 		event.setEvent_UUID(syncWeeklySupply.getUuid());
 
@@ -358,9 +359,9 @@ public class ServerSyncBL implements IServerSyncBL
 
 		logger.debug("Imported {} to {}:\n{}", syncWeeklySupply, event);
 
-		//
 		// Notify agent that we got the message
-		SyncConfirmationsSender.forCurrentTransaction().confirm(event);
+		final String serverEventId = String.valueOf(event.getPMM_WeekReport_Event_ID());
+		SyncConfirmationsSender.forCurrentTransaction().confirm(syncWeeklySupply, serverEventId);
 	}
 
 	/**

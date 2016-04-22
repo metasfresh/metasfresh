@@ -1,19 +1,20 @@
 package de.metas.procurement.base.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 
 import com.google.common.base.Supplier;
 
 import de.metas.procurement.base.IAgentSyncBL;
-import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
-import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
-import de.metas.procurement.sync.protocol.SyncConfirmations;
-import de.metas.procurement.sync.protocol.SyncProductSupplyConfirm;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
+import de.metas.procurement.sync.protocol.AbstractSyncModel;
+import de.metas.procurement.sync.protocol.SyncConfirmation;
 
 /*
  * #%L
@@ -25,12 +26,12 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +40,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyConfirm;
 
 /**
  * Sync confirmation collector and sender.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -78,7 +79,7 @@ final class SyncConfirmationsSender
 
 	private static final String TRXPROPERTY = SyncConfirmationsSender.class.getName();
 
-	private SyncConfirmations syncConfirmations = new SyncConfirmations();
+	private List<SyncConfirmation> syncConfirmations = new ArrayList<SyncConfirmation>();
 	private boolean autoSendAfterEachConfirm = false;
 
 	private SyncConfirmationsSender()
@@ -94,36 +95,33 @@ final class SyncConfirmationsSender
 	public synchronized void send()
 	{
 		// Do nothing if there is nothing to send
-		if (syncConfirmations.getProductSuppliesConfirmations().isEmpty()
-				&& syncConfirmations.getWeeklySuppliesConfirmations().isEmpty())
+		if (syncConfirmations.isEmpty())
 		{
 			return;
 		}
 
 		Services.get(IAgentSyncBL.class).confirm(syncConfirmations);
+		syncConfirmations.clear();
 	}
 
-	public synchronized void confirm(final I_PMM_QtyReport_Event event)
+	/**
+	 * Generates a {@link SyncConfirmation} instance to be send either directly after the next commit.
+	 *
+	 * @param syncModel
+	 * @param serverEventId
+	 */
+	public void confirm(final AbstractSyncModel syncModel, final String serverEventId)
 	{
-		final SyncProductSupplyConfirm confirm = new SyncProductSupplyConfirm();
-		confirm.setProduct_supply_uuid(event.getEvent_UUID());
-		confirm.setServer_event_id(String.valueOf(event.getPMM_QtyReport_Event_ID()));
-
-		syncConfirmations.getProductSuppliesConfirmations().add(confirm);
-
-		if (autoSendAfterEachConfirm)
+		if (syncModel.getSyncConfirmationId() <= 0)
 		{
-			send();
+			return; // nothing to do
 		}
-	}
 
-	public synchronized void confirm(final I_PMM_WeekReport_Event event)
-	{
-		final SyncWeeklySupplyConfirm confirm = new SyncWeeklySupplyConfirm();
-		confirm.setWeek_supply_uuid(event.getEvent_UUID());
-		confirm.setServer_event_id(String.valueOf(event.getPMM_WeekReport_Event_ID()));
+		final SyncConfirmation syncConfirmation = SyncConfirmation.forConfirmId(syncModel.getSyncConfirmationId());
+		syncConfirmation.setDateConfirmed(SystemTime.asDate());
+		syncConfirmation.setServerEventId(serverEventId);
 
-		syncConfirmations.getWeeklySuppliesConfirmations().add(confirm);
+		syncConfirmations.add(syncConfirmation);
 
 		if (autoSendAfterEachConfirm)
 		{

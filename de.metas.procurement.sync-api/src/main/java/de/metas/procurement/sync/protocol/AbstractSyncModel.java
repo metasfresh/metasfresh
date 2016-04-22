@@ -1,6 +1,5 @@
 package de.metas.procurement.sync.protocol;
 
-
 /*
  * #%L
  * de.metas.fresh.procurement.webui
@@ -23,10 +22,15 @@ package de.metas.procurement.sync.protocol;
  * #L%
  */
 
-public class AbstractSyncModel
+public abstract class AbstractSyncModel
 {
 	private String uuid;
 	private boolean deleted = false;
+
+	/**
+	 * see {@link #getSyncConfirmationId()}.
+	 */
+	private long syncConfirmationId;
 
 	public final void setUuid(String uuid)
 	{
@@ -37,14 +41,31 @@ public class AbstractSyncModel
 	{
 		return uuid;
 	}
-	
+
 	public boolean isDeleted()
 	{
 		return deleted;
 	}
-	
+
 	public void setDeleted(final boolean deleted)
 	{
 		this.deleted = deleted;
+	}
+
+	/**
+	 * If greater than zero, then the sender requests a confirmation, using this ID.<br>
+	 * The confirmation shall be generated using {@link SyncConfirmation#forConfirmId(long)}, using the ID returned by this method.
+	 *
+	 * @return
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-206
+	 */
+	public long getSyncConfirmationId()
+	{
+		return syncConfirmationId;
+	}
+
+	public void setSyncConfirmationId(long syncConfirmationId)
+	{
+		this.syncConfirmationId = syncConfirmationId;
 	}
 }

@@ -1,12 +1,14 @@
 package de.metas.procurement.sync;
 
+import java.util.List;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
 import org.apache.cxf.jaxrs.ext.Oneway;
 
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncConfirmations;
+import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
@@ -56,14 +58,14 @@ public interface IAgentSync
 	@Path("products")
 	@Oneway
 	void syncProducts(final SyncProductsRequest request);
-	
+
 	@POST
 	@Path("infoMessage")
 	@Oneway
 	void syncInfoMessage(final SyncInfoMessageRequest request);
 
 	@POST
-	@Path("confirm")
+	@Path("confirmations")
 	@Oneway
-	void confirm(SyncConfirmations syncConfirmations);
+	void confirm(final List<SyncConfirmation> syncConfirmations);
 }
