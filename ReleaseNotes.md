@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.14.13 (Upcoming Release)  
+# metasfresh 4.x.x (Upcoming Release)  
+
+## Features
+
+## Fixes
+
+# metasfresh 4.14.13
 
 ## Features
  - FRESH-87 Log the JSON-Packages that are exchanged between the service endpoints
@@ -35,7 +41,6 @@ The actual release notes
  - FRESH-215 Procurement WebUI language not updated when changed in bpartner
  - FRESH-219 Procurement: Contract missing in Procurement webUI: 
     * making queue subscriptions durable to make sure data is not lost if a subscriber is not present
- - FRESH-220 Autocomplete for entering product in Auftrag does not work
  - FRESH-205 Doc Outbound: eMail sent not updated
     * the EMail-sent counter is now correct
  - FRESH-219 - Procurement: Contract missing in Procurement webUI
