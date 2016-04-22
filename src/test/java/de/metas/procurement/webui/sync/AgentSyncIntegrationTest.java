@@ -1,5 +1,9 @@
 package de.metas.procurement.webui.sync;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
@@ -213,7 +217,7 @@ public class AgentSyncIntegrationTest
 	public void test_ImportUser_DeleteUser_and_ImportAnotherOneWithSameEmail()
 	{
 		final String email = "email1";
-		
+
 		final SyncBPartner syncBPartner = new SyncBPartner();
 		syncBPartner.setUuid(newUUID());
 		syncBPartner.setName("Test");
@@ -237,15 +241,15 @@ public class AgentSyncIntegrationTest
 			Assert.assertEquals("User1 - Deleted_ID", null, user1.getDeleted_id());
 			Assert.assertEquals("User1 - EMail", email, user1.getEmail());
 			//
-			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1) , usersRepo.findAll());
+			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1), usersRepo.findAll());
 		}
-		
+
 		//
 		// Delete the first user and import another one with same email
 		final SyncUser syncUser2 = new SyncUser();
 		{
 			syncUser1.setDeleted(true);
-			
+
 			syncUser2.setUuid(newUUID());
 			syncUser2.setEmail(email);
 			syncUser2.setDeleted(false);
@@ -254,7 +258,7 @@ public class AgentSyncIntegrationTest
 			syncBPartner.getUsers().add(syncUser2);
 
 			agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
-			
+
 			final User user1 = usersRepo.findByUuid(syncUser1.getUuid());
 			Assert.assertNotNull("User1 was imported", user1);
 			Assert.assertEquals("User1 - BPartner", syncBPartner.getUuid(), user1.getBpartner().getUuid());
@@ -269,10 +273,116 @@ public class AgentSyncIntegrationTest
 			Assert.assertEquals("User1 - Deleted_ID", null, user2.getDeleted_id());
 			Assert.assertEquals("User2 - EMail", email, user1.getEmail());
 			//
-			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1, user2) , usersRepo.findAll());
-			
+			assertThat("Database shall contain only that user", usersRepo.findAll(), containsInAnyOrder(user1, user2));
 		}
+	}
 
+	/**
+	 * If just a single BPartner with deleted=true is synched, then that bpartner and its users shall be deleted.
+	 */
+	@Test
+	public void test_ImportUser_DeleteExistingBPartner()
+	{
+		//
+		// set up the database
+		final String bpartnerUUID = newUUID();
+		final BPartner bpartner = new BPartner();
+		bpartner.setUuid(bpartnerUUID);
+		bpartner.setName("Test");
+		bpartnerRepo.save(bpartner);
+
+		assertThat(bpartnerRepo.findByUuid(bpartnerUUID), is(bpartner)); // just to gain confidence :-)
+
+		final String userUUID = newUUID();
+		User user = new User();
+		user.setUuid(userUUID);
+		user.setEmail("userEmail");
+		user.setBpartner(bpartner);
+		usersRepo.save(user);
+
+		//
+		// set up the delete-em-all sync request
+		final SyncBPartner syncBPartner = new SyncBPartner();
+
+		syncBPartner.setUuid(bpartnerUUID);
+		syncBPartner.setName("Test");
+		syncBPartner.setSyncContracts(false);
+		syncBPartner.setDeleted(true);
+
+		agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
+
+		final BPartner deletedBPartner = bpartnerRepo.findByUuid(bpartnerUUID);
+		assertThat(deletedBPartner.isDeleted(), is(true));
+
+		final User deletedUser = usersRepo.findByUuid(userUUID);
+		assertThat(deletedUser.isDeleted(), is(true));
+	}
+
+
+	/**
+	 * If just a single BPartner with deleted=true is synched, but there is no such local bpartner, it shall be not a problem.
+	 */
+	@Test
+	public void test_ImportUser_DeleteNotExistingBPartner()
+	{
+		final String bpartnerUUID = newUUID();
+
+		//
+		// no need to set up the database since there shall be no such bpartner
+
+		//
+		// set up the delete-em-all sync request
+		final SyncBPartner syncBPartner = new SyncBPartner();
+
+		syncBPartner.setUuid(bpartnerUUID);
+		syncBPartner.setName("Test");
+		syncBPartner.setSyncContracts(false);
+		syncBPartner.setDeleted(true);
+
+		agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
+	}
+
+	@Test
+	public void test_ImportUser_DeleteNotExistingUser()
+	{
+		final String bpartnerUUID = newUUID();
+
+		//
+		// set up the database
+		//
+		// set up the database
+		final BPartner bpartner = new BPartner();
+		bpartner.setUuid(bpartnerUUID);
+		bpartner.setName("Test");
+		bpartnerRepo.save(bpartner);
+
+		final String userUUID = newUUID();
+		User user = new User();
+		user.setUuid(userUUID);
+		user.setEmail("userEmail");
+		user.setBpartner(bpartner);
+		usersRepo.save(user);
+
+		//
+		// set up the delete-em-all sync request
+		final SyncBPartner syncBPartner = new SyncBPartner();
+
+		syncBPartner.setUuid(bpartnerUUID);
+		syncBPartner.setName("Test");
+		syncBPartner.setSyncContracts(false);
+		syncBPartner.setDeleted(false);
+
+		final SyncUser syncUser = new SyncUser();
+		syncUser.setUuid(newUUID());
+		syncUser.setDeleted(true);
+		syncUser.setEmail("nonExistingUserEmail");
+
+		syncBPartner.getUsers().add(syncUser);
+
+		agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner));
+
+		assertThat(bpartnerRepo.findByUuid(bpartnerUUID), is(bpartner)); // bpartner shall still exist
+		assertThat(usersRepo.findByUuid(userUUID), is(user)); // other user shall still exist
 	}
 
 	private static final String newUUID()
