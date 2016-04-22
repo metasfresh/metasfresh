@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
@@ -36,8 +35,6 @@ import de.metas.procurement.base.model.I_AD_User;
 
 public class PMMBPartnerDAO implements IPMMBPartnerDAO
 {
-
-	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#" + I_AD_User.Table_Name + "#" + I_AD_User.COLUMNNAME_IsMFProcurementUser)
 	@Override
 	public List<I_C_BPartner> retrieveAllPartnersWithProcurementUsers()
 	{

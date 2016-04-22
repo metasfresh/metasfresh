@@ -46,7 +46,7 @@ public interface IWebuiPush extends ISingletonService
 	 *
 	 * @param bpartner
 	 */
-	void pushBPartnerWithoutContracts(I_C_BPartner bpartner);
+	void pushBPartnerAndUsers(I_C_BPartner bpartner);
 
 	void pushBPartnerForContact(I_AD_User contact);
 

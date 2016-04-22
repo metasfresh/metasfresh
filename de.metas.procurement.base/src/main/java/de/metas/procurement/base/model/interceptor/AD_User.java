@@ -53,6 +53,9 @@ public class AD_User
 			, afterCommit = true)
 	public void pushToWebUI(final I_AD_User contact)
 	{
+		// FIXME: as it is will push ANY bpartner, even if it is relevant or not from PMM's point of view
+		// good part: will solve the case when u have a pmm bpartner with one 1 user and u just un-ticket the IsMFProcurementUser flag for it
+		// bad part: a lot of not relevant BPartners will be sent to procurement webui
 		Services.get(IWebuiPush.class).pushBPartnerForContact(contact);
 	}
 

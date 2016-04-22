@@ -29,7 +29,7 @@ public class SyncBPartner extends AbstractSyncModel
 {
 	private String name;
 	private List<SyncUser> users = new ArrayList<>();
-	
+
 	private boolean syncContracts = false;
 	private List<SyncContract> contracts = new ArrayList<>();
 
@@ -60,19 +60,19 @@ public class SyncBPartner extends AbstractSyncModel
 
 	/**
 	 * WARNING: don't use it directly
-	 * 
+	 *
 	 * @param users
 	 */
 	public void setUsers(List<SyncUser> users)
 	{
 		this.users = users;
 	}
-	
+
 	public void setSyncContracts(boolean syncContracts)
 	{
 		this.syncContracts = syncContracts;
 	}
-	
+
 	public boolean isSyncContracts()
 	{
 		return syncContracts;
@@ -85,7 +85,7 @@ public class SyncBPartner extends AbstractSyncModel
 
 	/**
 	 * WARNING: don't use it directly
-	 * 
+	 *
 	 * @param contracts
 	 */
 	public void setContracts(List<SyncContract> contracts)

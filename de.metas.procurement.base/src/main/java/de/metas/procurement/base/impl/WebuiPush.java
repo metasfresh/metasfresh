@@ -82,7 +82,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushBPartnerWithoutContracts(final I_C_BPartner bpartner)
+	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
 	{
 		final IAgentSync agent = getAgentSyncOrNull();
 		if (agent == null)
@@ -99,12 +99,6 @@ public class WebuiPush implements IWebuiPush
 //			return;
 //		}
 // @formatter:on
-
-		// Validate
-		if (!bpartner.isVendor())
-		{
-			throw new AdempiereException("@C_BPartner_ID@ @IsVendor@=@N@: " + bpartner.getValue() + "_" + bpartner.getName());
-		}
 
 		final SyncBPartner syncBPartner = syncFactory.createSyncBPartnerWithoutContracts(bpartner);
 		if (syncBPartner == null)
@@ -146,8 +140,7 @@ public class WebuiPush implements IWebuiPush
 		{
 			return;
 		}
-
-		pushBPartnerWithoutContracts(bpartner);
+		pushBPartnerAndUsers(bpartner);
 	}
 
 	@Override

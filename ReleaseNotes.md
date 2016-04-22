@@ -32,7 +32,8 @@ The actual release notes
  - FRESH-172 Procurement: Double entries in PMM_Product: adding unique constraint after having cleaned up
 
 ## Fixes
- - FRESH-219 Procurement: Contract missing in Procurement webUI
+ - FRESH-215 Procurement WebUI language not updated when changed in bpartner
+ - FRESH-219 Procurement: Contract missing in Procurement webUI: 
     * making queue subscriptions durable to make sure data is not lost if a subscriber is not present
  - FRESH-220 Autocomplete for entering product in Auftrag does not work
  - FRESH-205 Doc Outbound: eMail sent not updated

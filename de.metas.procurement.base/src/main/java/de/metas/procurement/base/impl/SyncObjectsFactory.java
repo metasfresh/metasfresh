@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,6 +20,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -191,16 +191,26 @@ public class SyncObjectsFactory
 	private SyncBPartner createSyncBPartnerWithoutContracts(final int bpartnerId)
 	{
 		final I_C_BPartner bpartner = getC_BPartnerById(bpartnerId);
+
 		final SyncBPartner syncBPartner = new SyncBPartner();
 		syncBPartner.setName(bpartner.getName());
 		syncBPartner.setUuid(SyncUUIDs.toUUIDString(bpartner));
+
+		// Contracts: we are not populating them here, so, for now we flag them as "do not sync"
+		syncBPartner.setSyncContracts(false);
+
+		// not a vendor: no need to look at the contacts. delete the bpartner.
+		if(!bpartner.isVendor())
+		{
+			syncBPartner.setDeleted(true);
+			return syncBPartner;
+		}
 
 		final String adLanguage = bpartner.getAD_Language();
 
 		//
 		// Fill Users
-		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(
-				bpartnerDAO.retrieveContacts(bpartner), I_AD_User.class);
+		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(bpartnerDAO.retrieveContacts(bpartner), I_AD_User.class);
 
 		for (final I_AD_User contact : contacts)
 		{
@@ -209,13 +219,14 @@ public class SyncObjectsFactory
 			{
 				continue;
 			}
-
 			syncBPartner.getUsers().add(syncUser);
 		}
 
-		//
-		// Contracts: we are not populating them here, so, for now we flag them as "do not sync"
-		syncBPartner.setSyncContracts(false);
+		// no users: also delete the BPartner
+		if(syncBPartner.getUsers().isEmpty())
+		{
+			syncBPartner.setDeleted(true);
+		}
 
 		return syncBPartner;
 	}
@@ -264,13 +275,12 @@ public class SyncObjectsFactory
 
 	private Set<Integer> getAllBPartnerIds()
 	{
-		final Set<Integer> result = new HashSet<>();
-		final List<I_C_BPartner> bPartners = pmmbPartnerDAO.retrieveAllPartnersWithProcurementUsers();
-		for (final I_C_BPartner bPartner : bPartners)
+		final List<I_C_BPartner> bpartnersList = pmmbPartnerDAO.retrieveAllPartnersWithProcurementUsers();
+		for (final I_C_BPartner bpartner : bpartnersList)
 		{
-			result.add(bPartner.getC_BPartner_ID());
+			bpartners.put(bpartner.getC_BPartner_ID(), bpartner);
 		}
-		return result;
+		return ImmutableSet.copyOf(bpartners.keySet());
 	}
 
 	private I_C_BPartner getC_BPartnerById(final int bpartnerId)
