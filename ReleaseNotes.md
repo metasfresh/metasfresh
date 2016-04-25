@@ -12,11 +12,15 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.15.13 (Upcoming Release)  
+# metasfresh 4.14.13a (Upcoming Release)  
 
 ## Features
   - FRESH-206 metasfresh server informs the procurement webui server about what supplies were synchronized
      * when data is received by metasfresh, it now asynchronously sends back a confirmation to the procurement UI. This way it is possible to monitor the procurement webUI for supply reports that were not yet received by the metasfresh system , e.g. due to internet problems.
+  - FRESH-187 Filter date-from and date-to in procurement excel
+     * also fixing a problem that the library-version we use only supports a hardcoded 50 columns
+  - FRESH-218 Create archives in partner's language
+     * adding langauge info to archive records, so when mailing the PDF, the system can choose a mail template in the correct language
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
