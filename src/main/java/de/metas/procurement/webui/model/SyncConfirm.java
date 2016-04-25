@@ -4,8 +4,6 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -58,12 +56,6 @@ public class SyncConfirm extends AbstractEntity
 	private String serverEventId;
 
 	/**
-	 * See {@link #getDateCreated()}.
-	 */
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date dateCreated;
-
-	/**
 	 * See {@link #getDateConfirmed()}.
 	 */
 	@Temporal(TemporalType.TIMESTAMP)
@@ -82,19 +74,8 @@ public class SyncConfirm extends AbstractEntity
 				.add("entryType", entryType)
 				.add("entryUuid", entryUuid)
 				.add("serverEventId", serverEventId)
-				.add("dateCreated", dateCreated)
+				.add("dateCreated", getDateCreated())
 				.add("dateConfirmReceived", dateConfirmReceived);
-	}
-
-	@PreUpdate
-	@PrePersist
-	public void updateCreatedUpdated()
-	{
-		if (dateCreated == null)
-		{
-			final Date now = new Date();
-			dateCreated = now;
-		}
 	}
 
 	public String getEntryType()
@@ -135,14 +116,10 @@ public class SyncConfirm extends AbstractEntity
 	 *
 	 * @return the date when this record was created, which is also the date when the sync request was submitted towards the remote endpoint.
 	 */
+	@Override
 	public Date getDateCreated()
 	{
-		return dateCreated;
-	}
-
-	public void setDateCreated(Date dateCreated)
-	{
-		this.dateCreated = dateCreated;
+		return super.getDateCreated();
 	}
 
 	/**

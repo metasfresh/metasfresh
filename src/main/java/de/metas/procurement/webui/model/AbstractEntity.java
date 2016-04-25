@@ -1,11 +1,16 @@
 package de.metas.procurement.webui.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
@@ -42,18 +47,37 @@ public abstract class AbstractEntity implements Serializable
 	@GeneratedValue
 	private Long id;
 
-	protected static final int VERSION_INITIAL = 0;
-	@Version
-	private final int version = VERSION_INITIAL;
-
 	private boolean deleted = false;
 
 	@NotNull
 	private String uuid = UUID.randomUUID().toString();
 
+	//
+	// Versioning and created/updated timestamps
+	protected static final int VERSION_INITIAL = 0;
+	@Version
+	private final int version = VERSION_INITIAL;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateCreated;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateUpdated;
+
 	AbstractEntity()
 	{
 		super();
+	}
+	
+	@PreUpdate
+	@PrePersist
+	public void updateCreatedUpdated()
+	{
+		final Date now = new Date();
+		this.dateUpdated = now;
+		if (dateCreated == null)
+		{
+			dateCreated = now;
+		}
 	}
 
 	@Override
@@ -132,6 +156,16 @@ public abstract class AbstractEntity implements Serializable
 
 		final AbstractEntity other = (AbstractEntity)obj;
 		return Objects.equal(id, other.id);
+	}
+	
+	protected Date getDateCreated()
+	{
+		return dateCreated;
+	}
+	
+	protected Date getDateUpdated()
+	{
+		return dateUpdated;
 	}
 
 }
