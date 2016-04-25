@@ -1,0 +1,22 @@
+{
+	"transactionId":"testTrx"
+	,"printPackageId":"456"
+	,"pageCount":10
+	,"format":"PDF"
+	,"printPackageInfos":[
+		{
+			"printService":"Microsoft XPS Document Writer"
+			,"tray":"tray01"
+			,"pageFrom":1
+			,"pageTo":2,"index":1
+		}
+		,
+		{
+			"printService":"Microsoft XPS Document Writer"
+			,"tray":"tray02"
+			,"pageFrom":2
+			,"pageTo":2
+			,"index":2
+		}
+	]
+}

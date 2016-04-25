@@ -1,0 +1,18 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="adempiere_standard" verbose="1">
+
+	<test name="beforeAfterSuite">
+		<classes>
+			<class name="org.adempiere.test.TestSupport" />
+		</classes>
+	</test>
+
+
+	<test name="order">
+		<packages>
+			<package name="org.adempiere.order.service.impl.db" />
+		</packages>
+	</test>
+
+</suite>

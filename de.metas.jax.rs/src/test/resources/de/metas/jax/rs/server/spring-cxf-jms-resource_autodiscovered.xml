@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://cxf.apache.org/jaxrs
+http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<!-- 
+	This bean.xml prepares a jms-transported cxf server endpoint
+	which just specifies where to look for resources. Note that there is no searching in sub-packages!  
+ 	-->
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
+	<!-- note that we use the p-namespace. Docs can be found at http://docs.spring.io/spring/docs/2.5.x/reference/beans.html -->
+	<bean
+		id="jmsConnectionFactory"
+		class="org.apache.activemq.ActiveMQConnectionFactory"
+		p:brokerURL="tcp://localhost:61616" />
+
+	<bean
+		id="jmsConfig"
+		class="org.apache.cxf.transport.jms.JMSConfiguration"
+		p:connectionFactory-ref="jmsConnectionFactory"
+		p:targetDestination="test.de.metas.jax.rs.jmstransport.queue" />
+
+	<jaxrs:server
+		id="jaxrs:server:jms"
+		serviceName="test"
+		transportId="http://cxf.apache.org/transports/jms"
+		address="/"
+		basePackages="de.metas.jax.rs.testService,de.metas.jax.rs.testService2">
+
+		<jaxrs:features>
+			<bean
+				class="org.apache.cxf.transport.jms.JMSConfigFeature"
+				p:jmsConfig-ref="jmsConfig" />
+		</jaxrs:features>
+		<jaxrs:providers>
+			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+</beans>

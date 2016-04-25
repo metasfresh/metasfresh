@@ -1,0 +1,18 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="adempiere_standard_jasper" verbose="1">
+
+	<test name="DocumentPrint">
+
+		<parameter name="salesOrderId" value="-1" />
+		<parameter name="shipmentId" value="-1" />
+		<parameter name="salesOrderPrintProcessId" value="500007" />
+		<parameter name="shipmentPrintProcessId" value="500008" />
+
+		<classes>
+			<class name="de.metas.docs.db.DocumentReportTests" />
+		</classes>
+
+	</test>
+
+</suite>

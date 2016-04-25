@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<artifactId>de.metas.commission</artifactId>
+		<groupId>de.metas.commission</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>de.metas.commission.ait</artifactId>
+	<packaging>jar</packaging>
+
+
+	<dependencies>
+
+		<!-- overriding the scope from the parent pom -->
+		<dependency>
+			<!-- Make sure this dependency comes BEFORE junit. See: http://stackoverflow.com/questions/7869711/getting-nosuchmethoderror-org-hamcrest-matcher-describemismatch-when-running -->
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<classifier>tests</classifier>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<!-- needed because of TestClientUI class -->
+			<groupId>de.metas.adempiere.ait</groupId>
+			<artifactId>de.metas.adempiere.ait</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.ait</artifactId>
+		</dependency>
+
+		<dependency>
+			<artifactId>de.metas.commission.client</artifactId>
+			<groupId>de.metas.commission</groupId>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.commission</groupId>
+			<artifactId>de.metas.commission.zkwebui</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>de.metas.commission.client</artifactId>
+					<groupId>de.metas.commission</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+	</dependencies>
+
+</project>

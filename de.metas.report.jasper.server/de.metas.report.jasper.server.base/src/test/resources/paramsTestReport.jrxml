@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<parameter name="PARAM_String" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PARAM_Integer" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="PARAM_BigDecimal" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="PARAM_Date" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="PARAM_Timestamp" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="PARAM_Boolean" class="java.lang.Boolean" isForPrompting="false"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="62" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="147" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="10" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{PARAM_String}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$P{PARAM_Integer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="50" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$P{PARAM_BigDecimal}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="70" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{PARAM_Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="90" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$P{PARAM_Timestamp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="110" width="194" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Boolean"><![CDATA[$P{PARAM_Boolean}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="61" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

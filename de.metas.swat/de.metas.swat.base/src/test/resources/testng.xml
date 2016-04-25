@@ -1,0 +1,188 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="adempiere-swat" verbose="1">
+
+	<test name="ModelAndApplicationDictionary">
+		<packages>
+			<package name="org.adempiere" />
+			<package name="org.adempiere.model" />
+			<package name="org.adempiere.modelvalidator" />
+			<package name="org.adempiere.report" />
+		</packages>
+	</test>
+
+	<test name="AddOn">
+		<packages>
+			<package name="org.adempiere.addon.impl" />
+			<package name="org.compiere.report" />
+		</packages>
+	</test>
+
+	<test name="BPartner">
+		<packages>
+			<package name="org.adempiere.bpartner.service.impl" />
+			<package name="org.adempiere.bpartner.callout" />
+			<package name="org.adempiere.bpartner.modelvalidator" />
+		</packages>
+	</test>
+
+	<test name="Document">
+		<packages>
+			<package name="org.adempiere.document.process" />
+			<package name="org.adempiere.document.callout" />
+			<package name="org.adempiere.document.service.impl" />
+		</packages>
+		<classes>
+			<class name="org.adempiere.model.MDocExchangeTests"></class>
+		</classes>
+	</test>
+
+	<test name="Email">
+		<packages>
+			<package name="org.compiere.report.email" />
+			<package name="org.compiere.report.email.service.impl" />
+		</packages>
+	</test>
+
+	<test name="Invoice">
+		<packages>
+			<package name="org.adempiere.invoice.createCreditMemo" />
+		</packages>
+	</test>
+
+	<test name="Order">
+		<packages>
+			<package name="org.adempiere.order" />
+			<package name="org.adempiere.order.createNewFromProposal" />
+		</packages>
+		<classes>
+			<class name="de.metas.adempiere.callout.OrderFastInputTests" />
+			<class name="de.metas.adempiere.service.impl.OrderBLTests" />
+		</classes>
+	</test>
+
+	<test name="Process">
+		<packages>
+			<package name="org.adempiere.process.event.impl" />
+		</packages>
+	</test>
+
+	<test name="Product">
+		<packages>
+			<package name="org.adempiere.product.service.impl" />
+			<package name="org.adempiere.product.modelvalidator" />
+		</packages>
+		<classes>
+			<class name="org.compiere.model.MProductPricingTests" />
+		</classes>
+	</test>
+
+	<test name="Report">
+		<packages>
+			<package name="org.compiere.report.preprocessor.impl" />
+		</packages>
+	</test>
+
+	<test name="Tools">
+		<groups>
+			<run>
+				<include name="tools" />
+			</run>
+		</groups>
+		<packages>
+			<package name="de.metas.adempiere.tools" />
+			<package name="de.metas.adempiere.tools.client" />
+		</packages>
+	</test>
+
+	<test name="Receipt">
+		<packages>
+			<package name="org.adempiere.inout.purchaseSchedule.service.impl" />
+			<package name="org.adempiere.inout.replenish.service" />
+		</packages>
+	</test>
+
+	<test name="Shipment">
+
+		<packages>
+			<package name="org.adempiere.inout.shipmentschedule" />
+			<package name="org.adempiere.inout.shipmentschedule.virtualColumn" />
+			<package name="org.adempiere.inout.shipmentschedule.service.impl" />
+			<package name="org.adempiere.inout.shipmentschedule.modelvalidator" />
+			<package name="org.compiere.process" />
+			<package name="org.adempiere.inout.shipment.impl" />
+		</packages>
+		<classes>
+			<class name="de.metas.adempiere.model.MFreightCostShipperTests" />
+			<class name="de.metas.adempiere.model.MFreightCostDetailTests" />
+			<class name="de.metas.adempiere.modelvalidator.FreightCostValidatorTests" />
+		</classes>
+	</test>
+
+	<test name="Misc">
+		<packages>
+			<package name="de.metas.util" />
+			<package name="org.compiere.grid" />
+			<package name="org.adempiere.appdict.impl" />
+		</packages>
+	</test>
+
+	<test name="DPD">
+		<packages>
+			<package name="de.metas.dpd.service" />
+			<package name="de.metas.dpd.model" />
+		</packages>
+	</test>
+
+	<test name="packing">
+		<!--
+			<packages> <package name="de.metas.adempiere.form" /> <package " />
+			</packages>
+		-->
+		<classes>
+			<!--
+				test causes an InderArrayOutOfBoundsException see
+				http://code.google.com/p/testng/issues/detail?id=61 <class
+				name="de.metas.adempiere.form.BinPackerTests" />
+			-->
+			<class name="de.metas.adempiere.form.PackingDetailsCtrlTests" />
+			<class name="de.metas.adempiere.form.PackingItemTests" />
+			<class name="de.metas.adempiere.form.PackingTreeModelTests" />
+			<class name="de.metas.adempiere.addon.PackingAddonTest" />
+		</classes>
+	</test>
+
+	<test name="FreightCost">
+		<packages>
+			<package name="org.adempiere.freightCost.callout" />
+			<package name="org.adempiere.invoice.freightCost" />
+			<package name="org.adempiere.invoice.freightCost.modelvalidator" />
+		</packages>
+	</test>
+
+	<test name="Subscription">
+		<packages>
+			<package name="org.adempiere.order.subscription.callout" />
+			<package name="org.adempiere.order.subscription.modelvalidator" />
+
+			<package name="org.adempiere.order.subscription.aop" />
+		</packages>
+		<classes>
+			<class name="de.metas.adempiere.process.ChangeSubscriptionTests" />
+			<class name="de.metas.adempiere.process.PauseSubscriptionTests" />
+			<class name="de.metas.adempiere.modelvalidator.SubscriptionChangeTests" />
+			<class name="org.adempiere.model.MSubscriptionProgressTests" />
+		</classes>
+	</test>
+
+	<test name="Misc">
+		<packages>
+			<package name="de.metas.adempiere.service.impl" />
+			<package name="org.compiere.apps.search" />
+		</packages>
+	</test>
+
+
+
+</suite>
+

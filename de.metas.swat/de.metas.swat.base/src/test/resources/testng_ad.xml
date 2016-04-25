@@ -1,0 +1,62 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="adempiere_standard" verbose="1">
+
+	<test name="beforeAfterSuite">
+		<classes>
+			<class name="org.adempiere.test.TestSupport" />
+		</classes>
+	</test>
+
+	<test name="ModelAndApplicationDictionary">
+		<packages>
+			<package name="org.compiere.model.ad" />
+			<package name="org.adempiere.model.ad" />
+			<package name="org.adempiere.modelvalidator.ad" />
+
+			<package name="org.adempiere.process.ad" />
+			<package name="org.adempiere" />
+		</packages>
+	</test>
+
+	<test name="Receipt">
+		<packages>
+			<package name="org.adempiere.inout.purchaseSchedule.ad" />
+			<package name="org.adempiere.inout.replenish.ad" />
+		</packages>
+	</test>
+
+	<test name="Shipment">
+		<packages>
+			<package name="org.adempiere.inout.form.ad" />
+			<package name="org.adempiere.inout.modelvalidator.ad" />
+			<package name="org.adempiere.inout.shipmentGenerator.ad" />
+		</packages>
+	</test>
+
+	<test name="Email">
+		<packages>
+			<package name="org.compiere.report.email.ad" />
+		</packages>
+	</test>
+
+	<test name="Order">
+		<packages>
+			<package name="org.adempiere.order.process.ad" />
+		</packages>
+	</test>
+
+	<test name="Invoice">
+		<packages>
+			<package name="org.adempiere.invoice.process.ad" />
+		</packages>
+	</test>
+
+	<test name="Misc">
+		<packages>
+			<package name="org.compiere.grid.ed.ad" />
+			<package name="org.compiere.apps.ad" />
+		</packages>
+	</test>
+
+</suite>

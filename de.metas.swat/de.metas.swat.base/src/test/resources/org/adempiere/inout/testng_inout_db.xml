@@ -1,0 +1,40 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="adempiere_standard_inout" verbose="1">
+
+	<test name="beforeAfterSuite">
+		<classes>
+			<class name="org.adempiere.test.TestSupport" />
+		</classes>
+	</test>
+
+
+	<test name="Model">
+		<classes>
+			<class name="org.compiere.model.db.MInOutTests" />
+		</classes>
+	</test>
+
+	<test name="Shipment">
+		<packages>
+			<package name="org.adempiere.inout.shipmentGenerator.db" />
+			<package name="org.compiere.process.db" />
+		</packages>
+	</test>
+
+
+	<test name="ShipmentSchedule">
+
+		<packages>
+			<package name="org.adempiere.inout.shipmentschedule.db" />
+			<package
+				name="org.adempiere.inout.shipmentschedule.service.impl.db" />
+		</packages>
+
+		<classes>
+			<class
+				name="org.adempiere.inout.shipmentschedule.modelvalidator.db.ShipmentScheduleValidatorTests" />
+		</classes>
+
+	</test>
+</suite>

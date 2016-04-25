@@ -1,0 +1,10 @@
+{
+	"format":"application/pdf"
+	,"transactionId":"9bdcbd78-e8e0-4b1f-8c63-cb91f9d5ddaa"
+	,"pageCount":3
+	,"printJobInstructionsID":"123"
+	,"printPackageId":null
+	,"printPackageInfos":[
+		{"pageFrom":1,"pageTo":3,"calX":null,"calY":null,"printService":"WF-3540 Series(Netzwerk)","tray":"Kassette 1"}
+	]
+}
