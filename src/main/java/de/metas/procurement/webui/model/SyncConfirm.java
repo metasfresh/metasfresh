@@ -2,6 +2,7 @@ package de.metas.procurement.webui.model;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -46,6 +47,7 @@ public class SyncConfirm extends AbstractEntity
 {
 	private String entryType;
 
+	@Column(nullable=true)
 	private long entryId;
 
 	/**
