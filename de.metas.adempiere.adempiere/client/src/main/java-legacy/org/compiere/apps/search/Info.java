@@ -521,6 +521,12 @@ public abstract class Info extends Component
 				}
 				sql.append(" AS ").append(columnName).append("_DisplayName");
 			}
+			// Else, append the " AS ColumnName" (FRESH-235)
+			// NOTE: we mainly do this for "AD_Ref_List" based columns.
+			else if (!Check.isEmpty(layout[i].getColumnName(), true))
+			{
+				sql.append(" AS ").append(layout[i].getColumnName());
+			}
 			
 			//
 			// adding ID column
