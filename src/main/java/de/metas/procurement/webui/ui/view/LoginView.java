@@ -1,7 +1,10 @@
 package de.metas.procurement.webui.ui.view;
 
+import java.io.File;
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.spring.i18n.I18N;
@@ -14,6 +17,7 @@ import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Resource;
@@ -70,7 +74,7 @@ public class LoginView extends NavigationView implements View
 	private static final String STYLE_ForgotPasswordButton = "forgot-password-button";
 	private static final String STYLE_PoweredBy = "powered-by";
 
-	// private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
+	private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
 
 	@Autowired
 	private I18N i18n;
@@ -80,6 +84,8 @@ public class LoginView extends NavigationView implements View
 	@Autowired(required = true)
 	private LoginRememberMeService rememberMeService;
 
+	@Value("${mfprocurement.logo.file:}")
+	private String logoFilename;
 	@Value("${mfprocurement.poweredby.url:}")
 	private String poweredByLogoUrl;
 	@Value("${mfprocurement.poweredby.link.url:}")
@@ -100,7 +106,8 @@ public class LoginView extends NavigationView implements View
 		{
 			final VerticalComponentGroup content = new VerticalComponentGroup();
 
-			final Image logo = new Image(null, Constants.RESOURCE_Logo);
+			final Resource logoResource = getLogoResource();
+			final Image logo = new Image(null, logoResource);
 			logo.addStyleName(STYLE_Logo);
 			content.addComponent(logo);
 
@@ -179,6 +186,27 @@ public class LoginView extends NavigationView implements View
 			poweredByComponent.addStyleName(STYLE_PoweredBy);
 			setToolbar(poweredByComponent);
 		}
+	}
+	
+	private Resource getLogoResource()
+	{
+		if (logoFilename == null)
+		{
+			return Constants.RESOURCE_Logo;
+		}
+		if (logoFilename.trim().isEmpty())
+		{
+			return Constants.RESOURCE_Logo;
+		}
+		
+		final File logoFile = new File(logoFilename.trim());
+		if (!logoFile.isFile() || !logoFile.canRead())
+		{
+			logger.warn("Using default log because {} does not exist or it's not readable", logoFile);
+			return Constants.RESOURCE_Logo;
+		}
+		
+		return new FileResource(logoFile);
 	}
 
 	@Override
