@@ -13,4 +13,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE AD_Archive ADD AD_Language VARCHAR(25) DEFAULT NULL 
 ;
 
-s
