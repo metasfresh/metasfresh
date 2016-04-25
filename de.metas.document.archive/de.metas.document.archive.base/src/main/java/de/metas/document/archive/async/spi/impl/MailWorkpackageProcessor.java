@@ -41,6 +41,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.process.DocAction;
 import org.compiere.util.EMail;
+import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -132,6 +133,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final String trxName) throws Exception
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+		
+		// task FRESH-218
+		// set the archive language in the mailing context. This ensures us that the mail will be sent in this language.
+		final String archiveLanguage = archive.getAD_Language();
+		if(archiveLanguage != null)
+		{
+			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
+		}
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
 		Check.assumeNotNull(partner, "partner not null for {}", log);

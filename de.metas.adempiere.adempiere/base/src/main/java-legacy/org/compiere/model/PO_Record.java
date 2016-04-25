@@ -18,11 +18,13 @@ package org.compiere.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Maintain AD_Table_ID/Record_ID constraint
@@ -55,7 +57,7 @@ public class PO_Record
 	/**	Cascade Table ID			*/
 	private static int[]	s_cascades =	new int[]{
 		X_AD_Attachment.Table_ID,
-		X_AD_Archive.Table_ID,
+		InterfaceWrapperHelper.getTableId(I_AD_Archive.class),
 	//	X_CM_ContainerTTable.Table_ID,
 	//	X_CM_CStageTTable.Table_ID,
 		X_K_Index.Table_ID,

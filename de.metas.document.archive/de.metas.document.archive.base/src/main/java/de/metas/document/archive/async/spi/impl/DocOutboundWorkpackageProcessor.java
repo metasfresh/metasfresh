@@ -10,12 +10,12 @@ package de.metas.document.archive.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,8 +24,7 @@ package de.metas.document.archive.async.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -48,6 +47,7 @@ import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
@@ -60,6 +60,7 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 /**
  * Process work packages from queue and:
@@ -67,9 +68,9 @@ import de.metas.document.engine.IDocActionBL;
  * <li>archive the document
  * <li>record log (see {@link de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener#onPdfUpdate(org.compiere.model.I_AD_Archive, org.compiere.model.I_AD_User)})
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -154,7 +155,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		// Create ReportEngine
 		final int reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
 		ReportEngine reportEngine = null;
-		if (reportEngineDocumentType > -1)  // important: 0 is also fine! -1 means "not found"
+		if (reportEngineDocumentType > -1)    // important: 0 is also fine! -1 means "not found"
 		{
 			// we are dealing with document reporting
 			final int printFormatId = config.getAD_PrintFormat_ID();
@@ -174,12 +175,12 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			//
 			// Print format
 			int printFormatId = findBP_PrintFormat_ID(po, printInfo.getC_BPartner_ID());
-			if(printFormatId <= 0)
+			if (printFormatId <= 0)
 			{
 				printFormatId = config.getAD_PrintFormat_ID();
 			}
 			final MPrintFormat printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
-			
+
 			// 04454 and 04430: we need to set the printformat's language;
 			// using the client language is what would also be done by ReportEngine.get() if it can't be determined via a reportEngineDocumentType
 			// 09527: Exception: When the partner has a language set. In this case, the partner's language must be set
@@ -205,6 +206,12 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		//
 		// PrintInfo (needed for archiving)
 		final PrintInfo printInfo = reportEngine.getPrintInfo();
+
+		final MPrintFormat printFormat = reportEngine.getPrintFormat();
+		if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
+		{
+			printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
+		}
 		logger.debug("PrintInfo: {}", printInfo);
 
 		//
@@ -246,7 +253,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Helper method which creates an {@link MQuery} (KeyColumnName=Record_ID) for given object
-	 * 
+	 *
 	 * @param po
 	 * @return
 	 */

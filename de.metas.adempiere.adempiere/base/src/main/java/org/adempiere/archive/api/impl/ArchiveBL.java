@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.service.IClientDAO;
@@ -37,11 +38,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.PrintInfo;
 import org.compiere.model.X_AD_Client;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
+
+import de.metas.adempiere.model.I_AD_Process;
 
 public class ArchiveBL implements IArchiveBL
 {
@@ -113,10 +117,15 @@ public class ArchiveBL implements IArchiveBL
 			final String trxName)
 	{
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
-		final Properties ctxToUse = createContext(ctx, info.getAD_Table_ID(), info.getRecord_ID(), trxName);
+		final Properties ctxToUse = createContext(ctx, info, trxName);
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse, trxName);
+
+		// FRESH-218: extract and set the language to the archive
+		final String language = getLanguageFromReport(ctxToUse, info, trxName);
+		archive.setAD_Language(language);
+
 		archive.setName(info.getName());
 		archive.setIsReport(info.isReport());
 		//
@@ -133,12 +142,86 @@ public class ArchiveBL implements IArchiveBL
 		return archive;
 	}
 
-	private final Properties createContext(final Properties ctx, final int adTableId, final int recordId, final String trxName)
+	/**
+	 * Return the BPartner's language, in case the info has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
+	 * in the given context
+	 *
+	 * @param ctx
+	 * @param info
+	 * @param trxName
+	 * @return
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-218
+	 */
+	private String getLanguageFromReport(Properties ctx, PrintInfo info, String trxName)
 	{
+		// the language from the given context. In case there will be no other language to fit the logic, this is the value to be returned.
+		final String initialLanguage = Env.getAD_Language(ctx);
+
+		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, info.getAD_Process_ID(), I_AD_Process.class, trxName);
+
+		// make sure there is a process set in the PrintInfo
+		if (process == null)
+		{
+			return initialLanguage;
+		}
+
+		// in case the found process does not have the isUseBPartnerLanguage on true, there is no reason to search more
+		final boolean isUseBPartnerLanguage = process.isUseBPartnerLanguage();
+
+		if (!isUseBPartnerLanguage)
+		{
+			return initialLanguage;
+		}
+
+		final int tableID = info.getAD_Table_ID();
+		final int recordID = info.getRecord_ID();
+
+		if (tableID <= 0)
+		{
+			return initialLanguage;
+		}
+
+		if (recordID <= 0)
+		{
+			return initialLanguage;
+		}
+
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
+
+		// make sure the record linked with the PrintInfo is bpartner aware (has a C_BPartner_ID column)
+		final IBPartnerAware bpRecord = InterfaceWrapperHelper.create(ctx, tableName, recordID, IBPartnerAware.class, trxName);
+
+		if (bpRecord == null)
+		{
+			// Act like before
+			return initialLanguage;
+		}
+
+		// if the record really is BPartner aware, we should be able to load the bpartner
+		final I_C_BPartner partner = bpRecord.getC_BPartner();
+
+		// this shall not happen
+		if (partner == null)
+		{
+			// Act like before
+			return initialLanguage;
+		}
+
+		// return the language of the linked bpartner
+		return partner.getAD_Language();
+
+	}
+
+	private final Properties createContext(final Properties ctx, final PrintInfo info, final String trxName)
+	{
+		final int adTableId = info.getAD_Table_ID();
+
 		if (adTableId <= 0)
 		{
 			return ctx;
 		}
+
+		final int recordId = info.getRecord_ID();
 		if (recordId <= 0)
 		{
 			return ctx;
@@ -152,10 +235,12 @@ public class ArchiveBL implements IArchiveBL
 			return ctx;
 		}
 		final Properties ctxToUse = Env.deriveCtx(ctx);
-		Env.setContext(ctxToUse, "#AD_Client_ID", record.getAD_Client_ID());
-		Env.setContext(ctxToUse, "#AD_Org_ID", record.getAD_Org_ID());
+		Env.setContext(ctxToUse, Env.CTXNAME_AD_Client_ID, record.getAD_Client_ID());
+		Env.setContext(ctxToUse, Env.CTXNAME_AD_Org_ID, record.getAD_Org_ID());
 		// setClientOrg(archivedPO);
+
 		return ctxToUse;
+
 	}
 
 	@Override

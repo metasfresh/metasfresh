@@ -32,4 +32,8 @@ public interface I_AD_Process extends org.compiere.model.I_AD_Process
 	public static final String COLUMNNAME_LockWaitTimeout = "LockWaitTimeout";
 	public int getLockWaitTimeout();
 	public void setLockWaitTimeout(int LockWaitTimeout);
+	
+	public static final String COLUMNNAME_IsUseBPartnerLanguage = "IsUseBPartnerLanguage";
+	public boolean isUseBPartnerLanguage();
+	public void setIsBPartnerLanguage(boolean isUseBPartnerLanguage);
 }
