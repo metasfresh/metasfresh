@@ -26,13 +26,13 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.net.ssl.HttpsURLConnection;
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+
 
 /**
  *  Payment Processor Abstract Class
