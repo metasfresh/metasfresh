@@ -20,7 +20,7 @@ The actual release notes
   - FRESH-187 Filter date-from and date-to in procurement excel
      * also fixing a problem that the library-version we use only supports a hardcoded 50 columns
   - FRESH-218 Create archives in partner's language
-     * adding langauge info to archive records, so when mailing the PDF, the system can choose a mail template in the correct language
+     * adding language info to archive records, so when mailing the PDF, the system can choose a mail template in the correct language
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
