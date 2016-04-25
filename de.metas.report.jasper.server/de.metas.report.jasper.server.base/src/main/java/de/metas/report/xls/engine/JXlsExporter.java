@@ -1,8 +1,10 @@
 package de.metas.report.xls.engine;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -10,11 +12,19 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.adempiere.util.Check;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.jxls.area.Area;
+import org.jxls.builder.AreaBuilder;
+import org.jxls.builder.xls.XlsCommentAreaBuilder;
+import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.common.JxlsException;
-import org.jxls.util.JxlsHelper;
+import org.jxls.formula.FastFormulaProcessor;
+import org.jxls.transform.TransformationConfig;
+import org.jxls.transform.Transformer;
+import org.jxls.transform.poi.PoiTransformer;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -49,6 +59,11 @@ public class JXlsExporter
 	{
 		return new JXlsExporter();
 	}
+	
+	static
+	{
+		XlsCommentAreaBuilder.addCommandMapping(HideColumnIfCommand.NAME, HideColumnIfCommand.class);
+	}
 
 	private static final String PROPERTY_Data = "data";
 	private static final String PROPERTY_ResourceBundle = "r";
@@ -81,7 +96,8 @@ public class JXlsExporter
 				{
 					final Context context = createJXlsContext();
 
-					JxlsHelper.getInstance().processTemplate(is, os, context);
+					final Transformer transformer = createTransformer(is, os);
+					processTemplate(transformer, context);
 				}
 			}
 		}
@@ -89,6 +105,44 @@ public class JXlsExporter
 		{
 			throw new JXlsExporterException(e);
 		}
+	}
+	
+	private void processTemplate(final Transformer transformer, final Context context) throws IOException, InvalidFormatException
+	{
+		
+		//
+		// Find Areas which we will need to process
+	    final AreaBuilder areaBuilder = new XlsCommentAreaBuilder();
+        areaBuilder.setTransformer(transformer);
+        final List<Area> xlsAreaList = areaBuilder.build();
+
+        //
+        // Process those areas
+        for (final Area xlsArea : xlsAreaList)
+        {
+        	// Process area
+            xlsArea.applyAt(new CellRef(xlsArea.getStartCellRef().getCellName()), context);
+
+            // Process formulas
+            xlsArea.setFormulaProcessor(new FastFormulaProcessor());
+            xlsArea.processFormulas();
+        }
+
+        //
+        // Write the result
+        transformer.write();
+	}
+	
+	private final Transformer createTransformer(final InputStream is, final OutputStream os) throws InvalidFormatException, IOException
+	{
+		final PoiTransformer transformer = PoiTransformer.createTransformer(is, os);
+		transformer.setLastCommentedColumn(250);
+		
+		// make sure our custom jexl functions are registered
+		final TransformationConfig config = transformer.getTransformationConfig();
+		JexlCustomFunctions.registerIfNeeded(config.getExpressionEvaluator());
+
+		return transformer;
 	}
 
 	private Context createJXlsContext()
