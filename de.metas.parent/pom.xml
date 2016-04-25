@@ -39,9 +39,6 @@
 		<!-- 
 		The version to be used by metasfresh, as opposed to the ESB's. 
 		The two versions might clash in ait modules 
-		3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need.
-		Until 3.1.6 is released, we use our "own" 3.1.6_metas in the de.metas.jaxrs module.
-		2016-04-21 ts: trying 3.1.6 now 
 		-->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
