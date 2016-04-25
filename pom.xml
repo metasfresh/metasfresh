@@ -26,11 +26,8 @@
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
 
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
-		<!-- 
-		3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need.
-		Until 3.1.6 is released, we use our "own" 3.1.6_metas in the de.metas.jaxrs module.
-		2016-04-21 ts: trying 3.1.6 now 
-		-->
+
+		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
 		<cxf.version>3.1.6</cxf.version>
 	</properties>
 
@@ -190,11 +187,6 @@
 			<artifactId>javax.ws.rs-api</artifactId>
 		</dependency>
 
-		<!-- 
-		   	Note about the locked cxf SNAPSHOT dependencies: 
-		   	3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need. 
-			Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions
-		-->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-jms</artifactId>
@@ -221,7 +213,7 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-rs-extension-providers</artifactId>
-			<version>3.1.6-20160315.074503-30</version>
+			<version>${cxf.version}</version>
 		</dependency>
 
 		<dependency>
