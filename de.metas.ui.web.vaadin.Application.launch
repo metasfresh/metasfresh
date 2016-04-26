@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/de.metas.ui.web.vaadin/src/main/java/de/metas/ui/web/vaadin/Application.java"/>
+<listEntry value="/metasfresh-webui/src/main/java/de/metas/ui/web/vaadin/Application.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -17,7 +17,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.ui.web.vaadin.Application"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.ui.web.vaadin"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-webui"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="${jrebel_args:jdk1.8.0_40}&#13;&#10;-noverify&#13;&#10;-Xmx1G&#13;&#10;-XX:MaxPermSize=256m"/>
 </launchConfiguration>
