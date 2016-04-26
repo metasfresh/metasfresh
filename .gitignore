@@ -1,7 +1,6 @@
-/target/
-/.classpath
-/.project
-/.settings/
+**/target/
+**/.settings/
 *.cache
 *.diff
-
+*.project
+*.classpath
