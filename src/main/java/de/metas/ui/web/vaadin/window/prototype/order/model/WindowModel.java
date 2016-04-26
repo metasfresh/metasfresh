@@ -88,11 +88,7 @@ public class WindowModel
 		// Window: record additional summary
 		{
 			final PropertyName propertyName = WindowConstants.PROPERTYNAME_RecordAditionalSummary;
-			final PropertyValue recordSummary = ConstantPropertyValue.of(propertyName, ""
-					+ "    Lines:           9"
-					+ "\n" + " Net Total: 489,29 CHF"
-					+ "\n" + "       Tax:   9,79 CHF"
-					+ "\n" + "Gros Total: 499,29 CHF");
+			final PropertyValue recordSummary = new HARDCODED_Order.AdditionalRecordSummaryPropertyValue(propertyName);
 			propertiesCollector.addProperty(recordSummary);
 		}
 

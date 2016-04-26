@@ -40,15 +40,14 @@ public class PropertyLayoutInfo implements Serializable
 		return new Builder();
 	}
 
+	private final boolean displayed;
 	private final boolean nextColumn;
 	private final int rowsSpan;
 
 	/** Default constructor */
 	private PropertyLayoutInfo()
 	{
-		super();
-		nextColumn = false;
-		rowsSpan = 1;
+		this(new Builder());
 	}
 	
 	private PropertyLayoutInfo(final Builder builder)
@@ -56,6 +55,12 @@ public class PropertyLayoutInfo implements Serializable
 		super();
 		this.nextColumn = builder.nextColumn;
 		this.rowsSpan = builder.rowsSpan;
+		this.displayed = builder.displayed;
+	}
+	
+	public boolean isDisplayed()
+	{
+		return displayed;
 	}
 
 	public boolean isNextColumn()
@@ -70,8 +75,9 @@ public class PropertyLayoutInfo implements Serializable
 	
 	public static class Builder
 	{
+		public boolean displayed = true;
 		public boolean nextColumn;
-		public int rowsSpan;
+		public int rowsSpan = 1;
 
 		private Builder()
 		{
@@ -92,6 +98,12 @@ public class PropertyLayoutInfo implements Serializable
 		public Builder setRowsSpan(int rowsSpan)
 		{
 			this.rowsSpan = rowsSpan;
+			return this;
+		}
+		
+		public Builder setDisplayed(final boolean displayed)
+		{
+			this.displayed = displayed;
 			return this;
 		}
 	}

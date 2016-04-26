@@ -249,6 +249,11 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		// Create editors
 		{
 			final Editor editorsRoot = createEditorsRecursivelly(rootPropertyDescriptor, editorsCollector);
+			if(editorsRoot == null)
+			{
+				throw new IllegalStateException("No editor was created");
+			}
+			
 			panelsContainer.addComponent(editorsRoot);
 			editors = editorsCollector.build();
 

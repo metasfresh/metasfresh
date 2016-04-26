@@ -60,6 +60,10 @@ public final class HARDCODED_Order
 	public static final PropertyName ORDER_BillBPartnerAndAddress = PropertyName.of(ORDER_Bill_BPartner_ID + "#" + ORDER_Bill_Location_ID + "#" + ORDER_Bill_User_ID);
 	//
 	public static final PropertyName ORDER_Lines = PropertyName.of("Lines");
+	
+	public static final PropertyName ORDER_GrandTotal = PropertyName.of(I_C_Order.COLUMNNAME_GrandTotal);
+	public static final PropertyName ORDER_TotalLines = PropertyName.of(I_C_Order.COLUMNNAME_TotalLines);
+	
 	private static WindowModel singletonWindowModel;
 	
 	private HARDCODED_Order()
@@ -226,6 +230,26 @@ public final class HARDCODED_Order
 						.setType(PropertyDescriptorType.Group)
 						.build())
 				//
+				// Additional hidden fields
+				.addChildPropertyDescriptor(PropertyDescriptor.builder()
+						.setPropertyName(ORDER_GrandTotal)
+						.setValueType(BigDecimal.class)
+						.setSqlColumnName(I_C_Order.COLUMNNAME_GrandTotal)
+						.setSqlDisplayType(DisplayType.Amount)
+						.setLayoutInfo(PropertyLayoutInfo.builder()
+								.setDisplayed(false)
+								.build())
+						.build())
+				.addChildPropertyDescriptor(PropertyDescriptor.builder()
+						.setPropertyName(ORDER_TotalLines)
+						.setValueType(BigDecimal.class)
+						.setSqlColumnName(I_C_Order.COLUMNNAME_TotalLines)
+						.setSqlDisplayType(DisplayType.Amount)
+						.setLayoutInfo(PropertyLayoutInfo.builder()
+								.setDisplayed(false)
+								.build())
+						.build())
+				//
 				//
 				.build();
 	}
@@ -298,6 +322,29 @@ public final class HARDCODED_Order
 
 	}
 
+	public static final class AdditionalRecordSummaryPropertyValue extends CalculatedPropertyValue
+	{
+		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_GrandTotal, ORDER_TotalLines);
+
+		public AdditionalRecordSummaryPropertyValue(final PropertyName name)
+		{
+			super(name);
+		}
+
+		@Override
+		public Set<PropertyName> getDependsOnPropertyNames()
+		{
+			return dependsOn;
+		}
+
+		@Override
+		public Object calculateValue(final PropertyValueCollection values)
+		{
+			return "Net total: "+values.getPropertyValue(ORDER_TotalLines).getValueAsString().or("0")
+					+"\nGrand total: "+values.getPropertyValue(ORDER_GrandTotal).getValueAsString().or("0");
+		}
+	}
+	
 	public static final class RecordSummaryPropertyValue extends CalculatedPropertyValue
 	{
 		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_DocumentNo, ORDER_DatePromised, ORDER_C_BPartner_ID, ORDER_C_BPartner_Location_ID);
@@ -325,5 +372,6 @@ public final class HARDCODED_Order
 			return valueNew;
 		}
 	}
+
 
 }
