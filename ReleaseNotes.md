@@ -12,10 +12,11 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.15.x (upcoming)
 
 ## Features
-	 
+  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+
 ## Fixes
 
 # metasfresh 4.14.13a
