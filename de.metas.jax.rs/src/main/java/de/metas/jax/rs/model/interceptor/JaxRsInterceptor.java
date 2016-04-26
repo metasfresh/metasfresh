@@ -44,13 +44,14 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
-		if (Ini.getRunMode() == RunMode.BACKEND || CConnection.isServerEmbedded())
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND || Ini.getRunMode() == RunMode.WEBUI;
+		if (serverMode || CConnection.isServerEmbedded())
 		{
 			// in embedded mode, we assume that a local JMS broker was already started by this module's AddOnn implementation.
 			jaxRsBL.createServerEndPoints();
 		}
 
-		if (Ini.getRunMode() != RunMode.BACKEND)
+		if (!serverMode)
 		{
 			jaxRsBL.createClientEndPoints(ctx);
 		}

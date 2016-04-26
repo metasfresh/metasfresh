@@ -34,7 +34,7 @@ public final class ConstantLogicExpression implements ILogicExpression
 {
 	private final boolean value;
 
-	public ConstantLogicExpression(boolean value)
+	ConstantLogicExpression(boolean value)
 	{
 		this.value = value;
 	}
@@ -71,7 +71,7 @@ public final class ConstantLogicExpression implements ILogicExpression
 	@Override
 	public String getExpressionString()
 	{
-		return null;
+		return value ? "1=1" : "1=0";
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public final class ConstantLogicExpression implements ILogicExpression
 	@Override
 	public String getFormatedExpressionString()
 	{
-		return null;
+		return getExpressionString();
 	}
 
 	@Override
@@ -108,5 +108,31 @@ public final class ConstantLogicExpression implements ILogicExpression
 	public final IExpressionEvaluator<ILogicExpression, Boolean> getEvaluator()
 	{
 		return LogicExpressionEvaluator.instance;
+	}
+
+	@Override
+	public ILogicExpression and(ILogicExpression expression)
+	{
+		if (value == true)
+		{
+			return expression;
+		}
+		else
+		{
+			return this;
+		}
+	}
+
+	@Override
+	public ILogicExpression or(ILogicExpression expression)
+	{
+		if (value == true)
+		{
+			return this;
+		}
+		else
+		{
+			return expression;
+		}
 	}
 }

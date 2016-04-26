@@ -211,12 +211,12 @@ public class MLookupFactory
 		//	remaining values
 		// NOTE: because some of the previous getters can retrieve a clone of a cached lookup info, here we need to set the actual values again
 		info.setCtx(ctx);
-		info.WindowNo = WindowNo;
-		info.Column_ID = Column_ID;
+		info.setWindowNo(WindowNo);
+		info.setAD_Column_ID(Column_ID);
 		info.setDisplayType(AD_Reference_ID);
-		info.AD_Reference_Value_ID = AD_Reference_Value_ID;
-		info.IsParent = IsParent;
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.TableName, AD_Val_Rule_ID));
+		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
+		info.setIsParent(IsParent);
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.getTableName(), AD_Val_Rule_ID));
 
 		//	Variables in SQL WHERE
 		// NOTE(metas): there is no point to parse the where clause (even if just partially, for global variables) because it will be parsed anyway on valiadation time 
@@ -238,7 +238,7 @@ public class MLookupFactory
 //		}
 
 		//	Direct Query - NO Validation/Security
-		info.QueryDirect = createQueryDirect(info);
+		info.setSqlQueryDirect(createQueryDirect(info));
 
 		//	Validation
 		// NOTE (metas): we are not adding the validation here because it will be added on load time (from IValidationRule)
@@ -246,7 +246,7 @@ public class MLookupFactory
 		//	Add Security
 		if (!info.isSecurityDisabled())
 		{
-			info.Query = Env.getUserRolePermissions(ctx).addAccessSQL(info.Query, info.TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			info.setSqlQuery(Env.getUserRolePermissions(ctx).addAccessSQL(info.getSqlQuery(), info.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
 		}
 		
 		//
@@ -462,8 +462,7 @@ public class MLookupFactory
 			return s_cacheRefTable.get(cacheKey).cloneIt();
 		}
 
-		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class)
-				.retrieveLookupDisplayInfo(tableRefInfo);
+		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
 		if (lookupDisplayInfo == null)
 		{
 			return null;
@@ -681,7 +680,7 @@ public class MLookupFactory
 		final MLookupInfo lookupInfo = new MLookupInfo(sqlQueryFinal.toString(),
 				TableName, keyColumnFQ,
 				ZoomWindow, ZoomWindowPO, zoomQuery);
-		lookupInfo.WindowNo = windowNo;
+		lookupInfo.setWindowNo(windowNo);
 		lookupInfo.setDisplayColumns(displayColumns);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL.toString());
 		lookupInfo.setSelectSqlPart(sqlSelect.toString());

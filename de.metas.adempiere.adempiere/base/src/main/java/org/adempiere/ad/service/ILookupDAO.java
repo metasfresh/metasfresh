@@ -26,6 +26,7 @@ package org.adempiere.ad.service;
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.collections.BlindIterator;
 import org.compiere.model.ILookupDisplayColumn;
@@ -108,7 +109,7 @@ public interface ILookupDAO extends ISingletonService
 	 * @author tsa
 	 * 
 	 */
-	interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
+	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
 		 * 
@@ -163,9 +164,17 @@ public interface ILookupDAO extends ISingletonService
 	 * 
 	 * @param validationCtx
 	 * @param lookupInfo
-	 * @return
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo);
+	
+	/**
+	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
+	 * 
+	 * @param validationCtx
+	 * @param lookupInfo
+	 * @param additionalValidationRule optional additional validation rule to be applied on top of lookupInfo's validation rule
+	 */
+	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo, IValidationRule additionalValidationRule);
 
 	/**
 	 * Directly retrieves a data element identified by <code>key</code>.
@@ -185,4 +194,5 @@ public interface ILookupDAO extends ISingletonService
 	 * @return
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
+
 }

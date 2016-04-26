@@ -101,16 +101,16 @@ public class CompositeOrderFastInputHandler implements IOrderFastInputHandler
 	}
 
 	@Override
-	public IGridTabRowBuilder createLineBuilderFromHeader(final GridTab gridTab)
+	public IGridTabRowBuilder createLineBuilderFromHeader(final Object model)
 	{
 		final CompositeGridTabRowBuilder builders = new CompositeGridTabRowBuilder();
 
 		for (final IOrderFastInputHandler handler : handlers)
 		{
-			final IGridTabRowBuilder builder = handler.createLineBuilderFromHeader(gridTab);
+			final IGridTabRowBuilder builder = handler.createLineBuilderFromHeader(model);
 			builders.addGridTabRowBuilder(builder);
 		}
-		builders.addGridTabRowBuilder(defaultHandler.createLineBuilderFromHeader(gridTab));
+		builders.addGridTabRowBuilder(defaultHandler.createLineBuilderFromHeader(model));
 		return builders;
 	}
 }

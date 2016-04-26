@@ -162,7 +162,15 @@ public class JaxRsBL implements IJaxRsBL
 		svrFactory.getFeatures().add(createJMSConfigFeature(
 				request.getRequestQueue(),
 				request.getResponseQueue()));
-		svrFactory.getFeatures().add(loggingFeature);
+		
+		if (loggingFeature != null)
+		{
+			svrFactory.getFeatures().add(loggingFeature);
+		}
+		else
+		{
+			logger.warn("Skip adding {} because is null", LoggingFeature.class);
+		}
 
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");

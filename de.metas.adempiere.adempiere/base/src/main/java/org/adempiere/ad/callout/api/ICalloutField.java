@@ -38,6 +38,8 @@ public interface ICalloutField
 
 	Properties getCtx();
 
+	String getTableName();
+
 	int getAD_Table_ID();
 
 	int getAD_Column_ID();
@@ -58,4 +60,13 @@ public interface ICalloutField
 	 * @return true if we are currently creating this record by copying (with or without details) from another record
 	 */
 	boolean isRecordCopyingMode();
+
+	/**
+	 * @return true if we are currently creating this record by copying (with details) from another record
+	 */
+	boolean isRecordCopyingModeIncludingDetails();
+
+	ICalloutExecutor getCurrentCalloutExecutor();
+	
+	void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError);
 }

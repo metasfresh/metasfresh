@@ -437,6 +437,11 @@ public class GridWindowVO implements Serializable
 	{
 		return loadErrorMessages == null || loadErrorMessages.length() == 0 ? null : loadErrorMessages.toString();
 	}
+	
+	public List<GridTabVO> getTabs()
+	{
+		return Tabs;
+	}
 // metas: end
 }   //  MWindowVO
 

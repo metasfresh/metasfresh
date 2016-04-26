@@ -1,10 +1,10 @@
-package de.metas.adempiere.callout;
+package org.adempiere.ad.wrapper;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,21 +22,16 @@ package de.metas.adempiere.callout;
  * #L%
  */
 
-
-import org.compiere.apps.search.IGridTabRowBuilder;
-import org.compiere.model.GridTab;
-
-public interface IOrderFastInputHandler
+public interface IInterfaceWrapperHelper
 {
 
-	void clearFields(GridTab gridTab);
+	boolean canHandled(Object model);
 
-	/**
-	 * 
-	 * @param gridTab
-	 * @return true if focus was actually requested
-	 */
-	boolean requestFocus(GridTab gridTab);
+	<T> T wrap(Object model, Class<T> modelClass, boolean useOldValues);
 
-	IGridTabRowBuilder createLineBuilderFromHeader(Object model);
+	void refresh(Object model, boolean discardChanges);
+
+	void refresh(Object model, String trxName);
+
+	boolean hasModelColumnName(Object model, String columnName);
 }

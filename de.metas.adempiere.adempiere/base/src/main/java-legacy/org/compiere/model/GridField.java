@@ -33,6 +33,7 @@ import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -967,20 +968,7 @@ public class GridField
 	 */
 	public String getColumnSQL(boolean withAS)
 	{
-		// metas
-		if (m_vo.ColumnClass != null)
-		{
-			return "NULL";
-		}
-		// metas end
-		if (m_vo.ColumnSQL != null && m_vo.ColumnSQL.length() > 0)
-		{
-			if (withAS)
-				return m_vo.ColumnSQL + " AS " + m_vo.getColumnName();
-			else
-				return m_vo.ColumnSQL;
-		}
-		return m_vo.getColumnName();
+		return m_vo.getColumnSQL(withAS);
 	}	// getColumnSQL
 
 	/**
@@ -990,10 +978,7 @@ public class GridField
 	 */
 	public boolean isVirtualColumn()
 	{
-		if ((m_vo.ColumnSQL != null && m_vo.ColumnSQL.length() > 0)
-				|| (m_vo.ColumnClass != null && !"".equals(m_vo.ColumnClass))) // metas: columns with a columnClass are also virtual
-			return true;
-		return false;
+		return m_vo.isVirtualColumn();
 	}	// isColumnVirtual
 
 	/**
@@ -1003,7 +988,7 @@ public class GridField
 	 */
 	public String getHeader()
 	{
-		return m_vo.Header;
+		return m_vo.getHeader();
 	}
 
 	/**
@@ -1023,7 +1008,7 @@ public class GridField
 	 */
 	public int getAD_Reference_Value_ID()
 	{
-		return m_vo.AD_Reference_Value_ID;
+		return m_vo.getAD_Reference_Value_ID();
 	}
 
 	/**
@@ -1042,7 +1027,7 @@ public class GridField
 	 * @return window no
 	 */
 	@Override
-	public final int getWindowNo()
+	public int getWindowNo()
 	{
 		return m_vo.WindowNo;
 	}
@@ -1344,15 +1329,6 @@ public class GridField
 		}
 		return m_parentValue.booleanValue();
 	}	// isParentValue
-
-	// /**
-	// * Get Callout
-	// * @return callout
-	// */
-	// public String getCallout()
-	// {
-	// return m_vo.Callout;
-	// }
 
 	/**
 	 * Get AD_Process_ID
@@ -2166,6 +2142,25 @@ public class GridField
 	}
 
 	@Override
+	public String getTableName()
+	{
+		final int adTableId = getAD_Table_ID();
+		return adTableId <= 0 ? null : Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+	}
+	
+	@Override
+	public ICalloutExecutor getCurrentCalloutExecutor()
+	{
+		final GridTab gridTab = getGridTab();
+		if (gridTab == null)
+		{
+			return null;
+		}
+		
+		return gridTab.getCalloutExecutor();
+	}
+
+	@Override
 	public <T> T getModel(Class<T> modelClass)
 	{
 		final GridTab gridTab = getGridTab();
@@ -2215,5 +2210,25 @@ public class GridField
 		}
 
 		return gridTab.isDataNewCopy();
+	}
+	
+	@Override
+	public boolean isRecordCopyingModeIncludingDetails()
+	{
+		final GridTab gridTab = getGridTab();
+
+		// If there was no GridTab set for this field, consider as we are not copying the record
+		if (gridTab == null)
+		{
+			return false;
+		}
+
+		return gridTab.getTableModel().isCopyWithDetails();
+	}
+
+	@Override
+	public void fireDataStatusEEvent(String AD_Message, String info, boolean isError)
+	{
+		getGridTab().fireDataStatusEEvent(AD_Message, info, isError);
 	}
 }

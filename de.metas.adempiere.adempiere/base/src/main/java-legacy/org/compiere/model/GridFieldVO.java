@@ -1068,4 +1068,52 @@ public class GridFieldVO implements Serializable
 	{
 		this.IsMandatory = mandatory;
 	}
+	
+	public String getHeader()
+	{
+		return Header;
+	}
+	
+	public int getAD_Reference_Value_ID()
+	{
+		return AD_Reference_Value_ID;
+	}
+	
+	/**
+	 * Get Column Name or SQL .. with/without AS
+	 * 
+	 * @param withAS include AS ColumnName for virtual columns in select statements
+	 * @return column name
+	 */
+	public String getColumnSQL(boolean withAS)
+	{
+		// metas
+		if (ColumnClass != null)
+		{
+			return "NULL";
+		}
+		// metas end
+		if (ColumnSQL != null && ColumnSQL.length() > 0)
+		{
+			if (withAS)
+				return ColumnSQL + " AS " + ColumnName;
+			else
+				return ColumnSQL;
+		}
+		return ColumnName;
+	}	// getColumnSQL
+
+	/**
+	 * Is Virtual Column
+	 * 
+	 * @return column is virtual
+	 */
+	public boolean isVirtualColumn()
+	{
+		if ((ColumnSQL != null && ColumnSQL.length() > 0)
+				|| (ColumnClass != null && !"".equals(ColumnClass))) // metas: columns with a columnClass are also virtual
+			return true;
+		return false;
+	}	// isColumnVirtual
+
 }

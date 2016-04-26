@@ -23,18 +23,13 @@ package org.adempiere.ad.callout.api.impl.legacy;
  */
 
 
-import java.util.Properties;
-
 import org.adempiere.ad.callout.api.ICallout;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.util.Util;
 
 /**
@@ -139,28 +134,10 @@ public class LegacyCalloutAdapter implements ICallout
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void onFieldChanged(final ICalloutExecutor executor, final ICalloutField field)
 	{
-		final Properties ctx = executor.getCtx();
-		final int windowNo = executor.getWindowNo();
-		final Object value = field.getValue();
-		final Object valueOld = field.getValue();
-
-		final GridField gridField = getGridField(field);
-		final GridTab gridTab = gridField.getGridTab();
-
-		final String retValue = callout.start(ctx, methodName, windowNo, gridTab, gridField, value, valueOld);
-		if (!Check.isEmpty(retValue, true))
-		{
-			throw new CalloutExecutionException(retValue);
-		}
-	}
-
-	protected GridField getGridField(final ICalloutField field)
-	{
-		Check.assume(field instanceof GridField, "Cannot get GridField from {}", field);
-		final GridField gridField = (GridField)field;
-		return gridField;
+		callout.start(methodName, field);
 	}
 
 	public org.compiere.model.Callout getCallout()

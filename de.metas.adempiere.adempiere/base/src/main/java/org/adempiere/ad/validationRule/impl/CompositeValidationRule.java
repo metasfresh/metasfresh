@@ -40,6 +40,23 @@ import org.compiere.util.NamePair;
  */
 public class CompositeValidationRule implements IValidationRule
 {
+	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
+	{
+		if (rule1 == null || rule1 == NullValidationRule.instance)
+		{
+			return rule2 == null ? NullValidationRule.instance : rule2;
+		}
+		if (rule2 == null || rule2 == NullValidationRule.instance)
+		{
+			return NullValidationRule.instance;
+		}
+		
+		final CompositeValidationRule composite = new CompositeValidationRule();
+		composite.addValidationRule(rule1);
+		composite.addValidationRule(rule2);
+		return composite;
+	}
+	
 	private final List<IValidationRule> rules = new ArrayList<IValidationRule>();
 	private final List<IValidationRule> rulesRO = Collections.unmodifiableList(rules);
 
@@ -107,6 +124,11 @@ public class CompositeValidationRule implements IValidationRule
 			if (Check.isEmpty(ruleWhereClause, true))
 			{
 				continue;
+			}
+			
+			if (IValidationRule.WHERECLAUSE_ERROR == ruleWhereClause)
+			{
+				return IValidationRule.WHERECLAUSE_ERROR;
 			}
 
 			if (wc.length() > 0)

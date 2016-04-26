@@ -99,8 +99,15 @@ public class TriggerUIBL implements ITriggerUIBL
 		@Override
 		public void execute(final ICalloutExecutor executor, final ICalloutField field)
 		{
-			final GridField gridField = (GridField)field; // FIXME: find a better way to get rid of direct GridField access
-			trigger(gridField);
+			if (field instanceof GridField)
+			{
+				final GridField gridField = (GridField)field; // FIXME: find a better way to get rid of direct GridField access
+				trigger(gridField);
+			}
+			else
+			{
+				// FIXME: not supported
+			}
 		}
 
 		@Override

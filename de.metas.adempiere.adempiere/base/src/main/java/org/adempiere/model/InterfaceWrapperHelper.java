@@ -40,6 +40,11 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.wrapper.CompositeInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.GridTabInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.POInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,6 +71,11 @@ public class InterfaceWrapperHelper
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
 	public static final String COLUMNNAME_SUFFIX_Override = "_Override";
+	
+	private static final CompositeInterfaceWrapperHelper helpers = new CompositeInterfaceWrapperHelper()
+			.addFactory(new POInterfaceWrapperHelper())
+			.addFactory(new GridTabInterfaceWrapperHelper())
+			.addFactory(new POJOInterfaceWrapperHelper());
 
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
@@ -80,6 +90,11 @@ public class InterfaceWrapperHelper
 	private static final boolean isInMemoryDatabaseOnly()
 	{
 		return org.compiere.Adempiere.isUnitTestMode();
+	}
+	
+	public static final void registerHelper(IInterfaceWrapperHelper helper)
+	{
+		helpers.addFactory(helper);
 	}
 
 	/**
@@ -152,7 +167,7 @@ public class InterfaceWrapperHelper
 	 * Wraps given model to given model class.
 	 *
 	 * @param model
-	 * @param cl model class
+	 * @param modelClass model class
 	 * @param useOldValues
 	 *            <ul>
 	 *            <li>true if old values shall be used
@@ -167,59 +182,21 @@ public class InterfaceWrapperHelper
 	 *             </ul>
 	 */
 	@Deprecated
-	public static <T> T create(final Object model, final Class<T> cl, final boolean useOldValues)
+	public static <T> T create(final Object model, final Class<T> modelClass, final boolean useOldValues)
 	{
 		if (model == null)
 		{
 			return null;
 		}
-		else if (cl.isInstance(model) && !useOldValues)
+		else if (modelClass.isInstance(model) && !useOldValues)
 		{
 			@SuppressWarnings("unchecked")
 			final T modelCasted = (T)model;
 			return modelCasted;
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return POWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return POWrapper.create(model, cl);
-			}
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return GridTabWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return GridTabWrapper.create(model, cl);
-			}
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return POJOWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return POJOWrapper.create(model, cl);
-			}
-		}
 		else
 		{
-			throw new AdempiereException("Model wrapping is not supported for " + model
-					+ "\n Class: " + (model == null ? null : model.getClass())
-					+ "\n useOldValues: " + useOldValues);
+			return helpers.wrap(model, modelClass, useOldValues);
 		}
 	}
 
@@ -382,22 +359,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void refresh(final Object model, final boolean discardChanges)
 	{
-		if (GridTabWrapper.isHandled(model))
-		{
-			GridTabWrapper.refresh(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			POWrapper.refresh(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			POJOWrapper.refresh(model, discardChanges, POJOWrapper.getTrxName(model));
-		}
-		else
-		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.refresh(model, discardChanges);
 	}
 
 	/**
@@ -408,23 +370,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void refresh(final Object model, final String trxName)
 	{
-		if (GridTabWrapper.isHandled(model))
-		{
-			GridTabWrapper.refresh(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			POWrapper.refresh(model, trxName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final boolean discardChanges = false;
-			POJOWrapper.refresh(model, discardChanges, trxName);
-		}
-		else
-		{
-			throw new AdempiereException("Unsupported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.refresh(model, trxName);
 	}
 
 	public static void setTrxName(final Object model, final String trxName)
@@ -1022,24 +968,8 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
-
-		if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.hasColumnName(model, columnName);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.hasModelColumnName(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			return wrapper.hasColumnName(columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		
+		return helpers.hasModelColumnName(model, columnName);
 	}
 
 	public static boolean hasColumnName(final Class<?> modelClass, final String columnName)

@@ -74,11 +74,11 @@ public class MLookupCache
 			return String.valueOf(System.currentTimeMillis());
 		//
 		StringBuffer sb = new StringBuffer();
-		sb.append(info.WindowNo).append(":")
+		sb.append(info.getWindowNo()).append(":")
 		//	.append(info.Column_ID)
-			.append(info.KeyColumn)
-			.append(info.AD_Reference_Value_ID)
-			.append(info.Query)
+			.append(info.getKeyColumnFQ())
+			.append(info.getAD_Reference_Value_ID())
+			.append(info.getSqlQuery())
 			.append(info.getValidationRule().toString());
 		//	does not include ctx
 		return sb.toString();
