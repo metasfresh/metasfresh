@@ -2,3 +2,8 @@
 /.settings/
 .classpath
 .project
+metasfresh.properties
+/log/
+src/main/webapp/VAADIN/themes/metasfresh/styles.css
+/src/main/webapp/VAADIN/widgetsets/
+
