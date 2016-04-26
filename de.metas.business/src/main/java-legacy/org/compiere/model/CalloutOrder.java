@@ -25,8 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,7 +51,8 @@ import de.metas.product.IProductPA;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
- * Lieferadressen nur die Adressen angezeigt, die auch als solche in der Location ausgewiesen sind. Ebenso bei den Rechnungsadressen. <li>Contains proposed <a
+ * Lieferadressen nur die Adressen angezeigt, die auch als solche in der Location ausgewiesen sind. Ebenso bei den Rechnungsadressen.
+ * <li>Contains proposed <a
  * href="https://sourceforge.net/tracker/index.php?func=detail&aid=1883543&group_id=176962&atid=879332" >BF_1883543</a></li>
  * 
  * @author Jorg Janke
@@ -135,7 +134,7 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			String DocSubType = "";
 			boolean IsSOTrx = true;
-			if (rs.next()) // we found document type
+			if (rs.next())  // we found document type
 			{
 				// Set Context: Document Sub Type for Sales Orders
 				DocSubType = rs.getString(1);
@@ -154,19 +153,19 @@ public class CalloutOrder extends CalloutEngine
 				if (DocSubType.equals(MOrder.DocSubType_POS))
 				{
 					order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
-				}				
+				}
 				// NOTE: Don't override default configured DeliveryRule (see task 09250)
-//				else
-//				{
-//					if (DocSubType.equals(MOrder.DocSubType_Prepay))
-//					{
-//						order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
-//					}
-//					else
-//					{
-//						order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
-//					}
-//				}
+				// else
+				// {
+				// if (DocSubType.equals(MOrder.DocSubType_Prepay))
+				// {
+				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
+				// }
+				// else
+				// {
+				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
+				// }
+				// }
 
 				// Invoice Rule
 				if (DocSubType.equals(MOrder.DocSubType_POS)
@@ -200,7 +199,7 @@ public class CalloutOrder extends CalloutEngine
 				Env.setContext(ctx, WindowNo, "HasCharges", rs.getString(2));
 
 				// DocumentNo
-				if (rs.getString(4).equals("Y")) // IsDocNoControlled
+				if (rs.getString(4).equals("Y"))  // IsDocNoControlled
 				{
 					if (!newDocNo && AD_Sequence_ID != rs.getInt(7))
 					{
@@ -222,7 +221,8 @@ public class CalloutOrder extends CalloutEngine
 									order.setDocumentNo("<"
 											+ MSequence.getPreliminaryNoByYear(
 													mTab, rs.getInt(7), dateColumn,
-													null) + ">");
+													null)
+											+ ">");
 								}
 							}
 							else
@@ -242,7 +242,7 @@ public class CalloutOrder extends CalloutEngine
 				// BPartner)
 				// This re-reads the Rules and applies them.
 				if (DocSubType.equals(MOrder.DocSubType_POS)
-						|| DocSubType.equals(MOrder.DocSubType_Prepay)) // not
+						|| DocSubType.equals(MOrder.DocSubType_Prepay))  // not
 					// for
 					// POS/PrePay
 					;
@@ -266,10 +266,10 @@ public class CalloutOrder extends CalloutEngine
 						if (s != null && s.length() != 0)
 						{
 							if (IsSOTrx
-									&& (s.equals("B") || s.equals("S") || s.equals("U"))) // No Cash/Check/Transfer
+									&& (s.equals("B") || s.equals("S") || s.equals("U")))  // No Cash/Check/Transfer
 								// for SO_Trx
 								s = "P"; // Payment Term
-							if (!IsSOTrx && (s.equals("B"))) // No Cash for PO_Trx
+							if (!IsSOTrx && (s.equals("B")))  // No Cash for PO_Trx
 								s = "P"; // Payment Term
 							order.setPaymentRule(s);
 						}
@@ -391,17 +391,32 @@ public class CalloutOrder extends CalloutEngine
 		}
 		final boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		
+		// task FRESH-152: Joining with the BPartner Stats.
+		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
 
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
 				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
+				+ " p.SO_CreditLimit, p.SO_CreditLimit-stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
+				+ " AS CreditAvailable,"
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
-				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, p.SOCreditStatus, "
+				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus
+				+ ", "
 				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
 				+ "FROM C_BPartner p"
+
+		+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
@@ -473,9 +488,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas (2009 0027 G1): setting billTo location. Why has it
 				// been selected above when it isn't used?
 				final int billTo_ID = rs.getInt("Bill_Location_ID");
-				mTab.setValue("Bill_Location_ID", //
+				mTab.setValue("Bill_Location_ID",  //
 						billTo_ID == 0 ? null : billTo_ID);
-				// metas: end
+						// metas: end
 
 				// metas: Einkaufsgenossenschaft
 				// TODO auskommentiert, weil Aufruf macht nur aus C_OrderLine heraus Sinn
@@ -542,7 +557,7 @@ public class CalloutOrder extends CalloutEngine
 					mTab.setValue("InvoiceRule", X_C_Order.INVOICERULE_Immediate);
 					// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				}
-				else if (OrderType.equals(MOrder.DocSubType_POS)) // for POS
+				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
 				{
 					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
 				}
@@ -552,9 +567,9 @@ public class CalloutOrder extends CalloutEngine
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
 					if (s != null && s.length() != 0)
 					{
-						if (s.equals("B")) // No Cache in Non POS
+						if (s.equals("B"))  // No Cache in Non POS
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U"))) // No Check/Transfer for SO_Trx
+						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No Check/Transfer for SO_Trx
 							s = "P"; // Payment Term
 						mTab.setValue("PaymentRule", s);
 					}
@@ -578,7 +593,7 @@ public class CalloutOrder extends CalloutEngine
 					s = rs.getString("DeliveryViaRule");
 					if (s != null && s.length() != 0)
 					{
-						if (IsSOTrx) // task: 06914: for purchase orders, we use another C_BPartner column
+						if (IsSOTrx)  // task: 06914: for purchase orders, we use another C_BPartner column
 						{
 							mTab.setValue(I_C_Order.COLUMNNAME_DeliveryViaRule, s);
 						}
@@ -624,19 +639,30 @@ public class CalloutOrder extends CalloutEngine
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
 				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ "p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
+				+ "p.SO_CreditLimit, p.SO_CreditLimit-stats."
+
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
+				+ " AS CreditAvailable,"
 				+ "c.AD_User_ID,"
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
 				+ "FROM C_BPartner p"
+
+				+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + C_BPartner_Location_ISBILLTO_DEFAULT + " DESC"
-		// metas end
-		; // #1
+				// metas end
+				; // #1
 
 		boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 		PreparedStatement pstmt = null;
@@ -698,7 +724,8 @@ public class CalloutOrder extends CalloutEngine
 							mTab.fireDataStatusEEvent("CreditLimitOver",
 									DisplayType.getNumberFormat(
 											DisplayType.Amount).format(
-											CreditAvailable), false);
+													CreditAvailable),
+									false);
 					}
 				}
 
@@ -727,7 +754,7 @@ public class CalloutOrder extends CalloutEngine
 				if (OrderType.equals(MOrder.DocSubType_Prepay))
 					mTab.setValue("InvoiceRule",
 							X_C_Order.INVOICERULE_Immediate);
-				else if (OrderType.equals(MOrder.DocSubType_POS)) // for POS
+				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
 					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
 				else
 				{
@@ -735,9 +762,9 @@ public class CalloutOrder extends CalloutEngine
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
 					if (s != null && s.length() != 0)
 					{
-						if (s.equals("B")) // No Cache in Non POS
+						if (s.equals("B"))  // No Cache in Non POS
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U"))) // No
+						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No
 							// Check/Transfer
 							// for
 							// SO_Trx
@@ -1003,7 +1030,7 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.setPricesIfNotIgnored(ctx, ol,
-				false, // usePriceUOM
+				false,  // usePriceUOM
 				null);
 
 		String column = mField.getColumnName();
@@ -1100,9 +1127,9 @@ public class CalloutOrder extends CalloutEngine
 		final String changedColumnName = gridField.getColumnName();
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
-		
+
 		final boolean processed = orderLine.isProcessed();
-		
+
 		final int C_UOM_To_ID = orderLine.getPrice_UOM_ID();
 		final int M_Product_ID = orderLine.getM_Product_ID();
 		final int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
@@ -1357,7 +1384,7 @@ public class CalloutOrder extends CalloutEngine
 
 		// Storage
 		if (M_Product_ID != 0 && Env.isSOTrx(ctx, WindowNo)
-				&& QtyOrdered.signum() > 0) // no negative (returns)
+				&& QtyOrdered.signum() > 0)  // no negative (returns)
 		{
 			MProduct product = MProduct.get(ctx, M_Product_ID);
 			if (Services.get(IProductBL.class).isStocked(product))
@@ -1479,7 +1506,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			String creditStatus = rs.getString("SOCreditStatus");
 			dontCheck = creditLimit == 0
-					|| MBPartner.SOCREDITSTATUS_NoCreditCheck
+					|| X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck
 							.equals(creditStatus);
 		}
 		else
@@ -1509,8 +1536,8 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				+ " ORDER BY lship." + C_BPartner_Location_ISSHIPTO_DEFAULT
 				+ " DESC"
-		// metas end
-		; // #1
+				// metas end
+				; // #1
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

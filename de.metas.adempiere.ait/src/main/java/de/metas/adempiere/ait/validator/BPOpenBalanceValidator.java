@@ -30,10 +30,12 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.POWrapper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MClient;
@@ -41,6 +43,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+
+import junit.framework.Assert;
 
 public class BPOpenBalanceValidator implements ModelValidator
 {
@@ -139,7 +143,11 @@ public class BPOpenBalanceValidator implements ModelValidator
 
 	private void afterInvoiceComplete(MInvoice invoice)
 	{
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		
 		final I_C_BPartner bp = invoice.getC_BPartner();
+		final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(bp);
 		BPAmounts bpAmt = getBPAmounts(bp);
 
 		//
@@ -152,14 +160,18 @@ public class BPOpenBalanceValidator implements ModelValidator
 		final BigDecimal actualLifeTimeValueExpected = bpAmt.actualLifeTimeValue.add(invoice.isSOTrx() ? invoiceAmtAbs : BigDecimal.ZERO);
 		
 		POWrapper.refresh(bp);
-		assertThat("BP open amount is not correct after invoice " + invoice, bp.getTotalOpenBalance(), comparesEqualTo(totalOpenBalanceExpected));
-		assertThat("BP lifetime value is not correct after invoice " + invoice, bp.getActualLifeTimeValue(), comparesEqualTo(actualLifeTimeValueExpected));
+		assertThat("BP open amount is not correct after invoice " + invoice, bpartnerStatsBL.getTotalOpenBalance(stats), comparesEqualTo(totalOpenBalanceExpected));
+		assertThat("BP lifetime value is not correct after invoice " + invoice, bpartnerStatsBL.getActualLifeTimeValue(stats), comparesEqualTo(actualLifeTimeValueExpected));
 
-		updateFrom(bpAmt, bp);
+		updateFrom(bpAmt, stats);
 	}
 
 	private void afterPaymentComplete(I_C_Payment payment)
 	{
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		
+		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(payment.getC_BPartner());
+
 		final I_C_BPartner bp = payment.getC_BPartner();
 		BPAmounts bpAmt = getBPAmounts(bp);
 
@@ -174,9 +186,9 @@ public class BPOpenBalanceValidator implements ModelValidator
 
 		final BigDecimal totalOpenBalanceExpected = bpAmt.totalOpenBalance.subtract(payAmtAbs);
 		POWrapper.refresh(bp);
-		assertThat("BP open amount is not correct after payment " + payment, bp.getTotalOpenBalance(), comparesEqualTo(totalOpenBalanceExpected));
+		assertThat("BP open amount is not correct after payment " + payment, bpartnerStatsBL.getTotalOpenBalance(stats), comparesEqualTo(totalOpenBalanceExpected));
 
-		updateFrom(bpAmt, bp);
+		updateFrom(bpAmt, stats);
 	}
 
 	private void updateFrom(I_C_BPartner bp)
@@ -184,6 +196,7 @@ public class BPOpenBalanceValidator implements ModelValidator
 		Assert.assertNotNull(bp);
 		Assert.assertTrue(bp.getC_BPartner_ID() > 0);
 
+		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bp);
 		BPAmounts bpAmt = map.get(bp.getC_BPartner_ID());
 		if (bpAmt == null)
 		{
@@ -191,13 +204,15 @@ public class BPOpenBalanceValidator implements ModelValidator
 			bpAmt.bpartnerId = bp.getC_BPartner_ID();
 			map.put(bpAmt.bpartnerId, bpAmt);
 		}
-		updateFrom(bpAmt, bp);
+		updateFrom(bpAmt, stats);
 	}
 
-	private void updateFrom(BPAmounts bpAmt, I_C_BPartner bp)
+	private void updateFrom(BPAmounts bpAmt, I_C_BPartner_Stats stats)
 	{
-		bpAmt.totalOpenBalance = bp.getTotalOpenBalance();
-		bpAmt.actualLifeTimeValue = bp.getActualLifeTimeValue();
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		
+		bpAmt.totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+		bpAmt.actualLifeTimeValue = bpartnerStatsBL.getActualLifeTimeValue(stats);
 	}
 
 	private BPAmounts getBPAmounts(I_C_BPartner bp)

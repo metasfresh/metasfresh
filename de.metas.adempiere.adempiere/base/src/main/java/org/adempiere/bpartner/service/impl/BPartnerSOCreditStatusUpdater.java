@@ -1,10 +1,22 @@
 package org.adempiere.bpartner.service.impl;
 
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +34,10 @@ package org.adempiere.bpartner.service.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
-
-/**
- * Synchronous implementation; note that there is also an async implementation which sets up a work package to to the job later and in background.
- *
- */
-public class BPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanceUpdater
+public class BPartnerSOCreditStatusUpdater implements IBPartnerSOCreditStatusUpdater
 {
 	@Override
-	public void updateTotalOpenBalances(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
+	public void updateSOCreditStatus(Properties ctx, Set<Integer> bpartnerIds, String trxName)
 	{
 		// Services
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
@@ -49,14 +45,15 @@ public class BPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanc
 		{
 			return;
 		}
-
 		final Iterator<Integer> it = bpartnerIds.iterator();
+
 		while (it.hasNext())
 		{
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, it.next(), I_C_BPartner.class, trxName);
-			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-			bpartnerStatsBL.updateTotalOpenBalance(stats);
+			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+			
+			bpartnerStatsBL.updateSOCreditStatus(stats);
 		}
 	}
 }

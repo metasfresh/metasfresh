@@ -28,9 +28,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -1740,19 +1743,34 @@ public final class MPayment extends X_C_Payment
 		// Do not pay when Credit Stop/Hold
 		if (!isReceipt())
 		{
-			MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-			if (X_C_BPartner.SOCREDITSTATUS_CreditStop.equals(bp.getSOCreditStatus()))
+			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+			
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+			
+			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		
+			final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+			final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+					
+			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))
 			{
-				m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-						+ bp.getTotalOpenBalance()
-						+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
-				return DocAction.STATUS_Invalid;
+				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
+						+ bpartnerStatsBL.getTotalOpenBalance(stats)
+						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
 			}
-			if (X_C_BPartner.SOCREDITSTATUS_CreditHold.equals(bp.getSOCreditStatus()))
+			
+			// if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+			// {
+			// m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
+			// + totalOpenBalance
+			// + ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
+			// return DocAction.STATUS_Invalid;
+			// }
+			if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 			{
 				m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
-						+ bp.getTotalOpenBalance()
-						+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
+						+ totalOpenBalance
+						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
 				return DocAction.STATUS_Invalid;
 			}
 		}
@@ -1837,7 +1855,14 @@ public final class MPayment extends X_C_Payment
 		// Update BP for Prepayments
 		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
 		{
-			final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
+			// task FRESH-152
+			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+			
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+
+						
 			// Update total balance to include this payment
 			final BigDecimal payAmt =
 					Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
@@ -1848,17 +1873,28 @@ public final class MPayment extends X_C_Payment
 				return DocAction.STATUS_Invalid;
 			}
 			// Total Balance
-			BigDecimal newBalance = bp.getTotalOpenBalance(false);
+			BigDecimal newBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+			
 			if (newBalance == null)
+			{
 				newBalance = Env.ZERO;
+			}
 			if (isReceipt())
+			{
 				newBalance = newBalance.subtract(payAmt);
+			}
 			else
+			{
 				newBalance = newBalance.add(payAmt);
+			}
 
-			bp.setTotalOpenBalance(newBalance);
-			bp.setSOCreditStatus();
-			bp.saveEx();
+
+			//
+			// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
+			
+				Services.get(IBPartnerTotalOpenBalanceUpdater.class)
+						.updateTotalOpenBalances(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
+			
 		}
 
 		// Counter Doc
@@ -2579,8 +2615,9 @@ public final class MPayment extends X_C_Payment
 		// Update BPartner
 		if (getC_BPartner_ID() > 0)
 		{
-			Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-					.updateTotalOpenBalances(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
+				Services.get(IBPartnerTotalOpenBalanceUpdater.class)
+						.updateTotalOpenBalances(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
+			
 		}
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);

@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -271,15 +269,24 @@ public class CalloutInOut extends CalloutEngine {
 		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
 			return "";
 
-		//metas: B062: Aenderung fuer die Ermittlung von Preisliste und Anschrift. 
+		// metas: B062: Aenderung fuer die Ermittlung von Preisliste und Anschrift.
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
-				+ "p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
+				+ "p.SO_CreditLimit-stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
+				+ " AS CreditAvailable,"
 				+ "l.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ "COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID,"
 				+ "COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID "
 				+ "FROM C_BPartner p"
+				+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
 				+ " JOIN C_BP_Group g ON p.C_BP_Group_ID=g.C_BP_Group_ID"
 				+ " LEFT JOIN C_BPartner_Location l ON p.C_BPartner_ID=l.C_BPartner_ID"
 				+ " LEFT JOIN AD_User c ON p.C_BPartner_ID=c.C_BPartner_ID "

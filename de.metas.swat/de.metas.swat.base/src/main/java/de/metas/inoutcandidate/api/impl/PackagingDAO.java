@@ -31,10 +31,7 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Deli
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PriorityRule;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_SOCreditStatus;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
-import static org.compiere.model.X_C_BPartner.SOCREDITSTATUS_CreditHold;
-import static org.compiere.model.X_C_BPartner.SOCREDITSTATUS_CreditStop;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -62,6 +59,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Query;
+import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -153,9 +151,9 @@ public class PackagingDAO implements IPackagingDAO
 			+ "        select 1 from " + ShipmentSchedulePA.M_SHIPMENT_SCHEDULE_SHIPMENT_RUN + " sr "
 			+ "        where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID
 			+ "   ) "
-			+ "   AND ( p." + COLUMNNAME_SOCreditStatus //
-			+ "           NOT IN ('" + SOCREDITSTATUS_CreditStop + "', '" + SOCREDITSTATUS_CreditHold + "')" //
-			+ "         OR p." + COLUMNNAME_SOCreditStatus + " IS NULL " //
+			+ "   AND ( p." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus //
+			+ "           NOT IN ('" + X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop + "', '" + X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold + "')" //
+			+ "         OR p." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + " IS NULL " //
 			+ "   )"
 			+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_IsActive + "='Y' ";
 

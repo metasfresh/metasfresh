@@ -48,31 +48,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_AcqusitionCost = "AcqusitionCost";
 
 	/**
-	 * Set Aktueller Gesamtertrag.
-	 * Actual Life Time Revenue
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setActualLifeTimeValue (java.math.BigDecimal ActualLifeTimeValue);
-
-	/**
-	 * Get Aktueller Gesamtertrag.
-	 * Actual Life Time Revenue
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getActualLifeTimeValue();
-
-    /** Column definition for ActualLifeTimeValue */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ActualLifeTimeValue = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ActualLifeTimeValue", null);
-    /** Column name ActualLifeTimeValue */
-    public static final String COLUMNNAME_ActualLifeTimeValue = "ActualLifeTimeValue";
-
-	/**
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
@@ -1964,31 +1939,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_SO_CreditLimit = "SO_CreditLimit";
 
 	/**
-	 * Set Kredit gewährt.
-	 * Current open balance
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSO_CreditUsed (java.math.BigDecimal SO_CreditUsed);
-
-	/**
-	 * Get Kredit gewährt.
-	 * Current open balance
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getSO_CreditUsed();
-
-    /** Column definition for SO_CreditUsed */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_SO_CreditUsed = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "SO_CreditUsed", null);
-    /** Column name SO_CreditUsed */
-    public static final String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";
-
-	/**
 	 * Set Beschreibung Auftrag.
 	 * Description to be used on orders
 	 *
@@ -2066,31 +2016,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_SO_TargetDocTypeReason = "SO_TargetDocTypeReason";
 
 	/**
-	 * Set Kreditstatus.
-	 * Business Partner Credit Status
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSOCreditStatus (java.lang.String SOCreditStatus);
-
-	/**
-	 * Get Kreditstatus.
-	 * Business Partner Credit Status
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getSOCreditStatus();
-
-    /** Column definition for SOCreditStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "SOCreditStatus", null);
-    /** Column name SOCreditStatus */
-    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
-
-	/**
 	 * Set Steuer-ID.
 	 * Tax Identification
 	 *
@@ -2116,37 +2041,15 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_TaxID = "TaxID";
 
 	/**
-	 * Set Offener Saldo.
-	 * Total Open Balance Amount in primary Accounting Currency
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setTotalOpenBalance (java.math.BigDecimal TotalOpenBalance);
-
-	/**
-	 * Get Offener Saldo.
-	 * Total Open Balance Amount in primary Accounting Currency
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getTotalOpenBalance();
-
-    /** Column definition for TotalOpenBalance */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_TotalOpenBalance = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "TotalOpenBalance", null);
-    /** Column name TotalOpenBalance */
-    public static final String COLUMNNAME_TotalOpenBalance = "TotalOpenBalance";
-
-	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>
+	 * Type: DateTime
+	 * <br>
+	 * Mandatory: true
+	 * <br>
+	 * Virtual Column: false
 	 */
 	public java.sql.Timestamp getUpdated();
 

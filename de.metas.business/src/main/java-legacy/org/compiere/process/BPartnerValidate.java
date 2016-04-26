@@ -18,10 +18,17 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Iterator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
@@ -29,25 +36,25 @@ import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Msg;
 
-
 /**
- *	Validate Business Partner
- *	
- *  @author Jorg Janke
- *  @version $Id: BPartnerValidate.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
- *  FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
+ * Validate Business Partner
+ * 
+ * @author Jorg Janke
+ * @version $Id: BPartnerValidate.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
+ *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
  */
 public class BPartnerValidate extends SvrProcess
 {
-	/**	BPartner ID			*/
+	/** BPartner ID */
 	int p_C_BPartner_ID = 0;
-	/** BPartner Group		*/
-	int p_C_BP_Group_ID = 0;	
+	/** BPartner Group */
+	int p_C_BP_Group_ID = 0;
 
 	/**
-	 *	Prepare
+	 * Prepare
 	 */
-	protected void prepare ()
+	@Override
+	protected void prepare()
 	{
 		p_C_BPartner_ID = getRecord_ID();
 		ProcessInfoParameter[] para = getParameter();
@@ -63,77 +70,92 @@ public class BPartnerValidate extends SvrProcess
 			else
 				log.error("Unknown Parameter: " + name);
 		}
-	}	//	prepare
+	}	// prepare
 
 	/**
-	 * 	Process
-	 *	@return info
-	 *	@throws Exception
+	 * Process
+	 * 
+	 * @return info
+	 * @throws Exception
 	 */
-	protected String doIt () throws Exception
+	@Override
+	protected String doIt() throws Exception
 	{
-		log.info("C_BPartner_ID=" + p_C_BPartner_ID + ", C_BP_Group_ID=" + p_C_BP_Group_ID); 
+		log.info("C_BPartner_ID=" + p_C_BPartner_ID + ", C_BP_Group_ID=" + p_C_BP_Group_ID);
 		if (p_C_BPartner_ID == 0 && p_C_BP_Group_ID == 0)
-			throw new AdempiereUserError ("No Business Partner/Group selected");
-		
+			throw new AdempiereUserError("No Business Partner/Group selected");
+
 		if (p_C_BP_Group_ID == 0)
 		{
-			MBPartner bp = new MBPartner (getCtx(), p_C_BPartner_ID, get_TrxName());
+			MBPartner bp = new MBPartner(getCtx(), p_C_BPartner_ID, get_TrxName());
 			if (bp.get_ID() == 0)
-				throw new AdempiereUserError ("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
-			checkBP (bp);
+				throw new AdempiereUserError("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
+			checkBP(bp);
 		}
 		else
 		{
 			String whereClause = "C_BP_Group_ID=?";
-		 	Iterator<MBPartner> it = new Query(getCtx(), MBPartner.Table_Name, whereClause, get_TrxName())
-			.setParameters(new Object[]{p_C_BP_Group_ID})
-	 		.setOnlyActiveRecords(true)
-			.iterate(null, false); // metas: guaranteed = false because we are just simple querying all bpartners
-		 	while(it.hasNext())
-		 	{
-		 		checkBP(it.next());
-		 	}
+			Iterator<MBPartner> it = new Query(getCtx(), MBPartner.Table_Name, whereClause, get_TrxName())
+					.setParameters(new Object[] { p_C_BP_Group_ID })
+					.setOnlyActiveRecords(true)
+					.iterate(null, false); // metas: guaranteed = false because we are just simple querying all bpartners
+			while (it.hasNext())
+			{
+				checkBP(it.next());
+			}
 		}
 		//
 		return "OK";
-	}	//	doIt
+	}	// doIt
 
 	/**
-	 * 	Check BP
-	 *	@param bp bp
-	 * @throws SQLException 
+	 * Check BP
+	 * 
+	 * @param bp bp
+	 * @throws SQLException
 	 */
-	private void checkBP (MBPartner bp) throws SQLException
+	private void checkBP(MBPartner bp) throws SQLException
 	{
+		final IBPartnerStatsBL bpartnerStatBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		
+		final I_C_BPartner partner  = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
+		final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		
 		addLog(0, null, null, bp.getName() + ":");
-		//	See also VMerge.postMerge
+		// See also VMerge.postMerge
 		checkPayments(bp);
 		checkInvoices(bp);
-		//	
-		bp.setTotalOpenBalance();
-		bp.setActualLifeTimeValue();
-		bp.saveEx();
+
 		//
-	//	if (bp.getSO_CreditUsed().signum() != 0)
-		addLog(0, null, bp.getSO_CreditUsed(), Msg.getElement(getCtx(), "SO_CreditUsed"));
-		addLog(0, null, bp.getTotalOpenBalance(), Msg.getElement(getCtx(), "TotalOpenBalance"));
-		addLog(0, null, bp.getActualLifeTimeValue(), Msg.getElement(getCtx(), "ActualLifeTimeValue"));
+		// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
+		Services.get(IBPartnerTotalOpenBalanceUpdater.class)
+				.updateTotalOpenBalances(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
+
+		Services.get(IBPartnerActualLifeTimeValueUpdater.class)
+				.updateActualLifeTimeValue(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
+		
+		
+		//
+		// if (bp.getSO_CreditUsed().signum() != 0)
+		addLog(0, null, bpartnerStatBL.getSOCreditUsed(stats), Msg.getElement(getCtx(), "SO_CreditUsed"));
+		addLog(0, null, bpartnerStatBL.getTotalOpenBalance(stats), Msg.getElement(getCtx(), "TotalOpenBalance"));
+		addLog(0, null, bpartnerStatBL.getActualLifeTimeValue(stats), Msg.getElement(getCtx(), "ActualLifeTimeValue"));
 		//
 		commitEx();
-	}	//	checkBP
-	
-	
+	}	// checkBP
+
 	/**
-	 * 	Check Payments
-	 *	@param bp business partner
+	 * Check Payments
+	 * 
+	 * @param bp business partner
 	 */
-	private void checkPayments (MBPartner bp)
+	private void checkPayments(MBPartner bp)
 	{
-		//	See also VMerge.postMerge
+		// See also VMerge.postMerge
 		int changed = 0;
 		MPayment[] payments = MPayment.getOfBPartner(getCtx(), bp.getC_BPartner_ID(), get_TrxName());
-		for (int i = 0; i < payments.length; i++) 
+		for (int i = 0; i < payments.length; i++)
 		{
 			MPayment payment = payments[i];
 			if (payment.testAllocation())
@@ -143,20 +165,21 @@ public class BPartnerValidate extends SvrProcess
 			}
 		}
 		if (changed != 0)
-			addLog(0, null, new BigDecimal(payments.length), 
-				Msg.getElement(getCtx(), "C_Payment_ID") + " - #" + changed);
-	}	//	checkPayments
+			addLog(0, null, new BigDecimal(payments.length),
+					Msg.getElement(getCtx(), "C_Payment_ID") + " - #" + changed);
+	}	// checkPayments
 
 	/**
-	 * 	Check Invoices
-	 *	@param bp business partner
+	 * Check Invoices
+	 * 
+	 * @param bp business partner
 	 */
-	private void checkInvoices (MBPartner bp)
+	private void checkInvoices(MBPartner bp)
 	{
-		//	See also VMerge.postMerge
+		// See also VMerge.postMerge
 		int changed = 0;
 		MInvoice[] invoices = MInvoice.getOfBPartner(getCtx(), bp.getC_BPartner_ID(), get_TrxName());
-		for (int i = 0; i < invoices.length; i++) 
+		for (int i = 0; i < invoices.length; i++)
 		{
 			MInvoice invoice = invoices[i];
 			if (invoice.testAllocation())
@@ -166,8 +189,8 @@ public class BPartnerValidate extends SvrProcess
 			}
 		}
 		if (changed != 0)
-			addLog(0, null, new BigDecimal(invoices.length), 
-				Msg.getElement(getCtx(), "C_Invoice_ID") + " - #" + changed);
-	}	//	checkInvoices
-	
-}	//	BPartnerValidate
+			addLog(0, null, new BigDecimal(invoices.length),
+					Msg.getElement(getCtx(), "C_Invoice_ID") + " - #" + changed);
+	}	// checkInvoices
+
+}	// BPartnerValidate

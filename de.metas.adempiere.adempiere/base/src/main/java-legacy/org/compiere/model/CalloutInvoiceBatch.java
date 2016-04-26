@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
+
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -79,16 +80,25 @@ public class CalloutInvoiceBatch extends CalloutEngine
 			return "";
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-			+ " p.SO_Description,p.IsDiscountPrinted,"
-			+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
-			+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
-			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID " 
-			+ "FROM C_BPartner p"
-			+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-			+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
-			+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
-			+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'";		//	#1
+				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
+				+ " p.SO_Description,p.IsDiscountPrinted,"
+				+ " p.SO_CreditLimit, p.SO_CreditLimit-stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
+				+ " AS CreditAvailable,"
+				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
+				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
+				+ "FROM C_BPartner p"
+				+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
+				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
+				+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
+				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
+				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'";		// #1
 
 		boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
 		PreparedStatement pstmt = null;

@@ -41,5 +41,6 @@ public interface IBPartnerTotalOpenBalanceUpdater extends ISingletonService
 {
 	ModelDynAttributeAccessor<I_C_AllocationHdr, Boolean> DYNATTR_DisableUpdateTotalOpenBalances = new ModelDynAttributeAccessor<>("org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater.DisableUpdateTotalOpenBalances", Boolean.class);
 	
-	void updateTotalOpenBalances(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName);
+	void updateTotalOpenBalances(final Properties ctx, final Set<Integer> bpartnerToBalances, final String trxName);
+
 }

@@ -15,33 +15,35 @@
  *****************************************************************************/
 package org.eevolution.process;
 
-
+import java.util.Collections;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
-
 /**
  * Re-calculate Invoice Tax (and unpost the document)
- *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * 				<li>FR [ 2520591 ] Support multiples calendar for Org 
- * 				@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * 
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Teo Sarca, www.arhipac.ro
  */
 public class InvoiceCalculateTax extends SvrProcess
 {
 	public static final String PARAM_C_Invoice_ID = "C_Invoice_ID";
-	
+
 	private int p_C_Invoice_ID = 0;
 
 	@Override
-	protected void prepare() 
+	protected void prepare()
 	{
 		for (ProcessInfoParameter para : getParameter())
 		{
@@ -55,7 +57,7 @@ public class InvoiceCalculateTax extends SvrProcess
 				p_C_Invoice_ID = para.getParameterAsInt();
 			}
 		}
-		
+
 		if (p_C_Invoice_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_C_Invoice_ID);
@@ -70,9 +72,12 @@ public class InvoiceCalculateTax extends SvrProcess
 		//
 		return "@ProcessOK@";
 	}
-	
+
 	public static void recalculateTax(MInvoice invoice)
 	{
+
+		final I_C_BPartner partner = invoice.getC_BPartner();
+
 		//
 		// Delete accounting /UnPost
 		MPeriod.testPeriodOpen(invoice.getCtx(), invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
@@ -82,11 +87,17 @@ public class InvoiceCalculateTax extends SvrProcess
 		invoice.calculateTaxTotal();
 		invoice.setPosted(false);
 		invoice.saveEx();
+
 		//
 		// Update balance
-		MBPartner bp = new MBPartner (invoice.getCtx(), invoice.getC_BPartner_ID(), invoice.get_TrxName());
-		bp.setTotalOpenBalance();
-		bp.setSOCreditStatus();
-		bp.saveEx();
+		//
+		// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
+
+		Services.get(IBPartnerTotalOpenBalanceUpdater.class)
+				.updateTotalOpenBalances(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
+
+		Services.get(IBPartnerSOCreditStatusUpdater.class)
+				.updateSOCreditStatus(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
+
 	}
 }

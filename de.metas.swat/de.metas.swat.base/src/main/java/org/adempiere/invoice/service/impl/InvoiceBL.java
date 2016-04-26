@@ -22,17 +22,24 @@ package org.adempiere.invoice.service.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
+import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
@@ -122,8 +129,8 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		return invoice;
 	}
 
-	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler =
-			new DefaultDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine>(org.compiere.model.I_C_InvoiceLine.class);
+	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine>(
+			org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice,
@@ -137,7 +144,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			final I_C_Invoice toInvoice,
 			final boolean counter,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef, // settings
+			final boolean setInvoiceRef,    // settings
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
 	{
 		if (toInvoice.isProcessed() || toInvoice.isPosted() || fromInvoice == null)
@@ -293,23 +300,32 @@ public final class InvoiceBL extends AbstractInvoiceBL
 	@Override
 	protected void updateBPartnerStatistics(final I_C_Invoice invoice)
 	{
+		// Services
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(invoice.getC_BPartner());
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		final MBPartner bpPO = LegacyAdapters.convertToPO(invoice.getC_BPartner());
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
 
-		final BigDecimal invAmt =
-				Services.get(ICurrencyBL.class).convertBase(
-						ctx,
-						invoicePO.getGrandTotal(true),	// CM adjusted
-						invoice.getC_Currency_ID(),
-						invoice.getDateAcct(),
-						invoice.getC_ConversionType_ID(),
-						invoice.getAD_Client_ID(),
-						invoice.getAD_Org_ID());
+		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
+				ctx,
+				invoicePO.getGrandTotal(true),   	// CM adjusted
+				invoice.getC_Currency_ID(),
+				invoice.getDateAcct(),
+				invoice.getC_ConversionType_ID(),
+				invoice.getAD_Client_ID(),
+				invoice.getAD_Org_ID());
+
+		final BigDecimal actualLifeTimeValue = bpartnerStatsBL.getActualLifeTimeValue(stats);
+		final BigDecimal soCreditUsed = bpartnerStatsBL.getSOCreditUsed(stats);
+		final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
 
 		// Total Balance
-		BigDecimal newBalance = bpPO.getTotalOpenBalance(false);
+		BigDecimal newBalance = totalOpenBalance;
 		if (newBalance == null)
 		{
 			newBalance = Env.ZERO;
@@ -322,7 +338,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			{
 				bpPO.setFirstSale(invoice.getDateInvoiced());
 			}
-			BigDecimal newLifeAmt = bpPO.getActualLifeTimeValue();
+			BigDecimal newLifeAmt = actualLifeTimeValue;
 			if (newLifeAmt == null)
 			{
 				newLifeAmt = invAmt;
@@ -331,7 +347,8 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			{
 				newLifeAmt = newLifeAmt.add(invAmt);
 			}
-			BigDecimal newCreditAmt = bpPO.getSO_CreditUsed();
+
+			BigDecimal newCreditAmt = soCreditUsed;
 			if (newCreditAmt == null)
 			{
 				newCreditAmt = invAmt;
@@ -342,20 +359,28 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			}
 			//
 			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
-					+ ") BP Life=" + bpPO.getActualLifeTimeValue() + "->" + newLifeAmt
-					+ ", Credit=" + bpPO.getSO_CreditUsed() + "->" + newCreditAmt
-					+ ", Balance=" + bpPO.getTotalOpenBalance(false) + " -> " + newBalance);
-			bpPO.setActualLifeTimeValue(newLifeAmt);
-			bpPO.setSO_CreditUsed(newCreditAmt);
-		}	// SO
+					+ ") BP Life=" + actualLifeTimeValue + "->" + newLifeAmt
+					+ ", Credit=" + soCreditUsed + "->" + newCreditAmt
+					+ ", Balance=" + totalOpenBalance + " -> " + newBalance);
+
+			bpartnerStatsBL.setActualLifeTimeValue(stats, newLifeAmt);
+			bpartnerStatsBL.setSOCreditUsed(stats, newCreditAmt);
+
+		}   	// SO
 		else
 		{
 			newBalance = newBalance.subtract(invAmt);
 			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
-					+ ") Balance=" + bpPO.getTotalOpenBalance(false) + " -> " + newBalance);
+					+ ") Balance=" + totalOpenBalance + " -> " + newBalance);
 		}
-		bpPO.setTotalOpenBalance(newBalance);
-		bpPO.setSOCreditStatus();
-		InterfaceWrapperHelper.save(bpPO);
+
+		// TODO ?
+
+		bpartnerStatsBL.setTotalOpenBalance(stats, newBalance);
+
+
+		Services.get(IBPartnerSOCreditStatusUpdater.class)
+				.updateSOCreditStatus(ctx, Collections.singleton(bpPO.getC_BPartner_ID()), trxName);
+
 	}
 }

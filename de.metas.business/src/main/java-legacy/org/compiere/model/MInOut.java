@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.inout.service.IMTransactionDAO;
@@ -68,10 +70,14 @@ import de.metas.product.IStorageBL;
  * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
  *
  *          Modifications: Added the RMA functionality (Ashley Ramdass)
- * @author Karsten Thiemann, Schaeffer AG <li>Bug [ 1759431 ] Problems with VCreateFrom
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @author Karsten Thiemann, Schaeffer AG
+ *         <li>Bug [ 1759431 ] Problems with VCreateFrom
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http ://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
- * @author Armen Rizal, Goodwill Consulting <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * @author Armen Rizal, Goodwill Consulting
+ *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @see http ://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
  */
 public class MInOut extends X_M_InOut implements DocAction
@@ -146,7 +152,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				}
 			}
 			// Create Line
-			if (retValue.get_ID() == 0) // not saved yet
+			if (retValue.get_ID() == 0)  // not saved yet
 				retValue.save(trxName);
 			// Create a line until qty is reached
 			for (int ll = 0; ll < storages.length; ll++)
@@ -171,7 +177,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				if (qty.signum() == 0)
 					break;
 			}
-		} // for all order lines
+		}  // for all order lines
 
 		// No Lines saved
 		if (retValue.get_ID() == 0)
@@ -217,7 +223,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		to.setC_DocType_ID(C_DocType_ID);
 		to.setIsSOTrx(isSOTrx);
 
-		if (isSOTrx) // currently, only material receipts can be dropship
+		if (isSOTrx)  // currently, only material receipts can be dropship
 		{
 			to.setIsDropShip(false);
 		}
@@ -794,7 +800,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			MInOutLine line = new MInOutLine(this);
 			MInOutLine fromLine = fromLines[i];
 			line.set_TrxName(get_TrxName());
-			if (counter) // header
+			if (counter)  // header
 				PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
 			else
 				PO.copyValues(fromLine, line, fromLine.getAD_Client_ID(), fromLine.getAD_Org_ID());
@@ -978,7 +984,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		// Set Contact
 		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length > 0) // get first User
+		if (contacts != null && contacts.length > 0)  // get first User
 			setAD_User_ID(contacts[0].getAD_User_ID());
 	} // setBPartner
 
@@ -1008,7 +1014,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				MInOutConfirm confirm = confirmations[i];
 				if (MInOutConfirm.CONFIRMTYPE_PickQAConfirm.equals(confirm.getConfirmType()))
 				{
-					if (!confirm.isProcessed()) // wait intil done
+					if (!confirm.isProcessed())  // wait intil done
 					{
 						log.debug("Unprocessed: " + confirm);
 						return;
@@ -1238,29 +1244,42 @@ public class MInOut extends X_M_InOut implements DocAction
 			}
 			else
 			{
-				MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-				if (MBPartner.SOCREDITSTATUS_CreditStop.equals(bp.getSOCreditStatus()))
+				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+				final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+
+				final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+
+				final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+
+				final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+			
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-							+ bp.getTotalOpenBalance()
-							+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
+							+ totalOpenBalance
+							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
 					return DocAction.STATUS_Invalid;
 				}
-				if (MBPartner.SOCREDITSTATUS_CreditHold.equals(bp.getSOCreditStatus()))
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
-							+ bp.getTotalOpenBalance()
-							+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
+							+ totalOpenBalance
+							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
 					return DocAction.STATUS_Invalid;
 				}
+
 				BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-				if (MBPartner.SOCREDITSTATUS_CreditHold.equals(bp.getSOCreditStatus(notInvoicedAmt)))
+				final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 				{
 					m_processMsg = "@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
-							+ bp.getTotalOpenBalance() + ", @NotInvoicedAmt@=" + notInvoicedAmt
-							+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
+							+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
+							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
 					return DocAction.STATUS_Invalid;
 				}
+
 			}
 		}
 
@@ -1295,7 +1314,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		setVolume(Volume);
 		setWeight(Weight);
 
-		if (!isReversal()) // don't change reversal
+		if (!isReversal())  // don't change reversal
 		{
 			createConfirmation();
 		}
@@ -1393,7 +1412,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			// Qty & Type
 			String MovementType = getMovementType();
 			BigDecimal Qty = sLine.getMovementQty();
-			if (MovementType.charAt(1) == '-') // C- Customer Shipment - V- Vendor Return
+			if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
 				Qty = Qty.negate();
 			BigDecimal QtySO = Env.ZERO;
 			BigDecimal QtyPO = Env.ZERO;
@@ -1457,7 +1476,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					{
 						MInOutLineMA ma = mas[j];
 						BigDecimal QtyMA = ma.getMovementQty();
-						if (MovementType.charAt(1) == '-') // C- Customer Shipment - V- Vendor Return
+						if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
 							QtyMA = QtyMA.negate();
 						BigDecimal reservedDiff = Env.ZERO;
 						BigDecimal orderedDiff = Env.ZERO;
@@ -1527,8 +1546,7 @@ public class MInOut extends X_M_InOut implements DocAction
 						storageBL.addAsync(
 								getCtx(),
 								Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
-								Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(), +
-								sLine.getM_Product_ID(),
+								Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(), +sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								Env.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
 					}
@@ -1540,20 +1558,20 @@ public class MInOut extends X_M_InOut implements DocAction
 					mtrx.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 					InterfaceWrapperHelper.save(mtrx);
 				}
-			} // stock movement
+			}  // stock movement
 
 			// Correct Order Line
-// task 09358: get rid of this; instead, update qtyReserved at one central place
-//			if (product != null && oLine != null) // other in VMatch.createMatchRecord
-//			{
-//				oLine.setQtyReserved(oLine.getQtyReserved().subtract(
-//						mkQtyReservedDiff(oLine, sLine))); // metas us1251: ommit negative qtyReserved value
-//			}
+			// task 09358: get rid of this; instead, update qtyReserved at one central place
+			// if (product != null && oLine != null) // other in VMatch.createMatchRecord
+			// {
+			// oLine.setQtyReserved(oLine.getQtyReserved().subtract(
+			// mkQtyReservedDiff(oLine, sLine))); // metas us1251: ommit negative qtyReserved value
+			// }
 			// Update Sales Order Line
 			if (oLine != null)
 			{
 				if (isSOTrx() // PO is done by MatchPO (further down this method)
-						|| sLine.getM_Product_ID() == 0) // PO Charges, empty lines
+						|| sLine.getM_Product_ID() == 0)  // PO Charges, empty lines
 				{
 					BigDecimal qtyDeliveredAbs = Qty;
 
@@ -1609,7 +1627,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					}
 					info.append(asset.getValue());
 				}
-			} // Asset
+			}  // Asset
 
 			//
 			// Matching
@@ -1636,7 +1654,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 						// Update PO with ASI
 						if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
-								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0) // just if full match [
+								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0)  // just if full match [
 						// 1876965 ]
 						{
 							oLine.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
@@ -1658,18 +1676,18 @@ public class MInOut extends X_M_InOut implements DocAction
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());
 							if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
-									&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0) // just if full match [
+									&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0)  // just if full match [
 							// 1876965 ]
 							{
 								oLine.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
 								oLine.saveEx(get_TrxName()); // metas: using saveEx to be notified of trouble
 							}
 						}
-					} // No Order
-				} // PO Matching
+					}  // No Order
+				}  // PO Matching
 
 				// Note: we now also create a MatchInv for SO-InOuts.
-				// However, we only do it "if (sLine.getM_Product_ID() != 0	&& !isReversal())" as before.
+				// However, we only do it "if (sLine.getM_Product_ID() != 0 && !isReversal())" as before.
 				// I don't really understand what the "!isReversal()" part about, so i'll leave it too
 				// 07742: Load line again in case it was changed by the MMatchPO
 				iLine = MInvoiceLine.getOfInOutLine(sLine);
@@ -1693,7 +1711,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					}
 				}
 			}
-		} // for all lines
+		}  // for all lines
 
 		// Counter Documents
 		MInOut counter = createCounterDoc();
@@ -1762,7 +1780,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	 */
 	private BigDecimal mkQtyReservedDiff(final I_C_OrderLine ol, final I_M_InOutLine iol)
 	{
-		Check.assumeNotNull(iol,"Param 'iol' not null");
+		Check.assumeNotNull(iol, "Param 'iol' not null");
 		if (ol == null)
 		{
 			return iol.getMovementQty();
@@ -2116,8 +2134,8 @@ public class MInOut extends X_M_InOut implements DocAction
 					ma.saveEx();
 					log.debug("##: " + ma);
 				}
-			} // outgoing Trx
-		} // attributeSetInstance
+			}  // outgoing Trx
+		}  // attributeSetInstance
 
 		if (needSave)
 		{
@@ -2347,7 +2365,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				getDateAcct(),
 				getC_DocType_ID(),
 				isSOTrx(),
-				false, // counter
+				false,  // counter
 				get_TrxName(),
 				true // setOrder
 		);
@@ -2439,7 +2457,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 	private void deleteOrUnLinkMatchPOs()
 	{
-		if(isSOTrx())
+		if (isSOTrx())
 		{
 			return; // nothing to do
 		}

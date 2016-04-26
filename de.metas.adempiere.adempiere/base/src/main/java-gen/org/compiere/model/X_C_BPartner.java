@@ -88,28 +88,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd;
 	}
 
-	/** Set Aktueller Gesamtertrag.
-		@param ActualLifeTimeValue 
-		Actual Life Time Revenue
-	  */
-	@Override
-	public void setActualLifeTimeValue (java.math.BigDecimal ActualLifeTimeValue)
-	{
-		set_Value (COLUMNNAME_ActualLifeTimeValue, ActualLifeTimeValue);
-	}
-
-	/** Get Aktueller Gesamtertrag.
-		@return Actual Life Time Revenue
-	  */
-	@Override
-	public java.math.BigDecimal getActualLifeTimeValue () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualLifeTimeValue);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** 
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
@@ -2006,28 +1984,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd;
 	}
 
-	/** Set Kredit gewährt.
-		@param SO_CreditUsed 
-		Current open balance
-	  */
-	@Override
-	public void setSO_CreditUsed (java.math.BigDecimal SO_CreditUsed)
-	{
-		set_ValueNoCheck (COLUMNNAME_SO_CreditUsed, SO_CreditUsed);
-	}
-
-	/** Get Kredit gewährt.
-		@return Current open balance
-	  */
-	@Override
-	public java.math.BigDecimal getSO_CreditUsed () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditUsed);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Beschreibung Auftrag.
 		@param SO_Description 
 		Description to be used on orders
@@ -2100,43 +2056,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_SO_TargetDocTypeReason);
 	}
 
-	/** 
-	 * SOCreditStatus AD_Reference_ID=289
-	 * Reference name: C_BPartner SOCreditStatus
-	 */
-	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
-	/** CreditStop = S */
-	public static final String SOCREDITSTATUS_CreditStop = "S";
-	/** CreditHold = H */
-	public static final String SOCREDITSTATUS_CreditHold = "H";
-	/** CreditWatch = W */
-	public static final String SOCREDITSTATUS_CreditWatch = "W";
-	/** NoCreditCheck = X */
-	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
-	/** CreditOK = O */
-	public static final String SOCREDITSTATUS_CreditOK = "O";
-	/** NurEineRechnung = I */
-	public static final String SOCREDITSTATUS_NurEineRechnung = "I";
-	/** Set Kreditstatus.
-		@param SOCreditStatus 
-		Business Partner Credit Status
-	  */
-	@Override
-	public void setSOCreditStatus (java.lang.String SOCreditStatus)
-	{
-
-		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
-	}
-
-	/** Get Kreditstatus.
-		@return Business Partner Credit Status
-	  */
-	@Override
-	public java.lang.String getSOCreditStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
-	}
-
 	/** Set Steuer-ID.
 		@param TaxID 
 		Tax Identification
@@ -2154,28 +2073,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getTaxID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TaxID);
-	}
-
-	/** Set Offener Saldo.
-		@param TotalOpenBalance 
-		Total Open Balance Amount in primary Accounting Currency
-	  */
-	@Override
-	public void setTotalOpenBalance (java.math.BigDecimal TotalOpenBalance)
-	{
-		set_Value (COLUMNNAME_TotalOpenBalance, TotalOpenBalance);
-	}
-
-	/** Get Offener Saldo.
-		@return Total Open Balance Amount in primary Accounting Currency
-	  */
-	@Override
-	public java.math.BigDecimal getTotalOpenBalance () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOpenBalance);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
 	}
 
 	/** Set URL.

@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -1291,13 +1293,18 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		//	Credit Status
 		if (isSOTrx() && !isReversal())
 		{
-			MBPartner bp = new MBPartner (getCtx(), getC_BPartner_ID(), null);
-			if (MBPartner.SOCREDITSTATUS_CreditStop.equals(bp.getSOCreditStatus()))
+			//task FRESH-152
+			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+			
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());			
+			final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		
+			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true)))
 			{
-				m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-					+ bp.getTotalOpenBalance()
-					+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
-				return DocAction.STATUS_Invalid;
+				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
+						+ bpartnerStatsBL.getTotalOpenBalance(stats)
+						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
 			}
 		}
 
