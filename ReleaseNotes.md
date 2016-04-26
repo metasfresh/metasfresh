@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.14.13a (Upcoming Release)  
+# metasfresh 4.x.x (upcoming)
+
+## Features
+	 
+## Fixes
+
+# metasfresh 4.14.13a
 
 ## Features
   - FRESH-206 metasfresh server informs the procurement webui server about what supplies were synchronized
