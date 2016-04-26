@@ -8,7 +8,10 @@ begin
 	--
 	raise notice 'Snapshot current events';
 	drop table if exists TMP_PMM_Balance_Events;
-	create temporary table TMP_PMM_Balance_Events as select * from de_metas_procurement.PMM_Balance_Events_v;
+	create temporary table TMP_PMM_Balance_Events as 
+	select * from de_metas_procurement.PMM_Balance_Events_v 
+	where monthdate>='2016-04-01'; -- no point polluting the events table with older records
+	
 	create index on TMP_PMM_Balance_Events(ad_client_id, c_bpartner_id, m_product_id, M_AttributeSetInstance_ID, m_hu_pi_item_product_id, C_Flatrate_DataEntry_ID, MonthDate);
 
 	--
