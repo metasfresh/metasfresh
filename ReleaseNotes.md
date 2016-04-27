@@ -12,13 +12,16 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.15.x (upcoming)
+# metasfresh 4.15.14 (upcoming)
 
 ## Features
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+  - FRESH-252 New Field datePromissed in Invoice Candidates Window
 
 ## Fixes
-
+  - FRESH-234 report sales inout qtys for products and TUs are not alligned
+  
+  
 # metasfresh 4.14.13a
 
 ## Features
