@@ -22,7 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -69,7 +68,7 @@ public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFact
 		return createAttributeStorageCached(ctx, huId, trxName, model);
 	}
 
-	//@Cached // commented out because it's not applied anyways
+	// @Cached // commented out because it's not applied anyways
 	/* package */HUAttributeStorage createAttributeStorageCached(
 			@CacheCtx final Properties ctx,
 			final int huId,
@@ -81,11 +80,13 @@ public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFact
 	}
 
 	@Override
+	// FIXME : this toString has to be modified, maybe using the ModeObjects from the guava.
 	public String toString()
 	{
 		return "HUAttributeStorageFactory ["
 				// + "getParentAttributeStorageFactory()=" + getParentAttributeStorageFactory()
-				+ "getExistingAttributeStorages()=" + getExistingAttributeStorages()
+				+ "getExistingAttributeStorages()="
+				// getExistingAttributeStorages()
 				+ "]";
 	}
 }

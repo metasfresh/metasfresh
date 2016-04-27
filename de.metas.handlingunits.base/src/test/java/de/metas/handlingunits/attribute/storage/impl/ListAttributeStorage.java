@@ -22,7 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,8 @@ import java.util.UUID;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.junit.Ignore;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -77,9 +78,11 @@ public class ListAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	public String toString()
+	protected void toString(final ToStringHelper stringHelper)
 	{
-		return "ListAttributeStorage [id=" + id + ", initalAttributeValues=" + initalAttributeValues + "]";
+		stringHelper
+				.add("id", id)
+				.add("initalAttributeValues", initalAttributeValues);
 	}
 
 	@Override

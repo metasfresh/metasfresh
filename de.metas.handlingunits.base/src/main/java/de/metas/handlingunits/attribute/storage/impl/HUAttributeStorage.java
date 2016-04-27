@@ -32,6 +32,8 @@ import java.util.Map;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 
+import com.google.common.base.MoreObjects.ToStringHelper;
+
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -71,13 +73,12 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 	}
 
 	@Override
-	public String toString()
+	protected void toString(final ToStringHelper stringHelper)
 	{
-		return getClass().getSimpleName() + "["
-				+ "hu=" + getM_HU()
-				// + ", huDisplayName=" + Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU()) // used only for debugging
-				+ ", attributes #" + getAttributeValues().size()
-				+ "]";
+		stringHelper
+				.add("hu", _hu)
+				// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
+				;
 	}
 
 	@Override
