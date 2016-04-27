@@ -68,6 +68,11 @@ implements Field<T>
 
 	protected abstract AbstractField<T> createValueField();
 	
+	protected AbstractField<T> getValueField()
+	{
+		return valueField;
+	}
+	
 	@Override
 	public void setValue(final Object value)
 	{
