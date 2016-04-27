@@ -52,7 +52,7 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 				<textFieldExpression><![CDATA[$R{HUReturns}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f2805df3-fac3-4b9d-86b8-582327e2627e" key="textField-19" x="335" y="0" width="54" height="12" forecolor="#000000"/>
+				<reportElement uuid="f2805df3-fac3-4b9d-86b8-582327e2627e" key="textField-19" x="349" y="0" width="54" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
