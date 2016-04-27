@@ -343,6 +343,6 @@ public class SqlModelDataSource implements ModelDataSource
 	public void saveRecord(final int index, final Map<PropertyName, Object> values)
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("save is not implemented");
 	}
 }
