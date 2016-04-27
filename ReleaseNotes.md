@@ -20,7 +20,8 @@ The actual release notes
 
 ## Fixes
   - FRESH-234 report sales inout qtys for products and TUs are not alligned
-  
+  - FRESH-249 hubalance general report missing TU when no carry
+
   
 # metasfresh 4.14.13a
 
