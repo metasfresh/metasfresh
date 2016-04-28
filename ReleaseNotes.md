@@ -21,6 +21,7 @@ The actual release notes
 # metasfresh 4.15.14
 
 ## Features
+  - FRESH-245 filter columns in procurement for year as well
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
   - FRESH-252 New Field datePromissed in Invoice Candidates Window
 
