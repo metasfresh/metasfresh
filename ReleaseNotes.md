@@ -35,7 +35,12 @@ The actual release notes
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
-
+ - FRESH-191 Procurement Excel: Although received no qties does not show
+ - FRESH-220 Autocomplete does not work if the underlying table has translated columns
+ - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
+ - FRESH-213 Process panel's Back button not working
+ - FRESH-222 QtyDelivered not updated for PMM_Balance
+ 
 # metasfresh 4.14.13
 
 ## Features
