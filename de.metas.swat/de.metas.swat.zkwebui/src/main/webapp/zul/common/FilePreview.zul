@@ -1,4 +1,0 @@
-<?page title="File Preview" contentType="text/html;charset=UTF-8"?>
-<zk>
-<div use="de.metas.web.component.FilePreviewWindow" />
-</zk>

@@ -19,7 +19,6 @@
 		<module>base</module>
 		<module>serverRoot</module>
 		<module>client</module>
-		<module>zkwebui</module>
 		<module>migration</module>
 	</modules>
 

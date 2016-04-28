@@ -16,7 +16,6 @@
 
 	<modules>
 		<module>de.metas.fresh.base</module>
-		<module>de.metas.fresh.zkwebui</module>
 		<module>de.metas.fresh.swingui</module>
 	</modules>
 
