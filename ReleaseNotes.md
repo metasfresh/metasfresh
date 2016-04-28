@@ -12,10 +12,15 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.15.14 (upcoming)
+# metasfresh 4.x.x (upcoming)
 
 ## Features
-  - FRESH-245 filter columns in procurement for year as well
+
+## Fixes
+
+# metasfresh 4.15.14
+
+## Features
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
   - FRESH-252 New Field datePromissed in Invoice Candidates Window
 
@@ -27,6 +32,7 @@ The actual release notes
 # metasfresh 4.14.13a
 
 ## Features
+
   - FRESH-206 metasfresh server informs the procurement webui server about what supplies were synchronized
      * when data is received by metasfresh, it now asynchronously sends back a confirmation to the procurement UI. This way it is possible to monitor the procurement webUI for supply reports that were not yet received by the metasfresh system , e.g. due to internet problems.
   - FRESH-187 Filter date-from and date-to in procurement excel
