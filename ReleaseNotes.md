@@ -7,8 +7,8 @@ In this document, we sort of lean on http://www.semanticreleasenotes.org/,
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at http://metasfresh.com/
- * You can also follow us on twitter: @metasfresh
+ * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
+ * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 The actual release notes
 
@@ -35,7 +35,12 @@ The actual release notes
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
-
+ - FRESH-191 Procurement Excel: Although received no qties does not show
+ - FRESH-220 Autocomplete does not work if the underlying table has translated columns
+ - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
+ - FRESH-213 Process panel's Back button not working
+ - FRESH-222 QtyDelivered not updated for PMM_Balance
+ 
 # metasfresh 4.14.13
 
 ## Features
@@ -285,7 +290,7 @@ The actual release notes
       (just its value would have worked) as soon as "English" is available
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * allow to distinguish between Edi-ORDERS and Excel files and allow both kinds to be processed in an EDI fashion
- - FRESH-20: 09661 Statistik für monatliche Lagermeldung - grouping per Product and ASI (106566269211)
+ - FRESH-20: 09661 Statistik fÃ¼r monatliche Lagermeldung - grouping per Product and ASI (106566269211)
     * fix for some quantities being counted multiple times
  - 09852 ESR-Import allow importing with invoice-partners that have AD Org ID 0 (109927070478):
 	* when importing ESR-Data, we now accept C_BPartners with AD_Org_ID=0, because besides being a different number, it's not an inconsistency to have a partner with no org
@@ -307,8 +312,8 @@ The actual release notes
     * another alternative shipment document that among other things also lists product which are generally delivered to the customer, even if they are not part of  this particular shipment.
  - 09822 Inter-Org Product Mapping Process (104151535488)
     * allows a user to add and remove product mappings between different organisations
- - 09661 Report "Statistik für monatliche Lagermeldung" - grouping per product and selected attributes (106566269211)
- - 09837 Report Gebinde Übersicht change (103471986337)
+ - 09661 Report "Statistik fÃ¼r monatliche Lagermeldung" - grouping per product and selected attributes (106566269211)
+ - 09837 Report Gebinde Ãœbersicht change (103471986337)
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
     * added french translations
 
