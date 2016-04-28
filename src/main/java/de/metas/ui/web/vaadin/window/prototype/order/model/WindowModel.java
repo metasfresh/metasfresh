@@ -40,11 +40,11 @@ import de.metas.ui.web.vaadin.window.prototype.order.model.event.PropertyChanged
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,11 +65,16 @@ public class WindowModel
 
 	private int _recordIndex;
 
+	/**
+	 * Create a new instance using the given descriptor.
+	 *
+	 * @param rootPropertyDescriptor
+	 */
 	public WindowModel(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		super();
 		this.rootPropertyDescriptor = rootPropertyDescriptor;
-//		this.dataSource = new DummyModelDataSource(rootPropertyDescriptor);
+		// this.dataSource = new DummyModelDataSource(rootPropertyDescriptor);
 		this.dataSource = new SqlModelDataSource(rootPropertyDescriptor);
 
 		final PropertyValueCollection.Builder propertiesCollector = PropertyValueCollection.builder();
@@ -198,7 +203,7 @@ public class WindowModel
 				logger.debug("Skip setting value to {} because it's constant", propertyValue);
 				continue;
 			}
-			
+
 			final PropertyName propertyName = propertyValue.getName();
 			if (values.containsKey(propertyName))
 			{
@@ -386,11 +391,11 @@ public class WindowModel
 		}
 		else if (onChangesFound == OnChangesFound.Ask)
 		{
-//			if (hasChangesOnCurrentRecord())
-//			{
-//				postEvent(ConfirmDiscardChangesModelEvent.of(this));
-//				return;
-//			}
+			// if (hasChangesOnCurrentRecord())
+			// {
+			// postEvent(ConfirmDiscardChangesModelEvent.of(this));
+			// return;
+			// }
 		}
 		else
 		{
@@ -415,11 +420,11 @@ public class WindowModel
 		}
 		else if (onChangesFound == OnChangesFound.Ask)
 		{
-//			if (hasChangesOnCurrentRecord())
-//			{
-//				postEvent(ConfirmDiscardChangesModelEvent.of(this));
-//				return;
-//			}
+			// if (hasChangesOnCurrentRecord())
+			// {
+			// postEvent(ConfirmDiscardChangesModelEvent.of(this));
+			// return;
+			// }
 		}
 		else
 		{
