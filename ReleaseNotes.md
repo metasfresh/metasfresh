@@ -7,25 +7,38 @@ In this document, we sort of lean on http://www.semanticreleasenotes.org/,
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at http://metasfresh.com/
- * You can also follow us on twitter: @metasfresh
+ * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
+ * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 The actual release notes
 
-# metasfresh 4.15.14 (upcoming)
+# metasfresh 4.x.x (upcoming)
 
 ## Features
+
+## Fixes
+
+# metasfresh 4.15.14
+
+## Features
+  - FRESH-245 filter columns in procurement for year as well
+     * Possibility to hide also the columns filtered by year in Excel Reporting. Here especially done for Procurement contract report.
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+     * Moving the Business Partner Status out of C_BPartner Data structure into C_BPartner_Stats. This was we avoid performance and blocking issues when updateing the Business Partner statistics.
   - FRESH-252 New Field datePromissed in Invoice Candidates Window
+     * User Requirement for selecting Service Data to be invoiced via Invoice Candidates Window. Now the User has the possibility to also filter rows which are not triggered by an Inout Document.
 
 ## Fixes
   - FRESH-234 report sales inout qtys for products and TUs are not alligned
+     * Minor Layout change for customer individual Inout Documents (Alignment of  identical Column headers on same Page).
   - FRESH-249 hubalance general report missing TU when no carry
+     * Small fix in Handling Unit Balance Report.
 
   
 # metasfresh 4.14.13a
 
 ## Features
+
   - FRESH-206 metasfresh server informs the procurement webui server about what supplies were synchronized
      * when data is received by metasfresh, it now asynchronously sends back a confirmation to the procurement UI. This way it is possible to monitor the procurement webUI for supply reports that were not yet received by the metasfresh system , e.g. due to internet problems.
   - FRESH-187 Filter date-from and date-to in procurement excel
@@ -35,11 +48,17 @@ The actual release notes
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
+    * Fix of sql alias Issue. Recognized in User to Role Assignment.
  - FRESH-191 Procurement Excel: Although received no qties does not show
+    * Fixed Issue. The quantities were not shown correctly in Procurement contract Excel Report.
  - FRESH-220 Autocomplete does not work if the underlying table has translated columns
+    * Fixing the Issue with autocomplete not working whan the underlying table has translated columns.
  - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
+    * Using the SetupWizard, the Org name was not updated correctly.
  - FRESH-213 Process panel's Back button not working
+    * Fixing an Issue with the back Button in Process Panel.
  - FRESH-222 QtyDelivered not updated for PMM_Balance
+    * The PMM_Balance was not updateing QtyDelivered for contracted PMM_Products correctly. Fixed this Issue.
  
 # metasfresh 4.14.13
 
@@ -290,7 +309,7 @@ The actual release notes
       (just its value would have worked) as soon as "English" is available
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * allow to distinguish between Edi-ORDERS and Excel files and allow both kinds to be processed in an EDI fashion
- - FRESH-20: 09661 Statistik für monatliche Lagermeldung - grouping per Product and ASI (106566269211)
+ - FRESH-20: 09661 Statistik fÃ¼r monatliche Lagermeldung - grouping per Product and ASI (106566269211)
     * fix for some quantities being counted multiple times
  - 09852 ESR-Import allow importing with invoice-partners that have AD Org ID 0 (109927070478):
 	* when importing ESR-Data, we now accept C_BPartners with AD_Org_ID=0, because besides being a different number, it's not an inconsistency to have a partner with no org
@@ -312,8 +331,8 @@ The actual release notes
     * another alternative shipment document that among other things also lists product which are generally delivered to the customer, even if they are not part of  this particular shipment.
  - 09822 Inter-Org Product Mapping Process (104151535488)
     * allows a user to add and remove product mappings between different organisations
- - 09661 Report "Statistik für monatliche Lagermeldung" - grouping per product and selected attributes (106566269211)
- - 09837 Report Gebinde Übersicht change (103471986337)
+ - 09661 Report "Statistik fÃ¼r monatliche Lagermeldung" - grouping per product and selected attributes (106566269211)
+ - 09837 Report Gebinde Ãœbersicht change (103471986337)
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
     * added french translations
 
