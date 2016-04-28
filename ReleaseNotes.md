@@ -12,13 +12,17 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.15.x (upcoming)
+# metasfresh 4.15.14 (upcoming)
 
 ## Features
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+  - FRESH-252 New Field datePromissed in Invoice Candidates Window
 
 ## Fixes
+  - FRESH-234 report sales inout qtys for products and TUs are not alligned
+  - FRESH-249 hubalance general report missing TU when no carry
 
+  
 # metasfresh 4.14.13a
 
 ## Features
@@ -31,7 +35,12 @@ The actual release notes
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
-
+ - FRESH-191 Procurement Excel: Although received no qties does not show
+ - FRESH-220 Autocomplete does not work if the underlying table has translated columns
+ - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
+ - FRESH-213 Process panel's Back button not working
+ - FRESH-222 QtyDelivered not updated for PMM_Balance
+ 
 # metasfresh 4.14.13
 
 ## Features
