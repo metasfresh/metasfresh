@@ -236,10 +236,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
 		final BigDecimal qtyToAddConverted = uomConversionBL.convertQty(product,
-				qtyToAdd, // Qty
-				qtyToAddUOM, // From UOM
+				qtyToAdd,  // Qty
+				qtyToAddUOM,  // From UOM
 				uom // To UOM
-				);
+		);
 
 		qtyEntered = qtyEntered.add(qtyToAddConverted);
 
@@ -370,7 +370,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 		shipmentLine.setQtyTU_Override(BigDecimal.valueOf(manualPackingMaterial_QtyTU));
 		shipmentLine.setM_HU_PI_Item_Product_Override(manualPackingMaterial_huPIItemProduct);
 		shipmentLine.setM_HU_PI_Item_Product_Calculated(manualPackingMaterial_huPIItemProduct); // FIXME: figure out how to actually fetch it from collected HUs, but for now it's fine because it
-																								// covers most of the cases
+ // covers most of the cases
 
 		//
 		// Save Shipment Line
@@ -405,7 +405,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 			// transfer packing materials only if this TU was not already assigned to other document line (partial TUs case)
 			final boolean isTransferPackingMaterials = alreadyAssignedTUIds.add(huToAssign.getM_TU_HU_ID());
 
-			huShipmentAssignmentBL.assignHU(shipmentLine, huToAssign, isTransferPackingMaterials);
+			if (isTransferPackingMaterials)
+			{
+				huShipmentAssignmentBL.assignHU(shipmentLine, huToAssign, isTransferPackingMaterials);
+			}
 			haveHUAssigments = true;
 		}
 
