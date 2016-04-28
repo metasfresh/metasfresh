@@ -41,21 +41,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_Individual(
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="394" y="2" width="40" height="12" forecolor="#000000"/>
+				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="405" y="2" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="348" y="2" width="41" height="12" forecolor="#000000"/>
+				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="362" y="2" width="41" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="442" y="2" width="81" height="12" forecolor="#000000"/>
+				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="444" y="2" width="80" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -79,7 +79,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_Individual(
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -92,7 +92,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_Individual(
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="348" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="362" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -105,7 +105,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_Individual(
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="29b3439c-dc9f-4453-a34b-742c951b1566" x="442" y="11" width="81" height="1"/>
+				<reportElement uuid="29b3439c-dc9f-4453-a34b-742c951b1566" x="444" y="11" width="80" height="1"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>
