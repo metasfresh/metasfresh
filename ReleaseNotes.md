@@ -22,12 +22,17 @@ The actual release notes
 
 ## Features
   - FRESH-245 filter columns in procurement for year as well
+     * Possibility to hide also the columns filtered by year in Excel Reporting. Here especially done for Procurement contract report.
   - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+     * Moving the Business Partner Status out of C_BPartner Data structure into C_BPartner_Stats. This was we avoid performance and blocking issues when updateing the Business Partner statistics.
   - FRESH-252 New Field datePromissed in Invoice Candidates Window
+     * User Requirement for selecting Service Data to be invoiced via Invoice Candidates Window. Now the User has the possibility to also filter rows which are not triggered by an Inout Document.
 
 ## Fixes
   - FRESH-234 report sales inout qtys for products and TUs are not alligned
+     * Minor Layout change for customer individual Inout Documents (Alignment of  identical Column headers on same Page).
   - FRESH-249 hubalance general report missing TU when no carry
+     * Small fix in Handling Unit Balance Report.
 
   
 # metasfresh 4.14.13a
@@ -43,11 +48,17 @@ The actual release notes
 	 
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
+    * Fix of sql alias Issue. Recognized in User to Role Assignment.
  - FRESH-191 Procurement Excel: Although received no qties does not show
+    * Fixed Issue. The quantities were not shown correctly in Procurement contract Excel Report.
  - FRESH-220 Autocomplete does not work if the underlying table has translated columns
+    * Fixing the Issue with autocomplete not working whan the underlying table has translated columns.
  - FRESH-210 Org Name not updated after setting different name in Set Up Wizard
+    * Using the SetupWizard, the Org name was not updated correctly.
  - FRESH-213 Process panel's Back button not working
+    * Fixing an Issue with the back Button in Process Panel.
  - FRESH-222 QtyDelivered not updated for PMM_Balance
+    * The PMM_Balance was not updateing QtyDelivered for contracted PMM_Products correctly. Fixed this Issue.
  
 # metasfresh 4.14.13
 
