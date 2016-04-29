@@ -113,36 +113,6 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
-			<classifier>jasper</classifier>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
 			<version>${project.version}</version>
@@ -272,6 +242,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
 			<version>${project.version}</version>
@@ -309,6 +287,28 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report.jasper.server</groupId>
+			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
