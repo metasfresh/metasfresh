@@ -69,13 +69,13 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 @Immutable
@@ -709,7 +709,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final int posOrder = SQL.lastIndexOf(" ORDER BY ");
 		if (posOrder != -1)
 		{
-			orderBy = SQL.substring(posOrder);
+			orderBy = "\n" + SQL.substring(posOrder);
 			retSQL.append(SQL.substring(0, posOrder));
 		}
 		else
@@ -758,6 +758,7 @@ class UserRolePermissions implements IUserRolePermissions
 		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
 		{ // globalqss, bug 1662433
 			// Client Access
+			retSQL.append("\n /* security-client */ ");
 			if (fullyQualified)
 			{
 				retSQL.append(tableName).append(".");
@@ -767,6 +768,7 @@ class UserRolePermissions implements IUserRolePermissions
 			// Org Access
 			if (!isAccessAllOrgs())
 			{
+				retSQL.append("\n /* security-org */ ");
 				retSQL.append(" AND ");
 				if (fullyQualified)
 				{
@@ -777,7 +779,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		else
 		{
-			retSQL.append("1=1");
+			retSQL.append("\n /* no security */ 1=1");
 		}
 
 		// ** Data Access **
@@ -799,7 +801,7 @@ class UserRolePermissions implements IUserRolePermissions
 			// Data Table Access
 			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, !rw))
 			{
-				retSQL.append(" AND 1=3");	// prevent access at all
+				retSQL.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
 				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, retSQL);
 				break;	// no need to check further
 			}
@@ -829,7 +831,7 @@ class UserRolePermissions implements IUserRolePermissions
 			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, rw);
 			if (recordWhere.length() > 0)
 			{
-				retSQL.append(" AND ").append(recordWhere);
+				retSQL.append("\n /* security-record */ AND ").append(recordWhere);
 				logger.trace("Record access: {}", recordWhere);
 			}
 		}	// for all table info
