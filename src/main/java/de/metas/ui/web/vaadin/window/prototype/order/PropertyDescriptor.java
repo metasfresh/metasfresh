@@ -14,6 +14,7 @@ import com.ibm.icu.math.BigDecimal;
 
 import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.SqlModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 
 /*
@@ -247,9 +248,31 @@ public class PropertyDescriptor implements Serializable
 			return this;
 		}
 
+		/**
+		 * Useful when creating a child descriptor, and we need a path-like property name. Note that there might in furte be a better solution, where this is handled behind the scenes. Also see {@link PropertyName#of(PropertyName, String)}.
+		 *
+		 * @return
+		 */
+		public PropertyName getPropertyName()
+		{
+			return propertyName;
+		}
+
+		/**
+		 * If omitted, then the descriptor will have {@link PropertyDescriptorType#Value}.<br>
+		 * If set to {@link PropertyDescriptorType#ComposedValue} <b>and</b> the builder's <code>valueType</code> (see {@link #setValueType(Class)}) is not yet set, then this method sets <code>valueType</code> to {@link ComposedValue}.
+		 *
+		 *
+		 * @param type
+		 * @return
+		 */
 		public Builder setType(PropertyDescriptorType type)
 		{
 			this.type = type;
+			if (type == PropertyDescriptorType.ComposedValue && valueType == null)
+			{
+				setValueType(ComposedValue.class);
+			}
 			return this;
 		}
 

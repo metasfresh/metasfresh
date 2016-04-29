@@ -18,11 +18,11 @@ import com.google.common.base.Preconditions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,6 +33,18 @@ public final class PropertyName implements Serializable
 	public static final PropertyName of(final String name)
 	{
 		return new PropertyName(name);
+	}
+
+	/**
+	 * Also see {@link PropertyDescriptor.Builder#getPropertyName()}.
+	 *
+	 * @param parent
+	 * @param name
+	 * @return
+	 */
+	public static final PropertyName of(final PropertyName parent, final String name)
+	{
+		return new PropertyName(parent.name + "/" + name);
 	}
 
 	private final String name;
@@ -75,7 +87,9 @@ public final class PropertyName implements Serializable
 		return Objects.equals(name, other.name);
 	}
 
-	/** @return human friendly, localized name */
+	/**
+	 * @return human friendly, localized name
+	 */
 	public String getCaption()
 	{
 		// TODO: implement it. atm this method is really a placeholder. In future it might be that we will really move it from here.
