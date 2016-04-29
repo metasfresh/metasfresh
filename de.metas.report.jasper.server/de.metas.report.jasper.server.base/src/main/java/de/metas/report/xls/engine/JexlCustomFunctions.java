@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.jexl2.JexlEngine;
+import org.compiere.util.TimeUtil;
 import org.jxls.expression.ExpressionEvaluator;
 import org.jxls.expression.JexlExpressionEvaluator;
 import org.slf4j.Logger;
@@ -114,6 +115,62 @@ public class JexlCustomFunctions
 		@SuppressWarnings("deprecation")
 		final int toMonth = dateEnd == null ? Calendar.DECEMBER : dateEnd.getMonth();
 		if (month > toMonth)
+		{
+			logger.trace("Not between because month is after end date");
+			return false;
+		}
+
+		logger.trace("Returning true because month is between given dates");
+		return true;
+	}
+	/**
+	 * @param month month (1-Jan, 2-Feb ... 12-Dec)
+	 * @param year year (2000, ... 2016)
+	 * @param dateStart date or null; null will be ignored
+	 * @param dateEnd date or null; null will be ignored
+	 * @return true if given <code>month</code> and <code>year</code> is between given dates
+	 */
+	public boolean monthBetween(final int monthOneBased, final int year, final Date dateStart, final Date dateEnd)
+	{
+		if (monthOneBased < 1 || monthOneBased > 12)
+		{
+			throw new IllegalArgumentException(
+					"Invalid month value '" + monthOneBased + "'. It shall be between 1 and 12.");
+		}
+
+		final int yearFrom = TimeUtil.getYearFromTimestamp(dateStart);
+		final int yearTo = TimeUtil.getYearFromTimestamp(dateEnd);
+
+		// if year is after endDate, false
+		if (year > yearTo)
+		{
+			logger.trace("Not between because year is after endDate");
+			return false;
+		}
+
+		// if year is before startDate, false
+		if (year < yearFrom)
+		{
+			logger.trace("Not between because year is before startDate");
+			return false;
+		}
+
+		// convert the "one based" month (i.e. Jan=1) to "zero based" (i.e. Jan=0)
+		final int month = monthOneBased - 1;
+
+		logger.trace("Evaluating monthBetween: month(zero based)={}, date={} -> {}", month, dateStart, dateEnd);
+
+		@SuppressWarnings("deprecation")
+		final int fromMonth = dateStart == null ? Calendar.JANUARY : dateStart.getMonth();
+		if ((month < fromMonth) && (year == yearFrom))
+		{
+			logger.trace("Not between because month is before start date");
+			return false;
+		}
+
+		@SuppressWarnings("deprecation")
+		final int toMonth = dateEnd == null ? Calendar.DECEMBER : dateEnd.getMonth();
+		if ((month > toMonth) && (year == yearTo))
 		{
 			logger.trace("Not between because month is after end date");
 			return false;
