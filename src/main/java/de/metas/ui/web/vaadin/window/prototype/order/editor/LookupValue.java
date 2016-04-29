@@ -1,5 +1,7 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.ui.web.vaadin
@@ -56,6 +58,32 @@ public class LookupValue
 	public String toString()
 	{
 		return displayName;
+	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (!(obj instanceof LookupValue))
+		{
+			return false;
+		}
+		
+		final LookupValue other = (LookupValue)obj;
+		return Objects.equals(this.id, other.id);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hashCode(this.id);
 	}
 
 	public Object getId()
