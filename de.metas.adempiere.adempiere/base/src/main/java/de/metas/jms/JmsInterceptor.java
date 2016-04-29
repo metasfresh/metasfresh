@@ -8,6 +8,7 @@ import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -61,7 +62,8 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 	/** Start embedded server if running in server mode and we were asked for embedded server */
 	private void startEmbeddedBrokerIfRequired()
 	{
-		if ((Ini.getRunMode() == RunMode.BACKEND && JmsConstants.isUseEmbeddedBroker())
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND || Ini.getRunMode() == RunMode.WEBUI;
+		if ((serverMode && JmsConstants.isUseEmbeddedBroker())
 				|| CConnection.isServerEmbedded())
 		{
 			logger.warn(
