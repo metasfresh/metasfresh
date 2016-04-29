@@ -462,6 +462,7 @@ public class WindowModel
 	{
 		final Map<PropertyName, Object> values = getProperties().getValuesAsMap();
 		dataSource.saveRecord(getRecordIndex(), values);
+		loadRecord();
 	}
 
 	public void reloadRecord()

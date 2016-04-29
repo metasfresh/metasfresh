@@ -39,7 +39,7 @@ import de.metas.ui.web.vaadin.session.UserSession;
  */
 
 @SpringUI
-@PreserveOnRefresh // FIXME: DEBUG
+@PreserveOnRefresh
 @Widgetset("de.metas.ui.web.vaadin.widgetset.metasfreshWidgetSet")
 @Theme(de.metas.ui.web.vaadin.theme.Theme.NAME)
 @SuppressWarnings("serial")

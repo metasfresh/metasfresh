@@ -268,6 +268,11 @@ final class SqlsBuilder
 		
 		return table;
 	}
+	
+	public String getMainTableName()
+	{
+		return getTableNameForAlias(TABLEALIAS_Master);
+	}
 
 	private SqlTable getTableForAlias(final String tableAlias)
 	{
