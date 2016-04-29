@@ -6,7 +6,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
  * #%L
- * de.metas.ui.web.vaadin
+ * metasfresh-webui
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -26,13 +26,31 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
-public interface EditorListener
+public abstract class ForwardingEditorListener implements EditorListener
 {
-	void valueChange(PropertyName propertyName, Object value);
+	protected abstract EditorListener getDelegate();
 
-	ListenableFuture<Object> requestValue(PropertyName propertyName);
+	@Override
+	public void valueChange(PropertyName propertyName, Object value)
+	{
+		getDelegate().valueChange(propertyName, value);
+	}
 
-	void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
+	@Override
+	public ListenableFuture<Object> requestValue(PropertyName propertyName)
+	{
+		return getDelegate().requestValue(propertyName);
+	}
 
-	ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
+	@Override
+	public void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value)
+	{
+		getDelegate().gridValueChanged(gridPropertyName, rowId, propertyName, value);
+	}
+	
+	@Override
+	public ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
+	{
+		return getDelegate().requestGridValue(gridPropertyName, rowId, propertyName);
+	}
 }

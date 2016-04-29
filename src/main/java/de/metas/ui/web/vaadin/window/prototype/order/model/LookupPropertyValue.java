@@ -1,14 +1,9 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
@@ -17,7 +12,6 @@ import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
@@ -53,8 +47,9 @@ public class LookupPropertyValue implements PropertyValue
 {
 	private final PropertyName propertyName;
 	private final DataFieldLookupDescriptor sqlLookupDescriptor;
+	private final SqlLazyLookupDataSource sqlLazyLookupDataSource;
 
-	private final List<LookupValue> lookupValues = ImmutableList.of();
+	// private final List<LookupValue> lookupValues = ImmutableList.of();
 
 	LookupPropertyValue(final PropertyDescriptor descriptor)
 	{
@@ -63,6 +58,8 @@ public class LookupPropertyValue implements PropertyValue
 		this.propertyName = WindowConstants.lookupValuesName(propertyName);
 
 		this.sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
+
+		this.sqlLazyLookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 	}
 
 	@Override
@@ -95,22 +92,26 @@ public class LookupPropertyValue implements PropertyValue
 	@Override
 	public Object getValue()
 	{
-		final IStringExpression sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
-		final boolean numericKey = sqlLookupDescriptor.isNumericKey();
-		final int entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
+		return sqlLazyLookupDataSource;
+		
+		// final IStringExpression sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
+		// final boolean numericKey = sqlLookupDescriptor.isNumericKey();
+		// final int entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
+		//
+		// final Evaluatee evalCtx = createEvaluationContext();
+		// final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+		//
+		// try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
+		// {
+		// final List<LookupValue> items = data.fetchAll()
+		// .stream()
+		// .map(namePair -> toLookupValue(namePair))
+		// .collect(Collectors.toList());
+		// return items;
+		// }
 
-		final Evaluatee evalCtx = createEvaluationContext();
-		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
-
-		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
-		{
-			final List<LookupValue> items = data.fetchAll()
-					.stream()
-					.map(namePair -> toLookupValue(namePair))
-					.collect(Collectors.toList());
-			return items;
-		}
-
+		
+		
 		// // TODO
 		// final Date now = new Date();
 		// final List<LookupValue> lookupValues = new ArrayList<>();

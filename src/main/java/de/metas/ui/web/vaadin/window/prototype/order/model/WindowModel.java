@@ -327,7 +327,7 @@ public class WindowModel
 		}
 
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue gridProp = (GridPropertyValue)properties.getPropertyValue(gridPropertyName);
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
 		if (gridProp == null)
 		{
 			// TODO: handle missing model property
@@ -348,6 +348,21 @@ public class WindowModel
 		postEvent(GridPropertyChangedModelEvent.of(this, gridPropertyName, rowId, propertyName, value, valueOld));
 
 		// TODO: process dependencies
+	}
+
+	public Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
+		if (gridProp == null)
+		{
+			// TODO: handle missing model property
+			logger.trace("Skip setting propery {} because property value is missing", propertyName);
+			return null;
+		}
+
+		final Object value = gridProp.getValueAt(rowId, propertyName);
+		return value;
 	}
 
 	/**

@@ -2,6 +2,8 @@ package de.metas.ui.web.vaadin.window.prototype.order.view;
 
 import java.util.Set;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants.OnChangesFound;
 
@@ -50,5 +52,7 @@ public interface WindowViewListener
 	void viewCancelEditing();
 
 	/** View is asking for a value update */
-	void viewRequestValueUpdate(PropertyName propertyName);
+	ListenableFuture<Object> viewRequestValue(PropertyName propertyName);
+
+	ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 }

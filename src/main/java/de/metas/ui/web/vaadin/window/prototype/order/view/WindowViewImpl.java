@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
@@ -59,7 +60,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	private final EditorFactory editorFactory = new EditorFactory();
 
 	static final String STYLE = "mf-window";
-	
+
 	//
 	// UI components
 	private HorizontalLayout actionsPanel;
@@ -90,6 +91,12 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		}
 
 		@Override
+		public ListenableFuture<Object> requestValue(PropertyName propertyName)
+		{
+			return listener.viewRequestValue(propertyName);
+		}
+
+		@Override
 		public void gridValueChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
 		{
 			final WindowViewListener listener = WindowViewImpl.this.listener;
@@ -101,10 +108,11 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		}
 
 		@Override
-		public void requestValue(PropertyName propertyName)
+		public ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
 		{
-			listener.viewRequestValueUpdate(propertyName);
-		}
+			return listener.viewRequestGridValue(gridPropertyName, rowId, propertyName);
+		};
+
 	};
 
 	public WindowViewImpl(final PropertyDescriptor rootPropertyDescriptor)
@@ -144,12 +152,12 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			actionsPanel = new HorizontalLayout();
 			actionsPanel.addStyleName(STYLE + "-actions-lane");
 			content.addComponent(actionsPanel);
-			
+
 			final Button btnSave = new Button();
 			btnSave.setCaption("Save");
 			btnSave.addClickListener(new Button.ClickListener()
 			{
-				
+
 				@Override
 				public void buttonClick(Button.ClickEvent event)
 				{
@@ -157,7 +165,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 				}
 			});
 			actionsPanel.addComponent(btnSave);
-			
+
 			final Button btnCancel = new Button();
 			btnCancel.setCaption("Cancel");
 			btnCancel.addClickListener(new Button.ClickListener()
@@ -192,27 +200,27 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 				btnPreviousRecord.setIcon(FontAwesome.CARET_LEFT);
 				btnPreviousRecord.addClickListener(new Button.ClickListener()
 				{
-					
+
 					@Override
 					public void buttonClick(Button.ClickEvent event)
 					{
 						listener.viewPreviousRecord(OnChangesFound.Ask);
 					}
 				});
-				
+
 				btnNextRecord = new Button();
 				btnNextRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
 				btnNextRecord.setIcon(FontAwesome.CARET_RIGHT);
 				btnNextRecord.addClickListener(new Button.ClickListener()
 				{
-					
+
 					@Override
 					public void buttonClick(Button.ClickEvent event)
 					{
 						listener.viewNextRecord(OnChangesFound.Ask);
 					}
 				});
-				
+
 				final HorizontalLayout recordNavigationComp = new HorizontalLayout(btnPreviousRecord, recordSummary, btnNextRecord);
 				recordNavigationComp.addStyleName(STYLE + "-record-nav");
 				panelSummary.addComponent(recordNavigationComp);
@@ -256,14 +264,14 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		// Create editors
 		{
 			final Editor editorsRoot = createEditorsRecursivelly(rootPropertyDescriptor, editorsCollector);
-			if(editorsRoot == null)
+			if (editorsRoot == null)
 			{
 				throw new IllegalStateException("No editor was created");
 			}
-			
+
 			panelsContainer.addComponent(editorsRoot);
 			_propertyName2editor = editorsCollector.build();
-			
+
 			//
 			// Set navigation bar shortcuts
 			{
@@ -275,7 +283,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 						continue;
 					}
 					alreadyAddedEditors.put(editor, Boolean.TRUE);
-					
+
 					if (EditorsContainer.isDocumentFragment(editor))
 					{
 						panelsBar.addNavigationShortcut(editor);
@@ -299,7 +307,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 				editor.addChildEditor(childEditor);
 			}
 		}
-		
+
 		final Set<PropertyName> editorWatchedPropertyNames = editor.getWatchedPropertyNames();
 		if (editorWatchedPropertyNames != null && !editorWatchedPropertyNames.isEmpty())
 		{
@@ -319,15 +327,15 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		{
 			return;
 		}
-		
+
 		final WindowViewListener listenerOld = this.listener;
 		if (listenerOld != null)
 		{
 			listener.viewSubscribeToValueChanges(ImmutableSet.of());
 		}
-		
+
 		this.listener = listener;
-		
+
 		if (listener != null)
 		{
 			final Set<PropertyName> watchedPropertyNames = getWatchedPropertyNames();
@@ -377,27 +385,27 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 
 		editor.setValue(propertyName, value);
 	}
-	
+
 	private Set<PropertyName> getWatchedPropertyNames()
 	{
 		return _propertyName2editor.keySet();
 	}
-	
+
 	private final Editor getEditor(final PropertyName propertyName)
 	{
 		return _propertyName2editor.get(propertyName);
 	}
-	
+
 	private final GridEditor getGridEditor(final PropertyName gridPropertyName)
 	{
 		final Editor editor = getEditor(gridPropertyName);
-		if(editor instanceof GridEditor)
+		if (editor instanceof GridEditor)
 		{
 			return (GridEditor)editor;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, Object value)
 	{
@@ -415,7 +423,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		{
 			value = null;
 		}
-		
+
 		editor.setValueAt(rowId, propertyName, value);
 	}
 
@@ -431,7 +439,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			logger.trace("Skip {} because there is no editor for it", gridPropertyName);
 			return;
 		}
-		
+
 		editor.newRow(rowId, rowValues);
 	}
 
@@ -446,7 +454,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	public void confirmDiscardChanges()
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

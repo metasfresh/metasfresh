@@ -47,4 +47,8 @@ public interface Editor extends Component
 	Label getLabel();
 
 	PropertyLayoutInfo getLayoutInfo();
+
+	void setAttribute(final String name, final Object value);
+	
+	<T> T getAttribute(final String name);
 }

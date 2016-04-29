@@ -24,35 +24,33 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 public final class GridRow
 {
-	/*package*/static final GridRow of(final Collection<PropertyDescriptor> columnDescriptors, final Map<PropertyName, Object> initialValues)
+	/* package */static final GridRow of(final Collection<PropertyDescriptor> columnDescriptors, final Map<PropertyName, Object> initialValues)
 	{
 		return new GridRow(columnDescriptors, initialValues);
 	}
-	
+
 	private static final Logger logger = LogManager.getLogger(GridRow.class);
 
 	public static final GridRow NULL = new GridRow();
-	
+
 	private final GridRowId rowId;
 
 	private final PropertyValueCollection propertyValues;
 
-	
 	/** empty constructor */
 	private GridRow()
 	{
@@ -65,25 +63,25 @@ public final class GridRow
 	{
 		super();
 		final PropertyValueCollection.Builder valuesBuilder = PropertyValueCollection.builder();
-		
+
 		// Row Id
 		{
-			this.rowId = GridRowId.newRowId();
+			rowId = GridRowId.newRowId();
 			final PropertyValue rowIdPropertyValue = ConstantPropertyValue.of(WindowConstants.PROPERTYNAME_GridRowId, rowId);
 			valuesBuilder.addProperty(rowIdPropertyValue);
 		}
-		
+
 		for (final PropertyDescriptor columnDesc : columnDescriptors)
 		{
-			final PropertyName propertyName = columnDesc.getPropertyName();			
-			
+			final PropertyName propertyName = columnDesc.getPropertyName();
+
 			final Object initialValue = initialValues.get(propertyName);
 			valuesBuilder.addPropertyRecursivelly(columnDesc, initialValue);
 		}
-		
-		this.propertyValues = valuesBuilder.build();
+
+		propertyValues = valuesBuilder.build();
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -92,17 +90,17 @@ public final class GridRow
 				.add("propertyValues", propertyValues)
 				.toString();
 	}
-	
+
 	public GridRowId getRowId()
 	{
 		return rowId;
 	}
-	
+
 	public Map<PropertyName, Object> getValuesAsMap()
 	{
 		return propertyValues.getValuesAsMap();
 	}
-	
+
 	public void setValuesFromMap(final Map<PropertyName, Object> values)
 	{
 		for (final Map.Entry<PropertyName, Object> e : values.entrySet())
@@ -112,24 +110,36 @@ public final class GridRow
 			setValue(propertyName, value);
 		}
 	}
-	
+
 	public Object setValue(final PropertyName propertyName, Object value)
 	{
 		final PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
-		if(propertyValue == null)
+		if (propertyValue == null)
 		{
-			// TODO
 			logger.warn("Property {} not found in {}. Skip setting it.", propertyName, this);
 			return null;
 		}
-		
+
 		if (NullValue.isNull(value))
 		{
 			value = null;
 		}
-		
+
 		final Object valueOld = propertyValue.getValue();
 		propertyValue.setValue(value);
 		return valueOld;
+	}
+
+	public Object getValue(final PropertyName propertyName)
+	{
+		final PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
+		if (propertyValue == null)
+		{
+			logger.warn("Property {} not found in {}. Skip setting it.", propertyName, this);
+			return null;
+		}
+
+		final Object value = propertyValue.getValue();
+		return value;
 	}
 }

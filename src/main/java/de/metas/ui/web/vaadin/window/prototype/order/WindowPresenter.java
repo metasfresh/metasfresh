@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 import com.vaadin.ui.UI;
 
@@ -388,9 +390,16 @@ public class WindowPresenter implements WindowViewListener
 	}
 
 	@Override
-	public void viewRequestValueUpdate(final PropertyName propertyName)
+	public ListenableFuture<Object> viewRequestValue(final PropertyName propertyName)
 	{
 		final Object value = model.getProperty(propertyName);
-		view.setProperty(propertyName, value);
+		return Futures.immediateFuture(value);
+	}
+
+	@Override
+	public ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
+	{
+		final Object value = model.getGridProperty(gridPropertyName, rowId, propertyName);
+		return Futures.immediateFuture(value);
 	}
 }

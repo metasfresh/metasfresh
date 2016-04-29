@@ -34,6 +34,11 @@ public final class PropertyName implements Serializable
 	{
 		return new PropertyName(name);
 	}
+	
+	public static final PropertyName cast(final Object propertyNameObj)
+	{
+		return (PropertyName)propertyNameObj;
+	}
 
 	private final String name;
 

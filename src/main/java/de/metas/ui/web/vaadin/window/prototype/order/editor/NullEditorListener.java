@@ -1,5 +1,8 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
@@ -40,14 +43,22 @@ public final class NullEditorListener implements EditorListener
 	}
 
 	@Override
+	public ListenableFuture<Object> requestValue(PropertyName propertyName)
+	{
+		final Object value = null;
+		return Futures.immediateFuture(value);
+	}
+
+	@Override
 	public void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value)
 	{
 		// nothing
 	}
 
 	@Override
-	public void requestValue(PropertyName propertyName)
+	public ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
 	{
-		// nothing
+		final Object value = null;
+		return Futures.immediateFuture(value);
 	}
 }

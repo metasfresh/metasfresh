@@ -150,4 +150,17 @@ public class GridPropertyValue extends ObjectPropertyValue
 		}
 		return row.setValue(propertyName, value);
 	}
+	
+	public Object getValueAt(final Object rowIdObj, final PropertyName propertyName)
+	{
+		final GridRowId rowId = GridRowId.of(rowIdObj);
+
+		final GridRow row = rows.get(rowId);
+		if (row == null)
+		{
+			return null;
+		}
+
+		return row.getValue(propertyName);
+	}
 }
