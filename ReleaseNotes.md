@@ -12,13 +12,16 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.16.x (upcoming)
+# metasfresh 4.16.15 (upcoming)
 
 ## Features
+ - FRESH-259 Completely remove zkwebui from metasfresh
  - FRESH-261 Create simple process to change the hostname of a device configuration
     * adding a simple DB function to do the job for now
 
 ## Fixes
+ - FRESH-234 report sales inout qtys for products and TUs are not alligned
+
 
 # metasfresh 4.15.14
 

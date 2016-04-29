@@ -20,7 +20,6 @@
 	<modules>
 		<module>de.metas.commission.base</module>
 		<module>de.metas.commission.client</module>
-		<module>de.metas.commission.zkwebui</module>
 	</modules>
 
 </project>
