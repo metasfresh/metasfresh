@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -62,7 +63,7 @@ public final class CtxName
 		{
 			if (i == 0)
 			{
-				name = tokens[i];
+				name = tokens[i].trim();
 			}
 			else
 			{
@@ -159,7 +160,7 @@ public final class CtxName
 	private transient volatile String cachedToStringWithTagMarkers = null;
 	private transient volatile String cachedToStringWithoutTagMarkers = null;
 
-	// NOTE: package and not private because we want to test it
+	@VisibleForTesting
 	/* package */CtxName(final String name, final List<String> modifiers, final String defaultValue)
 	{
 		super();
