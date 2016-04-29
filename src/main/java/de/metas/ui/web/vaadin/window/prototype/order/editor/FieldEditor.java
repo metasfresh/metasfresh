@@ -8,9 +8,9 @@ import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
  * #%L
@@ -35,12 +35,10 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
  */
 
 @SuppressWarnings("serial")
-public abstract class FieldEditor<T> extends AbstractEditor
-implements Field<T>
+public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 {
 	static final String STYLE_Field = "mf-editor-field";
 	private final AbstractField<T> valueField;
-	private Label label;
 
 	public FieldEditor(final PropertyDescriptor descriptor)
 	{
@@ -50,7 +48,7 @@ implements Field<T>
 		valueField = createValueField();
 		valueField.addStyleName(STYLE_ValueField);
 		valueField.setCaption(descriptor.getPropertyName().toString());
-		
+
 		final Component content = valueField;
 		content.setSizeFull();
 		setCompositionRoot(content);
@@ -61,23 +59,32 @@ implements Field<T>
 			@Override
 			public void valueChange(final Property.ValueChangeEvent event)
 			{
-				listener().valueChange(getPropertyName(), getValue());
+				listener().valueChange(getPropertyName(), valueField.getValue());
 			}
 		});
 	}
 
 	protected abstract AbstractField<T> createValueField();
-	
+
 	protected AbstractField<T> getValueField()
 	{
 		return valueField;
 	}
+
+	@Override
+	public final void setValue(final Object value)
+	{
+		setValue(getPropertyName(), value);
+	}
 	
 	@Override
-	public void setValue(final Object value)
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		final T valueView = convertToView(value);
-		valueField.setValue(valueView);
+		if (getPropertyName().equals(propertyName))
+		{
+			final T valueView = convertToView(value);
+			valueField.setValue(valueView);
+		}
 	}
 
 	protected abstract T convertToView(final Object valueObj);
@@ -90,21 +97,11 @@ implements Field<T>
 	}
 
 	@Override
-	public void addChildEditor(de.metas.ui.web.vaadin.window.prototype.order.editor.Editor editor)
+	public void addChildEditor(final de.metas.ui.web.vaadin.window.prototype.order.editor.Editor editor)
 	{
 		throw new UnsupportedOperationException();
 	}
-	
-	@Override
-	public Label getLabel()
-	{
-		if(label == null)
-		{
-			label = new Label(getCaption());
-		}
-		return label;
-	}
-	
+
 	@Override
 	public void focus()
 	{
@@ -118,7 +115,7 @@ implements Field<T>
 	}
 
 	@Override
-	public void setInvalidCommitted(boolean isCommitted)
+	public void setInvalidCommitted(final boolean isCommitted)
 	{
 		valueField.setInvalidCommitted(isCommitted);
 	}
@@ -136,7 +133,7 @@ implements Field<T>
 	}
 
 	@Override
-	public void setBuffered(boolean buffered)
+	public void setBuffered(final boolean buffered)
 	{
 		valueField.setBuffered(buffered);
 	}
@@ -154,13 +151,13 @@ implements Field<T>
 	}
 
 	@Override
-	public void addValidator(Validator validator)
+	public void addValidator(final Validator validator)
 	{
 		valueField.addValidator(validator);
 	}
 
 	@Override
-	public void removeValidator(Validator validator)
+	public void removeValidator(final Validator validator)
 	{
 		valueField.removeValidator(validator);
 	}
@@ -196,7 +193,7 @@ implements Field<T>
 	}
 
 	@Override
-	public void setInvalidAllowed(boolean invalidValueAllowed) throws UnsupportedOperationException
+	public void setInvalidAllowed(final boolean invalidValueAllowed) throws UnsupportedOperationException
 	{
 		valueField.setInvalidAllowed(true);
 	}
@@ -204,47 +201,47 @@ implements Field<T>
 	@Override
 	public Class<? extends T> getType()
 	{
-		//TODO
+		// TODO
 		return null;
-//		final Class<? extends IT> type = valueField.getType();
-//		return type;
+		// final Class<? extends IT> type = valueField.getType();
+		// return type;
 	}
 
 	@Override
-	public void addValueChangeListener(com.vaadin.data.Property.ValueChangeListener listener)
+	public void addValueChangeListener(final com.vaadin.data.Property.ValueChangeListener listener)
 	{
 		valueField.addValueChangeListener(listener);
 	}
 
 	@Override
 	@Deprecated
-	public void addListener(com.vaadin.data.Property.ValueChangeListener listener)
+	public void addListener(final com.vaadin.data.Property.ValueChangeListener listener)
 	{
 		valueField.addListener(listener);
 	}
 
 	@Override
-	public void removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener listener)
+	public void removeValueChangeListener(final com.vaadin.data.Property.ValueChangeListener listener)
 	{
 		valueField.removeValueChangeListener(listener);
 	}
 
 	@Override
 	@Deprecated
-	public void removeListener(com.vaadin.data.Property.ValueChangeListener listener)
+	public void removeListener(final com.vaadin.data.Property.ValueChangeListener listener)
 	{
 		valueField.removeListener(listener);
 	}
 
 	@Override
-	public void valueChange(com.vaadin.data.Property.ValueChangeEvent event)
+	public void valueChange(final com.vaadin.data.Property.ValueChangeEvent event)
 	{
 		valueField.valueChange(event);
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void setPropertyDataSource(Property newDataSource)
+	public void setPropertyDataSource(final Property newDataSource)
 	{
 		valueField.setPropertyDataSource(newDataSource);
 	}
@@ -263,7 +260,7 @@ implements Field<T>
 	}
 
 	@Override
-	public void setTabIndex(int tabIndex)
+	public void setTabIndex(final int tabIndex)
 	{
 		valueField.setTabIndex(tabIndex);
 	}
@@ -275,13 +272,13 @@ implements Field<T>
 	}
 
 	@Override
-	public void setRequired(boolean required)
+	public void setRequired(final boolean required)
 	{
 		valueField.setRequired(required);
 	}
 
 	@Override
-	public void setRequiredError(String requiredMessage)
+	public void setRequiredError(final String requiredMessage)
 	{
 		valueField.setRequiredError(requiredMessage);
 	}

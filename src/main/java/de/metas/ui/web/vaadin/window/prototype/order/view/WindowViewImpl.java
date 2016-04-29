@@ -1,6 +1,8 @@
 package de.metas.ui.web.vaadin.window.prototype.order.view;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 
@@ -70,7 +72,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 
 	//
 	// Properties
-	private Map<PropertyName, Editor> editors;
+	private Map<PropertyName, Editor> _propertyName2editor;
 
 	/** Listens editors and forwards to {@link WindowViewListener} */
 	private final EditorListener editorListener = new EditorListener()
@@ -96,6 +98,12 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 				return;
 			}
 			listener.viewGridPropertyChanged(gridPropertyName, rowId, propertyName, value);
+		}
+
+		@Override
+		public void requestValue(PropertyName propertyName)
+		{
+			listener.viewRequestValueUpdate(propertyName);
 		}
 	};
 
@@ -154,7 +162,6 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			btnCancel.setCaption("Cancel");
 			btnCancel.addClickListener(new Button.ClickListener()
 			{
-				
 				@Override
 				public void buttonClick(Button.ClickEvent event)
 				{
@@ -255,14 +262,24 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			}
 			
 			panelsContainer.addComponent(editorsRoot);
-			editors = editorsCollector.build();
-
+			_propertyName2editor = editorsCollector.build();
+			
 			//
-			for (final Editor editor : editors.values())
+			// Set navigation bar shortcuts
 			{
-				if (EditorsContainer.isDocumentFragment(editor))
+				final IdentityHashMap<Editor, Boolean> alreadyAddedEditors = new IdentityHashMap<>();
+				for (final Editor editor : _propertyName2editor.values())
 				{
-					panelsBar.addNavigationShortcut(editor);
+					if (alreadyAddedEditors.containsKey(editor))
+					{
+						continue;
+					}
+					alreadyAddedEditors.put(editor, Boolean.TRUE);
+					
+					if (EditorsContainer.isDocumentFragment(editor))
+					{
+						panelsBar.addNavigationShortcut(editor);
+					}
 				}
 			}
 		}
@@ -280,6 +297,15 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			{
 				final Editor childEditor = createEditorsRecursivelly(childDescriptor, editorsCollector);
 				editor.addChildEditor(childEditor);
+			}
+		}
+		
+		final Set<PropertyName> editorWatchedPropertyNames = editor.getWatchedPropertyNames();
+		if (editorWatchedPropertyNames != null && !editorWatchedPropertyNames.isEmpty())
+		{
+			for (final PropertyName editorWatchedPropertyName : editorWatchedPropertyNames)
+			{
+				editorsCollector.put(editorWatchedPropertyName, editor);
 			}
 		}
 
@@ -304,7 +330,8 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		
 		if (listener != null)
 		{
-			listener.viewSubscribeToValueChanges(editors.keySet());
+			final Set<PropertyName> watchedPropertyNames = getWatchedPropertyNames();
+			listener.viewSubscribeToValueChanges(watchedPropertyNames);
 		}
 	}
 
@@ -335,7 +362,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	public void setProperty(final PropertyName propertyName, Object value)
 	{
 		logger.trace("Setting propery: {}={}", propertyName, value);
-		final Editor editor = editors.get(propertyName);
+		final Editor editor = getEditor(propertyName);
 		if (editor == null)
 		{
 			// TODO: handle missing editor
@@ -348,12 +375,22 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			value = null;
 		}
 
-		editor.setValue(value);
+		editor.setValue(propertyName, value);
+	}
+	
+	private Set<PropertyName> getWatchedPropertyNames()
+	{
+		return _propertyName2editor.keySet();
+	}
+	
+	private final Editor getEditor(final PropertyName propertyName)
+	{
+		return _propertyName2editor.get(propertyName);
 	}
 	
 	private final GridEditor getGridEditor(final PropertyName gridPropertyName)
 	{
-		final Editor editor = editors.get(gridPropertyName);
+		final Editor editor = getEditor(gridPropertyName);
 		if(editor instanceof GridEditor)
 		{
 			return (GridEditor)editor;

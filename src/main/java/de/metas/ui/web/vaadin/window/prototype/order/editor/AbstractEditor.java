@@ -1,6 +1,11 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.gwt.thirdparty.guava.common.base.Optional;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyLayoutInfo;
@@ -39,6 +44,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	private final PropertyName propertyName;
 	
 	private EditorListener listener = NullEditorListener.instance;
+	private Optional<Label> _labelComp;
 	
 	
 	public AbstractEditor(final PropertyName propertyName)
@@ -79,6 +85,12 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 		return propertyName;
 	}
 	
+	@Override
+	public Set<PropertyName> getWatchedPropertyNames()
+	{
+		return ImmutableSet.of();
+	}
+	
 	protected final PropertyDescriptor getPropertyDescriptor()
 	{
 		return propertyDescriptor;
@@ -87,14 +99,13 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	@Override
 	public final String getCaption()
 	{
-		// TODO Auto-generated method stub
-		return getPropertyName().toString();
+		return getPropertyName().getCaption();
 	}
 	
 	@Override
 	public final void setCaption(String caption)
 	{
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("Setting the caption is not allowed");
 	}
 	
 	@Override
@@ -109,4 +120,21 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	{
 		return true;
 	}
+	
+	@Override
+	public final Label getLabel()
+	{
+		if(_labelComp == null)
+		{
+			final Label label = createLabelComponent();
+			_labelComp = Optional.fromNullable(label);
+		}
+		return _labelComp.orNull();
+	}
+	
+	protected Label createLabelComponent()
+	{
+		return new Label(getCaption());
+	}
+
 }

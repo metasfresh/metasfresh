@@ -105,7 +105,7 @@ final class BPartnerAndAddressPropertyValue extends CalculatedPropertyValue
 	}
 
 	@Override
-	public Object calculateValue(final PropertyValueCollection values)
+	protected Object calculateValue(final PropertyValueCollection values)
 	{
 		final String bpartnerStr = getPartAsString(bpartnerPropertyValue);
 		final String bpLocationStr = getPartAsString(bpLocationPropertyValue);

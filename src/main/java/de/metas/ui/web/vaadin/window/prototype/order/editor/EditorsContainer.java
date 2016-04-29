@@ -47,16 +47,9 @@ public abstract class EditorsContainer extends AbstractEditor
 	}
 
 	@Override
-	public void setValue(final Object value)
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Object getValue()
-	{
-		// not supported
-		return null;
+		throw new UnsupportedOperationException("Setting value to an " + getClass() + " is not allowed.");
 	}
 
 	public final boolean isDocumentFragment()
@@ -76,10 +69,10 @@ public abstract class EditorsContainer extends AbstractEditor
 			return false;
 		}
 	}
-	
+
 	@Override
-	public final Label getLabel()
+	protected Label createLabelComponent()
 	{
-		return null;
+		return null; // no label
 	}
 }

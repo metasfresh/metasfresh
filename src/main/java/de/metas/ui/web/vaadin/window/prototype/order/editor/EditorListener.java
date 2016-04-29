@@ -29,4 +29,6 @@ public interface EditorListener
 	void valueChange(PropertyName propertyName, Object value);
 	
 	void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
+	
+	void requestValue(PropertyName propertyName);
 }

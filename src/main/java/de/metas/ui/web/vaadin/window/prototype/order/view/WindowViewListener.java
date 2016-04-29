@@ -48,4 +48,7 @@ public interface WindowViewListener
 
 	/** View asked to cancel the current editing */
 	void viewCancelEditing();
+
+	/** View is asking for a value update */
+	void viewRequestValueUpdate(PropertyName propertyName);
 }

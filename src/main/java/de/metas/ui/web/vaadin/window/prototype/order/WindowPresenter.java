@@ -54,6 +54,7 @@ public class WindowPresenter implements WindowViewListener
 	private final WindowModel model;
 	private final WindowView view;
 
+	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
 	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
 
 	public WindowPresenter()
@@ -116,6 +117,8 @@ public class WindowPresenter implements WindowViewListener
 	{
 		Preconditions.checkNotNull(propertyNames, "propertyNames");
 		this.viewPropertyNames = ImmutableSet.copyOf(propertyNames);
+		
+		logger.trace("View subscribed to following property names: {}", propertyNames);
 	}
 
 	private final Set<PropertyName> viewSettingPropertyNames = new HashSet<>();
@@ -253,8 +256,13 @@ public class WindowPresenter implements WindowViewListener
 
 		if (viewSettingPropertyNames.contains(propertyName))
 		{
-			logger.trace("Skip updating the view because this property is currently updating from view");
+			logger.trace("Skip updating the view because this property is currently updating from view: {}", propertyName);
 			return;
+		}
+		
+		if (!viewPropertyNames.contains(propertyName))
+		{
+			logger.trace("Skip updating the view because this property is not interesting for view: {}", propertyName);
 		}
 
 		final Object value = event.getValue();
@@ -377,5 +385,12 @@ public class WindowPresenter implements WindowViewListener
 				model.reloadRecord();
 			}
 		});
+	}
+
+	@Override
+	public void viewRequestValueUpdate(final PropertyName propertyName)
+	{
+		final Object value = model.getProperty(propertyName);
+		view.setProperty(propertyName, value);
 	}
 }

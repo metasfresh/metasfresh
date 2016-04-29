@@ -34,8 +34,16 @@ public abstract class CalculatedPropertyValue extends ObjectPropertyValue
 		super(PropertyValueBuilder.newBuilder()
 				.setPropertyName(name));
 	}
-
+	
+	@Override
 	public abstract Set<PropertyName> getDependsOnPropertyNames();
+	
+	@Override
+	public final void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	{
+		final Object calculatedValueNew = calculateValue(values);
+		setValue(calculatedValueNew);
+	}
 
-	public abstract Object calculateValue(final PropertyValueCollection values);
+	protected abstract Object calculateValue(final PropertyValueCollection values);
 }

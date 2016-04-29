@@ -75,7 +75,8 @@ public class EditorFactory
 		}
 		else if (LookupValue.class.isAssignableFrom(valueType))
 		{
-			return new LookupValueEditor(descriptor);
+			return new ComboLookupValueEditor(descriptor);
+//			return new SearchLookupValueEditor(descriptor);
 		}
 		else if (ComposedValue.class.isAssignableFrom(valueType))
 		{

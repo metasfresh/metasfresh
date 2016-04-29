@@ -36,6 +36,11 @@ public final class WindowConstants
 		Discard,
 		Ask,
 	}
+	
+	public static final PropertyName lookupValuesName(final PropertyName propertyName)
+	{
+		return PropertyName.of(propertyName.toString() + "#values");
+	}
 
 
 	private WindowConstants()

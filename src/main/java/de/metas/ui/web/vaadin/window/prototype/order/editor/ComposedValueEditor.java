@@ -6,6 +6,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
  * #%L
@@ -42,6 +43,7 @@ public class ComposedValueEditor extends AbstractEditor
 	
 	//
 	// State
+	@SuppressWarnings("unused")
 	private ComposedValue value;
 
 	public ComposedValueEditor(final PropertyDescriptor descriptor)
@@ -64,27 +66,24 @@ public class ComposedValueEditor extends AbstractEditor
 	}
 
 	@Override
-	public void setValue(final Object value)
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		final ComposedValue composedValue = (ComposedValue)value;
-		this.value = composedValue;
-		
-		if (composedValue == null)
+		if(getPropertyName().equals(propertyName))
 		{
-			valueField.setValue("");
-			description.setValue("");
+			final ComposedValue composedValue = ComposedValue.cast(value);
+			this.value = composedValue;
+			
+			if (composedValue == null)
+			{
+				valueField.setValue("");
+				description.setValue("");
+			}
+			else
+			{
+				valueField.setValue(composedValue.getDisplayName());
+				description.setValue(composedValue.getLongDisplayName());
+			}
 		}
-		else
-		{
-			valueField.setValue(composedValue.getDisplayName());
-			description.setValue(composedValue.getLongDisplayName());
-		}
-	}
-
-	@Override
-	public ComposedValue getValue()
-	{
-		return value;
 	}
 
 	@Override
@@ -95,8 +94,8 @@ public class ComposedValueEditor extends AbstractEditor
 	}
 	
 	@Override
-	public Label getLabel()
+	protected Label createLabelComponent()
 	{
-		return null;
+		return null; // no label
 	}
 }

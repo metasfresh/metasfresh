@@ -28,6 +28,11 @@ public class ComposedValue
 	{
 		return new ComposedValue(id, displayName, longDisplayName);
 	}
+	
+	public static final ComposedValue cast(final Object valueObj)
+	{
+		return (ComposedValue)valueObj;
+	}
 
 	private final Object id;
 	private final String displayName;

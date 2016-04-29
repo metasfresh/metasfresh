@@ -1,11 +1,13 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
@@ -19,20 +21,19 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public class ObjectPropertyValue implements PropertyValue 
+public class ObjectPropertyValue implements PropertyValue
 {
 	private final PropertyName name;
 	private final String composedValuePartName;
@@ -41,14 +42,14 @@ public class ObjectPropertyValue implements PropertyValue
 	private Object value;
 
 	private final Map<PropertyName, PropertyValue> _childPropertyValues;
-	
+
 	ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
 		name = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = builder.getChildPropertyValues();
-		
+
 		initialValue = builder.getInitialValue();
 		value = initialValue;
 	}
@@ -69,6 +70,18 @@ public class ObjectPropertyValue implements PropertyValue
 	}
 
 	@Override
+	public Set<PropertyName> getDependsOnPropertyNames()
+	{
+		return ImmutableSet.of();
+	}
+
+	@Override
+	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	{
+		// nothing on this level
+	}
+
+	@Override
 	public Object getValue()
 	{
 		return value;
@@ -86,7 +99,7 @@ public class ObjectPropertyValue implements PropertyValue
 	{
 		this.value = value;
 	}
-	
+
 	public Object getInitialValue()
 	{
 		return initialValue;
@@ -107,6 +120,6 @@ public class ObjectPropertyValue implements PropertyValue
 	@Override
 	public boolean isChanged()
 	{
-		return !Check.equals(this.value, this.initialValue);
+		return !Check.equals(value, initialValue);
 	}
 }

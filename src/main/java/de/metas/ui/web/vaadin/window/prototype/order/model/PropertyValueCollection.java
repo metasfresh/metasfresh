@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.thirdparty.guava.common.base.Strings;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
@@ -44,7 +46,7 @@ public class PropertyValueCollection
 	{
 		return new Builder();
 	}
-	
+
 	public static final PropertyValueCollection EMPTY = new PropertyValueCollection();
 
 	private final Map<PropertyName, PropertyValue> name2value;
@@ -55,8 +57,12 @@ public class PropertyValueCollection
 		super();
 		name2value = builder.name2value.build();
 		name2dependencies = builder.name2dependencies.build();
+
+		System.out.println("--------------------------------------------------------------------------------");
+		System.out.println("Build PropertyValuesCollection" + toStringRecursivelly(name2value.values()));
+		System.out.println("--------------------------------------------------------------------------------");
 	}
-	
+
 	/** empty builder */
 	private PropertyValueCollection()
 	{
@@ -64,13 +70,43 @@ public class PropertyValueCollection
 		name2value = ImmutableMap.of();
 		name2dependencies = ImmutableMultimap.of();
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("name2value", name2value)
 				.toString();
+	}
+	
+	public static final String toStringRecursivelly(final PropertyValue propertyValue)
+	{
+		final int level = 0;
+		return toStringRecursivelly(propertyValue, level);
+	}
+	public static final String toStringRecursivelly(final Iterable<PropertyValue> propertyValues)
+	{
+		final StringBuilder sb = new StringBuilder();
+		final int level = 0;
+		for (final PropertyValue propertyValue : propertyValues)
+		{
+			sb.append(toStringRecursivelly(propertyValue, level));
+		}
+		return sb.toString();
+	}
+	public static final String toStringRecursivelly(final PropertyValue propertyValue, final int level)
+	{
+		final String indentStr = Strings.repeat("\t", level);
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n").append(indentStr).append(propertyValue.toString());
+		
+		final Collection<PropertyValue> childPropertyValues = propertyValue.getChildPropertyValues().values();
+		for (final PropertyValue childPropertyValue : childPropertyValues)
+		{
+			sb.append(toStringRecursivelly(childPropertyValue, level + 1));
+		}
+		
+		return sb.toString();
 	}
 
 	public PropertyValue getPropertyValue(final String propertyNameStr)
@@ -88,17 +124,17 @@ public class PropertyValueCollection
 	{
 		return name2dependencies.get(propertyName);
 	}
-	
+
 	public Collection<PropertyName> getAllDependentPropertyNames()
 	{
 		return ImmutableSet.copyOf(name2dependencies.values());
 	}
-	
+
 	public Set<PropertyName> getPropertyNames()
 	{
 		return name2value.keySet();
 	}
-	
+
 	public Collection<PropertyValue> getPropertyValues()
 	{
 		return name2value.values();
@@ -125,7 +161,7 @@ public class PropertyValueCollection
 
 		return propertiesMap.build();
 	}
-	
+
 	public boolean hasChanges()
 	{
 		for (final PropertyValue propertyValue : getPropertyValues())
@@ -139,6 +175,11 @@ public class PropertyValueCollection
 		return false;
 	}
 
+	public Iterable<Object> getAvailableValues(final PropertyName propertyName)
+	{
+		// TODO: implement
+		return ImmutableList.of();
+	}
 
 	public static final class Builder
 	{
@@ -161,10 +202,12 @@ public class PropertyValueCollection
 
 			name2value.put(propertyName, propertyValue);
 
-			if (propertyValue instanceof CalculatedPropertyValue)
+			//
+			// Collect dependencies
+			final Set<PropertyName> dependsOnPropertyNames = propertyValue.getDependsOnPropertyNames();
+			if (dependsOnPropertyNames != null && !dependsOnPropertyNames.isEmpty())
 			{
-				final CalculatedPropertyValue calculatedPropertyValue = (CalculatedPropertyValue)propertyValue;
-				for (final PropertyName dependsOnPropertyName : calculatedPropertyValue.getDependsOnPropertyNames())
+				for (final PropertyName dependsOnPropertyName : dependsOnPropertyNames)
 				{
 					name2dependencies.put(dependsOnPropertyName, propertyName);
 				}
@@ -180,7 +223,7 @@ public class PropertyValueCollection
 			addPropertyRecursivelly(parentBuilder, propertyDescriptor, initialValue);
 			return this;
 		}
-		
+
 		public PropertyValueCollection.Builder addPropertyRecursivelly(final PropertyDescriptor propertyDescriptor, final Object initialValue)
 		{
 			final PropertyValueBuilder parentBuilder = null;
@@ -197,12 +240,19 @@ public class PropertyValueCollection
 			{
 				builder = PropertyValueBuilder.newBuilder()
 						.setPropertyDescriptor(propertyDescriptor);
-				
+
 				if (initialValue != null)
 				{
 					builder.setInitialValue(initialValue);
 				}
-				
+
+				if (propertyDescriptor.isValueProperty() && propertyDescriptor.getSqlLookupDescriptor() != null)
+				{
+					final PropertyValue lookupPropertyValue = new LookupPropertyValue(propertyDescriptor);
+					builder.addChildPropertyValue(lookupPropertyValue);
+					addProperty(lookupPropertyValue);
+				}
+
 				addingChildPropertiesAllowed = builder.isAddingChildPropertiesAllowed();
 			}
 			else

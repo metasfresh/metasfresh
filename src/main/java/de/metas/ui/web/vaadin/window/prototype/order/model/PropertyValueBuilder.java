@@ -109,7 +109,7 @@ public final class PropertyValueBuilder
 		return PropertyDescriptorType.Value;
 	}
 
-	public PropertyValueBuilder addChildPropertyValue(final ObjectPropertyValue propertyValue)
+	public PropertyValueBuilder addChildPropertyValue(final PropertyValue propertyValue)
 	{
 		_childPropertyValuesBuilder.put(propertyValue.getName(), propertyValue);
 		_childPropertyValues = null;

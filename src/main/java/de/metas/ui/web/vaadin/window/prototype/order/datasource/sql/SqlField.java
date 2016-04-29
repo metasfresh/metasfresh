@@ -106,6 +106,11 @@ final class SqlField
 	{
 		return propertyName;
 	}
+	
+	public SqlTable getSqlTable()
+	{
+		return sqlTable;
+	}
 
 	public String getColumnName()
 	{

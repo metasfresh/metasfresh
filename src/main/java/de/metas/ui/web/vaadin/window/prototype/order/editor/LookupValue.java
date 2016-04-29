@@ -34,6 +34,11 @@ public class LookupValue
 		final String longDisplayName = null;
 		return new LookupValue(id, displayName, longDisplayName);
 	}
+	
+	public static final LookupValue cast(final Object obj)
+	{
+		return (LookupValue)obj;
+	}
 
 	private final Object id;
 	private final String displayName;

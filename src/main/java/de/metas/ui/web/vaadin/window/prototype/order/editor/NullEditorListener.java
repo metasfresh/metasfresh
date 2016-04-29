@@ -44,4 +44,10 @@ public final class NullEditorListener implements EditorListener
 	{
 		// nothing
 	}
+
+	@Override
+	public void requestValue(PropertyName propertyName)
+	{
+		// nothing
+	}
 }

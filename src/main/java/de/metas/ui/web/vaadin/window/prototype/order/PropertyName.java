@@ -74,4 +74,11 @@ public final class PropertyName implements Serializable
 		final PropertyName other = (PropertyName)obj;
 		return Objects.equals(name, other.name);
 	}
+
+	/** @return human friendly, localized name */
+	public String getCaption()
+	{
+		// TODO: implement it. atm this method is really a placeholder. In future it might be that we will really move it from here.
+		return toString();
+	}
 }

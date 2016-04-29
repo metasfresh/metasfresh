@@ -1,9 +1,9 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
-import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
  * #%L
@@ -28,15 +28,15 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
  */
 
 @SuppressWarnings("serial")
-public class LookupValueEditor extends AbstractEditor
+public class SearchLookupValueEditor extends AbstractEditor
 {
 	private final TextField valueField;
-	private Label label;
 	
+	@SuppressWarnings("unused")
 	private LookupValue value;
 
 
-	public LookupValueEditor(PropertyDescriptor descriptor)
+	public SearchLookupValueEditor(PropertyDescriptor descriptor)
 	{
 		super(descriptor.getPropertyName());
 		
@@ -47,25 +47,22 @@ public class LookupValueEditor extends AbstractEditor
 	}
 
 	@Override
-	public void setValue(Object value)
+	public void setValue(final PropertyName propertyName, Object value)
 	{
-		final LookupValue lookupValue = (LookupValue)value;
-		this.value = lookupValue;
-		
-		if(lookupValue == null)
+		if (getPropertyName().equals(propertyName))
 		{
-			valueField.setValue("");
+			final LookupValue lookupValue = LookupValue.cast(value);
+			this.value = lookupValue;
+			
+			if(lookupValue == null)
+			{
+				valueField.setValue("");
+			}
+			else
+			{
+				valueField.setValue(lookupValue.getDisplayName());
+			}
 		}
-		else
-		{
-			valueField.setValue(lookupValue.getDisplayName());
-		}
-	}
-
-	@Override
-	public LookupValue getValue()
-	{
-		return value;
 	}
 
 	@Override
@@ -73,15 +70,4 @@ public class LookupValueEditor extends AbstractEditor
 	{
 		throw new UnsupportedOperationException();
 	}
-
-	@Override
-	public Label getLabel()
-	{
-		if(label == null)
-		{
-			label = new Label(getCaption());
-		}
-		return label;
-	}
-
 }

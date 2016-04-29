@@ -64,6 +64,7 @@ public final class DataFieldLookupDescriptor
 	private IStringExpression sqlForFetchingExpression;
 	private IStringExpression sqlForCountingExpression;
 	private IStringExpression sqlForFetchingDisplayNameByIdExpression;
+	private int entityTypeIndex = -1;
 
 	DataFieldLookupDescriptor(final int displayType, final String columnName, final int AD_Reference_Value_ID)
 	{
@@ -153,6 +154,11 @@ public final class DataFieldLookupDescriptor
 		sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
 		sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
 		sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+		
+		if (lookupInfo.isQueryHasEntityType())
+		{
+			this.entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
+		}
 	}
 
 	public boolean isNumericKey()
@@ -184,5 +190,10 @@ public final class DataFieldLookupDescriptor
 	public Class<?> getValueClass()
 	{
 		return valueClass;
+	}
+	
+	public int getEntityTypeIndex()
+	{
+		return entityTypeIndex;
 	}
 }

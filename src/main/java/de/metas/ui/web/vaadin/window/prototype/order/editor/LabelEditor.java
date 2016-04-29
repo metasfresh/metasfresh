@@ -33,14 +33,15 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 public class LabelEditor extends AbstractEditor
 {
 	private final Label valueField = new Label();
+
 	public LabelEditor(final PropertyName propertyName)
 	{
 		super(propertyName);
 		setCompositionRoot(valueField);
-		
+
 		valueField.addValueChangeListener(new ValueChangeListener()
 		{
-			
+
 			@Override
 			public void valueChange(ValueChangeEvent event)
 			{
@@ -50,23 +51,20 @@ public class LabelEditor extends AbstractEditor
 	}
 
 	@Override
-	public void setValue(Object value)
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		final String valueView = convertToView(value);
-		valueField.setValue(valueView);
-	}
-
-	@Override
-	public Object getValue()
-	{
-		return valueField.getValue();
+		if (getPropertyName().equals(propertyName))
+		{
+			final String valueView = convertToView(value);
+			valueField.setValue(valueView);
+		}
 	}
 
 	private String convertToView(final Object valueObj)
 	{
 		return valueObj == null ? "" : valueObj.toString();
 	}
-	
+
 	public void setContentModel(final ContentMode contentMode)
 	{
 		valueField.setContentMode(contentMode);
@@ -79,9 +77,9 @@ public class LabelEditor extends AbstractEditor
 	}
 
 	@Override
-	public Label getLabel()
+	protected Label createLabelComponent()
 	{
-		return null;
+		return null; // no label, this is a label by itself
 	}
 
 }

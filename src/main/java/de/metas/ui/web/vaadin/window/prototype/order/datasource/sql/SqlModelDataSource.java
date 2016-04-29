@@ -57,6 +57,7 @@ public class SqlModelDataSource implements ModelDataSource
 	//
 	// SQL definitions
 	private final Map<PropertyName, SqlField> sqlFields;
+	@SuppressWarnings("unused")
 	private final SqlField sqlField_KeyColumn;
 	private final SqlField sqlField_ParentLinkColumn;
 	/** SQL: SELECT ... FROM ... */
@@ -207,8 +208,15 @@ public class SqlModelDataSource implements ModelDataSource
 	private String buildSqlWhereClause(final List<Object> sqlParams, Object parentLinkId)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
+		
+		//
+		// Parent link where clause (if any) 
 		if(sqlField_ParentLinkColumn != null)
 		{
+			if (sqlWhereClause.length() > 0)
+			{
+				sqlWhereClause.append("\n AND ");
+			}
 			sqlWhereClause.append(sqlField_ParentLinkColumn.getColumnName()).append("=?");
 			sqlParams.add(parentLinkId);
 		}

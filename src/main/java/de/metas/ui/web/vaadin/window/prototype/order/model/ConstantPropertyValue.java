@@ -1,9 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
+import java.util.Set;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
@@ -17,12 +20,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +39,7 @@ public final class ConstantPropertyValue implements PropertyValue
 		return new ConstantPropertyValue(name, value);
 	}
 
-	public static boolean isConstant(PropertyValue propertyValue)
+	public static boolean isConstant(final PropertyValue propertyValue)
 	{
 		return propertyValue instanceof ConstantPropertyValue;
 	}
@@ -47,8 +50,16 @@ public final class ConstantPropertyValue implements PropertyValue
 	private ConstantPropertyValue(final PropertyName name, final Object value)
 	{
 		super();
-		this.propertyName = name;
+		propertyName = name;
 		constantValue = value;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add(propertyName.toString(), constantValue)
+				.toString();
 	}
 
 	@Override
@@ -58,13 +69,25 @@ public final class ConstantPropertyValue implements PropertyValue
 	}
 
 	@Override
+	public Set<PropertyName> getDependsOnPropertyNames()
+	{
+		return ImmutableSet.of();
+	}
+
+	@Override
+	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public Map<PropertyName, PropertyValue> getChildPropertyValues()
 	{
 		return ImmutableMap.of();
 	}
 
 	@Override
-	public void setValue(Object value)
+	public void setValue(final Object value)
 	{
 		throw new UnsupportedOperationException("Cannot set value '" + value + "' to " + this + " because it's constant.");
 	}

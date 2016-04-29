@@ -3,13 +3,13 @@ package de.metas.ui.web.vaadin.window.prototype.order.editor;
 import java.util.List;
 import java.util.Map;
 
-import com.vaadin.data.Container;
+import org.slf4j.Logger;
+
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.HasChildMeasurementHint.ChildMeasurementHint;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TableFieldFactory;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
@@ -38,6 +38,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 @SuppressWarnings("serial")
 public class GridEditor extends DocumentSectionEditorsContainer
 {
+	static final Logger logger = LogManager.getLogger(GridEditor.class);
 
 	private GridEditorDataContainer containerDataSource;
 
@@ -93,21 +94,24 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	}
 
 	@Override
-	public void setValue(final Object value)
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		@SuppressWarnings("unchecked")
-		final List<Map<PropertyName, Object>> rowValuesList = (List<Map<PropertyName, Object>>)value;
-
-		// FIXME: this is NOT optimum at all
+		if (getPropertyName().equals(propertyName))
 		{
-			final GridEditorDataContainer containerDataSourceNew = new GridEditorDataContainer(getPropertyDescriptor());
-			containerDataSourceNew.setContent(rowValuesList);
-			containerDataSourceNew.setEditorListener(getEditorListener());
-			//
-			containerDataSource = containerDataSourceNew;
-			getContent().setContainerDataSource(containerDataSourceNew);
-
-			// containerDataSource.setContent(rowValuesList);
+			@SuppressWarnings("unchecked")
+			final List<Map<PropertyName, Object>> rowValuesList = (List<Map<PropertyName, Object>>)value;
+	
+			// FIXME: this is NOT optimum at all
+			{
+				final GridEditorDataContainer containerDataSourceNew = new GridEditorDataContainer(getPropertyDescriptor());
+				containerDataSourceNew.setContent(rowValuesList);
+				containerDataSourceNew.setEditorListener(getEditorListener());
+				//
+				containerDataSource = containerDataSourceNew;
+				getContent().setContainerDataSource(containerDataSourceNew);
+	
+				// containerDataSource.setContent(rowValuesList);
+			}
 		}
 	}
 
@@ -127,35 +131,5 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	{
 		final GridRowItem row = containerDataSource.addItem(rowId);
 		row.setValues(rowValues);
-	}
-
-	private static final class GridTableFieldFactory implements TableFieldFactory
-	{
-		private final EditorFactory editorsFactory = new EditorFactory();
-		private final Map<PropertyName, PropertyDescriptor> descriptors;
-
-		public GridTableFieldFactory(final PropertyDescriptor propertyDescriptor)
-		{
-			super();
-			descriptors = propertyDescriptor.getChildPropertyDescriptorsAsMap();
-		}
-
-		@Override
-		public Field<?> createField(final Container container, final Object itemId, final Object propertyId, final Component uiContext)
-		{
-			final PropertyName propertyName = (PropertyName)propertyId;
-			final PropertyDescriptor propertyDescriptor = descriptors.get(propertyName);
-
-			final Editor editor = editorsFactory.createEditor(propertyDescriptor);
-			if (editor instanceof Field<?>)
-			{
-				final Field<?> field = (Field<?>)editor;
-				return field;
-			}
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
 	}
 }

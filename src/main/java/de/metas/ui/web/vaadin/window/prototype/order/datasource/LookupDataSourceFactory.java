@@ -1,15 +1,8 @@
-package de.metas.ui.web.vaadin.window.prototype.order.model;
-
-import java.util.Map;
-import java.util.Set;
-
-import com.google.common.base.Optional;
-
-import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+package de.metas.ui.web.vaadin.window.prototype.order.datasource;
 
 /*
  * #%L
- * de.metas.ui.web.vaadin
+ * metasfresh-webui
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,23 +22,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
-public interface PropertyValue
+public class LookupDataSourceFactory
 {
-	PropertyName getName();
-
-	String getComposedValuePartName();
-
-	Set<PropertyName> getDependsOnPropertyNames();
-
-	void onDependentPropertyValueChanged(PropertyValueCollection values, PropertyName changedPropertyName);
-
-	void setValue(final Object value);
-
-	Object getValue();
-
-	Optional<String> getValueAsString();
-
-	Map<PropertyName, PropertyValue> getChildPropertyValues();
-
-	boolean isChanged();
+	
 }

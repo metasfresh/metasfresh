@@ -232,7 +232,7 @@ public class WindowModel
 		return properties.hasChanges();
 	}
 
-	public Object getProperty(final String propertyName)
+	public Object getProperty(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		return properties.getPropertyValue(propertyName).getValue();
@@ -285,13 +285,12 @@ public class WindowModel
 			final PropertyValue dependentPropertyValue = properties.getPropertyValue(dependentPropertyName);
 			if (dependentPropertyValue == null)
 			{
-				// TODO: handle property not found
-				logger.trace("Skip setting dependent propery {} because property value is missing", dependentPropertyName);
+				logger.warn("Skip setting dependent propery {} because property value is missing", dependentPropertyName);
 				continue;
 			}
 
 			final Map<PropertyName, PropertyChangedModelEvent> eventsCollector = new LinkedHashMap<>();
-			updateDependentPropertyValue(dependentPropertyValue, eventsCollector);
+			updateDependentPropertyValue(dependentPropertyValue, propertyName, eventsCollector);
 			postEvents(eventsCollector.values());
 
 			for (final PropertyName dependentPropertyNameLvl2 : eventsCollector.keySet())
@@ -302,26 +301,22 @@ public class WindowModel
 
 	}
 
-	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
+	private final void updateDependentPropertyValue(final PropertyValue propertyValue, PropertyName changedPropertyName, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
 	{
 		final PropertyValueCollection properties = getProperties();
-
-		if (propertyValue instanceof CalculatedPropertyValue)
+		
+		final Object calculatedValueOld = propertyValue.getValue();
+		propertyValue.onDependentPropertyValueChanged(properties, changedPropertyName);
+		final Object calculatedValueNew = propertyValue.getValue();
+		if (Objects.equal(calculatedValueOld, calculatedValueNew))
 		{
-			final CalculatedPropertyValue calculatedPropertyValue = (CalculatedPropertyValue)propertyValue;
-			final Object calculatedValueOld = calculatedPropertyValue.getValue();
-			final Object calculatedValueNew = calculatedPropertyValue.calculateValue(properties);
-			if (Objects.equal(calculatedValueOld, calculatedValueNew))
-			{
-				return;
-			}
-
-			final PropertyName propertyName = propertyValue.getName();
-			logger.trace("Updating dependent property: {}={}", propertyName, calculatedValueNew);
-			calculatedPropertyValue.setValue(calculatedValueNew);
-
-			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
+			return;
 		}
+
+		final PropertyName propertyName = propertyValue.getName();
+		logger.trace("Updated dependent property: {}={}", propertyName, calculatedValueNew);
+
+		eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
 	}
 
 	public void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
@@ -355,6 +350,12 @@ public class WindowModel
 		// TODO: process dependencies
 	}
 
+	/**
+	 * Ask the model to create a new grid row.
+	 * 
+	 * @param gridPropertyName
+	 * @return the ID of newly created now
+	 */
 	public GridRowId gridNewRow(final PropertyName gridPropertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
@@ -372,6 +373,12 @@ public class WindowModel
 		return rowId;
 	}
 
+	/**
+	 * Gets a map of all "selected" property name and their values.
+	 * 
+	 * @param selectedPropertyNames
+	 * @return
+	 */
 	public Map<PropertyName, Object> getPropertiesAsMap(final Set<PropertyName> selectedPropertyNames)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
@@ -445,5 +452,11 @@ public class WindowModel
 	public void reloadRecord()
 	{
 		loadRecord();
+	}
+	
+	public Iterable<Object> getPropertyAvailableValues(final PropertyName propertyName)
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		return properties.getAvailableValues(propertyName);
 	}
 }

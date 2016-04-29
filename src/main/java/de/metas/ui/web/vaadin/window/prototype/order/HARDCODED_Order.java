@@ -315,7 +315,7 @@ public final class HARDCODED_Order
 		}
 
 		@Override
-		public Object calculateValue(final PropertyValueCollection values)
+		protected Object calculateValue(final PropertyValueCollection values)
 		{
 			return "Order window - " + values.getPropertyValue(ORDER_DocumentNo).getValueAsString().or("?");
 		}
@@ -338,7 +338,7 @@ public final class HARDCODED_Order
 		}
 
 		@Override
-		public Object calculateValue(final PropertyValueCollection values)
+		protected Object calculateValue(final PropertyValueCollection values)
 		{
 			return "Net total: "+values.getPropertyValue(ORDER_TotalLines).getValueAsString().or("0")
 					+"\nGrand total: "+values.getPropertyValue(ORDER_GrandTotal).getValueAsString().or("0");
@@ -361,7 +361,7 @@ public final class HARDCODED_Order
 		}
 
 		@Override
-		public Object calculateValue(final PropertyValueCollection values)
+		protected Object calculateValue(final PropertyValueCollection values)
 		{
 			final String valueNew = values.getPropertyValue(ORDER_DocumentNo).getValueAsString().or("?")
 					+ "\n" + values.getPropertyValue(ORDER_DatePromised).getValueAsString().or("?")

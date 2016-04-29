@@ -39,6 +39,10 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 public class GridPropertyValue extends ObjectPropertyValue
 {
+	public static final GridPropertyValue cast(final PropertyValue propertyValue)
+	{
+		return (GridPropertyValue)propertyValue;
+	}
 	// private static final Logger logger = LogManager.getLogger(GridPropertyValue.class);
 
 	private final Collection<PropertyDescriptor> columnDescriptors;
