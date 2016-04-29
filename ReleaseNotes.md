@@ -12,9 +12,11 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.16.x (upcoming)
 
 ## Features
+ - FRESH-261 Create simple process to change the hostname of a device configuration
+    * adding a simple DB function to do the job for now
 
 ## Fixes
 
