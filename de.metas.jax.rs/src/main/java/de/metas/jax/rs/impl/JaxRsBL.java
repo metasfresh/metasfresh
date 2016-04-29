@@ -357,10 +357,21 @@ public class JaxRsBL implements IJaxRsBL
 
 		for (final Class<T> endPointclass : request.getEndpointClasses())
 		{
+			final List<Feature> features;
+			if (loggingFeature == null)
+			{
+				logger.warn("No logging feature was wired for {}. Going without it", LoggingFeature.class);
+				features = Collections.emptyList();
+			}
+			else
+			{
+				features = Collections.singletonList((Feature)loggingFeature);
+			}
+			
 			final T client = JAXRSClientFactory.create(clientURL,
 					endPointclass,
 					Collections.singletonList(jacksonJaxbJsonProvider),
-					Collections.singletonList((Feature)loggingFeature),
+					features,
 					null); // not providing a particular configLocation);
 
 			WebClient.client(client)
