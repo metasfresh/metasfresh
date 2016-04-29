@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import com.ibm.icu.math.BigDecimal;
 
 import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 
 /*
@@ -28,11 +29,11 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -62,7 +63,6 @@ public class PropertyDescriptor implements Serializable
 	// Layout properties
 	private final PropertyLayoutInfo layoutInfo;
 
-	
 	//
 	// SQL related properties
 	private final String sqlTableName;
@@ -75,7 +75,7 @@ public class PropertyDescriptor implements Serializable
 	public PropertyDescriptor(final Builder builder)
 	{
 		super();
-		
+
 		//
 		// General
 		propertyName = builder.propertyName;
@@ -83,11 +83,11 @@ public class PropertyDescriptor implements Serializable
 		valueType = builder.valueType;
 		composedValuePartName = builder.composedValuePartName;
 		childPropertyDescriptors = builder.childPropertyDescriptors.build();
-		
+
 		//
 		// Layout
 		layoutInfo = builder.layoutInfo;
-		
+
 		//
 		// SQL related properties
 		sqlTableName = builder.sqlTableName;
@@ -171,27 +171,27 @@ public class PropertyDescriptor implements Serializable
 
 		return collector.build();
 	}
-	
+
 	public String getSqlTableName()
 	{
 		return sqlTableName;
 	}
-	
+
 	public String getSqlParentLinkColumnName()
 	{
 		return sqlParentLinkColumnName;
 	}
-	
+
 	public String getSqlColumnName()
 	{
 		return sqlColumnName;
 	}
-	
+
 	public String getSqlColumnSql()
 	{
 		return sqlColumnSql;
 	}
-	
+
 	public DataFieldLookupDescriptor getSqlLookupDescriptor()
 	{
 		return sqlLookupDescriptor;
@@ -217,7 +217,7 @@ public class PropertyDescriptor implements Serializable
 		private final ImmutableMap.Builder<PropertyName, PropertyDescriptor> childPropertyDescriptors = ImmutableMap.builder();
 		private String composedValuePartName;
 		private PropertyLayoutInfo layoutInfo = PropertyLayoutInfo.DEFAULT;
-		
+
 		private String sqlTableName;
 		private String sqlParentLinkColumnName;
 		private String sqlColumnName;
@@ -277,7 +277,13 @@ public class PropertyDescriptor implements Serializable
 			this.layoutInfo = layoutInfo;
 			return this;
 		}
-		
+
+		/**
+		 * Set the SQL table name. For the {@link SqlModelDataSource} to work, each descriptor itself of its parent has to have this information.
+		 *
+		 * @param sqlTableName
+		 * @return
+		 */
 		public Builder setSqlTableName(final String sqlTableName)
 		{
 			this.sqlTableName = sqlTableName;
@@ -295,19 +301,19 @@ public class PropertyDescriptor implements Serializable
 			this.sqlColumnName = sqlColumnName;
 			return this;
 		}
-		
+
 		public Builder setSqlColumnSql(String sqlColumnSql)
 		{
 			this.sqlColumnSql = sqlColumnSql;
 			return this;
 		}
-		
+
 		public Builder setSqlDisplayType(int sqlDisplayType)
 		{
 			this.sqlDisplayType = sqlDisplayType;
 			return this;
 		}
-		
+
 		public int getSqlDisplayType()
 		{
 			if (sqlDisplayType != null)
@@ -320,7 +326,7 @@ public class PropertyDescriptor implements Serializable
 			// FIXME: i think, in final version this part will be completelly removed
 			if (valueType == null)
 			{
-				
+
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueType))
 			{
@@ -346,30 +352,30 @@ public class PropertyDescriptor implements Serializable
 			{
 				return DisplayType.YesNo;
 			}
-			
+
 			return -1;
 		}
-		
+
 		public Builder setSqlLookupDescriptor(DataFieldLookupDescriptor sqlLookupDescriptor)
 		{
 			this.sqlLookupDescriptor = sqlLookupDescriptor;
 			return this;
 		}
-		
+
 		private DataFieldLookupDescriptor getSqlLookupDescriptor()
 		{
 			if (sqlLookupDescriptor != null)
 			{
 				return sqlLookupDescriptor;
 			}
-			
+
 			// FIXME: i think, in final version this part will be completelly removed
 			final int sqlDisplayType = getSqlDisplayType();
 			if (DisplayType.isLookup(sqlDisplayType) && sqlColumnName != null)
 			{
 				return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, 0);
 			}
-			
+
 			return sqlLookupDescriptor;
 		}
 	}

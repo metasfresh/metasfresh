@@ -29,12 +29,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.model.WindowModel;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,25 +60,29 @@ public final class HARDCODED_Order
 	public static final PropertyName ORDER_BillBPartnerAndAddress = PropertyName.of(ORDER_Bill_BPartner_ID + "#" + ORDER_Bill_Location_ID + "#" + ORDER_Bill_User_ID);
 	//
 	public static final PropertyName ORDER_Lines = PropertyName.of("Lines");
-	
+
 	public static final PropertyName ORDER_GrandTotal = PropertyName.of(I_C_Order.COLUMNNAME_GrandTotal);
 	public static final PropertyName ORDER_TotalLines = PropertyName.of(I_C_Order.COLUMNNAME_TotalLines);
-	
+
 	private static WindowModel singletonWindowModel;
-	
+
 	private HARDCODED_Order()
 	{
 		super();
 	}
-	
+
 	public static PropertyDescriptor createRootPropertyDescriptor()
 	{
 		return PropertyDescriptor.builder()
 				.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
+
+				// currently the "main" table needs to be specified on this level, whereas "sub tables" like the ORDER_Lines declare their table in the respective child properties descriptor
 				.setSqlTableName(I_C_Order.Table_Name)
+
 				//
 				// Group: Document
 				.addChildPropertyDescriptor(PropertyDescriptor.builder()
+						// this ChildPropertyDescriptor goes with the "main table"
 						.setPropertyName("Document")
 						.setType(PropertyDescriptorType.Group)
 						//
@@ -253,7 +257,7 @@ public final class HARDCODED_Order
 				//
 				.build();
 	}
-	
+
 	public static synchronized WindowModel getSingletonWindowModel()
 	{
 		if (VaadinService.getCurrentRequest().getParameter("restartApplication") != null)
@@ -261,16 +265,16 @@ public final class HARDCODED_Order
 			System.out.println("Resting singletonWindowModel: "+singletonWindowModel);
 			singletonWindowModel = null;
 		}
-		
-		
+
+
 		if (singletonWindowModel == null)
 		{
 			singletonWindowModel = new WindowModel(createRootPropertyDescriptor());
 		}
-		
+
 		return singletonWindowModel;
 	}
-	
+
 	public static final void createHardcodedData(WindowModel model)
 	{
 		model.setProperty(ORDER_DocumentNo, "123456");
@@ -295,7 +299,7 @@ public final class HARDCODED_Order
 			model.setGridProperty(ORDER_Lines, rowId, PropertyName.of("QtyTU"), BigDecimal.valueOf(i));
 			model.setGridProperty(ORDER_Lines, rowId, PropertyName.of("M_HU_PI_Item_Product_ID"), LookupValue.of(1, "IFCO"));
 		}
-		
+
 	}
 
 	public static final class OrderWindowTitleSummaryPropertyValue extends CalculatedPropertyValue
@@ -344,7 +348,7 @@ public final class HARDCODED_Order
 					+"\nGrand total: "+values.getPropertyValue(ORDER_GrandTotal).getValueAsString().or("0");
 		}
 	}
-	
+
 	public static final class RecordSummaryPropertyValue extends CalculatedPropertyValue
 	{
 		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_DocumentNo, ORDER_DatePromised, ORDER_C_BPartner_ID, ORDER_C_BPartner_Location_ID);

@@ -1,11 +1,24 @@
 package de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.gridWindowVO;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.adempiere.util.Check;
+import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimaps;
+import com.google.gwt.dev.util.collect.HashMap;
+
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor.Builder;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 import de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.IPropertyDescriptorProvider;
 
@@ -45,14 +58,78 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 	{
 		final GridWindowVO gridWindowVO = GridWindowVO.create(Env.getCtx(), 0, AD_Window_ID);
 
-		final Builder builder = PropertyDescriptor.builder().setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot);
+		final Builder rootBuilder = PropertyDescriptor.builder().setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot);
+		final List<GridTabVO> gridTabsVO = gridWindowVO.getTabs();
 
-		for (final GridTabVO tab : gridWindowVO.getTabs())
+		final GridTabVO rootTab = gridTabsVO.get(0);
+
+		rootBuilder
+				.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
+				.setSqlTableName(rootTab.TableName);
+
+		Map<Integer, PropertyDescriptor> level2currentDescriptor = new HashMap<>();
+
+		for (final GridTabVO tab : gridTabsVO)
 		{
+			// we again look also at the root tab now.
+			final Builder tabBuilder = PropertyDescriptor.builder();
+
+			tabBuilder
+					.setPropertyName(tab.TableName)
+					.setType(PropertyDescriptorType.Group);
+
+			final ArrayList<GridFieldVO> fields = tab.getFields();
+
+			final ImmutableMultimap<String, GridFieldVO> fieldGroups = Multimaps.index(fields, VOPropertyDescriptorProvider::getFieldGroupName);
+
+			final Set<Integer> fieldIdsAdded = new HashSet<>();
+
+			fields.forEach(p -> {
+				if (fieldIdsAdded.contains(p.getAD_Field_ID()))
+				{
+					return;
+				}
+
+				// create this field's PropertyDescriptor
+				// TODO here we need that path-propertyname
+				final Builder fieldBuilder = PropertyDescriptor.builder()
+						.setPropertyName(p.getColumnName());
+
+				fieldIdsAdded.add(p.getAD_Field_ID());
+
+				// iterate all other fields of this field's field group and flag them as added, then go on with this loop
+			});
+
+			final PropertyDescriptor tabDescriptor = tabBuilder.build();
+			rootBuilder.addChildPropertyDescriptor(tabDescriptor);
+			level2currentDescriptor.put(tab.TabLevel, tabDescriptor);
 
 		}
 
-		return builder.build();
+		return rootBuilder.build();
+	}
+
+	final static String NOFIELDGROUP = "NOFIELDGROUP";
+
+	private static String getFieldGroupName(final GridFieldVO field)
+	{
+		final String fieldGroupName;
+		if (field.getFieldGroup() == null)
+		{
+			fieldGroupName = NOFIELDGROUP;
+		}
+		else
+		{
+			if (Check.isEmpty(field.getFieldGroup().getFieldGroupName(), true))
+			{
+				fieldGroupName = NOFIELDGROUP;
+			}
+			else
+			{
+				fieldGroupName = field.getFieldGroup().getFieldGroupName();
+			}
+		}
+		return fieldGroupName;
 	}
 
 }
