@@ -78,7 +78,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			@Override
 			protected void setInternalValue(Object newValue)
 			{
-				// TODO Auto-generated method stub
+				getComboDataSource().setCurrentValue(newValue);
 				super.setInternalValue(newValue);
 			}
 		};
@@ -117,6 +117,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		}
 		else
 		{
+			getComboDataSource().setCurrentValue(value);
 			super.setValue(propertyName, value);
 		}
 	}
@@ -131,6 +132,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		private final int pageLength;
 		private SqlLazyLookupDataSource _lookupDataSource;
+		private LookupValue _currentValue;
 
 		public ComboDataSource(int pageLength)
 		{
@@ -185,27 +187,43 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			}
 			return _lookupDataSource;
 		}
+		
+		public void setCurrentValue(Object newValue)
+		{
+			this._currentValue = (LookupValue)newValue;
+		}
+		
+		private LookupValue getCurrentValue()
+		{
+			return this._currentValue;
+		}
 
 		@Override
 		public int size(final String filter)
 		{
 			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
-			if (lookupDataSource == null)
+			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
+			if (askDataSource)
 			{
-				return 0;
+				return lookupDataSource.size(filter);
 			}
-			return lookupDataSource.size(filter);
+			
+			final LookupValue currentValue = getCurrentValue();
+			return currentValue == null ? 0 : 1;
 		}
 
 		@Override
 		public List<LookupValue> findEntities(final int firstRow, final String filter)
 		{
 			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
-			if (lookupDataSource == null)
+			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
+			if (askDataSource)
 			{
-				return ImmutableList.of();
+				return lookupDataSource.findEntities(filter, firstRow, pageLength);
 			}
-			return lookupDataSource.findEntities(filter, firstRow, pageLength);
+			
+			final LookupValue currentValue = getCurrentValue();
+			return currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
 		}
 
 	}

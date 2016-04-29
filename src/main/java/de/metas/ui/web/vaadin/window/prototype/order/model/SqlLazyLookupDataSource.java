@@ -131,8 +131,7 @@ public class SqlLazyLookupDataSource
 		}
 	}
 
-	
-	private final boolean isValidFilter(final String filter)
+	public boolean isValidFilter(final String filter)
 	{
 		if (Check.isEmpty(filter, true))
 		{
