@@ -706,4 +706,20 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return entityType;
 	}
-}   //  MTabVO
+
+	public int getAD_Tab_ID()
+	{
+		return AD_Tab_ID;
+	}
+
+	public int getTabLevel()
+	{
+		return TabLevel;
+	}
+
+	public String getTableName()
+	{
+		return TableName;
+	}
+
+}
