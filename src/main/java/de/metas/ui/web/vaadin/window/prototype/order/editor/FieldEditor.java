@@ -8,6 +8,7 @@ import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Field;
+import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
@@ -62,6 +63,8 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 				listener().valueChange(getPropertyName(), valueField.getValue());
 			}
 		});
+		
+		updateUI();
 	}
 
 	protected abstract AbstractField<T> createValueField();
@@ -300,4 +303,20 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	{
 		valueField.clear();
 	}
+	
+	private void updateUI()
+	{
+		// TODO: move this to model
+		
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		final boolean visible = propertyDescriptor != null && propertyDescriptor.getLayoutInfo().isDisplayed();
+		
+		setVisible(visible);
+		final Label label = getLabel();
+		if (label != null)
+		{
+			label.setVisible(visible);
+		}
+	}
+
 }

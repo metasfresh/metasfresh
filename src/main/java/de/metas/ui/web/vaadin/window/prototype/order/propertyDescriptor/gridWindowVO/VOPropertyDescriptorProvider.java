@@ -26,6 +26,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor.Builder;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyLayoutInfo;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
@@ -287,6 +288,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setPropertyName(PropertyName.of(parentBuilder.getPropertyName(), gridFieldVO.getColumnName()))
 					.setValueType(getValueType(gridFieldVO))
 					.setCaption(gridFieldVO.getHeader())
+					.setLayoutInfo(createLayoutInfo(gridFieldVO))
 
 			// shall be factored out of the descriptor
 					.setSqlColumnName(gridFieldVO.getColumnName())
@@ -299,6 +301,13 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			fieldIdsAdded.add(gridFieldVO.getAD_Field_ID());
 
 			logger.debug("Added {} to {} ({})", fieldDescriptor, parentBuilder, gridFieldVO);
+		}
+		
+		private PropertyLayoutInfo createLayoutInfo(final GridFieldVO gridFieldVO)
+		{
+			return PropertyLayoutInfo.builder()
+					.setDisplayed(gridFieldVO.isDisplayed())
+					.build();
 		}
 
 		private static Class<?> getValueType(final GridFieldVO field)
