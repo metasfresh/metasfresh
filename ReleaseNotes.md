@@ -20,8 +20,9 @@ The actual release notes
     * adding a simple DB function to do the job for now
 
 ## Fixes
+  - FRESH-270 material tracking: total received qty and scrap sometimes missing on invoice
+     * fixed a problem where those two invoice detail records were attached to a not-displayed group
  - FRESH-234 report sales inout qtys for products and TUs are not alligned
-
 
 # metasfresh 4.15.14
 
