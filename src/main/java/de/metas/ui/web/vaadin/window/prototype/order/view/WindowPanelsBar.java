@@ -10,6 +10,7 @@ import com.vaadin.ui.UI;
 
 import de.metas.ui.web.vaadin.window.prototype.order.editor.Editor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorsContainer;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.GridEditor;
 
 /*
  * #%L
@@ -59,6 +60,10 @@ public class WindowPanelsBar extends CustomComponent
 			alreadyAddedEditors.put(editor, Boolean.TRUE);
 
 			if (EditorsContainer.isDocumentFragment(editor))
+			{
+				addNavigationShortcut(editor);
+			}
+			else if (editor instanceof GridEditor)
 			{
 				addNavigationShortcut(editor);
 			}

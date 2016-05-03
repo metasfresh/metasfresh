@@ -103,6 +103,11 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	@Override
 	public final String getCaption()
 	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if(propertyDescriptor != null)
+		{
+			return propertyDescriptor.getCaption();
+		}
 		return getPropertyName().getCaption();
 	}
 	

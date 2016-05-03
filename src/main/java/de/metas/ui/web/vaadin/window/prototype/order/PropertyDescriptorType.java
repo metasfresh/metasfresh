@@ -26,6 +26,10 @@ public enum PropertyDescriptorType
 {
 	Group,
 	Tabular,
+
+	/**
+	 * A single value, such as a document number
+	 */
 	Value,
 
 	/**

@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.prototype.order.editor;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.VerticalLayout;
 
-import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 
 /*
  * #%L
@@ -32,9 +32,9 @@ public class WindowContentRootEditorsContainer extends EditorsContainer
 {
 	private final VerticalLayout content;
 
-	public WindowContentRootEditorsContainer(PropertyName propertyName)
+	public WindowContentRootEditorsContainer(PropertyDescriptor propertyDescriptor)
 	{
-		super(propertyName);
+		super(propertyDescriptor);
 		
 		content = new VerticalLayout();
 		content.setSizeFull();
