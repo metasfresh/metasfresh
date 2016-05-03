@@ -1122,9 +1122,4 @@ public class GridFieldVO implements Serializable
 		return Included_Tab_ID;
 	}
 
-	public int getIncluded_Tab_ID()
-	{
-		return Included_Tab_ID;
-	}
-
 }
