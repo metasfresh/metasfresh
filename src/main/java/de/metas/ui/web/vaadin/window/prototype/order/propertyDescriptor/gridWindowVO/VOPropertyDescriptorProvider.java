@@ -112,14 +112,12 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			gridTabsVO = gridWindowVO.getTabs();
 			id2gridTabVO = Maps.uniqueIndex(gridTabsVO, x -> x.getAD_Tab_ID());
 
-			
 			final GridTabVO rootTab = gridTabsVO.get(0);
 			final String rootTableName = rootTab.getTableName();
 			rootBuilder = PropertyDescriptor.builder()
 					.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
 					.setSqlTableName(rootTableName);
-			
-			
+
 			this.parent_SqlTableName = rootTableName;
 			try
 			{
@@ -147,37 +145,35 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 				logger.debug("Skip adding {} because it was already considered", gridTabVO);
 				return;
 			}
-			
+
 			logger.debug("Adding {} to {}", gridTabVO, parentBuilder);
 
 			final LinkedHashMap<String, PropertyDescriptor.Builder> groupBuilders = new LinkedHashMap<>();
 
-			gridTabVO.getFields().forEach(gridFieldVO -> {
+			gridTabVO.getFields()
+					.stream()
+					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
+					.filter(gridFieldVO -> fieldIdsAdded.add(gridFieldVO.getAD_Field_ID()))
+					.forEach(gridFieldVO -> {
+						if (gridFieldVO.getIncluded_Tab_ID() > 0)
+						{
+							final PropertyDescriptor.Builder builder = createIncludedTab(parentBuilder.getPropertyName(), gridFieldVO);
+							if (builder == null)
+							{
+								return;
+							}
 
-				if (fieldIdsAdded.contains(gridFieldVO.getAD_Field_ID()))
-				{
-					return;
-				}
+							final String key = "IncludedTab_" + gridFieldVO.getIncluded_Tab_ID();
+							groupBuilders.put(key, builder);
+						}
+						else
+						{
+							final PropertyDescriptor.Builder groupBuilder = getCreateGroupBuilder(groupBuilders, gridTabVO, gridFieldVO);
+							createAndAddField(groupBuilder, gridFieldVO);
+						}
 
-				if (gridFieldVO.getIncluded_Tab_ID() > 0)
-				{
-					final PropertyDescriptor.Builder builder = createIncludedTab(parentBuilder.getPropertyName(), gridFieldVO);
-					if (builder == null)
-					{
-						return;
-					}
+					});
 
-					final String key = "IncludedTab_" + gridFieldVO.getIncluded_Tab_ID();
-					groupBuilders.put(key, builder);
-				}
-				else
-				{
-					final PropertyDescriptor.Builder groupBuilder = getCreateGroupBuilder(groupBuilders, gridTabVO, gridFieldVO);
-					createAndAddField(groupBuilder, gridFieldVO);
-				}
-
-			});
-			
 			// TODO: find out other child tabs and include them here
 
 			for (final PropertyDescriptor.Builder groupBuilder : groupBuilders.values())
@@ -235,7 +231,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			try
 			{
 				// Add fields directly to tab builder (without creating field groups)
-				includedGridTabVO.getFields().forEach(fieldOfIncludedTab -> createAndAddField(includedTabBuilder, fieldOfIncludedTab));
+				includedGridTabVO.getFields()
+						.stream()
+						.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
+						.forEach(fieldOfIncludedTab -> createAndAddField(includedTabBuilder, fieldOfIncludedTab));
 			}
 			finally
 			{
@@ -298,11 +297,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 			final PropertyDescriptor fieldDescriptor = fieldBuilder.build();
 			parentBuilder.addChildPropertyDescriptor(fieldDescriptor);
-			fieldIdsAdded.add(gridFieldVO.getAD_Field_ID());
 
 			logger.debug("Added {} to {} ({})", fieldDescriptor, parentBuilder, gridFieldVO);
 		}
-		
+
 		private PropertyLayoutInfo createLayoutInfo(final GridFieldVO gridFieldVO)
 		{
 			return PropertyLayoutInfo.builder()
