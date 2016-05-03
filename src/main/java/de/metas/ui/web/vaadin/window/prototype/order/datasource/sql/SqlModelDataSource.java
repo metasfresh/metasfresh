@@ -65,7 +65,6 @@ public class SqlModelDataSource implements ModelDataSource
 	// SQL definitions
 	private final String sqlTableName;
 	private final Map<PropertyName, SqlField> sqlFields;
-	@SuppressWarnings("unused")
 	private final SqlField sqlField_KeyColumn;
 	private final SqlField sqlField_ParentLinkColumn;
 	/** SQL: SELECT ... FROM ... */

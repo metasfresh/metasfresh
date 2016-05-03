@@ -1,10 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.view;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
+import org.vaadin.spring.annotation.PrototypeScope;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,6 +12,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
@@ -25,7 +26,6 @@ import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants.OnChangesFo
 import de.metas.ui.web.vaadin.window.prototype.order.editor.Editor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorFactory;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorListener;
-import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorsContainer;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.GridEditor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LabelEditor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
@@ -52,6 +52,8 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
  * #L%
  */
 
+@org.springframework.stereotype.Component
+@PrototypeScope
 @SuppressWarnings("serial")
 public class WindowViewImpl extends VerticalLayout implements WindowView
 {
@@ -68,12 +70,16 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	private Button btnNextRecord;
 	private WindowRecordIndicators recordIndicators;
 	private WindowPanelsBar panelsBar;
-	private HorizontalLayout panelsContainer;
+	private HorizontalLayout rootEditorContainer;
+	
 	private WindowViewListener listener;
 
 	//
-	// Properties
-	private Map<PropertyName, Editor> _propertyName2editor;
+	// Editors (UI)
+	private LabelEditor titleEditor;
+	private LabelEditor recordSummaryEditor;
+	private LabelEditor recordAdditionalSummaryEditor;
+	private Map<PropertyName, Editor> _propertyName2editor = ImmutableMap.of();
 
 	/** Listens editors and forwards to {@link WindowViewListener} */
 	private final EditorListener editorListener = new EditorListener()
@@ -114,20 +120,18 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		};
 
 	};
-
-	public WindowViewImpl(final PropertyDescriptor rootPropertyDescriptor)
+	
+	public WindowViewImpl()
 	{
 		super();
 
-		createUI(rootPropertyDescriptor);
+		createUI();
 	}
 
-	private void createUI(final PropertyDescriptor rootPropertyDescriptor)
+	private void createUI()
 	{
 		final ComponentContainer content = this;
 		content.addStyleName(STYLE);
-
-		final ImmutableMap.Builder<PropertyName, Editor> editorsCollector = ImmutableMap.builder();
 
 		//
 		// Lane: title
@@ -136,12 +140,11 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			icon.setPrimaryStyleName(STYLE + "-title-icon");
 			icon.setIcon(FontAwesome.BARS);
 
-			final LabelEditor title = new LabelEditor(WindowConstants.PROPERTYNAME_WindowTitle);
-			title.setPrimaryStyleName(STYLE + "-title-text");
-			title.setEditorListener(editorListener);
-			editorsCollector.put(title.getPropertyName(), title);
-
-			final HorizontalLayout panel = new HorizontalLayout(icon, title);
+			this.titleEditor = new LabelEditor(WindowConstants.PROPERTYNAME_WindowTitle);
+			titleEditor.setPrimaryStyleName(STYLE + "-title-text");
+			titleEditor.setEditorListener(editorListener);
+	
+			final HorizontalLayout panel = new HorizontalLayout(icon, titleEditor);
 			panel.addStyleName(STYLE + "-title-lane");
 			content.addComponent(panel);
 		}
@@ -177,7 +180,6 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 				}
 			});
 			actionsPanel.addComponent(btnCancel);
-
 		}
 
 		//
@@ -189,11 +191,10 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 
 			// Component: navigation buttons and document summary text
 			{
-				final LabelEditor recordSummary = new LabelEditor(WindowConstants.PROPERTYNAME_RecordSummary);
-				recordSummary.addStyleName(STYLE + "-record-summary-label");
-				recordSummary.setContentModel(ContentMode.PREFORMATTED);
-				recordSummary.setEditorListener(editorListener);
-				editorsCollector.put(recordSummary.getPropertyName(), recordSummary);
+				this.recordSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordSummary);
+				recordSummaryEditor.addStyleName(STYLE + "-record-summary-label");
+				recordSummaryEditor.setContentModel(ContentMode.PREFORMATTED);
+				recordSummaryEditor.setEditorListener(editorListener);
 
 				btnPreviousRecord = new Button();
 				btnPreviousRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
@@ -221,7 +222,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 					}
 				});
 
-				final HorizontalLayout recordNavigationComp = new HorizontalLayout(btnPreviousRecord, recordSummary, btnNextRecord);
+				final HorizontalLayout recordNavigationComp = new HorizontalLayout(btnPreviousRecord, recordSummaryEditor, btnNextRecord);
 				recordNavigationComp.addStyleName(STYLE + "-record-nav");
 				panelSummary.addComponent(recordNavigationComp);
 			}
@@ -234,12 +235,11 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 
 			// Component: document additional summary text
 			{
-				final LabelEditor recordAdditionalSummary = new LabelEditor(WindowConstants.PROPERTYNAME_RecordAditionalSummary);
-				recordAdditionalSummary.addStyleName(STYLE + "-record-addsummary-label");
-				recordAdditionalSummary.setContentModel(ContentMode.PREFORMATTED);
-				recordAdditionalSummary.setEditorListener(editorListener);
-				editorsCollector.put(recordAdditionalSummary.getPropertyName(), recordAdditionalSummary);
-				panelSummary.addComponent(recordAdditionalSummary);
+				this.recordAdditionalSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordAditionalSummary);
+				recordAdditionalSummaryEditor.addStyleName(STYLE + "-record-addsummary-label");
+				recordAdditionalSummaryEditor.setContentModel(ContentMode.PREFORMATTED);
+				recordAdditionalSummaryEditor.setEditorListener(editorListener);
+				panelSummary.addComponent(recordAdditionalSummaryEditor);
 			}
 		}
 
@@ -254,42 +254,10 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 		//
 		// Panels container
 		{
-			panelsContainer = new HorizontalLayout();
-			panelsContainer.addStyleName(STYLE + "-content-lane");
-			panelsContainer.setSizeFull();
-			content.addComponent(panelsContainer);
-		}
-
-		//
-		// Create editors
-		{
-			final Editor editorsRoot = createEditorsRecursivelly(rootPropertyDescriptor, editorsCollector);
-			if (editorsRoot == null)
-			{
-				throw new IllegalStateException("No editor was created");
-			}
-
-			panelsContainer.addComponent(editorsRoot);
-			_propertyName2editor = editorsCollector.build();
-
-			//
-			// Set navigation bar shortcuts
-			{
-				final IdentityHashMap<Editor, Boolean> alreadyAddedEditors = new IdentityHashMap<>();
-				for (final Editor editor : _propertyName2editor.values())
-				{
-					if (alreadyAddedEditors.containsKey(editor))
-					{
-						continue;
-					}
-					alreadyAddedEditors.put(editor, Boolean.TRUE);
-
-					if (EditorsContainer.isDocumentFragment(editor))
-					{
-						panelsBar.addNavigationShortcut(editor);
-					}
-				}
-			}
+			rootEditorContainer = new HorizontalLayout();
+			rootEditorContainer.addStyleName(STYLE + "-content-lane");
+			rootEditorContainer.setSizeFull();
+			content.addComponent(rootEditorContainer);
 		}
 	}
 
@@ -319,6 +287,43 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 
 		return editor;
 	}
+	
+	@Override
+	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	{
+		//
+		// Create editors
+		{
+			final ImmutableMap.Builder<PropertyName, Editor> editorsCollector = ImmutableMap.builder();
+			
+			editorsCollector.put(titleEditor.getPropertyName(), titleEditor);
+			editorsCollector.put(recordSummaryEditor.getPropertyName(), recordSummaryEditor);
+			editorsCollector.put(recordAdditionalSummaryEditor.getPropertyName(), recordAdditionalSummaryEditor);
+			
+			final Editor rootEditor = createEditorsRecursivelly(rootPropertyDescriptor, editorsCollector);
+			if (rootEditor == null)
+			{
+				throw new IllegalStateException("No editor was created");
+			}
+
+			rootEditorContainer.removeAllComponents();
+			rootEditorContainer.addComponent(rootEditor);
+			_propertyName2editor = editorsCollector.build();
+
+			//
+			// Set navigation bar shortcuts
+			panelsBar.setNavigationShortcutsFromEditors(_propertyName2editor.values());
+		}
+
+		//
+		// Notify listener
+		if (listener != null)
+		{
+			final Set<PropertyName> watchedPropertyNames = getWatchedPropertyNames();
+			listener.viewSubscribeToValueChanges(watchedPropertyNames);
+		}
+
+	}
 
 	@Override
 	public void setListener(final WindowViewListener listener)
@@ -341,6 +346,12 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 			final Set<PropertyName> watchedPropertyNames = getWatchedPropertyNames();
 			listener.viewSubscribeToValueChanges(watchedPropertyNames);
 		}
+	}
+	
+	@Override
+	public Component getComponent()
+	{
+		return this;
 	}
 
 	@Override
@@ -458,7 +469,7 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	}
 
 	@Override
-	public void showError(String message)
+	public void showError(final String message)
 	{
 		Notification.show(message, Notification.Type.WARNING_MESSAGE);
 	}

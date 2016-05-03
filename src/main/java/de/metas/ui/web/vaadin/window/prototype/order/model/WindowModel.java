@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+import org.vaadin.spring.annotation.PrototypeScope;
 
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
@@ -20,6 +22,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.NullModelDataSource;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.GridPropertyChangedModelEvent;
@@ -49,33 +52,41 @@ import de.metas.ui.web.vaadin.window.prototype.order.model.event.PropertyChanged
  * #L%
  */
 
+@Component
+@PrototypeScope
 public class WindowModel
 {
 	private static final Logger logger = LogManager.getLogger(WindowModel.class);
 
-	private final PropertyDescriptor rootPropertyDescriptor;
 	private final String id = UUID.randomUUID().toString();
 	private final EventBus eventBus = new EventBus(getClass().getName());
 
-	private final ModelDataSource dataSource;
 
 	//
 	// Properties
-	private final PropertyValueCollection _properties;
+	private PropertyDescriptor _rootPropertyDescriptor;
+	private PropertyValueCollection _properties = PropertyValueCollection.EMPTY;
+	private ModelDataSource _dataSource = NullModelDataSource.instance;
 
-	private int _recordIndex;
+	private int _recordIndex = -1;
 
-	/**
-	 * Create a new instance using the given descriptor.
-	 *
-	 * @param rootPropertyDescriptor
-	 */
-	public WindowModel(final PropertyDescriptor rootPropertyDescriptor)
+	public WindowModel()
 	{
 		super();
-		this.rootPropertyDescriptor = rootPropertyDescriptor;
+	}
+	
+	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	{
+		if (this._rootPropertyDescriptor == rootPropertyDescriptor)
+		{
+			return;
+		}
+		Check.assumeNotNull(rootPropertyDescriptor, "Parameter rootPropertyDescriptor is not null");
+		
+		
+		this._rootPropertyDescriptor = rootPropertyDescriptor;
 		// this.dataSource = new DummyModelDataSource(rootPropertyDescriptor);
-		this.dataSource = new SqlModelDataSource(rootPropertyDescriptor);
+		this._dataSource = new SqlModelDataSource(rootPropertyDescriptor);
 
 		final PropertyValueCollection.Builder propertiesCollector = PropertyValueCollection.builder();
 
@@ -140,7 +151,12 @@ public class WindowModel
 
 	public PropertyDescriptor getRootPropertyDescriptor()
 	{
-		return rootPropertyDescriptor;
+		return _rootPropertyDescriptor;
+	}
+	
+	private ModelDataSource getDataSource()
+	{
+		return _dataSource;
 	}
 
 	public EventBus getEventBus()
@@ -166,6 +182,7 @@ public class WindowModel
 
 	private int getRecordsCount()
 	{
+		final ModelDataSource dataSource = getDataSource();
 		return dataSource.getRecordsCount();
 	}
 
@@ -191,6 +208,7 @@ public class WindowModel
 
 	private final void loadRecord()
 	{
+		final ModelDataSource dataSource = getDataSource();
 		final Map<PropertyName, Object> values = dataSource.getRecord(getRecordIndex());
 
 		//
@@ -461,7 +479,10 @@ public class WindowModel
 	public void saveRecord()
 	{
 		final Map<PropertyName, Object> values = getProperties().getValuesAsMap();
+		
+		final ModelDataSource dataSource = getDataSource();
 		dataSource.saveRecord(getRecordIndex(), values);
+		
 		loadRecord();
 	}
 

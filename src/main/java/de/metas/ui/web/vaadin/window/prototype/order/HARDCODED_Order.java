@@ -272,14 +272,16 @@ public final class HARDCODED_Order
 	{
 		if (VaadinService.getCurrentRequest().getParameter("restartApplication") != null)
 		{
-			System.out.println("Resting singletonWindowModel: "+singletonWindowModel);
+			System.out.println("Restarting singletonWindowModel: " + singletonWindowModel);
 			singletonWindowModel = null;
 		}
 
 
 		if (singletonWindowModel == null)
 		{
-			singletonWindowModel = new WindowModel(createRootPropertyDescriptor());
+			final WindowModel windowModel = new WindowModel();
+			windowModel.setRootPropertyDescriptor(createRootPropertyDescriptor());
+			singletonWindowModel = windowModel;
 		}
 
 		return singletonWindowModel;
