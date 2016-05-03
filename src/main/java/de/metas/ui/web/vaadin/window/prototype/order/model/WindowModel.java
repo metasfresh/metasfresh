@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.vaadin.spring.annotation.PrototypeScope;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 
@@ -73,6 +74,15 @@ public class WindowModel
 	public WindowModel()
 	{
 		super();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("rootPropertyDescriptor", _rootPropertyDescriptor)
+				.toString();
 	}
 	
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
