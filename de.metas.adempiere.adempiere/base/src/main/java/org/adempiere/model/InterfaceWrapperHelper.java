@@ -13,11 +13,11 @@ package org.adempiere.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,12 +66,19 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 
+/**
+ * This class is the developers' entrypoint to using <code>model</code> instances of different types.
+ * It internally relates on a {@link CompositeInterfaceWrapperHelper} which in turn supports all the types that are supported by this class.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
 	public static final String COLUMNNAME_SUFFIX_Override = "_Override";
-	
+
 	private static final CompositeInterfaceWrapperHelper helpers = new CompositeInterfaceWrapperHelper()
 			.addFactory(new POInterfaceWrapperHelper())
 			.addFactory(new GridTabInterfaceWrapperHelper())
@@ -91,7 +98,7 @@ public class InterfaceWrapperHelper
 	{
 		return org.compiere.Adempiere.isUnitTestMode();
 	}
-	
+
 	public static final void registerHelper(IInterfaceWrapperHelper helper)
 	{
 		helpers.addFactory(helper);
@@ -147,7 +154,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Convenient method to create a new instance of given class, using current context and current transaction.
-	 * 
+	 *
 	 * @param cl
 	 */
 	public static <T> T newInstance(final Class<T> cl)
@@ -177,7 +184,7 @@ public class InterfaceWrapperHelper
 	 *
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 *             <ul>
-	 *             <li> {@link #create(Object, Class)}
+	 *             <li>{@link #create(Object, Class)}
 	 *             <li>or {@link #createOld(Object, Class)}
 	 *             </ul>
 	 */
@@ -968,7 +975,7 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
-		
+
 		return helpers.hasModelColumnName(model, columnName);
 	}
 
@@ -1525,7 +1532,7 @@ public class InterfaceWrapperHelper
 			throw new AdempiereException("Model translation is not supported for " + model + " (class:" + model.getClass() + ")");
 		}
 	}
-	
+
 	public static final IModelTranslationMap getModelTranslationMap(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
@@ -1538,7 +1545,7 @@ public class InterfaceWrapperHelper
 			return NullModelTranslationMap.instance;
 		}
 	}
-	
+
 	/**
 	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
@@ -1840,13 +1847,13 @@ public class InterfaceWrapperHelper
 
 		return InterfaceWrapperHelper.create(model, clazz);
 	}
-	
+
 	/**
 	 * Disables the read only (i.e. not updateable) columns enforcement.
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
-	 * 
+	 *
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
-	 * 
+	 *
 	 * @param model
 	 */
 	public static final void disableReadOnlyColumnCheck(final Object model)
@@ -1854,7 +1861,7 @@ public class InterfaceWrapperHelper
 		Check.assumeNotNull(model, "model not null");
 		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
 	}
-	
+
 	public static final ModelDynAttributeAccessor<Object, Boolean> ATTR_ReadOnlyColumnCheckDisabled = new ModelDynAttributeAccessor<>(InterfaceWrapperHelper.class.getName(), "ReadOnlyColumnCheckDisabled", Boolean.class);
-	
+
 }
