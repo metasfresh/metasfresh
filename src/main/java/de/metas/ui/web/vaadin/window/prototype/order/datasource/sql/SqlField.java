@@ -98,6 +98,7 @@ final class SqlField
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("table", sqlTable)
 				.add("columnName", columnName)
 				.toString();
 	}

@@ -40,7 +40,7 @@ public class EditorFactory
 		}
 		else if (WindowConstants.PROPERTYNAME_WindowRoot.equals(descriptor.getPropertyName()))
 		{
-			return new WindowContentRootEditorsContainer(descriptor.getPropertyName());
+			return new WindowContentRootEditorsContainer(descriptor);
 		}
 		else
 		{

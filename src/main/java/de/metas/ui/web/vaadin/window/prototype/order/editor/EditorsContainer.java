@@ -41,11 +41,6 @@ public abstract class EditorsContainer extends AbstractEditor
 		super(descriptor);
 	}
 
-	public EditorsContainer(final PropertyName propertyName)
-	{
-		super(propertyName);
-	}
-
 	@Override
 	public void setValue(final PropertyName propertyName, final Object value)
 	{

@@ -119,6 +119,17 @@ final class GridEditorDataContainer extends AbstractContainer
 	{
 		return propertyNames;
 	}
+	
+	public String getHeader(final Object propertyId)
+	{
+		final PropertyDescriptor childPropertyDescriptor = descriptor.getChildPropertyDescriptorsAsMap().get(propertyId);
+		if (childPropertyDescriptor != null)
+		{
+			return childPropertyDescriptor.getCaption();
+		}
+		
+		return "";
+	}
 
 	@Override
 	public Collection<GridRowId> getItemIds()

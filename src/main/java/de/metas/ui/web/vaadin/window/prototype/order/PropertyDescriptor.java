@@ -57,8 +57,8 @@ public class PropertyDescriptor implements Serializable
 	private final Class<?> valueType;
 	private final String composedValuePartName;
 	private final ImmutableMap<PropertyName, PropertyDescriptor> childPropertyDescriptors;
-	//
 	private Set<PropertyName> _allPropertyNames; // lazy
+	private final String caption;
 
 	//
 	// Layout properties
@@ -83,7 +83,8 @@ public class PropertyDescriptor implements Serializable
 		type = builder.type;
 		valueType = builder.valueType;
 		composedValuePartName = builder.composedValuePartName;
-		childPropertyDescriptors = builder.childPropertyDescriptors.build();
+		childPropertyDescriptors = builder.getChildPropertyDescriptors();
+		caption = builder.getCaption();
 
 		//
 		// Layout
@@ -91,7 +92,7 @@ public class PropertyDescriptor implements Serializable
 
 		//
 		// SQL related properties
-		sqlTableName = builder.sqlTableName;
+		sqlTableName = builder.getSqlTableName();
 		sqlParentLinkColumnName = builder.sqlParentLinkColumnName;
 		sqlColumnName = builder.sqlColumnName;
 		sqlColumnSql = builder.sqlColumnSql;
@@ -103,7 +104,11 @@ public class PropertyDescriptor implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("name", propertyName)
+				.add("type", type)
+				.add("sqlTableName", sqlTableName)
+				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
 				.toString();
 	}
 
@@ -145,6 +150,11 @@ public class PropertyDescriptor implements Serializable
 	public String getComposedValuePartName()
 	{
 		return composedValuePartName;
+	}
+
+	public String getCaption()
+	{
+		return caption;
 	}
 
 	public PropertyLayoutInfo getLayoutInfo()
@@ -217,6 +227,7 @@ public class PropertyDescriptor implements Serializable
 		private Class<?> valueType;
 		private final ImmutableMap.Builder<PropertyName, PropertyDescriptor> childPropertyDescriptors = ImmutableMap.builder();
 		private String composedValuePartName;
+		private String caption;
 		private PropertyLayoutInfo layoutInfo = PropertyLayoutInfo.DEFAULT;
 
 		private String sqlTableName;
@@ -225,6 +236,7 @@ public class PropertyDescriptor implements Serializable
 		private String sqlColumnSql;
 		private Integer sqlDisplayType;
 		private DataFieldLookupDescriptor sqlLookupDescriptor;
+		private int sql_AD_Reference_Value_ID;
 
 		private Builder()
 		{
@@ -234,6 +246,17 @@ public class PropertyDescriptor implements Serializable
 		public PropertyDescriptor build()
 		{
 			return new PropertyDescriptor(this);
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("propertyName", propertyName)
+					.add("type", type)
+					.add("sqlTableName", sqlTableName)
+					.toString();
 		}
 
 		public Builder setPropertyName(final PropertyName propertyName)
@@ -294,6 +317,22 @@ public class PropertyDescriptor implements Serializable
 			this.composedValuePartName = composedValuePartName;
 			return this;
 		}
+		
+		public Builder setCaption(final String caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+
+		private String getCaption()
+		{
+			if(caption != null)
+			{
+				return caption;
+			}
+			
+			return getPropertyName().getCaption();
+		}
 
 		public Builder setLayoutInfo(final PropertyLayoutInfo layoutInfo)
 		{
@@ -311,6 +350,11 @@ public class PropertyDescriptor implements Serializable
 		{
 			this.sqlTableName = sqlTableName;
 			return this;
+		}
+		
+		private String getSqlTableName()
+		{
+			return this.sqlTableName;
 		}
 
 		public Builder setSqlParentLinkColumnName(String sqlParentLinkColumnName)
@@ -396,10 +440,28 @@ public class PropertyDescriptor implements Serializable
 			final int sqlDisplayType = getSqlDisplayType();
 			if (DisplayType.isLookup(sqlDisplayType) && sqlColumnName != null)
 			{
-				return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, 0);
+				return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
 			}
 
 			return sqlLookupDescriptor;
+		}
+		
+		public Builder setSQL_AD_Reference_Value_ID(final int sql_AD_Reference_Value_ID)
+		{
+			this.sql_AD_Reference_Value_ID = sql_AD_Reference_Value_ID;
+			return this;
+		}
+		
+		public ImmutableMap<PropertyName, PropertyDescriptor> getChildPropertyDescriptors()
+		{
+			try
+			{
+				return childPropertyDescriptors.build();
+			}
+			catch (Throwable e)
+			{
+				throw new RuntimeException("Failed building child property descriptors for " + this, e);
+			}
 		}
 	}
 }

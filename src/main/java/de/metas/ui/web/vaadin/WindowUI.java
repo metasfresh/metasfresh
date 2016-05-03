@@ -20,6 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.HARDCODED_Order;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowPresenter;
+import de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.gridWindowVO.VOPropertyDescriptorProvider;
 
 /*
  * #%L
@@ -87,6 +88,11 @@ public class WindowUI extends UI
 
 	private PropertyDescriptor getRootPropertyDescriptor(final RequestCommand command)
 	{
+		if (true)
+		{
+			return new VOPropertyDescriptorProvider().provideForWindow(command.getWindowId());
+		}
+		
 		final int windowId = command.getWindowId();
 		if (windowId == 143)
 		{

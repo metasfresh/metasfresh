@@ -184,7 +184,6 @@ final class SqlsBuilder
 		else if (type == PropertyDescriptorType.Tabular)
 		{
 			addProperty_ChildTable(propertyDescriptor, sqlTable);
-			// TODO
 		}
 		else
 		{

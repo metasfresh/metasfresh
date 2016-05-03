@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.thirdparty.guava.common.base.Strings;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
@@ -59,7 +58,7 @@ public class PropertyValueCollection
 		name2dependencies = builder.name2dependencies.build();
 
 		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("Build PropertyValuesCollection" + toStringRecursivelly(name2value.values()));
+		System.out.println("Build PropertyValuesCollection" + TraceHelper.toStringRecursivelly(name2value.values()));
 		System.out.println("--------------------------------------------------------------------------------");
 	}
 
@@ -79,36 +78,6 @@ public class PropertyValueCollection
 				.toString();
 	}
 	
-	public static final String toStringRecursivelly(final PropertyValue propertyValue)
-	{
-		final int level = 0;
-		return toStringRecursivelly(propertyValue, level);
-	}
-	public static final String toStringRecursivelly(final Iterable<PropertyValue> propertyValues)
-	{
-		final StringBuilder sb = new StringBuilder();
-		final int level = 0;
-		for (final PropertyValue propertyValue : propertyValues)
-		{
-			sb.append(toStringRecursivelly(propertyValue, level));
-		}
-		return sb.toString();
-	}
-	public static final String toStringRecursivelly(final PropertyValue propertyValue, final int level)
-	{
-		final String indentStr = Strings.repeat("\t", level);
-		StringBuilder sb = new StringBuilder();
-		sb.append("\n").append(indentStr).append(propertyValue.toString());
-		
-		final Collection<PropertyValue> childPropertyValues = propertyValue.getChildPropertyValues().values();
-		for (final PropertyValue childPropertyValue : childPropertyValues)
-		{
-			sb.append(toStringRecursivelly(childPropertyValue, level + 1));
-		}
-		
-		return sb.toString();
-	}
-
 	public PropertyValue getPropertyValue(final String propertyNameStr)
 	{
 		final PropertyName propertyName = PropertyName.of(propertyNameStr);
