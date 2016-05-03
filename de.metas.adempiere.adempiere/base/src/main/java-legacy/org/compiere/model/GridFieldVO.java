@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -37,6 +35,9 @@ import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -1115,5 +1116,10 @@ public class GridFieldVO implements Serializable
 			return true;
 		return false;
 	}	// isColumnVirtual
+	
+	public int getIncluded_Tab_ID()
+	{
+		return Included_Tab_ID;
+	}
 
 }

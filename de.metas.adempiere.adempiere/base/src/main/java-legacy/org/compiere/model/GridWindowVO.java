@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,6 +34,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Model Window Value Object
@@ -436,6 +437,11 @@ public class GridWindowVO implements Serializable
 	public String getLoadErrorMessage()
 	{
 		return loadErrorMessages == null || loadErrorMessages.length() == 0 ? null : loadErrorMessages.toString();
+	}
+	
+	public Properties getCtx()
+	{
+		return ctx;
 	}
 	
 	public List<GridTabVO> getTabs()

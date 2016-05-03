@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -36,6 +36,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -82,7 +84,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		//  Create Fields
 		if (vo.IsSortTab)
 		{
-			vo.Fields = new ArrayList<GridFieldVO>();	//	dummy
+			vo._fields = ImmutableList.of();
 		}
 		/*
 		else
@@ -304,10 +306,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *  @param mTabVO tab value object
 	 *  @return true if fields were created
 	 */
-	private static boolean createFields (GridTabVO mTabVO)
+	private static List<GridFieldVO> createFields (final GridTabVO mTabVO)
 	{
 		//local only or remote fail for vpn profile
-		mTabVO.Fields = new ArrayList<GridFieldVO>();
+		final ImmutableList.Builder<GridFieldVO> fields = ImmutableList.builder();
 
 		final String sql = GridFieldVO.getSQL(mTabVO.getCtx());
 		PreparedStatement pstmt = null;
@@ -325,24 +327,22 @@ public class GridTabVO implements Evaluatee, Serializable
 					mTabVO.IsReadOnly, rs);
 				if (voF != null)
 				{
-					mTabVO.Fields.add(voF);
+					fields.add(voF);
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			logger.error("", e);
-			return false;
+			logger.error("Failed creating fields for {}", mTabVO, e);
+			return ImmutableList.of();
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-
-		mTabVO.initFields = true;
-
-		return mTabVO.Fields.size() != 0;
+		
+		return fields.build();
 	}   //  createFields
 
 	/**
@@ -463,16 +463,21 @@ public class GridTabVO implements Evaluatee, Serializable
 	/**	Only Current Days - derived	*/
 	public int			onlyCurrentDays = 0;
 
-	/** Fields contain MFieldVO entities    */
-	private ArrayList<GridFieldVO>	Fields = null;
+	private List<GridFieldVO> _fields = null;
 
-	private boolean initFields = false;
-
-	public ArrayList<GridFieldVO> getFields()
+	public List<GridFieldVO> getFields()
 	{
-		if (!initFields)
-			createFields(this);
-		return Fields;
+		if(_fields == null)
+		{
+			synchronized (this)
+			{
+				if(_fields == null)
+				{
+					_fields = createFields(this);
+				}
+			}
+		}
+		return _fields;
 	}
 
 	/**
@@ -482,11 +487,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	public void setCtx (Properties newCtx)
 	{
 		ctx = newCtx;
-		if (Fields != null)
+		final List<GridFieldVO> fields = this._fields;
+		if (fields != null)
 		{
-			for (int i = 0; i < Fields.size() ; i++)
+			for (GridFieldVO field : fields)
 			{
-				GridFieldVO field = Fields.get(i);
 				field.setCtx(newCtx);
 			}
 		}
@@ -564,24 +569,27 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 		clone_metas(ctx, windowNo, clone); // metas
 
-		clone.Fields = new ArrayList<GridFieldVO>();
-		for (int i = 0; i < Fields.size(); i++)
+		final List<GridFieldVO> fields = _fields;
+		if(fields != null)
 		{
-			GridFieldVO field = Fields.get(i);
-			GridFieldVO cloneField = field.clone(ctx, windowNo, TabNo, AD_Window_ID, AD_Tab_ID, IsReadOnly);
-			if (cloneField == null)
-				return null;
-			clone.Fields.add(cloneField);
+			final ImmutableList.Builder<GridFieldVO> cloneFields = ImmutableList.builder();
+			for (final GridFieldVO field : fields)
+			{
+				final GridFieldVO cloneField = field.clone(ctx, windowNo, TabNo, AD_Window_ID, AD_Tab_ID, IsReadOnly);
+				if (cloneField == null)
+					continue;
+				cloneFields.add(cloneField);
+			}
+			
+			clone._fields = cloneFields.build();
 		}
 
 		return clone;
 	}	//	clone
 
-	/**
-	 * @return the initFields
-	 */
-	public boolean isInitFields() {
-		return initFields;
+	public void clearFields()
+	{
+		_fields = null;
 	}
 
 // metas: begin
@@ -677,6 +685,16 @@ public class GridTabVO implements Evaluatee, Serializable
 		return DisplayLogicExpr;
 	}
 // metas: end
+	
+	public String getTableName()
+	{
+		return TableName;
+	}
+	
+	public int getAD_Tab_ID()
+	{
+		return AD_Tab_ID;
+	}
 
 	public int getWindowNo()
 	{
@@ -705,5 +723,15 @@ public class GridTabVO implements Evaluatee, Serializable
 	public String getEntityType()
 	{
 		return entityType;
+	}
+	
+	public int getTabLevel()
+	{
+		return TabLevel;
+	}
+	
+	public String getName()
+	{
+		return Name;
 	}
 }   //  MTabVO
