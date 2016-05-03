@@ -338,6 +338,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			{
 				valueType = java.math.BigDecimal.class;
 			}
+			else if (DisplayType.YesNo == displayType)
+			{
+				valueType = java.lang.Boolean.class;
+			}
 			else
 			{
 				valueType = String.class;

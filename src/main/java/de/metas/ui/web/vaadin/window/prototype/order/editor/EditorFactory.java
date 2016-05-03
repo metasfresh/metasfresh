@@ -82,6 +82,10 @@ public class EditorFactory
 		{
 			return new ComposedValueEditor(descriptor);
 		}
+		else if (Boolean.class.isAssignableFrom(valueType))
+		{
+			return new CheckboxEditor(descriptor);
+		}
 		else
 		{
 			throw new IllegalArgumentException("Unsupported property for " + valueType + " (descriptor: " + descriptor);
