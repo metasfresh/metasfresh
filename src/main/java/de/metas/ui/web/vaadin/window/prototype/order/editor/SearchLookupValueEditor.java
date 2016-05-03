@@ -188,9 +188,24 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			return _lookupDataSource;
 		}
 		
-		public void setCurrentValue(Object newValue)
+		public void setCurrentValue(final Object newValue)
 		{
-			this._currentValue = (LookupValue)newValue;
+			if(newValue == null)
+			{
+				this._currentValue = null;
+			}
+			else if (newValue instanceof LookupValue)
+			{
+				this._currentValue = (LookupValue)newValue;
+			}
+			else if (newValue instanceof Integer)
+			{
+				this._currentValue = LookupValue.of(newValue, "<" + newValue + ">");
+			}
+			else
+			{
+				logger.warn("Editor {} does not support value: {}", getPropertyName(), newValue);
+			}
 		}
 		
 		private LookupValue getCurrentValue()
