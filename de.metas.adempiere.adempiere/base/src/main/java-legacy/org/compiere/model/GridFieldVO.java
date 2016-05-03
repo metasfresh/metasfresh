@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -52,6 +53,34 @@ import de.metas.logging.LogManager;
  */
 public class GridFieldVO implements Serializable
 {
+	public static final Comparator<GridFieldVO> COMPARATOR_BySeqNo = new Comparator<GridFieldVO>()
+	{
+		@Override
+		public int compare(final GridFieldVO o1, final GridFieldVO o2)
+		{
+			return getSeqNo(o1) - getSeqNo(o2);
+		}
+		
+		private final int getSeqNo(final GridFieldVO field)
+		{
+			return field == null ? 0 : field.getSeqNo();
+		}
+	};
+	
+	public static final Comparator<GridFieldVO> COMPARATOR_BySeqNoGrid = new Comparator<GridFieldVO>()
+	{
+		@Override
+		public int compare(final GridFieldVO o1, final GridFieldVO o2)
+		{
+			return getSeqNo(o1) - getSeqNo(o2);
+		}
+		
+		private final int getSeqNo(final GridFieldVO field)
+		{
+			return field == null ? 0 : field.getSeqNoGrid();
+		}
+	};
+	
 	private static final transient Logger logger = LogManager.getLogger(GridFieldVO.class);
 
 
@@ -60,7 +89,7 @@ public class GridFieldVO implements Serializable
 	 *  @param ctx context
 	 *  @return SQL with or w/o translation and 1 parameter
 	 */
-	public static String getSQL (Properties ctx)
+	static String getSQL (Properties ctx)
 	{
 		final boolean baseLanguage = Env.isBaseLanguage(ctx, I_AD_Tab.Table_Name);
 
