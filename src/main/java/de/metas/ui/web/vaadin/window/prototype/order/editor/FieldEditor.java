@@ -72,7 +72,7 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	}
 
 	@Override
-	public final void setValue(final Object value)
+	public final void setValue(final T value)
 	{
 		setValue(getPropertyName(), value);
 	}

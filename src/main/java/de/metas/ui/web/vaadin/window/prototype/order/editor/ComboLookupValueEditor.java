@@ -22,6 +22,7 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.AbstractContainer;
 import com.vaadin.data.util.filter.UnsupportedFilterException;
+import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.ComboBox;
@@ -93,6 +94,13 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 				lookupValuesContainer.setTemporaryValue(newValue);
 				super.setInternalValue(newValue);
 			}
+
+			@Override
+			protected Filter buildFilter(String filterString, FilteringMode filteringMode)
+			{
+				return super.buildFilter(filterString, filteringMode);
+//				return LookupValueFilter.of(filterString, filteringMode);
+			}
 		};
 
 		return valueField;
@@ -111,9 +119,9 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 	}
 
 	@Override
-	protected Object convertToView(final Object valueObj)
+	protected LookupValue convertToView(final Object valueObj)
 	{
-		return valueObj;
+		return LookupValue.cast(valueObj);
 	}
 
 	@Override
@@ -625,6 +633,56 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 			}
 			return filteredItemIds.subList(startIndex, toIndex);
 		}
+	}
+
+	private static class LookupValueFilter implements Container.Filter
+	{
+
+		public static Container.Filter of(String filterString, FilteringMode filteringMode)
+		{
+			return null;
+//			if (filterString != null && !filterString.isEmpty())
+//			{
+//				boolean ignoreCase = true;
+//				switch (filteringMode)
+//				{
+//					case OFF:
+//						break;
+//					case STARTSWITH:
+//						final boolean onlyMatchPrefix = true;
+//						filter = new SimpleStringFilter(getItemCaptionPropertyId(), filterString, ignoreCase, onlyMatchPrefix);
+//						break;
+//					case CONTAINS:
+//						final boolean onlyMatchPrefix = false;
+//						filter = new SimpleStringFilter(getItemCaptionPropertyId(), filterString, ignoreCase, onlyMatchPrefix);
+//						break;
+//				}
+//			}
+//			return filter;
+//
+//			return new LookupValueFilter(filterString, filteringMode);
+		}
+
+		public LookupValueFilter(String filterString, FilteringMode filteringMode)
+		{
+			super();
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException
+		{
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean appliesToProperty(Object propertyId)
+		{
+			// TODO Auto-generated method stub
+			return false;
+		}
+
 	}
 
 }

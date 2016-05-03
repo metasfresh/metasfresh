@@ -4,6 +4,7 @@
 .project
 metasfresh.properties
 /log/
+/activemq-data/
 src/main/webapp/VAADIN/themes/metasfresh/styles.css
 /src/main/webapp/VAADIN/widgetsets/
 

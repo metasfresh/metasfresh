@@ -8,12 +8,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Strings;
@@ -56,8 +63,8 @@ public class SqlModelDataSource implements ModelDataSource
 
 	//
 	// SQL definitions
+	private final String sqlTableName;
 	private final Map<PropertyName, SqlField> sqlFields;
-	@SuppressWarnings("unused")
 	private final SqlField sqlField_KeyColumn;
 	private final SqlField sqlField_ParentLinkColumn;
 	/** SQL: SELECT ... FROM ... */
@@ -74,11 +81,17 @@ public class SqlModelDataSource implements ModelDataSource
 		// Build SQLs
 		final SqlsBuilder builder = SqlsBuilder.newBuilder()
 				.addRootProperty(rootPropertyDescriptor);
+		sqlTableName = builder.getMainTableName();
 		sqlFields = builder.buildSqlFieldsIndexedByPropertyName();
 		sqlField_KeyColumn = builder.getKeyColumn();
 		sqlField_ParentLinkColumn = builder.getParentLinkColumn();
 		sqlSelect = builder.buildSqlSelect();
 		includedDataSources = ImmutableMap.copyOf(builder.includedDataSources);
+	}
+
+	private Properties getCtx()
+	{
+		return Env.getCtx();
 	}
 
 	@Override
@@ -158,7 +171,7 @@ public class SqlModelDataSource implements ModelDataSource
 			final PropertyName propertyName = sqlField.getPropertyName();
 			final Object value = retrieveField(rs, sqlField);
 			data.put(propertyName, NullValue.valueOrNull(value));
-			
+
 			if (sqlField.isKeyColumn())
 			{
 				keyColumn_Value = value;
@@ -205,13 +218,13 @@ public class SqlModelDataSource implements ModelDataSource
 		return sql.toString();
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, Object parentLinkId)
+	private String buildSqlWhereClause(final List<Object> sqlParams, final Object parentLinkId)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
-		
+
 		//
-		// Parent link where clause (if any) 
-		if(sqlField_ParentLinkColumn != null)
+		// Parent link where clause (if any)
+		if (sqlField_ParentLinkColumn != null)
 		{
 			if (sqlWhereClause.length() > 0)
 			{
@@ -332,8 +345,8 @@ public class SqlModelDataSource implements ModelDataSource
 
 		// Decrypt if needed
 		final Object valueDecrypted = encrypted ? decrypt(value) : value;
-		
-		logger.trace("Retrived value for {}: {} ({})", sqlField, valueDecrypted, (valueDecrypted == null ? "null" : valueDecrypted.getClass()));
+
+		logger.trace("Retrived value for {}: {} ({})", sqlField, valueDecrypted, valueDecrypted == null ? "null" : valueDecrypted.getClass());
 
 		return valueDecrypted;
 	}
@@ -350,7 +363,65 @@ public class SqlModelDataSource implements ModelDataSource
 	@Override
 	public void saveRecord(final int index, final Map<PropertyName, Object> values)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("save is not implemented");
+		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
+		final Object keyValue = values.get(keyProperyName);
+
+		final PO po;
+		if (keyValue == null)
+		{
+			// new
+			po = TableModelLoader.instance.newPO(getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
+		}
+		else
+		{
+			final int recordId = (Integer)keyValue;
+			final boolean checkCache = false;
+			po = TableModelLoader.instance.getPO(getCtx(), sqlTableName, recordId, checkCache, ITrx.TRXNAME_ThreadInherited);
+		}
+		Check.assumeNotNull(po, "po is not null");
+
+		// TODO po.set_ManualUserAction(m_WindowNo); // metas: tsa: 02380: mark it as manual user action
+
+		for (final Map.Entry<PropertyName, Object> valueEntry : values.entrySet())
+		{
+			final PropertyName propertyName = valueEntry.getKey();
+			final Object value = valueEntry.getValue();
+			setPOValue(po, propertyName, value);
+		}
+
+		InterfaceWrapperHelper.save(po);
+
+		//
+		// Update the buffer
+		getRecords().set(index, ImmutableMap.copyOf(values));
+	}
+
+	private void setPOValue(final PO po, final PropertyName propertyName, Object value)
+	{
+		final SqlField sqlField = sqlFields.get(propertyName);
+		if (sqlField == null)
+		{
+			return;
+		}
+
+		final String columnName = sqlField.getColumnName();
+
+		if (NullValue.isNull(value))
+		{
+			value = null;
+		}
+
+		if (value instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)value;
+			value = lookupValue.getId();
+		}
+		
+		if (value instanceof java.util.Date)
+		{
+			value = TimeUtil.asTimestamp((java.util.Date)value);
+		}
+
+		po.set_ValueOfColumnReturningBoolean(columnName, value);
 	}
 }

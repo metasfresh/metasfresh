@@ -1,7 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.base.Optional;
 import com.vaadin.ui.CustomComponent;
@@ -46,6 +49,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	private EditorListener listener = NullEditorListener.instance;
 	private Optional<Label> _labelComp;
 	
+	private final Map<String, Object> _attributes = new HashMap<>();
 	
 	public AbstractEditor(final PropertyName propertyName)
 	{
@@ -64,9 +68,9 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	}
 	
 	@Override
-	public void setEditorListener(EditorListener listener)
+	public void setEditorListener(final EditorListener listener)
 	{
-		this.listener = listener;
+		this.listener = listener != null ? listener : NullEditorListener.instance;
 	}
 	
 	protected final EditorListener getEditorListener()
@@ -135,6 +139,28 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	protected Label createLabelComponent()
 	{
 		return new Label(getCaption());
+	}
+	
+	@Override
+	public final <T> T getAttribute(String name)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)_attributes.get(name);
+		return value;
+	}
+	
+	@Override
+	public final void setAttribute(String name, Object value)
+	{
+		Preconditions.checkNotNull(name, "name shall not be null");
+		if(value == null)
+		{
+			_attributes.remove(name);
+		}
+		else
+		{
+			_attributes.put(name, value);
+		}
 	}
 
 }

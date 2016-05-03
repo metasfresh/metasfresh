@@ -40,7 +40,9 @@ public class GridEditor extends DocumentSectionEditorsContainer
 {
 	static final Logger logger = LogManager.getLogger(GridEditor.class);
 
+	private final GridTableFieldFactory fieldFactory;
 	private GridEditorDataContainer containerDataSource;
+
 
 	public GridEditor(final PropertyDescriptor propertyDescriptor)
 	{
@@ -49,7 +51,8 @@ public class GridEditor extends DocumentSectionEditorsContainer
 		final Table table = getContent();
 		table.setEditable(true);
 
-		table.setTableFieldFactory(new GridTableFieldFactory(propertyDescriptor));
+		this.fieldFactory = new GridTableFieldFactory(propertyDescriptor);
+		table.setTableFieldFactory(fieldFactory);
 
 		containerDataSource = new GridEditorDataContainer(propertyDescriptor);
 		table.setContainerDataSource(containerDataSource);
@@ -78,6 +81,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	public void setEditorListener(final EditorListener listener)
 	{
 		super.setEditorListener(listener);
+		fieldFactory.setEditorListener(listener);
 		containerDataSource.setEditorListener(listener);
 	}
 

@@ -1,5 +1,7 @@
 package de.metas.ui.web.vaadin.window.prototype.order.view;
 
+import java.util.IdentityHashMap;
+
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CustomComponent;
@@ -7,6 +9,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 
 import de.metas.ui.web.vaadin.window.prototype.order.editor.Editor;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorsContainer;
 
 /*
  * #%L
@@ -40,6 +43,26 @@ public class WindowPanelsBar extends CustomComponent
 		
 		content = new HorizontalLayout();
 		setCompositionRoot(content);
+	}
+	
+	public void setNavigationShortcutsFromEditors(final Iterable<Editor> editors)
+	{
+		content.removeAllComponents();
+		
+		final IdentityHashMap<Editor, Boolean> alreadyAddedEditors = new IdentityHashMap<>();
+		for (final Editor editor : editors)
+		{
+			if (alreadyAddedEditors.containsKey(editor))
+			{
+				continue;
+			}
+			alreadyAddedEditors.put(editor, Boolean.TRUE);
+
+			if (EditorsContainer.isDocumentFragment(editor))
+			{
+				addNavigationShortcut(editor);
+			}
+		}
 	}
 
 	public void addNavigationShortcut(final Editor editor)

@@ -39,7 +39,7 @@ import de.metas.ui.web.vaadin.session.UserSession;
  */
 
 @SpringUI
-@PreserveOnRefresh // FIXME: DEBUG
+@PreserveOnRefresh
 @Widgetset("de.metas.ui.web.vaadin.widgetset.metasfreshWidgetSet")
 @Theme(de.metas.ui.web.vaadin.theme.Theme.NAME)
 @SuppressWarnings("serial")
@@ -58,13 +58,12 @@ public class RootUI extends UI
 	
 	private final void updateContent()
 	{
-		// FIXME: DEBUG
-		if(true)
-		{
-			//getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
-			setContent(new de.metas.ui.web.vaadin.window.prototype.order.WindowPresenter().getView());
-			return;
-		}
+//		if(true)
+//		{
+//			//getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
+////			setContent(new de.metas.ui.web.vaadin.window.prototype.order.WindowPresenter().getView());
+//			return;
+//		}
 		
 		
 		

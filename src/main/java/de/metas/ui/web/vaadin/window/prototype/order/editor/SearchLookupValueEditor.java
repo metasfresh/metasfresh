@@ -1,9 +1,24 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
-import com.vaadin.ui.TextField;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.vaadin.viritin.fields.LazyComboBox;
+import org.vaadin.viritin.fields.LazyComboBox.FilterableCountProvider;
+import org.vaadin.viritin.fields.LazyComboBox.FilterablePagingProvider;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
+import de.metas.ui.web.vaadin.window.prototype.order.model.SqlLazyLookupDataSource;
 
 /*
  * #%L
@@ -28,46 +43,188 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  */
 
 @SuppressWarnings("serial")
-public class SearchLookupValueEditor extends AbstractEditor
+public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 {
-	private final TextField valueField;
-	
-	@SuppressWarnings("unused")
-	private LookupValue value;
+	private static final Logger logger = LogManager.getLogger(SearchLookupValueEditor.class);
 
+	private final PropertyName valuesPropertyName;
+	private final ImmutableSet<PropertyName> watchedPropertyNames;
 
-	public SearchLookupValueEditor(PropertyDescriptor descriptor)
+	private final int pageLength = 10;
+	private ComboDataSource _comboDataSource;
+
+	public SearchLookupValueEditor(final PropertyDescriptor descriptor)
 	{
-		super(descriptor.getPropertyName());
+		super(descriptor);
+
+		final ImmutableSet.Builder<PropertyName> watchedPropertyNames = ImmutableSet.builder();
+
+		valuesPropertyName = WindowConstants.lookupValuesName(getPropertyName());
+		watchedPropertyNames.add(valuesPropertyName);
+
+		this.watchedPropertyNames = watchedPropertyNames.build();
+
+	}
+
+	@Override
+	protected LazyComboBox<LookupValue> createValueField()
+	{
+		final ComboDataSource comboDataSource = getComboDataSource();
+		final int pageLength = comboDataSource.getPageLength();
 		
-		valueField = new TextField();
-		valueField.setEnabled(false);
+		@SuppressWarnings("unchecked")
+		final LazyComboBox<LookupValue> valueField = new LazyComboBox<LookupValue>(LookupValue.class, comboDataSource, comboDataSource, pageLength)
+		{
+			@Override
+			protected void setInternalValue(Object newValue)
+			{
+				getComboDataSource().setCurrentValue(newValue);
+				super.setInternalValue(newValue);
+			}
+		};
 		
-		setCompositionRoot(valueField);
+		return valueField;
+	}
+
+	private final ComboDataSource getComboDataSource()
+	{
+		if (_comboDataSource == null)
+		{
+			_comboDataSource = new ComboDataSource(pageLength);
+		}
+		return _comboDataSource;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	protected LazyComboBox<LookupValue> getValueField()
+	{
+		return (LazyComboBox<LookupValue>)super.getValueField();
+	}
+
+	@Override
+	public Set<PropertyName> getWatchedPropertyNames()
+	{
+		return watchedPropertyNames;
 	}
 
 	@Override
 	public void setValue(final PropertyName propertyName, Object value)
 	{
-		if (getPropertyName().equals(propertyName))
+		if (valuesPropertyName != null && Objects.equal(valuesPropertyName, propertyName))
 		{
-			final LookupValue lookupValue = LookupValue.cast(value);
-			this.value = lookupValue;
-			
-			if(lookupValue == null)
-			{
-				valueField.setValue("");
-			}
-			else
-			{
-				valueField.setValue(lookupValue.getDisplayName());
-			}
+			getComboDataSource().setLookupDataSourceFromObject(value);
+		}
+		else
+		{
+			getComboDataSource().setCurrentValue(value);
+			super.setValue(propertyName, value);
 		}
 	}
 
 	@Override
-	public void addChildEditor(Editor editor)
+	protected LookupValue convertToView(Object valueObj)
 	{
-		throw new UnsupportedOperationException();
+		return LookupValue.cast(valueObj);
+	}
+
+	private final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
+	{
+		private final int pageLength;
+		private SqlLazyLookupDataSource _lookupDataSource;
+		private LookupValue _currentValue;
+
+		public ComboDataSource(int pageLength)
+		{
+			super();
+			if (pageLength <= 0)
+			{
+				throw new IllegalArgumentException("pageLength <= 0");
+			}
+			this.pageLength = pageLength;
+		}
+
+		public int getPageLength()
+		{
+			return pageLength;
+		}
+
+		public void setLookupDataSourceFromObject(Object value)
+		{
+			if (value instanceof SqlLazyLookupDataSource)
+			{
+				setLookupDataSource((SqlLazyLookupDataSource)value);
+			}
+			else
+			{
+				// TODO
+				setLookupDataSource(null);
+			}
+		}
+
+		public void setLookupDataSource(final SqlLazyLookupDataSource lookupDataSource)
+		{
+			this._lookupDataSource = lookupDataSource;
+		}
+		
+		private SqlLazyLookupDataSource getLookupDataSource()
+		{
+			if (_lookupDataSource == null)
+			{
+				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyName);
+				try
+				{
+					_lookupDataSource = (SqlLazyLookupDataSource)futureValue.get(10, TimeUnit.SECONDS);
+					if(_lookupDataSource == null)
+					{
+						logger.warn("Got no lookupDataSource for {}", valuesPropertyName);
+					}
+				}
+				catch (Exception e)
+				{
+					logger.warn("Failed retrieving future lookup data source", e);
+				}
+			}
+			return _lookupDataSource;
+		}
+		
+		public void setCurrentValue(Object newValue)
+		{
+			this._currentValue = (LookupValue)newValue;
+		}
+		
+		private LookupValue getCurrentValue()
+		{
+			return this._currentValue;
+		}
+
+		@Override
+		public int size(final String filter)
+		{
+			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
+			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
+			if (askDataSource)
+			{
+				return lookupDataSource.size(filter);
+			}
+			
+			final LookupValue currentValue = getCurrentValue();
+			return currentValue == null ? 0 : 1;
+		}
+
+		@Override
+		public List<LookupValue> findEntities(final int firstRow, final String filter)
+		{
+			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
+			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
+			if (askDataSource)
+			{
+				return lookupDataSource.findEntities(filter, firstRow, pageLength);
+			}
+			
+			final LookupValue currentValue = getCurrentValue();
+			return currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
+		}
+
 	}
 }

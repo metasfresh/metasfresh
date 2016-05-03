@@ -18,11 +18,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<version.vaadin>7.6.3</version.vaadin>
-		<vaadin.plugin.version>${version.vaadin}</vaadin.plugin.version>
+		<vaadin.version>7.6.5</vaadin.version>
+		<vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
 		<vaadin-lazyquerycontainer.version>7.6.1.3</vaadin-lazyquerycontainer.version>
-		<vaadin-viritin.version>1.35</vaadin-viritin.version>
-		<vaadin-spring.version>1.0.0.beta3</vaadin-spring.version>
+		<vaadin-viritin.version>1.50</vaadin-viritin.version>
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
 
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
@@ -76,13 +75,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-spring</artifactId>
-			<version>${vaadin-spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-server</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>vaadin-theme-compiler</artifactId>
@@ -93,13 +87,13 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-push</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-client</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 		</dependency>
 		<!-- Needed when using the widgetset optimizer (custom ConnectorBundleLoaderFactory). 
 			For widgetset compilation, vaadin-client-compiler is automatically added 
@@ -108,7 +102,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-client-compiler</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -128,12 +122,12 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-client-compiled</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-themes</artifactId>
-			<version>${version.vaadin}</version>
+			<version>${vaadin.version}</version>
 		</dependency>
 
 		<dependency>

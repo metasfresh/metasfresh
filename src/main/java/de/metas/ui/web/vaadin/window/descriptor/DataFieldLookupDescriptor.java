@@ -51,6 +51,7 @@ public final class DataFieldLookupDescriptor
 	
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
 	public static final CtxName SQL_PARAM_ValidationRuleSql = CtxName.parse("SqlValidationRule");
+	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset");
 	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
 
@@ -92,23 +93,24 @@ public final class DataFieldLookupDescriptor
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
 			if (!Check.isEmpty(lookup_SqlWhere, true))
 			{
-				sqlWhereFinal.append("(").append(lookup_SqlWhere).append(")");
+				
+				sqlWhereFinal.append(" /* lookup where clause */ ").append("(").append(lookup_SqlWhere).append(")");
 			}
 
 			// Validation Rule's WHERE
 			if (sqlWhereFinal.length() > 0)
 			{
-				sqlWhereFinal.append(" AND ");
+				sqlWhereFinal.append("\n AND ");
 			}
-			sqlWhereFinal.append("(").append(SQL_PARAM_ValidationRuleSql.toStringWithMarkers()).append(")");
+			sqlWhereFinal.append(" /* validation rule */ ").append("(").append(SQL_PARAM_ValidationRuleSql.toStringWithMarkers()).append(")");
 
 			// Filter's WHERE
 			if (sqlWhereFinal.length() > 0)
 			{
-				sqlWhereFinal.append(" AND ");
+				sqlWhereFinal.append("\n AND ");
 			}
 			final String displayColumnSql = lookupInfo.getDisplayColumnSQL();
-			sqlWhereFinal.append("(").append(displayColumnSql).append(") LIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
+			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
 		}
 		// sqlForFetching.append(" WHERE ").append(sqlWhereFinal);
 		// sqlForCounting.append(" WHERE ").append(sqlWhereFinal);
@@ -125,9 +127,10 @@ public final class DataFieldLookupDescriptor
 		// Assemble the SQLs
 		String sqlForFetching = new StringBuilder()
 				.append(lookupInfo.getSelectSqlPart()) // SELECT ... FROM ...
-				.append(" WHERE ").append(sqlWhereFinal) // WHERE
-				.append(" ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-				.append(" LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
+				.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
+				.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
+				.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
+				.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
 				.toString();
 		String sqlForCounting = new StringBuilder()
 				.append("SELECT COUNT(1) FROM ").append(lookupInfo.getFromSqlPart()) // SELECT .. FROM ...
@@ -136,8 +139,8 @@ public final class DataFieldLookupDescriptor
 		;
 		final String sqlForFetchingDisplayNameById = new StringBuilder()
 				.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
-				.append(" FROM ").append(lookupInfo.getFromSqlPart()) // FROM
-				.append(" WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
+				.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
+				.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
 				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
 				.toString();
 

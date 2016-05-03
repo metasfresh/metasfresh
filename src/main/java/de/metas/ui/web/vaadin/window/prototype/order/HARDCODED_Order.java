@@ -61,6 +61,7 @@ public final class HARDCODED_Order
 	//
 	public static final PropertyName ORDER_Lines = PropertyName.of("Lines");
 
+	public static final PropertyName ORDER_C_Order_ID = PropertyName.of(I_C_Order.COLUMNNAME_C_Order_ID);
 	public static final PropertyName ORDER_GrandTotal = PropertyName.of(I_C_Order.COLUMNNAME_GrandTotal);
 	public static final PropertyName ORDER_TotalLines = PropertyName.of(I_C_Order.COLUMNNAME_TotalLines);
 
@@ -236,6 +237,15 @@ public final class HARDCODED_Order
 				//
 				// Additional hidden fields
 				.addChildPropertyDescriptor(PropertyDescriptor.builder()
+						.setPropertyName(ORDER_C_Order_ID)
+						.setValueType(Integer.class)
+						.setSqlColumnName(I_C_Order.COLUMNNAME_C_Order_ID)
+						.setSqlDisplayType(DisplayType.ID)
+						.setLayoutInfo(PropertyLayoutInfo.builder()
+								.setDisplayed(false)
+								.build())
+						.build())
+				.addChildPropertyDescriptor(PropertyDescriptor.builder()
 						.setPropertyName(ORDER_GrandTotal)
 						.setValueType(BigDecimal.class)
 						.setSqlColumnName(I_C_Order.COLUMNNAME_GrandTotal)
@@ -262,14 +272,16 @@ public final class HARDCODED_Order
 	{
 		if (VaadinService.getCurrentRequest().getParameter("restartApplication") != null)
 		{
-			System.out.println("Resting singletonWindowModel: "+singletonWindowModel);
+			System.out.println("Restarting singletonWindowModel: " + singletonWindowModel);
 			singletonWindowModel = null;
 		}
 
 
 		if (singletonWindowModel == null)
 		{
-			singletonWindowModel = new WindowModel(createRootPropertyDescriptor());
+			final WindowModel windowModel = new WindowModel();
+			windowModel.setRootPropertyDescriptor(createRootPropertyDescriptor());
+			singletonWindowModel = windowModel;
 		}
 
 		return singletonWindowModel;

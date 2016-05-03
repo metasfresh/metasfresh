@@ -2,8 +2,7 @@ package de.metas.ui.web.vaadin.window.prototype.order.view;
 
 import java.util.Map;
 
-import com.vaadin.ui.Component;
-
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 /*
@@ -28,10 +27,13 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
-public interface WindowView extends Component
+public interface WindowView
 {
-
+	com.vaadin.ui.Component getComponent();
+	
 	void setListener(WindowViewListener listener);
+
+	void setRootPropertyDescriptor(PropertyDescriptor rootPropertyDescriptor);
 
 	void setNextRecordEnabled(boolean enabled);
 
@@ -50,5 +52,4 @@ public interface WindowView extends Component
 	void confirmDiscardChanges();
 
 	void showError(String message);
-
 }
