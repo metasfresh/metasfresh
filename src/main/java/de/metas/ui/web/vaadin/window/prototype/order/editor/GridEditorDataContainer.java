@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableSet;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -13,6 +14,7 @@ import com.vaadin.data.util.AbstractContainer;
 
 import de.metas.ui.web.vaadin.window.prototype.order.GridRowId;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyLayoutInfo;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 
@@ -43,7 +45,7 @@ final class GridEditorDataContainer extends AbstractContainer
 		implements Container.ItemSetChangeNotifier, Container.Ordered
 {
 	private final PropertyDescriptor descriptor;
-	private final Collection<PropertyName> propertyNames;
+	private final Collection<PropertyName> visiblePropertyNames;
 
 	private final Map<GridRowId, GridRowItem> rows = new LinkedHashMap<>();
 	private final List<GridRowId> rowIds = new ArrayList<>();
@@ -73,7 +75,18 @@ final class GridEditorDataContainer extends AbstractContainer
 		super();
 		this.descriptor = descriptor;
 
-		this.propertyNames = descriptor.getChildPropertyDescriptorsAsMap().keySet();
+		final ImmutableSet.Builder<PropertyName> propertyNames = ImmutableSet.builder();
+		for (final PropertyDescriptor childPropertyDescriptor : descriptor.getChildPropertyDescriptors())
+		{
+			final PropertyLayoutInfo layoutInfo = childPropertyDescriptor.getLayoutInfo();
+			final boolean visible = layoutInfo == null || layoutInfo.isDisplayed();
+			if (!visible)
+			{
+				continue;
+			}
+			propertyNames.add(childPropertyDescriptor.getPropertyName());
+		}
+		this.visiblePropertyNames = propertyNames.build();
 	}
 	
 	public void setEditorListener(final EditorListener editorListener)
@@ -117,7 +130,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	@Override
 	public Collection<PropertyName> getContainerPropertyIds()
 	{
-		return propertyNames;
+		return visiblePropertyNames;
 	}
 	
 	public String getHeader(final Object propertyId)
