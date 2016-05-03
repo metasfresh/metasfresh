@@ -61,6 +61,10 @@ public class GridEditor extends DocumentSectionEditorsContainer
 			table.setColumnHeader(propertyId, containerDataSource.getHeader(propertyId));
 			table.setColumnExpandRatio(propertyId, -1);
 		}
+		
+		table.setChildMeasurementHint(ChildMeasurementHint.MEASURE_NEVER);
+		table.setColumnCollapsingAllowed(true);
+		table.setPageLength(5);
 	}
 
 	@Override
