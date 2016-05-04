@@ -7,6 +7,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
@@ -14,6 +15,8 @@ import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
@@ -59,23 +62,30 @@ public class WindowUI extends UI
 	@Override
 	protected void init(final VaadinRequest request)
 	{
+		final RequestCommand requestCommand = RequestCommand.of(request);
+		logger.debug("Command: {}", requestCommand);
+		
 		// FIXME: setting up the context
 		{
 			final Properties ctx = Env.getCtx();
-			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
+			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, requestCommand.getParameterAsInt("AD_Client_ID", 1000000));
 			Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
+			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, requestCommand.getParameterAsInt("AD_Role_ID", 1000000));
 			Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
 			// getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
 		}
 
-		final RequestCommand requestCommand = RequestCommand.of(request);
-		logger.debug("Command: {}", requestCommand);
-
-		final WindowPresenter windowPresenter = getWindowPresenter(requestCommand);
-		final Component viewComp = windowPresenter.getViewComponent();
-		setContent(viewComp);
-		return;
+		try
+		{
+			final WindowPresenter windowPresenter = getWindowPresenter(requestCommand);
+			final Component viewComp = windowPresenter.getViewComponent();
+			setContent(viewComp);
+		}
+		catch (Throwable e)
+		{
+			logger.error("Failed loading the window", e);
+			Notification.show("Error", e.getLocalizedMessage(), Type.ERROR_MESSAGE);
+		}
 	}
 
 	private WindowPresenter getWindowPresenter(final RequestCommand command)
@@ -92,7 +102,7 @@ public class WindowUI extends UI
 		{
 			return new VOPropertyDescriptorProvider().provideForWindow(command.getWindowId());
 		}
-		
+
 		final int windowId = command.getWindowId();
 		if (windowId == 143)
 		{
@@ -132,7 +142,7 @@ public class WindowUI extends UI
 			this.command = pathInfoParts[1];
 			this.windowId = Integer.parseInt(pathInfoParts[2]);
 
-			this.parameters = request.getParameterMap();
+			this.parameters = ImmutableMap.copyOf(request.getParameterMap());
 		}
 
 		@Override
@@ -152,6 +162,43 @@ public class WindowUI extends UI
 		public int getWindowId()
 		{
 			return windowId;
+		}
+		
+		public int getParameterAsInt(final String parameterName, final int defaultValue)
+		{
+			final String valueStr = getParameterAsString(parameterName);
+			if (valueStr == null || valueStr.isEmpty())
+			{
+				return defaultValue;
+			}
+			
+			try
+			{
+				return Integer.parseInt(valueStr.trim());
+			}
+			catch (Exception e)
+			{
+				logger.warn("Failed parsing {}'s value: {}", parameterName, valueStr, e);
+				return defaultValue;
+			}
+		}
+		
+		public String getParameterAsString(final String parameterName)
+		{
+			final String[] values = parameters.get(parameterName);
+			if (values == null || values.length == 0)
+			{
+				return null;
+			}
+			else if (values.length == 1)
+			{
+				return values[0];
+			}
+			else
+			{
+				throw new RuntimeException("Got more than one values for " + parameterName + ": " + values);
+			}
+			
 		}
 	}
 
