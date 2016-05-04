@@ -2,10 +2,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
+		<groupId>de.metas.esb</groupId>
+		<artifactId>de.metas.esb</artifactId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../de.metas.esb/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.printing.esb</groupId>
@@ -14,8 +14,8 @@
 	<description>metasfresh :: Components :: Request-Response Framework for Printing (SMX-6.1.0)</description>
 
 	<packaging>pom</packaging>
+
 	<modules>
-		<module>de.metas.printing.esb.api</module>
 		<module>de.metas.printing.esb.base</module>
 		<module>de.metas.printing.esb.camel</module>
 	</modules>

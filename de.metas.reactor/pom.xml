@@ -79,7 +79,8 @@
 		<module>../de.metas.payment.esr</module>
 		<module>../de.metas.payment.sepa</module>
 		<module>../de.metas.printing</module>
-		
+
+		<module>../de.metas.printing.api</module>
 		<module>../de.metas.printing.esb.client</module>
 		<module>../de.metas.printing.esb.client-webapp</module>
 

@@ -2,13 +2,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.printing.esb</groupId>
-		<artifactId>de.metas.printing.esb</artifactId>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>de.metas.printing.esb.api</artifactId>
+	<groupId>de.metas.printing</groupId>
+	<artifactId>de.metas.printing.api</artifactId>
 
 	<dependencies>
 		<dependency>
