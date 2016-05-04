@@ -1,5 +1,6 @@
 package de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.gridWindowVO;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -87,7 +88,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		private Properties ctx;
 		private PropertyDescriptor.Builder rootBuilder;
-		private List<GridTabVO> gridTabsVO;
+		private List<GridTabVO> gridTabVOs;
 		private Map<Object, GridTabVO> id2gridTabVO;
 		private final Set<Integer> tabIdsAdded = new HashSet<>();
 		private final Set<Integer> fieldIdsAdded = new HashSet<>();
@@ -109,10 +110,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			logger.debug("Adding {}", gridWindowVO);
 
 			ctx = gridWindowVO.getCtx();
-			gridTabsVO = gridWindowVO.getTabs();
-			id2gridTabVO = Maps.uniqueIndex(gridTabsVO, x -> x.getAD_Tab_ID());
+			gridTabVOs = gridWindowVO.getTabs();
+			id2gridTabVO = Maps.uniqueIndex(gridTabVOs, x -> x.getAD_Tab_ID());
 
-			final GridTabVO rootTab = gridTabsVO.get(0);
+			final GridTabVO rootTab = gridTabVOs.get(0);
 			final String rootTableName = rootTab.getTableName();
 			rootBuilder = PropertyDescriptor.builder()
 					.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
@@ -174,8 +175,23 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 					});
 
-			// TODO: find out other child tabs and include them here
+			//
+			// Child tabs
+			for (final GridTabVO childTab : getChildTabs(gridTabVO))
+			{
+				if (!tabIdsAdded.add(childTab.getAD_Tab_ID()))
+				{
+					logger.debug("Skip adding {} because it was already considered", childTab);
+					continue;
+				}
 
+				final PropertyName includedTabPropertyName = PropertyName.of("IncludedTab_" + childTab.getAD_Tab_ID());
+				final PropertyDescriptor.Builder builder = createIncludedTab(includedTabPropertyName, childTab);
+				groupBuilders.put(includedTabPropertyName.toString(), builder);
+			}
+
+			//
+			//
 			for (final PropertyDescriptor.Builder groupBuilder : groupBuilders.values())
 			{
 				final PropertyDescriptor group = groupBuilder.build();
@@ -183,6 +199,29 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 				logger.debug("Added {} to {}", group, parentBuilder);
 			}
+		}
+
+		private List<GridTabVO> getChildTabs(final GridTabVO parentTab)
+		{
+			boolean foundParentTab = false;
+			final List<GridTabVO> childTabs = new ArrayList<>();
+			for (final GridTabVO tab : this.gridTabVOs)
+			{
+				if (!foundParentTab)
+				{
+					foundParentTab = tab == parentTab;
+				}
+				else if (tab.getTabLevel() == parentTab.getTabLevel() + 1)
+				{
+					childTabs.add(tab);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			return childTabs;
 		}
 
 		private PropertyDescriptor.Builder getCreateGroupBuilder(final Map<String, Builder> groupBuilders, final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
@@ -217,9 +256,16 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 				return null;
 			}
 
+			final PropertyName includedTabPropertyName = PropertyName.of(parentPropertyName, gridFieldVO.getColumnName());
+			return createIncludedTab(includedTabPropertyName, includedGridTabVO);
+		}
+
+		private Builder createIncludedTab(final PropertyName includedTabPropertyName, final GridTabVO includedGridTabVO)
+		{
+
 			final String includedTableName = includedGridTabVO.getTableName();
 			final Builder includedTabBuilder = PropertyDescriptor.builder()
-					.setPropertyName(PropertyName.of(parentPropertyName, gridFieldVO.getColumnName()))
+					.setPropertyName(includedTabPropertyName)
 					.setType(PropertyDescriptorType.Tabular)
 					.setCaption(includedGridTabVO.getName())
 					.setSqlTableName(includedTableName)
@@ -269,7 +315,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		private static String getFieldGroupName(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 		{
-			final FieldGroupVO fieldGroup = gridFieldVO.getFieldGroup();
+			final FieldGroupVO fieldGroup = gridFieldVO == null ? null : gridFieldVO.getFieldGroup();
 			if (fieldGroup != null && !Check.isEmpty(fieldGroup.getFieldGroupName(), true))
 			{
 				return fieldGroup.getFieldGroupName();
