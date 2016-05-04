@@ -371,9 +371,17 @@ public class WindowViewImpl extends VerticalLayout implements WindowView
 	{
 		for (final Map.Entry<PropertyName, Object> entry : propertiesAsMap.entrySet())
 		{
-			final PropertyName propertyName = entry.getKey();
-			final Object value = entry.getValue();
-			setProperty(propertyName, value);
+			try
+			{
+				final PropertyName propertyName = entry.getKey();
+				final Object value = entry.getValue();
+				setProperty(propertyName, value);
+			}
+			catch (Exception e)
+			{
+				// TODO: handle the error
+				e.printStackTrace();
+			}
 		}
 	}
 
