@@ -1,5 +1,6 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.StringToIntegerConverter;
 
 /*
@@ -27,7 +28,7 @@ import com.vaadin.data.util.converter.StringToIntegerConverter;
 @SuppressWarnings("serial")
 public class IntegerField extends NumberField<Integer>
 {
-	public IntegerField()
+	public IntegerField(final Converter<String, Integer> converter)
 	{
 		super(Integer.class, new StringToIntegerConverter());
 	}

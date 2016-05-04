@@ -1,5 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import org.compiere.util.DisplayType;
+
+import com.vaadin.data.util.converter.StringToIntegerConverter;
 import com.vaadin.ui.AbstractField;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
@@ -14,12 +21,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +44,19 @@ public class IntegerEditor extends FieldEditor<Integer>
 	@Override
 	protected AbstractField<Integer> createValueField()
 	{
-		final IntegerField valueField = new IntegerField();
+		//
+		// Create the converter
+		final PropertyDescriptor descriptor = getPropertyDescriptor();
+		int displayType = descriptor == null ? DisplayType.Integer : descriptor.getSqlDisplayType();
+		if (!DisplayType.isNumeric(displayType))
+		{
+			displayType = DisplayType.Integer;
+		}
+		final IntegerConverter converter = new IntegerConverter(displayType);
+
+		//
+		// Create the field
+		final IntegerField valueField = new IntegerField(converter);
 		return valueField;
 	}
 
@@ -46,4 +65,23 @@ public class IntegerEditor extends FieldEditor<Integer>
 	{
 		return (Integer)valueObj;
 	}
+
+	private static final class IntegerConverter extends StringToIntegerConverter
+	{
+		private final int displayType;
+
+		public IntegerConverter(final int displayType)
+		{
+			super();
+			this.displayType = displayType;
+		}
+
+		@Override
+		protected NumberFormat getFormat(final Locale locale)
+		{
+			final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
+			return numberFormat;
+		}
+	}
+
 }
