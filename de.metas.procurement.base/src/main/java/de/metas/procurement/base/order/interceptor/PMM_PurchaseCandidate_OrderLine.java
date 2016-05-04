@@ -97,13 +97,11 @@ public class PMM_PurchaseCandidate_OrderLine
 		final BigDecimal qtyOrdered = isReversal ? alloc.getQtyOrdered().negate() : alloc.getQtyOrdered();
 		final BigDecimal qtyOrderedTU = isReversal ? alloc.getQtyOrdered_TU().negate() : alloc.getQtyOrdered_TU();
 
-		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IPMMPurchaseCandidateBL.class).getM_HU_PI_Item_Product_Effective(candidate);
-
 		final PMMBalanceChangeEvent event = PMMBalanceChangeEvent.builder()
 				.setC_BPartner_ID(candidate.getC_BPartner_ID())
 				.setM_Product_ID(candidate.getM_Product_ID())
 				.setM_AttributeSetInstance_ID(candidate.getM_AttributeSetInstance_ID())
-				.setM_HU_PI_Item_Product_ID(huPIItemProduct == null ? -1 : huPIItemProduct.getM_HU_PI_Item_Product_ID())
+				.setM_HU_PI_Item_Product_ID(Services.get(IPMMPurchaseCandidateBL.class).getM_HU_PI_Item_Product_Effective_ID(candidate))
 				.setC_Flatrate_DataEntry_ID(candidate.getC_Flatrate_DataEntry_ID())
 				//
 				.setDate(candidate.getDatePromised())

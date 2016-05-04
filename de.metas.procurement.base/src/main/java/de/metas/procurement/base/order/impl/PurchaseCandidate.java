@@ -15,7 +15,6 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
@@ -136,9 +135,7 @@ public final class PurchaseCandidate
 
 	public int getM_HU_PI_Item_Product_ID()
 	{
-		final I_M_HU_PI_Item_Product huPIP = Services.get(IPMMPurchaseCandidateBL.class).getM_HU_PI_Item_Product_Effective(model);
-
-		return huPIP == null ? -1 : huPIP.getM_HU_PI_Item_Product_ID();
+		return Services.get(IPMMPurchaseCandidateBL.class).getM_HU_PI_Item_Product_Effective_ID(model);
 	}
 
 	public BigDecimal getQtyToOrder()

@@ -98,4 +98,10 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 	 * @return M_HU_PI_Item_Product_Override if set, M_HU_PI_Item_Product otherwise
 	 */
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Effective(I_PMM_PurchaseCandidate candidate);
+	
+	/**
+	 * @param candidate
+	 * @return M_HU_PI_Item_Product_Override_ID if set, M_HU_PI_Item_Product_ID otherwise
+	 */
+	int getM_HU_PI_Item_Product_Effective_ID(I_PMM_PurchaseCandidate candidate);
 }

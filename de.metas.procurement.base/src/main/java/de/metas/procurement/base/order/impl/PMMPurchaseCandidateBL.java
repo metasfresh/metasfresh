@@ -98,4 +98,19 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		// return M_HU_PI_Item_Product
 		return candidate.getM_HU_PI_Item_Product();
 	}
+	
+	@Override
+	public int getM_HU_PI_Item_Product_Effective_ID(final I_PMM_PurchaseCandidate candidate)
+	{
+		final int hupipOverrideID = candidate.getM_HU_PI_Item_Product_Override_ID();
+
+		if (hupipOverrideID > 0)
+		{
+			// return M_HU_PI_Item_Product_Override if set
+			return hupipOverrideID;
+		}
+
+		// return M_HU_PI_Item_Product
+		return candidate.getM_HU_PI_Item_Product_ID();
+	}
 }
