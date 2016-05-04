@@ -57,7 +57,7 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 	@Override
 	public void updateQtyToOrderFromQtyToOrderTU(final I_PMM_PurchaseCandidate candidate)
 	{
-		final I_M_HU_PI_Item_Product huPIItemProduct = candidate.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPIItemProduct = getM_HU_PI_Item_Product_Effective(candidate);
 		if (huPIItemProduct != null)
 		{
 			final BigDecimal qtyToOrderTU = candidate.getQtyToOrder_TU();
@@ -82,5 +82,35 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 	public IPMMPricingAware asPMMPricingAware(final I_PMM_PurchaseCandidate candidate)
 	{
 		return PMMPricingAware_PurchaseCandidate.of(candidate);
+	}
+
+	@Override
+	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Effective(final I_PMM_PurchaseCandidate candidate)
+	{
+		final I_M_HU_PI_Item_Product hupipOverride = candidate.getM_HU_PI_Item_Product_Override();
+
+		if (hupipOverride != null)
+		{
+			// return M_HU_PI_Item_Product_Override if set
+			return hupipOverride;
+		}
+
+		// return M_HU_PI_Item_Product
+		return candidate.getM_HU_PI_Item_Product();
+	}
+	
+	@Override
+	public int getM_HU_PI_Item_Product_Effective_ID(final I_PMM_PurchaseCandidate candidate)
+	{
+		final int hupipOverrideID = candidate.getM_HU_PI_Item_Product_Override_ID();
+
+		if (hupipOverrideID > 0)
+		{
+			// return M_HU_PI_Item_Product_Override if set
+			return hupipOverrideID;
+		}
+
+		// return M_HU_PI_Item_Product
+		return candidate.getM_HU_PI_Item_Product_ID();
 	}
 }
