@@ -46,7 +46,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
  * #L%
  */
 
-public class SqlLazyLookupDataSource
+public class SqlLazyLookupDataSource implements LookupDataSource
 {
 	private static final Logger logger = LogManager.getLogger(SqlLazyLookupDataSource.class);
 
@@ -60,6 +60,7 @@ public class SqlLazyLookupDataSource
 		this.sqlLookupDescriptor = sqlLookupDescriptor;
 	}
 	
+	@Override
 	public int size(final String filter)
 	{
 		if (!isValidFilter(filter))
@@ -80,6 +81,7 @@ public class SqlLazyLookupDataSource
 		return count;
 	}
 
+	@Override
 	public List<LookupValue> findEntities(final String filter, final int firstRow, final int pageLength)
 	{
 		if (!isValidFilter(filter))
@@ -107,6 +109,23 @@ public class SqlLazyLookupDataSource
 			return values;
 		}
 	}
+
+	@Override
+	public LookupValue findById(final Object id)
+	{
+		if(id == null)
+		{
+			return null;
+		}
+		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
+		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
+		if(displayName == null)
+		{
+			return null;
+		}
+		
+		return LookupValue.of(id, displayName);
+	}
 	
 	private static final LookupValue toLookupValue(final NamePair namePair)
 	{
@@ -131,6 +150,7 @@ public class SqlLazyLookupDataSource
 		}
 	}
 
+	@Override
 	public boolean isValidFilter(final String filter)
 	{
 		if (Check.isEmpty(filter, true))
