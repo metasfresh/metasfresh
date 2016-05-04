@@ -48,7 +48,13 @@ public final class DataFieldLookupDescriptor
 	{
 		return new DataFieldLookupDescriptor(displayType, columnName, AD_Reference_Value_ID);
 	}
-	
+
+	public static final DataFieldLookupDescriptor of(final int displayType, final String columnName)
+	{
+		final int AD_Reference_Value_ID = 0;
+		return new DataFieldLookupDescriptor(displayType, columnName, AD_Reference_Value_ID);
+	}
+
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
 	public static final CtxName SQL_PARAM_ValidationRuleSql = CtxName.parse("SqlValidationRule");
 	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset");
