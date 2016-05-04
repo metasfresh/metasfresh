@@ -2,7 +2,7 @@ package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.math.BigDecimal;
 
-import com.vaadin.data.util.converter.StringToBigDecimalConverter;
+import com.vaadin.data.util.converter.Converter;
 
 /*
  * #%L
@@ -29,8 +29,8 @@ import com.vaadin.data.util.converter.StringToBigDecimalConverter;
 @SuppressWarnings("serial")
 public class BigDecimalField extends NumberField<BigDecimal>
 {
-	public BigDecimalField()
+	public BigDecimalField(final Converter<String, BigDecimal> converter)
 	{
-		super(BigDecimal.class, new StringToBigDecimalConverter());
+		super(BigDecimal.class, converter);
 	}
 }
