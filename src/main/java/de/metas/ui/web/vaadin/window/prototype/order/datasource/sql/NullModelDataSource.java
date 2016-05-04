@@ -52,13 +52,13 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public void saveRecord(int index, Map<PropertyName, Object> values)
+	public int saveRecord(int index, Map<PropertyName, Object> values)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(Object parentLinkId)
+	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
 	{
 		throw new UnsupportedOperationException();
 	}

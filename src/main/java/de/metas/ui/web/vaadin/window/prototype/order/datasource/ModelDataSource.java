@@ -6,6 +6,7 @@ import java.util.Map;
 import com.google.common.base.Supplier;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.ModelDataSourceQuery;
 
 /*
  * #%L
@@ -31,13 +32,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 public interface ModelDataSource
 {
-
 	Map<PropertyName, Object> getRecord(int index);
 
 	int getRecordsCount();
 
-	void saveRecord(int index, Map<PropertyName, Object> values);
+	int saveRecord(int index, Map<PropertyName, Object> values);
 
-	Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(Object parentLinkId);
+	Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(ModelDataSourceQuery query);
 
 }

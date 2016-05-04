@@ -13,6 +13,7 @@ import java.util.Properties;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.PO;
@@ -110,14 +111,15 @@ public class SqlModelDataSource implements ModelDataSource
 	{
 		if (_records == null)
 		{
-			final Object parentLinkId = null;
-			_records = retriveRecords(parentLinkId);
+			final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
+					.build();
+			_records = retriveRecords(query);
 		}
 		return _records;
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final Object parentLinkId)
+	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
 	{
 		return Suppliers.memoize(new Supplier<List<Map<PropertyName, Object>>>()
 		{
@@ -125,15 +127,32 @@ public class SqlModelDataSource implements ModelDataSource
 			@Override
 			public List<Map<PropertyName, Object>> get()
 			{
-				return retriveRecords(parentLinkId);
+				return retriveRecords(query);
 			}
 		});
 	}
 
-	private final List<Map<PropertyName, Object>> retriveRecords(final Object parentLinkId)
+	private final Map<PropertyName, Object> retriveRecord(final ModelDataSourceQuery query)
+	{
+		final List<Map<PropertyName, Object>> records = retriveRecords(query);
+		if (records.isEmpty())
+		{
+			return null;
+		}
+		else if (records.size() > 1)
+		{
+			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query);
+		}
+		else
+		{
+			return records.get(0);
+		}
+	}
+
+	private final List<Map<PropertyName, Object>> retriveRecords(final ModelDataSourceQuery query)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSql(sqlParams, parentLinkId);
+		final String sql = buildSql(sqlParams, query);
 		logger.trace("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
 		final List<Map<PropertyName, Object>> records = new ArrayList<>();
@@ -178,25 +197,29 @@ public class SqlModelDataSource implements ModelDataSource
 			}
 		}
 
+		final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
+				.setParentLinkId(keyColumn_Value)
+				.build();
+
 		for (final Map.Entry<PropertyName, ModelDataSource> e : includedDataSources.entrySet())
 		{
 			final PropertyName propertyName = e.getKey();
 			final ModelDataSource dataSource = e.getValue();
 
-			final Supplier<List<Map<PropertyName, Object>>> dataSourceValue = dataSource.retrieveSupplier(keyColumn_Value);
+			final Supplier<List<Map<PropertyName, Object>>> dataSourceValue = dataSource.retrieveSupplier(query);
 			data.put(propertyName, dataSourceValue);
 		}
 
 		return data.build();
 	}
 
-	private final String buildSql(final List<Object> sqlParams, final Object parentLinkId)
+	private final String buildSql(final List<Object> sqlParams, final ModelDataSourceQuery query)
 	{
 		final StringBuilder sql = new StringBuilder();
 
 		sql.append(sqlSelect);
 
-		final String whereClause = buildSqlWhereClause(sqlParams, parentLinkId);
+		final String whereClause = buildSqlWhereClause(sqlParams, query);
 		if (!Strings.isNullOrEmpty(whereClause))
 		{
 			sql.append("\n WHERE ").append(whereClause);
@@ -218,7 +241,7 @@ public class SqlModelDataSource implements ModelDataSource
 		return sql.toString();
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, final Object parentLinkId)
+	private String buildSqlWhereClause(final List<Object> sqlParams, final ModelDataSourceQuery query)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
@@ -231,7 +254,7 @@ public class SqlModelDataSource implements ModelDataSource
 				sqlWhereClause.append("\n AND ");
 			}
 			sqlWhereClause.append(sqlField_ParentLinkColumn.getColumnName()).append("=?");
-			sqlParams.add(parentLinkId);
+			sqlParams.add(query.getParentLinkId());
 		}
 
 		return sqlWhereClause.toString();
@@ -361,10 +384,15 @@ public class SqlModelDataSource implements ModelDataSource
 	}	// decrypt
 
 	@Override
-	public void saveRecord(final int index, final Map<PropertyName, Object> values)
+	public int saveRecord(final int index, final Map<PropertyName, Object> values)
 	{
 		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
-		final Object keyValue = values.get(keyProperyName);
+
+		Object keyValue = values.get(keyProperyName);
+		if (NullValue.isNull(keyValue))
+		{
+			keyValue = null;
+		}
 
 		final PO po;
 		if (keyValue == null)
@@ -389,11 +417,27 @@ public class SqlModelDataSource implements ModelDataSource
 			setPOValue(po, propertyName, value);
 		}
 
+		//
+		// Actual save
 		InterfaceWrapperHelper.save(po);
+		final Object keyValueNew = InterfaceWrapperHelper.getId(po);
 
 		//
 		// Update the buffer
-		getRecords().set(index, ImmutableMap.copyOf(values));
+		final Map<PropertyName, Object> valuesNew = retriveRecord(ModelDataSourceQuery.builder()
+				.setRecordId(keyValueNew)
+				.build());
+		final List<Map<PropertyName, Object>> records = getRecords();
+		if (index >= 0)
+		{
+			records.set(index, ImmutableMap.copyOf(valuesNew));
+			return index;
+		}
+		else
+		{
+			records.add(ImmutableMap.copyOf(valuesNew));
+			return records.size() - 1;
+		}
 	}
 
 	private void setPOValue(final PO po, final PropertyName propertyName, Object value)
@@ -416,7 +460,7 @@ public class SqlModelDataSource implements ModelDataSource
 			final LookupValue lookupValue = (LookupValue)value;
 			value = lookupValue.getId();
 		}
-		
+
 		if (value instanceof java.util.Date)
 		{
 			value = TimeUtil.asTimestamp((java.util.Date)value);

@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
-import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.ModelDataSourceQuery;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 
 /*
@@ -122,7 +122,7 @@ public class DummyModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public void saveRecord(final int index, final Map<PropertyName, Object> values)
+	public int saveRecord(final int index, final Map<PropertyName, Object> values)
 	{
 		if (index < 0 || index >= records.size())
 		{
@@ -132,10 +132,11 @@ public class DummyModelDataSource implements ModelDataSource
 		logger.debug("Saving record {}: {}", index, values);
 		
 		records.set(index, ImmutableMap.copyOf(values));
+		return index;
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(Object parentLinkId)
+	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
 	{
 		return Suppliers.memoize(new Supplier<List<Map<PropertyName, Object>>>(){
 

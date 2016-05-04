@@ -488,7 +488,7 @@ public class WindowPresenter implements WindowViewListener
 	public ListenableFuture<Object> viewRequestValue(final PropertyName propertyName)
 	{
 		final WindowModel model = getModel();
-		final Object value = model.getProperty(propertyName);
+		final Object value = model.getPropertyOrNull(propertyName);
 		return Futures.immediateFuture(value);
 	}
 

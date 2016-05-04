@@ -62,7 +62,6 @@ public class WindowModel
 	private final String id = UUID.randomUUID().toString();
 	private final EventBus eventBus = new EventBus(getClass().getName());
 
-
 	//
 	// Properties
 	private PropertyDescriptor _rootPropertyDescriptor;
@@ -75,7 +74,7 @@ public class WindowModel
 	{
 		super();
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -84,7 +83,7 @@ public class WindowModel
 				.add("rootPropertyDescriptor", _rootPropertyDescriptor)
 				.toString();
 	}
-	
+
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		if (this._rootPropertyDescriptor == rootPropertyDescriptor)
@@ -92,8 +91,7 @@ public class WindowModel
 			return;
 		}
 		Check.assumeNotNull(rootPropertyDescriptor, "Parameter rootPropertyDescriptor is not null");
-		
-		
+
 		this._rootPropertyDescriptor = rootPropertyDescriptor;
 		// this.dataSource = new DummyModelDataSource(rootPropertyDescriptor);
 		this._dataSource = new SqlModelDataSource(rootPropertyDescriptor);
@@ -130,8 +128,11 @@ public class WindowModel
 
 		//
 		// Data source
-		_recordIndex = 0;
-		loadRecord();
+		if (getRecordsCount() > 0)
+		{
+			_recordIndex = 0;
+			loadRecord();
+		}
 	}
 
 	private final <ET extends ModelEvent> void postEvent(final ET event)
@@ -163,7 +164,7 @@ public class WindowModel
 	{
 		return _rootPropertyDescriptor;
 	}
-	
+
 	private ModelDataSource getDataSource()
 	{
 		return _dataSource;
@@ -186,6 +187,15 @@ public class WindowModel
 			return;
 		}
 
+		setRecordIndexAndReload(index);
+	}
+
+	private void setRecordIndexAndReload(final int index)
+	{
+		if (index < 0)
+		{
+			throw new IllegalArgumentException("Invalid index: " + index);
+		}
 		_recordIndex = index;
 		loadRecord();
 	}
@@ -263,7 +273,19 @@ public class WindowModel
 	public Object getProperty(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		return properties.getPropertyValue(propertyName).getValue();
+		final PropertyValue propertyValue = properties.getPropertyValue(propertyName);
+		return propertyValue.getValue();
+	}
+
+	public Object getPropertyOrNull(final PropertyName propertyName)
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final PropertyValue propertyValue = properties.getPropertyValueOrNull(propertyName);
+		if (propertyValue == null)
+		{
+			return null;
+		}
+		return propertyValue.getValue();
 	}
 
 	public void setProperty(final PropertyName propertyName, final Object value)
@@ -332,7 +354,7 @@ public class WindowModel
 	private final void updateDependentPropertyValue(final PropertyValue propertyValue, PropertyName changedPropertyName, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
 	{
 		final PropertyValueCollection properties = getProperties();
-		
+
 		final Object calculatedValueOld = propertyValue.getValue();
 		propertyValue.onDependentPropertyValueChanged(properties, changedPropertyName);
 		final Object calculatedValueNew = propertyValue.getValue();
@@ -381,7 +403,7 @@ public class WindowModel
 	public Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValueOrNull(gridPropertyName));
 		if (gridProp == null)
 		{
 			// TODO: handle missing model property
@@ -489,18 +511,19 @@ public class WindowModel
 	public void saveRecord()
 	{
 		final Map<PropertyName, Object> values = getProperties().getValuesAsMap();
-		
+
 		final ModelDataSource dataSource = getDataSource();
-		dataSource.saveRecord(getRecordIndex(), values);
-		
-		loadRecord();
+		final int index = getRecordIndex();
+		final int indexActual = dataSource.saveRecord(index, values);
+
+		setRecordIndexAndReload(indexActual);
 	}
 
 	public void reloadRecord()
 	{
 		loadRecord();
 	}
-	
+
 	public Iterable<Object> getPropertyAvailableValues(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();

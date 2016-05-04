@@ -77,7 +77,7 @@ public class PropertyValueCollection
 				.add("name2value", name2value)
 				.toString();
 	}
-	
+
 	public PropertyValue getPropertyValue(final String propertyNameStr)
 	{
 		final PropertyName propertyName = PropertyName.of(propertyNameStr);
@@ -85,6 +85,16 @@ public class PropertyValueCollection
 	}
 
 	public PropertyValue getPropertyValue(final PropertyName propertyName)
+	{
+		final PropertyValue propertyValue = getPropertyValueOrNull(propertyName);
+		if (propertyValue == null)
+		{
+			throw new RuntimeException("Property " + propertyName + " not found");
+		}
+		return propertyValue;
+	}
+
+	public PropertyValue getPropertyValueOrNull(final PropertyName propertyName)
 	{
 		return name2value.get(propertyName);
 	}
