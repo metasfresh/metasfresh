@@ -15,18 +15,24 @@ import org.adempiere.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * Allows to combine a number of different handlers and will delegate the actual works to the particular handler for the particular type of <code>model</code>.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 {
 	private final CopyOnWriteArrayList<IInterfaceWrapperHelper> helpers = new CopyOnWriteArrayList<>();
@@ -43,6 +49,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return this;
 	}
 
+	/**
+	 * Always returns <code>true</code>
+	 */
 	@Override
 	public boolean canHandled(Object model)
 	{
@@ -85,12 +94,12 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		getHelperThatCanHandle(model)
 				.refresh(model, trxName);
 	}
-	
+
 	@Override
 	public boolean hasModelColumnName(Object model, String columnName)
 	{
 		return getHelperThatCanHandle(model)
-		.hasModelColumnName(model, columnName);
+				.hasModelColumnName(model, columnName);
 	}
 
 }
