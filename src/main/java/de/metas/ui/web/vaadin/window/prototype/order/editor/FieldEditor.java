@@ -60,7 +60,8 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 			@Override
 			public void valueChange(final Property.ValueChangeEvent event)
 			{
-				listener().valueChange(getPropertyName(), valueField.getValue());
+				final T valueNew = valueField.getValue();
+				listener().valueChange(getPropertyName(), valueNew);
 			}
 		});
 		

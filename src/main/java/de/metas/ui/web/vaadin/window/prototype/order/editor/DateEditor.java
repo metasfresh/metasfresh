@@ -7,6 +7,7 @@ import java.util.Date;
 import org.compiere.util.DisplayType;
 
 import com.vaadin.data.util.converter.Converter;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.DateField;
 
@@ -46,12 +47,38 @@ public class DateEditor extends FieldEditor<Date>
 		final DateField valueField = getValueField();
 
 		//
-		// Date format
+		// Display Type
 		int displayType = getPropertyDescriptor().getSqlDisplayType();
 		if (!DisplayType.isDate(displayType))
 		{
+			// Make sure the display type is about Dates
 			displayType = DisplayType.Date;
 		}
+		
+		//
+		// Date resolution
+		final Resolution resolution;
+		if (displayType == DisplayType.Date)
+		{
+			resolution = Resolution.DAY;
+		}
+		else if (displayType == DisplayType.DateTime)
+		{
+			resolution = Resolution.MINUTE;
+		}
+		else if (displayType == DisplayType.Time)
+		{
+			// TODO: implement TimeEditor. Consider using https://vaadin.com/directory#!addon/timefield or something more nicer
+			resolution = Resolution.SECOND;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot detect resolution for displayType="+displayType);
+		}
+		valueField.setResolution(resolution);
+		
+		//
+		// Date format
 		this.dateFormat = DisplayType.getDateFormat(displayType);
 		final String dateFormatPattern = dateFormat.toPattern();
 		valueField.setDateFormat(dateFormatPattern);
