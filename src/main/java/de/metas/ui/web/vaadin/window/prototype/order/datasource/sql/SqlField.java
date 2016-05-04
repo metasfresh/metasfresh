@@ -79,7 +79,7 @@ final class SqlField
 		if (lookupDescriptor != null)
 		{
 			usingDisplayColumn = true;
-			displayColumnName = columnName + "_Display";
+			displayColumnName = columnName + "$Display";
 			displayColumnSql = lookupDescriptor.getSqlForFetchingDisplayNameById(sqlTable.getTableAlias() + "." + columnName);
 			numericKey = lookupDescriptor.isNumericKey();
 		}
