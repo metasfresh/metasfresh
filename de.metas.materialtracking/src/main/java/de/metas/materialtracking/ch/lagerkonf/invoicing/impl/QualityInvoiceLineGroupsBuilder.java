@@ -13,11 +13,11 @@ package de.metas.materialtracking.ch.lagerkonf.invoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -44,9 +42,11 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
@@ -294,8 +294,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// ok, at this point we can be sure that there is already a invoicing group set!
 		// add one detail line for the raw material and one for the scrap-information
 		{
-			// TODO: verify
-			final IQualityInvoiceLineGroup firstGroup = getCreatedInvoiceLineGroups().get(0);
+			final IQualityInvoiceLineGroup firstDisplayedGroup = getFirstDisplayedGroupOrNull();
+			Check.assumeNotNull(firstDisplayedGroup,
+					"firstDisplayedGroup is not null, because we already added the main product's group; createdInvoiceLineGroups={}",
+					_createdInvoiceLineGroups);
 
 			final IQualityInspectionLine scrapLine = getScrapQualityInspectionLine();
 
@@ -306,7 +308,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				final IQualityInspectionLine rawLine = getRawQualityInspectionLine();
 				final QualityInvoiceLine detail = createQualityInvoiceLine(rawLine);
 				detail.setDisplayed(true);
-				firstGroup.addDetailBefore(detail);
+				firstDisplayedGroup.addDetailBefore(detail);
 			}
 
 			//
@@ -315,7 +317,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			{
 				final QualityInvoiceLine detail = createQualityInvoiceLine(scrapLine);
 				detail.setDisplayed(true);
-				firstGroup.addDetailBefore(detail);
+				firstDisplayedGroup.addDetailBefore(detail);
 
 				detail.setQty(detail.getQty().negate()); // NOTE: in report is with "-"
 			}
@@ -335,6 +337,29 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		createQualityInvoiceLineGroup_WithholdingAmount();
 
 		return this;
+	}
+
+	/**
+	 * Returns the first {@link IQualityInvoiceLineGroup} that is supposed to be displayed
+	 *
+	 * @return
+	 */
+	private IQualityInvoiceLineGroup getFirstDisplayedGroupOrNull()
+	{
+		for (final IQualityInvoiceLineGroup group : getCreatedInvoiceLineGroups())
+		{
+			final IQualityInvoiceLine invoiceableLine = group.getInvoiceableLine();
+			if (invoiceableLine == null)
+			{
+				continue;
+			}
+			if (!invoiceableLine.isDisplayed())
+			{
+				continue;
+			}
+			return group;
+		}
+		return null;
 	}
 
 	/**
@@ -420,9 +445,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// add a reference to each PP_Order
-		final List<IQualityInspectionOrder> allProductionOrders =
-				_materialTrackingDocuments
-						.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+		final List<IQualityInspectionOrder> allProductionOrders = _materialTrackingDocuments
+				.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
 
 		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
@@ -447,9 +471,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
 
-		final List<IQualityInspectionOrder> allProductionOrders =
-				_materialTrackingDocuments
-						.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+		final List<IQualityInspectionOrder> allProductionOrders = _materialTrackingDocuments
+				.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
 
 		// this check is mostly a guard against poorly set up AITs
 		Check.errorIf(allProductionOrders.isEmpty(), "MaterialTrackingDocuments {} contains no IQualityInspectionOrders for plv {}",
@@ -584,12 +607,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			if (isInvoiceRegularOrderForDate(dateOfProduction))
 			{
 				invoicableDetailLine.setQty(
-						invoicableDetailLine.getQty().add(ppOrderDetailLine.getQty())
-						);
+						invoicableDetailLine.getQty().add(ppOrderDetailLine.getQty()));
 			}
 			invoicableDetailLineOverride.setQty(
-					invoicableDetailLineOverride.getQty().add(ppOrderDetailLine.getQty())
-					);
+					invoicableDetailLineOverride.getQty().add(ppOrderDetailLine.getQty()));
 
 			final int qtyTU;
 			final IHandlingUnitsInfo regularInvoiceDetailHUInfo = ppOrderDetailLine.getHandlingUnitsInfo();
@@ -635,22 +656,20 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// the "label" line which shall be displayed (in the jasper printout) instead of the action invoice lines product, uom etc
 			{
-				final QualityInvoiceLine detailLineOverride =
-						createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
-								huInfo,
-								new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
-								labelToUse);
+				final QualityInvoiceLine detailLineOverride = createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
+						huInfo,
+						new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
+						labelToUse);
 				detailLineOverride.setDisplayed(true);
 				invoiceLineGroup.setInvoiceableLineOverride(detailLineOverride);
 			}
 
 			// the line which shall later become the C_InvoiceLine
 			{
-				final QualityInvoiceLine detailLineInvcoiceable =
-						createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
-								huInfo,
-								new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
-								labelToUse);
+				final QualityInvoiceLine detailLineInvcoiceable = createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
+						huInfo,
+						new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
+						labelToUse);
 				detailLineInvcoiceable.setDisplayed(true);
 
 				// Pricing
