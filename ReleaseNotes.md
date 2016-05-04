@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.16.15 (upcoming)
+# metasfresh 4.x.x (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.16.15
 
 ## Features
  - FRESH-259 Completely remove zkwebui from metasfresh
@@ -20,8 +26,8 @@ The actual release notes
     * adding a simple DB function to do the job for now
 
 ## Fixes
-  - FRESH-267 aparently Loglevels are changed somewhere in the code
-  - FRESH-270 material tracking: total received qty and scrap sometimes missing on invoice
+ - FRESH-267 aparently Loglevels are changed somewhere in the code
+ - FRESH-270 material tracking: total received qty and scrap sometimes missing on invoice
      * fixed a problem where those two invoice detail records were attached to a not-displayed group
  - FRESH-234 report sales inout qtys for products and TUs are not alligned
 
