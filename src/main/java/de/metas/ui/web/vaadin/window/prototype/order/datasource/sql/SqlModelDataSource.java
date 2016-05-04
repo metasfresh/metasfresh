@@ -273,7 +273,7 @@ public class SqlModelDataSource implements ModelDataSource
 
 		if (sqlField.isUsingDisplayColumn())
 		{
-			final String displayName = rs.getString(columnName + "_Display");
+			final String displayName = rs.getString(sqlField.getDisplayColumnName());
 			if (sqlField.isNumericKey())
 			{
 				final int id = rs.getInt(columnName);
