@@ -20,7 +20,9 @@
 
 	<modules>
 		<module>../de.metas.assemblies</module>
-		<module>../de.metas.parent</module>
+
+		<!-- FRESH-271: de.metas.parent now has this reactor pom as module, so to avoid a loop, we cannot have it as module anymore -->
+		<!-- module>../de.metas.parent</module -->
 
 		<module>../de.metas.migration</module>
 		<module>../de.metas.scripts.rollout</module>
