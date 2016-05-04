@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 
@@ -87,6 +88,14 @@ public interface IPMMPurchaseCandidateBL extends ISingletonService
 	 */
 	void resetQtyToOrder(final I_PMM_PurchaseCandidate candidate);
 
-	/** @return candidate wrapped to {@link IPMMPricingAware} */
+	/**
+	 * @return candidate wrapped to {@link IPMMPricingAware}
+	 */
 	IPMMPricingAware asPMMPricingAware(I_PMM_PurchaseCandidate candidate);
+
+	/**
+	 * @param candidate
+	 * @return M_HU_PI_Item_Product_Override if set, M_HU_PI_Item_Product otherwise
+	 */
+	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Effective(I_PMM_PurchaseCandidate candidate);
 }

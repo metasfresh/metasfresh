@@ -369,6 +369,33 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
+	 * Set Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PI_Item_Product_Override_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override();
+
+	public void setM_HU_PI_Item_Product_Override(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override);
+
+    /** Column definition for M_HU_PI_Item_Product_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_Override_ID = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_PurchaseCandidate.class, "M_HU_PI_Item_Product_Override_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    /** Column name M_HU_PI_Item_Product_Override_ID */
+    public static final String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
+
+	/**
 	 * Set Preisliste.
 	 * Bezeichnung der Preisliste
 	 *

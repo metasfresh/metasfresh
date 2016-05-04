@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -14,9 +15,11 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
+import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 
 /*
  * #%L
@@ -133,7 +136,9 @@ public final class PurchaseCandidate
 
 	public int getM_HU_PI_Item_Product_ID()
 	{
-		return model.getM_HU_PI_Item_Product_ID();
+		final I_M_HU_PI_Item_Product huPIP = Services.get(IPMMPurchaseCandidateBL.class).getM_HU_PI_Item_Product_Effective(model);
+
+		return huPIP == null ? -1 : huPIP.getM_HU_PI_Item_Product_ID();
 	}
 
 	public BigDecimal getQtyToOrder()
@@ -178,6 +183,7 @@ public final class PurchaseCandidate
 
 	/**
 	 * This method is actually used by the item aggregation key builder of {@link OrderLinesAggregator}.
+	 * 
 	 * @return
 	 */
 	public final Object getLineAggregationKey()
