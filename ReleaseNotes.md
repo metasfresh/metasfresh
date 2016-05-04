@@ -15,7 +15,7 @@ The actual release notes
 # metasfresh 4.x.x (upcoming)
 
 ## Features
-
+ - FRESH-265 Procurement Candidates: Packvorschrift overwrite
 ## Fixes
 
 # metasfresh 4.16.15
