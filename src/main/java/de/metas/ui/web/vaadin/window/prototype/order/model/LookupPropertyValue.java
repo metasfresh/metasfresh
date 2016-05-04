@@ -47,7 +47,7 @@ public class LookupPropertyValue implements PropertyValue
 {
 	private final PropertyName propertyName;
 	private final DataFieldLookupDescriptor sqlLookupDescriptor;
-	private final SqlLazyLookupDataSource sqlLazyLookupDataSource;
+	private final LookupDataSource sqlLazyLookupDataSource;
 
 	// private final List<LookupValue> lookupValues = ImmutableList.of();
 
