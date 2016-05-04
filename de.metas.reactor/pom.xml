@@ -64,8 +64,11 @@
 		<module>../de.metas.device.adempiere</module>
 		<module>../de.metas.device.api</module>
 		<module>../de.metas.device.scales</module>
+		
+		<module>../de.metas.document.archive.esb.api</module>
 		<module>../de.metas.document.archive</module>
 		<module>../de.metas.document.archive.esb</module>
+		
 		<module>../de.metas.document.refid</module>
 		<module>../de.metas.dunning</module>
 
