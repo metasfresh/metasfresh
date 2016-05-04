@@ -57,6 +57,7 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 	@Override
 	public void updateQtyToOrderFromQtyToOrderTU(final I_PMM_PurchaseCandidate candidate)
 	{
+		final I_M_HU_PI_Item_Product huPIItemProduct = getM_HU_PI_Item_Product_Effective(candidate);
 		if (huPIItemProduct != null)
 		{
 			final BigDecimal qtyToOrderTU = candidate.getQtyToOrder_TU();
