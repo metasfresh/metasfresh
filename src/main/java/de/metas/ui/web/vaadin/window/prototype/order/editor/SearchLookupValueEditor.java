@@ -18,7 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
-import de.metas.ui.web.vaadin.window.prototype.order.model.SqlLazyLookupDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.model.LookupDataSource;
 
 /*
  * #%L
@@ -131,7 +131,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	private final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
 	{
 		private final int pageLength;
-		private SqlLazyLookupDataSource _lookupDataSource;
+		private LookupDataSource _lookupDataSource;
 		private LookupValue _currentValue;
 
 		public ComboDataSource(int pageLength)
@@ -151,9 +151,9 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 
 		public void setLookupDataSourceFromObject(Object value)
 		{
-			if (value instanceof SqlLazyLookupDataSource)
+			if (value instanceof LookupDataSource)
 			{
-				setLookupDataSource((SqlLazyLookupDataSource)value);
+				setLookupDataSource((LookupDataSource)value);
 			}
 			else
 			{
@@ -162,19 +162,19 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			}
 		}
 
-		public void setLookupDataSource(final SqlLazyLookupDataSource lookupDataSource)
+		public void setLookupDataSource(final LookupDataSource lookupDataSource)
 		{
 			this._lookupDataSource = lookupDataSource;
 		}
 		
-		private SqlLazyLookupDataSource getLookupDataSource()
+		private LookupDataSource getLookupDataSource()
 		{
 			if (_lookupDataSource == null)
 			{
 				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyName);
 				try
 				{
-					_lookupDataSource = (SqlLazyLookupDataSource)futureValue.get(10, TimeUnit.SECONDS);
+					_lookupDataSource = (LookupDataSource)futureValue.get(10, TimeUnit.SECONDS);
 					if(_lookupDataSource == null)
 					{
 						logger.warn("Got no lookupDataSource for {}", valuesPropertyName);
@@ -216,7 +216,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		@Override
 		public int size(final String filter)
 		{
-			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
+			final LookupDataSource lookupDataSource = getLookupDataSource();
 			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
 			if (askDataSource)
 			{
@@ -230,7 +230,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		@Override
 		public List<LookupValue> findEntities(final int firstRow, final String filter)
 		{
-			final SqlLazyLookupDataSource lookupDataSource = getLookupDataSource();
+			final LookupDataSource lookupDataSource = getLookupDataSource();
 			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
 			if (askDataSource)
 			{
