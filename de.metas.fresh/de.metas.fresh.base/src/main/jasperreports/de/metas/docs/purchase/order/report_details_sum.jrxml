@@ -18,8 +18,7 @@
 		<![CDATA[SELECT
 	(
 		SELECT SUM(ot.TaxBaseAmt) FROM C_OrderTax ot
-		JOIN C_Tax t ON ot.C_Tax_ID = t.C_Tax_ID
-		WHERE ot.C_Order_ID = o.C_Order_ID and t.name NOT LIKE '%Gebinde%'
+		WHERE ot.C_Order_ID = o.C_Order_ID and ot.IsPackagingTax = 'N'
 	) NonHULines,
 	GrandTotal,
 	COALESCE(cur.cursymbol,cur.iso_code) AS iso_code,
@@ -37,14 +36,14 @@ FROM
 	INNER JOIN
 	(
 		SELECT	o.C_Order_ID,
-			t.name LIKE '%Gebinde%' AS isHULine,
+			ot.IsPackagingTax = 'Y' AS isHULine,
 			SUM(ot.TaxBaseAmt) AS TaxBaseAmt,
 			t.rate AS TaxRate,
 			SUM(ot.taxamt) AS TaxAmt
 		FROM 	C_Order o
 			LEFT OUTER JOIN C_OrderTax ot ON o.C_Order_ID = ot.C_Order_ID
 			LEFT OUTER JOIN C_Tax t ON ot.C_Tax_ID = t.C_Tax_ID
-		GROUP BY o.C_Order_ID, t.name LIKE '%Gebinde%', t.rate
+		GROUP BY o.C_Order_ID, ot.IsPackagingTax = 'Y', t.rate
 	) sum ON o.C_Order_ID = sum.C_Order_ID
 	INNER JOIN C_Currency cur ON o.C_Currency_ID = cur.C_Currency_ID
 	INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
@@ -86,9 +85,6 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
-	<detail>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
 			<textField>
@@ -112,6 +108,8 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{nonhulines}]]></textFieldExpression>
 			</textField>
 		</band>
+	</columnHeader>
+	<detail>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{taxrate}.floatValue() != 0 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
