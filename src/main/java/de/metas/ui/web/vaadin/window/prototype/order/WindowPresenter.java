@@ -139,6 +139,26 @@ public class WindowPresenter implements WindowViewListener
 		_registeredToModelEventBus = false;
 		logger.trace("Unbound presenter {} from model {}", this, model);
 	}
+	
+	public void setView(final WindowView view)
+	{
+		final WindowView viewOld = this._view;
+		if (viewOld == view)
+		{
+			return;
+		}
+		
+		if (viewOld != null)
+		{
+			viewOld.setListener(null);
+		}
+		
+		this._view = view;
+		if(this._view != null)
+		{
+			this._view.setListener(this);
+		}
+	}
 
 	private WindowView getView()
 	{
