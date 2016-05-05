@@ -90,6 +90,17 @@ public class SqlModelDataSource implements ModelDataSource
 		includedDataSources = ImmutableMap.copyOf(builder.includedDataSources);
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("sqlTableName", sqlTableName)
+				.add("keyColumn", sqlField_KeyColumn)
+				.add("parentLinkColumn", sqlField_ParentLinkColumn)
+				.toString();
+	}
+
 	private Properties getCtx()
 	{
 		return Env.getCtx();
@@ -141,7 +152,8 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 		else if (records.size() > 1)
 		{
-			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query);
+			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
+					+ "\nRecords: " + Joiner.on("\n").join(records));
 		}
 		else
 		{
@@ -178,6 +190,7 @@ public class SqlModelDataSource implements ModelDataSource
 			DB.close(rs, pstmt);
 		}
 
+		logger.trace("Retrieved {} records.", records.size());
 		return records;
 	}
 
