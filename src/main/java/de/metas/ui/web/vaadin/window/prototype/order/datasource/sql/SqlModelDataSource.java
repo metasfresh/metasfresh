@@ -309,7 +309,8 @@ public class SqlModelDataSource implements ModelDataSource
 				|| DisplayType.isID(displayType)
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct")
 								|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))
-				|| columnName.endsWith("atedBy")
+				|| "CreatedBy".equals(columnName)
+				|| "UpdatedBy".equals(columnName)
 				|| "Record_ID".equals(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
 		)
 		{
