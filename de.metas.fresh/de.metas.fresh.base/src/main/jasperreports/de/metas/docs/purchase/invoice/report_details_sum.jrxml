@@ -41,7 +41,7 @@ FROM
 		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
 		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 	WHERE
-		t.name NOT ILIKE '%Gebinde%'
+		it.IsPackagingTax = 'N'
 	GROUP BY
 		it.C_Invoice_ID,
 		isPrintTax,
@@ -62,7 +62,7 @@ UNION
 			WHEN round(t.Rate,2) = t.Rate THEN round(t.Rate,2)
 		END AS TaxRate,
 		SUM(TaxBaseAmt + TaxAmt) AS total,
-		CASE WHEN t.name LIKE '%Gebinde%' THEN 'Y' ELSE 'N' END AS HuLine,
+		it.IsPackagingTax AS HuLine,
 		isPrintTax,
 		2 AS orderindex
 	FROM
@@ -72,7 +72,7 @@ UNION
 		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
 		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 	GROUP BY
-		it.C_Invoice_ID, CASE WHEN t.name LIKE '%Gebinde%' THEN 'Y' ELSE 'N' END,
+		it.C_Invoice_ID, it.IsPackagingTax,
 		isPrintTax,
 		CASE
 			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
