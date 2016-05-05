@@ -116,24 +116,28 @@ public class WindowPresenter implements WindowViewListener
 	{
 		if (_registeredToModelEventBus)
 		{
+			logger.trace("Skip binding presenter to model because it was already bound");
 			return;
 		}
 
 		final WindowModel model = getModel();
 		model.getEventBus().register(this);
 		_registeredToModelEventBus = true;
+		logger.trace("Bound presenter {} to model {}", this, model);
 	}
 
 	private final void unbindFromModel()
 	{
 		if (!_registeredToModelEventBus)
 		{
+			logger.trace("Skip unbinding presenter from model because it was not bound");
 			return;
 		}
 
 		final WindowModel model = getModel();
 		model.getEventBus().unregister(this);
 		_registeredToModelEventBus = false;
+		logger.trace("Unbound presenter {} from model {}", this, model);
 	}
 
 	private WindowView getView()
