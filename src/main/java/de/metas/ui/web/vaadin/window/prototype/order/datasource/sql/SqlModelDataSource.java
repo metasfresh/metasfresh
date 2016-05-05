@@ -434,7 +434,6 @@ public class SqlModelDataSource implements ModelDataSource
 		{
 			final PropertyName propertyName = valueEntry.getKey();
 			final Object value = valueEntry.getValue();
-			setPOValue(po, propertyName, value);
 			final Object valueOld = valuesOld.get(propertyName);
 			setPOValue(po, propertyName, value, valueOld);
 		}
@@ -462,7 +461,6 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 	}
 
-	private void setPOValue(final PO po, final PropertyName propertyName, Object value)
 	private void setPOValue(final PO po, final PropertyName propertyName, Object value, Object valueOld)
 	{
 		final SqlField sqlField = sqlFields.get(propertyName);
