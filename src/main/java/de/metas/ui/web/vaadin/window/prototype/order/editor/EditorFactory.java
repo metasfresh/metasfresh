@@ -1,7 +1,14 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
+import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 
 /*
@@ -91,4 +98,49 @@ public class EditorFactory
 			throw new IllegalArgumentException("Unsupported property for " + valueType + " (descriptor: " + descriptor);
 		}
 	}
+	
+	public Editor createEditorsRecursivelly(final PropertyDescriptor descriptor)
+	{
+		Preconditions.checkNotNull(descriptor, "descriptor");
+		final Editor editor = createEditor(descriptor);
+
+		if (editor.isAddingChildEditorsAllowed())
+		{
+			for (final PropertyDescriptor childDescriptor : descriptor.getChildPropertyDescriptors())
+			{
+				final Editor childEditor = createEditorsRecursivelly(childDescriptor);
+				editor.addChildEditor(childEditor);
+			}
+		}
+
+		return editor;
+	}
+	
+	public Map<PropertyName, Editor> getAllWatchedPropertyNamesAndEditors(final Editor rootEditor)
+	{
+		Preconditions.checkNotNull(rootEditor, "rootEditor");
+		final ImmutableMap.Builder<PropertyName, Editor> editorsCollector = ImmutableMap.builder();
+		collectAllWatchedPropertyNamesAndEditors(editorsCollector, rootEditor);
+		return editorsCollector.build();
+	}
+
+	private void collectAllWatchedPropertyNamesAndEditors(final ImmutableMap.Builder<PropertyName, Editor> editorsCollector, final Editor editor)
+	{
+		editorsCollector.put(editor.getPropertyName(), editor);
+
+		final Set<PropertyName> editorWatchedPropertyNames = editor.getWatchedPropertyNames();
+		if (editorWatchedPropertyNames != null && !editorWatchedPropertyNames.isEmpty())
+		{
+			for (final PropertyName editorWatchedPropertyName : editorWatchedPropertyNames)
+			{
+				editorsCollector.put(editorWatchedPropertyName, editor);
+			}
+		}
+		
+		for (final Editor childEditor : editor.getChildEditors())
+		{
+			collectAllWatchedPropertyNamesAndEditors(editorsCollector, childEditor);
+		}
+	}
+
 }

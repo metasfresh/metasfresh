@@ -92,6 +92,8 @@ public class WindowPresenter implements WindowViewListener
 		// Register back all listeners
 		bindToModel();
 		view.setListener(this);
+		
+		updateViewFromModel();
 	}
 
 	public void dispose()
