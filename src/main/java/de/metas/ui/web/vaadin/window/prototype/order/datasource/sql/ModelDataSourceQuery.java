@@ -51,6 +51,11 @@ public class ModelDataSourceQuery
 				.toString();
 	}
 	
+	public Object getRecordId()
+	{
+		return recordId;
+	}
+	
 	public Object getParentLinkId()
 	{
 		return parentLinkId;

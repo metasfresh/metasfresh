@@ -246,6 +246,23 @@ public class SqlModelDataSource implements ModelDataSource
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
 		//
+		// Key column
+		if (query.getRecordId() != null)
+		{
+			if (sqlField_KeyColumn == null)
+			{
+				throw new RuntimeException("Failed building where clause for " + query + " because there is no KeyColumn");
+			}
+
+			if (sqlWhereClause.length() > 0)
+			{
+				sqlWhereClause.append("\n AND ");
+			}
+			sqlWhereClause.append(sqlField_KeyColumn.getColumnName()).append("=?");
+			sqlParams.add(query.getRecordId());
+		}
+
+		//
 		// Parent link where clause (if any)
 		if (sqlField_ParentLinkColumn != null)
 		{
