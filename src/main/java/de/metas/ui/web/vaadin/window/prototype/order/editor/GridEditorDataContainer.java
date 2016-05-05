@@ -50,7 +50,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	private final Map<GridRowId, GridRowItem> rows = new LinkedHashMap<>();
 	private final List<GridRowId> rowIds = new ArrayList<>();
 
-	private EditorListener editorListener = null;
+	private EditorListener editorListener = NullEditorListener.instance;
 	private final Property.ValueChangeListener cellValueChangedListenerDelegate = new Property.ValueChangeListener()
 	{
 		@Override
@@ -89,9 +89,9 @@ final class GridEditorDataContainer extends AbstractContainer
 		this.visiblePropertyNames = propertyNames.build();
 	}
 	
-	public void setEditorListener(final EditorListener editorListener)
+	public void setEditorListener(final EditorListener listener)
 	{
-		this.editorListener = editorListener;
+		this.editorListener = listener != null ? listener : NullEditorListener.instance;
 	}
 
 	@Override
