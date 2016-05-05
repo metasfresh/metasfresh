@@ -132,7 +132,7 @@ public final class GridRow
 
 	public Object getValue(final PropertyName propertyName)
 	{
-		final PropertyValue propertyValue = propertyValues.getPropertyValue(propertyName);
+		final PropertyValue propertyValue = propertyValues.getPropertyValueOrNull(propertyName);
 		if (propertyValue == null)
 		{
 			logger.warn("Property {} not found in {}. Skip setting it.", propertyName, this);
