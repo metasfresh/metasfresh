@@ -412,16 +412,19 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 
 		final PO po;
+		final Map<PropertyName, Object> valuesOld;
 		if (keyValue == null)
 		{
 			// new
 			po = TableModelLoader.instance.newPO(getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
+			valuesOld = ImmutableMap.of();
 		}
 		else
 		{
 			final int recordId = (Integer)keyValue;
 			final boolean checkCache = false;
 			po = TableModelLoader.instance.getPO(getCtx(), sqlTableName, recordId, checkCache, ITrx.TRXNAME_ThreadInherited);
+			valuesOld = getRecord(index);
 		}
 		Check.assumeNotNull(po, "po is not null");
 
@@ -432,6 +435,8 @@ public class SqlModelDataSource implements ModelDataSource
 			final PropertyName propertyName = valueEntry.getKey();
 			final Object value = valueEntry.getValue();
 			setPOValue(po, propertyName, value);
+			final Object valueOld = valuesOld.get(propertyName);
+			setPOValue(po, propertyName, value, valueOld);
 		}
 
 		//
@@ -458,10 +463,12 @@ public class SqlModelDataSource implements ModelDataSource
 	}
 
 	private void setPOValue(final PO po, final PropertyName propertyName, Object value)
+	private void setPOValue(final PO po, final PropertyName propertyName, Object value, Object valueOld)
 	{
 		final SqlField sqlField = sqlFields.get(propertyName);
 		if (sqlField == null)
 		{
+			logger.trace("Skip setting value {}={} because there is no SQL field defined", propertyName, value);
 			return;
 		}
 
@@ -471,6 +478,17 @@ public class SqlModelDataSource implements ModelDataSource
 		{
 			value = null;
 		}
+		if (NullValue.isNull(valueOld))
+		{
+			valueOld = null;
+		}
+
+		if (Objects.equal(valueOld, value))
+		{
+			//logger.trace("Skip setting {}={} because value is not changed", propertyName, value);
+			return;
+		}
+		logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, value, valueOld, po);
 
 		if (value instanceof LookupValue)
 		{
