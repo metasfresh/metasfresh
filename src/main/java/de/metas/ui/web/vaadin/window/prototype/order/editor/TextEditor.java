@@ -38,7 +38,9 @@ public class TextEditor extends FieldEditor<String>
 	@Override
 	protected AbstractField<String> createValueField()
 	{
-		return new TextField();
+		final TextField valueField = new TextField();
+		valueField.setNullRepresentation("");
+		return valueField;
 	}
 
 	@Override
