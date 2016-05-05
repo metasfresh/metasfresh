@@ -16,11 +16,11 @@ package de.metas.notification.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -145,7 +145,12 @@ public class EMailConfigTest extends SvrProcess
 	{
 		final I_AD_Client client = clientDAO.retriveClient(getCtx(), p_AD_Client_ID);
 
-		final IMailbox mailbox = mailBL.findMailBox(client, p_AD_Org_ID, p_AD_Process_ID, p_CustomType, getFrom_User());
+		final IMailbox mailbox = mailBL.findMailBox(
+				client,
+				p_AD_Org_ID,
+				p_AD_Process_ID,
+				null,  // C_DocType - Task FRESH-203. This shall work as before
+				p_CustomType, getFrom_User());
 		addLog("Using configuration: " + mailbox);
 
 		final EMail email = mailBL.createEMail(getCtx(), mailbox, p_EMail_To,

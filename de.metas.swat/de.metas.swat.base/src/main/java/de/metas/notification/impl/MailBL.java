@@ -3,33 +3,8 @@
  */
 package de.metas.notification.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.mail.internet.InternetAddress;
 
@@ -43,12 +18,15 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.Query;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.notification.IMailBL;
+import de.metas.notification.IMailDAO;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -156,10 +134,11 @@ public class MailBL implements IMailBL
 	public IMailbox findMailBox(final I_AD_Client client,
 			final int AD_Org_ID,
 			final int AD_Process_ID,
+			final I_C_DocType docType,
 			final String customType,
 			final I_AD_User user)
 	{
-		IMailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, customType);
+		IMailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
 		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
 				client, AD_Org_ID, AD_Process_ID, customType);
 		if (user != null)
@@ -176,38 +155,16 @@ public class MailBL implements IMailBL
 		return mailbox;
 	}
 
-	public IMailbox findMailBox(final I_AD_Client client, final int AD_Org_ID, final int AD_Process_ID, final String customType)
+	public IMailbox findMailBox(final I_AD_Client client, final int orgID, final int processID, final I_C_DocType docType, final String customType)
 	{
-		log.debug("Looking for AD_Client_ID=" + client.getAD_Client_ID() + ", AD_Org_ID=" + AD_Org_ID + ", AD_Process_ID=" + AD_Process_ID + ", customType=" + customType);
+		log.debug("Looking for AD_Client_ID=" + client.getAD_Client_ID() + ", AD_Org_ID=" + orgID + ", AD_Process_ID=" + processID + ", customType=" + customType);
 
-		final ArrayList<Object> params = new ArrayList<Object>();
-		final StringBuffer whereClause = new StringBuffer();
+		final List<I_AD_MailConfig> configs = Services.get(IMailDAO.class).retrieveMailCOnfigs(client, orgID, processID, docType, customType);
 
-		whereClause.append(I_AD_MailConfig.COLUMNNAME_AD_Client_ID).append(" = ?");
-		params.add(client.getAD_Client_ID());
-
-		// + I_AD_MailConfig.COLUMNNAME_AD_Org_ID + " IN (0 , ?)";
-		// params.add(AD_Org_ID);
-		if (!Check.isEmpty(customType, true))
-		{
-			whereClause.append(" AND ").append(I_AD_MailConfig.COLUMNNAME_CustomType).append(" = ? ");
-			params.add(customType);
-		}
-		else if (AD_Process_ID > 0)
-		{
-			whereClause.append(" AND ").append(I_AD_MailConfig.COLUMNNAME_AD_Process_ID).append(" = ? ");
-			params.add(AD_Process_ID);
-		}
-
-		final List<I_AD_MailConfig> configs = new Query(Env.getCtx(), I_AD_MailConfig.Table_Name, whereClause.toString(), null)
-				.setOnlyActiveRecords(true)
-				.setParameters(params)
-				.setOrderBy(I_AD_MailConfig.COLUMNNAME_AD_Org_ID + " DESC ")
-				.list(I_AD_MailConfig.class);
 		for (final I_AD_MailConfig config : configs)
 		{
-			if (config.getAD_Org_ID() == AD_Org_ID
-					|| config.getAD_Org_ID() != AD_Org_ID && config.getAD_Org_ID() == 0)
+			if (config.getAD_Org_ID() == orgID
+					|| config.getAD_Org_ID() != orgID && config.getAD_Org_ID() == 0)
 			{
 				final I_AD_MailBox adMailbox = config.getAD_MailBox();
 				final Mailbox mailbox = new Mailbox(adMailbox.getSMTPHost(),
@@ -259,7 +216,9 @@ public class MailBL implements IMailBL
 			final boolean html)
 	{
 		final Properties ctx = POWrapper.getCtx(client);
-		final IMailbox mailbox = findMailBox(client, ProcessUtil.getCurrentOrgId(), ProcessUtil.getCurrentProcessId(), mailCustomType, from);
+		final IMailbox mailbox = findMailBox(
+				client, ProcessUtil.getCurrentOrgId(), ProcessUtil.getCurrentProcessId(), null // C_DocType - Task FRESH-203 : This shall work as before
+				, mailCustomType, from);
 		return createEMail(ctx, mailbox, to, subject, message, html);
 	}
 
@@ -351,7 +310,7 @@ public class MailBL implements IMailBL
 	public InternetAddress getDebugMailToAddressOrNull(final Properties ctx)
 	{
 		String emailStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DebugMailTo,
-				null, // defaultValue
+				null,           // defaultValue
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(emailStr, true))
