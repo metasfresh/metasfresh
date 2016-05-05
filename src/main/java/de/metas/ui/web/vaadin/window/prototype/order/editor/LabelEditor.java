@@ -1,5 +1,8 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.List;
+
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -69,11 +72,23 @@ public class LabelEditor extends AbstractEditor
 	{
 		valueField.setContentMode(contentMode);
 	}
+	
+	@Override
+	public boolean isAddingChildEditorsAllowed()
+	{
+		return false;
+	}
 
 	@Override
 	public void addChildEditor(Editor editor)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<Editor> getChildEditors()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override

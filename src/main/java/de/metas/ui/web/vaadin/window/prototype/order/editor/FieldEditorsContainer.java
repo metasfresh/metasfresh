@@ -1,9 +1,11 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -121,4 +123,12 @@ public class FieldEditorsContainer extends DocumentSectionEditorsContainer
 		// contentNextColumn;
 		contentNextRow = editorRowTo + 1;
 	}
+	
+
+	@Override
+	public List<Editor> getChildEditors()
+	{
+		return ImmutableList.copyOf(childEditors.values());
+	}
+
 }

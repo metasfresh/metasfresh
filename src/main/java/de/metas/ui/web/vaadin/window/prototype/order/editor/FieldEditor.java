@@ -1,7 +1,9 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
@@ -99,11 +101,23 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 		final T value = valueField.getValue();
 		return value;
 	}
+	
+	@Override
+	public final boolean isAddingChildEditorsAllowed()
+	{
+		return false;
+	}
 
 	@Override
-	public void addChildEditor(final de.metas.ui.web.vaadin.window.prototype.order.editor.Editor editor)
+	public final void addChildEditor(final de.metas.ui.web.vaadin.window.prototype.order.editor.Editor editor)
 	{
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public final List<de.metas.ui.web.vaadin.window.prototype.order.editor.Editor> getChildEditors()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.ui.Component;
@@ -43,6 +44,8 @@ public interface Editor extends Component
 	boolean isAddingChildEditorsAllowed();
 
 	void addChildEditor(Editor editor);
+	
+	List<Editor> getChildEditors();
 
 	Label getLabel();
 

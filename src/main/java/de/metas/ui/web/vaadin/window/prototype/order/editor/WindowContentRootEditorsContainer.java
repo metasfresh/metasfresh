@@ -1,5 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.base.Preconditions;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.VerticalLayout;
 
@@ -31,10 +36,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 public class WindowContentRootEditorsContainer extends EditorsContainer
 {
 	private final VerticalLayout content;
+	
+	private final List<Editor> editors = new ArrayList<>();
 
-	public WindowContentRootEditorsContainer(PropertyDescriptor propertyDescriptor)
+	public WindowContentRootEditorsContainer(final PropertyDescriptor rootPropertyDescriptor)
 	{
-		super(propertyDescriptor);
+		super(rootPropertyDescriptor);
 		
 		content = new VerticalLayout();
 		content.setSizeFull();
@@ -44,9 +51,19 @@ public class WindowContentRootEditorsContainer extends EditorsContainer
 	}
 
 	@Override
-	public void addChildEditor(Editor editor)
+	public void addChildEditor(final Editor editor)
 	{
+		Preconditions.checkNotNull(editor, "editor");
+		
+		editors.add(editor);
+		
 		final Component editorComp = editor;
 		content.addComponent(editorComp);
+	}
+	
+	@Override
+	public List<Editor> getChildEditors()
+	{
+		return ImmutableList.copyOf(editors);
 	}
 }

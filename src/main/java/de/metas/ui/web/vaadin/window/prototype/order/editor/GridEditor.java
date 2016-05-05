@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasChildMeasurementHint.ChildMeasurementHint;
 import com.vaadin.ui.Table;
@@ -90,15 +91,21 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	}
 
 	@Override
+	public boolean isAddingChildEditorsAllowed()
+	{
+		return false;
+	}
+	
+	@Override
 	public void addChildEditor(final Editor editor)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean isAddingChildEditorsAllowed()
+	public List<Editor> getChildEditors()
 	{
-		return false;
+		return ImmutableList.of();
 	}
 
 	@Override

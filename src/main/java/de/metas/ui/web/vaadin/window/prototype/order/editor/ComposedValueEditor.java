@@ -1,5 +1,8 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import java.util.List;
+
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
@@ -85,14 +88,27 @@ public class ComposedValueEditor extends AbstractEditor
 			}
 		}
 	}
+	
+	@Override
+	public boolean isAddingChildEditorsAllowed()
+	{
+		// TODO Auto-generated method stub
+		return true;
+	}
 
 	@Override
 	public void addChildEditor(Editor editor)
 	{
 		// TODO Auto-generated method stub
-		
 	}
-	
+
+	@Override
+	public List<Editor> getChildEditors()
+	{
+		// TODO Auto-generated method stub
+		return ImmutableList.of();
+	}
+
 	@Override
 	protected Label createLabelComponent()
 	{
