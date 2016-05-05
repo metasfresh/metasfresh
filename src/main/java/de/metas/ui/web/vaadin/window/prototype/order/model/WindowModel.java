@@ -137,6 +137,7 @@ public class WindowModel
 
 	private final <ET extends ModelEvent> void postEvent(final ET event)
 	{
+		logger.trace("Firing event: {}", event);
 		eventBus.post(event);
 	}
 
@@ -146,9 +147,9 @@ public class WindowModel
 		{
 			return;
 		}
-		for (final Object event : events)
+		for (final ET event : events)
 		{
-			eventBus.post(event);
+			postEvent(event);
 		}
 	}
 
@@ -229,7 +230,10 @@ public class WindowModel
 	private final void loadRecord()
 	{
 		final ModelDataSource dataSource = getDataSource();
-		final Map<PropertyName, Object> values = dataSource.getRecord(getRecordIndex());
+		final int recordIndex = getRecordIndex();
+		final Map<PropertyName, Object> values = dataSource.getRecord(recordIndex);
+
+		logger.trace("Loading current record ({})", recordIndex);
 
 		//
 		//
@@ -255,11 +259,14 @@ public class WindowModel
 		}
 
 		//
-		// Update calculated values
+		logger.trace("Update calculated values (after load)");
 		for (final PropertyName propertyName : properties.getPropertyNames())
 		{
 			updateAllWhichDependOn(propertyName);
 		}
+
+		if (logger.isTraceEnabled())
+			logger.trace("Loaded record {}: {}", recordIndex, TraceHelper.toStringRecursivelly(properties.getPropertyValues()));
 
 		postEvent(AllPropertiesChangedModelEvent.of(this));
 	}
