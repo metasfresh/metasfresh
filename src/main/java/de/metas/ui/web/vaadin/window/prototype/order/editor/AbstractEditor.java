@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.base.Optional;
@@ -65,6 +66,16 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 		addStyleName(STYLE);
 		this.propertyDescriptor = propertyDescriptor;
 		this.propertyName = propertyDescriptor.getPropertyName();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("propertyName", propertyName)
+				.add("instanceId", System.identityHashCode(this))
+				.toString();
 	}
 	
 	@Override
@@ -167,5 +178,4 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 			_attributes.put(name, value);
 		}
 	}
-
 }
