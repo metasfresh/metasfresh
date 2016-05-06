@@ -1,13 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
-import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowPresenter;
@@ -44,9 +43,8 @@ public class LocationEditorPopup extends Window
 {
 	private static final String STYLE = "mf-editor-location-popup";
 
-	private static final Logger logger = LogManager.getLogger(LocationEditorPopup.class);
-	// @Autowired(required = true) // FIXME
-	private LocationService locationService = new LocationService();
+	@Autowired(required = true)
+	private LocationService locationService;
 
 	private LookupValue lookupValue;
 
