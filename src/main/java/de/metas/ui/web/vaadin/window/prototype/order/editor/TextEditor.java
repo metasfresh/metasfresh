@@ -1,6 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
+import org.compiere.util.DisplayType;
+
 import com.vaadin.ui.AbstractField;
+import com.vaadin.ui.AbstractTextField;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
@@ -38,7 +42,17 @@ public class TextEditor extends FieldEditor<String>
 	@Override
 	protected AbstractField<String> createValueField()
 	{
-		final TextField valueField = new TextField();
+		final AbstractTextField valueField;
+		final int displayType = getPropertyDescriptor().getSqlDisplayType();
+		if (displayType == DisplayType.TextLong || displayType == DisplayType.Memo || displayType == DisplayType.Text)
+		{
+			valueField = new TextArea();
+		}
+		else
+		{
+			valueField = new TextField();
+		}
+		
 		valueField.setNullRepresentation("");
 		return valueField;
 	}
