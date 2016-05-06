@@ -98,6 +98,7 @@ public class LookupPropertyValue implements PropertyValue
 	@Override
 	public void setValue(final Object value)
 	{
+		// TODO: make sure it's not called
 	}
 
 	public Object getInitialValue()
