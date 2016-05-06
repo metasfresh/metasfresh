@@ -102,27 +102,12 @@ public class WindowViewImpl extends AbstractView
 
 			final Button btnSave = new Button();
 			btnSave.setCaption("Save");
-			btnSave.addClickListener(new Button.ClickListener()
-			{
-
-				@Override
-				public void buttonClick(Button.ClickEvent event)
-				{
-					getWindowViewListener().viewSaveEditing();
-				}
-			});
+			btnSave.addClickListener(e -> getWindowViewListener().viewSaveEditing());
 			actionsPanel.addComponent(btnSave);
 
 			final Button btnCancel = new Button();
 			btnCancel.setCaption("Cancel");
-			btnCancel.addClickListener(new Button.ClickListener()
-			{
-				@Override
-				public void buttonClick(Button.ClickEvent event)
-				{
-					getWindowViewListener().viewCancelEditing();
-				}
-			});
+			btnCancel.addClickListener(e -> getWindowViewListener().viewCancelEditing());
 			actionsPanel.addComponent(btnCancel);
 		}
 
