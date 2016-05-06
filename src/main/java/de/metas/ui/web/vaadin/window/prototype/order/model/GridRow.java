@@ -38,7 +38,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
 
 public final class GridRow
 {
-	/* package */static final GridRow of(final Collection<PropertyDescriptor> columnDescriptors, final Map<PropertyName, Object> initialValues)
+	/* package */static final GridRow of(final Collection<PropertyDescriptor> columnDescriptors, final PropertyValuesDTO initialValues)
 	{
 		return new GridRow(columnDescriptors, initialValues);
 	}
@@ -59,7 +59,7 @@ public final class GridRow
 		propertyValues = PropertyValueCollection.EMPTY;
 	}
 
-	private GridRow(final Collection<PropertyDescriptor> columnDescriptors, final Map<PropertyName, Object> initialValues)
+	private GridRow(final Collection<PropertyDescriptor> columnDescriptors, final PropertyValuesDTO initialValues)
 	{
 		super();
 		final PropertyValueCollection.Builder valuesBuilder = PropertyValueCollection.builder();
@@ -96,12 +96,12 @@ public final class GridRow
 		return rowId;
 	}
 
-	public Map<PropertyName, Object> getValuesAsMap()
+	public PropertyValuesDTO getValuesAsMap()
 	{
 		return propertyValues.getValuesAsMap();
 	}
 
-	public void setValuesFromMap(final Map<PropertyName, Object> values)
+	public void setValuesFromMap(final PropertyValuesDTO values)
 	{
 		for (final Map.Entry<PropertyName, Object> e : values.entrySet())
 		{

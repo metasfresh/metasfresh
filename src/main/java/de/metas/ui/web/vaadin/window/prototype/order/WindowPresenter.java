@@ -185,7 +185,7 @@ public class WindowPresenter implements WindowViewListener
 		// Properties
 		try
 		{
-			final Map<PropertyName, Object> values = model.getPropertiesAsMap(viewPropertyNames);
+			final PropertyValuesDTO values = model.getPropertyValuesDTO(viewPropertyNames);
 			view.setProperties(values);
 		}
 		catch (Exception e)

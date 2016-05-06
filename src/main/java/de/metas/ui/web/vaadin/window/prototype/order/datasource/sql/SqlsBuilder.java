@@ -294,4 +294,9 @@ final class SqlsBuilder
 	{
 		return sqlField_ParentLinkColumn;
 	}
+	
+	public Map<PropertyName, ModelDataSource> getIncludedDataSources()
+	{
+		return includedDataSources;
+	}
 }

@@ -1,12 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order.datasource.sql;
 
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.Supplier;
 
-import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.SaveResult;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public Map<PropertyName, Object> getRecord(int index)
+	public PropertyValuesDTO getRecord(int index)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -52,13 +52,19 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public int saveRecord(int index, Map<PropertyName, Object> values)
+	public SaveResult saveRecord(int index, PropertyValuesDTO values)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
+	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public PropertyValuesDTO retrieveRecordById(Object recordId)
 	{
 		throw new UnsupportedOperationException();
 	}

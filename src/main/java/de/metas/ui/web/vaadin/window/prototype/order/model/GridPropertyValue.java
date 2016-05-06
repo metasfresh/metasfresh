@@ -43,6 +43,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 	{
 		return (GridPropertyValue)propertyValue;
 	}
+	
 	// private static final Logger logger = LogManager.getLogger(GridPropertyValue.class);
 
 	private final Collection<PropertyDescriptor> columnDescriptors;
@@ -58,11 +59,11 @@ public class GridPropertyValue extends ObjectPropertyValue
 
 	public GridRow newRow()
 	{
-		final Map<PropertyName, Object> values = ImmutableMap.of();
+		final PropertyValuesDTO values = PropertyValuesDTO.of();
 		return newRow(values);
 	}
 
-	public GridRow newRow(final Map<PropertyName, Object> values)
+	public GridRow newRow(final PropertyValuesDTO values)
 	{
 		final GridRow row = GridRow.of(columnDescriptors, values);
 		rows.put(row.getRowId(), row);
@@ -81,7 +82,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 		return MoreObjects.firstNonNull(row, GridRow.NULL);
 	}
 
-	public Map<PropertyName, Object> getRowValues(final Object rowIdObj)
+	public PropertyValuesDTO getRowValues(final Object rowIdObj)
 	{
 		return getRow(rowIdObj).getValuesAsMap();
 	}
@@ -95,7 +96,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 	@Override
 	public void setValue(final Object value)
 	{
-		final List<Map<PropertyName, Object>> rowValuesList;
+		final List<PropertyValuesDTO> rowValuesList;
 		if (value == null)
 		{
 			rowValuesList = ImmutableList.of();
@@ -103,18 +104,18 @@ public class GridPropertyValue extends ObjectPropertyValue
 		else if (value instanceof Supplier<?>)
 		{
 			@SuppressWarnings("unchecked")
-			final Supplier<List<Map<PropertyName, Object>>> supplier = (Supplier<List<Map<PropertyName, Object>>>)value;
+			final Supplier<List<PropertyValuesDTO>> supplier = (Supplier<List<PropertyValuesDTO>>)value;
 			rowValuesList = supplier.get();
 		}
 		else
 		{
-			rowValuesList = (List<Map<PropertyName, Object>>)value;
+			rowValuesList = (List<PropertyValuesDTO>)value;
 		}
 
 		//
 		//
 		rows.clear();
-		for (final Map<PropertyName, Object> rowValues : rowValuesList)
+		for (final PropertyValuesDTO rowValues : rowValuesList)
 		{
 			final GridRow row = GridRow.of(columnDescriptors, rowValues);
 			final GridRowId rowId = row.getRowId();
@@ -130,10 +131,10 @@ public class GridPropertyValue extends ObjectPropertyValue
 	@Override
 	public Object getValue()
 	{
-		final List<Map<PropertyName, Object>> rowValuesList = new ArrayList<>(rows.size());
+		final List<PropertyValuesDTO> rowValuesList = new ArrayList<>(rows.size());
 		for (final GridRow row : rows.values())
 		{
-			final Map<PropertyName, Object> rowValues = row.getValuesAsMap();
+			final PropertyValuesDTO rowValues = row.getValuesAsMap();
 			rowValuesList.add(rowValues);
 		}
 		return rowValuesList;

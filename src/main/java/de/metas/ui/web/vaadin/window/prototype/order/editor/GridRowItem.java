@@ -11,6 +11,7 @@ import com.vaadin.data.Property.ValueChangeListener;
 import de.metas.ui.web.vaadin.window.prototype.order.GridRowId;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -88,7 +89,7 @@ final class GridRowItem implements Item, Property.ValueChangeNotifier
 		throw new UnsupportedOperationException();
 	}
 	
-	public void setValues(final Map<PropertyName, Object> values)
+	public void setValues(final PropertyValuesDTO values)
 	{
 		for (final Map.Entry<PropertyName, Object> e : values.entrySet())
 		{

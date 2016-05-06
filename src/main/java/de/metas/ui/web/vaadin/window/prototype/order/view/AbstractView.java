@@ -20,6 +20,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.Editor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.EditorFactory;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.GridEditor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -212,7 +213,7 @@ public abstract class AbstractView implements WindowView
 	}
 
 	@Override
-	public final void setProperties(final Map<PropertyName, Object> propertiesAsMap)
+	public final void setProperties(final PropertyValuesDTO propertiesAsMap)
 	{
 		logger.trace("Setting all properties from {}", propertiesAsMap);
 		for (final Map.Entry<PropertyName, Object> entry : propertiesAsMap.entrySet())
@@ -298,7 +299,7 @@ public abstract class AbstractView implements WindowView
 	}
 
 	@Override
-	public final void gridNewRow(PropertyName gridPropertyName, Object rowId, Map<PropertyName, Object> rowValues)
+	public final void gridNewRow(PropertyName gridPropertyName, Object rowId, PropertyValuesDTO rowValues)
 	{
 		logger.trace("Creating new grid row {}, {} with values: {}", gridPropertyName, rowId, rowValues);
 

@@ -1,9 +1,8 @@
 package de.metas.ui.web.vaadin.window.prototype.order.view;
 
-import java.util.Map;
-
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -39,13 +38,13 @@ public interface WindowView
 
 	void setPreviousRecordEnabled(boolean enabled);
 
-	void setProperties(Map<PropertyName, Object> propertiesAsMap);
+	void setProperties(PropertyValuesDTO propertiesAsMap);
 	
 	void setProperty(PropertyName propertyName, final Object value);
 
 	void setGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
 
-	void gridNewRow(PropertyName gridPropertyName, Object rowId, Map<PropertyName, Object> rowValues);
+	void gridNewRow(PropertyName gridPropertyName, Object rowId, PropertyValuesDTO rowValues);
 
 	void commitChanges();
 

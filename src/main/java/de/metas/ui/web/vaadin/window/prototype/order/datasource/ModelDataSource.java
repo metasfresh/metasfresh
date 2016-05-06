@@ -1,12 +1,11 @@
 package de.metas.ui.web.vaadin.window.prototype.order.datasource;
 
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.Supplier;
 
-import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.ModelDataSourceQuery;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -32,12 +31,13 @@ import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.ModelDataSou
 
 public interface ModelDataSource
 {
-	Map<PropertyName, Object> getRecord(int index);
+	PropertyValuesDTO getRecord(int index);
 
 	int getRecordsCount();
 
-	int saveRecord(int index, Map<PropertyName, Object> values);
+	SaveResult saveRecord(int index, PropertyValuesDTO values);
 
-	Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(ModelDataSourceQuery query);
+	Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(ModelDataSourceQuery query);
 
+	PropertyValuesDTO retrieveRecordById(Object recordId);
 }

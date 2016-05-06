@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 
@@ -13,6 +12,7 @@ import com.vaadin.ui.Table;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -114,7 +114,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 		if (getPropertyName().equals(propertyName))
 		{
 			@SuppressWarnings("unchecked")
-			final List<Map<PropertyName, Object>> rowValuesList = (List<Map<PropertyName, Object>>)value;
+			final List<PropertyValuesDTO> rowValuesList = (List<PropertyValuesDTO>)value;
 	
 			// FIXME: this is NOT optimum at all
 			{
@@ -142,7 +142,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 		row.setValue(propertyName, value);
 	}
 
-	public void newRow(final Object rowId, final Map<PropertyName, Object> rowValues)
+	public void newRow(final Object rowId, final PropertyValuesDTO rowValues)
 	{
 		final GridRowItem row = containerDataSource.addItem(rowId);
 		row.setValues(rowValues);

@@ -13,9 +13,7 @@ import static de.metas.ui.web.vaadin.window.prototype.order.HARDCODED_Order.ORDE
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -23,13 +21,13 @@ import org.slf4j.Logger;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.ModelDataSourceQuery;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ public class DummyModelDataSource implements ModelDataSource
 {
 	private static final Logger logger = LogManager.getLogger(DummyModelDataSource.class);
 
-	private List<ImmutableMap<PropertyName, Object>> records = new ArrayList<>();
+	private List<PropertyValuesDTO> records = new ArrayList<>();
 	
 	public DummyModelDataSource(final PropertyDescriptor rootPropertyDescriptor)
 	{
@@ -70,21 +68,21 @@ public class DummyModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public Map<PropertyName, Object> getRecord(final int index)
+	public PropertyValuesDTO getRecord(final int index)
 	{
 		if (index < 0 || index >= records.size())
 		{
 			throw new IllegalArgumentException("No record found at index " + index);
 		}
 		
-		final Map<PropertyName, Object> values = records.get(index);
+		final PropertyValuesDTO values = records.get(index);
 		logger.debug("Get record {}: {}", index, values);
 		return values;
 	}
 
-	private ImmutableMap<PropertyName, Object> createDummyRecord(final int index)
+	private PropertyValuesDTO createDummyRecord(final int index)
 	{
-		final Map<PropertyName, Object> record = new HashMap<>();
+		final PropertyValuesDTO.Builder record = PropertyValuesDTO.builder();
 		record.put(ORDER_DocumentNo, "1000-" + index);
 		record.put(ORDER_DatePromised, TimeUtil.getDay(2016, 4 + 1, 24));
 		record.put(ORDER_M_Warehouse_ID, LookupValue.of(540008, "Hauptlager"));
@@ -99,20 +97,20 @@ public class DummyModelDataSource implements ModelDataSource
 
 		//
 		// Lines
-		final List<Map<PropertyName, Object>> lines = new ArrayList<>();
+		final List<PropertyValuesDTO> lines = new ArrayList<>();
 		for (int i = 1; i <= 10; i++)
 		{
-			final Map<PropertyName, Object> line = new HashMap<>();
+			final PropertyValuesDTO.Builder line = PropertyValuesDTO.builder();
 			line.put(PropertyName.of("LineNo"), i * 10);
 			line.put(PropertyName.of("M_Product_ID"), LookupValue.of(1, index + " - Alice salad " + i));
 			line.put(PropertyName.of("M_AttributeSetInstance_ID"), LookupValue.of(1, "BIO"));
 			line.put(PropertyName.of("QtyTU"), BigDecimal.valueOf(i));
 			line.put(PropertyName.of("M_HU_PI_Item_Product_ID"), LookupValue.of(1, "IFCO"));
-			lines.add(line);
+			lines.add(line.build());
 		}
 		record.put(ORDER_Lines, lines);
 
-		return ImmutableMap.copyOf(record);
+		return record.build();
 	}
 
 	@Override
@@ -122,7 +120,7 @@ public class DummyModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public int saveRecord(final int index, final Map<PropertyName, Object> values)
+	public SaveResult saveRecord(final int index, final PropertyValuesDTO values)
 	{
 		if (index < 0 || index >= records.size())
 		{
@@ -131,20 +129,27 @@ public class DummyModelDataSource implements ModelDataSource
 		
 		logger.debug("Saving record {}: {}", index, values);
 		
-		records.set(index, ImmutableMap.copyOf(values));
-		return index;
+		records.set(index, PropertyValuesDTO.copyOf(values));
+		Object recordId = null; // unknown
+		return SaveResult.of(index, recordId);
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
+	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
-		return Suppliers.memoize(new Supplier<List<Map<PropertyName, Object>>>(){
+		return Suppliers.memoize(new Supplier<List<PropertyValuesDTO>>(){
 
 			@Override
-			public List<Map<PropertyName, Object>> get()
+			public List<PropertyValuesDTO> get()
 			{
 				return ImmutableList.copyOf(records);
 			}
 		});
+	}
+
+	@Override
+	public PropertyValuesDTO retrieveRecordById(Object recordId)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

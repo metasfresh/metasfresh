@@ -1,10 +1,9 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model.event;
 
-import java.util.Map;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -33,7 +32,7 @@ public class GridRowAddedModelEvent extends ModelEvent
 	public static final GridRowAddedModelEvent of(final Object model
 			, final PropertyName gridPropertyName
 			, final Object rowId
-			, final Map<PropertyName, Object> rowValues)
+			, final PropertyValuesDTO rowValues)
 	{
 		return new GridRowAddedModelEvent(model, gridPropertyName, rowId, rowValues);
 	}
@@ -41,9 +40,9 @@ public class GridRowAddedModelEvent extends ModelEvent
 
 	private final PropertyName gridPropertyName;
 	private final Object rowId;
-	final Map<PropertyName, Object> rowValues;
+	final PropertyValuesDTO rowValues;
 
-	private GridRowAddedModelEvent(Object model, PropertyName gridPropertyName, Object rowId, Map<PropertyName, Object> rowValues)
+	private GridRowAddedModelEvent(Object model, PropertyName gridPropertyName, Object rowId, PropertyValuesDTO rowValues)
 	{
 		super(model);
 		this.gridPropertyName = gridPropertyName;
@@ -71,7 +70,7 @@ public class GridRowAddedModelEvent extends ModelEvent
 		return rowId;
 	}
 
-	public Map<PropertyName, Object> getRowValues()
+	public PropertyValuesDTO getRowValues()
 	{
 		return rowValues;
 	}

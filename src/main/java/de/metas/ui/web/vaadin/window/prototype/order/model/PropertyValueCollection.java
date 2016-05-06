@@ -4,18 +4,19 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
-import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
 
 /*
  * #%L
@@ -47,6 +48,8 @@ public class PropertyValueCollection
 	}
 
 	public static final PropertyValueCollection EMPTY = new PropertyValueCollection();
+
+	private static final Logger logger = LogManager.getLogger(PropertyValueCollection.class);
 
 	private final Map<PropertyName, PropertyValue> name2value;
 	private final Multimap<PropertyName, PropertyName> name2dependencies;
@@ -119,14 +122,15 @@ public class PropertyValueCollection
 		return name2value.values();
 	}
 
-	public Map<PropertyName, Object> getValuesAsMap()
+	public PropertyValuesDTO getValuesAsMap()
 	{
-		return getValuesAsMap(name2value.keySet());
+		final Set<PropertyName> allPropertyNames = getPropertyNames();
+		return getValuesAsMap(allPropertyNames);
 	}
 
-	public Map<PropertyName, Object> getValuesAsMap(final Set<PropertyName> selectedPropertyNames)
+	public PropertyValuesDTO getValuesAsMap(final Set<PropertyName> selectedPropertyNames)
 	{
-		final ImmutableMap.Builder<PropertyName, Object> propertiesMap = ImmutableMap.builder();
+		final PropertyValuesDTO.Builder valuesBuilder = PropertyValuesDTO.builder();
 		for (final PropertyName propertyName : selectedPropertyNames)
 		{
 			final PropertyValue propertyValue = name2value.get(propertyName);
@@ -134,11 +138,40 @@ public class PropertyValueCollection
 			{
 				continue;
 			}
-			final Object value = NullValue.valueOrNull(propertyValue.getValue());
-			propertiesMap.put(propertyName, value);
+			final Object value = propertyValue.getValue();
+			valuesBuilder.put(propertyName, value);
 		}
 
-		return propertiesMap.build();
+		return valuesBuilder.build();
+	}
+	
+	public void setValuesFromMap(final PropertyValuesDTO values)
+	{
+		for (final PropertyValue propertyValue : getPropertyValues())
+		{
+			if (ConstantPropertyValue.isConstant(propertyValue))
+			{
+				logger.debug("Skip setting value to {} because it's constant", propertyValue);
+				continue;
+			}
+
+			final PropertyName propertyName = propertyValue.getName();
+			final Object value;
+			if (values.containsKey(propertyName))
+			{
+				value = values.get(propertyName);
+			}
+			else
+			{
+				value = createDefaultValue(propertyValue);
+			}
+			propertyValue.setValue(value);
+		}
+	}
+	
+	private final Object createDefaultValue(final PropertyValue propertyValue)
+	{
+		return null; // TODO: implement default
 	}
 
 	public boolean hasChanges()
@@ -152,12 +185,6 @@ public class PropertyValueCollection
 		}
 
 		return false;
-	}
-
-	public Iterable<Object> getAvailableValues(final PropertyName propertyName)
-	{
-		// TODO: implement
-		return ImmutableList.of();
 	}
 
 	public static final class Builder
@@ -225,6 +252,8 @@ public class PropertyValueCollection
 					builder.setInitialValue(initialValue);
 				}
 
+				//
+				// Lookup values provider property
 				if (propertyDescriptor.isValueProperty() && propertyDescriptor.getSqlLookupDescriptor() != null)
 				{
 					final PropertyValue lookupPropertyValue = new LookupPropertyValue(propertyDescriptor);

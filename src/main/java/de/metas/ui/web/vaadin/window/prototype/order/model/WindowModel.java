@@ -23,8 +23,8 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
-import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.NullModelDataSource;
-import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.SqlModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSourceFactory;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.SaveResult;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.GridRowAddedModelEvent;
@@ -66,9 +66,19 @@ public class WindowModel
 	// Properties
 	private PropertyDescriptor _rootPropertyDescriptor;
 	private PropertyValueCollection _properties = PropertyValueCollection.EMPTY;
-	private ModelDataSource _dataSource = NullModelDataSource.instance;
 
-	private int _recordIndex = -1;
+	//
+	// Data source
+	private final ModelDataSourceFactory dataSourceFactory = new ModelDataSourceFactory();
+	private final Object _dataSourceSync = new Object();
+	private ModelDataSource _dataSource = null;
+
+	//
+	// Current record index
+	private static final int RECORDINDEX_New = -1;
+	private static final int RECORDINDEX_Unknown = -100;
+	private int _recordIndex = RECORDINDEX_Unknown;
+	private int _recordIndexPrev = RECORDINDEX_Unknown;
 
 	public WindowModel()
 	{
@@ -81,20 +91,19 @@ public class WindowModel
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("rootPropertyDescriptor", _rootPropertyDescriptor)
+				.add("recordIndex", _recordIndex)
 				.toString();
 	}
 
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
 	{
-		if (this._rootPropertyDescriptor == rootPropertyDescriptor)
+		if (_rootPropertyDescriptor == rootPropertyDescriptor)
 		{
 			return;
 		}
 		Check.assumeNotNull(rootPropertyDescriptor, "Parameter rootPropertyDescriptor is not null");
 
-		this._rootPropertyDescriptor = rootPropertyDescriptor;
-		// this.dataSource = new DummyModelDataSource(rootPropertyDescriptor);
-		this._dataSource = new SqlModelDataSource(rootPropertyDescriptor);
+		_rootPropertyDescriptor = rootPropertyDescriptor;
 
 		final PropertyValueCollection.Builder propertiesCollector = PropertyValueCollection.builder();
 
@@ -130,8 +139,11 @@ public class WindowModel
 		// Data source
 		if (getRecordsCount() > 0)
 		{
-			_recordIndex = 0;
-			loadRecord();
+			setRecordIndexAndReload(0);
+		}
+		else
+		{
+			setRecordIndexAndReload(RECORDINDEX_New);
 		}
 	}
 
@@ -168,7 +180,33 @@ public class WindowModel
 
 	private ModelDataSource getDataSource()
 	{
+		if (_dataSource == null)
+		{
+			synchronized (_dataSourceSync)
+			{
+				if (_dataSource == null)
+				{
+					_dataSource = dataSourceFactory.createDataSource(getRootPropertyDescriptor());
+				}
+			}
+		}
 		return _dataSource;
+	}
+
+	public void setDataSource(final ModelDataSource dataSourceNew)
+	{
+		synchronized (_dataSourceSync)
+		{
+			if (Objects.equal(_dataSource, dataSourceNew))
+			{
+				return;
+			}
+
+			_dataSource = dataSourceNew;
+
+			// TODO: check if current record index is still valid and matches
+			// TODO: fire events
+		}
 	}
 
 	public EventBus getEventBus()
@@ -191,14 +229,28 @@ public class WindowModel
 		setRecordIndexAndReload(index);
 	}
 
-	private void setRecordIndexAndReload(final int index)
+	private void setRecordIndexAndReload(final int recordIndex)
 	{
-		if (index < 0)
+		if (recordIndex == RECORDINDEX_New)
 		{
-			throw new IllegalArgumentException("Invalid index: " + index);
+			_recordIndexPrev = _recordIndex;
+			_recordIndex = RECORDINDEX_New;
+			loadRecord(PropertyValuesDTO.of());
 		}
-		_recordIndex = index;
-		loadRecord();
+		else if (recordIndex < 0)
+		{
+			throw new IllegalArgumentException("Invalid index: " + recordIndex);
+		}
+		else
+		{
+			final ModelDataSource dataSource = getDataSource();
+			final PropertyValuesDTO values = dataSource.getRecord(recordIndex);
+			logger.trace("Loading current record ({})", recordIndex);
+
+			_recordIndexPrev = _recordIndex;
+			_recordIndex = recordIndex;
+			loadRecord(values);
+		}
 	}
 
 	private int getRecordsCount()
@@ -209,12 +261,18 @@ public class WindowModel
 
 	public boolean hasPreviousRecord()
 	{
-		return getRecordIndex() > 0;
+		final int recordIndex = getRecordIndex();
+		return recordIndex > 0;
 	}
 
 	public boolean hasNextRecord()
 	{
-		return getRecordIndex() + 1 < getRecordsCount();
+		final int recordIndex = getRecordIndex();
+		if (recordIndex < 0)
+		{
+			return false;
+		}
+		return recordIndex + 1 < getRecordsCount();
 	}
 
 	private final PropertyValueCollection getProperties()
@@ -227,36 +285,10 @@ public class WindowModel
 		return _properties;
 	}
 
-	private final void loadRecord()
+	private final void loadRecord(final PropertyValuesDTO values)
 	{
-		final ModelDataSource dataSource = getDataSource();
-		final int recordIndex = getRecordIndex();
-		final Map<PropertyName, Object> values = dataSource.getRecord(recordIndex);
-
-		logger.trace("Loading current record ({})", recordIndex);
-
-		//
-		//
 		final PropertyValueCollection properties = getProperties();
-		for (final PropertyValue propertyValue : properties.getPropertyValues())
-		{
-			if (ConstantPropertyValue.isConstant(propertyValue))
-			{
-				logger.debug("Skip setting value to {} because it's constant", propertyValue);
-				continue;
-			}
-
-			final PropertyName propertyName = propertyValue.getName();
-			if (values.containsKey(propertyName))
-			{
-				final Object value = values.get(propertyName);
-				propertyValue.setValue(value);
-			}
-			else
-			{
-				propertyValue.setValue(null); // TODO: implement default
-			}
-		}
+		properties.setValuesFromMap(values);
 
 		//
 		logger.trace("Update calculated values (after load)");
@@ -266,9 +298,12 @@ public class WindowModel
 		}
 
 		if (logger.isTraceEnabled())
-			logger.trace("Loaded record {}: {}", recordIndex, TraceHelper.toStringRecursivelly(properties.getPropertyValues()));
+		{
+			logger.trace("Loaded record {}:\n{}", getRecordIndex(), TraceHelper.toStringRecursivelly(properties.getPropertyValues()));
+		}
 
 		postEvent(AllPropertiesChangedModelEvent.of(this));
+
 	}
 
 	private final boolean hasChangesOnCurrentRecord()
@@ -308,6 +343,12 @@ public class WindowModel
 		{
 			// TODO: handle missing model property
 			logger.trace("Skip setting propery {} because property value is missing", propertyName);
+			return;
+		}
+		
+		if (prop.isReadOnlyForUser())
+		{
+			logger.trace("Skip setting propery {} because property value is readonly for user", propertyName);
 			return;
 		}
 
@@ -358,7 +399,7 @@ public class WindowModel
 
 	}
 
-	private final void updateDependentPropertyValue(final PropertyValue propertyValue, PropertyName changedPropertyName, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
+	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final PropertyName changedPropertyName, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
 	{
 		final PropertyValueCollection properties = getProperties();
 
@@ -424,21 +465,21 @@ public class WindowModel
 
 	/**
 	 * Ask the model to create a new grid row.
-	 * 
+	 *
 	 * @param gridPropertyName
 	 * @return the ID of newly created now
 	 */
 	public GridRowId gridNewRow(final PropertyName gridPropertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue grid = (GridPropertyValue)properties.getPropertyValue(gridPropertyName);
+		final GridPropertyValue grid = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
 		if (grid == null)
 		{
 			throw new IllegalArgumentException("No such grid property found for " + gridPropertyName);
 		}
 		final GridRow row = grid.newRow();
 		final GridRowId rowId = row.getRowId();
-		final Map<PropertyName, Object> rowValues = row.getValuesAsMap();
+		final PropertyValuesDTO rowValues = row.getValuesAsMap();
 
 		postEvent(GridRowAddedModelEvent.of(this, gridPropertyName, rowId, rowValues));
 
@@ -447,16 +488,50 @@ public class WindowModel
 
 	/**
 	 * Gets a map of all "selected" property name and their values.
-	 * 
+	 *
 	 * @param selectedPropertyNames
 	 * @return
 	 */
-	public Map<PropertyName, Object> getPropertiesAsMap(final Set<PropertyName> selectedPropertyNames)
+	public PropertyValuesDTO getPropertyValuesDTO(final Set<PropertyName> selectedPropertyNames)
 	{
+		if (selectedPropertyNames.isEmpty())
+		{
+			return PropertyValuesDTO.of();
+		}
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		return properties.getValuesAsMap(selectedPropertyNames);
 	}
 
+	private void setFromPropertyValuesDTO(final PropertyValuesDTO values)
+	{
+		// TODO: find a way to aggregate all events and send them all together
+
+		for (final Map.Entry<PropertyName, Object> e : values.entrySet())
+		{
+			final PropertyName propertyName = e.getKey();
+			final Object value = e.getValue();
+			setProperty(propertyName, value);
+		}
+	}
+
+	public boolean isNewRecord()
+	{
+		return getRecordIndex() == RECORDINDEX_New;
+	}
+
+	public void newRecord()
+	{
+		setRecordIndexAndReload(RECORDINDEX_New);
+	}
+	
+	public void newRecordAsCopyById(final Object recordId)
+	{
+		newRecord();
+		
+		final PropertyValuesDTO values = getDataSource().retrieveRecordById(recordId);
+		setFromPropertyValuesDTO(values);
+	}
+	
 	public void nextRecord(final OnChangesFound onChangesFound)
 	{
 		if (!hasNextRecord())
@@ -515,25 +590,28 @@ public class WindowModel
 		setRecordIndex(nextIndex);
 	}
 
-	public void saveRecord()
+	public SaveResult saveRecord()
 	{
-		final Map<PropertyName, Object> values = getProperties().getValuesAsMap();
+		final PropertyValuesDTO values = getProperties().getValuesAsMap();
 
 		final ModelDataSource dataSource = getDataSource();
 		final int index = getRecordIndex();
-		final int indexActual = dataSource.saveRecord(index, values);
+		final SaveResult result = dataSource.saveRecord(index, values);
 
-		setRecordIndexAndReload(indexActual);
+		setRecordIndexAndReload(result.getRecordIndex());
+		
+		return result;
 	}
 
-	public void reloadRecord()
+	public void cancelRecordEditing()
 	{
-		loadRecord();
-	}
-
-	public Iterable<Object> getPropertyAvailableValues(final PropertyName propertyName)
-	{
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		return properties.getAvailableValues(propertyName);
+		if (isNewRecord())
+		{
+			setRecordIndexAndReload(_recordIndexPrev);
+		}
+		else
+		{
+			setRecordIndexAndReload(getRecordIndex());
+		}
 	}
 }

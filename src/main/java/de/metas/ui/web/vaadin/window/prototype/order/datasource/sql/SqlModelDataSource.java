@@ -38,6 +38,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -75,7 +76,8 @@ public class SqlModelDataSource implements ModelDataSource
 	private final String sqlSelect;
 	private final Map<PropertyName, ModelDataSource> includedDataSources;
 
-	private List<Map<PropertyName, Object>> _records;
+	private final Object recordsSync = new Object();
+	private List<PropertyValuesDTO> _records;
 
 	public SqlModelDataSource(final PropertyDescriptor rootPropertyDescriptor)
 	{
@@ -90,7 +92,7 @@ public class SqlModelDataSource implements ModelDataSource
 		sqlField_KeyColumn = builder.getKeyColumn();
 		sqlField_ParentLinkColumn = builder.getParentLinkColumn();
 		sqlSelect = builder.buildSqlSelect();
-		includedDataSources = ImmutableMap.copyOf(builder.includedDataSources);
+		includedDataSources = ImmutableMap.copyOf(builder.getIncludedDataSources());
 	}
 
 	@Override
@@ -116,39 +118,47 @@ public class SqlModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public Map<PropertyName, Object> getRecord(final int index)
+	public PropertyValuesDTO getRecord(final int index)
 	{
 		return getRecords().get(index);
 	}
 
-	private List<Map<PropertyName, Object>> getRecords()
+	private List<PropertyValuesDTO> getRecords()
 	{
 		if (_records == null)
 		{
-			final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
-					.build();
-			_records = retriveRecords(query);
+			synchronized (recordsSync)
+			{
+				if (_records == null)
+				{
+					final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
+							.build();
+					_records = retriveRecords(query);
+				}
+			}
 		}
 		return _records;
 	}
 
 	@Override
-	public Supplier<List<Map<PropertyName, Object>>> retrieveSupplier(final ModelDataSourceQuery query)
+	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
-		return Suppliers.memoize(new Supplier<List<Map<PropertyName, Object>>>()
-		{
-
-			@Override
-			public List<Map<PropertyName, Object>> get()
-			{
-				return retriveRecords(query);
-			}
-		});
+		return Suppliers.memoize(() -> retriveRecords(query));
 	}
 
-	private final Map<PropertyName, Object> retriveRecord(final ModelDataSourceQuery query)
+	@Override
+	public PropertyValuesDTO retrieveRecordById(final Object recordId)
 	{
-		final List<Map<PropertyName, Object>> records = retriveRecords(query);
+		return retriveRecord(ModelDataSourceQuery.builder()
+				.setRecordId(recordId)
+				.build());
+	}
+
+	private final PropertyValuesDTO retriveRecord(final ModelDataSourceQuery query)
+	{
+		// TODO: optimize
+
+		final List<PropertyValuesDTO> records = retriveRecords(query);
 		if (records.isEmpty())
 		{
 			return null;
@@ -164,13 +174,13 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 	}
 
-	private final List<Map<PropertyName, Object>> retriveRecords(final ModelDataSourceQuery query)
+	private final List<PropertyValuesDTO> retriveRecords(final ModelDataSourceQuery query)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSql(sqlParams, query);
 		logger.trace("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final List<Map<PropertyName, Object>> records = new ArrayList<>();
+		final List<PropertyValuesDTO> records = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -180,7 +190,7 @@ public class SqlModelDataSource implements ModelDataSource
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Map<PropertyName, Object> record = retriveRecord(rs);
+				final PropertyValuesDTO record = retriveRecord(rs);
 				records.add(record);
 			}
 		}
@@ -197,9 +207,12 @@ public class SqlModelDataSource implements ModelDataSource
 		return records;
 	}
 
-	private Map<PropertyName, Object> retriveRecord(final ResultSet rs) throws SQLException
+	private PropertyValuesDTO retriveRecord(final ResultSet rs) throws SQLException
 	{
-		final ImmutableMap.Builder<PropertyName, Object> data = ImmutableMap.builder();
+		final PropertyValuesDTO.Builder data = PropertyValuesDTO.builder();
+
+		//
+		// Retrieve main record values
 		Object keyColumn_Value = null;
 		for (final SqlField sqlField : sqlFields.values())
 		{
@@ -213,16 +226,17 @@ public class SqlModelDataSource implements ModelDataSource
 			}
 		}
 
+		//
+		// Retrieved values from included data sources
 		final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
 				.setParentLinkId(keyColumn_Value)
 				.build();
-
 		for (final Map.Entry<PropertyName, ModelDataSource> e : includedDataSources.entrySet())
 		{
 			final PropertyName propertyName = e.getKey();
 			final ModelDataSource dataSource = e.getValue();
 
-			final Supplier<List<Map<PropertyName, Object>>> dataSourceValue = dataSource.retrieveSupplier(query);
+			final Supplier<List<PropertyValuesDTO>> dataSourceValue = dataSource.retrieveRecordsSupplier(query);
 			data.put(propertyName, dataSourceValue);
 		}
 
@@ -390,7 +404,7 @@ public class SqlModelDataSource implements ModelDataSource
 			}
 			else
 			{
-				logger.warn("Unknown LOB value '{}' for {}. Considering it null.", new Object[] { valueObj, sqlField });
+				logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, sqlField);
 				value = null;
 			}
 		}
@@ -418,7 +432,18 @@ public class SqlModelDataSource implements ModelDataSource
 	}	// decrypt
 
 	@Override
-	public int saveRecord(final int index, final Map<PropertyName, Object> values)
+	public SaveResult saveRecord(final int recordIndex, final PropertyValuesDTO values)
+	{
+		final Mutable<SaveResult> resultRef = new Mutable<>();
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, (trxName) -> {
+			final SaveResult result = saveRecord0(recordIndex, values);
+			resultRef.setValue(result);
+		});
+
+		return resultRef.getValue();
+	}
+
+	private SaveResult saveRecord0(final int recordIndex, final PropertyValuesDTO values)
 	{
 		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
 
@@ -428,31 +453,49 @@ public class SqlModelDataSource implements ModelDataSource
 			keyValue = null;
 		}
 
+		if (keyValue != null && recordIndex < 0)
+		{
+			throw new IllegalArgumentException("Cannot save values as a new record because the values contains an existing ID: " + keyValue);
+		}
+
+		//
+		// Load the PO / Create new PO instance
 		final PO po;
-		final Map<PropertyName, Object> valuesOld;
+		final PropertyValuesDTO valuesOld;
 		if (keyValue == null)
 		{
 			// new
 			po = TableModelLoader.instance.newPO(getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
-			valuesOld = ImmutableMap.of();
+			valuesOld = PropertyValuesDTO.of();
 		}
 		else
 		{
 			final int recordId = (Integer)keyValue;
 			final boolean checkCache = false;
 			po = TableModelLoader.instance.getPO(getCtx(), sqlTableName, recordId, checkCache, ITrx.TRXNAME_ThreadInherited);
-			valuesOld = getRecord(index);
+			valuesOld = getRecord(recordIndex);
 		}
 		Check.assumeNotNull(po, "po is not null");
-
 		// TODO po.set_ManualUserAction(m_WindowNo); // metas: tsa: 02380: mark it as manual user action
 
+		//
+		// Set values to PO
 		for (final Map.Entry<PropertyName, Object> valueEntry : values.entrySet())
 		{
 			final PropertyName propertyName = valueEntry.getKey();
 			final Object value = valueEntry.getValue();
-			final Object valueOld = valuesOld.get(propertyName);
-			setPOValue(po, propertyName, value, valueOld);
+
+			final ModelDataSource includedDataSource = includedDataSources.get(propertyName);
+			if (includedDataSource != null)
+			{
+				// TODO: implement
+				logger.warn("Saving {} to {} NOT IMPLEMENTED!!!", propertyName, includedDataSource);
+			}
+			else
+			{
+				final Object valueOld = valuesOld.get(propertyName);
+				setPOValue(po, propertyName, value, valueOld);
+			}
 		}
 
 		//
@@ -462,20 +505,21 @@ public class SqlModelDataSource implements ModelDataSource
 
 		//
 		// Update the buffer
-		final Map<PropertyName, Object> valuesNew = retriveRecord(ModelDataSourceQuery.builder()
-				.setRecordId(keyValueNew)
-				.build());
-		final List<Map<PropertyName, Object>> records = getRecords();
-		if (index >= 0)
+		final PropertyValuesDTO valuesNew = retrieveRecordById(keyValueNew);
+		final List<PropertyValuesDTO> records = getRecords();
+		final int recordIndexNew;
+		if (recordIndex >= 0)
 		{
-			records.set(index, ImmutableMap.copyOf(valuesNew));
-			return index;
+			records.set(recordIndex, PropertyValuesDTO.copyOf(valuesNew));
+			recordIndexNew = recordIndex;
 		}
 		else
 		{
-			records.add(ImmutableMap.copyOf(valuesNew));
-			return records.size() - 1;
+			records.add(PropertyValuesDTO.copyOf(valuesNew));
+			recordIndexNew = records.size() - 1;
 		}
+		
+		return SaveResult.of(recordIndexNew, keyValueNew);
 	}
 
 	private void setPOValue(final PO po, final PropertyName propertyName, Object value, Object valueOld)
@@ -500,7 +544,7 @@ public class SqlModelDataSource implements ModelDataSource
 
 		if (Objects.equal(valueOld, value))
 		{
-			//logger.trace("Skip setting {}={} because value is not changed", propertyName, value);
+			// logger.trace("Skip setting {}={} because value is not changed", propertyName, value);
 			return;
 		}
 		logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, value, valueOld, po);

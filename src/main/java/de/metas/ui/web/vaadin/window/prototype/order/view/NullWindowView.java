@@ -1,11 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.view;
 
-import java.util.Map;
-
 import com.vaadin.ui.Component;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 /*
  * #%L
@@ -69,7 +68,7 @@ public class NullWindowView implements WindowView
 	}
 
 	@Override
-	public void setProperties(Map<PropertyName, Object> propertiesAsMap)
+	public void setProperties(PropertyValuesDTO propertiesAsMap)
 	{
 		// nothing
 	}
@@ -87,7 +86,7 @@ public class NullWindowView implements WindowView
 	}
 
 	@Override
-	public void gridNewRow(PropertyName gridPropertyName, Object rowId, Map<PropertyName, Object> rowValues)
+	public void gridNewRow(PropertyName gridPropertyName, Object rowId, PropertyValuesDTO rowValues)
 	{
 		// nothing
 	}
