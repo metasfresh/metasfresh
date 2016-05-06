@@ -119,4 +119,10 @@ public final class ConstantPropertyValue implements PropertyValue
 	{
 		return false;
 	}
+	
+	@Override
+	public boolean isReadOnlyForUser()
+	{
+		return true;
+	}
 }

@@ -46,4 +46,10 @@ public abstract class CalculatedPropertyValue extends ObjectPropertyValue
 	}
 
 	protected abstract Object calculateValue(final PropertyValueCollection values);
+	
+	@Override
+	public final boolean isReadOnlyForUser()
+	{
+		return true;
+	}
 }

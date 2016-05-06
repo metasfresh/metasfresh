@@ -179,19 +179,10 @@ public class LookupPropertyValue implements PropertyValue
 	{
 		return false;
 	}
-
-	private Evaluatee createEvaluationContext()
+	
+	@Override
+	public boolean isReadOnlyForUser()
 	{
-		final String sqlFilter = "'%'"; // TODO
-		final int sqlFetchLimit = 100; // TODO
-		final String sqlValidationRule = "1=1"; // TODO
-
-		final Map<String, Object> map = new HashMap<>();
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_FilterSql.toStringWithoutMarkers(), sqlFilter);
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_Limit.toStringWithoutMarkers(), sqlFetchLimit);
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_ValidationRuleSql.toStringWithoutMarkers(), sqlValidationRule);
-
-		return Evaluatees.ofMap(map);
+		return true;
 	}
-
 }

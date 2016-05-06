@@ -52,6 +52,8 @@ public class ObjectPropertyValue implements PropertyValue
 
 		initialValue = builder.getInitialValue();
 		value = initialValue;
+		
+		readOnlyForUser = builder.isReadOnlyForUser();
 	}
 
 	@Override
@@ -121,5 +123,11 @@ public class ObjectPropertyValue implements PropertyValue
 	public boolean isChanged()
 	{
 		return !Check.equals(value, initialValue);
+	}
+	
+	@Override
+	public boolean isReadOnlyForUser()
+	{
+		return readOnlyForUser;
 	}
 }

@@ -48,4 +48,6 @@ public interface PropertyValue
 	Map<PropertyName, PropertyValue> getChildPropertyValues();
 
 	boolean isChanged();
+	
+	boolean isReadOnlyForUser();
 }

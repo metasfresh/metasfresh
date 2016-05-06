@@ -72,6 +72,7 @@ public class PropertyDescriptor implements Serializable
 	private final String sqlColumnSql;
 	private final int sqlDisplayType;
 	private final DataFieldLookupDescriptor sqlLookupDescriptor;
+	private final boolean readOnlyForUser;
 
 	public PropertyDescriptor(final Builder builder)
 	{
@@ -98,6 +99,8 @@ public class PropertyDescriptor implements Serializable
 		sqlColumnSql = builder.sqlColumnSql;
 		sqlDisplayType = builder.getSqlDisplayType();
 		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
+		
+		readOnlyForUser = builder.isReadOnlyForUser();
 	}
 
 	@Override
@@ -218,6 +221,11 @@ public class PropertyDescriptor implements Serializable
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public boolean isReadOnlyForUser()
+	{
+		return readOnlyForUser;
 	}
 
 	public static final class Builder
@@ -383,6 +391,8 @@ public class PropertyDescriptor implements Serializable
 
 		public int getSqlDisplayType()
 		{
+			// TODO: cache the actual value
+			
 			if (sqlDisplayType != null)
 			{
 				return sqlDisplayType;
@@ -390,7 +400,8 @@ public class PropertyDescriptor implements Serializable
 
 			//
 			// Figure out the display type based on value type
-			// FIXME: i think, in final version this part will be completelly removed
+			// FIXME: i think, in final version this part will be completely removed
+			final Class<?> valueType = this.valueType;
 			if (valueType == null)
 			{
 
@@ -463,5 +474,19 @@ public class PropertyDescriptor implements Serializable
 				throw new RuntimeException("Failed building child property descriptors for " + this, e);
 			}
 		}
+		
+		private boolean isReadOnlyForUser()
+		{
+			final int sqlDisplayType = getSqlDisplayType();
+			if(DisplayType.ID == sqlDisplayType)
+			{
+				return true;
+			}
+			
+			// TODO more logic like not updateable etc
+			
+			return false;
+		}
+
 	}
 }
