@@ -1,14 +1,7 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.NamePair;
-import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
@@ -19,7 +12,6 @@ import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
-import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 
 /*
  * #%L
@@ -43,13 +35,17 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
  * #L%
  */
 
+/**
+ * Lookup values provider as {@link PropertyValue} node.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class LookupPropertyValue implements PropertyValue
 {
 	private final PropertyName propertyName;
-	private final DataFieldLookupDescriptor sqlLookupDescriptor;
-	private final LookupDataSource sqlLazyLookupDataSource;
-
-	// private final List<LookupValue> lookupValues = ImmutableList.of();
+	/** i.e. the value */
+	private final LookupDataSource lookupDataSource;
 
 	LookupPropertyValue(final PropertyDescriptor descriptor)
 	{
@@ -57,9 +53,8 @@ public class LookupPropertyValue implements PropertyValue
 		final PropertyName propertyName = descriptor.getPropertyName();
 		this.propertyName = WindowConstants.lookupValuesName(propertyName);
 
-		this.sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
-
-		this.sqlLazyLookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
+		final DataFieldLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
+		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 	}
 
 	@Override
@@ -85,65 +80,13 @@ public class LookupPropertyValue implements PropertyValue
 	@Override
 	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
 	{
-		// TODO Auto-generated method stub
-
+		// TODO: update lookup datasource in case it's filtering depends on some other properties
 	}
 
 	@Override
 	public Object getValue()
 	{
-		return sqlLazyLookupDataSource;
-		
-		// final IStringExpression sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
-		// final boolean numericKey = sqlLookupDescriptor.isNumericKey();
-		// final int entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
-		//
-		// final Evaluatee evalCtx = createEvaluationContext();
-		// final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
-		//
-		// try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
-		// {
-		// final List<LookupValue> items = data.fetchAll()
-		// .stream()
-		// .map(namePair -> toLookupValue(namePair))
-		// .collect(Collectors.toList());
-		// return items;
-		// }
-
-		
-		
-		// // TODO
-		// final Date now = new Date();
-		// final List<LookupValue> lookupValues = new ArrayList<>();
-		// for (int i = 1; i <= 10; i++)
-		// {
-		// lookupValues.add(LookupValue.of(i, "" + propertyName + " - " + now));
-		// }
-		//
-		// return Suppliers.ofInstance(lookupValues);
-	}
-
-	private static final LookupValue toLookupValue(final NamePair namePair)
-	{
-		if (namePair == null)
-		{
-			return null;
-		}
-		else if (namePair instanceof ValueNamePair)
-		{
-			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return LookupValue.of(vnp.getValue(), vnp.getName());
-		}
-		else if (namePair instanceof KeyNamePair)
-		{
-			final KeyNamePair knp = (KeyNamePair)namePair;
-			return LookupValue.of(knp.getKey(), knp.getName());
-		}
-		else
-		{
-			// shall not happen
-			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
-		}
+		return lookupDataSource;
 	}
 
 	@Override
