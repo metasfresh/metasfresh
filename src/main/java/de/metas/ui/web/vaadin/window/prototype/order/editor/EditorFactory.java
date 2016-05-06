@@ -3,6 +3,8 @@ package de.metas.ui.web.vaadin.window.prototype.order.editor;
 import java.util.Map;
 import java.util.Set;
 
+import org.compiere.util.DisplayType;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
@@ -63,6 +65,7 @@ public class EditorFactory
 	private Editor createValueEditor(final PropertyDescriptor descriptor)
 	{
 		final Class<?> valueType = descriptor.getValueType();
+		final int displayType = descriptor.getSqlDisplayType();
 
 		if (String.class.equals(valueType))
 		{
@@ -82,6 +85,11 @@ public class EditorFactory
 		}
 		else if (LookupValue.class.isAssignableFrom(valueType))
 		{
+			if (displayType == DisplayType.Location)
+			{
+				return new LocationEditor(descriptor);
+			}
+			
 //			return new ComboLookupValueEditor(descriptor);
 			return new SearchLookupValueEditor(descriptor);
 		}

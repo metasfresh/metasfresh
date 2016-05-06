@@ -26,6 +26,8 @@ import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
@@ -36,6 +38,7 @@ import com.google.gwt.thirdparty.guava.common.base.Joiner;
 import com.google.gwt.thirdparty.guava.common.base.Objects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
@@ -43,6 +46,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.datasource.SaveResult;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
 import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.prototype.order.service.LocationService;
 
 /*
  * #%L
@@ -72,6 +76,10 @@ public class SqlModelDataSource implements ModelDataSource
 	private static final Logger logger = LogManager.getLogger(SqlModelDataSource.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	@Autowired
+	@Lazy
+	private LocationService locationService;
+
 	//
 	// SQL definitions
 	private final String sqlTableName;
@@ -88,6 +96,7 @@ public class SqlModelDataSource implements ModelDataSource
 	public SqlModelDataSource(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		super();
+		Application.autowire(this);
 
 		//
 		// Build SQLs
@@ -339,6 +348,13 @@ public class SqlModelDataSource implements ModelDataSource
 			}
 			encrypted = false;
 		}
+		else if (DisplayType.Location == displayType)
+		{
+			// FIXME: implement it efficiently - see https://metasfresh.atlassian.net/browse/FRESH-287 - Precalculate C_Location display address
+			final int locationId = rs.getInt(columnName);
+			value = locationService.findLookupValueById(locationId);
+			encrypted = false;
+		}
 		// Integer, ID, Lookup (UpdatedBy is a numeric column)
 		// FIXME: hardcoded
 		else if (displayType == DisplayType.Integer
@@ -524,7 +540,7 @@ public class SqlModelDataSource implements ModelDataSource
 			records.add(PropertyValuesDTO.copyOf(valuesNew));
 			recordIndexNew = records.size() - 1;
 		}
-		
+
 		return SaveResult.of(recordIndexNew, keyValueNew);
 	}
 
