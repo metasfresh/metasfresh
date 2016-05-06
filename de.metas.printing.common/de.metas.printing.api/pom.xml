@@ -2,13 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
+		<groupId>de.metas.printing</groupId>
+		<artifactId>de.metas.printing.common</artifactId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.printing</groupId>
 	<artifactId>de.metas.printing.api</artifactId>
 
 	<dependencies>
