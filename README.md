@@ -1,11 +1,11 @@
 
 # metasfresh-procurement-webui
 
-This is a standalone mobile web application that a communicates with metasfresh and allows vendors to report supplies.
+The metasfresh procurement webui is a standalone mobile web application that communicates with metasfresh and allows producers/ vendors to report supplies.
 
-Those supply reports are transferred to metasfresh, are transformed into procurement candidates and then a metasfresh user can create purchase orders based on them.
+Those supply reports are transferred to metasfresh ERP and then transformed into the procurement candidates data structure. A metasfresh user - this could be a usere from purchase/ procurement - checks the reported data for a given supply date and generates purchase orders.
 
-The webui leans on the following components to do its job
+The webui leans on the following components to do its job:
 
 * vaadin
 * spring-boot
