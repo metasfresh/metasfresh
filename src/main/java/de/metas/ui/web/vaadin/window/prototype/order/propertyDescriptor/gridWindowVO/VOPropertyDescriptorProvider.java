@@ -68,6 +68,8 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 	@Override
 	public PropertyDescriptor provideForWindow(final int AD_Window_ID)
 	{
+		// TODO: caching
+		
 		final Properties ctx = Env.getCtx(); // TODO
 		final int windowNo = 0; // TODO
 		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
@@ -177,18 +179,19 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 			//
 			// Child tabs
-			for (final GridTabVO childTab : getChildTabs(gridTabVO))
-			{
-				if (!tabIdsAdded.add(childTab.getAD_Tab_ID()))
-				{
-					logger.debug("Skip adding {} because it was already considered", childTab);
-					continue;
-				}
-
-				final PropertyName includedTabPropertyName = PropertyName.of("IncludedTab_" + childTab.getAD_Tab_ID());
-				final PropertyDescriptor.Builder builder = createIncludedTab(includedTabPropertyName, childTab);
-				groupBuilders.put(includedTabPropertyName.toString(), builder);
-			}
+			// FIXME: commented out because atm is breaking the "Save" BL
+//			for (final GridTabVO childTab : getChildTabs(gridTabVO))
+//			{
+//				if (!tabIdsAdded.add(childTab.getAD_Tab_ID()))
+//				{
+//					logger.debug("Skip adding {} because it was already considered", childTab);
+//					continue;
+//				}
+//
+//				final PropertyName includedTabPropertyName = PropertyName.of("IncludedTab_" + childTab.getAD_Tab_ID());
+//				final PropertyDescriptor.Builder builder = createIncludedTab(includedTabPropertyName, childTab);
+//				groupBuilders.put(includedTabPropertyName.toString(), builder);
+//			}
 
 			//
 			//
