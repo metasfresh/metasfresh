@@ -44,6 +44,9 @@ check_file_readable(){
 	exit 1
 }
 
+#
+# If the given variable is not set (value being either "" or "NOT_SET"), then this method fails the script (exit 1)
+#
 check_var()
 {
 	local varName=$1
@@ -59,7 +62,10 @@ check_var()
 	return 0
 }
 
-# if the given var is not set, then it 
+# 
+# If the first given variable is not set (value being either "" or "NOT_SET"), then it falls back to the second given variable 
+# and sets the first var to the second var's value. If the second variabe is not set either then this method fails the script (exit 1).
+#
 check_var_fallback()
 {
 	local varName=$1
