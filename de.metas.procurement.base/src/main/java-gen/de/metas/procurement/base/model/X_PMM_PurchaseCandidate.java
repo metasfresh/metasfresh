@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 910013021L;
+	private static final long serialVersionUID = 725538695L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -344,6 +344,40 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public int getM_HU_PI_Item_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_Override_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_Override(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_Override_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product_Override);
+	}
+
+	/** Set Packvorschrift-Produkt Zuordnung abw..
+		@param M_HU_PI_Item_Product_Override_ID Packvorschrift-Produkt Zuordnung abw.	  */
+	@Override
+	public void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID)
+	{
+		if (M_HU_PI_Item_Product_Override_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, Integer.valueOf(M_HU_PI_Item_Product_Override_ID));
+	}
+
+	/** Get Packvorschrift-Produkt Zuordnung abw..
+		@return Packvorschrift-Produkt Zuordnung abw.	  */
+	@Override
+	public int getM_HU_PI_Item_Product_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
