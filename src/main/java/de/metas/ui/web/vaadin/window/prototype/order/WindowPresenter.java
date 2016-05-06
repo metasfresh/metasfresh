@@ -1,24 +1,29 @@
 package de.metas.ui.web.vaadin.window.prototype.order;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+import com.vaadin.server.ErrorEvent;
+import com.vaadin.server.ErrorHandler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants.OnChangesFound;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.prototype.order.model.WindowModel;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.vaadin.window.prototype.order.model.event.ConfirmDiscardChangesModelEvent;
@@ -50,15 +55,18 @@ import de.metas.ui.web.vaadin.window.prototype.order.view.WindowViewListener;
  * #L%
  */
 
-public class WindowPresenter implements WindowViewListener
+@SuppressWarnings("serial")
+public class WindowPresenter implements WindowViewListener, ErrorHandler
 {
 	private static final Logger logger = LogManager.getLogger(WindowPresenter.class);
 
 	@Autowired(required = true)
+	// @Lazy
 	private WindowModel _model;
 	private boolean _registeredToModelEventBus = false;
 
 	@Autowired(required = true)
+	// @Lazy
 	private WindowView _view;
 
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
@@ -68,9 +76,6 @@ public class WindowPresenter implements WindowViewListener
 	{
 		super();
 		Application.autowire(this);
-
-		// this._model = new WindowModel();
-		// this._view = new WindowViewImpl();
 	}
 
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
@@ -81,35 +86,39 @@ public class WindowPresenter implements WindowViewListener
 		//
 		// Unregister listeners
 		unbindFromModel();
-		view.setListener(null);
+		unbindFromView();
 
 		//
 		// Set root property descriptor to model and view
-		view.setRootPropertyDescriptor(rootPropertyDescriptor);
+		if (view != null)
+		{
+			view.setRootPropertyDescriptor(rootPropertyDescriptor);
+		}
 		model.setRootPropertyDescriptor(rootPropertyDescriptor);
 
 		//
 		// Register back all listeners
 		bindToModel();
-		view.setListener(this);
-		
-		updateViewFromModel();
+		bindToView();
+
+		//
+		updateViewFromModel(view);
 	}
 
 	public void dispose()
 	{
 		unbindFromModel();
-
-		final WindowView view = getView();
-		if (view != null)
-		{
-			view.setListener(null);
-		}
+		setView(null);
 	}
 
-	private WindowModel getModel()
+	public WindowModel getModel()
 	{
 		return _model;
+	}
+
+	public void setModelDataSource(final ModelDataSource modelDataSource)
+	{
+		updateModel(model -> model.setDataSource(modelDataSource));
 	}
 
 	private final void bindToModel()
@@ -139,7 +148,7 @@ public class WindowPresenter implements WindowViewListener
 		_registeredToModelEventBus = false;
 		logger.trace("Unbound presenter {} from model {}", this, model);
 	}
-	
+
 	public void setView(final WindowView view)
 	{
 		final WindowView viewOld = this._view;
@@ -147,22 +156,38 @@ public class WindowPresenter implements WindowViewListener
 		{
 			return;
 		}
-		
-		if (viewOld != null)
-		{
-			viewOld.setListener(null);
-		}
-		
+
+		unbindFromView();
 		this._view = view;
-		if(this._view != null)
-		{
-			this._view.setListener(this);
-		}
+		bindToView();
 	}
 
 	private WindowView getView()
 	{
 		return _view;
+	}
+
+	private final void bindToView()
+	{
+		final WindowView view = getView();
+		if (view == null)
+		{
+			return;
+		}
+
+		view.setListener(this);
+	}
+
+	private final void unbindFromView()
+	{
+		final WindowView view = getView();
+		if (view == null)
+		{
+			return;
+		}
+
+		view.setListener(null);
+
 	}
 
 	public Component getViewComponent()
@@ -171,10 +196,14 @@ public class WindowPresenter implements WindowViewListener
 		return view == null ? null : view.getComponent();
 	}
 
-	private void updateViewFromModel()
+	private void updateViewFromModel(final WindowView view)
 	{
+		if (view == null)
+		{
+			return;
+		}
+
 		final WindowModel model = getModel();
-		final WindowView view = getView();
 		logger.debug("Updating {} from {}", view, model);
 
 		// view.setTitle(model.getTitle()); // not needed, will come with all properties
@@ -211,7 +240,7 @@ public class WindowPresenter implements WindowViewListener
 		this.viewPropertyNames = viewPropertyNamesNew;
 		logger.trace("View subscribed to following property names: {}", propertyNames);
 
-		updateViewFromModel();
+		updateViewFromModel(getView());
 	}
 
 	private final Set<PropertyName> viewSettingPropertyNames = new HashSet<>();
@@ -226,15 +255,7 @@ public class WindowPresenter implements WindowViewListener
 		try
 		{
 			logger.trace("Updating model's property");
-			updateModel(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					final WindowModel model = getModel();
-					model.setProperty(propertyName, value);
-				}
-			});
+			updateModel((model) -> model.setProperty(propertyName, value));
 		}
 		finally
 		{
@@ -253,15 +274,7 @@ public class WindowPresenter implements WindowViewListener
 		try
 		{
 			logger.trace("Updating model's property");
-			updateModel(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					final WindowModel model = getModel();
-					model.setGridProperty(gridPropertyName, rowId, propertyName, value);
-				};
-			});
+			updateModel((model) -> model.setGridProperty(gridPropertyName, rowId, propertyName, value));
 		}
 		finally
 		{
@@ -291,28 +304,35 @@ public class WindowPresenter implements WindowViewListener
 		return ui;
 	}
 
-	private final void updateView(final Runnable runnable)
+	private final void updateView(final Consumer<WindowView> consumer)
 	{
+		final WindowView view = getView();
+		if (view == null)
+		{
+			return;
+		}
+
 		final UI viewUI = getUI();
-		if (viewUI != null && viewUI != UI.getCurrent())
+		final UI currentUI = UI.getCurrent();
+		if (viewUI != null && viewUI != currentUI)
 		{
 			logger.trace("Updating view on UI: {}", viewUI);
-			viewUI.access(runnable);
+			viewUI.access(() -> consumer.accept(view));
 		}
 		else
 		{
-			logger.trace("Updating view directly");
-			runnable.run();
+			logger.trace("Updating view directly (viewUI={}, currentUI={})", viewUI, currentUI);
+			consumer.accept(view);
 		}
 	}
 
-	private final void updateModel(final Runnable runnable)
+	private final void updateModel(final Consumer<WindowModel> consumer)
 	{
 		final WindowModel model = getModel();
-		logger.trace("Updating the model {} using {}", model, runnable);
+		logger.trace("Updating the model {} using {}", model, consumer);
 		try
 		{
-			runnable.run();
+			consumer.accept(model);
 			return;
 		}
 		catch (Exception modelException)
@@ -325,46 +345,24 @@ public class WindowPresenter implements WindowViewListener
 	private void handleModelException(final Exception modelException)
 	{
 		logger.debug("Got model exception", modelException);
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowView view = getView();
-				view.showError(modelException.getLocalizedMessage());
-			}
-		});
+		updateView((view) -> view.showError(modelException.getLocalizedMessage()));
 	}
 
 	@Subscribe
 	public void modelAllPropertiesChanged(final AllPropertiesChangedModelEvent event)
 	{
 		logger.trace("Got {}", event);
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				updateViewFromModel();
-			}
-		});
+		updateView((view) -> updateViewFromModel(view));
 	}
 
 	@Subscribe
 	public void modelPropertyChanged(final PropertyChangedModelEvent event)
 	{
 		logger.trace("Got {}", event);
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				modelPropertyChanged0(event);
-			}
-		});
+		updateView((view) -> modelPropertyChanged0(view, event));
 	}
 
-	private void modelPropertyChanged0(final PropertyChangedModelEvent event)
+	private void modelPropertyChanged0(final WindowView view, final PropertyChangedModelEvent event)
 	{
 		final PropertyName propertyName = event.getPropertyName();
 
@@ -379,7 +377,6 @@ public class WindowPresenter implements WindowViewListener
 			logger.trace("Skip updating the view because this property is not interesting for view: {}", propertyName);
 		}
 
-		final WindowView view = getView();
 		final Object value = event.getValue();
 		view.setProperty(propertyName, value);
 	}
@@ -388,17 +385,10 @@ public class WindowPresenter implements WindowViewListener
 	public void modelGridPropertyChanged(final GridPropertyChangedModelEvent event)
 	{
 		logger.trace("Got {}", event);
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				modelGridPropertyChanged0(event);
-			}
-		});
+		updateView((view) -> modelGridPropertyChanged0(view, event));
 	}
 
-	private void modelGridPropertyChanged0(final GridPropertyChangedModelEvent event)
+	private void modelGridPropertyChanged0(final WindowView view, final GridPropertyChangedModelEvent event)
 	{
 		final PropertyName gridPropertyName = event.getGridPropertyName();
 		final Object rowId = event.getRowId();
@@ -411,7 +401,6 @@ public class WindowPresenter implements WindowViewListener
 			return;
 		}
 
-		final WindowView view = getView();
 		final Object value = event.getValue();
 		view.setGridProperty(gridPropertyName, rowId, propertyName, value);
 	}
@@ -420,95 +409,52 @@ public class WindowPresenter implements WindowViewListener
 	public void modelGridRowAdded(final GridRowAddedModelEvent event)
 	{
 		logger.trace("Got {}", event);
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final PropertyName gridPropertyName = event.getGridPropertyName();
-				final Object rowId = event.getRowId();
-				final Map<PropertyName, Object> rowValues = event.getRowValues();
+		updateView((view) -> {
+			final PropertyName gridPropertyName = event.getGridPropertyName();
+			final Object rowId = event.getRowId();
+			final PropertyValuesDTO rowValues = event.getRowValues();
 
-				final WindowView view = getView();
-				view.gridNewRow(gridPropertyName, rowId, rowValues);
-			}
+			view.gridNewRow(gridPropertyName, rowId, rowValues);
 		});
 	}
 
 	@Subscribe
 	public void modelConfirmDiscardChanges(final ConfirmDiscardChangesModelEvent event)
 	{
-		updateView(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowView view = getView();
-				view.confirmDiscardChanges();
-			}
-		});
+		updateView((view) -> view.confirmDiscardChanges());
 	}
 
 	@Override
 	public void viewNextRecord(final OnChangesFound onChangesFound)
 	{
 		final WindowView view = getView();
+		Preconditions.checkNotNull(view, "view");
 		view.commitChanges();
 
-		updateModel(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowModel model = getModel();
-				model.nextRecord(onChangesFound);
-			}
-		});
+		updateModel((model) -> model.nextRecord(onChangesFound));
 	}
 
 	@Override
 	public void viewPreviousRecord(final OnChangesFound onChangesFound)
 	{
 		final WindowView view = getView();
+		Preconditions.checkNotNull(view, "view");
 		view.commitChanges();
 
-		updateModel(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowModel model = getModel();
-				model.previousRecord(onChangesFound);
-			}
-		});
+		updateModel((model) -> model.previousRecord(onChangesFound));
+	}
 	}
 
 	@Override
 	public void viewSaveEditing()
 	{
-		updateModel(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowModel model = getModel();
-				model.saveRecord();
-			}
-		});
+		updateModel((model) -> model.saveRecord());
 	}
 
 	@Override
 	public void viewCancelEditing()
 	{
-		updateModel(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final WindowModel model = getModel();
-				model.reloadRecord();
-			}
-		});
+		updateModel((model) -> model.cancelRecordEditing());
 	}
 
 	@Override
@@ -525,5 +471,15 @@ public class WindowPresenter implements WindowViewListener
 		final WindowModel model = getModel();
 		final Object value = model.getGridProperty(gridPropertyName, rowId, propertyName);
 		return Futures.immediateFuture(value);
+	}
+
+	@Override
+	public void error(final ErrorEvent event)
+	{
+		final Throwable ex = event.getThrowable();
+		logger.warn("Got error", ex);
+		
+		final String errorMessage = Throwables.getRootCause(ex).getLocalizedMessage();
+		updateView(view -> view.showError(errorMessage));
 	}
 }
