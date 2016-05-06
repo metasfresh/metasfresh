@@ -68,7 +68,9 @@ import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValuesDTO;
 
 public class SqlModelDataSource implements ModelDataSource
 {
+	// services
 	private static final Logger logger = LogManager.getLogger(SqlModelDataSource.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
 	// SQL definitions
