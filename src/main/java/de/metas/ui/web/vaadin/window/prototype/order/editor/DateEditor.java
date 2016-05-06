@@ -106,7 +106,7 @@ public class DateEditor extends FieldEditor<Date>
 		}
 		else if (valueObj instanceof java.util.Date)
 		{
-			return (Date)valueObj;
+			return (java.util.Date)valueObj;
 		}
 		else if (valueObj instanceof String)
 		{
