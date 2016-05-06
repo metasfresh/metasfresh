@@ -16,6 +16,9 @@ The actual release notes
 
 ## Features
  - FRESH-265 Procurement Candidates: Packvorschrift overwrite
+ - FRESH-286 jenkins envInject plugin overwrites BUILD_URL value
+	* introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Falback to BUILD_URL if the new var is not set
+	
 ## Fixes
 
 # metasfresh 4.16.15

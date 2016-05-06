@@ -12,10 +12,14 @@ if [ "$MINOR" == "" ]; then
 	MINOR="false"
 fi
 
-#Note: BUILD_URL is mandatory
-#if [ "$BUILD_URL" == "" ]; then
-#	BUILD_URL="NOT_YET_SPECIFIED"
+#Note: ROLLOUT_BUILD_URL is mandatory
+#if [ "ROLLOUT_BUILD_URL" == "" ]; then
+#	TARGET_HOST="NOT_YET_SPECIFIED"
 #fi
+
+if [ "$BUILD_URL" == "" ]; then
+	BUILD_URL="NOT_SPECIFIED"
+fi
 
 if [ "$TARGET_USER" == "" ]; then
 	TARGET_USER="metas"
@@ -72,18 +76,23 @@ prepare()
 	check_std_tool scp
 	check_std_tool wget
 	
-	check_var DATABASE $DATABASE
-	check_var MINOR $MINOR
+	check_var BUILD_URL ${BUILD_URL:-NOT_SET}
 	
-	check_var BUILD_URL $BUILD_URL
-	check_var ROLLOUT_DIR $ROLLOUT_DIR 
-	check_var TARGET_HOST $TARGET_HOST
-	check_var SSH_PORT $SSH_PORT
+	check_var DATABASE ${DATABASE:-NOT_SET}
+	check_var MINOR ${MINOR:-NOT_SET}
 	
-	check_var BUILD_URL $BUILD_URL
-	check_var DIST_ARCHIVE $DIST_ARCHIVE
+	# FRESH-286:
+	# In jenkins, the envInject plugin aparently overwrites our BUILD_URL build parameter with the URL of the currently running job.
+	# We therefore introduce the ROLLOUT_BUILD_URL, but provide a fallback for those cases where the ROLLOUT_BUILD_URL is not specified, 
+	# but the BUILD_URL is actually the desired one
+	check_var_fallback ROLLOUT_BUILD_URL ${ROLLOUT_BUILD_URL:-NOT_SET} BUILD_URL ${BUILD_URL:-NOT_SET}
 	
-	
+	check_var ROLLOUT_DIR ${ROLLOUT_DIR:-NOT_SET}
+	check_var TARGET_HOST ${TARGET_HOST:-NOT_SET}
+	check_var SSH_PORT ${SSH_PORT:-NOT_SET}
+		
+	check_var DIST_ARCHIVE ${DIST_ARCHIVE:-NOT_SET}
+		
 	if [ "$DATABASE" = "false" ] && [ "$MINOR" = "false" ]; 
 	then
 		trace prepare "============================================================================================"
@@ -95,15 +104,15 @@ prepare()
 		START_STOP="true"
 	fi
 		
-	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$BUILD_URL" = "NOT_YET_SPECIFIED" ]; 
+	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$ROLLOUT_BUILD_URL" = "NOT_YET_SPECIFIED" ]; 
 	then
-		trace prepare "At least one of -d or the environment variable 'BUILD_URL' must be set"
+		trace prepare "At least one of -d or the environment variable 'ROLLOUT_BUILD_URL' needs to be set"
 		exit 1
 	fi
 	
-	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$BUILD_URL" != "NOT_YET_SPECIFIED" ]; 
+	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$ROLLOUT_BUILD_URL" != "NOT_YET_SPECIFIED" ]; 
 	then
-		trace prepare "ignoring BUILD_URL because a rollout dir is set"
+		trace prepare "ignoring ROLLOUT_BUILD_URL because a rollout dir is set"
 		exit 1
 	fi
 
@@ -113,12 +122,12 @@ prepare()
 	#getting build number from build URL
 	#example for a build URL:
 	#http://debuild901:8080/job/us1017_ma01_ad_build/29/
-	local build_no=$(echo $BUILD_URL | cut -d '/' -f 6 )
+	local build_no=$(echo $ROLLOUT_BUILD_URL | cut -d '/' -f 6 )
 	check_var build_no $build_no
 		
-	trace prepare "Setting DOWNLOAD_FILE from BUILD_URL"
+	trace prepare "Setting DOWNLOAD_FILE from ROLLOUT_BUILD_URL"
 				
-	DOWNLOAD_FILE=${BUILD_URL}/${DIST_ARCHIVE}
+	DOWNLOAD_FILE=${ROLLOUT_BUILD_URL}/${DIST_ARCHIVE}
 	check_var DOWNLOAD_FILE "${DOWNLOAD_FILE}"
 	
 	trace prepare "Downloading rollout file"
