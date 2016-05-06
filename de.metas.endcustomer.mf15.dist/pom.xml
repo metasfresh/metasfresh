@@ -19,6 +19,17 @@
 				  2. shell scripts are using certain jars in their class-paths
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
+		
+		<!--
+			the artifact version of the esb bundles which we download from the maven repository in other to 
+			provide them as part of the complete metasfresh package. 
+			FRESH-271: we include the esb bundles with the same version, but if we build a task-specific metasfresh distributable,
+			we might want to not have to build task-specific esb-bundles and instead just go with the standard ones 
+		-->
+		<esb.bundles.version>${project.version}</esb.bundles.version>
+		
+		<!-- our spring-boot-admin webui rarely changes, so always include our "standard" version in this distributable -->		
+		<de.metas.admin.webui.version>1.0_IT-SNAPSHOT</de.metas.admin.webui.version>
 	</properties>
 
 	<dependencies>
@@ -47,7 +58,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- we will roll this out to ${ADEMPIERE_HOME}/lib -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
@@ -63,12 +73,15 @@
 			<type>zip</type>
 		</dependency>
 
+<!--
+we currenty don't have a usecase for it. maybe we will remove it alltogether. 
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client-webapp</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
+-->
 
 <!-- 
 SQL and jasper dependencies:
@@ -436,28 +449,28 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>de.metas.printing.esb</groupId>
 									<artifactId>de.metas.printing.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.printing.esb</groupId>
 									<artifactId>de.metas.printing.esb.client</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 									<classifier>jar-with-dependencies</classifier>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.edi.esb</groupId>
 									<artifactId>de.metas.edi.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.document.archive.esb</groupId>
 									<artifactId>de.metas.document.archive.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.admin.webui</groupId>
 									<artifactId>de.metas.admin.webui</artifactId>
-									<version>${project.version}</version>
+									<version>${de.metas.admin.webui.version}</version>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
