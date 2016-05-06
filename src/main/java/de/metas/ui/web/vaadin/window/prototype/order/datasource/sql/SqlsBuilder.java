@@ -11,6 +11,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.prototype.order.datasource.ModelDataSourceFactory;
 
 /*
  * #%L
@@ -42,10 +43,12 @@ final class SqlsBuilder
 		return new SqlsBuilder();
 	}
 
+	private ModelDataSourceFactory dataSourceFactory = new ModelDataSourceFactory();
+
 	private final Map<String, SqlTable> _tablesByAlias = new LinkedHashMap<>();
 	private final Map<PropertyName, SqlField> sqlFields = new LinkedHashMap<>();
 
-	final Map<PropertyName, ModelDataSource> includedDataSources = new LinkedHashMap<>();
+	private final Map<PropertyName, ModelDataSource> includedDataSources = new LinkedHashMap<>();
 	private SqlField sqlField_KeyColumn;
 	//
 	private SqlField sqlField_ParentLinkColumn;
@@ -209,7 +212,7 @@ final class SqlsBuilder
 		Check.assumeNotEmpty(childParentLinkColumnName, "childParentLinkColumnName is not empty");
 
 		final PropertyName propertyName = propertyDescriptor.getPropertyName();
-		final SqlModelDataSource childDataSource = new SqlModelDataSource(propertyDescriptor);
+		final ModelDataSource childDataSource = dataSourceFactory.createDataSource(propertyDescriptor);
 		final ModelDataSource childDataSourcePrev = includedDataSources.put(propertyName, childDataSource);
 		if (childDataSourcePrev != null)
 		{
