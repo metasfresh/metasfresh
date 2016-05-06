@@ -45,6 +45,8 @@ public interface WindowViewListener
 	/** View asked to move to previous record */
 	void viewPreviousRecord(OnChangesFound onChangesFound);
 
+	void viewNewRecord();
+
 	/** View asked to save the current editing */
 	void viewSaveEditing();
 

@@ -95,6 +95,11 @@ public class WindowViewImpl extends AbstractView
 			actionsPanel.addStyleName(STYLE + "-actions-lane");
 			content.addComponent(actionsPanel);
 
+			final Button btnNew = new Button();
+			btnNew.setCaption("New");
+			btnNew.addClickListener(e -> getWindowViewListener().viewNewRecord());
+			actionsPanel.addComponent(btnNew);
+
 			final Button btnSave = new Button();
 			btnSave.setCaption("Save");
 			btnSave.addClickListener(new Button.ClickListener()

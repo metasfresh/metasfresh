@@ -443,6 +443,11 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 
 		updateModel((model) -> model.previousRecord(onChangesFound));
 	}
+
+	@Override
+	public void viewNewRecord()
+	{
+		updateModel((model) -> model.newRecord());
 	}
 
 	@Override
