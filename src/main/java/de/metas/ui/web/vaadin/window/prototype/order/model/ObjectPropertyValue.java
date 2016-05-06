@@ -7,6 +7,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
@@ -41,14 +42,15 @@ public class ObjectPropertyValue implements PropertyValue
 	private final Object initialValue;
 	private Object value;
 
-	private final Map<PropertyName, PropertyValue> _childPropertyValues;
+	private final ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
+	private final boolean readOnlyForUser;
 
 	ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
 		name = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
-		_childPropertyValues = builder.getChildPropertyValues();
+		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
 
 		initialValue = builder.getInitialValue();
 		value = initialValue;
