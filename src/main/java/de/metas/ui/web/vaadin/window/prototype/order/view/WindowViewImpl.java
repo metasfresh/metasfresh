@@ -48,7 +48,6 @@ public class WindowViewImpl extends AbstractView
 
 	//
 	// UI components
-	private VerticalLayout content;
 	private HorizontalLayout actionsPanel;
 	private Button btnPreviousRecord;
 	private Button btnNextRecord;
@@ -68,9 +67,9 @@ public class WindowViewImpl extends AbstractView
 	}
 
 	@Override
-	protected void createUI()
+	protected Component createUI()
 	{
-		content = new VerticalLayout();
+		final VerticalLayout content = new VerticalLayout();
 		content.addStyleName(STYLE);
 
 		//
@@ -207,6 +206,9 @@ public class WindowViewImpl extends AbstractView
 			registerEditor(recordSummaryEditor);
 			registerEditor(recordAdditionalSummaryEditor);
 		}
+		
+		//
+		return content;
 	}
 
 	@Override
@@ -225,12 +227,6 @@ public class WindowViewImpl extends AbstractView
 		//
 		// Set navigation bar shortcuts
 		panelsBar.setNavigationShortcutsFromEditors(getAllEditors());
-	}
-
-	@Override
-	public Component getComponent()
-	{
-		return content;
 	}
 
 	@Override

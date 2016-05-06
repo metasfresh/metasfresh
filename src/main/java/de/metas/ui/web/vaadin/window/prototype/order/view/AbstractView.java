@@ -9,8 +9,11 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.vaadin.server.ErrorEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Notification;
 
 import de.metas.logging.LogManager;
@@ -56,6 +59,8 @@ public abstract class AbstractView implements WindowView
 	private static final Logger logger = LogManager.getLogger(AbstractView.class);
 	protected final EditorFactory editorFactory = new EditorFactory();
 
+	private final Component content;
+
 	//
 	// Editors (UI)
 	private Editor _rootPropertyEditor = null;
@@ -69,10 +74,18 @@ public abstract class AbstractView implements WindowView
 	{
 		super();
 
-		createUI();
+		content = createUI();
+		Preconditions.checkNotNull(content, "content cannot be null");
+		content.setErrorHandler(event -> showError(event));
 	}
 
-	protected abstract void createUI();
+	protected abstract Component createUI();
+	
+	@Override
+	public final Component getComponent()
+	{
+		return content;
+	}
 
 	protected final void registerEditor(final Editor editor)
 	{
@@ -332,4 +345,14 @@ public abstract class AbstractView implements WindowView
 	{
 		Notification.show(message, Notification.Type.WARNING_MESSAGE);
 	}
+	
+	private void showError(final ErrorEvent event)
+	{
+		final Throwable ex = event.getThrowable();
+		logger.warn("Got error", ex);
+		
+		final String errorMessage = Throwables.getRootCause(ex).getLocalizedMessage();
+		showError(errorMessage);
+	}
+
 }

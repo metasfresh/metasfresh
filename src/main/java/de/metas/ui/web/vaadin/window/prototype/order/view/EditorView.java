@@ -36,16 +36,12 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.Editor;
  */
 public class EditorView extends AbstractView
 {
-	private VerticalLayout content = new VerticalLayout();
+	private VerticalLayout content;
 
 	@Override
-	protected void createUI()
+	protected Component createUI()
 	{
-	}
-
-	@Override
-	public Component getComponent()
-	{
+		content = new VerticalLayout();
 		return content;
 	}
 
