@@ -16,89 +16,7 @@
 	</parameter>
 	<parameter name="kind" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT
-	*
-FROM
-(
-	SELECT
-		it.C_Invoice_ID,
-		null as ISO_Code,
-		SUM(TaxBaseAmt) AS TaxBaseAmt,
-		null AS TaxAmt,
-		CASE
-			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
-			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
-			WHEN round(t.Rate,2) = t.Rate THEN round(t.Rate,2)
-		END AS TaxRate,
-		null AS total,
-		'N' AS HuLine,
-		IsPrintTaxSales,
-		1 as orderindex
-	FROM
-		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
-	WHERE
-		it.IsPackagingTax = 'N'
-	GROUP BY
-		it.C_Invoice_ID,
-		IsPrintTaxSales,
-		CASE
-			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
-			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
-			WHEN round(t.Rate,2) = t.Rate THEN round(t.Rate,2)
-		END
-UNION
-
-	SELECT	it.C_Invoice_ID,
-		null,
-		null,
-		SUM(TaxAmt),
-		CASE
-			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
-			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
-			WHEN round(t.Rate,2) = t.Rate THEN round(t.Rate,2)
-		END AS TaxRate,
-		SUM(TaxBaseAmt + TaxAmt) AS total,
-		it.IsPackagingTax AS HuLine,
-		IsPrintTaxSales,
-		2 AS orderindex
-	FROM
-		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
-	GROUP BY
-		it.C_Invoice_ID, it.IsPackagingTax,
-		IsPrintTaxSales,
-		CASE
-			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
-			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
-			WHEN round(t.Rate,2) = t.Rate THEN round(t.Rate,2)
-		END
-UNION
-	SELECT	i.C_Invoice_ID,
-		c.Iso_Code,
-		null,
-		null,
-		null,
-		Grandtotal AS total,
-		null,
-		IsPrintTaxSales,
-		3 AS orderindex
-	FROM
-		C_Invoice i
-		INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
-) a
-WHERE
-	C_Invoice_ID = $P{c_invoice_id}
-ORDER BY
-	orderindex, taxrate desc]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Sum ( $P{c_invoice_id});]]>
 	</queryString>
 	<field name="c_invoice_id" class="java.math.BigDecimal"/>
 	<field name="iso_code" class="java.lang.String"/>
@@ -107,7 +25,7 @@ ORDER BY
 	<field name="taxrate" class="java.math.BigDecimal"/>
 	<field name="total" class="java.math.BigDecimal"/>
 	<field name="huline" class="java.lang.String"/>
-	<field name="isprinttaxsales" class="java.lang.String"/>
+	<field name="isprinttax" class="java.lang.String"/>
 	<field name="orderindex" class="java.lang.Integer"/>
 	<variable name="currency" class="java.lang.String">
 		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
@@ -133,7 +51,7 @@ ORDER BY
 				</textField>
 				<textField>
 					<reportElement uuid="3d3693f0-cf03-4ab6-a228-55dea03649c0" key="textField-20" x="529" y="0" width="47" height="12" forecolor="#000000">
-						<printWhenExpression><![CDATA[new Boolean($F{isprinttaxsales}.equals("Y"))]]></printWhenExpression>
+						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -156,7 +74,7 @@ ORDER BY
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{iso_code} + (
-    $F{isprinttaxsales}.equals( 'Y' ) ? " " + $R{VATIncluded} : ""
+    $F{isprinttax}.equals( 'Y' ) ? " " + $R{VATIncluded} : ""
 )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="false">
@@ -189,7 +107,7 @@ ORDER BY
 	</columnHeader>
 	<detail>
 		<band height="12" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 1 && $F{isprinttaxsales}.equals( "Y" ))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 1 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
 				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
 				<box>
@@ -205,7 +123,7 @@ ORDER BY
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.0" isBlankWhenNull="true">
 				<reportElement uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6" key="textField-34" mode="Transparent" x="538" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttaxsales}.equals("Y"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -227,7 +145,7 @@ ORDER BY
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "N" ) && $F{isprinttaxsales}.equals( "Y" ))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "N" ) && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
 				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
 				<box>
@@ -273,7 +191,7 @@ ORDER BY
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "Y" ) && $F{isprinttaxsales}.equals( "Y" ))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "Y" ) && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField>
 				<reportElement uuid="f6cc24cb-d046-450d-b2be-6bb9a25331df" key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000"/>
 				<textElement markup="none">
