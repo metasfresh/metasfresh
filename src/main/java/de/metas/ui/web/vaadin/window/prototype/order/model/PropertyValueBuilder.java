@@ -151,4 +151,15 @@ public final class PropertyValueBuilder
 	{
 		return _initialValue;
 	}
+
+	public boolean isReadOnlyForUser()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if(propertyDescriptor != null)
+		{
+			return propertyDescriptor.isReadOnlyForUser();
+		}
+		
+		return false; // fallback
+	}
 }
