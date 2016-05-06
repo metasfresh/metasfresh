@@ -159,7 +159,7 @@ public class MailBL implements IMailBL
 	{
 		log.debug("Looking for AD_Client_ID=" + client.getAD_Client_ID() + ", AD_Org_ID=" + orgID + ", AD_Process_ID=" + processID + ", customType=" + customType);
 
-		final List<I_AD_MailConfig> configs = Services.get(IMailDAO.class).retrieveMailCOnfigs(client, orgID, processID, docType, customType);
+		final List<I_AD_MailConfig> configs = Services.get(IMailDAO.class).retrieveMailConfigs(client, orgID, processID, docType, customType);
 
 		for (final I_AD_MailConfig config : configs)
 		{

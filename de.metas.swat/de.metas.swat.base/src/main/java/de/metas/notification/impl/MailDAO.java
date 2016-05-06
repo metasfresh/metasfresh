@@ -40,7 +40,7 @@ public class MailDAO implements IMailDAO
 {
 
 	@Override
-	public List<I_AD_MailConfig> retrieveMailCOnfigs(final I_AD_Client client, final int orgID, final int processID, final I_C_DocType docType, final String customType)
+	public List<I_AD_MailConfig> retrieveMailConfigs(final I_AD_Client client, final int orgID, final int processID, final I_C_DocType docType, final String customType)
 	{
 		final IQueryBuilder<I_AD_MailConfig> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_MailConfig.class, client);
@@ -75,7 +75,7 @@ public class MailDAO implements IMailDAO
 
 			if (!Check.isEmpty(docSubType, true))
 			{
-				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType);
+				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
 			}
 
 		}
@@ -86,6 +86,7 @@ public class MailDAO implements IMailDAO
 		// Order by Org, Desc, Nulls Last
 		queryBuilder.orderBy()
 				.addColumn(I_AD_MailConfig.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_AD_MailConfig.COLUMN_DocSubType, Direction.Ascending, Nulls.Last)
 				.endOrderBy();
 
 		final List<I_AD_MailConfig> configs = queryBuilder.create().list();

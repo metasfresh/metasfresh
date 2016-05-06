@@ -40,6 +40,6 @@ public interface IMailDAO extends ISingletonService
 	 * @param customType
 	 * @return The {@link I_AD_MailConfig} entries that fit the given parameters, empty list if none found
 	 */
-	List<I_AD_MailConfig> retrieveMailCOnfigs(I_AD_Client client, int orgID, int processID, I_C_DocType docType, String customType);
+	List<I_AD_MailConfig> retrieveMailConfigs(I_AD_Client client, int orgID, int processID, I_C_DocType docType, String customType);
 
 }
