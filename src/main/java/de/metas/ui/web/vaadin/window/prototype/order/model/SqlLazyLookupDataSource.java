@@ -54,7 +54,7 @@ public class SqlLazyLookupDataSource implements LookupDataSource
 	
 	private ImmutableList<LookupValue> _lastPage = ImmutableList.of();
 
-	public SqlLazyLookupDataSource(final DataFieldLookupDescriptor sqlLookupDescriptor)
+	SqlLazyLookupDataSource(final DataFieldLookupDescriptor sqlLookupDescriptor)
 	{
 		super();
 		this.sqlLookupDescriptor = sqlLookupDescriptor;
