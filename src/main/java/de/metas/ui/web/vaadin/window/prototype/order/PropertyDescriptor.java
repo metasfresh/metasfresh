@@ -122,6 +122,9 @@ public class PropertyDescriptor implements Serializable
 				.add("type", type)
 				.add("sqlTableName", sqlTableName)
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
+				.add("readonly", readonlyLogic)
+				.add("mandatory", mandatoryLogic)
+				.add("display", displayLogic)
 				.toString();
 	}
 
