@@ -130,6 +130,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		{
 			final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 			final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
+			workpackage.setAD_PInstance_ID(pInstanceId);
 			queue.enqueueElement(workpackage, docOutboundLine);
 
 			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
