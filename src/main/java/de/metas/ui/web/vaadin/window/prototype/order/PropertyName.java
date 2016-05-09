@@ -1,9 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -50,6 +53,22 @@ public final class PropertyName implements Serializable
 	public static final PropertyName of(final PropertyName parent, final String name)
 	{
 		return new PropertyName(parent.name + "/" + name);
+	}
+	
+	public static final Set<PropertyName> toSet(final Collection<String> names)
+	{
+		if (names == null || names.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		final ImmutableSet.Builder<PropertyName> builder = ImmutableSet.builder();
+		for (final String name : names)
+		{
+			final PropertyName propertyName = of(name);
+			builder.add(propertyName);
+		}
+		return builder.build();
 	}
 
 	private final String name;
