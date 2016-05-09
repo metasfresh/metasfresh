@@ -52,11 +52,11 @@ public class ArchiveEventManager implements IArchiveEventManager
 	}
 
 	@Override
-	public void fireEmailSent(final I_AD_Archive archive, final String action, final I_AD_User user, final String from, final String to, final String cc, final String bcc, final String status)
+	public void fireEmailSent(final I_AD_Archive archive, final String action, final I_AD_User user, final String emailFrom, final String emailTo, final String emailCc, final String emailBcc, final String status)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onEmailSent(archive, action, user, from, to, cc, bcc, status);
+			listener.onEmailSent(archive, action, user, emailFrom, emailTo, emailCc, emailBcc, status);
 		}
 	}
 
