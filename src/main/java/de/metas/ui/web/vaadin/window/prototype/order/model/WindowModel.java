@@ -292,10 +292,7 @@ public class WindowModel
 
 		//
 		logger.trace("Update calculated values (after load)");
-		for (final PropertyName propertyName : properties.getPropertyNames())
-		{
-			updateAllWhichDependOn(propertyName);
-		}
+		updateAllDependenciesNoFire();
 
 		if (logger.isTraceEnabled())
 		{
@@ -371,6 +368,17 @@ public class WindowModel
 		// Update dependencies
 		updateAllWhichDependOn(propertyName);
 	}
+	
+	private final void updateAllDependenciesNoFire()
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final DependencyValueChangedEvent dependencyChangedEvent = DependencyValueChangedEvent.any(properties);
+		for (final PropertyValue propertyValue : properties.getPropertyValues())
+		{
+			final Map<PropertyName, PropertyChangedModelEvent> eventsCollector = null;
+			updateDependentPropertyValue(propertyValue, dependencyChangedEvent, eventsCollector);
+		}
+	}
 
 	private final void updateAllWhichDependOn(final PropertyName propertyName)
 	{
@@ -412,7 +420,12 @@ public class WindowModel
 		final PropertyName propertyName = propertyValue.getName();
 		logger.trace("Updated dependent property: {}={} (event: {})", propertyName, calculatedValueNew, dependencyChangedEvent);
 
-		eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
+		//
+		// Collect event
+		if(eventsCollector != null)
+		{
+			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
+		}
 	}
 
 	public void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
