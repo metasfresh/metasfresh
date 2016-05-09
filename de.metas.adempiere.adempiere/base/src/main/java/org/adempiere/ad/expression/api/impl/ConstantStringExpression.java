@@ -35,12 +35,14 @@ import com.google.common.collect.ImmutableList;
 class ConstantStringExpression implements IStringExpression
 {
 	private final String expressionStr;
+	private final List<Object> expressionChunks;
 
 	/* package */ ConstantStringExpression(final String expressionStr)
 	{
 		super();
 		Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 		this.expressionStr = expressionStr;
+		this.expressionChunks = ImmutableList.of((Object)expressionStr);
 	}
 
 	@Override
@@ -109,7 +111,7 @@ class ConstantStringExpression implements IStringExpression
 	@Override
 	public List<Object> getExpressionChunks()
 	{
-		return ImmutableList.of();
+		return expressionChunks;
 	}
 
 	@Override
