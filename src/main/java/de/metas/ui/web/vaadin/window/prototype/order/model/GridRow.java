@@ -80,6 +80,11 @@ public final class GridRow
 		}
 
 		propertyValues = valuesBuilder.build();
+		
+		if(logger.isTraceEnabled())
+		{
+			logger.trace("{}", TraceHelper.toStringRecursivelly(propertyValues.getPropertyValues()));
+		}
 	}
 
 	@Override
