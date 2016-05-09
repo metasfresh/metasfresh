@@ -1150,5 +1150,19 @@ public class GridFieldVO implements Serializable
 	{
 		return Included_Tab_ID;
 	}
-
+	
+	public boolean isReadOnly()
+	{
+		return IsReadOnly;
+	}
+	
+	public boolean isAlwaysUpdateable()
+	{
+		return IsAlwaysUpdateable;
+	}
+	
+	public String getDefaultValue()
+	{
+		return DefaultValue;
+	}
 }
