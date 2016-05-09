@@ -198,8 +198,8 @@
 			Duplicate classes found:
 		
 			  Found in:
-			    de.metas.swat:de.metas.swat.zkwebui:jar:1.0_IT-SNAPSHOT:compile
-			    de.metas.swat:de.metas.swat.zkwebui:jar:1.0_IT-SNAPSHOT:compile
+			    de.metas.swat:de.metas.swat.swingui:jar:1.0_IT-SNAPSHOT:compile
+			    de.metas.swat:de.metas.swat.swingui:jar:1.0_IT-SNAPSHOT:compile
 			Notes:
 			*an alternative would be to explicitly ignore the artifacts' classes, 
 			 but i don't see the pattern of when just an another artifact is flagged as duplicate of itself, 
@@ -247,11 +247,6 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>de.metas.banking</groupId>
-				<artifactId>de.metas.banking.zkwebui</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>de.metas.business</groupId>
 				<artifactId>de.metas.business</artifactId>
 				<classifier>tests</classifier>
@@ -265,11 +260,6 @@
 			<dependency>
 				<artifactId>de.metas.commission.client</artifactId>
 				<groupId>de.metas.commission</groupId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>de.metas.commission</groupId>
-				<artifactId>de.metas.commission.zkwebui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -355,12 +345,6 @@
 
 			<dependency>
 				<groupId>de.metas.swat</groupId>
-				<artifactId>de.metas.swat.zkwebui</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>de.metas.swat</groupId>
 				<artifactId>de.metas.swat.ait</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -409,11 +393,6 @@
 
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-				<groupId>de.metas.adempiere.adempiere</groupId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<artifactId>de.metas.adempiere.adempiere.zkwebui</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>

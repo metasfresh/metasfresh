@@ -15,8 +15,27 @@ The actual release notes
 # metasfresh 4.x.x (upcoming)
 
 ## Features
+ - FRESH-265 Procurement Candidates: Packvorschrift overwrite
+ - FRESH-286 jenkins envInject plugin overwrites BUILD_URL value
+	* introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Falback to BUILD_URL if the new var is not set
+	
+## Fixes
+
+# metasfresh 4.16.15
+
+## Features
+ - FRESH-259 Completely remove zkwebui from metasfresh
+    * Getting rid of WebUI based on ZK. The path of metasfresh is a new WebUI based on technologies and Open Source Frameworks which allow a more flexible and modern Implementation.
+ - FRESH-261 Create simple process to change the hostname of a device configuration
+    * adding a simple DB function to do the job for now
 
 ## Fixes
+ - FRESH-267 aparently Loglevels are changed somewhere in the code
+    * Fixing an issue where Loglevels were changed in Code. This has some ugly sideeffects in large environments with quickly raising Logfiles in size.
+ - FRESH-270 material tracking: total received qty and scrap sometimes missing on invoice
+    * Minor issue. Fixed an issue where those two invoice detail records were attached to a not-displayed group.
+ - FRESH-234 report sales inout qtys for products and TUs are not alligned
+    * Minor layout issue. Improved the layout of InOut Jasper Document, aligning to seperate header lines and fields.
 
 # metasfresh 4.15.14
 

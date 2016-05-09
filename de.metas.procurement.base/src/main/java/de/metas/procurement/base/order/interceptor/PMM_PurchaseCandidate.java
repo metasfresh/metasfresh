@@ -51,10 +51,17 @@ public class PMM_PurchaseCandidate
 		// If we really want to allow deleting, we will have to trigger an event to update the PMM_Balance
 		throw new AdempiereException("Deleting candidates is not allowed");
 	}
-	
+
 	@CalloutMethod(columnNames = I_PMM_PurchaseCandidate.COLUMNNAME_QtyToOrder_TU)
 	public void onQtyToOrderTUChanged_UI(final I_PMM_PurchaseCandidate candidate)
 	{
+		Services.get(IPMMPurchaseCandidateBL.class).updateQtyToOrderFromQtyToOrderTU(candidate);
+	}
+
+	@CalloutMethod(columnNames = I_PMM_PurchaseCandidate.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+	public void onM_HU_PI_Item_Product_Override_Changed(final I_PMM_PurchaseCandidate candidate)
+	{
+		// Task FRESH-265: Make sure the QtyToOrder also updates on M_HU_PI_Item_Product override
 		Services.get(IPMMPurchaseCandidateBL.class).updateQtyToOrderFromQtyToOrderTU(candidate);
 	}
 

@@ -10,12 +10,12 @@ package de.metas.document.archive.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -133,7 +133,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final String trxName) throws Exception
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
-		
+
 		// task FRESH-218
 		// set the archive language in the mailing context. This ensures us that the mail will be sent in this language.
 		final String archiveLanguage = archive.getAD_Language();
@@ -186,10 +186,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		//
 		// Create doc outbound log entry
 		{
-			final String from = userTo.getName();
+			final String from = mailbox.getEmail();
 			final String cc = null;
 			final String bcc = null;
-			
+
 			final String statusText = Services.get(IMsgBL.class).getMsg(ctx, status);
 
 			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, statusText);

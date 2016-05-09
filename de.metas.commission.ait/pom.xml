@@ -50,21 +50,9 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.client</artifactId>
-			<groupId>de.metas.commission</groupId>
 		</dependency>
-
-		<dependency>
-			<groupId>de.metas.commission</groupId>
-			<artifactId>de.metas.commission.zkwebui</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>de.metas.commission.client</artifactId>
-					<groupId>de.metas.commission</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 	</dependencies>
 
 </project>

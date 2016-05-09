@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.2418426461183105"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -41,14 +41,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="348" y="0" width="41" height="12" forecolor="#000000"/>
+				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="362" y="0" width="41" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -72,7 +72,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -85,7 +85,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="348" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="362" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
