@@ -447,11 +447,19 @@ public class PropertyDescriptor implements Serializable
 				return sqlLookupDescriptor;
 			}
 
-			// FIXME: i think, in final version this part will be completelly removed
+			// FIXME: i think, in final version this part will be completely removed
 			final int sqlDisplayType = getSqlDisplayType();
-			if (DisplayType.isLookup(sqlDisplayType) && sqlColumnName != null)
+			if (sqlColumnName != null)
 			{
-				return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+				if (DisplayType.isLookup(sqlDisplayType))
+				{
+					return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+				}
+				else if (DisplayType.PAttribute == sqlDisplayType)
+				{
+					return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+				}
+				
 			}
 
 			return sqlLookupDescriptor;
