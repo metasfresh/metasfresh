@@ -55,7 +55,7 @@ public final class GridRow
 	private GridRow()
 	{
 		super();
-		rowId = GridRowId.newRowId(); // TODO: have a custom one for this case
+		rowId = GridRowId.newRowId();
 		propertyValues = PropertyValueCollection.EMPTY;
 	}
 
