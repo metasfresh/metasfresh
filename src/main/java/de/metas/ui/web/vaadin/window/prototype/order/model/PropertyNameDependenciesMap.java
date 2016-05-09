@@ -42,6 +42,8 @@ public class PropertyNameDependenciesMap
 	{
 		Value, ReadonlyLogic, DisplayLogic, MandatoryLogic,
 	};
+	
+	public static final Set<DependencyType> DEPENDENCYTYPE_ALL = ImmutableSet.copyOf(DependencyType.values());
 
 	public static Builder builder()
 	{
