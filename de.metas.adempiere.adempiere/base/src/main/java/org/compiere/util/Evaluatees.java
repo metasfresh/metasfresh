@@ -38,6 +38,33 @@ public final class Evaluatees
 		return new MapEvaluatee(map);
 	}
 	
+	public static final Evaluatee2 empty()
+	{
+		return EMPTY;
+	}
+	
+	private static final Evaluatee2 EMPTY = new Evaluatee2()
+	{
+		@Override
+		public boolean has_Variable(String variableName)
+		{
+			return false;
+		}
+		
+		@Override
+		public String get_ValueAsString(String variableName)
+		{
+			return null;
+		}
+		
+		
+		@Override
+		public String get_ValueOldAsString(String variableName)
+		{
+			return null;
+		}
+	};
+	
 	private static final class MapEvaluatee implements Evaluatee2
 	{
 		private final Map<String, Object> map;
