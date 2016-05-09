@@ -1,37 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.KeyNamePair;
-
 /** Generated Model for AD_MailConfig
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailConfig, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20110117L;
+	private static final long serialVersionUID = 358956060L;
 
     /** Standard Constructor */
     public X_AD_MailConfig (Properties ctx, int AD_MailConfig_ID, String trxName)
@@ -50,35 +33,30 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_MailConfig[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_MailBox getAD_MailBox() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_MailBox_ID, org.compiere.model.I_AD_MailBox.class);
+	}
 
-	public I_AD_MailBox getAD_MailBox() throws RuntimeException
-    {
-		return (I_AD_MailBox)MTable.get(getCtx(), I_AD_MailBox.Table_Name)
-			.getPO(getAD_MailBox_ID(), get_TrxName());	}
+	@Override
+	public void setAD_MailBox(org.compiere.model.I_AD_MailBox AD_MailBox)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_MailBox_ID, org.compiere.model.I_AD_MailBox.class, AD_MailBox);
+	}
 
 	/** Set Mail Box.
 		@param AD_MailBox_ID Mail Box	  */
+	@Override
 	public void setAD_MailBox_ID (int AD_MailBox_ID)
 	{
 		if (AD_MailBox_ID < 1) 
@@ -89,6 +67,7 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 
 	/** Get Mail Box.
 		@return Mail Box	  */
+	@Override
 	public int getAD_MailBox_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MailBox_ID);
@@ -99,6 +78,7 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 
 	/** Set Mail Configuration.
 		@param AD_MailConfig_ID Mail Configuration	  */
+	@Override
 	public void setAD_MailConfig_ID (int AD_MailConfig_ID)
 	{
 		if (AD_MailConfig_ID < 1) 
@@ -109,6 +89,7 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 
 	/** Get Mail Configuration.
 		@return Mail Configuration	  */
+	@Override
 	public int getAD_MailConfig_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MailConfig_ID);
@@ -117,15 +98,23 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 		return ii.intValue();
 	}
 
+	@Override
 	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
-    {
-		return (org.compiere.model.I_AD_Process)MTable.get(getCtx(), org.compiere.model.I_AD_Process.Table_Name)
-			.getPO(getAD_Process_ID(), get_TrxName());	}
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
+	}
+
+	@Override
+	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
+	}
 
 	/** Set Prozess.
 		@param AD_Process_ID 
 		Prozess oder Bericht
 	  */
+	@Override
 	public void setAD_Process_ID (int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
@@ -137,6 +126,7 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 	/** Get Prozess.
 		@return Prozess oder Bericht
 	  */
+	@Override
 	public int getAD_Process_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
@@ -145,13 +135,17 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 		return ii.intValue();
 	}
 
-	/** CustomType AD_Reference_ID=540142 */
+	/** 
+	 * CustomType AD_Reference_ID=540142
+	 * Reference name: AD_MailConfig_CustomType
+	 */
 	public static final int CUSTOMTYPE_AD_Reference_ID=540142;
 	/** org.compiere.util.Login = L */
 	public static final String CUSTOMTYPE_OrgCompiereUtilLogin = "L";
 	/** Set Custom Type.
 		@param CustomType Custom Type	  */
-	public void setCustomType (String CustomType)
+	@Override
+	public void setCustomType (java.lang.String CustomType)
 	{
 
 		set_Value (COLUMNNAME_CustomType, CustomType);
@@ -159,16 +153,47 @@ public class X_AD_MailConfig extends PO implements I_AD_MailConfig, I_Persistent
 
 	/** Get Custom Type.
 		@return Custom Type	  */
-	public String getCustomType () 
+	@Override
+	public java.lang.String getCustomType () 
 	{
-		return (String)get_Value(COLUMNNAME_CustomType);
+		return (java.lang.String)get_Value(COLUMNNAME_CustomType);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getCustomType()));
-    }
+	/** Set Document BaseType.
+		@param DocBaseType 
+		Logical type of document
+	  */
+	@Override
+	public void setDocBaseType (java.lang.String DocBaseType)
+	{
+		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
+	}
+
+	/** Get Document BaseType.
+		@return Logical type of document
+	  */
+	@Override
+	public java.lang.String getDocBaseType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
+	}
+
+	/** Set Doc Sub Type.
+		@param DocSubType 
+		Document Sub Type
+	  */
+	@Override
+	public void setDocSubType (java.lang.String DocSubType)
+	{
+		set_Value (COLUMNNAME_DocSubType, DocSubType);
+	}
+
+	/** Get Doc Sub Type.
+		@return Document Sub Type
+	  */
+	@Override
+	public java.lang.String getDocSubType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocSubType);
+	}
 }

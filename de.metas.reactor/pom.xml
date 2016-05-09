@@ -20,7 +20,9 @@
 
 	<modules>
 		<module>../de.metas.assemblies</module>
-		<module>../de.metas.parent</module>
+
+		<!-- FRESH-271: de.metas.parent now has this reactor pom as module, so to avoid a loop, we cannot have it as module anymore -->
+		<!-- module>../de.metas.parent</module -->
 
 		<module>../de.metas.migration</module>
 		<module>../de.metas.scripts.rollout</module>
@@ -57,18 +59,17 @@
 
 		<module>../de.metas.contracts</module>
 
-		<module>../de.metas.esb</module>
-
 		<module>../de.metas.device.adempiere</module>
 		<module>../de.metas.device.api</module>
 		<module>../de.metas.device.scales</module>
+		
+		<module>../de.metas.document.archive.api</module>
 		<module>../de.metas.document.archive</module>
-		<module>../de.metas.document.archive.esb</module>
+		
 		<module>../de.metas.document.refid</module>
 		<module>../de.metas.dunning</module>
 
 		<module>../de.metas.edi</module>
-		<module>../de.metas.edi.esb.camel</module>
 
 		<module>../de.metas.materialtracking</module>
 
@@ -78,8 +79,8 @@
 		<module>../de.metas.payment.esr</module>
 		<module>../de.metas.payment.sepa</module>
 		<module>../de.metas.printing</module>
-		
-		<module>../de.metas.printing.esb</module>
+
+		<module>../de.metas.printing.common</module>
 		<module>../de.metas.printing.esb.client</module>
 		<module>../de.metas.printing.esb.client-webapp</module>
 

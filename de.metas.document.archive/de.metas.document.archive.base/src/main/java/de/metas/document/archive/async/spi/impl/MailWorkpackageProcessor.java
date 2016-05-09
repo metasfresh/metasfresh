@@ -38,7 +38,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -61,6 +63,15 @@ import de.metas.notification.IMailBL.IMailbox;
  */
 public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
+	//
+	// Services
+	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final transient IMailBL mailBL = Services.get(IMailBL.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
 	private static final String STATUS_MESSAGE_SENT = "MessageSent";
@@ -72,13 +83,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		//
-		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IMailBL mailBL = Services.get(IMailBL.class);
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-
 		final String action = X_C_Doc_Outbound_Log_Line.ACTION_EMail;
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveItems(workpackage, I_C_Doc_Outbound_Log_Line.class, localTrxName);
@@ -89,23 +93,22 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			final I_C_Doc_Outbound_Log log = logLine.getC_Doc_Outbound_Log();
 
-			sendEMail(mailBL, msgBL, archiveEventManager, action, log, archive, localTrxName);
+			sendEMail(action, log, archive, workpackage.getAD_PInstance(), localTrxName);
 		}
 
 		return Result.SUCCESS;
 	}
 
-	private void sendEMail(final IMailBL mailBL,
-			final IMsgBL msgBL,
-			final IArchiveEventManager archiveEventManager,
+	private void sendEMail(
 			final String action,
 			final I_C_Doc_Outbound_Log log,
 			final I_AD_Archive archive,
+			final I_AD_PInstance pInstance,
 			final String trxName)
 	{
 		try
 		{
-			sendEMail0(mailBL, msgBL, archiveEventManager, action, log, archive, trxName);
+			sendEMail0(action, log, archive, pInstance, trxName);
 		}
 		catch (final Exception e)
 		{
@@ -124,12 +127,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 	}
 
-	private void sendEMail0(final IMailBL mailBL,
-			final IMsgBL msgBL,
-			final IArchiveEventManager archiveEventManager,
+	private void sendEMail0(
 			final String action,
 			final I_C_Doc_Outbound_Log log,
 			final I_AD_Archive archive,
+			final I_AD_PInstance pInstance,
 			final String trxName) throws Exception
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
@@ -149,10 +151,15 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final String mailCustomType = null;
 
-		final IMailbox mailbox = mailBL.findMailBox(client, ProcessUtil.getCurrentOrgId(), ProcessUtil.getCurrentProcessId(), mailCustomType, null); // user=null
+		final int processID = pInstance == null ? ProcessUtil.getCurrentProcessId() : pInstance.getAD_Process_ID();
+		final int orgID = pInstance == null ? ProcessUtil.getCurrentOrgId() : pInstance.getAD_Org_ID();
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
+		
+		final I_C_DocType docType = log.getC_DocType();
+			
+		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
-		final I_AD_User userTo = Services.get(IBPartnerBL.class).retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+		final I_AD_User userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
 		Check.assumeNotNull(userTo, "userTo not null for {}", log);
 
 		final String mailTo = userTo.getEMail();
@@ -190,7 +197,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final String cc = null;
 			final String bcc = null;
 
-			final String statusText = Services.get(IMsgBL.class).getMsg(ctx, status);
+			final String statusText = msgBL.getMsg(ctx, status);
 
 			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, statusText);
 		}
@@ -199,7 +206,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private File getDocumentAttachment(final Properties ctx, final I_AD_Archive archive, final String trxName)
 	{
 		final int tableId = archive.getAD_Table_ID();
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
+		final String tableName = adTableDAO.retrieveTableName(tableId);
 
 		final int recordId = archive.getRecord_ID();
 		final DocAction doc = InterfaceWrapperHelper.create(ctx, tableName, recordId, DocAction.class, trxName);
