@@ -26,8 +26,6 @@ package de.metas.adempiere.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +37,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.akunagroup.uk.postcode.AddressInterface;
 
@@ -47,6 +46,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.dpd.model.I_DPD_Route;
+import de.metas.logging.LogManager;
 
 public class LocationBL implements ILocationBL
 {
@@ -651,7 +651,14 @@ public class LocationBL implements ILocationBL
 			return null;
 		}
 	}
-	
+
+	@Override
+	public String mkAddress(final I_C_Location location)
+	{
+		final String bPartnerBlock = null;
+		final String userBlock = null;
+		return mkAddress(location, bPartnerBlock, userBlock);
+	}
 	
 	@Override
 	public String mkAddress(final I_C_Location location, String bPartnerBlock, String userBlock)
