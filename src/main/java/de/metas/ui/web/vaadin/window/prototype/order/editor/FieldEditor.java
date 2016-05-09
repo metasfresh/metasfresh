@@ -65,7 +65,7 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 
 		valueField = createValueField();
 		valueField.addStyleName(STYLE_ValueField);
-		valueField.setCaption(descriptor.getPropertyName().toString());
+		valueField.setCaption(descriptor.getCaption());
 
 		final Component content = valueField;
 		content.setSizeFull();
