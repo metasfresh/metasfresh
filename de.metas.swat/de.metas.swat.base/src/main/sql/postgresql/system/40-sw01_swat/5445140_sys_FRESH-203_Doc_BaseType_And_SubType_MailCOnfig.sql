@@ -143,8 +143,8 @@ UPDATE AD_Field SET SeqNo=70, SeqNoGrid=70,Updated=TO_TIMESTAMP('2016-05-05 17:5
 
 -- 05.05.2016 17:51
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,554392,556929,0,540231,0,TO_TIMESTAMP('2016-05-05 17:51:34','YYYY-MM-DD HH24:MI:SS'),100,'Logical type of document',0,'de.metas.swat','The Document Base Type identifies the base or starting point for a document.  Multiple document types may share a single document base type.',0,'Y','Y','Y','Y','N','N','N','N','N','Document BaseType',80,80,0,1,1,TO_TIMESTAMP('2016-05-05 17:51:34','YYYY-MM-DD HH24:MI:SS'),100)
-;
+--INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,554392,556929,0,540231,0,TO_TIMESTAMP('2016-05-05 17:51:34','YYYY-MM-DD HH24:MI:SS'),100,'Logical type of document',0,'de.metas.swat','The Document Base Type identifies the base or starting point for a document.  Multiple document types may share a single document base type.',0,'Y','Y','Y','Y','N','N','N','N','N','Document BaseType',80,80,0,1,1,TO_TIMESTAMP('2016-05-05 17:51:34','YYYY-MM-DD HH24:MI:SS'),100)
+--;
 
 -- 05.05.2016 17:52
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
