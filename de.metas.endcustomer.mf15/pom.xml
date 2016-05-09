@@ -14,7 +14,8 @@
 	<groupId>de.metas.endcustomer.mf15</groupId>
 	<artifactId>de.metas.endcustomer.mf15</artifactId>
 	<packaging>pom</packaging>
-
+	<version>1.0_IT-SNAPSHOT</version>
+	
 	<modules>
 		<module>de.metas.endcustomer.mf15.base</module>
 		<module>de.metas.endcustomer.mf15.serverRoot</module>

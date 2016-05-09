@@ -26,8 +26,8 @@
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>de.metas.document.archive.esb.api</artifactId>
-					<groupId>de.metas.document.archive.esb</groupId>
+					<artifactId>de.metas.document.archive.api</artifactId>
+					<groupId>de.metas.document.archive</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
