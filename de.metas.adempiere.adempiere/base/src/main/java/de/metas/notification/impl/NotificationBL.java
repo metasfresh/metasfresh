@@ -36,11 +36,11 @@ import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,8 +53,7 @@ public class NotificationBL implements INotificationBL
 	public void notifyUser(final I_AD_User recipient,
 			final String adMessage,
 			final String messageText,
-			final ITableRecordReference referencedRecord
-			)
+			final ITableRecordReference referencedRecord)
 	{
 		// task 09833
 		// Provide more specific information to the user, in case there exists a notification context provider
@@ -63,7 +62,7 @@ public class NotificationBL implements INotificationBL
 		detailedMsgText.append(messageText);
 		if (specificInfo != null)
 		{
-			if(!messageText.isEmpty())
+			if (!messageText.isEmpty())
 			{
 				detailedMsgText.append(" ");
 			}
@@ -85,9 +84,8 @@ public class NotificationBL implements INotificationBL
 
 		if (userBL.isNotifyUserIncharge(recipient))
 		{
-			final I_AD_User userIncharge =
-					InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
-							.getAD_User_InCharge();
+			final I_AD_User userIncharge = InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
+					.getAD_User_InCharge();
 			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {}", userIds);
 			notifyUser0(userIncharge, adMessage, messageText, referencedRecord, userIds);
 		}
@@ -146,9 +144,12 @@ public class NotificationBL implements INotificationBL
 		// final de.metas.adempiere.model.I_AD_User sender = userDAO.retrieveUser(ctx, Env.getAD_User_ID(ctx));
 		final I_AD_Client adClient = clientDAO.retriveClient(ctx);
 
-		final IMailbox mailBox = mailBL.findMailBox(adClient, recipient.getAD_Org_ID(),
-				0, // AD_Process_ID
-				null, // customType
+		final IMailbox mailBox = mailBL.findMailBox(
+				adClient,
+				recipient.getAD_Org_ID(),
+				0,  // AD_Process_ID
+				null,  // C_DocType - Task FRESH-203 this shall work as before
+				null,  // customType
 				null); // sender
 		Check.assumeNotNull(mailBox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, recipient.getAD_Org_ID());
 
