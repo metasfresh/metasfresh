@@ -7,6 +7,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.CtxName;
@@ -66,8 +67,6 @@ public final class DataFieldLookupDescriptor
 	private final boolean numericKey;
 	private final Class<?> valueClass;
 
-	// private int sqlFetchLimit = 10;
-
 	private IStringExpression sqlForFetchingExpression;
 	private IStringExpression sqlForCountingExpression;
 	private IStringExpression sqlForFetchingDisplayNameByIdExpression;
@@ -80,13 +79,21 @@ public final class DataFieldLookupDescriptor
 		final int Column_ID = 0;
 		final Language language = Env.getLanguage(ctx);
 		final boolean IsParent = false;
-		final String ValidationCode = null;
-		final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
-
-		numericKey = MLookupInfo.isNumericKey(columnName);
-		valueClass = numericKey ? KeyNamePair.class : ValueNamePair.class;
-
-		setSqlExpressions(lookupInfo);
+		final String ValidationCode = null; // TODO
+		
+		if (DisplayType.PAttribute == displayType && AD_Reference_Value_ID <= 0)
+		{
+			numericKey = true;
+			valueClass = KeyNamePair.class;
+			setSqlExpressions_PAttribute(columnName);
+		}
+		else
+		{
+			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+			numericKey = MLookupInfo.isNumericKey(columnName);
+			valueClass = numericKey ? KeyNamePair.class : ValueNamePair.class;
+			setSqlExpressions(lookupInfo);
+		}
 	}
 
 	private void setSqlExpressions(final MLookupInfo lookupInfo)
@@ -118,8 +125,6 @@ public final class DataFieldLookupDescriptor
 			final String displayColumnSql = lookupInfo.getDisplayColumnSQL();
 			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
 		}
-		// sqlForFetching.append(" WHERE ").append(sqlWhereFinal);
-		// sqlForCounting.append(" WHERE ").append(sqlWhereFinal);
 
 		//
 		// ORDER BY
@@ -170,6 +175,79 @@ public final class DataFieldLookupDescriptor
 		}
 	}
 
+	private void setSqlExpressions_PAttribute(final String columnName)
+	{
+		final String tableName = I_M_AttributeSetInstance.Table_Name;
+		final String keyColumnNameFQ = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
+		final String displayColumnSql = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_Description;
+		final StringBuilder sqlSelectFrom = new StringBuilder("SELECT ")
+				.append(" ").append(keyColumnNameFQ) // Key
+				.append(", NULL") // Value
+				.append(",").append(displayColumnSql) // DisplayName
+				.append(", M_AttributeSetInstance.IsActive") // IsActive
+				.append(", NULL") // EntityType
+				.append(" FROM ").append(tableName);
+		//
+		// WHERE
+		final StringBuilder sqlWhereFinal = new StringBuilder();
+		{
+			// Validation Rule's WHERE
+			if (sqlWhereFinal.length() > 0)
+			{
+				sqlWhereFinal.append("\n AND ");
+			}
+			sqlWhereFinal.append(" /* validation rule */ ").append("(").append(SQL_PARAM_ValidationRuleSql.toStringWithMarkers()).append(")");
+
+			// Filter's WHERE
+			if (sqlWhereFinal.length() > 0)
+			{
+				sqlWhereFinal.append("\n AND ");
+			}
+			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
+		}
+
+		//
+		// ORDER BY
+		String lookup_SqlOrderBy = I_M_AttributeSetInstance.COLUMNNAME_Description;
+		if (Check.isEmpty(lookup_SqlOrderBy, true))
+		{
+			lookup_SqlOrderBy = String.valueOf(MLookupFactory.COLUMNINDEX_DisplayName);
+		}
+
+		//
+		// Assemble the SQLs
+		String sqlForFetching = new StringBuilder()
+				.append(sqlSelectFrom) // SELECT ... FROM ...
+				.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
+				.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
+				.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
+				.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
+				.toString();
+		String sqlForCounting = new StringBuilder()
+				.append("SELECT COUNT(1) FROM ").append(tableName) // SELECT .. FROM ...
+				.append(" WHERE ").append(sqlWhereFinal) // WHERE
+				.toString();
+		;
+		final String sqlForFetchingDisplayNameById = new StringBuilder()
+				.append("SELECT ").append(displayColumnSql) // SELECT
+				.append("\n FROM ").append(tableName) // FROM
+				.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
+				.toString();
+
+		//
+		// Apply security filters
+		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions();
+		sqlForFetching = userRolePermissions.addAccessSQL(sqlForFetching, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+		sqlForCounting = userRolePermissions.addAccessSQL(sqlForCounting, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+
+		//
+		// Set the SQL prototype expressions
+		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+		sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
+		sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
+		sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+	}
+
 	public boolean isNumericKey()
 	{
 		return numericKey;
@@ -196,6 +274,7 @@ public final class DataFieldLookupDescriptor
 		return sqlForFetchingDisplayNameByIdExpression.evaluate(ctx, OnVariableNotFound.Fail);
 	}
 
+	@Deprecated
 	public Class<?> getValueClass()
 	{
 		return valueClass;
