@@ -12,11 +12,20 @@ if [ "$MINOR" == "" ]; then
 	MINOR="false"
 fi
 
-#Note: ROLLOUT_BUILD_URL is mandatory
+# ROLLOUT_BUILD_URL and DIST_ARCHIVE are mandatory, *unless* ROLLOUT_FILE_URL is set 
 #if [ "ROLLOUT_BUILD_URL" == "" ]; then
-#	TARGET_HOST="NOT_YET_SPECIFIED"
+#	ROLLOUT_BUILD_URL="NOT_YET_SPECIFIED"
 #fi
+#if [ "DIST_ARCHIVE" == "" ]; then
+#	DIST_ARCHIVE="NOT_YET_SPECIFIED"
+#fi
+if [ "ROLLOUT_FILE_URL" == "" ]; then
+	ROLLOUT_FILE_URL="NOT_SPECIFIED"
+fi
 
+
+# Note that in recent rollout jobs, 
+# BUILD_URL is not the URL of the build that contains the rollout artifact, but instead the URL of the job that is actually performing the rollout.
 if [ "$BUILD_URL" == "" ]; then
 	BUILD_URL="NOT_SPECIFIED"
 fi
@@ -81,17 +90,29 @@ prepare()
 	check_var DATABASE ${DATABASE:-NOT_SET}
 	check_var MINOR ${MINOR:-NOT_SET}
 	
-	# FRESH-286:
-	# In jenkins, the envInject plugin aparently overwrites our BUILD_URL build parameter with the URL of the currently running job.
-	# We therefore introduce the ROLLOUT_BUILD_URL, but provide a fallback for those cases where the ROLLOUT_BUILD_URL is not specified, 
-	# but the BUILD_URL is actually the desired one
-	check_var_fallback ROLLOUT_BUILD_URL ${ROLLOUT_BUILD_URL:-NOT_SET} BUILD_URL ${BUILD_URL:-NOT_SET}
+	if [ "$ROLLOUT_FILE_URL" == "NOT_SPECIFIED" ]; then
+	
+		trace prepare "Setting ROLLOUT_FILE_URL from ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+
+		# FRESH-286:
+		# In jenkins, the envInject plugin aparently overwrites our BUILD_URL build parameter with the URL of the currently running job.
+		# We therefore introduce the ROLLOUT_BUILD_URL, but provide a fallback for those cases where the ROLLOUT_BUILD_URL is not specified, 
+		# but the BUILD_URL is actually the desired one
+		check_var_fallback ROLLOUT_BUILD_URL ${ROLLOUT_BUILD_URL:-NOT_SET} BUILD_URL ${BUILD_URL:-NOT_SET}
+		check_var DIST_ARCHIVE ${DIST_ARCHIVE:-NOT_SET}
+					
+		ROLLOUT_FILE_URL=${ROLLOUT_BUILD_URL}/${DIST_ARCHIVE}
+		check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"
+	else
+		trace prepare "ROLLOUT_FILE_URL was already set. Ignoring ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+		check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"
+	fi
 	
 	check_var ROLLOUT_DIR ${ROLLOUT_DIR:-NOT_SET}
 	check_var TARGET_HOST ${TARGET_HOST:-NOT_SET}
 	check_var SSH_PORT ${SSH_PORT:-NOT_SET}
 		
-	check_var DIST_ARCHIVE ${DIST_ARCHIVE:-NOT_SET}
+	
 		
 	if [ "$DATABASE" = "false" ] && [ "$MINOR" = "false" ]; 
 	then
@@ -116,7 +137,8 @@ prepare()
 		exit 1
 	fi
 
-	DIST_FILE=$(basename ${DIST_ARCHIVE})
+	# basename shoult also work with an URL, and note that DIST_ARCHIVE might not actually be set after all
+	DIST_FILE=$(basename ${ROLLOUT_FILE_URL})
 	check_var DIST_FILE $DIST_FILE
 	
 	#getting build number from build URL
@@ -124,15 +146,10 @@ prepare()
 	#http://debuild901:8080/job/us1017_ma01_ad_build/29/
 	local build_no=$(echo $ROLLOUT_BUILD_URL | cut -d '/' -f 6 )
 	check_var build_no $build_no
-		
-	trace prepare "Setting DOWNLOAD_FILE from ROLLOUT_BUILD_URL"
-				
-	DOWNLOAD_FILE=${ROLLOUT_BUILD_URL}/${DIST_ARCHIVE}
-	check_var DOWNLOAD_FILE "${DOWNLOAD_FILE}"
 	
 	trace prepare "Downloading rollout file"
 							
-	wget --no-verbose ${DOWNLOAD_FILE}
+	wget --no-verbose ${ROLLOUT_FILE_URL}
 		
 	ROLLOUT_DIR=${WORKSPACE}
 		
