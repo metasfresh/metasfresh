@@ -50,7 +50,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 
 	private final LinkedHashMap<GridRowId, GridRow> rows = new LinkedHashMap<>();
 
-	public GridPropertyValue(PropertyValueBuilder builder)
+	public GridPropertyValue(final PropertyValueBuilder builder)
 	{
 		super(builder);
 
