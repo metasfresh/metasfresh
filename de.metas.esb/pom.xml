@@ -10,6 +10,8 @@
 
 	<groupId>de.metas.esb</groupId>
 	<artifactId>de.metas.esb</artifactId>
+	<version>1.0_IT-SNAPSHOT</version>
+	
 	<packaging>pom</packaging>
 
 	<properties>
@@ -34,6 +36,12 @@
 		<hamcrest.version>1.3</hamcrest.version>
 	</properties>
 
+	<modules>
+		<module>../de.metas.document.archive.esb</module>
+		<module>../de.metas.edi.esb.camel</module>
+		<module>../de.metas.printing.esb</module>
+	</modules>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
