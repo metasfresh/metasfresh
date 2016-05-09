@@ -19,7 +19,7 @@ fi
 #if [ "DIST_ARCHIVE" == "" ]; then
 #	DIST_ARCHIVE="NOT_YET_SPECIFIED"
 #fi
-if [ "ROLLOUT_FILE_URL" == "" ]; then
+if [ "$ROLLOUT_FILE_URL" == "" ]; then
 	ROLLOUT_FILE_URL="NOT_SPECIFIED"
 fi
 
