@@ -2,6 +2,8 @@ package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.ILogicExpression;
+
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.vaadin.window.prototype.order.HARDCODED_Order;
@@ -31,19 +33,18 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
-
 public final class PropertyValueBuilder
 {
 	public static final PropertyValueBuilder newBuilder()
 	{
 		return new PropertyValueBuilder();
 	}
-	
+
 	private PropertyName propertyName;
 	private String composedValuePartName;
 	private final ImmutableMap.Builder<PropertyName, PropertyValue> _childPropertyValuesBuilder = ImmutableMap.builder();
 	private ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
-	private PropertyDescriptor propertyDescriptor;
+	private PropertyDescriptor _propertyDescriptor;
 	private Object _initialValue;
 	private boolean _initialValueSet;
 
@@ -59,7 +60,7 @@ public final class PropertyValueBuilder
 		{
 			return new GridPropertyValue(this);
 		}
-		
+
 		// FIXME: hardcoded
 		if (HARDCODED_Order.ORDER_BPartnerAndAddress.equals(propertyName)
 				|| HARDCODED_Order.ORDER_BillBPartnerAndAddress.equals(propertyName))
@@ -72,40 +73,41 @@ public final class PropertyValueBuilder
 
 	public PropertyValueBuilder setPropertyDescriptor(final PropertyDescriptor descriptor)
 	{
-		this.propertyDescriptor = descriptor;
+		this._propertyDescriptor = descriptor;
 		setPropertyName(descriptor.getPropertyName());
 		this.composedValuePartName = descriptor.getComposedValuePartName();
 		return this;
 	}
-	
+
 	PropertyDescriptor getPropertyDescriptor()
 	{
-		return propertyDescriptor;
+		return _propertyDescriptor;
 	}
-	
+
 	public PropertyValueBuilder setPropertyName(final PropertyName name)
 	{
 		this.propertyName = name;
 		return this;
 	}
-	
+
 	PropertyName getPropertyName()
 	{
 		return propertyName;
 	}
-	
+
 	String getComposedValuePartName()
 	{
 		return composedValuePartName;
 	}
-	
+
 	private PropertyDescriptorType getType()
 	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
 		if (propertyDescriptor != null)
 		{
 			return propertyDescriptor.getType();
 		}
-		
+
 		return PropertyDescriptorType.Value;
 	}
 
@@ -115,38 +117,38 @@ public final class PropertyValueBuilder
 		_childPropertyValues = null;
 		return this;
 	}
-	
+
 	Map<PropertyName, PropertyValue> getChildPropertyValues()
 	{
-		if(_childPropertyValues == null)
+		if (_childPropertyValues == null)
 		{
 			_childPropertyValues = _childPropertyValuesBuilder.build();
 		}
 		return _childPropertyValues;
 	}
-	
+
 	public boolean isAddingChildPropertiesAllowed()
 	{
 		if (getType() == PropertyDescriptorType.Tabular)
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	public PropertyValueBuilder setInitialValue(final Object initialValue)
 	{
 		this._initialValue = initialValue;
 		this._initialValueSet = true;
 		return this;
 	}
-	
+
 	boolean isInitialValueSet()
 	{
 		return _initialValueSet;
 	}
-	
+
 	Object getInitialValue()
 	{
 		return _initialValue;
@@ -155,11 +157,44 @@ public final class PropertyValueBuilder
 	public boolean isReadOnlyForUser()
 	{
 		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
-		if(propertyDescriptor != null)
+		if (propertyDescriptor != null)
 		{
 			return propertyDescriptor.isReadOnlyForUser();
 		}
-		
+
 		return false; // fallback
+	}
+
+	public ILogicExpression getReadonlyLogic()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getReadonlyLogic();
+		}
+
+		return ILogicExpression.FALSE;
+	}
+
+	public ILogicExpression getMandatoryLogic()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getMandatoryLogic();
+		}
+
+		return ILogicExpression.FALSE;
+	}
+
+	public ILogicExpression getDisplayLogic()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getDisplayLogic();
+		}
+
+		return ILogicExpression.TRUE;
 	}
 }

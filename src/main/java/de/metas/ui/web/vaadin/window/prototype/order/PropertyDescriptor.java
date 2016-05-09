@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
@@ -60,6 +61,10 @@ public class PropertyDescriptor implements Serializable
 	private Set<PropertyName> _allPropertyNames; // lazy
 	private final String caption;
 
+	private final ILogicExpression readonlyLogic; 
+	private final ILogicExpression displayLogic;
+	private final ILogicExpression mandatoryLogic;
+
 	//
 	// Layout properties
 	private final PropertyLayoutInfo layoutInfo;
@@ -86,6 +91,11 @@ public class PropertyDescriptor implements Serializable
 		composedValuePartName = builder.composedValuePartName;
 		childPropertyDescriptors = builder.getChildPropertyDescriptors();
 		caption = builder.getCaption();
+		
+		//
+		readonlyLogic = builder.getReadonlyLogic();
+		displayLogic = builder.getDisplayLogic();
+		mandatoryLogic = builder.getMandatoryLogic();
 
 		//
 		// Layout
@@ -186,6 +196,26 @@ public class PropertyDescriptor implements Serializable
 		return collector.build();
 	}
 
+	public boolean isReadOnlyForUser()
+	{
+		return readOnlyForUser;
+	}
+	
+	public ILogicExpression getReadonlyLogic()
+	{
+		return readonlyLogic;
+	}
+
+	public ILogicExpression getDisplayLogic()
+	{
+		return displayLogic;
+	}
+
+	public ILogicExpression getMandatoryLogic()
+	{
+		return mandatoryLogic;
+	}
+
 	public String getSqlTableName()
 	{
 		return sqlTableName;
@@ -223,11 +253,6 @@ public class PropertyDescriptor implements Serializable
 		return false;
 	}
 
-	public boolean isReadOnlyForUser()
-	{
-		return readOnlyForUser;
-	}
-
 	public static final class Builder
 	{
 		private PropertyName propertyName;
@@ -245,6 +270,10 @@ public class PropertyDescriptor implements Serializable
 		private Integer sqlDisplayType;
 		private DataFieldLookupDescriptor sqlLookupDescriptor;
 		private int sql_AD_Reference_Value_ID;
+		
+		private ILogicExpression readonlyLogic = ILogicExpression.FALSE; 
+		private ILogicExpression displayLogic = ILogicExpression.TRUE;
+		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
 
 		private Builder()
 		{
@@ -496,5 +525,37 @@ public class PropertyDescriptor implements Serializable
 			return false;
 		}
 
+		private ILogicExpression getReadonlyLogic()
+		{
+			return readonlyLogic;
+		}
+
+		public Builder setReadonlyLogic(ILogicExpression readonlyLogic)
+		{
+			this.readonlyLogic = readonlyLogic;
+			return this;
+		}
+
+		private ILogicExpression getDisplayLogic()
+		{
+			return displayLogic;
+		}
+
+		public Builder setDisplayLogic(ILogicExpression displayLogic)
+		{
+			this.displayLogic = displayLogic;
+			return this;
+		}
+
+		private ILogicExpression getMandatoryLogic()
+		{
+			return mandatoryLogic;
+		}
+
+		public Builder setMandatoryLogic(ILogicExpression mandatoryLogic)
+		{
+			this.mandatoryLogic = mandatoryLogic;
+			return this;
+		}
 	}
 }

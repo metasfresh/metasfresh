@@ -31,17 +31,34 @@ public final class WindowConstants
 
 	public static final PropertyName PROPERTYNAME_GridRowId = PropertyName.of("#RowId");
 	
+	public static final PropertyName PROPERTYNAME_IsActive = PropertyName.of("IsActive");
+	public static final PropertyName PROPERTYNAME_Processed = PropertyName.of("Processed");
+	public static final PropertyName PROPERTYNAME_Processing = PropertyName.of("Processing");
+
 	public static enum OnChangesFound
 	{
-		Discard,
-		Ask,
+		Discard, Ask,
 	}
-	
+
 	public static final PropertyName lookupValuesName(final PropertyName propertyName)
 	{
 		return PropertyName.of(propertyName.toString() + "#values");
 	}
 
+	public static final PropertyName readonlyFlagName(final PropertyName propertyName)
+	{
+		return PropertyName.of(propertyName.toString() + "#readonly");
+	}
+
+	public static final PropertyName displayFlagName(final PropertyName propertyName)
+	{
+		return PropertyName.of(propertyName.toString() + "#displayed");
+	}
+
+	public static final PropertyName mandatoryFlagName(final PropertyName propertyName)
+	{
+		return PropertyName.of(propertyName.toString() + "#mandatory");
+	}
 
 	private WindowConstants()
 	{
