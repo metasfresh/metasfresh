@@ -109,11 +109,6 @@ public class PropertyValueCollection
 		return name2value.get(propertyName);
 	}
 
-	public Collection<PropertyName> getPropertyNamesWhichDependOn(final PropertyName propertyName)
-	{
-		return dependencies.getPropertyNamesWhichDependOn(propertyName, DependencyType.Value);
-	}
-
 	PropertyNameDependenciesMap getDependencies()
 	{
 		return dependencies;

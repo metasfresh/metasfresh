@@ -1,6 +1,5 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -97,16 +96,6 @@ public class PropertyNameDependenciesMap
 		}
 
 		return sb.toString();
-	}
-
-	public Collection<PropertyName> getPropertyNamesWhichDependOn(final PropertyName propertyName, final DependencyType dependencyType)
-	{
-		final Multimap<PropertyName, PropertyName> name2dependencies = type2name2dependencies.get(dependencyType);
-		if (name2dependencies == null)
-		{
-			return ImmutableSet.of();
-		}
-		return name2dependencies.get(propertyName);
 	}
 
 	public void consume(final PropertyName propertyName, final BiConsumer<PropertyName, Set<DependencyType>> consumer)
