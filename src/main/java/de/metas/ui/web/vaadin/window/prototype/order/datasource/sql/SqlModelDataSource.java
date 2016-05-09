@@ -193,7 +193,7 @@ public class SqlModelDataSource implements ModelDataSource
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSql(sqlParams, query);
-		logger.trace("Retrieving records: SQL={} -- {}", sql, sqlParams);
+		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
 		final List<PropertyValuesDTO> records = new ArrayList<>();
 		PreparedStatement pstmt = null;

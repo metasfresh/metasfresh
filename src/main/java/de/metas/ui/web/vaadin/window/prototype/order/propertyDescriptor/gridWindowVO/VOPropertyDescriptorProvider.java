@@ -60,6 +60,13 @@ import de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.IPropert
  * #L%
  */
 
+/**
+ * A {@link IPropertyDescriptorProvider} implementation that generates a descriptor from the application dictionary,
+ * meaning {@link GridWindowVO}, {@link GridTabVO}, {@link GridFieldVO} etc.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 {
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
