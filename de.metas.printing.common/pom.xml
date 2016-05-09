@@ -2,21 +2,22 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.esb</groupId>
-		<artifactId>de.metas.esb</artifactId>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../de.metas.esb/pom.xml</relativePath>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.printing.esb</groupId>
-	<artifactId>de.metas.printing.esb</artifactId>
+	<groupId>de.metas.printing</groupId>
+	<artifactId>de.metas.printing.common</artifactId>
 	
-	<description>metasfresh :: Components :: Request-Response Framework for Printing (SMX-6.1.0)</description>
+	<description>Printing related code that this used by both metasfresh and the ESB</description>
 
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>de.metas.printing.esb.camel</module>
+		<module>de.metas.printing.api</module>
+		<module>de.metas.printing.esb.base</module>
 	</modules>
 
 	<build>

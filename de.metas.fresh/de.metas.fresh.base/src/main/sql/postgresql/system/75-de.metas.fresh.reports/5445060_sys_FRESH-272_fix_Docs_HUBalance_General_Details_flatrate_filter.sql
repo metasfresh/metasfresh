@@ -1,5 +1,4 @@
 
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric,  date, date, date);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric, character varying, date, date, date);
 
@@ -100,8 +99,6 @@ FROM
 								(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
 					AND COALESCE( ft.EndDate >= $6, true )
 					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
 					)
 
 				)
@@ -117,8 +114,6 @@ FROM
 
 					AND COALESCE( ft.EndDate >= $6, true )
 					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
 					)
 				)
 				else 
@@ -192,8 +187,6 @@ FROM
 								(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
 					AND COALESCE( ft.EndDate >= $6, true )
 					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
 					)
 
 				)
@@ -209,8 +202,6 @@ FROM
 
 					AND COALESCE( ft.EndDate >= $6, true )
 					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
 					)
 				)
 				else 
@@ -270,94 +261,6 @@ Order by
 order by 
 rez.bpartner, rez.name, rez.movementDate, rez.documentno, rez.printname, rez.CarryIncoming, rez.CarryOutgoing, rez.UOMSymbol 
   $BODY$
-  LANGUAGE sql VOLATILE
-  COST 100
-  ROWS 1000;
-
-
-  
-  
-  
-  
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap(numeric, numeric, numeric, numeric, character varying, date, date, date);
-
-DROP TABLE   IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap;
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap
-(
-  
-  "name" character varying,
-
-  Outgoing numeric,
-  Incoming numeric,
-  carryincoming numeric,
-  carryoutgoing numeric
-
-)
-WITH (
-  OIDS=FALSE
-);
-
-  
-  
- 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap(m_material_balance_config_id numeric, c_bpartner_id numeric, C_BP_Group_ID numeric, M_Product_ID numeric, isGebindeFlatrate character varying, startdate date, enddate date, refdate date)
-  RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap AS
-$BODY$
-
-  select x.name, sum(x.outgoing), sum(x.incoming), sum(x.carryincoming), sum(x.carryoutgoing) 
-  from
-
-(
-(SELECT
-
-	rec.Name, 
-	rec.bpartner,
-
-	0::numeric as Outgoing,
-	0::numeric as Incoming,
-	rec.carryincoming,
-	rec.carryoutgoing
-FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8) rec
-	
-GROUP BY
-	
-	rec.Name,rec.bpartner,
-	rec.carryincoming,
-	rec.carryoutgoing
-ORDER BY
-	
-	rec.Name)
-
-
-
-	UNION ALL 
-(
-SELECT
-
-	rec.Name, 
-	rec.bpartner,
-	
-	sum(rec.Outgoing),
-	sum(rec.Incoming),
-	0::numeric as carryoutgoing,
-	0::numeric as carryincoming
-
-FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8) rec
-	
-GROUP BY
-	
-	rec.Name,rec.bpartner
-	
-ORDER BY
-	
-	rec.Name)) x
-
-	group by x.name
-
-	
-$BODY$
   LANGUAGE sql VOLATILE
   COST 100
   ROWS 1000;

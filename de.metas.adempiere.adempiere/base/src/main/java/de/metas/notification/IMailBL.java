@@ -31,6 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.EMail;
 
 /**
@@ -74,6 +75,7 @@ public interface IMailBL extends ISingletonService
 	IMailbox findMailBox(I_AD_Client client,
 			int AD_Org_ID,
 			int AD_Process_ID,
+			I_C_DocType docType,
 			String customType,
 			I_AD_User user);
 
