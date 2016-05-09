@@ -282,8 +282,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		//
 		// Iterate all QtyPicked records and create candidates from them
 		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>(qtyPickedRecords.size());
-		
-		// task FRESH-251 : If the qty Picked has a TU that was already used, do not create a new candidate for  it
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);

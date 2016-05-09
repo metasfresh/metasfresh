@@ -40,7 +40,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
@@ -85,15 +84,11 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private final I_M_Material_Tracking materialTracking;
 	private final List<I_M_InOutLine> sources = new ArrayList<I_M_InOutLine>();
 
-	// task FRESH-251
-	// add HU
-	private final I_M_HU hu;
-
 	/**
 	 *
 	 * @param product packing material product
 	 */
-	public HUPackingMaterialDocumentLineCandidate(final I_M_Product product, final I_M_Material_Tracking materialTracking, final I_M_Locator locator, final I_M_HU hu)
+	public HUPackingMaterialDocumentLineCandidate(final I_M_Product product, final I_M_Material_Tracking materialTracking, final I_M_Locator locator)
 	{
 		super();
 		Check.assumeNotNull(product, "product not null");
@@ -105,8 +100,6 @@ public final class HUPackingMaterialDocumentLineCandidate
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		uom = Services.get(IUOMDAO.class).retrieveEachUOM(ctx);
-
-		this.hu = hu;
 	}
 
 	@Override
@@ -123,8 +116,6 @@ public final class HUPackingMaterialDocumentLineCandidate
 		builder.append(locator);
 		builder.append(", materialTracking=");
 		builder.append(materialTracking);
-		builder.append("hu=");
-		builder.append(hu);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -240,21 +231,6 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return materialTrackingId > 0 ? materialTrackingId : -1;
 	}
 
-	public I_M_HU getM_HU()
-	{
-		return hu;
-	}
-	
-	public int getM_HU_ID()
-	{
-		if(hu == null)
-		{
-			return -1;
-		}
-		
-		return hu.getM_HU_ID();
-	}
-
 	protected void add(final HUPackingMaterialDocumentLineCandidate candidateToAdd)
 	{
 		Check.assumeNotNull(candidateToAdd, "candidateToAdd not null");
@@ -288,5 +264,4 @@ public final class HUPackingMaterialDocumentLineCandidate
 	{
 		return new UnmodifiableList<I_M_InOutLine>(sources);
 	}
-
 }
