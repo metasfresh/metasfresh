@@ -41,6 +41,12 @@ public class DependencyValueChangedEvent
 	{
 		return new DependencyValueChangedEvent(values, changedPropertyName, ImmutableSet.of(dependencyType));
 	}
+	
+	public static final DependencyValueChangedEvent any(final PropertyValueCollection values)
+	{
+		final PropertyName changedPropertyName = null;
+		return new DependencyValueChangedEvent(values, changedPropertyName, PropertyNameDependenciesMap.DEPENDENCYTYPE_ALL);
+	}
 
 	private final PropertyValueCollection values;
 	private final PropertyName changedPropertyName;
