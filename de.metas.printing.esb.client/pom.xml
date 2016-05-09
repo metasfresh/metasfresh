@@ -21,8 +21,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.api</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
