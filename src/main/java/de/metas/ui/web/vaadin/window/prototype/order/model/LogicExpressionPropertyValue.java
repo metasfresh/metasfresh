@@ -54,7 +54,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	private final ILogicExpression logicExpression;
 	private final PropertyNameDependenciesMap dependencies;
 	private final boolean defaultValue;
-	private boolean value;
+	private Boolean value;
 
 	private LogicExpressionPropertyValue(final PropertyName propertyName, final DependencyType dependencyType, final ILogicExpression logicExpression, final boolean defaultValue)
 	{
@@ -73,10 +73,6 @@ public class LogicExpressionPropertyValue implements PropertyValue
 		if (logicExpressionParams.isEmpty())
 		{
 			this.value = logicExpression.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
-		}
-		else
-		{
-			this.value = defaultValue;
 		}
 	}
 
@@ -144,6 +140,12 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	@Override
 	public Object getValue()
 	{
+		final Boolean value = this.value;
+		if(value == null)
+		{
+			logger.warn("Value was not calculated for {}. Returning default: {}", getName(), defaultValue);
+			return defaultValue;
+		}
 		return value;
 	}
 
