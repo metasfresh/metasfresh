@@ -9,3 +9,6 @@ src/main/webapp/VAADIN/themes/metasfresh/styles.css
 /src/main/webapp/VAADIN/widgetsets/
 
 src/main/webapp/VAADIN/themes/metasfresh/styles.scss.cache
+
+hs_err*.log
+
