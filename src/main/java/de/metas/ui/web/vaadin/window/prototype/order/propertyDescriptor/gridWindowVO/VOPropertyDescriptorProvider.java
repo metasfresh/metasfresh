@@ -180,6 +180,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			//
 			// Child tabs
 			// FIXME: commented out because atm is breaking the "Save" BL
+			//@formatter:off
 //			for (final GridTabVO childTab : getChildTabs(gridTabVO))
 //			{
 //				if (!tabIdsAdded.add(childTab.getAD_Tab_ID()))
@@ -192,6 +193,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 //				final PropertyDescriptor.Builder builder = createIncludedTab(includedTabPropertyName, childTab);
 //				groupBuilders.put(includedTabPropertyName.toString(), builder);
 //			}
+			//@formatter:on
 
 			//
 			//
