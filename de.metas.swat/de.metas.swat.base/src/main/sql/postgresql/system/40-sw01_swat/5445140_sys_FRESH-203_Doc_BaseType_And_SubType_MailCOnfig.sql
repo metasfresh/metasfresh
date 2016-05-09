@@ -73,7 +73,7 @@ Doc Sub Type of <b>Standard Order</b> will generate just the <b>Order</b> docume
 The <b>Delivery Note</b>, <b>Invoice</b> and <b>Receipt</b> must be generated via other processes.  <br>
 Doc Sub Type of <b>Warehouse Order</b> will generate the <b>Order</b> and <b>Delivery Note</b>. <br> The <b>Invoice</b> and <b>Receipt</b> must be generated via other processes.<br>
 Doc Sub Type of <b>Credit Order</b> will generate the <b>Order</b>, <b>Delivery Note</b> and <b>Invoice</b>. <br> The <b>Reciept</b> must be generated via other processes.<br>
-Doc Sub Type of <b>POS</b> (Point of Sale) will generate all document','Y','Y','Y','N','N','N','N','N','Doc Sub Type',TO_TIMESTAMP('2016-05-05 17:50:05','YYYY-MM-DD HH24:MI:SS'),100)
+Doc Sub Type of <b>POS</b> (Point of Sale) will generate all document','Y','N','Y','N','N','N','N','N','Doc Sub Type',TO_TIMESTAMP('2016-05-05 17:50:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 05.05.2016 17:50
