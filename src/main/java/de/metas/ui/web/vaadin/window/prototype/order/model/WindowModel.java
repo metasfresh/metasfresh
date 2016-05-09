@@ -231,7 +231,8 @@ public class WindowModel
 
 	private void setRecordIndexAndReload(final int recordIndex)
 	{
-		if (recordIndex == RECORDINDEX_New)
+		final boolean isNewRecord = recordIndex == RECORDINDEX_New;
+		if (isNewRecord)
 		{
 			_recordIndexPrev = _recordIndex;
 			_recordIndex = RECORDINDEX_New;
@@ -252,6 +253,24 @@ public class WindowModel
 			loadRecord(values);
 		}
 	}
+	
+	private final void loadRecord(final PropertyValuesDTO values)
+	{
+		final PropertyValueCollection properties = getProperties();
+		properties.setValuesFromMap(values);
+
+		//
+		logger.trace("Update calculated values (after load)");
+		updateAllDependenciesNoFire();
+
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Loaded record {}:\n{}", getRecordIndex(), TraceHelper.toStringRecursivelly(properties.getPropertyValues()));
+		}
+
+		postEvent(AllPropertiesChangedModelEvent.of(this));
+	}
+
 
 	private int getRecordsCount()
 	{
@@ -283,24 +302,6 @@ public class WindowModel
 	private final PropertyValueCollection getPropertiesLoaded()
 	{
 		return _properties;
-	}
-
-	private final void loadRecord(final PropertyValuesDTO values)
-	{
-		final PropertyValueCollection properties = getProperties();
-		properties.setValuesFromMap(values);
-
-		//
-		logger.trace("Update calculated values (after load)");
-		updateAllDependenciesNoFire();
-
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Loaded record {}:\n{}", getRecordIndex(), TraceHelper.toStringRecursivelly(properties.getPropertyValues()));
-		}
-
-		postEvent(AllPropertiesChangedModelEvent.of(this));
-
 	}
 
 	private final boolean hasChangesOnCurrentRecord()

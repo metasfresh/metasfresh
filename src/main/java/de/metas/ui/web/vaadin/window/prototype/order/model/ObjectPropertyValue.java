@@ -2,6 +2,7 @@ package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
@@ -38,6 +39,7 @@ public class ObjectPropertyValue implements PropertyValue
 	private final String composedValuePartName;
 	private final PropertyNameDependenciesMap dependencies;
 
+	private final IStringExpression defaultValueExpression;
 	private final Object initialValue;
 	private Object value;
 
@@ -50,7 +52,8 @@ public class ObjectPropertyValue implements PropertyValue
 		propertyName = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
-
+		
+		defaultValueExpression = builder.getDefaultValueExpression();
 		initialValue = builder.getInitialValue();
 		value = initialValue;
 		
@@ -91,6 +94,11 @@ public class ObjectPropertyValue implements PropertyValue
 	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		// nothing on this level
+	}
+
+	public IStringExpression getDefaultValueExpression()
+	{
+		return defaultValueExpression;
 	}
 
 	@Override

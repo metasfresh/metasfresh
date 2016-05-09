@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.window.prototype.order.model;
 import java.util.Map;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -196,5 +197,16 @@ public final class PropertyValueBuilder
 		}
 
 		return ILogicExpression.TRUE;
+	}
+	
+	public IStringExpression getDefaultValueExpression()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getDefaultValueExpression();
+		}
+
+		return IStringExpression.NULL;
 	}
 }

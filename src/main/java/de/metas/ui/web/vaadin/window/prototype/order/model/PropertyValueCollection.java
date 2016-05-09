@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
@@ -156,6 +159,11 @@ public class PropertyValueCollection
 				logger.debug("Skip setting value to {} because it's constant", propertyValue);
 				continue;
 			}
+			else if(propertyValue.isReadOnlyForUser())
+			{
+				logger.debug("Skip setting value to {} because it's readonly for user", propertyValue);
+				continue;
+			}
 
 			final PropertyName propertyName = propertyValue.getName();
 			final Object value;
@@ -173,7 +181,31 @@ public class PropertyValueCollection
 
 	private final Object createDefaultValue(final PropertyValue propertyValue)
 	{
-		return null; // TODO: implement default
+		if (propertyValue instanceof ObjectPropertyValue)
+		{
+			final IStringExpression defaultValueExpression = ((ObjectPropertyValue)propertyValue).getDefaultValueExpression();
+			if (defaultValueExpression == IStringExpression.NULL)
+			{
+				return null;
+			}
+			
+			final Evaluatee evalCtx = asEvaluatee();
+			try
+			{
+				final String defaultValueStr = defaultValueExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+				
+				// TODO: convert to proper type
+				//DisplayType.convertToDisplayType(defaultValueStr, columnName, displayType);
+				return defaultValueStr;
+			}
+			catch (Exception e)
+			{
+				logger.warn("Failed evaluating default string expression for {}: {}", propertyValue.getName(), defaultValueExpression, e);
+				return null;
+			}
+		}
+		
+		return null;
 	}
 
 	public boolean hasChanges()
@@ -191,83 +223,86 @@ public class PropertyValueCollection
 
 	public Evaluatee2 asEvaluatee()
 	{
-		return new Evaluatee2()
+		return evaluatee;
+	}
+	
+	private final Evaluatee2 evaluatee = new Evaluatee2()
+	{
+		private final PropertyName toPropertyName(final String variableName)
 		{
-			private final PropertyName toPropertyName(final String variableName)
+			return PropertyName.of(variableName);
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			if (variableName.startsWith("#"))   // Env, global var
 			{
-				return PropertyName.of(variableName);
+				return Env.getContext(Env.getCtx(), variableName);
+			}
+			else if (variableName.startsWith("$"))   // Env, global accounting var
+			{
+				return Env.getContext(Env.getCtx(), variableName);
 			}
 
-			@Override
-			public String get_ValueAsString(final String variableName)
+			final PropertyName propertyName = toPropertyName(variableName);
+			final PropertyValue propertyValue = getPropertyValue(propertyName);
+			final Object value = propertyValue.getValue();
+			if (value == null)
 			{
-				if (variableName.startsWith("#"))   // Env, global var
-				{
-					return Env.getContext(Env.getCtx(), variableName);
-				}
-				else if (variableName.startsWith("$"))   // Env, global accounting var
-				{
-					return Env.getContext(Env.getCtx(), variableName);
-				}
-
-				final PropertyName propertyName = toPropertyName(variableName);
-				final PropertyValue propertyValue = getPropertyValue(propertyName);
-				final Object value = propertyValue.getValue();
-				if (value == null)
-				{
-					// TODO: find some defaults?
-					return null;
-				}
-				else if (value instanceof Boolean)
-				{
-					return DisplayType.toBooleanString((Boolean)value);
-				}
-				else if (value instanceof String)
-				{
-					return value.toString();
-				}
-				else
-				{
-					return value.toString();
-				}
-			}
-
-			@Override
-			public boolean has_Variable(final String variableName)
-			{
-				if (variableName == null)
-				{
-					return false;
-				}
-				else if (variableName.startsWith("#"))   // Env, global var
-				{
-					return true;
-				}
-				else if (variableName.startsWith("$"))   // Env, global accounting var
-				{
-					return true;
-				}
-				final PropertyName propertyName = toPropertyName(variableName);
-				final PropertyValue propertyValue = getPropertyValueOrNull(propertyName);
-				if (propertyValue != null)
-				{
-					return true;
-				}
-
-				if (logger.isTraceEnabled())
-					logger.trace("No property {} found. Existing properties are: {}", propertyName, getPropertyNames());
-				
-				return false;
-			}
-
-			@Override
-			public String get_ValueOldAsString(String variableName)
-			{
-				// TODO Auto-generated method stub
+				// TODO: find some defaults?
 				return null;
 			}
-		};
-	}
+			else if (value instanceof Boolean)
+			{
+				return DisplayType.toBooleanString((Boolean)value);
+			}
+			else if (value instanceof String)
+			{
+				return value.toString();
+			}
+			else
+			{
+				return value.toString();
+			}
+		}
+
+		@Override
+		public boolean has_Variable(final String variableName)
+		{
+			if (variableName == null)
+			{
+				return false;
+			}
+			else if (variableName.startsWith("#"))   // Env, global var
+			{
+				return true;
+			}
+			else if (variableName.startsWith("$"))   // Env, global accounting var
+			{
+				return true;
+			}
+			final PropertyName propertyName = toPropertyName(variableName);
+			final PropertyValue propertyValue = getPropertyValueOrNull(propertyName);
+			if (propertyValue != null)
+			{
+				return true;
+			}
+
+			if (logger.isTraceEnabled())
+				logger.trace("No property {} found. Existing properties are: {}", propertyName, getPropertyNames());
+			
+			return false;
+		}
+
+		@Override
+		public String get_ValueOldAsString(String variableName)
+		{
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+
 
 	public static final class Builder
 	{

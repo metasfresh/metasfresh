@@ -1,9 +1,11 @@
 package de.metas.ui.web.vaadin;
 
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Properties;
 
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -73,6 +75,7 @@ public class WindowUI extends UI
 			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, requestCommand.getParameterAsInt("AD_Role_ID", 1000000));
 			Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
 			Env.setContext(ctx, Env.CTXNAME_ShowAcct, true);
+			Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY));
 			// getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
 		}
 

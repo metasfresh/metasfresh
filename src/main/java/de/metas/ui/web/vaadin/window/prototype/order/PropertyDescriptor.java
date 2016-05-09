@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
@@ -60,6 +61,7 @@ public class PropertyDescriptor implements Serializable
 	private final ImmutableMap<PropertyName, PropertyDescriptor> childPropertyDescriptors;
 	private Set<PropertyName> _allPropertyNames; // lazy
 	private final String caption;
+	private final IStringExpression defaultValueExpression;
 
 	private final ILogicExpression readonlyLogic; 
 	private final ILogicExpression displayLogic;
@@ -91,6 +93,7 @@ public class PropertyDescriptor implements Serializable
 		composedValuePartName = builder.composedValuePartName;
 		childPropertyDescriptors = builder.getChildPropertyDescriptors();
 		caption = builder.getCaption();
+		defaultValueExpression = builder.getDefaultValueExpression();
 		
 		//
 		readonlyLogic = builder.getReadonlyLogic();
@@ -198,6 +201,11 @@ public class PropertyDescriptor implements Serializable
 
 		return collector.build();
 	}
+	
+	public IStringExpression getDefaultValueExpression()
+	{
+		return defaultValueExpression;
+	}
 
 	public boolean isReadOnlyForUser()
 	{
@@ -265,6 +273,8 @@ public class PropertyDescriptor implements Serializable
 		private String composedValuePartName;
 		private String caption;
 		private PropertyLayoutInfo layoutInfo = PropertyLayoutInfo.DEFAULT;
+
+		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
 		private String sqlTableName;
 		private String sqlParentLinkColumnName;
@@ -559,6 +569,17 @@ public class PropertyDescriptor implements Serializable
 		{
 			this.mandatoryLogic = mandatoryLogic;
 			return this;
+		}
+
+		public Builder setDefaultValueExpression(final IStringExpression defaultValueExpression)
+		{
+			this.defaultValueExpression = defaultValueExpression == null ? IStringExpression.NULL : defaultValueExpression;
+			return this;
+		}
+		
+		private IStringExpression getDefaultValueExpression()
+		{
+			return defaultValueExpression;
 		}
 	}
 }

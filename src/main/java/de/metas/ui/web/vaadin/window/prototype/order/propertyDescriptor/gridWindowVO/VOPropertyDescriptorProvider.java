@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -98,6 +99,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 	private static final class RootPropertyDescriptorBuilder
 	{
 		private static final Logger logger = LogManager.getLogger(RootPropertyDescriptorBuilder.class);
+		private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 
 		private Properties ctx;
 		private PropertyDescriptor.Builder rootBuilder;
@@ -360,6 +362,8 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setValueType(getValueType(gridFieldVO))
 					.setCaption(gridFieldVO.getHeader())
 					.setLayoutInfo(createLayoutInfo(gridFieldVO))
+					//
+					.setDefaultValueExpression(extractDefaultValueExpression(gridFieldVO))
 
 			// Logic
 					.setReadonlyLogic(extractReadonlyLogic(propertyName, gridFieldVO))
@@ -423,6 +427,25 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 				return ILogicExpression.FALSE;
 			}
 			return gridFieldVO.getDisplayLogic();
+		}
+
+		private IStringExpression extractDefaultValueExpression(final GridFieldVO gridFieldVO)
+		{
+			final String defaultValueStr = gridFieldVO.getDefaultValue();
+			if (defaultValueStr == null || defaultValueStr.isEmpty())
+			{
+				return IStringExpression.NULL;
+			}
+			else if (defaultValueStr.startsWith("@SQL="))
+			{
+				// TODO: implement
+				return IStringExpression.NULL;
+			}
+			else
+			{
+				final IStringExpression defaultValueExpression = expressionFactory.compile(defaultValueStr, IStringExpression.class);
+				return defaultValueExpression;
+			}
 		}
 
 		private PropertyLayoutInfo createLayoutInfo(final GridFieldVO gridFieldVO)
