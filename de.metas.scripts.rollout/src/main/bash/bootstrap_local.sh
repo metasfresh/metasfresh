@@ -125,28 +125,22 @@ prepare()
 		START_STOP="true"
 	fi
 		
-	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$ROLLOUT_BUILD_URL" = "NOT_YET_SPECIFIED" ]; 
+	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$ROLLOUT_FILE_URL" = "NOT_YET_SPECIFIED" ]; 
 	then
-		trace prepare "At least one of -d or the environment variable 'ROLLOUT_BUILD_URL' needs to be set"
+		trace prepare "At least one of -d or the environment variable 'ROLLOUT_FILE_URL' (alternative: ROLLOUT_BUILD_URL and DIST_ARCHIVE) needs to be set"
 		exit 1
 	fi
 	
-	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$ROLLOUT_BUILD_URL" != "NOT_YET_SPECIFIED" ]; 
+	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$ROLLOUT_FILE_URL" != "NOT_YET_SPECIFIED" ]; 
 	then
-		trace prepare "ignoring ROLLOUT_BUILD_URL because a rollout dir is set"
+		trace prepare "ignoring ROLLOUT_FILE_URL because a rollout dir is set"
 		exit 1
 	fi
 
-	# basename shoult also work with an URL, and note that DIST_ARCHIVE might not actually be set after all
+	# basename should also work with an URL, and note that DIST_ARCHIVE might not actually be set after all
 	DIST_FILE=$(basename ${ROLLOUT_FILE_URL})
 	check_var DIST_FILE $DIST_FILE
-	
-	#getting build number from build URL
-	#example for a build URL:
-	#http://debuild901:8080/job/us1017_ma01_ad_build/29/
-	local build_no=$(echo $ROLLOUT_BUILD_URL | cut -d '/' -f 6 )
-	check_var build_no $build_no
-	
+
 	trace prepare "Downloading rollout file"
 							
 	wget --no-verbose ${ROLLOUT_FILE_URL}
