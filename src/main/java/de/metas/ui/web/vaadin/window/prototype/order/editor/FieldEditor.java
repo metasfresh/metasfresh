@@ -2,7 +2,13 @@ package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.compiere.util.DisplayType;
+
+import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
@@ -14,6 +20,7 @@ import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 
 /*
  * #%L
@@ -42,6 +49,14 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 {
 	static final String STYLE_Field = "mf-editor-field";
 	private final AbstractField<T> valueField;
+	
+	private PropertyName propertyName_ReadOnly;
+	private PropertyName propertyName_Mandatory;
+	private PropertyName propertyName_Displayed;
+	
+	private boolean readonly = false;
+	private boolean mandatory = false;
+	private boolean displayed = true;
 
 	public FieldEditor(final PropertyDescriptor descriptor)
 	{
@@ -66,16 +81,43 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 				listener().valueChange(getPropertyName(), valueNew);
 			}
 		});
+	}
+	
+	@Override
+	protected void collectWatchedPropertyNamesOnInit(final ImmutableSet.Builder<PropertyName> watchedPropertyNames)
+	{
+		super.collectWatchedPropertyNamesOnInit(watchedPropertyNames);
 		
-		updateUI();
+		final PropertyName propertyName = getPropertyName();
+		
+		propertyName_ReadOnly = WindowConstants.readonlyFlagName(propertyName);
+		watchedPropertyNames.add(propertyName_ReadOnly);
+		
+		propertyName_Mandatory = WindowConstants.mandatoryFlagName(propertyName);
+		watchedPropertyNames.add(propertyName_Mandatory);
+		
+		propertyName_Displayed = WindowConstants.displayFlagName(propertyName);
+		watchedPropertyNames.add(propertyName_Displayed);
 	}
 
 	protected abstract AbstractField<T> createValueField();
-
+	
 	protected AbstractField<T> getValueField()
 	{
 		return valueField;
 	}
+	
+	@Override
+	protected Label createLabelComponent()
+	{
+		final Label label = super.createLabelComponent();
+		if (label != null)
+		{
+			label.setVisible(displayed);
+		}
+		return label;
+	}
+
 
 	@Override
 	public final void setValue(final T value)
@@ -84,12 +126,38 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	}
 	
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	public void setValue(final PropertyName propertyName, final Object value)
 	{
-		if (getPropertyName().equals(propertyName))
+		if (Objects.equals(getPropertyName(), propertyName))
 		{
 			final T valueView = convertToView(value);
-			valueField.setValue(valueView);
+			
+			final boolean readOnly = valueField.isReadOnly();
+			valueField.setReadOnly(false);
+			try
+			{
+				valueField.setValue(valueView);
+			}
+			finally
+			{
+				valueField.setReadOnly(readOnly);
+			}
+		}
+		else if (Objects.equals(this.propertyName_ReadOnly, propertyName))
+		{
+			final boolean readOnly = DisplayType.toBoolean(value);
+			setReadonly(readOnly);
+		}
+		else if (Objects.equals(this.propertyName_Mandatory, propertyName))
+		{
+			final boolean mandatory = DisplayType.toBoolean(value);
+			setMandatory(mandatory);
+		}
+		else if (Objects.equals(this.propertyName_Displayed, propertyName))
+		{
+			final boolean displayed = DisplayType.toBoolean(value);
+			setDisplayed(displayed);
 		}
 	}
 
@@ -319,18 +387,47 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 		valueField.clear();
 	}
 	
-	private void updateUI()
+	private void setReadonly(final boolean readonly)
 	{
-		// TODO: move this to model
+		if(this.readonly == readonly)
+		{
+			return;
+		}
 		
-		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
-		final boolean visible = propertyDescriptor != null && propertyDescriptor.getLayoutInfo().isDisplayed();
+		this.readonly = readonly;
 		
-		setVisible(visible);
-		final Label label = getLabel();
+		// Update UI
+		valueField.setReadOnly(readonly);
+	}
+	
+	private void setMandatory(boolean mandatory)
+	{
+		if(this.mandatory == mandatory)
+		{
+			return;
+		}
+		
+		this.mandatory = mandatory;
+		
+		// Update UI
+		this.setRequired(mandatory);
+	}
+	
+	private void setDisplayed(boolean displayed)
+	{
+		if(this.displayed == displayed)
+		{
+			return;
+		}
+		
+		this.displayed = displayed;
+
+		// Update UI
+		setVisible(displayed);
+		final Label label = getLabelIfCreated();
 		if (label != null)
 		{
-			label.setVisible(visible);
+			label.setVisible(displayed);
 		}
 	}
 

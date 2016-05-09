@@ -1,12 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ final class BPartnerAndAddressPropertyValue extends CalculatedPropertyValue
 	public static final String PARTNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 	public static final String PARTNAME_AD_User_ID = "AD_User_ID";
 
-	private final Set<PropertyName> dependsOn;
+	private final PropertyNameDependenciesMap dependencies;
 	private final PropertyValue bpartnerPropertyValue;
 	private final PropertyValue bpLocationPropertyValue;
 	private final PropertyValue bpContactPropertyValue;
@@ -95,13 +93,19 @@ final class BPartnerAndAddressPropertyValue extends CalculatedPropertyValue
 		this.bpartnerPropertyValue = bpartnerPropertyValue;
 		this.bpLocationPropertyValue = bpLocationPropertyValue;
 		this.bpContactPropertyValue = bpContactPropertyValue;
-		this.dependsOn = ImmutableSet.of(bpartnerPropertyValue.getName(), bpLocationPropertyValue.getName(), bpContactPropertyValue.getName());
+		
+		final PropertyName propertyName = builder.getPropertyName();
+		this.dependencies = PropertyNameDependenciesMap.builder()
+				.add(propertyName, bpartnerPropertyValue.getName(), DependencyType.Value)
+				.add(propertyName, bpLocationPropertyValue.getName(), DependencyType.Value)
+				.add(propertyName, bpContactPropertyValue.getName(), DependencyType.Value)
+				.build();
 	}
 
 	@Override
-	public Set<PropertyName> getDependsOnPropertyNames()
+	public PropertyNameDependenciesMap getDependencies()
 	{
-		return dependsOn;
+		return dependencies;
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -46,6 +48,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	// Descriptors
 	private final PropertyDescriptor propertyDescriptor;
 	private final PropertyName propertyName;
+	private final ImmutableSet<PropertyName> watchedPropertyNames;
 	
 	private EditorListener listener = NullEditorListener.instance;
 	private Optional<Label> _labelComp;
@@ -54,18 +57,24 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	
 	public AbstractEditor(final PropertyName propertyName)
 	{
-		super();
-		addStyleName(STYLE);
-		this.propertyDescriptor = null;
-		this.propertyName = propertyName;
+		this(propertyName, null);
 	}
 	
 	public AbstractEditor(final PropertyDescriptor propertyDescriptor)
 	{
+		this(propertyDescriptor.getPropertyName(), propertyDescriptor);
+	}
+
+	private AbstractEditor(final PropertyName propertyName, final PropertyDescriptor propertyDescriptor)
+	{
 		super();
 		addStyleName(STYLE);
 		this.propertyDescriptor = propertyDescriptor;
-		this.propertyName = propertyDescriptor.getPropertyName();
+		this.propertyName = propertyName;
+		
+		final ImmutableSet.Builder<PropertyName> watchedPropertyNames = ImmutableSet.builder();
+		collectWatchedPropertyNamesOnInit(watchedPropertyNames);
+		this.watchedPropertyNames = watchedPropertyNames.build();
 	}
 	
 	@Override
@@ -76,6 +85,12 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 				.add("propertyName", propertyName)
 				.add("instanceId", System.identityHashCode(this))
 				.toString();
+	}
+	
+	@OverridingMethodsMustInvokeSuper
+	protected void collectWatchedPropertyNamesOnInit(final ImmutableSet.Builder<PropertyName> watchedPropertyNames)
+	{
+		// nothing on this level
 	}
 	
 	@Override
@@ -101,9 +116,9 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	}
 	
 	@Override
-	public Set<PropertyName> getWatchedPropertyNames()
+	public final Set<PropertyName> getWatchedPropertyNames()
 	{
-		return ImmutableSet.of();
+		return watchedPropertyNames;
 	}
 	
 	protected final PropertyDescriptor getPropertyDescriptor()
@@ -150,6 +165,12 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 			_labelComp = Optional.fromNullable(label);
 		}
 		return _labelComp.orNull();
+	}
+	
+	protected final Label getLabelIfCreated()
+	{
+		final Optional<Label> labelComp = _labelComp;
+		return labelComp == null ? null : labelComp.orNull();
 	}
 	
 	protected Label createLabelComponent()

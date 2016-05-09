@@ -1,8 +1,7 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
-import java.util.Set;
-
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
 
 /*
  * #%L
@@ -36,13 +35,16 @@ public abstract class CalculatedPropertyValue extends ObjectPropertyValue
 	}
 	
 	@Override
-	public abstract Set<PropertyName> getDependsOnPropertyNames();
+	public abstract PropertyNameDependenciesMap getDependencies();
 	
 	@Override
-	public final void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	public final void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
-		final Object calculatedValueNew = calculateValue(values);
-		setValue(calculatedValueNew);
+		if (event.isDependencyType(DependencyType.Value))
+		{
+			final Object calculatedValueNew = calculateValue(event.getValues());
+			setValue(calculatedValueNew);
+		}
 	}
 
 	protected abstract Object calculateValue(final PropertyValueCollection values);

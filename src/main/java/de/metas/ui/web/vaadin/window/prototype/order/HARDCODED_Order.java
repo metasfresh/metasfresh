@@ -2,13 +2,11 @@ package de.metas.ui.web.vaadin.window.prototype.order;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Set;
 
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.collect.ImmutableSet;
 import com.vaadin.server.VaadinService;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -16,6 +14,8 @@ import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.prototype.order.model.CalculatedPropertyValue;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
 import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValueCollection;
 import de.metas.ui.web.vaadin.window.prototype.order.model.WindowModel;
 
@@ -316,18 +316,22 @@ public final class HARDCODED_Order
 
 	public static final class OrderWindowTitleSummaryPropertyValue extends CalculatedPropertyValue
 	{
-		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_DocumentNo);
+		private final PropertyNameDependenciesMap dependencies;
 
 		public OrderWindowTitleSummaryPropertyValue(final PropertyName name)
 		{
 			super(name);
+			dependencies = PropertyNameDependenciesMap.builder()
+					.add(name, ORDER_DocumentNo, DependencyType.Value)
+					.build();
+			
 			setValue("Order window");
 		}
-
+		
 		@Override
-		public Set<PropertyName> getDependsOnPropertyNames()
+		public PropertyNameDependenciesMap getDependencies()
 		{
-			return dependsOn;
+			return dependencies;
 		}
 
 		@Override
@@ -340,17 +344,22 @@ public final class HARDCODED_Order
 
 	public static final class AdditionalRecordSummaryPropertyValue extends CalculatedPropertyValue
 	{
-		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_GrandTotal, ORDER_TotalLines);
+		private final PropertyNameDependenciesMap dependencies;
 
 		public AdditionalRecordSummaryPropertyValue(final PropertyName name)
 		{
 			super(name);
+			
+			dependencies = PropertyNameDependenciesMap.builder()
+					.add(name, ORDER_GrandTotal, DependencyType.Value)
+					.add(name, ORDER_TotalLines, DependencyType.Value)
+					.build();
 		}
-
+		
 		@Override
-		public Set<PropertyName> getDependsOnPropertyNames()
+		public PropertyNameDependenciesMap getDependencies()
 		{
-			return dependsOn;
+			return dependencies;
 		}
 
 		@Override
@@ -363,17 +372,23 @@ public final class HARDCODED_Order
 
 	public static final class RecordSummaryPropertyValue extends CalculatedPropertyValue
 	{
-		private final Set<PropertyName> dependsOn = ImmutableSet.of(ORDER_DocumentNo, ORDER_DatePromised, ORDER_C_BPartner_ID, ORDER_C_BPartner_Location_ID);
+		private final PropertyNameDependenciesMap dependencies;
 
 		public RecordSummaryPropertyValue(final PropertyName name)
 		{
 			super(name);
+			dependencies = PropertyNameDependenciesMap.builder()
+					.add(name, ORDER_DocumentNo, DependencyType.Value)
+					.add(name, ORDER_DatePromised, DependencyType.Value)
+					.add(name, ORDER_C_BPartner_ID, DependencyType.Value)
+					.add(name, ORDER_C_BPartner_Location_ID, DependencyType.Value)
+					.build();
 		}
-
+		
 		@Override
-		public Set<PropertyName> getDependsOnPropertyNames()
+		public PropertyNameDependenciesMap getDependencies()
 		{
-			return dependsOn;
+			return dependencies;
 		}
 
 		@Override

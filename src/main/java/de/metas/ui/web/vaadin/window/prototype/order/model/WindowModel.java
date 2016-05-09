@@ -378,33 +378,31 @@ public class WindowModel
 
 		// TODO: avoid loops because of cyclic dependencies
 		final PropertyValueCollection properties = getProperties();
-		for (final PropertyName dependentPropertyName : properties.getPropertyNamesWhichDependOn(propertyName))
-		{
+		
+		properties.getDependencies().consume(propertyName, (dependentPropertyName, dependencyTypes) -> {
 			final PropertyValue dependentPropertyValue = properties.getPropertyValue(dependentPropertyName);
 			if (dependentPropertyValue == null)
 			{
 				logger.warn("Skip setting dependent propery {} because property value is missing", dependentPropertyName);
-				continue;
+				return;
 			}
 
+			final DependencyValueChangedEvent dependencyChangedEvent = DependencyValueChangedEvent.of(properties, propertyName, dependencyTypes);
 			final Map<PropertyName, PropertyChangedModelEvent> eventsCollector = new LinkedHashMap<>();
-			updateDependentPropertyValue(dependentPropertyValue, propertyName, eventsCollector);
+			updateDependentPropertyValue(dependentPropertyValue, dependencyChangedEvent, eventsCollector);
 			postEvents(eventsCollector.values());
 
 			for (final PropertyName dependentPropertyNameLvl2 : eventsCollector.keySet())
 			{
 				updateAllWhichDependOn(dependentPropertyNameLvl2);
 			}
-		}
-
+		});
 	}
 
-	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final PropertyName changedPropertyName, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
+	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final DependencyValueChangedEvent dependencyChangedEvent, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
 	{
-		final PropertyValueCollection properties = getProperties();
-
 		final Object calculatedValueOld = propertyValue.getValue();
-		propertyValue.onDependentPropertyValueChanged(properties, changedPropertyName);
+		propertyValue.onDependentPropertyValueChanged(dependencyChangedEvent);
 		final Object calculatedValueNew = propertyValue.getValue();
 		if (Objects.equal(calculatedValueOld, calculatedValueNew))
 		{
@@ -412,7 +410,7 @@ public class WindowModel
 		}
 
 		final PropertyName propertyName = propertyValue.getName();
-		logger.trace("Updated dependent property: {}={}", propertyName, calculatedValueNew);
+		logger.trace("Updated dependent property: {}={} (event: {})", propertyName, calculatedValueNew, dependencyChangedEvent);
 
 		eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
 	}

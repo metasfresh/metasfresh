@@ -1,11 +1,9 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
 import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
@@ -72,13 +70,13 @@ public class LookupPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public Set<PropertyName> getDependsOnPropertyNames()
+	public PropertyNameDependenciesMap getDependencies()
 	{
-		return ImmutableSet.of();
+		return PropertyNameDependenciesMap.EMPTY;
 	}
 
 	@Override
-	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		// TODO: update lookup datasource in case it's filtering depends on some other properties
 	}

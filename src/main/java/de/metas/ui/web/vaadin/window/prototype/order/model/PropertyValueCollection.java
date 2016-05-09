@@ -4,19 +4,20 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
+import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
 
 /*
  * #%L
@@ -52,17 +53,23 @@ public class PropertyValueCollection
 	private static final Logger logger = LogManager.getLogger(PropertyValueCollection.class);
 
 	private final Map<PropertyName, PropertyValue> name2value;
-	private final Multimap<PropertyName, PropertyName> name2dependencies;
+	private final PropertyNameDependenciesMap dependencies;
 
 	private PropertyValueCollection(final PropertyValueCollection.Builder builder)
 	{
 		super();
 		name2value = builder.name2value.build();
-		name2dependencies = builder.name2dependencies.build();
+		dependencies = builder.dependenciesBuilder.build();
 
-		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("Build PropertyValuesCollection" + TraceHelper.toStringRecursivelly(name2value.values()));
-		System.out.println("--------------------------------------------------------------------------------");
+		if (logger.isTraceEnabled())
+		{
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("Build PropertyValuesCollection" + TraceHelper.toStringRecursivelly(name2value.values()));
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("Dependencies map: ");
+			System.out.println(dependencies.toStringX());
+			System.out.println("--------------------------------------------------------------------------------");
+		}
 	}
 
 	/** empty builder */
@@ -70,7 +77,7 @@ public class PropertyValueCollection
 	{
 		super();
 		name2value = ImmutableMap.of();
-		name2dependencies = ImmutableMultimap.of();
+		dependencies = PropertyNameDependenciesMap.EMPTY;
 	}
 
 	@Override
@@ -104,12 +111,12 @@ public class PropertyValueCollection
 
 	public Collection<PropertyName> getPropertyNamesWhichDependOn(final PropertyName propertyName)
 	{
-		return name2dependencies.get(propertyName);
+		return dependencies.getPropertyNamesWhichDependOn(propertyName, DependencyType.Value);
 	}
 
-	public Collection<PropertyName> getAllDependentPropertyNames()
+	PropertyNameDependenciesMap getDependencies()
 	{
-		return ImmutableSet.copyOf(name2dependencies.values());
+		return dependencies;
 	}
 
 	public Set<PropertyName> getPropertyNames()
@@ -144,7 +151,7 @@ public class PropertyValueCollection
 
 		return valuesBuilder.build();
 	}
-	
+
 	public void setValuesFromMap(final PropertyValuesDTO values)
 	{
 		for (final PropertyValue propertyValue : getPropertyValues())
@@ -168,7 +175,7 @@ public class PropertyValueCollection
 			propertyValue.setValue(value);
 		}
 	}
-	
+
 	private final Object createDefaultValue(final PropertyValue propertyValue)
 	{
 		return null; // TODO: implement default
@@ -187,10 +194,90 @@ public class PropertyValueCollection
 		return false;
 	}
 
+	public Evaluatee2 asEvaluatee()
+	{
+		return new Evaluatee2()
+		{
+			private final PropertyName toPropertyName(final String variableName)
+			{
+				return PropertyName.of(variableName);
+			}
+
+			@Override
+			public String get_ValueAsString(final String variableName)
+			{
+				if (variableName.startsWith("#"))   // Env, global var
+				{
+					return Env.getContext(Env.getCtx(), variableName);
+				}
+				else if (variableName.startsWith("$"))   // Env, global accounting var
+				{
+					return Env.getContext(Env.getCtx(), variableName);
+				}
+
+				final PropertyName propertyName = toPropertyName(variableName);
+				final PropertyValue propertyValue = getPropertyValue(propertyName);
+				final Object value = propertyValue.getValue();
+				if (value == null)
+				{
+					// TODO: find some defaults?
+					return null;
+				}
+				else if (value instanceof Boolean)
+				{
+					return DisplayType.toBooleanString((Boolean)value);
+				}
+				else if (value instanceof String)
+				{
+					return value.toString();
+				}
+				else
+				{
+					return value.toString();
+				}
+			}
+
+			@Override
+			public boolean has_Variable(final String variableName)
+			{
+				if (variableName == null)
+				{
+					return false;
+				}
+				else if (variableName.startsWith("#"))   // Env, global var
+				{
+					return true;
+				}
+				else if (variableName.startsWith("$"))   // Env, global accounting var
+				{
+					return true;
+				}
+				final PropertyName propertyName = toPropertyName(variableName);
+				final PropertyValue propertyValue = getPropertyValueOrNull(propertyName);
+				if (propertyValue != null)
+				{
+					return true;
+				}
+
+				if (logger.isTraceEnabled())
+					logger.trace("No property {} found. Existing properties are: {}", propertyName, getPropertyNames());
+				
+				return false;
+			}
+
+			@Override
+			public String get_ValueOldAsString(String variableName)
+			{
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+	}
+
 	public static final class Builder
 	{
 		private final ImmutableMap.Builder<PropertyName, PropertyValue> name2value = ImmutableMap.builder();
-		private final ImmutableSetMultimap.Builder<PropertyName, PropertyName> name2dependencies = ImmutableSetMultimap.builder();
+		private final PropertyNameDependenciesMap.Builder dependenciesBuilder = PropertyNameDependenciesMap.builder();
 
 		private Builder()
 		{
@@ -209,14 +296,10 @@ public class PropertyValueCollection
 			name2value.put(propertyName, propertyValue);
 
 			//
-			// Collect dependencies
-			final Set<PropertyName> dependsOnPropertyNames = propertyValue.getDependsOnPropertyNames();
-			if (dependsOnPropertyNames != null && !dependsOnPropertyNames.isEmpty())
+			// Collect value dependencies
 			{
-				for (final PropertyName dependsOnPropertyName : dependsOnPropertyNames)
-				{
-					name2dependencies.put(dependsOnPropertyName, propertyName);
-				}
+				final PropertyNameDependenciesMap propertyDeps = propertyValue.getDependencies();
+				dependenciesBuilder.add(propertyDeps);
 			}
 
 			return this;
@@ -253,12 +336,42 @@ public class PropertyValueCollection
 				}
 
 				//
-				// Lookup values provider property
+				// Lookup values provider property: i.e. PropertyName#values
 				if (propertyDescriptor.isValueProperty() && propertyDescriptor.getSqlLookupDescriptor() != null)
 				{
 					final PropertyValue lookupPropertyValue = new LookupPropertyValue(propertyDescriptor);
 					builder.addChildPropertyValue(lookupPropertyValue);
 					addProperty(lookupPropertyValue);
+				}
+
+				//
+				// Readonly node
+				if (propertyDescriptor.isValueProperty())
+				{
+					final PropertyName propertyName = WindowConstants.readonlyFlagName(propertyDescriptor.getPropertyName());
+					final PropertyValue propertyValue = LogicExpressionPropertyValue.of(propertyName, DependencyType.ReadonlyLogic, propertyDescriptor.getReadonlyLogic(), false);
+					builder.addChildPropertyValue(propertyValue);
+					addProperty(propertyValue);
+				}
+
+				//
+				// DisplayLogic node
+				if (propertyDescriptor.isValueProperty())
+				{
+					final PropertyName propertyName = WindowConstants.displayFlagName(propertyDescriptor.getPropertyName());
+					final PropertyValue propertyValue = LogicExpressionPropertyValue.of(propertyName, DependencyType.DisplayLogic, propertyDescriptor.getDisplayLogic(), true);
+					builder.addChildPropertyValue(propertyValue);
+					addProperty(propertyValue);
+				}
+
+				//
+				// Mandatory node
+				if (propertyDescriptor.isValueProperty())
+				{
+					final PropertyName propertyName = WindowConstants.mandatoryFlagName(propertyDescriptor.getPropertyName());
+					final PropertyValue propertyValue = LogicExpressionPropertyValue.of(propertyName, DependencyType.MandatoryLogic, propertyDescriptor.getMandatoryLogic(), false);
+					builder.addChildPropertyValue(propertyValue);
+					addProperty(propertyValue);
 				}
 
 				addingChildPropertiesAllowed = builder.isAddingChildPropertiesAllowed();

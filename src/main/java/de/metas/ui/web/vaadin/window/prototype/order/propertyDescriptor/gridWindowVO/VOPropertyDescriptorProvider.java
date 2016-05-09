@@ -9,9 +9,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -58,6 +61,17 @@ import de.metas.ui.web.vaadin.window.prototype.order.propertyDescriptor.IPropert
 
 public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 {
+	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
+	private static final ILogicExpression LOGICEXPRESSION_NotActive;
+	/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
+	private static final ILogicExpression LOGICEXPRESSION_Processed;
+
+	static
+	{
+		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.PROPERTYNAME_IsActive + "/Y@=N", ILogicExpression.class);
+		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.PROPERTYNAME_Processed + "/N@=Y", ILogicExpression.class);
+	}
 
 	@Override
 	public PropertyDescriptor provideEntryWindowdescriptor()
@@ -69,7 +83,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 	public PropertyDescriptor provideForWindow(final int AD_Window_ID)
 	{
 		// TODO: caching
-		
+
 		final Properties ctx = Env.getCtx(); // TODO
 		final int windowNo = 0; // TODO
 		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
@@ -78,9 +92,6 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 				.add(gridWindowVO)
 				.build();
 
-		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("Build root descriptor " + TraceHelper.toStringRecursivelly(root));
-		System.out.println("--------------------------------------------------------------------------------");
 		return root;
 	}
 
@@ -93,7 +104,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 		private List<GridTabVO> gridTabVOs;
 		private Map<Object, GridTabVO> id2gridTabVO;
 		private final Set<Integer> tabIdsAdded = new HashSet<>();
-		private final Set<Integer> fieldIdsAdded = new HashSet<>();
+		private final Set<Integer> columnIdsAdded = new HashSet<>();
 
 		private String parent_SqlTableName = null;
 
@@ -104,7 +115,16 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		public PropertyDescriptor build()
 		{
-			return rootBuilder.build();
+			final PropertyDescriptor rootDescriptor = rootBuilder.build();
+
+			if (logger.isTraceEnabled())
+			{
+				System.out.println("--------------------------------------------------------------------------------");
+				System.out.println("Build root descriptor " + TraceHelper.toStringRecursivelly(rootDescriptor));
+				System.out.println("--------------------------------------------------------------------------------");
+			}
+
+			return rootDescriptor;
 		}
 
 		public RootPropertyDescriptorBuilder add(final GridWindowVO gridWindowVO)
@@ -156,7 +176,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			gridTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.filter(gridFieldVO -> fieldIdsAdded.add(gridFieldVO.getAD_Field_ID()))
+					.filter(gridFieldVO -> columnIdsAdded.add(gridFieldVO.getAD_Column_ID()))
 					.forEach(gridFieldVO -> {
 						if (gridFieldVO.getIncluded_Tab_ID() > 0)
 						{
@@ -333,23 +353,76 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		private void createAndAddField(final PropertyDescriptor.Builder parentBuilder, final GridFieldVO gridFieldVO)
 		{
+			final PropertyName propertyName = PropertyName.of(parentBuilder.getPropertyName(), gridFieldVO.getColumnName());
 			final Builder fieldBuilder = PropertyDescriptor.builder()
 					.setType(PropertyDescriptorType.Value)
-					.setPropertyName(PropertyName.of(parentBuilder.getPropertyName(), gridFieldVO.getColumnName()))
+					.setPropertyName(propertyName)
 					.setValueType(getValueType(gridFieldVO))
 					.setCaption(gridFieldVO.getHeader())
 					.setLayoutInfo(createLayoutInfo(gridFieldVO))
 
-			// shall be factored out of the descriptor
+			// Logic
+					.setReadonlyLogic(extractReadonlyLogic(propertyName, gridFieldVO))
+					.setMandatoryLogic(extractMandatoryLogic(propertyName, gridFieldVO))
+					.setDisplayLogic(extractDisplayLogic(propertyName, gridFieldVO))
+
+			// SQL related metas info (shall be factored out of the descriptor);
 					.setSqlColumnName(gridFieldVO.getColumnName())
 					.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
 					.setSqlDisplayType(gridFieldVO.getDisplayType())
-					.setSQL_AD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID());
+					.setSQL_AD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
+					//
+					;
 
 			final PropertyDescriptor fieldDescriptor = fieldBuilder.build();
 			parentBuilder.addChildPropertyDescriptor(fieldDescriptor);
 
 			logger.debug("Added {} to {} ({})", fieldDescriptor, parentBuilder, gridFieldVO);
+		}
+
+		private ILogicExpression extractReadonlyLogic(final PropertyName propertyName, final GridFieldVO gridFieldVO)
+		{
+			if (gridFieldVO.isReadOnly())
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
+
+			//
+			// Consider field readonly if the row is not active
+			// .. and this property is not the IsActive flag.
+			if (!WindowConstants.PROPERTYNAME_IsActive.equals(propertyName))
+			{
+				logicExpression = LOGICEXPRESSION_NotActive.or(logicExpression);
+			}
+
+			//
+			// Consider field readonly if the row is processed
+			if (!gridFieldVO.isAlwaysUpdateable())
+			{
+				logicExpression = LOGICEXPRESSION_Processed.or(logicExpression);
+			}
+
+			return logicExpression;
+		}
+
+		private ILogicExpression extractMandatoryLogic(final PropertyName propertyName, final GridFieldVO gridFieldVO)
+		{
+			if (gridFieldVO.isMandatory())
+			{
+				return ILogicExpression.TRUE;
+			}
+			return gridFieldVO.getMandatoryLogic();
+		}
+
+		private ILogicExpression extractDisplayLogic(final PropertyName propertyName, final GridFieldVO gridFieldVO)
+		{
+			if (!gridFieldVO.isDisplayed())
+			{
+				return ILogicExpression.FALSE;
+			}
+			return gridFieldVO.getDisplayLogic();
 		}
 
 		private PropertyLayoutInfo createLayoutInfo(final GridFieldVO gridFieldVO)

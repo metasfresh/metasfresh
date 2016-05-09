@@ -1,12 +1,10 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
@@ -69,13 +67,13 @@ public final class ConstantPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public Set<PropertyName> getDependsOnPropertyNames()
+	public PropertyNameDependenciesMap getDependencies()
 	{
-		return ImmutableSet.of();
+		return PropertyNameDependenciesMap.EMPTY;
 	}
 
 	@Override
-	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		throw new UnsupportedOperationException();
 	}

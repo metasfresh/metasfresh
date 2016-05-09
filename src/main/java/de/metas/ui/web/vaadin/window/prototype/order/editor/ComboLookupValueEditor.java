@@ -60,8 +60,7 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(ComboLookupValueEditor.class);
 
-	private final PropertyName valuesPropertyName;
-	private final ImmutableSet<PropertyName> watchedPropertyNames;
+	private PropertyName valuesPropertyName;
 	private final LookupValueContainer lookupValuesContainer;
 
 	public ComboLookupValueEditor(final PropertyDescriptor propertyDescriptor)
@@ -74,13 +73,15 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 		valueField.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		valueField.setItemCaptionPropertyId(lookupValuesContainer.getCaptionPropertyId());
 		valueField.setItemIconPropertyId(lookupValuesContainer.getIconPropertyId());
-
-		final ImmutableSet.Builder<PropertyName> watchedPropertyNames = ImmutableSet.builder();
-
+	}
+	
+	@Override
+	protected void collectWatchedPropertyNamesOnInit(final ImmutableSet.Builder<PropertyName> watchedPropertyNames)
+	{
+		super.collectWatchedPropertyNamesOnInit(watchedPropertyNames);
+		
 		valuesPropertyName = WindowConstants.lookupValuesName(getPropertyName());
 		watchedPropertyNames.add(valuesPropertyName);
-
-		this.watchedPropertyNames = watchedPropertyNames.build();
 	}
 
 	@Override
@@ -104,12 +105,6 @@ public class ComboLookupValueEditor extends FieldEditor<Object>
 		};
 
 		return valueField;
-	}
-
-	@Override
-	public Set<PropertyName> getWatchedPropertyNames()
-	{
-		return watchedPropertyNames;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Optional;
 
@@ -35,9 +34,9 @@ public interface PropertyValue
 
 	String getComposedValuePartName();
 
-	Set<PropertyName> getDependsOnPropertyNames();
+	PropertyNameDependenciesMap getDependencies();
 
-	void onDependentPropertyValueChanged(PropertyValueCollection values, PropertyName changedPropertyName);
+	void onDependentPropertyValueChanged(DependencyValueChangedEvent event);
 
 	void setValue(final Object value);
 

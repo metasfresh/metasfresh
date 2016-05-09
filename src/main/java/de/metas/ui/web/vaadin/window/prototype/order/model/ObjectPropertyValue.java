@@ -1,14 +1,12 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableSet;
 
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
@@ -36,8 +34,9 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 public class ObjectPropertyValue implements PropertyValue
 {
-	private final PropertyName name;
+	private final PropertyName propertyName;
 	private final String composedValuePartName;
+	private final PropertyNameDependenciesMap dependencies;
 
 	private final Object initialValue;
 	private Object value;
@@ -48,7 +47,7 @@ public class ObjectPropertyValue implements PropertyValue
 	ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
-		name = builder.getPropertyName();
+		propertyName = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
 
@@ -56,13 +55,22 @@ public class ObjectPropertyValue implements PropertyValue
 		value = initialValue;
 		
 		readOnlyForUser = builder.isReadOnlyForUser();
+		
+//		final ILogicExpression readonlyLogic = builder.getReadonlyLogic();
+//		final ILogicExpression mandatoryLogic = builder.getMandatoryLogic();
+//		final ILogicExpression displayLogic = builder.getDisplayLogic();
+		dependencies = PropertyNameDependenciesMap.builder()
+//				.add(propertyName, PropertyName.toSet(readonlyLogic.getParameters()), DependencyType.ReadonlyLogic)
+//				.add(propertyName, PropertyName.toSet(mandatoryLogic.getParameters()), DependencyType.MandatoryLogic)
+//				.add(propertyName, PropertyName.toSet(displayLogic.getParameters()), DependencyType.DisplayLogic)
+				.build();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add(name.toString(), value)
+				.add(propertyName.toString(), value)
 				.add("partName", composedValuePartName)
 				.toString();
 	}
@@ -70,17 +78,17 @@ public class ObjectPropertyValue implements PropertyValue
 	@Override
 	public PropertyName getName()
 	{
-		return name;
+		return propertyName;
 	}
 
 	@Override
-	public Set<PropertyName> getDependsOnPropertyNames()
+	public PropertyNameDependenciesMap getDependencies()
 	{
-		return ImmutableSet.of();
+		return dependencies;
 	}
 
 	@Override
-	public void onDependentPropertyValueChanged(final PropertyValueCollection values, final PropertyName changedPropertyName)
+	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		// nothing on this level
 	}

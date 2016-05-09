@@ -1,7 +1,7 @@
 package de.metas.ui.web.vaadin.window.prototype.order.editor;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -9,7 +9,6 @@ import org.vaadin.viritin.fields.LazyComboBox;
 import org.vaadin.viritin.fields.LazyComboBox.FilterableCountProvider;
 import org.vaadin.viritin.fields.LazyComboBox.FilterablePagingProvider;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
@@ -47,8 +46,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 {
 	private static final Logger logger = LogManager.getLogger(SearchLookupValueEditor.class);
 
-	private final PropertyName valuesPropertyName;
-	private final ImmutableSet<PropertyName> watchedPropertyNames;
+	private PropertyName valuesPropertyName;
 
 	private final int pageLength = 10;
 	private ComboDataSource _comboDataSource;
@@ -56,14 +54,15 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	public SearchLookupValueEditor(final PropertyDescriptor descriptor)
 	{
 		super(descriptor);
-
-		final ImmutableSet.Builder<PropertyName> watchedPropertyNames = ImmutableSet.builder();
-
+	}
+	
+	@Override
+	protected void collectWatchedPropertyNamesOnInit(final ImmutableSet.Builder<PropertyName> watchedPropertyNames)
+	{
+		super.collectWatchedPropertyNamesOnInit(watchedPropertyNames);
+		
 		valuesPropertyName = WindowConstants.lookupValuesName(getPropertyName());
 		watchedPropertyNames.add(valuesPropertyName);
-
-		this.watchedPropertyNames = watchedPropertyNames.build();
-
 	}
 
 	@Override
@@ -103,21 +102,19 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	}
 
 	@Override
-	public Set<PropertyName> getWatchedPropertyNames()
-	{
-		return watchedPropertyNames;
-	}
-
-	@Override
 	public void setValue(final PropertyName propertyName, Object value)
 	{
-		if (valuesPropertyName != null && Objects.equal(valuesPropertyName, propertyName))
+		if (Objects.equals(getPropertyName(), propertyName))
+		{
+			getComboDataSource().setCurrentValue(value);
+			super.setValue(propertyName, value);
+		}
+		else if (Objects.equals(valuesPropertyName, propertyName))
 		{
 			getComboDataSource().setLookupDataSourceFromObject(value);
 		}
 		else
 		{
-			getComboDataSource().setCurrentValue(value);
 			super.setValue(propertyName, value);
 		}
 	}
