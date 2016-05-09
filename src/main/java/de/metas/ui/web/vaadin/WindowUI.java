@@ -72,6 +72,7 @@ public class WindowUI extends UI
 			Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
 			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, requestCommand.getParameterAsInt("AD_Role_ID", 1000000));
 			Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
+			Env.setContext(ctx, Env.CTXNAME_ShowAcct, true);
 			// getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
 		}
 
