@@ -62,7 +62,6 @@ public class C_InvoiceLine
 	}
 
 	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
 	public void setIsPackagingMaterial(final I_C_InvoiceLine invoiceLine)
