@@ -38,14 +38,14 @@ import de.metas.ui.web.vaadin.util.FieldGroupModelWrapperHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,9 +59,11 @@ import de.metas.ui.web.vaadin.util.FieldGroupModelWrapperHelper;
 public class Application
 {
 
+	public static final String PROFILE_NAME_TESTING = "testing";
+
 	public static final void main(final String[] args)
 	{
-		 System.setProperty("PropertyFile", "./metasfresh.properties"); // FIXME: hardcoded
+		System.setProperty("PropertyFile", "./metasfresh.properties"); // FIXME: hardcoded
 
 		final ConfigurableApplicationContext context = new SpringApplicationBuilder(Application.class)
 				.headless(false) // FIXME: developing... we need it for now, in case CConnection is poping the config swing window
@@ -76,7 +78,7 @@ public class Application
 		}
 
 		Env.setContextProvider(new VaadinContextProvider());
-		
+
 		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
 	}
 
@@ -119,5 +121,22 @@ public class Application
 				});
 			}
 		};
+	}
+
+	/**
+	 * Returns <code>true</code> if the testing profile is active.<br>
+	 * Activate it by adding <code>spring.profiles.include=testing</code> to the application properties.
+	 * <p>
+	 * Thx to http://stackoverflow.com/questions/9267799/how-do-you-get-current-active-default-environment-profile-programatically-in-spr
+	 *
+	 * @return
+	 */
+	public static boolean isTesting()
+	{
+		if (getContext() == null && getContext().getEnvironment() == null)
+		{
+			return false; // guard against NPE
+		}
+		return getContext().getEnvironment().acceptsProfiles(PROFILE_NAME_TESTING);
 	}
 }
