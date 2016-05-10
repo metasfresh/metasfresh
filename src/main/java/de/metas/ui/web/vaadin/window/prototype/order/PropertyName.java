@@ -52,6 +52,7 @@ public final class PropertyName implements Serializable
 	 */
 	public static final PropertyName of(final PropertyName parent, final String name)
 	{
+		// FIXME: atm if we also append the parent's name to given name we will break a lot of display/readonly/mandatory/etc logics
 		if(true) return new PropertyName(name);
 		
 		
