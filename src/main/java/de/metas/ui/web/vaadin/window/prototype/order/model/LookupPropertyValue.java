@@ -41,6 +41,11 @@ import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
  */
 public class LookupPropertyValue implements PropertyValue
 {
+	public static final LookupPropertyValue cast(PropertyValue propertyValue)
+	{
+		return (LookupPropertyValue)propertyValue;
+	}
+	
 	private final PropertyName propertyName;
 	/** i.e. the value */
 	private final LookupDataSource lookupDataSource;
@@ -82,7 +87,7 @@ public class LookupPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public Object getValue()
+	public LookupDataSource getValue()
 	{
 		return lookupDataSource;
 	}
