@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.17.15 (upcoming)
+# metasfresh 4.17.16
 
 ## Features
  - Fresh 271 Allow easy and riskless experimental builds
