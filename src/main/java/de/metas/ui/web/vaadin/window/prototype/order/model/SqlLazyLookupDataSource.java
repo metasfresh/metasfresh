@@ -113,18 +113,54 @@ public class SqlLazyLookupDataSource implements LookupDataSource
 	@Override
 	public LookupValue findById(final Object id)
 	{
-		if(id == null)
+		final Object idNormalized = normalizeId(id);
+		if(idNormalized == null)
 		{
 			return null;
 		}
 		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
-		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
+		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, idNormalized);
 		if(displayName == null)
 		{
 			return null;
 		}
 		
-		return LookupValue.of(id, displayName);
+		return LookupValue.of(idNormalized, displayName);
+	}
+	
+	private final Object normalizeId(final Object id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+		
+		final boolean numericKey = sqlLookupDescriptor.isNumericKey();
+		if (numericKey)
+		{
+			if (id instanceof Number)
+			{
+				return ((Number)id).intValue();
+			}
+			
+			final String idStr = id.toString().trim();
+			if(idStr.isEmpty())
+			{
+				return null;
+			}
+			
+			final int idInt = Integer.parseInt(id.toString());
+			if(idInt < 0)
+			{
+				return null;
+			}
+			
+			return idInt;
+		}
+		else
+		{
+			return id.toString();
+		}
 	}
 	
 	private static final LookupValue toLookupValue(final NamePair namePair)
