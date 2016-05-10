@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -199,5 +200,11 @@ extends AbstractAttributeStorageFactory
 	protected void onAttributeStorageRemovedFromCache(final AttributeStorageType attributeStorage)
 	{
 		// nothing on this level
+	}
+	
+	@Override
+	protected void toString(final ToStringHelper stringHelper)
+	{
+		stringHelper.add("key2storage", key2storage);
 	}
 }

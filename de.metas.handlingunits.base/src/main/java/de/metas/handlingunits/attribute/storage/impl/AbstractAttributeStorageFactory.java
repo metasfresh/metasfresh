@@ -13,21 +13,23 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.Check;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -61,7 +63,7 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 			storage.addListener(listener);
 		}
 	}
-	
+
 	@Override
 	public final void removeAttributeStorageListener(final IAttributeStorageListener listener)
 	{
@@ -70,7 +72,7 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 		{
 			return;
 		}
-		
+
 		attributeStorageListeners.remove(listener);
 
 		//
@@ -80,7 +82,6 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 			storage.removeListener(listener);
 		}
 	}
-
 
 	/**
 	 * Gets current existing {@link IAttributeStorage}s from cache (if any)
@@ -108,6 +109,7 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 
 	/**
 	 * Removes current listeners from given {@link IAttributeStorage}.
+	 * 
 	 * @param attributeStorage
 	 */
 	protected final void removeListenersFromAttributeStorage(final IAttributeStorage attributeStorage)
@@ -149,4 +151,19 @@ public abstract class AbstractAttributeStorageFactory implements IAttributeStora
 	{
 		this.huStorageFactory = huStorageFactory;
 	}
+
+	@Override
+	public String toString()
+	{
+		final ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+		toString(stringHelper);
+
+		return stringHelper.toString();
+	}
+
+	protected void toString(final ToStringHelper stringHelper)
+	{
+		// nothing on this level
+	}
+
 }
