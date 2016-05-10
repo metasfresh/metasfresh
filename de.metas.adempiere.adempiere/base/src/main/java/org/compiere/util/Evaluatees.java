@@ -14,12 +14,12 @@ import org.adempiere.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,17 +32,21 @@ public final class Evaluatees
 	{
 		return SingletonEvaluatee.of(variableName, value);
 	}
-	
+
 	public static final Evaluatee2 ofMap(final Map<String, Object> map)
 	{
 		return new MapEvaluatee(map);
 	}
-	
+
+	/**
+	 *
+	 * @return a special instance that has no variables.
+	 */
 	public static final Evaluatee2 empty()
 	{
 		return EMPTY;
 	}
-	
+
 	private static final Evaluatee2 EMPTY = new Evaluatee2()
 	{
 		@Override
@@ -50,25 +54,25 @@ public final class Evaluatees
 		{
 			return false;
 		}
-		
+
 		@Override
 		public String get_ValueAsString(String variableName)
 		{
 			return null;
 		}
-		
-		
+
+
 		@Override
 		public String get_ValueOldAsString(String variableName)
 		{
 			return null;
 		}
 	};
-	
+
 	private static final class MapEvaluatee implements Evaluatee2
 	{
 		private final Map<String, Object> map;
-		
+
 		private MapEvaluatee(final Map<String, Object> map)
 		{
 			super();
@@ -94,6 +98,6 @@ public final class Evaluatees
 		{
 			return null;
 		}
-		
+
 	}
 }
