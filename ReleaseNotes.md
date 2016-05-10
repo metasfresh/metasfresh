@@ -12,6 +12,13 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.18.x (upcoming)
+
+## Features
+ - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
+
+## Fixes
+
 # metasfresh 4.17.16
 
 ## Features
