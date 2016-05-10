@@ -20,6 +20,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
 
 /*
@@ -183,19 +184,19 @@ public class PropertyValueCollection
 	{
 		if (propertyValue instanceof ObjectPropertyValue)
 		{
-			final IStringExpression defaultValueExpression = ((ObjectPropertyValue)propertyValue).getDefaultValueExpression();
+			final ObjectPropertyValue objectPropertyValue = (ObjectPropertyValue)propertyValue;
+			final IStringExpression defaultValueExpression = objectPropertyValue.getDefaultValueExpression();
 			if (defaultValueExpression == IStringExpression.NULL)
 			{
 				return null;
 			}
-			
+
+			//
+			// Evaluate expression
 			final Evaluatee evalCtx = asEvaluatee();
 			try
 			{
 				final String defaultValueStr = defaultValueExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
-				
-				// TODO: convert to proper type
-				//DisplayType.convertToDisplayType(defaultValueStr, columnName, displayType);
 				return defaultValueStr;
 			}
 			catch (Exception e)
@@ -260,6 +261,11 @@ public class PropertyValueCollection
 			else if (value instanceof String)
 			{
 				return value.toString();
+			}
+			else if (value instanceof LookupValue)
+			{
+				final Object idObj = ((LookupValue)value).getId();
+				return idObj == null ? null : idObj.toString().trim();
 			}
 			else
 			{
