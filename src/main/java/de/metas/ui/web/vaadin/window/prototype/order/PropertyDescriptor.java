@@ -87,10 +87,10 @@ public class PropertyDescriptor implements Serializable
 
 		//
 		// General
-		propertyName = builder.propertyName;
-		type = builder.type;
-		valueType = builder.valueType;
-		composedValuePartName = builder.composedValuePartName;
+		propertyName = builder.getPropertyName();
+		type = builder.getType();
+		valueType = builder.getValueType();
+		composedValuePartName = builder.getComposedValuePartName();
 		childPropertyDescriptors = builder.getChildPropertyDescriptors();
 		caption = builder.getCaption();
 		defaultValueExpression = builder.getDefaultValueExpression();
@@ -348,11 +348,21 @@ public class PropertyDescriptor implements Serializable
 			}
 			return this;
 		}
+		
+		public PropertyDescriptorType getType()
+		{
+			return type;
+		}
 
 		public Builder setValueType(final Class<?> valueType)
 		{
 			this.valueType = valueType;
 			return this;
+		}
+		
+		public Class<?> getValueType()
+		{
+			return this.valueType;
 		}
 
 		public Builder addChildPropertyDescriptor(final PropertyDescriptor childPropertyDescriptor)
@@ -366,6 +376,11 @@ public class PropertyDescriptor implements Serializable
 		{
 			this.composedValuePartName = composedValuePartName;
 			return this;
+		}
+		
+		public String getComposedValuePartName()
+		{
+			return composedValuePartName;
 		}
 		
 		public Builder setCaption(final String caption)
