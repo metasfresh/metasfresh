@@ -18,6 +18,7 @@ The actual release notes
  - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
 
 ## Fixes
+ - FRESH-300: client not starting when config is not completed
 
 # metasfresh 4.17.16
 
