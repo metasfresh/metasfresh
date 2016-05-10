@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="7ab5da58-2140-4be5-920f-d59a9f0730f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -15,46 +15,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	(
-		SELECT SUM(ot.TaxBaseAmt) FROM C_OrderTax ot
-		JOIN C_Tax t ON ot.C_Tax_ID = t.C_Tax_ID
-		WHERE ot.C_Order_ID = o.C_Order_ID and t.name NOT LIKE '%Gebinde%'
-	) NonHULines,
-	GrandTotal,
-	COALESCE(cur.cursymbol,cur.iso_code) AS iso_code,
-	isPrintTax,
-	isHULine,
-	sum.TaxBaseAmt,
-	CASE
-		WHEN round(sum.TaxRate,0) = sum.TaxRate THEN floor(sum.TaxRate)
-		WHEN round(sum.TaxRate,1) = sum.TaxRate THEN round(sum.TaxRate,1)
-		WHEN round(sum.TaxRate,2) = sum.TaxRate THEN round(sum.TaxRate,2)
-	END AS TaxRate,
-	sum.TaxAmt
-FROM
-	C_Order o
-	INNER JOIN
-	(
-		SELECT	o.C_Order_ID,
-			t.name LIKE '%Gebinde%' AS isHULine,
-			SUM(ot.TaxBaseAmt) AS TaxBaseAmt,
-			t.rate AS TaxRate,
-			SUM(ot.taxamt) AS TaxAmt
-		FROM 	C_Order o
-			LEFT OUTER JOIN C_OrderTax ot ON o.C_Order_ID = ot.C_Order_ID
-			LEFT OUTER JOIN C_Tax t ON ot.C_Tax_ID = t.C_Tax_ID
-		GROUP BY o.C_Order_ID, t.name LIKE '%Gebinde%', t.rate
-	) sum ON o.C_Order_ID = sum.C_Order_ID
-	INNER JOIN C_Currency cur ON o.C_Currency_ID = cur.C_Currency_ID
-	INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
-	INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
-WHERE
-	o.C_Order_ID = $P{c_order_id}
-ORDER BY
-	sum.isHULine, -- show HUs last
-	sum.TaxRate desc
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Order_Details_Sum ( $P{c_order_id});]]>
 	</queryString>
 	<field name="nonhulines" class="java.math.BigDecimal"/>
 	<field name="grandtotal" class="java.math.BigDecimal"/>
@@ -86,9 +47,6 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
-	<detail>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
 			<textField>
@@ -112,6 +70,8 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{nonhulines}]]></textFieldExpression>
 			</textField>
 		</band>
+	</columnHeader>
+	<detail>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{taxrate}.floatValue() != 0 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">

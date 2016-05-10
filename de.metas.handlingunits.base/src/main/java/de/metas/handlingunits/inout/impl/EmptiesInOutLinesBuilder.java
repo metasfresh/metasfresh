@@ -110,6 +110,8 @@ public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLin
 		final I_M_InOutLine inoutLine = inoutLinePMLine.getM_InOutLine();
 		inoutLine.setM_InOut(inout); // make sure inout line is linked to our M_InOut_ID (in case it was just saved)
 		inoutLine.setIsActive(true); // just to be sure
+		//task FRESH-273
+		inoutLine.setIsPackagingMaterial(true);
 		InterfaceWrapperHelper.save(inoutLine);
 	}
 
