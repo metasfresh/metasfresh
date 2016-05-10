@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -32,7 +16,7 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1718446902L;
+	private static final long serialVersionUID = -368074469L;
 
     /** Standard Constructor */
     public X_C_OrderTax (Properties ctx, int C_OrderTax_ID, String trxName)
@@ -42,6 +26,8 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
         {
 			setC_Order_ID (0);
 			setC_Tax_ID (0);
+			setIsPackagingTax (false);
+// N
 			setIsTaxIncluded (false);
 			setIsWholeTax (false);
 // N
@@ -64,14 +50,6 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_OrderTax[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -146,6 +124,29 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Packaging Tax.
+		@param IsPackagingTax Packaging Tax	  */
+	@Override
+	public void setIsPackagingTax (boolean IsPackagingTax)
+	{
+		set_Value (COLUMNNAME_IsPackagingTax, Boolean.valueOf(IsPackagingTax));
+	}
+
+	/** Get Packaging Tax.
+		@return Packaging Tax	  */
+	@Override
+	public boolean isPackagingTax () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPackagingTax);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Preis inklusive Steuern.

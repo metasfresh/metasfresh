@@ -13,15 +13,14 @@ package de.metas.invoice.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -46,6 +45,7 @@ public class C_InvoiceLine
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.adempiere.callout.C_InvoiceLine());
 	}
+
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
 	 */
@@ -59,5 +59,22 @@ public class C_InvoiceLine
 	public void updateIsReadOnly(final I_C_InvoiceLine invoiceLine)
 	{
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(InterfaceWrapperHelper.create(invoiceLine.getC_Invoice(), I_C_Invoice.class), invoiceLine);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+	public void setIsPackagingMaterial(final I_C_InvoiceLine invoiceLine)
+	{
+		if(invoiceLine.getC_OrderLine() == null)
+		{
+			// in case the c_orderline_id is removed, make sure the flag is on false. The user can set it on true, manually
+			invoiceLine.setIsPackagingMaterial(false);
+			return;
+		}
+
+		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), de.metas.interfaces.I_C_OrderLine.class);
+
+		invoiceLine.setIsPackagingMaterial(ol.isPackagingMaterial());
 	}
 }

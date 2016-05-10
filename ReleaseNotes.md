@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.17.15 (upcoming)
+# metasfresh 4.17.16
 
 ## Features
  - Fresh 271 Allow easy and riskless experimental builds
@@ -26,7 +26,9 @@ The actual release notes
     * extending the mail config to select a configuration by document type or base type
 	
 ## Fixes
-
+ - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
+	* Fixed the formatting and encoding problem in the mails send by our async processor
+	
 # metasfresh 4.16.15
 
 ## Features

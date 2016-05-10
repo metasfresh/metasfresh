@@ -71,7 +71,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	
+
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
 	private static final String STATUS_MESSAGE_SENT = "MessageSent";
@@ -154,9 +154,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final int processID = pInstance == null ? ProcessUtil.getCurrentProcessId() : pInstance.getAD_Process_ID();
 		final int orgID = pInstance == null ? ProcessUtil.getCurrentOrgId() : pInstance.getAD_Org_ID();
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
-		
+
 		final I_C_DocType docType = log.getC_DocType();
-			
+
 		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
 		final I_AD_User userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
@@ -172,7 +172,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final String subject = msgBL.getMsg(ctx, MSG_EmailSubject);
 			final String message = msgBL.getMsg(ctx, MSG_EmailMessage);
 
-			final boolean html = true; // can use HTML
+			// FRESH-203: HTML mails don't work for not-HTML texts, which are the majority or (even all?) among out AD_Messages
+			// setting this to false to avoid the formatting from being lost and non-ASCII-chars from being printed wrongly.
+			final boolean html = false;
 
 			final EMail email = mailBL.createEMail(ctx, mailbox, mailTo, subject, message, html);
 

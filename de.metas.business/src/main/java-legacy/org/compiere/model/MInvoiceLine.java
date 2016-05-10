@@ -247,6 +247,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(this, I_C_OrderLine.class);
 		il.setPrice_UOM_ID(ol.getPrice_UOM_ID());
+		il.setIsPackagingMaterial(ol.isPackagingMaterial());
 		//
 		setPriceEntered(oLine.getPriceEntered());
 		setPriceActual(oLine.getPriceActual());
@@ -401,6 +402,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setAD_OrgTrx_ID(sLine.getAD_OrgTrx_ID());
 		setUser1_ID(sLine.getUser1_ID());
 		setUser2_ID(sLine.getUser2_ID());
+		
+		//task FRESH-273
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final de.metas.inout.model.I_M_InOutLine sl = InterfaceWrapperHelper.create(sLine, de.metas.inout.model.I_M_InOutLine.class);		
+		il.setIsPackagingMaterial(sl.isPackagingMaterial());
+		
 	}	// setShipLine
 
 	/**
@@ -1561,6 +1568,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			setC_Activity_ID(rmaLine.getC_Activity_ID());
 		}
 		setC_Campaign_ID(rmaLine.getC_Campaign_ID());
+		
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		//task FRESH-273
+		il.setIsPackagingMaterial(true);
 	}
 
 	/**
