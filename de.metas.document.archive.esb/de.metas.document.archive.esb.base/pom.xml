@@ -20,8 +20,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.metas.document.archive.esb</groupId>
-			<artifactId>de.metas.document.archive.esb.api</artifactId>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

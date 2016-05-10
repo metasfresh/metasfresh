@@ -2,17 +2,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	
 	<parent>
-		<artifactId>de.metas.document.archive.esb</artifactId>
-		<groupId>de.metas.document.archive.esb</groupId>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 	
 	<modelVersion>4.0.0</modelVersion>
-
-	<artifactId>de.metas.document.archive.esb.api</artifactId>
+	
+	<groupId>de.metas.document.archive</groupId>
+	<artifactId>de.metas.document.archive.api</artifactId>
 	
 	<packaging>jar</packaging>
 
-	<description>Document Archive Management :: Camel ESB module</description>
+	<description>archive related API to be shared between metasfresh and external endpoints</description>
 
 </project>
