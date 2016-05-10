@@ -52,6 +52,9 @@ public final class PropertyName implements Serializable
 	 */
 	public static final PropertyName of(final PropertyName parent, final String name)
 	{
+		if(true) return new PropertyName(name);
+		
+		
 		return new PropertyName(parent.name + "/" + name);
 	}
 	
