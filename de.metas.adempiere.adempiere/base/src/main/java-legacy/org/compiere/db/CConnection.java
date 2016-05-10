@@ -26,6 +26,7 @@ import javax.naming.CommunicationException;
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -99,69 +100,82 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	private static final CConnection createInstance()
 	{
-		CConnection cc;
-
+		CConnection cc = null;
 		//
-		// Case: no connection settings found in Ini/config file
+		// First, try to create the connection from properties, if any
 		final String attributes = Ini.getProperty(Ini.P_CONNECTION);
-		if (Check.isEmpty(attributes))
+		if (!Check.isEmpty(attributes))
 		{
-			// Case: create a new connection from scratch
-			cc = new CConnection(null);
-			cc.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
-
-			// Ask the user (UI!) to provide the parameters
-			final CConnectionDialog ccd = new CConnectionDialog(cc);
-			cc = ccd.getConnection();
-
-			// If user canceled this dialog, there is NO point to go forward because it will propagate the wrong connection (task 09327)
-			if (ccd.isCancel())
+			cc = new CConnection();
+			try
 			{
-				throw new DBNoConnectionException("User canceled the connection dialog");
+				cc.setAttributes(attributes);
+				cc.testDatabaseIfNeeded();
 			}
-
-			// Test database connection
-			if (!ccd.isCancel() && !cc.isDatabaseOK())
+			catch (Exception e)
 			{
-				try
-				{
-					cc.testDatabase();
-				}
-				catch (Exception e)
-				{
-					log.error(e.getMessage(), e);
-				}
+				cc = null;
+				log.error("Failed loading the connection from attributes: {}", attributes, e);
 			}
-
-			// set also in ALogin and Ctrl
-			Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
-			Ini.saveProperties();
 		}
+		
 		//
-		// Case: connection settings are available
-		else
+		// Ask user to provide the configuration if not already configured
+		while(cc == null || !cc.isDatabaseOK())
 		{
-			cc = new CConnection(null);
-			cc.setAttributes(attributes);
+			cc = createInstance_FromUI(cc);
+			cc.testDatabaseIfNeeded();
 		}
+		Check.assumeNotNull(cc, "cc not null"); // shall never happen
 
+		//
+		// Save connection configuration to settings
+		Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
+		Ini.saveProperties();
+
+		//
+		// Return the newly created connection
 		log.debug("Created: {}", cc);
 		return cc;
 	}
 
-	/**************************************************************************
-	 * Adempiere Connection
-	 *
-	 * @param host optional application/db host
+	/**
+	 * Creates a connection configuration by asking the user.
+	 * 
+	 * @param ccTemplate connection template (optional)
+	 * @return user created {@link CConnection}; never returns <code>null</code>
+	 * @throws DBNoConnectionException if user canceled the settings panel
 	 */
-	public CConnection(final String host)
+	private static CConnection createInstance_FromUI(final CConnection ccTemplate)
+	{
+		final CConnection ccTemplateToUse;
+		if (ccTemplate == null)
+		{
+			ccTemplateToUse = new CConnection();
+			ccTemplateToUse.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
+		}
+		else
+		{
+			 ccTemplateToUse = ccTemplate;			
+		}
+
+		// Ask the user (UI!) to provide the parameters
+		final CConnectionDialog ccd = new CConnectionDialog(ccTemplateToUse);
+		final CConnection cc = ccd.getConnection();
+		Check.assumeNotNull(cc, "cc not null"); // shall not happen
+
+		// If user canceled this dialog, there is NO point to go forward because it will propagate the wrong connection (task 09327)
+		if (ccd.isCancel())
+		{
+			throw new DBNoConnectionException("User canceled the connection dialog");
+		}
+		
+		return cc;
+	}
+
+	private CConnection()
 	{
 		super();
-		if (host != null)
-		{
-			attrs.setAppsHost(host);
-			attrs.setDbHost(host);
-		}
 	} 	// CConnection
 
 	/** Connection attributes */
@@ -668,7 +682,7 @@ public final class CConnection implements Serializable, Cloneable
 	 *
 	 * @return true if database connection is OK
 	 */
-	// NOTE: this method is SUPPOSED to not contact the database server or do any expensive opperations.
+	// NOTE: this method is SUPPOSED to not contact the database server or do any expensive operations.
 	// It shall just return a status flag.
 	// Before changing this, check the caller, and mainly check in this class, because there are some methods which depends on this approach.
 	public final boolean isDatabaseOK()
@@ -796,6 +810,34 @@ public final class CConnection implements Serializable, Cloneable
 			DB.close(conn);
 		}
 	} 	// testDatabase
+	
+	/**
+	 * Tests database connection, if not already tested.
+	 * 
+	 * This method never throws an exception.
+	 * 
+	 * @return true if database connection is OK
+	 */
+	private final boolean testDatabaseIfNeeded()
+	{
+		// Check if database connection is already OK
+		if (isDatabaseOK())
+		{
+			return true;
+		}
+
+		// Test database connection now
+		try
+		{
+			testDatabase();
+			return true;
+		}
+		catch (Exception e)
+		{
+			log.error("Testing database connection failed for {}", this, e);
+			return false;
+		}
+	}
 
 	/*************************************************************************
 	 * Short String representation
@@ -860,7 +902,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * String representation.
-	 * Used also for Instanciation
+	 * Used also for Instantiation
 	 *
 	 * @return string representation
 	 * @see #setAttributes(String) setAttributes
@@ -874,6 +916,7 @@ public final class CConnection implements Serializable, Cloneable
 	 * Set Attributes from String (pares toStringLong())
 	 *
 	 * @param attributes attributes
+	 * @throws AdempiereException if something went wrong
 	 */
 	private void setAttributes(final String attributes)
 	{
@@ -898,13 +941,13 @@ public final class CConnection implements Serializable, Cloneable
 			//
 			setDbUid(connectionString.getDbUid());
 			setDbPwd(connectionString.getDbPwd());
-			//
 		}
 		catch (Exception e)
 		{
-			log.error(attributes + " - " + e.toString());
+			// NOTE: don't append the attributes because the exception will be logged and "attributes" might contain sensitive informations (like db password).
+			throw new AdempiereException("Cannot configure connection from attributes", e);
 		}
-	}	// setAttributes
+	}
 
 	/**
 	 * Equals
