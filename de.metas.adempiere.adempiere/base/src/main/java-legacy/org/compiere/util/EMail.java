@@ -97,7 +97,7 @@ public final class EMail implements Serializable
 	 * @param to Recipient EMail address
 	 * @param subject Subject of message
 	 * @param message The message
-	 * @param html
+	 * @param html if <code>true</code> then the given <code>message</code> is stored as <code>text/html</code>. This causes big problems with formatting and the display of non-ASCII chars, unless the given message is <b>really<b> in html.
 	 */
 	public EMail(final MClient client, final String from, final String to,
 			final String subject, final String message, final boolean html)
@@ -254,7 +254,7 @@ public final class EMail implements Serializable
 			}
 
 			session = Session.getInstance(props, m_auth);
-			session.setDebug(LogManager.isLevelFinest());
+			session.setDebug(log.isDebugEnabled());
 		}
 		catch (final SecurityException se)
 		{
@@ -288,7 +288,7 @@ public final class EMail implements Serializable
 			}
 			//
 			m_msg.setSentDate(new java.util.Date());
-			m_msg.setHeader("Comments", "AdempiereMail");
+			m_msg.setHeader("Comments", "mail send by metasfresh");
 			// m_msg.setDescription("Description");
 			// SMTP specifics
 			m_msg.setAllow8bitMIME(true);
@@ -1067,8 +1067,8 @@ public final class EMail implements Serializable
 		{
 			// First Part - Message
 			final MimeBodyPart mbp_1 = new MimeBodyPart();
-			mbp_1.setText("");
-			if (m_messageHTML == null || m_messageHTML.length() == 0)
+
+			if (Check.isEmpty(m_messageHTML, true))
 			{
 				mbp_1.setText(getMessageCRLF(), charSetName);
 			}
@@ -1080,7 +1080,7 @@ public final class EMail implements Serializable
 			// Create Multipart and its parts to it
 			final Multipart mp = new MimeMultipart();
 			mp.addBodyPart(mbp_1);
-			log.debug("(multi) " + getSubject() + " - " + mbp_1);
+			log.debug("Composing multipart message for subject {} - {}", getSubject(), mbp_1);
 
 			// for all attachments
 			for (int i = 0; i < m_attachments.size(); i++)
@@ -1124,7 +1124,7 @@ public final class EMail implements Serializable
 
 			// Add to Message
 			m_msg.setContent(mp);
-		} 	// multi=part
+		}  	// multi=part
 	}	// setContent
 
 	/**************************************************************************
@@ -1225,7 +1225,7 @@ public final class EMail implements Serializable
 		}
 
 		// Subject
-		if (m_subject == null || m_subject.length() == 0)
+		if (Check.isEmpty(m_subject, true))
 		{
 			final String errmsg = "Subject is invalid=" + m_subject;
 			reason.append(errmsg);
