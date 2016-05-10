@@ -194,6 +194,7 @@ public class ObjectPropertyValue implements PropertyValue
 	
 	private LookupDataSource getLookupDataSource()
 	{
+		// TODO: optimize
 		final PropertyName lookupPropertyName = WindowConstants.lookupValuesName(getName());
 		final LookupPropertyValue lookupPropertyValue = LookupPropertyValue.cast(getChildPropertyValues().get(lookupPropertyName));
 		return lookupPropertyValue.getValue();

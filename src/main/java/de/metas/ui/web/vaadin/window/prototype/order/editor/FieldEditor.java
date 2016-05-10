@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
@@ -18,6 +19,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.Label;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
@@ -47,6 +49,8 @@ import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 @SuppressWarnings("serial")
 public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 {
+	private static final Logger logger = LogManager.getLogger(FieldEditor.class);
+
 	static final String STYLE_Field = "mf-editor-field";
 	private final AbstractField<T> valueField;
 	
@@ -54,8 +58,8 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	private PropertyName propertyName_Mandatory;
 	private PropertyName propertyName_Displayed;
 	
-	private boolean readonly = false;
-	private boolean mandatory = false;
+//	private boolean readonly = false;
+//	private boolean mandatory = false;
 	private boolean displayed = true;
 
 	public FieldEditor(final PropertyDescriptor descriptor)
@@ -329,6 +333,8 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	@SuppressWarnings("rawtypes")
 	public void setPropertyDataSource(final Property newDataSource)
 	{
+		logger.trace("Setting property data source to {}: {}", this, newDataSource);
+		
 		valueField.setPropertyDataSource(newDataSource);
 	}
 
@@ -389,12 +395,12 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	
 	private void setReadonly(final boolean readonly)
 	{
-		if(this.readonly == readonly)
-		{
-			return;
-		}
-		
-		this.readonly = readonly;
+//		if(this.readonly == readonly)
+//		{
+//			return;
+//		}
+//		
+//		this.readonly = readonly;
 		
 		// Update UI
 		valueField.setReadOnly(readonly);
@@ -402,12 +408,12 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 	
 	private void setMandatory(boolean mandatory)
 	{
-		if(this.mandatory == mandatory)
-		{
-			return;
-		}
-		
-		this.mandatory = mandatory;
+//		if(this.mandatory == mandatory)
+//		{
+//			return;
+//		}
+//		
+//		this.mandatory = mandatory;
 		
 		// Update UI
 		this.setRequired(mandatory);

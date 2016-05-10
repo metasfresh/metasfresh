@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -55,13 +56,22 @@ final class GridEditorDataContainer extends AbstractContainer
 	private final Property.ValueChangeListener cellValueChangedListenerDelegate = new Property.ValueChangeListener()
 	{
 		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("gridPropertyName", descriptor.getPropertyName())
+					.add("objectId", System.identityHashCode(this))
+					.toString();
+		};
+
+		@Override
 		public void valueChange(Property.ValueChangeEvent event)
 		{
-			if(editorListener == null)
+			if (editorListener == null)
 			{
 				return;
 			}
-				
+
 			final PropertyName gridPropertyName = descriptor.getPropertyName();
 			final GridCellProperty cell = (GridCellProperty)event.getProperty();
 			final GridRowId rowId = cell.getRowId();
@@ -70,7 +80,7 @@ final class GridEditorDataContainer extends AbstractContainer
 			editorListener.gridValueChanged(gridPropertyName, rowId, propertyName, value);
 		}
 	};
-	
+
 	public GridEditorDataContainer(final PropertyDescriptor descriptor)
 	{
 		super();
@@ -89,7 +99,7 @@ final class GridEditorDataContainer extends AbstractContainer
 		}
 		this.visiblePropertyNames = propertyNames.build();
 	}
-	
+
 	public void setEditorListener(final EditorListener listener)
 	{
 		this.editorListener = listener != null ? listener : NullEditorListener.instance;
@@ -133,7 +143,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	{
 		return visiblePropertyNames;
 	}
-	
+
 	public String getHeader(final Object propertyId)
 	{
 		final PropertyDescriptor childPropertyDescriptor = descriptor.getChildPropertyDescriptorsAsMap().get(propertyId);
@@ -141,7 +151,7 @@ final class GridEditorDataContainer extends AbstractContainer
 		{
 			return childPropertyDescriptor.getCaption();
 		}
-		
+
 		return "";
 	}
 
@@ -315,19 +325,21 @@ final class GridEditorDataContainer extends AbstractContainer
 	@Override
 	public boolean isFirstId(Object itemId)
 	{
-        if (itemId == null) {
-            return false;
-        }
-        return itemId.equals(firstItemId());
+		if (itemId == null)
+		{
+			return false;
+		}
+		return itemId.equals(firstItemId());
 	}
 
 	@Override
 	public boolean isLastId(Object itemId)
 	{
-        if (itemId == null) {
-            return false;
-        }
-        return itemId.equals(lastItemId());
+		if (itemId == null)
+		{
+			return false;
+		}
+		return itemId.equals(lastItemId());
 	}
 
 	@Override
