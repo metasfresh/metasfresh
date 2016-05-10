@@ -39,6 +39,8 @@ public class ObjectPropertyValue implements PropertyValue
 	private final String composedValuePartName;
 	private final PropertyNameDependenciesMap dependencies;
 
+	private Class<?> valueType;
+
 	private final IStringExpression defaultValueExpression;
 	private final Object initialValue;
 	private Object value;
@@ -52,6 +54,8 @@ public class ObjectPropertyValue implements PropertyValue
 		propertyName = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
+		
+		valueType = builder.getValueType();
 		
 		defaultValueExpression = builder.getDefaultValueExpression();
 		initialValue = builder.getInitialValue();
@@ -94,6 +98,11 @@ public class ObjectPropertyValue implements PropertyValue
 	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		// nothing on this level
+	}
+	
+	public Class<?> getValueType()
+	{
+		return valueType;
 	}
 
 	public IStringExpression getDefaultValueExpression()

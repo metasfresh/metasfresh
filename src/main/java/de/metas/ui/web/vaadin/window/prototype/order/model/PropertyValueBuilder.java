@@ -209,4 +209,15 @@ public final class PropertyValueBuilder
 
 		return IStringExpression.NULL;
 	}
+	
+	public Class<?> getValueType()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getValueType();
+		}
+
+		return null;
+	}
 }
