@@ -4,12 +4,18 @@ import java.util.Map;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
+import de.metas.ui.web.vaadin.window.prototype.order.editor.NullValue;
 
 /*
  * #%L
@@ -35,6 +41,8 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
 
 public class ObjectPropertyValue implements PropertyValue
 {
+	private static final Logger logger = LogManager.getLogger(ObjectPropertyValue.class);
+
 	private final PropertyName propertyName;
 	private final String composedValuePartName;
 	private final PropertyNameDependenciesMap dependencies;
@@ -47,7 +55,7 @@ public class ObjectPropertyValue implements PropertyValue
 
 	private final ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
 	private final boolean readOnlyForUser;
-
+	
 	ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
@@ -63,13 +71,7 @@ public class ObjectPropertyValue implements PropertyValue
 		
 		readOnlyForUser = builder.isReadOnlyForUser();
 		
-//		final ILogicExpression readonlyLogic = builder.getReadonlyLogic();
-//		final ILogicExpression mandatoryLogic = builder.getMandatoryLogic();
-//		final ILogicExpression displayLogic = builder.getDisplayLogic();
 		dependencies = PropertyNameDependenciesMap.builder()
-//				.add(propertyName, PropertyName.toSet(readonlyLogic.getParameters()), DependencyType.ReadonlyLogic)
-//				.add(propertyName, PropertyName.toSet(mandatoryLogic.getParameters()), DependencyType.MandatoryLogic)
-//				.add(propertyName, PropertyName.toSet(displayLogic.getParameters()), DependencyType.DisplayLogic)
 				.build();
 	}
 
@@ -126,7 +128,75 @@ public class ObjectPropertyValue implements PropertyValue
 	@Override
 	public void setValue(final Object value)
 	{
-		this.value = value;
+		this.value = convertToValueType(value);
+	}
+
+	private Object convertToValueType(final Object valueObj)
+	{
+		if(NullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		if (valueType == null)
+		{
+			// no particular value type specified => nothing to convert
+			return valueObj;
+		}
+		
+		final Class<?> valueObjClass = valueObj.getClass();
+		if (valueType.isAssignableFrom(valueObjClass))
+		{
+			return valueObj;
+		}
+		
+		else if (String.class.isAssignableFrom(valueType))
+		{
+			return valueObj.toString();
+		}
+		else if (java.util.Date.class.isAssignableFrom(valueType))
+		{
+			return DisplayType.convertToDisplayType(valueObj.toString(), null, DisplayType.DateTime);
+		}
+		else if(Boolean.class.isAssignableFrom(valueType))
+		{
+			return DisplayType.toBoolean(valueObj);
+		}
+		else if (Integer.class.isAssignableFrom(valueType))
+		{
+			if (valueObj instanceof Number)
+			{
+				return ((Number)valueObj).intValue();
+			}
+			return DisplayType.convertToDisplayType(valueObj.toString(), null, DisplayType.Integer);
+		}
+		else if (java.math.BigDecimal.class.isAssignableFrom(valueType))
+		{
+			return new java.math.BigDecimal(valueObj.toString());
+		}
+		else if(LookupValue.class.isAssignableFrom(valueType))
+		{
+			final LookupDataSource lookupDataSource = getLookupDataSource();
+			if(lookupDataSource == null)
+			{
+				logger.warn("No lookup datasource found for {}", this);
+				return null; // TODO: throw ex?
+			}
+			
+			final LookupValue lookupValue = lookupDataSource.findById(valueObj);
+			return lookupValue;
+		}
+		else
+		{
+			logger.warn("Cannot convert '{}' to '{}'", valueObj, valueType);
+			return null;
+		}
+	}
+	
+	private LookupDataSource getLookupDataSource()
+	{
+		final PropertyName lookupPropertyName = WindowConstants.lookupValuesName(getName());
+		final LookupPropertyValue lookupPropertyValue = LookupPropertyValue.cast(getChildPropertyValues().get(lookupPropertyName));
+		return lookupPropertyValue.getValue();
 	}
 
 	public Object getInitialValue()
