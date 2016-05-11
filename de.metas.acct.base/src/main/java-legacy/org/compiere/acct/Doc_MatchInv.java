@@ -47,17 +47,17 @@ import de.metas.tax.api.ITaxBL;
 
 /**
  * Post MatchInv Documents.
- * 
+ *
  * <pre>
  *  Table:              M_MatchInv (472)
  *  Document Types:     MXI
  * </pre>
- * 
+ *
  * Update Costing Records
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Doc_MatchInv.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- * 
+ *
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
  *          2789949 ] Multicurrency in matching posting
  */
@@ -79,7 +79,7 @@ public class Doc_MatchInv extends Doc
 	private BigDecimal invoiceLineNetAmt = null;
 	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
 	private boolean isCreditMemoInvoice;
-	
+
 	/** Material Receipt */
 	private I_M_InOutLine m_receiptLine = null;
 
@@ -87,7 +87,7 @@ public class Doc_MatchInv extends Doc
 
 	/**
 	 * Load Specific Document Details
-	 * 
+	 *
 	 * @return error message or null
 	 */
 	@Override
@@ -105,11 +105,11 @@ public class Doc_MatchInv extends Doc
 			m_invoiceLine = InterfaceWrapperHelper.create(matchInv.getC_InvoiceLine(), I_C_InvoiceLine.class);
 			final I_C_Invoice invoice = m_invoiceLine.getC_Invoice();
 			this.isCreditMemoInvoice = invoiceBL.isCreditMemo(invoice);
-			
+
 			// BP for NotInvoicedReceipts
 			final int C_BPartner_ID = invoice.getC_BPartner_ID();
 			setC_BPartner_ID(C_BPartner_ID);
-			
+
 			invoiceCurrencyId = invoice.getC_Currency_ID();
 			invoiceLineNetAmt = m_invoiceLine.getLineNetAmt();
 
@@ -129,10 +129,10 @@ public class Doc_MatchInv extends Doc
 			}	// correct included Tax
 
 		}
-		
+
 		// Receipt info
 		m_receiptLine = matchInv.getM_InOutLine();
-		
+
 		// Product costing
 		m_pc = new ProductCost(getCtx(),
 				getM_Product_ID(), matchInv.getM_AttributeSetInstance_ID(),
@@ -150,7 +150,7 @@ public class Doc_MatchInv extends Doc
 
 	/**************************************************************************
 	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
-	 * 
+	 *
 	 * @return Zero (always balanced)
 	 */
 	@Override
@@ -161,7 +161,7 @@ public class Doc_MatchInv extends Doc
 
 	/**
 	 * Create Facts (the accounting logic) for MXI. (single line)
-	 * 
+	 *
 	 * <pre>
 	 *      NotInvoicedReceipts     DR			(Receipt Org)
 	 *      InventoryClearing               CR
@@ -170,7 +170,7 @@ public class Doc_MatchInv extends Doc
 	 * 		Expense							CR
 	 * 		Offset					DR
 	 * </pre>
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */
@@ -251,7 +251,7 @@ public class Doc_MatchInv extends Doc
 					// NOTE: there could be quite a lot of M_MatchInvs which don't have the M_InOut already posted,
 					// and we want to avoid filling the log file with all these issues
 					.setLogLevel(Level.INFO)
-					.setDetailMessage("Mat.Receipt not posted yet");
+					.setDetailMessage("Material Receipt (Line M_InOutLine_ID=" + m_receiptLine.getM_InOutLine_ID() + ") not posted yet");
 		}
 		if (log.isDebugEnabled())
 			log.debug("DR - Amt(" + dr.getAcctBalance() + ") - " + dr.toString());
@@ -279,7 +279,7 @@ public class Doc_MatchInv extends Doc
 		{
 			LineNetAmt = LineNetAmt.negate();
 		}
-		
+
 		final FactLine cr;
 		final int invoiceCurrencyId = getInvoiceCurrencyId();
 		if (as.isAccrual())
@@ -295,12 +295,12 @@ public class Doc_MatchInv extends Doc
 			{
 				log.debug("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
 				createFacts_InvoicePriceVariance(fact, dr, cr);
-				
+
 				facts.add(fact);
 				return facts;
 			}
 			cr.setQty(getQty().negate());
-			
+
 			if (log.isDebugEnabled())
 				log.debug("CR - Amt(" + cr.getAcctBalance() + ") - " + cr.toString());
 		}
@@ -332,7 +332,7 @@ public class Doc_MatchInv extends Doc
 		{
 			final MAccount acct_dr = dr.getAccount(); // not_invoiced_receipts
 			final MAccount acct_cr = cr.getAccount(); // inventory_clearing
-	
+
 			if (acct_dr.equals(acct_cr) && (!isInterOrg(as)))
 			{
 				BigDecimal debit = dr.getAmtAcctDr();
@@ -352,7 +352,7 @@ public class Doc_MatchInv extends Doc
 		//
 		// Update Costing
 		updateProductInfo(as.getC_AcctSchema_ID(), MAcctSchema.COSTINGMETHOD_StandardCosting.equals(as.getCostingMethod()));
-		
+
 		//
 		facts.add(fact);
 
@@ -381,7 +381,7 @@ public class Doc_MatchInv extends Doc
 		Check.assumeNotNull(fact, "fact not null");
 		Check.assumeNotNull(dr, "dr not null");
 		// Check.assumeNotNull(cr, "cr not null"); // CR can be null
-		
+
 		final MAcctSchema as = fact.getAcctSchema();
 
 		//
@@ -394,13 +394,13 @@ public class Doc_MatchInv extends Doc
 			ipvAmount = dr.getSourceBalance().negate();
 			ipvCurrencyId = getInvoiceCurrencyId();
 		}
-		// Case: both lines are not null 
+		// Case: both lines are not null
 		else
 		{
 			ipvAmount = cr.getAcctBalance().add(dr.getAcctBalance()).negate();
 			ipvCurrencyId = as.getC_Currency_ID();
 		}
-		
+
 		// If there is no invoice price variance => do nothing
 		if (ipvAmount.signum() == 0)
 		{
@@ -413,23 +413,23 @@ public class Doc_MatchInv extends Doc
 
 		//
 		// In case the DR line (InOut - NotInvoicedReceipts) is zero,
-		// make sure sure our IPV line is not on the same DR/CR side as the CR line (Invoice - InventoryClearing) 
+		// make sure sure our IPV line is not on the same DR/CR side as the CR line (Invoice - InventoryClearing)
 		if(dr.isZeroAmtSource()
 				&& cr != null && cr.isSameAmtSourceDrCrSideAs(ipvFactLine))
 		{
 			ipvFactLine.invertDrAndCrAmounts();
 			ipvFactLine.negateDrAndCrAmounts();
 		}
-		
+
 		updateFromInvoiceLine(ipvFactLine);
-		
+
 		if (log.isDebugEnabled())
 			log.debug("IPV=" + ipvAmount + "; Balance=" + fact.getSourceBalance());
 	}
 
 	/**
 	 * Verify if the posting involves two or more organizations
-	 * 
+	 *
 	 * @return true if there are more than one org involved on the posting
 	 */
 	private boolean isInterOrg(final MAcctSchema as)
@@ -450,7 +450,7 @@ public class Doc_MatchInv extends Doc
 
 	/**
 	 * Update Product Info (old). - Costing (CostStandardCumQty, CostStandardCumAmt, CostAverageCumQty, CostAverageCumAmt)
-	 * 
+	 *
 	 * @param C_AcctSchema_ID accounting schema
 	 * @param standardCosting true if std costing
 	 * @return true if updated
@@ -513,7 +513,7 @@ public class Doc_MatchInv extends Doc
 		}
 		return true;
 	}   // updateProductInfo
-	
+
 	private final int getInvoiceCurrencyId()
 	{
 		return this.invoiceCurrencyId;
@@ -530,7 +530,7 @@ public class Doc_MatchInv extends Doc
 	{
 		return m_invoiceLine.getQtyInvoiced();
 	}
-	
+
 	public final ICurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
 		if (invoiceCurrencyConversionCtx == null)
@@ -546,15 +546,15 @@ public class Doc_MatchInv extends Doc
 		}
 		return invoiceCurrencyConversionCtx;
 	}
-	
+
 	private final boolean isCreditMemoInvoice()
 	{
 		return isCreditMemoInvoice;
 	}
-	
+
 	/**
 	 * Updates dimensions and UOM of given FactLine from invoice line.
-	 * 
+	 *
 	 * @param fl
 	 */
 	private final void updateFromInvoiceLine(final FactLine fl)
@@ -563,14 +563,14 @@ public class Doc_MatchInv extends Doc
 		{
 			return;
 		}
-		
+
 		fl.setC_Activity_ID(m_invoiceLine.getC_Activity_ID());
 		fl.setC_Campaign_ID(m_invoiceLine.getC_Campaign_ID());
 		fl.setC_Project_ID(m_invoiceLine.getC_Project_ID());
 		fl.setC_UOM_ID(m_invoiceLine.getPrice_UOM_ID());
 		fl.setUser1_ID(m_invoiceLine.getUser1_ID());
 		fl.setUser2_ID(m_invoiceLine.getUser2_ID());
-		
+
 	}
 
 }   // Doc_MatchInv
