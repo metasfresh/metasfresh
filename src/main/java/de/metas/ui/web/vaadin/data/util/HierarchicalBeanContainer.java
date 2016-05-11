@@ -52,26 +52,9 @@ public class HierarchicalBeanContainer<BT extends TreeItem<BT>>
 	public HierarchicalBeanContainer(final Class<BT> type)
 	{
 		super(type);
-		super.setBeanIdResolver(new BeanIdResolver<Integer, BT>()
-		{
-			private static final long serialVersionUID = 14343948239048L;
-
-			@Override
-			public Integer getIdForBean(final BT bean)
-			{
-				return bean.getId();
-			}
-		});
-		
+		super.setBeanIdResolver(bean -> bean.getId());
 	}
 	
-	public HierarchicalBeanContainer(final Class<BT> type, final BT root)
-	{
-		this(type);
-		addRoot(root);
-	}
-
-
 	@Override
 	public BeanItem<BT> addBean(final BT bean)
 	{

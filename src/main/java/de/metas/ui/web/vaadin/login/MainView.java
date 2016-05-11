@@ -3,12 +3,8 @@ package de.metas.ui.web.vaadin.login;
 import org.compiere.model.X_AD_Menu;
 
 import com.vaadin.data.Container.Filter;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.filter.SimpleStringFilter;
-import com.vaadin.event.FieldEvents.TextChangeEvent;
-import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextField;
@@ -45,8 +41,6 @@ import de.metas.ui.web.vaadin.window.components.AWindow;
 @SuppressWarnings("serial")
 public class MainView extends HorizontalLayout
 {
-	private static final long serialVersionUID = -6769042428364695820L;
-
 	private HierarchicalBeanContainer<MenuTreeNode> menuTreeContainer;
 	private Filter menuTreeFilter = null;
 
@@ -62,42 +56,14 @@ public class MainView extends HorizontalLayout
 		{
 			final TextField searchText = new TextField();
 			searchText.setImmediate(true);
-			searchText.addTextChangeListener(new TextChangeListener()
-			{
-
-				@Override
-				public void textChange(final TextChangeEvent event)
-				{
-					final String text = event.getText();
-					onSearchText(text);
-				}
-			});
+			searchText.addTextChangeListener(event -> onSearchText(event.getText()));
 
 			menuTreeContainer = new MenuTreeProvider().getMenuTree();
 			final Tree menuTree = new Tree();
 			menuTree.setContainerDataSource(menuTreeContainer);
 			menuTree.setItemCaptionPropertyId(HierarchicalBeanContainer.PROPERTYID_Caption);
 			menuTree.setItemIconPropertyId(HierarchicalBeanContainer.PROPERTYID_Icon);
-			menuTree.addValueChangeListener(new ValueChangeListener()
-			{
-
-				@Override
-				public void valueChange(final ValueChangeEvent event)
-				{
-					final Object menuId = event.getProperty().getValue();
-					if(menuId == null)
-					{
-						return;
-					}
-					final BeanItem<MenuTreeNode> menuItem = menuTreeContainer.getItem(menuId);
-					if (menuItem == null)
-					{
-						return;
-					}
-					final MenuTreeNode menuNode = menuItem.getBean();
-					onMenuItemSelected(menuNode);
-				}
-			});
+			menuTree.addValueChangeListener(event -> onMenuItemSelected(findMenuTreeNodeById(event.getProperty().getValue())));
 
 			final VerticalLayout menuTreeWrapper = new VerticalLayout(searchText, menuTree);
 			addComponents(menuTreeWrapper);
@@ -157,9 +123,29 @@ public class MainView extends HorizontalLayout
 		menuTreeFilter = filter;
 
 	}
+	
+	private MenuTreeNode findMenuTreeNodeById(final Object menuId)
+	{
+		if (menuId == null)
+		{
+			return null;
+		}
+		final BeanItem<MenuTreeNode> menuItem = menuTreeContainer.getItem(menuId);
+		if (menuItem == null)
+		{
+			return null;
+		}
+		final MenuTreeNode menuNode = menuItem.getBean();
+		return menuNode;
+	}
 
 	private void onMenuItemSelected(final MenuTreeNode menuNode)
 	{
+		if(menuNode == null)
+		{
+			return;
+		}
+		
 		final String action = menuNode.getAction();
 
 		if (X_AD_Menu.ACTION_Window.equals(action))
@@ -176,7 +162,7 @@ public class MainView extends HorizontalLayout
 	private void openWindow(final int adWindowId)
 	{
 		final AWindow windowComp = new AWindow(adWindowId);
-		
+
 		contentWrapper.removeAllComponents();
 		contentWrapper.addComponent(windowComp);
 	}
