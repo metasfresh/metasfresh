@@ -15,63 +15,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[-- Note: This query is a copy of report_details.
-SELECT
-	Name, -- product
-	SUM( HUQty ) AS HUQty,
-	SUM( MovementQty ) AS MovementQty,
-	UOMSymbol
-FROM
-	-- Note: This query is a copy of report_details and some part were removed for speed. So the grouping outside of
-	-- the subquery is not really necessary anymore. But it was not changed to spare the effort. Original comment:
-	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
-	-- (Otherwise we'd have to copy the attributes sub select in the group by clause which. Hint: That would suck)
-	(
-	SELECT
-		iol.line,
-		COALESCE(pt.Name, p.name)		AS Name,
-		iol.QtyEnteredTU			AS HUQty,
-		iol.MovementQty,
-		COALESCE(uomt.UOMSymbol, uom.UOMSymbol) 	AS UOMSymbol
-	FROM
-		-- All In Outs linked to the order
-		(
-		SELECT DISTINCT
-			io.*
-		FROM
-			-- All In Out Lines directly linked to the order
-			M_InOutLine iol
-			INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-			INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-				AND rs.AD_Table_ID = ((SELECT tbl.AD_Table_ID FROM AD_Table tbl WHERE tbl.TableName = 'C_OrderLine'))
-			INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
-			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
-		WHERE
-			ol.C_Order_ID = $P{c_order_id}
-			AND io.DocStatus IN ('CO','CL')
-		) io
-		/*
-		 * Now, join all in out lines of those in outs. Might be more than the in out lines selected in the previous
-		 * sub select because not all in out lines are linked to the order (e.g Packing material). NOTE: Due to the
-		 * process we assume, that all lines of one inout belong to only one order
-		 */
-		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID
-		-- Product and its translation
-		LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
-		LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $P{ad_language}
-		LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-		-- Unit of measurement & its translation
-		LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
-		LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $P{ad_language}
-	WHERE
-		pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-	) iol
-GROUP BY
-	Name, -- product
-	UOMSymbol
-ORDER BY
-	Name
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_HU ( $P{c_order_id}, $P{ad_language} );]]>
 	</queryString>
 	<field name="name" class="java.lang.String"/>
 	<field name="huqty" class="java.math.BigDecimal"/>
