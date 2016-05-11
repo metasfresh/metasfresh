@@ -39,7 +39,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 {
 
 	/**
-	 * Set the ActualLifeTime given as parameter in the bpartner status
+	 * Set the ActualLifeTime given as parameter in the bpartner statistics and save. 
 	 * 
 	 * @param stat
 	 * @param actualLifeTimeValue
@@ -47,7 +47,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	void setActualLifeTimeValue(I_C_BPartner_Stats stat, BigDecimal actualLifeTimeValue);
 
 	/**
-	 * Set the CreditUsed given as parameter in the bpartner status
+	 * Set the CreditUsed given as parameter in the bpartner statistics and save. 
 	 * 
 	 * @param stat
 	 * @param creditUsed
@@ -55,7 +55,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	void setSOCreditUsed(I_C_BPartner_Stats stat, BigDecimal creditUsed);
 
 	/**
-	 * Set the SOCreditStatus given as parameter in the bpartner status
+	 * Set the SOCreditStatus given as parameter in the bpartner statistics and save. 
 	 * 
 	 * @param stat
 	 * @param soCreditStatus
@@ -63,7 +63,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	void setSOCreditStatus(I_C_BPartner_Stats stat, String soCreditStatus);
 
 	/**
-	 * Set the TotalOpenBalance given as parameter in the bpartner status
+	 * Set the TotalOpenBalance given as parameter in the bpartner statistics and save. 
 	 * 
 	 * @param stat
 	 * @param totalOpenBalance
