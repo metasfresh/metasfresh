@@ -301,14 +301,14 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(invoice.getC_BPartner());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-		final MBPartner bpPO = LegacyAdapters.convertToPO(invoice.getC_BPartner());
+		final I_C_BPartner partner = invoice.getC_BPartner();
+
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
 
 		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
 				ctx,
-				invoicePO.getGrandTotal(true),   	// CM adjusted
+				invoicePO.getGrandTotal(true),     	// CM adjusted
 				invoice.getC_Currency_ID(),
 				invoice.getDateAcct(),
 				invoice.getC_ConversionType_ID(),
@@ -329,9 +329,9 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		{
 			newBalance = newBalance.add(invAmt);
 			//
-			if (bpPO.getFirstSale() == null)
+			if (partner.getFirstSale() == null)
 			{
-				bpPO.setFirstSale(invoice.getDateInvoiced());
+				partner.setFirstSale(invoice.getDateInvoiced());
 			}
 			BigDecimal newLifeAmt = actualLifeTimeValue;
 			if (newLifeAmt == null)
@@ -361,7 +361,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			bpartnerStatsBL.setActualLifeTimeValue(stats, newLifeAmt);
 			bpartnerStatsBL.setSOCreditUsed(stats, newCreditAmt);
 
-		}   	// SO
+		}     	// SO
 		else
 		{
 			newBalance = newBalance.subtract(invAmt);
@@ -369,13 +369,6 @@ public final class InvoiceBL extends AbstractInvoiceBL
 					+ ") Balance=" + totalOpenBalance + " -> " + newBalance);
 		}
 
-		// TODO ?
-
 		bpartnerStatsBL.setTotalOpenBalance(stats, newBalance);
-
-
-		Services.get(IBPartnerSOCreditStatusUpdater.class)
-				.updateSOCreditStatus(ctx, Collections.singleton(bpPO.getC_BPartner_ID()), trxName);
-
 	}
 }
