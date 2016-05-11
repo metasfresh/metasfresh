@@ -12,8 +12,6 @@ import org.compiere.util.Util;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents.ComponentAttachDetachNotifier;
-import com.vaadin.ui.HasComponents.ComponentAttachEvent;
-import com.vaadin.ui.HasComponents.ComponentAttachListener;
 
 /*
  * #%L
@@ -39,14 +37,17 @@ import com.vaadin.ui.HasComponents.ComponentAttachListener;
 
 public class ResourceBundleTranslator
 {
-	private ResourceBundle res;
+	public static final ResourceBundleTranslator newInstance()
+	{
+		return new ResourceBundleTranslator();
+	}
+
+	private ResourceBundle _res;
 	private final List<TranslatableItem> items = new ArrayList<>();
 
-	public ResourceBundleTranslator(final ResourceBundle res)
+	private ResourceBundleTranslator()
 	{
 		super();
-		Check.assumeNotNull(res, "res not null");
-		this.res = res;
 	}
 
 	public void addComponent(final Component component, final String caption)
@@ -73,20 +74,10 @@ public class ResourceBundleTranslator
 			addComponent(component);
 		}
 	}
-	
+
 	public void addOnComponentAttach(final ComponentAttachDetachNotifier notifier)
 	{
-		notifier.addComponentAttachListener(new ComponentAttachListener()
-		{
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void componentAttachedToContainer(ComponentAttachEvent event)
-			{
-				final Component comp = event.getAttachedComponent();
-				addComponent(comp);
-			}
-		});
+		notifier.addComponentAttachListener(event -> addComponent(event.getAttachedComponent()));
 	}
 
 	public void translate()
@@ -103,11 +94,16 @@ public class ResourceBundleTranslator
 			translate(item);
 		}
 	}
-	
+
 	private final void translate(final TranslatableItem item)
 	{
 		final String name = item.getName();
-		if(Check.isEmpty(name, true))
+		if (Check.isEmpty(name, true))
+		{
+			return;
+		}
+		final ResourceBundle res = getResourceBundle();
+		if (res == null)
 		{
 			return;
 		}
@@ -115,24 +111,28 @@ public class ResourceBundleTranslator
 		{
 			return;
 		}
-		
+
 		final String trl = Util.cleanAmp(res.getString(name));
 		item.setTranslation(trl);
 	}
 
 	public void setResourceBundle(final ResourceBundle res)
 	{
-		Check.assumeNotNull(res, "res not null");
-		if (this.res == res)
+		if (this._res == res)
 		{
 			return;
 		}
 
-		this.res = res;
+		this._res = res;
 		translate();
 	}
 
-	public static interface TranslatableItem
+	private ResourceBundle getResourceBundle()
+	{
+		return _res;
+	}
+
+	private static interface TranslatableItem
 	{
 		String getName();
 

@@ -10,7 +10,6 @@ import javax.servlet.http.HttpSession;
 
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -29,9 +28,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.server.WrappedHttpSession;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
-import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.vaadin.session.UserSession;
@@ -64,7 +61,7 @@ public class LoginModel
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ILanguageBL languageBL = Services.get(ILanguageBL.class);
 	private final transient IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-
+	
 	private final Properties ctx = Env.getCtx();
 	private final transient Login loginService = new Login(ctx);
 
@@ -95,7 +92,7 @@ public class LoginModel
 		this.availableLanguages = ImmutableList.copyOf(availableLanguages);
 		setLanguage(Language.getBaseLanguage());
 	}
-
+	
 	private final UserSession getUserSession()
 	{
 		return UserSession.getCurrent();
@@ -288,13 +285,17 @@ public class LoginModel
 		}
 
 		final MSession sessionPO = MSession.get(ctx, remoteAddr, remoteHost, webSessionId);
-		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
 
 		// Set HostKey
-		HttpCookieHostKeyStorage.createUpdateHostKey();
-		final String hostKey = hostKeyBL.getHostKey();
-		session.setHostKey(hostKey);
-		InterfaceWrapperHelper.save(session);
+		// FIXME: commented out because this one is not working when running over websockets (i.e. HttpServletResponse does not exists) 
+		// see https://dev.vaadin.com/ticket/11808
+		// @formatter:off
+//		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
+//		HttpCookieHostKeyStorage.createUpdateHostKey();
+//		final String hostKey = hostKeyBL.getHostKey();
+//		session.setHostKey(hostKey);
+//		InterfaceWrapperHelper.save(session);
+		// @formatter:on
 
 		// Update Login helper
 		login.setRemoteAddr(remoteAddr);

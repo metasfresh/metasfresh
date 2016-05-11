@@ -1,12 +1,7 @@
 package de.metas.ui.web.vaadin.login;
 
-import java.util.List;
-import java.util.ResourceBundle;
-
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
-
-import com.vaadin.ui.Component;
 
 /*
  * #%L
@@ -18,38 +13,29 @@ import com.vaadin.ui.Component;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface LoginView
+public interface LoginViewListener
 {
-	Component getComponent();
+	void viewAuthenticate(String username, String password);
 
-	void setListener(LoginViewListener listener);
+	void viewLoginComplete(KeyNamePair role, KeyNamePair client, KeyNamePair org, KeyNamePair warehouse);
 
-	void showRolePanel();
+	void viewLanguageChanged(Language language);
 
-	void setResourceBundle(ResourceBundle res);
+	void viewRoleChanged(KeyNamePair role);
 
-	void setLanguages(List<Language> languages, Language defaultLanguage);
-
-	void setWarehouseVisible(boolean visible);
-
-	void setRoles(List<KeyNamePair> roles);
-
-	void setClients(List<KeyNamePair> clients);
-
-	void setOrgs(List<KeyNamePair> orgs);
-
-	void setWarehouses(List<KeyNamePair> warehouses);
-
+	void viewClientChanged(KeyNamePair client);
+	
+	void viewOrgChanged(KeyNamePair org);
 }

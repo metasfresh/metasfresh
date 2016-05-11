@@ -11,7 +11,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import de.metas.ui.web.vaadin.event.UIEventBus;
-import de.metas.ui.web.vaadin.login.LoginView;
+import de.metas.ui.web.vaadin.login.LoginPresenter;
 import de.metas.ui.web.vaadin.login.MainView;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
 import de.metas.ui.web.vaadin.session.UserSession;
@@ -58,20 +58,11 @@ public class RootUI extends UI
 	
 	private final void updateContent()
 	{
-//		if(true)
-//		{
-//			//getSession().setLocale(Locale.GERMANY); // TODO: date field does not display the date on any locale here.. or it's a JRebel issue????
-////			setContent(new de.metas.ui.web.vaadin.window.prototype.order.WindowPresenter().getView());
-//			return;
-//		}
-		
-		
-		
 		final Component view;
 		final UserSession userSession = UserSession.getCurrent();
 		if (!userSession.isLoggedIn())
 		{
-			view = new LoginView();
+			view = new LoginPresenter().getComponent();
 		}
 		else
 		{
