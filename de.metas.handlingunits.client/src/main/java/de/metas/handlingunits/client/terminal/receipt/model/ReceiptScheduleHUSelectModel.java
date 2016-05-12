@@ -16,14 +16,15 @@ package de.metas.handlingunits.client.terminal.receipt.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -77,7 +78,6 @@ import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 
@@ -175,12 +175,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	@Override
 	protected void onWarehouseKeyPressed(final WarehouseKey key)
 	{
-		final int warehouseId = key == null ? -1 : key.getM_Warehouse_ID();
-		final ITerminalContext terminalCtx = getTerminalContext();
-
-		// task FRESH-305 keep the selected warehouse id as property in the context
-		terminalCtx.setContextValue(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseId);
-
 		getVendorKeyLayout().getKeyLayoutSelectionModel().onKeySelected(null);
 		purchaseOrderKeyLayout.getKeyLayoutSelectionModel().onKeySelected(null);
 
@@ -517,9 +511,9 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			{
 				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
 				ProcessCtl.process(
-						null,  // ASyncProcess parent
+						null, // ASyncProcess parent
 						terminalContext.getWindowNo(),
-						null,  // IProcessParameter
+						null, // IProcessParameter
 						pi,
 						localTrx);
 			}

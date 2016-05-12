@@ -40,7 +40,6 @@ import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -50,8 +49,6 @@ import de.metas.logging.LogManager;
 
 public final class TerminalContext implements ITerminalContext, ITerminalContextReferences
 {
-	private static final Logger logger = LogManager.getLogger(TerminalContext.class);
-
 	private Properties ctx;
 
 	private final Map<String, Object> _contextProperties = new HashMap<>();
@@ -499,21 +496,5 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public void addToDisposableComponents(final IDisposable comp)
 	{
 		currentReferences.addToDisposableComponents(comp);
-	}
-
-	@Override
-	public void setContextValue(final String contextName, final int valueInt)
-	{
-		final int windowNo = getWindowNo();
-		if (windowNo <= 0)
-		{
-			logger.warn("Skip setting context {}={} because WindowNo={}", contextName, valueInt, windowNo);
-			return;
-		}
-		
-		final Properties ctx = getCtx();
-		
-		// set a particular property in the context
-		Env.setContext(ctx, windowNo, contextName, valueInt);
 	}
 }
