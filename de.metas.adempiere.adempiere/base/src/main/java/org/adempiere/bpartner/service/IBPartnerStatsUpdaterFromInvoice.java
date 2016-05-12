@@ -1,10 +1,15 @@
-package org.adempiere.bpartner.service.impl;
+package org.adempiere.bpartner.service;
+
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,18 +27,16 @@ package org.adempiere.bpartner.service.impl;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateStatsFromBPartner;
-
-public class AsyncBPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanceUpdater
+public interface IBPartnerStatsUpdaterFromInvoice extends ISingletonService
 {
 
-	@Override
-	public void updateTotalOpenBalances(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
-	{
-		C_BPartner_UpdateStatsFromBPartner.createWorkpackage(ctx, bpartnerIds, trxName);
-	}
+	/**
+	 * Update the bpartner statistics based on the latest invoices.
+	 * 
+	 * @param ctx
+	 * @param InvoiceIds
+	 * @param trxName
+	 */
+	void updateStatsFromInvoice(Properties ctx, Set<Integer> InvoiceIds, String trxName);
+
 }

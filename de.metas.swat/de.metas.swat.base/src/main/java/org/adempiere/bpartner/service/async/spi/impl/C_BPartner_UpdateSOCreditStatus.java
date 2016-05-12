@@ -31,11 +31,11 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,27 +63,23 @@ public class C_BPartner_UpdateSOCreditStatus extends WorkpackageProcessorAdapter
 				.bindToTrxName(trxName)
 				.build();
 	}
-	
 
 	@Override
 	public Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName)
 	{
 
-			final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 
-			final List<I_C_BPartner> bpartners = queueDAO.retrieveItems(workPackage, I_C_BPartner.class, localTrxName);
+		final List<I_C_BPartner> bpartners = queueDAO.retrieveItems(workPackage, I_C_BPartner.class, localTrxName);
 
-			for (final I_C_BPartner bpartner : bpartners)
-			{
-				final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+		for (final I_C_BPartner bpartner : bpartners)
+		{
+			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 
-				bpartnerStatsBL.updateSOCreditStatus(stats);
+			bpartnerStatsBL.updateSOCreditStatus(stats);
+		}
 
-			}
-
-			return Result.SUCCESS;
-		
+		return Result.SUCCESS;
 	}
-
 }

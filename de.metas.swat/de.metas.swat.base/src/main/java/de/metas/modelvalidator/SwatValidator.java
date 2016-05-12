@@ -41,10 +41,12 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
 import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
 import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatsUpdaterFromInvoice;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerActualLifeTimeUpdater;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerSOCreditStatusUpdater;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.invoice.async.spi.impl.AsyncBPartnerStatsInvoiceUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
 import org.adempiere.model.POWrapper;
@@ -87,13 +89,11 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
-import com.google.common.util.concurrent.Service;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
@@ -119,6 +119,7 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
+import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
@@ -180,7 +181,8 @@ public class SwatValidator implements ModelValidator
 		Services.registerService(IBPartnerTotalOpenBalanceUpdater.class, new AsyncBPartnerTotalOpenBalanceUpdater());
 		//task FRESH-152
 		Services.registerService(IBPartnerActualLifeTimeValueUpdater.class, new AsyncBPartnerActualLifeTimeUpdater());
-		Services.registerService(IBPartnerSOCreditStatusUpdater.class, new AsyncBPartnerSOCreditStatusUpdater());
+		Services.registerService(IBPartnerSOCreditStatusUpdater.class, new AsyncBPartnerSOCreditStatusUpdater());		
+		Services.registerService(IBPartnerStatsUpdaterFromInvoice.class, new AsyncBPartnerStatsInvoiceUpdater());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);

@@ -13,25 +13,21 @@ package org.adempiere.invoice.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
-import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -45,7 +41,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
@@ -144,7 +139,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			final I_C_Invoice toInvoice,
 			final boolean counter,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef,    // settings
+			final boolean setInvoiceRef,      // settings
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
 	{
 		if (toInvoice.isProcessed() || toInvoice.isPosted() || fromInvoice == null)
@@ -306,14 +301,14 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(invoice.getC_BPartner());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-		final MBPartner bpPO = LegacyAdapters.convertToPO(invoice.getC_BPartner());
+		final I_C_BPartner partner = invoice.getC_BPartner();
+
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
 
 		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
 				ctx,
-				invoicePO.getGrandTotal(true),   	// CM adjusted
+				invoicePO.getGrandTotal(true),     	// CM adjusted
 				invoice.getC_Currency_ID(),
 				invoice.getDateAcct(),
 				invoice.getC_ConversionType_ID(),
@@ -334,9 +329,9 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		{
 			newBalance = newBalance.add(invAmt);
 			//
-			if (bpPO.getFirstSale() == null)
+			if (partner.getFirstSale() == null)
 			{
-				bpPO.setFirstSale(invoice.getDateInvoiced());
+				partner.setFirstSale(invoice.getDateInvoiced());
 			}
 			BigDecimal newLifeAmt = actualLifeTimeValue;
 			if (newLifeAmt == null)
@@ -366,7 +361,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			bpartnerStatsBL.setActualLifeTimeValue(stats, newLifeAmt);
 			bpartnerStatsBL.setSOCreditUsed(stats, newCreditAmt);
 
-		}   	// SO
+		}     	// SO
 		else
 		{
 			newBalance = newBalance.subtract(invAmt);
@@ -374,13 +369,6 @@ public final class InvoiceBL extends AbstractInvoiceBL
 					+ ") Balance=" + totalOpenBalance + " -> " + newBalance);
 		}
 
-		// TODO ?
-
 		bpartnerStatsBL.setTotalOpenBalance(stats, newBalance);
-
-
-		Services.get(IBPartnerSOCreditStatusUpdater.class)
-				.updateSOCreditStatus(ctx, Collections.singleton(bpPO.getC_BPartner_ID()), trxName);
-
 	}
 }
