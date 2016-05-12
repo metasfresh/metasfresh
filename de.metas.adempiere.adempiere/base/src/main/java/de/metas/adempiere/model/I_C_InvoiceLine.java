@@ -109,5 +109,9 @@ public interface I_C_InvoiceLine extends org.compiere.model.I_C_InvoiceLine
 	public void setC_Order(I_C_Order order);
 	public I_C_Order getC_Order();
 	// @formatter:on
+	
+	public static String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
+	public boolean IsPackagingMaterial();
+	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
 
 }

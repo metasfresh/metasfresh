@@ -10,18 +10,17 @@ package de.metas.notification;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -31,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.EMail;
 
 /**
@@ -74,6 +74,7 @@ public interface IMailBL extends ISingletonService
 	IMailbox findMailBox(I_AD_Client client,
 			int AD_Org_ID,
 			int AD_Process_ID,
+			I_C_DocType docType,
 			String customType,
 			I_AD_User user);
 
@@ -117,7 +118,7 @@ public interface IMailBL extends ISingletonService
 	 * @param to
 	 * @param subject
 	 * @param message
-	 * @param html
+	 * @param html see the javadoc in {@link EMail}
 	 * @return email created
 	 */
 	EMail createEMail(Properties ctx,

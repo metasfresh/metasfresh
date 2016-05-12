@@ -52,6 +52,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.BlindIterator;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -134,6 +136,8 @@ public class PackagingDAO implements IPackagingDAO
 			+ "   LEFT JOIN M_Warehouse w ON w.M_Warehouse_ID= COALESCE(s."+I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", s."+I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")"//
 			+ "   LEFT JOIN M_Shipper sh ON sh.M_Shipper_ID=ol.M_Shipper_ID " //
 			+ "   LEFT JOIN C_BPartner p ON p.C_BPartner_ID=COALESCE(s." + COLUMNNAME_C_BPartner_Override_ID + ", ol.C_BPartner_ID) " //
+			+ "   LEFT JOIN " + I_C_BPartner_Stats.Table_Name + " stats "
+			+ "   ON p."+ I_C_BPartner.COLUMNNAME_C_BPartner_ID +  " = stats. "+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
 			+ "   LEFT JOIN C_BPartner_Location l ON l.C_BPartner_Location_ID=COALESCE(s." + COLUMNNAME_C_BP_Location_Override_ID + ", ol.C_BPartner_Location_ID) " //
 			+ "   LEFT JOIN C_Order o ON o.C_Order_ID=ol.C_Order_ID " //
 			+ "   LEFT JOIN C_DocType dt ON dt.C_DocType_ID=o.C_DocType_ID "
@@ -151,9 +155,9 @@ public class PackagingDAO implements IPackagingDAO
 			+ "        select 1 from " + ShipmentSchedulePA.M_SHIPMENT_SCHEDULE_SHIPMENT_RUN + " sr "
 			+ "        where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID
 			+ "   ) "
-			+ "   AND ( p." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus //
+			+ "   AND ( stats." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus //
 			+ "           NOT IN ('" + X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop + "', '" + X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold + "')" //
-			+ "         OR p." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + " IS NULL " //
+			+ "         OR stats." + X_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + " IS NULL " //
 			+ "   )"
 			+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_IsActive + "='Y' ";
 

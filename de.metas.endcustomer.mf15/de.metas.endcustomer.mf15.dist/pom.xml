@@ -19,6 +19,9 @@
 				  2. shell scripts are using certain jars in their class-paths
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
+		
+		<!-- our spring-boot-admin webui rarely changes, so always include our "standard" version in this distributable -->		
+		<de.metas.admin.webui.version>1.0_IT-SNAPSHOT</de.metas.admin.webui.version>
 	</properties>
 
 	<dependencies>
@@ -47,7 +50,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- we will roll this out to ${ADEMPIERE_HOME}/lib -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
@@ -63,12 +65,15 @@
 			<type>zip</type>
 		</dependency>
 
+<!--
+we currenty don't have a usecase for it. maybe we will remove it alltogether. 
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client-webapp</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
+-->
 
 <!-- 
 SQL and jasper dependencies:
@@ -107,36 +112,6 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
-			<classifier>jasper</classifier>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
 			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -272,6 +247,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
 			<version>${project.version}</version>
@@ -309,6 +292,28 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report.jasper.server</groupId>
+			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
@@ -436,28 +441,28 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>de.metas.printing.esb</groupId>
 									<artifactId>de.metas.printing.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.printing.esb</groupId>
 									<artifactId>de.metas.printing.esb.client</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 									<classifier>jar-with-dependencies</classifier>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.edi.esb</groupId>
 									<artifactId>de.metas.edi.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.document.archive.esb</groupId>
 									<artifactId>de.metas.document.archive.esb.camel</artifactId>
-									<version>${project.version}</version>
+									<version>${esb.bundles.version}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>de.metas.admin.webui</groupId>
 									<artifactId>de.metas.admin.webui</artifactId>
-									<version>${project.version}</version>
+									<version>${de.metas.admin.webui.version}</version>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

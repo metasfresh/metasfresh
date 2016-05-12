@@ -20,17 +20,19 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -221,48 +223,60 @@ public class MOrderTax extends X_C_OrderTax
 
 		BigDecimal taxBaseAmt = Env.ZERO;
 		BigDecimal taxAmt = Env.ZERO;
+		boolean havePackingMaterialLines = false;
+		boolean haveNonPackingMaterialLines = false;
 		boolean foundInvoiceLines = false;
 		//
 		final boolean documentLevel = getTax().isDocumentLevel();
 		final I_C_Tax tax = getTax();
 		//
-		String sql = "SELECT LineNetAmt FROM C_OrderLine WHERE C_Order_ID=? AND C_Tax_ID=?";
+		final String sql = "SELECT "
+				+ I_C_OrderLine.COLUMNNAME_LineNetAmt // 1 
+				+ ", " + I_C_OrderLine.COLUMNNAME_IsPackagingMaterial // 2
+				+ " FROM " + I_C_OrderLine.Table_Name
+				+ " WHERE "
+				+ I_C_OrderLine.COLUMNNAME_C_Order_ID + "=?"
+				+ " AND " + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "=?";
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			pstmt.setInt(1, getC_Order_ID());
 			pstmt.setInt(2, getC_Tax_ID());
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				foundInvoiceLines = true;
 
-				BigDecimal baseAmt = rs.getBigDecimal(1);
+				final BigDecimal baseAmt = rs.getBigDecimal(1);
 				taxBaseAmt = taxBaseAmt.add(baseAmt);
 				//
 				if (!documentLevel)		// calculate line tax
 					taxAmt = taxAmt.add(taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision()));
+				
+				//
+				final boolean lineIsPackingMaterial = DisplayType.toBoolean(rs.getString(2));
+				if (lineIsPackingMaterial)
+				{
+					havePackingMaterialLines = true;
+				}
+				else
+				{
+					haveNonPackingMaterialLines = true;
+				}
 			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
 		}
 		catch (Exception e)
 		{
 			log.error(get_TrxName(), e);
 			taxBaseAmt = null;
 		}
-		try
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
+			DB.close(rs, pstmt);
 		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
+		
 		//
 		if (taxBaseAmt == null)
 			return false;
@@ -281,9 +295,34 @@ public class MOrderTax extends X_C_OrderTax
 		// Deactivate InvoiceTax if there were no invoice lines matching our C_Tax_ID
 		// Active it otherwise
 		setIsActive(foundInvoiceLines);
+		
+		setIsPackagingTax(checkIsPackagingMaterialTax(havePackingMaterialLines, haveNonPackingMaterialLines));
 
 		return true;
 	}	// calculateTaxFromLines
+
+	/** 
+	 * @param havePackingMaterialLines
+	 * @param haveNonPackingMaterialLines
+	 * @return true if there are no non packing material lines with the same tax as the packing material lines, false otherwise
+	 */
+	private boolean checkIsPackagingMaterialTax(final boolean havePackingMaterialLines, final boolean haveNonPackingMaterialLines)
+	{
+		if (havePackingMaterialLines)
+		{
+			if (haveNonPackingMaterialLines)
+			{
+				log.warn("Found lines with packaging materials and lines without packing materials for C_Order_ID={} and C_Tax_ID={}. Considering {} not a packing material tax.", getC_Order_ID(), getC_Tax_ID(), this);
+				return false;
+			}
+			
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	/**
 	 * String Representation

@@ -95,5 +95,27 @@ public class C_InvoiceLine
 
 		invoiceLine.setM_Product(product);
 	}
+	
+	
+	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID })
+	public void setIsPackagingMaterial(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	{
+		if (InterfaceWrapperHelper.isNull(invoiceLine, I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID))
+		{
+			//in case the c_orderline_id is removed, make sure the flag is on false. The user can set it on true, manually
+			invoiceLine.setIsPackagingMaterial(false);
+			return;
+		}
+
+		final de.metas.interfaces.I_C_OrderLine ol =  InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), de.metas.interfaces.I_C_OrderLine.class);
+	
+		invoiceLine.setIsPackagingMaterial(ol.isPackagingMaterial());
+	}
+	
+	
+	
+	
+	
+	
 
 }
