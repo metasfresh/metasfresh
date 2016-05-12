@@ -22,7 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +37,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
@@ -88,9 +89,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	}
 
 	@Override
-	public String toString()
+	protected void toString(final ToStringHelper stringHelper)
 	{
-		return "ASIAttributeStorage [id=" + id + ", asi=" + asi + "]";
+		stringHelper
+				.add("id", id)
+				.add("asi", asi)
+				// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
+				;
 	}
 
 	@Override

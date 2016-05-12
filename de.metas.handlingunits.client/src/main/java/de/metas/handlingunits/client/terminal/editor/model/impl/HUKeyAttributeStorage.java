@@ -22,13 +22,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.adempiere.util.Check;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -92,13 +93,14 @@ import de.metas.handlingunits.model.I_M_HU;
 	}
 
 	@Override
-	public String toString()
+	protected void toString(final ToStringHelper stringHelper)
 	{
-		return "HUKeyAttributeStorage [id=" + id
-				+ ", huKey=" + huKey
-				+ ", hu=" + hu
-				+ ", objectId=" + System.identityHashCode(this)
-				+ "]";
+		stringHelper
+				.add("id", id)
+				.add("huKey", huKey)
+				.add("hu", hu)
+				.add("objectId", System.identityHashCode(this));
+
 	}
 
 	@Override
@@ -217,7 +219,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			return;
 		}
-		
+
 		this.disposed = true;
 		this.disposedTS = System.currentTimeMillis();
 		fireAttributeStorageDisposed();
@@ -230,8 +232,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			final HUException ex = new HUException("Accessing an already disposed HUKeyAttributeStorage shall not be allowed"
 					+ "\n Storage: " + this
-					+ "\n Disposed on: " + (disposedTS > 0 ? new Date(disposedTS).toString() : "")
-					);
+					+ "\n Disposed on: " + (disposedTS > 0 ? new Date(disposedTS).toString() : ""));
 			if (HUConstants.isAttributeStorageFailOnDisposed())
 			{
 				throw ex;
