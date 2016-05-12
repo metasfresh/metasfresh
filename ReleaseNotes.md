@@ -16,9 +16,11 @@ The actual release notes
 
 ## Features
  - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
+ - FRESH-302 make inout print preview faster
 
 ## Fixes
- - FRESH-300: client not starting when config is not completed
+ - FRESH-300 client not starting when config is not completed
+ - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
 
 # metasfresh 4.17.16
 
