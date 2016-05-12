@@ -205,6 +205,7 @@ extends AbstractAttributeStorageFactory
 	@Override
 	protected void toString(final ToStringHelper stringHelper)
 	{
-		stringHelper.add("key2storage", key2storage);
+		// NOTE: avoid printing the whole map because it might get to HU storages that also print factory, leading to recursive calls of the toString.
+		stringHelper.add("storages#", key2storage.size());
 	}
 }
