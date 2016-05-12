@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
 import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateActualLifeTime;
-import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateSOCreditStatus;
 
 /*
  * #%L
@@ -21,11 +20,11 @@ import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateSOCreditSt
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,7 +36,5 @@ public class AsyncBPartnerActualLifeTimeUpdater implements IBPartnerActualLifeTi
 	public void updateActualLifeTimeValue(Properties ctx, Set<Integer> bpartnerIds, String trxName) throws SQLException
 	{
 		C_BPartner_UpdateActualLifeTime.createWorkpackage(ctx, bpartnerIds, trxName);
-		
 	}
-
 }
