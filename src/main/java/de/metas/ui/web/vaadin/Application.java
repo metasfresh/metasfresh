@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere.RunMode;
@@ -26,7 +25,6 @@ import org.springframework.http.MediaType;
 import com.vaadin.spring.boot.internal.VaadinServletConfiguration;
 
 import de.metas.ui.web.vaadin.session.VaadinContextProvider;
-import de.metas.ui.web.vaadin.util.FieldGroupModelWrapperHelper;
 
 /*
  * #%L
@@ -79,7 +77,7 @@ public class Application
 
 		Env.setContextProvider(new VaadinContextProvider());
 
-		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
+//		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
 	}
 
 	private static ConfigurableApplicationContext context;

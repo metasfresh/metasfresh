@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.ibm.icu.math.BigDecimal;
 
-import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
@@ -78,7 +77,7 @@ public class PropertyDescriptor implements Serializable
 	private final String sqlColumnName;
 	private final String sqlColumnSql;
 	private final int sqlDisplayType;
-	private final DataFieldLookupDescriptor sqlLookupDescriptor;
+	private final SqlLookupDescriptor sqlLookupDescriptor;
 	private final boolean readOnlyForUser;
 
 	public PropertyDescriptor(final Builder builder)
@@ -247,7 +246,7 @@ public class PropertyDescriptor implements Serializable
 		return sqlColumnSql;
 	}
 
-	public DataFieldLookupDescriptor getSqlLookupDescriptor()
+	public SqlLookupDescriptor getSqlLookupDescriptor()
 	{
 		return sqlLookupDescriptor;
 	}
@@ -281,7 +280,7 @@ public class PropertyDescriptor implements Serializable
 		private String sqlColumnName;
 		private String sqlColumnSql;
 		private Integer sqlDisplayType;
-		private DataFieldLookupDescriptor sqlLookupDescriptor;
+		private SqlLookupDescriptor sqlLookupDescriptor;
 		private int sql_AD_Reference_Value_ID;
 		
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE; 
@@ -491,13 +490,13 @@ public class PropertyDescriptor implements Serializable
 			return -1;
 		}
 
-		public Builder setSqlLookupDescriptor(DataFieldLookupDescriptor sqlLookupDescriptor)
+		public Builder setSqlLookupDescriptor(SqlLookupDescriptor sqlLookupDescriptor)
 		{
 			this.sqlLookupDescriptor = sqlLookupDescriptor;
 			return this;
 		}
 
-		private DataFieldLookupDescriptor getSqlLookupDescriptor()
+		private SqlLookupDescriptor getSqlLookupDescriptor()
 		{
 			if (sqlLookupDescriptor != null)
 			{
@@ -510,11 +509,11 @@ public class PropertyDescriptor implements Serializable
 			{
 				if (DisplayType.isLookup(sqlDisplayType))
 				{
-					return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+					return SqlLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
 				}
 				else if (DisplayType.PAttribute == sqlDisplayType)
 				{
-					return DataFieldLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+					return SqlLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
 				}
 				
 			}

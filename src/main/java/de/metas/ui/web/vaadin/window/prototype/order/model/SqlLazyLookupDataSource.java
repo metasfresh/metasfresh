@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
+import de.metas.ui.web.vaadin.window.prototype.order.SqlLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 
 /*
@@ -50,11 +50,11 @@ public class SqlLazyLookupDataSource implements LookupDataSource
 {
 	private static final Logger logger = LogManager.getLogger(SqlLazyLookupDataSource.class);
 
-	private final DataFieldLookupDescriptor sqlLookupDescriptor;
+	private final SqlLookupDescriptor sqlLookupDescriptor;
 	
 	private ImmutableList<LookupValue> _lastPage = ImmutableList.of();
 
-	SqlLazyLookupDataSource(final DataFieldLookupDescriptor sqlLookupDescriptor)
+	SqlLazyLookupDataSource(final SqlLookupDescriptor sqlLookupDescriptor)
 	{
 		super();
 		this.sqlLookupDescriptor = sqlLookupDescriptor;
@@ -202,10 +202,10 @@ public class SqlLazyLookupDataSource implements LookupDataSource
 		final String sqlValidationRule = "1=1"; // TODO
 		
 		final Map<String, Object> map = new HashMap<>();
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
-		map.put(DataFieldLookupDescriptor.SQL_PARAM_ValidationRuleSql.getName(), sqlValidationRule);
+		map.put(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
+		map.put(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
+		map.put(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
+		map.put(SqlLookupDescriptor.SQL_PARAM_ValidationRuleSql.getName(), sqlValidationRule);
 
 		return Evaluatees.ofMap(map);
 	}

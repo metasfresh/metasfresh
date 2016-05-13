@@ -10,7 +10,6 @@ import org.compiere.util.TimeUtil;
 import com.vaadin.server.VaadinService;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.prototype.order.model.WindowModel;
@@ -158,21 +157,21 @@ public final class HARDCODED_Order
 										.setPropertyName(ORDER_Bill_BPartner_ID)
 										.setComposedValuePartName("C_BPartner_ID")
 										.setSqlColumnName(I_C_Order.COLUMNNAME_Bill_BPartner_ID)
-										.setSqlLookupDescriptor(DataFieldLookupDescriptor.of(DisplayType.Search, "Bill_BPartner_ID", 138))
+										.setSqlLookupDescriptor(SqlLookupDescriptor.of(DisplayType.Search, "Bill_BPartner_ID", 138))
 										.setValueType(LookupValue.class)
 										.build())
 								.addChildPropertyDescriptor(PropertyDescriptor.builder()
 										.setPropertyName(ORDER_Bill_Location_ID)
 										.setComposedValuePartName("C_BPartner_Location_ID")
 										.setSqlColumnName(I_C_Order.COLUMNNAME_Bill_Location_ID)
-										.setSqlLookupDescriptor(DataFieldLookupDescriptor.of(DisplayType.Search, "Bill_Location_ID", 159))
+										.setSqlLookupDescriptor(SqlLookupDescriptor.of(DisplayType.Search, "Bill_Location_ID", 159))
 										.setValueType(LookupValue.class)
 										.build())
 								.addChildPropertyDescriptor(PropertyDescriptor.builder()
 										.setPropertyName(ORDER_Bill_User_ID)
 										.setComposedValuePartName("AD_User_ID")
 										.setSqlColumnName(I_C_Order.COLUMNNAME_Bill_User_ID)
-										.setSqlLookupDescriptor(DataFieldLookupDescriptor.of(DisplayType.Search, "Bill_User_ID", 110))
+										.setSqlLookupDescriptor(SqlLookupDescriptor.of(DisplayType.Search, "Bill_User_ID", 110))
 										.setValueType(LookupValue.class)
 										.build())
 								.build())

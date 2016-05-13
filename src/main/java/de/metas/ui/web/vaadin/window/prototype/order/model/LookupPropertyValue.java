@@ -6,9 +6,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
-import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.SqlLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.WindowConstants;
 
 /*
@@ -56,7 +56,7 @@ public class LookupPropertyValue implements PropertyValue
 		final PropertyName propertyName = descriptor.getPropertyName();
 		this.propertyName = WindowConstants.lookupValuesName(propertyName);
 
-		final DataFieldLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
+		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
 		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 	}
 

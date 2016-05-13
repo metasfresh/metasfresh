@@ -4,9 +4,9 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
+import de.metas.ui.web.vaadin.window.prototype.order.SqlLookupDescriptor;
 
 /*
  * #%L
@@ -75,7 +75,7 @@ final class SqlField
 
 		//
 		// Display column
-		final DataFieldLookupDescriptor lookupDescriptor = fieldDescriptor.getSqlLookupDescriptor();
+		final SqlLookupDescriptor lookupDescriptor = fieldDescriptor.getSqlLookupDescriptor();
 		if (lookupDescriptor != null)
 		{
 			usingDisplayColumn = true;
