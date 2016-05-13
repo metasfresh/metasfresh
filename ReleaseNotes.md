@@ -19,6 +19,7 @@ The actual release notes
  - FRESH-302 make inout print preview faster
  - FRESH-298 Setup Printing Dunning Docs to separate tray for ESR Zahlschein
     * adjsuted the layout to better match pre-printed paper without having to use calibration
+ - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
 
 ## Fixes
  - FRESH-300 client not starting when config is not completed
