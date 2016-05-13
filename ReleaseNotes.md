@@ -12,11 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.18.x (upcoming)
+# metasfresh 4.18.17 (upcoming)
 
 ## Features
  - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
  - FRESH-302 make inout print preview faster
+ - FRESH-298 Setup Printing Dunning Docs to separate tray for ESR Zahlschein
+    * adjsuted the layout to better match pre-printed paper without having to use calibration
 
 ## Fixes
  - FRESH-300 client not starting when config is not completed
