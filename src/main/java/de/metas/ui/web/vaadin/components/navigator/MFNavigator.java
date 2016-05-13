@@ -81,6 +81,7 @@ public class MFNavigator extends Navigator
 	private Supplier<Boolean> isLoggedInSupplier;
 
 	private final Set<String> noLoginRequiredViewNames = new HashSet<>();
+	private String redirectAfterLogin;
 	
 	private MFNavigator(final UI ui)
 	{
@@ -165,6 +166,23 @@ public class MFNavigator extends Navigator
 		navigateTo(loginViewName);
 		return this;
 	}
+	
+	public MFNavigator navigateAfterLogin()
+	{
+		final String redirectAfterLogin = this.redirectAfterLogin;
+		this.redirectAfterLogin = null;
+		
+		if (redirectAfterLogin != null)
+		{
+			navigateTo(redirectAfterLogin);
+		}
+		else
+		{
+			navigateToDefaultView();
+		}
+		
+		return this;
+	}
 
 	private final boolean checkLoggedInAndRedirect(final ViewChangeEvent event)
 	{
@@ -189,6 +207,13 @@ public class MFNavigator extends Navigator
 			}
 
 			// Redirect to login view always if a user has not yet logged in
+			String redirectAfterLogin = event.getViewName();
+			if (event.getParameters() != null && !event.getParameters().isEmpty())
+			{
+				redirectAfterLogin += "/" + event.getParameters();
+			}
+			this.redirectAfterLogin = redirectAfterLogin;
+			
 			navigateTo(loginViewName);
 			return false;
 

@@ -97,6 +97,6 @@ public class RootUI extends UI
 	@Subscribe
 	public void onUserLoginRequestEvent(final UserLoggedInEvent event)
 	{
-		getNavigator().navigateToDefaultView();
+		getNavigator().navigateAfterLogin();
 	}
 }
