@@ -1,0 +1,28 @@
+//
+// Menu
+@mixin mf-menu {
+	.mf-menu {
+		width: 100%;
+		height: 400px;
+		display: block;
+		overflow-x: hide;
+		overflow-y: auto;
+		
+		.mf-menu-group {
+			height: 100%;
+			
+			
+			.mf-menu-group-caption {
+				font-weight: bold;
+			}
+			
+			.mf-menu-group-content {
+				overflow-x: hide;
+				overflow-y: auto;
+				
+				.mf-menu-item {
+				}
+			}
+		}
+	}
+}
