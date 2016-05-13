@@ -1,5 +1,7 @@
 package de.metas.ui.web.vaadin;
 
+import org.slf4j.Logger;
+
 import com.google.common.eventbus.Subscribe;
 import com.google.gwt.thirdparty.guava.common.base.Throwables;
 import com.vaadin.annotations.PreserveOnRefresh;
@@ -12,6 +14,7 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.components.navigator.MFNavigator;
 import de.metas.ui.web.vaadin.components.navigator.MFNavigator.CachedViewProvider;
 import de.metas.ui.web.vaadin.event.UIEventBus;
@@ -50,6 +53,8 @@ import de.metas.ui.web.vaadin.window.prototype.order.WindowViewProvider;
 @Push
 public class RootUI extends UI
 {
+	private static final Logger logger = LogManager.getLogger(RootUI.class);
+
 	private final UIEventBus eventBus = new UIEventBus();
 
 	@Override
@@ -65,7 +70,10 @@ public class RootUI extends UI
 		;
 
 		setErrorHandler(event -> {
-			final String errorMessage = Throwables.getRootCause(event.getThrowable()).getLocalizedMessage();
+			final Throwable throwable = event.getThrowable();
+			logger.warn("Got error", throwable);
+			
+			final String errorMessage = Throwables.getRootCause(throwable).getLocalizedMessage();
 			Notification.show("Error", errorMessage, Type.ERROR_MESSAGE);
 		});
 	}
