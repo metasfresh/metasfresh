@@ -1,23 +1,24 @@
 package de.metas.ui.web.vaadin;
 
-import org.compiere.util.KeyNamePair;
-
 import com.google.common.eventbus.Subscribe;
+import com.google.gwt.thirdparty.guava.common.base.Throwables;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
+import de.metas.ui.web.vaadin.components.navigator.MFNavigator;
+import de.metas.ui.web.vaadin.components.navigator.MFNavigator.CachedViewProvider;
 import de.metas.ui.web.vaadin.event.UIEventBus;
-import de.metas.ui.web.vaadin.login.LoginModel;
-import de.metas.ui.web.vaadin.login.LoginPresenter;
-import de.metas.ui.web.vaadin.login.MainView;
+import de.metas.ui.web.vaadin.login.LoginNavigationView;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
 import de.metas.ui.web.vaadin.session.UserSession;
+import de.metas.ui.web.vaadin.window.prototype.order.WindowViewProvider;
 
 /*
  * #%L
@@ -56,39 +57,17 @@ public class RootUI extends UI
 	{
 		UIEventBus.register(this);
 
-		if (Application.isTesting())
-		{
-			final LoginModel loginModel = new LoginModel();
-			loginModel.authenticate("SuperUser", "System");
-			loginModel.loginComplete(
-					new KeyNamePair(1000000, "Admin") // role
-					, new KeyNamePair(1000000, "?") // client
-					, new KeyNamePair(1000000, "?") // org
-					, (KeyNamePair)null // warehouse
-			);
-		}
+		MFNavigator.createAndBind(this)
+				.setLoginView(LoginNavigationView.class, () -> UserSession.getCurrent().isLoggedIn())
+				.addViewProvider(CachedViewProvider.of(MFNavigator.VIEWNAME_DEFAULT, MainNavigationView.class))
+				.addViewProvider(new WindowViewProvider());
+		//
+		;
 
-		updateContent();
-
-	}
-
-	private final void updateContent()
-	{
-		final UserSession userSession = UserSession.getCurrent();
-		if (!userSession.isLoggedIn())
-		{
-			final Component view = new LoginPresenter().getComponent();
-			setContent(view);
-		}
-		else
-		{
-			final Component viewOld = getContent();
-//			if(!(viewOld instanceof MainView))
-			{
-				MainView view = new MainView();
-				setContent(view);
-			}
-		}
+		setErrorHandler(event -> {
+			final String errorMessage = Throwables.getRootCause(event.getThrowable()).getLocalizedMessage();
+			Notification.show("Error", errorMessage, Type.ERROR_MESSAGE);
+		});
 	}
 
 	public static RootUI getCurrentRootUI()
@@ -101,9 +80,15 @@ public class RootUI extends UI
 		return getCurrentRootUI().eventBus;
 	}
 
+	@Override
+	public MFNavigator getNavigator()
+	{
+		return (MFNavigator)super.getNavigator();
+	}
+
 	@Subscribe
 	public void onUserLoginRequestEvent(final UserLoggedInEvent event)
 	{
-		updateContent();
+		getNavigator().navigateToDefaultView();
 	}
 }
