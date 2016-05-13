@@ -31,8 +31,10 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
+public interface Editor
 {
 	Component getComponent();
+
 	String getCaption();
 
 	PropertyName getPropertyName();

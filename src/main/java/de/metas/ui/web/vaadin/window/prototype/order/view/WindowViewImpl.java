@@ -42,7 +42,7 @@ import de.metas.ui.web.vaadin.window.prototype.order.editor.LabelEditor;
 public class WindowViewImpl extends AbstractView
 {
 	// services
-//	private static final Logger logger = LogManager.getLogger(WindowViewImpl.class);
+	// private static final Logger logger = LogManager.getLogger(WindowViewImpl.class);
 
 	static final String STYLE = "mf-window";
 
@@ -54,13 +54,13 @@ public class WindowViewImpl extends AbstractView
 	private WindowRecordIndicators recordIndicators;
 	private WindowPanelsBar panelsBar;
 	private HorizontalLayout rootEditorContainer;
-	
+
 	//
 	// Editors (UI)
-	private LabelEditor titleEditor;
 	private LabelEditor recordSummaryEditor;
 	private LabelEditor recordAdditionalSummaryEditor;
-	
+
+
 	public WindowViewImpl()
 	{
 		super();
@@ -71,22 +71,6 @@ public class WindowViewImpl extends AbstractView
 	{
 		final VerticalLayout content = new VerticalLayout();
 		content.addStyleName(STYLE);
-
-		//
-		// Lane: title
-		{
-			final Button icon = new Button();
-			icon.setPrimaryStyleName(STYLE + "-title-icon");
-			icon.setIcon(FontAwesome.BARS);
-
-			this.titleEditor = new LabelEditor(WindowConstants.PROPERTYNAME_WindowTitle);
-			titleEditor.setPrimaryStyleName(STYLE + "-title-text");
-			//titleEditor.setEditorListener(editorListener);
-	
-			final HorizontalLayout panel = new HorizontalLayout(icon, titleEditor);
-			panel.addStyleName(STYLE + "-title-lane");
-			content.addComponent(panel);
-		}
 
 		//
 		// Lane: Rating & actions
@@ -122,8 +106,8 @@ public class WindowViewImpl extends AbstractView
 			{
 				this.recordSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordSummary);
 				recordSummaryEditor.addStyleName(STYLE + "-record-summary-label");
-				recordSummaryEditor.setContentModel(ContentMode.PREFORMATTED);
-//				recordSummaryEditor.setEditorListener(editorListener);
+				recordSummaryEditor.setContentMode(ContentMode.PREFORMATTED);
+				// recordSummaryEditor.setEditorListener(editorListener);
 
 				btnPreviousRecord = new Button();
 				btnPreviousRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
@@ -166,8 +150,8 @@ public class WindowViewImpl extends AbstractView
 			{
 				this.recordAdditionalSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordAditionalSummary);
 				recordAdditionalSummaryEditor.addStyleName(STYLE + "-record-addsummary-label");
-				recordAdditionalSummaryEditor.setContentModel(ContentMode.PREFORMATTED);
-//				recordAdditionalSummaryEditor.setEditorListener(editorListener);
+				recordAdditionalSummaryEditor.setContentMode(ContentMode.PREFORMATTED);
+				// recordAdditionalSummaryEditor.setEditorListener(editorListener);
 				panelSummary.addComponent(recordAdditionalSummaryEditor);
 			}
 		}
@@ -188,15 +172,15 @@ public class WindowViewImpl extends AbstractView
 			rootEditorContainer.setSizeFull();
 			content.addComponent(rootEditorContainer);
 		}
-		
+
 		//
 		// Register editors
 		{
-			registerEditor(titleEditor);
+//			registerEditor(titleEditor);
 			registerEditor(recordSummaryEditor);
 			registerEditor(recordAdditionalSummaryEditor);
 		}
-		
+
 		//
 		return content;
 	}

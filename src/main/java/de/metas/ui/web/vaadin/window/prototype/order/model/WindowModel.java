@@ -304,6 +304,13 @@ public class WindowModel
 		final PropertyValueCollection properties = getProperties();
 		return properties.hasChanges();
 	}
+	
+	public boolean hasProperty(final PropertyName propertyName)
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		return properties.getPropertyValueOrNull(propertyName) != null;
+		
+	}
 
 	public Object getProperty(final PropertyName propertyName)
 	{

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -71,6 +73,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
 	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
+	
+	private Multimap<PropertyName, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
 
 	public WindowPresenter()
 	{
@@ -222,6 +226,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			logger.warn("Failed updating the view from model", e);
 			view.showError(e.getLocalizedMessage());
 		}
+		//
+		fireAllPropertyValueChangedListeners();
 
 		// TODO Auto-generated method stub
 
@@ -353,6 +359,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		logger.trace("Got {}", event);
 		updateView((view) -> updateViewFromModel(view));
+		
+		fireAllPropertyValueChangedListeners();
 	}
 
 	@Subscribe
@@ -360,6 +368,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		logger.trace("Got {}", event);
 		updateView((view) -> modelPropertyChanged0(view, event));
+		
+		firePropertyValueChangedListeners(event.getPropertyName(), event.getValue());
 	}
 
 	private void modelPropertyChanged0(final WindowView view, final PropertyChangedModelEvent event)
@@ -487,4 +497,55 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		final String errorMessage = Throwables.getRootCause(ex).getLocalizedMessage();
 		updateView(view -> view.showError(errorMessage));
 	}
+	
+	public static interface PropertyValueChangedListener
+	{
+		void valueChanged(PropertyName propertyName, Object value);
+	}
+	
+	public void addPropertyValueChangedListener(final PropertyName propertyName, PropertyValueChangedListener listener)
+	{
+		Preconditions.checkNotNull(propertyName, "propertyName not null");
+		Preconditions.checkNotNull(listener, "listener not null");
+		propertyValueChangedListeners.put(propertyName, listener);
+		
+		final WindowModel model = getModel();
+		if (model.hasProperty(propertyName))
+		{
+			final Object value = model.getProperty(propertyName);
+			listener.valueChanged(propertyName, value);
+		}
+	}
+	
+	private void firePropertyValueChangedListeners(final PropertyName propertyName, final Object value)
+	{
+		for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyName))
+		{
+			listener.valueChanged(propertyName, value);
+		}
+	}
+	
+	private void fireAllPropertyValueChangedListeners()
+	{
+		final Set<PropertyName> propertyNames = propertyValueChangedListeners.keySet();
+		if(propertyNames.isEmpty())
+		{
+			return;
+		}
+		
+		final WindowModel model = getModel();
+		for (final PropertyName propertyName : propertyNames)
+		{
+			if(!model.hasProperty(propertyName))
+			{
+				continue;
+			}
+			final Object value = model.getProperty(propertyName);
+			for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyName))
+			{
+				listener.valueChanged(propertyName, value);
+			}
+		}
+	}
+
 }
