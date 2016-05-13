@@ -1,10 +1,15 @@
 package de.metas.ui.web.vaadin.window.prototype.order.model;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -47,7 +52,8 @@ public class ObjectPropertyValue implements PropertyValue
 	private final String composedValuePartName;
 	private final PropertyNameDependenciesMap dependencies;
 
-	private Class<?> valueType;
+	private final Class<?> valueType;
+	private final int displayType;
 
 	private final IStringExpression defaultValueExpression;
 	private final Object initialValue;
@@ -55,6 +61,7 @@ public class ObjectPropertyValue implements PropertyValue
 
 	private final ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
 	private final boolean readOnlyForUser;
+
 	
 	ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
@@ -64,6 +71,7 @@ public class ObjectPropertyValue implements PropertyValue
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
 		
 		valueType = builder.getValueType();
+		displayType = builder.getDisplayType();
 		
 		defaultValueExpression = builder.getDefaultValueExpression();
 		initialValue = builder.getInitialValue();
@@ -71,8 +79,7 @@ public class ObjectPropertyValue implements PropertyValue
 		
 		readOnlyForUser = builder.isReadOnlyForUser();
 		
-		dependencies = PropertyNameDependenciesMap.builder()
-				.build();
+		dependencies = PropertyNameDependenciesMap.EMPTY;
 	}
 
 	@Override
@@ -106,6 +113,11 @@ public class ObjectPropertyValue implements PropertyValue
 	{
 		return valueType;
 	}
+	
+	private int getDisplayType()
+	{
+		return displayType;
+	}
 
 	public IStringExpression getDefaultValueExpression()
 	{
@@ -122,7 +134,13 @@ public class ObjectPropertyValue implements PropertyValue
 	public Optional<String> getValueAsString()
 	{
 		final Object value = this.value;
-		return Optional.fromNullable(value == null ? null : value.toString());
+		if(value == null)
+		{
+			return Optional.absent();
+		}
+		
+		final String valueStr = convertToDisplayString(value);
+		return Optional.fromNullable(valueStr);
 	}
 
 	@Override
@@ -189,6 +207,43 @@ public class ObjectPropertyValue implements PropertyValue
 		{
 			logger.warn("Cannot convert '{}' to '{}'", valueObj, valueType);
 			return null;
+		}
+	}
+	
+	private String convertToDisplayString(final Object value)
+	{
+		final int displayType = getDisplayType();
+		
+		if(value == null)
+		{
+			return "";
+		}
+		else if (value instanceof String)
+		{
+			return value.toString();
+		}
+		else if (value instanceof LookupValue)
+		{
+			return ((LookupValue)value).getDisplayName();
+		}
+		else if (value instanceof Boolean)
+		{
+			final String adMessage = DisplayType.toBooleanString((Boolean)value);
+			return Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMessage);
+		}
+		else if (value instanceof java.util.Date)
+		{
+			final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
+			return dateFormat.format(value);
+		}
+		else if (DisplayType.isNumeric(displayType))
+		{
+			final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
+			return numberFormat.format(value);
+		}
+		else
+		{
+			return value.toString();
 		}
 	}
 	

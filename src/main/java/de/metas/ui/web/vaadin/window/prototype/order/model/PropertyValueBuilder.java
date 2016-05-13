@@ -220,4 +220,15 @@ public final class PropertyValueBuilder
 
 		return null;
 	}
+	
+	public int getDisplayType()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		if (propertyDescriptor != null)
+		{
+			return propertyDescriptor.getSqlDisplayType();
+		}
+
+		return -1;
+	}
 }

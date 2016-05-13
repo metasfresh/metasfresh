@@ -227,50 +227,36 @@ public class PropertyValueCollection
 		return evaluatee;
 	}
 	
-	private final Evaluatee2 evaluatee = new Evaluatee2()
+	private final Evaluatee2 evaluatee = new PropertyValueCollectionEvaluatee(this);
+	
+	public static class PropertyValueCollectionEvaluatee implements Evaluatee2
 	{
+		private final PropertyValueCollection _values;
+
+		public PropertyValueCollectionEvaluatee(final PropertyValueCollection values)
+		{
+			super();
+			this._values = values;
+		}
+		
 		private final PropertyName toPropertyName(final String variableName)
 		{
 			return PropertyName.of(variableName);
 		}
-
-		@Override
-		public String get_ValueAsString(final String variableName)
+		
+		protected final PropertyValue getPropertyValueOrNull(final PropertyName propertyName)
 		{
-			if (variableName.startsWith("#"))   // Env, global var
-			{
-				return Env.getContext(Env.getCtx(), variableName);
-			}
-			else if (variableName.startsWith("$"))   // Env, global accounting var
-			{
-				return Env.getContext(Env.getCtx(), variableName);
-			}
+			return _values.getPropertyValueOrNull(propertyName);
+		}
 
-			final PropertyName propertyName = toPropertyName(variableName);
-			final PropertyValue propertyValue = getPropertyValue(propertyName);
-			final Object value = propertyValue.getValue();
-			if (value == null)
-			{
-				// TODO: find some defaults?
-				return null;
-			}
-			else if (value instanceof Boolean)
-			{
-				return DisplayType.toBooleanString((Boolean)value);
-			}
-			else if (value instanceof String)
-			{
-				return value.toString();
-			}
-			else if (value instanceof LookupValue)
-			{
-				final Object idObj = ((LookupValue)value).getId();
-				return idObj == null ? null : idObj.toString().trim();
-			}
-			else
-			{
-				return value.toString();
-			}
+		protected final PropertyValue getPropertyValue(final PropertyName propertyName)
+		{
+			return _values.getPropertyValue(propertyName);
+		}
+		
+		private final Set<PropertyName> getAvailablePropertyNames()
+		{
+			return _values.getPropertyNames();
 		}
 
 		@Override
@@ -296,9 +282,26 @@ public class PropertyValueCollection
 			}
 
 			if (logger.isTraceEnabled())
-				logger.trace("No property {} found. Existing properties are: {}", propertyName, getPropertyNames());
+				logger.trace("No property {} found. Existing properties are: {}", propertyName, getAvailablePropertyNames());
 			
 			return false;
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			if (variableName.startsWith("#"))   // Env, global var
+			{
+				return Env.getContext(Env.getCtx(), variableName);
+			}
+			else if (variableName.startsWith("$"))   // Env, global accounting var
+			{
+				return Env.getContext(Env.getCtx(), variableName);
+			}
+
+			final PropertyName propertyName = toPropertyName(variableName);
+			final PropertyValue propertyValue = getPropertyValue(propertyName);
+			return convertToString(propertyValue);
 		}
 
 		@Override
@@ -306,6 +309,33 @@ public class PropertyValueCollection
 		{
 			// TODO Auto-generated method stub
 			return null;
+		}
+
+		protected String convertToString(final PropertyValue propertyValue)
+		{
+			final Object value = propertyValue.getValue();
+			if (value == null)
+			{
+				// TODO: find some defaults?
+				return null;
+			}
+			else if (value instanceof Boolean)
+			{
+				return DisplayType.toBooleanString((Boolean)value);
+			}
+			else if (value instanceof String)
+			{
+				return value.toString();
+			}
+			else if (value instanceof LookupValue)
+			{
+				final Object idObj = ((LookupValue)value).getId();
+				return idObj == null ? null : idObj.toString().trim();
+			}
+			else
+			{
+				return value.toString();
+			}
 		}
 	};
 

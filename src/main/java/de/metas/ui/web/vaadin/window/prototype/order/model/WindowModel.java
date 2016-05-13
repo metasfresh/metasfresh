@@ -109,20 +109,15 @@ public class WindowModel
 
 		// Window: title
 		{
-			final CalculatedPropertyValue title = new HARDCODED_Order.OrderWindowTitleSummaryPropertyValue(WindowConstants.PROPERTYNAME_WindowTitle);
-			propertiesCollector.addProperty(title);
+			propertiesCollector.addProperty(StringExpressionPropertyValue.of(WindowConstants.PROPERTYNAME_WindowTitle, HARDCODED_Order.STRINGEXPRESSION_TitleSummary));
 		}
 		// Window: record summary
 		{
-			final PropertyName propertyName = WindowConstants.PROPERTYNAME_RecordSummary;
-			final CalculatedPropertyValue recordSummary = new HARDCODED_Order.RecordSummaryPropertyValue(propertyName);
-			propertiesCollector.addProperty(recordSummary);
+			propertiesCollector.addProperty(StringExpressionPropertyValue.of(WindowConstants.PROPERTYNAME_RecordSummary, HARDCODED_Order.STRINGEXPRESSION_RecordSummary));
 		}
 		// Window: record additional summary
 		{
-			final PropertyName propertyName = WindowConstants.PROPERTYNAME_RecordAditionalSummary;
-			final PropertyValue recordSummary = new HARDCODED_Order.AdditionalRecordSummaryPropertyValue(propertyName);
-			propertiesCollector.addProperty(recordSummary);
+			propertiesCollector.addProperty(StringExpressionPropertyValue.of(WindowConstants.PROPERTYNAME_RecordAditionalSummary, HARDCODED_Order.STRINGEXPRESSION_AdditionalRecordSummary));
 		}
 
 		//

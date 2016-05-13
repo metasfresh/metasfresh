@@ -13,10 +13,6 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ui.web.vaadin.window.descriptor.DataFieldLookupDescriptor;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.prototype.order.editor.LookupValue;
-import de.metas.ui.web.vaadin.window.prototype.order.model.CalculatedPropertyValue;
-import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap;
-import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyNameDependenciesMap.DependencyType;
-import de.metas.ui.web.vaadin.window.prototype.order.model.PropertyValueCollection;
 import de.metas.ui.web.vaadin.window.prototype.order.model.WindowModel;
 
 /*
@@ -65,6 +61,17 @@ public final class HARDCODED_Order
 	public static final PropertyName ORDER_GrandTotal = PropertyName.of(I_C_Order.COLUMNNAME_GrandTotal);
 	public static final PropertyName ORDER_TotalLines = PropertyName.of(I_C_Order.COLUMNNAME_TotalLines);
 
+	public static final String STRINGEXPRESSION_TitleSummary = ""
+			+ "Order window - @" + ORDER_DocumentNo + "/-@";
+	public static final String STRINGEXPRESSION_RecordSummary = ""
+			+ "@" + ORDER_DocumentNo + "/-@"
+			+ "\n@" + ORDER_DatePromised + "/-@"
+			+ "\n@" + ORDER_C_BPartner_ID + "/-@"
+			+ "\n@" + ORDER_C_BPartner_Location_ID + "/-@";
+	public static final String STRINGEXPRESSION_AdditionalRecordSummary = ""
+			+ "Net total: @" + ORDER_TotalLines + "/0@"
+			+ "\nGrand total: @" + ORDER_GrandTotal + "/0@";
+
 	private static WindowModel singletonWindowModel;
 
 	private HARDCODED_Order()
@@ -77,11 +84,11 @@ public final class HARDCODED_Order
 		return PropertyDescriptor.builder()
 				.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
 
-				// currently the "main" table needs to be specified on this level, whereas "sub tables" like the ORDER_Lines declare their table in the respective child properties descriptor
+		// currently the "main" table needs to be specified on this level, whereas "sub tables" like the ORDER_Lines declare their table in the respective child properties descriptor
 				.setSqlTableName(I_C_Order.Table_Name)
 
-				//
-				// Group: Document
+		//
+		// Group: Document
 				.addChildPropertyDescriptor(PropertyDescriptor.builder()
 						// this ChildPropertyDescriptor goes with the "main table"
 						.setPropertyName("Document")
@@ -217,10 +224,10 @@ public final class HARDCODED_Order
 				.addChildPropertyDescriptor(PropertyDescriptor.builder()
 						.setPropertyName("Pricing")
 						.setType(PropertyDescriptorType.Group)
-//						.addChildPropertyDescriptor(PropertyDescriptor.builder()
-//								.setPropertyName("PriceActual")
-//								.setValueType(java.math.BigDecimal.class)
-//								.build())
+						// .addChildPropertyDescriptor(PropertyDescriptor.builder()
+						// .setPropertyName("PriceActual")
+						// .setValueType(java.math.BigDecimal.class)
+						// .build())
 						.build())
 				//
 				// Group: History
@@ -276,7 +283,6 @@ public final class HARDCODED_Order
 			singletonWindowModel = null;
 		}
 
-
 		if (singletonWindowModel == null)
 		{
 			final WindowModel windowModel = new WindowModel();
@@ -301,7 +307,7 @@ public final class HARDCODED_Order
 		model.setProperty(ORDER_Bill_Location_ID, LookupValue.of(1234, "Bill address"));
 		model.setProperty(ORDER_Bill_User_ID, LookupValue.of(1234, "Bill user"));
 
-//		final GridPropertyValue lines = (GridPropertyValue)properties.getPropertyValue(ORDER_Lines);
+		// final GridPropertyValue lines = (GridPropertyValue)properties.getPropertyValue(ORDER_Lines);
 		for (int i = 1; i <= 10; i++)
 		{
 			final GridRowId rowId = model.gridNewRow(ORDER_Lines);
@@ -313,96 +319,4 @@ public final class HARDCODED_Order
 		}
 
 	}
-
-	public static final class OrderWindowTitleSummaryPropertyValue extends CalculatedPropertyValue
-	{
-		private final PropertyNameDependenciesMap dependencies;
-
-		public OrderWindowTitleSummaryPropertyValue(final PropertyName name)
-		{
-			super(name);
-			dependencies = PropertyNameDependenciesMap.builder()
-					.add(name, ORDER_DocumentNo, DependencyType.Value)
-					.build();
-			
-			setValue("Order window");
-		}
-		
-		@Override
-		public PropertyNameDependenciesMap getDependencies()
-		{
-			return dependencies;
-		}
-
-		@Override
-		protected Object calculateValue(final PropertyValueCollection values)
-		{
-			return "Order window - " + values.getPropertyValue(ORDER_DocumentNo).getValueAsString().or("?");
-		}
-
-	}
-
-	public static final class AdditionalRecordSummaryPropertyValue extends CalculatedPropertyValue
-	{
-		private final PropertyNameDependenciesMap dependencies;
-
-		public AdditionalRecordSummaryPropertyValue(final PropertyName name)
-		{
-			super(name);
-			
-			dependencies = PropertyNameDependenciesMap.builder()
-					.add(name, ORDER_GrandTotal, DependencyType.Value)
-					.add(name, ORDER_TotalLines, DependencyType.Value)
-					.build();
-		}
-		
-		@Override
-		public PropertyNameDependenciesMap getDependencies()
-		{
-			return dependencies;
-		}
-
-		@Override
-		protected Object calculateValue(final PropertyValueCollection values)
-		{
-			return "Net total: "+values.getPropertyValue(ORDER_TotalLines).getValueAsString().or("0")
-					+"\nGrand total: "+values.getPropertyValue(ORDER_GrandTotal).getValueAsString().or("0");
-		}
-	}
-
-	public static final class RecordSummaryPropertyValue extends CalculatedPropertyValue
-	{
-		private final PropertyNameDependenciesMap dependencies;
-
-		public RecordSummaryPropertyValue(final PropertyName name)
-		{
-			super(name);
-			dependencies = PropertyNameDependenciesMap.builder()
-					.add(name, ORDER_DocumentNo, DependencyType.Value)
-					.add(name, ORDER_DatePromised, DependencyType.Value)
-					.add(name, ORDER_C_BPartner_ID, DependencyType.Value)
-					.add(name, ORDER_C_BPartner_Location_ID, DependencyType.Value)
-					.build();
-		}
-		
-		@Override
-		public PropertyNameDependenciesMap getDependencies()
-		{
-			return dependencies;
-		}
-
-		@Override
-		protected Object calculateValue(final PropertyValueCollection values)
-		{
-			final String valueNew = values.getPropertyValue(ORDER_DocumentNo).getValueAsString().or("?")
-					+ "\n" + values.getPropertyValue(ORDER_DatePromised).getValueAsString().or("?")
-					+ "\n" + values.getPropertyValue(ORDER_C_BPartner_ID).getValueAsString().or("?")
-					+ "\n" + values.getPropertyValue(ORDER_C_BPartner_Location_ID).getValueAsString().or("?")
-					//
-					;
-			return valueNew;
-		}
-	}
-
-
 }
