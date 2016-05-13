@@ -32,6 +32,8 @@
 	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="c_calendar_id" class="java.math.BigDecimal"/>
 	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
