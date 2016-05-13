@@ -106,6 +106,8 @@ FROM
 			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
 			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
 
+			LEFT OUTER JOIN C_Period p ON p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, $2 )
+			LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int))
 		WHERE fa.postingtype = 'A' -- task 09804 don't show/sum other than current (A)
 	) fa
 	LEFT OUTER JOIN GL_JournalLine jl ON fa.Line_ID = jl.GL_JournalLine_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('GL_Journal'))
