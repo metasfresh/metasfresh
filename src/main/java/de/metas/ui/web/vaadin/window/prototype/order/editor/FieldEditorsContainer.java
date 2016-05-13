@@ -75,7 +75,7 @@ public class FieldEditorsContainer extends DocumentSectionEditorsContainer
 
 		final PropertyLayoutInfo layoutInfo = editor.getLayoutInfo();
 		final Label editorCaption = editor.getLabel();
-		final Component editorComp = editor;
+		final Component editorComp = editor.getComponent();
 		addChildEditor(editorCaption, editorComp, layoutInfo);
 
 		childEditors.put(editor.getPropertyName(), editor);

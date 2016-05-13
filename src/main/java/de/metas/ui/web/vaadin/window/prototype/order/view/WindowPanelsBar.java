@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
@@ -72,6 +73,17 @@ public class WindowPanelsBar extends CustomComponent
 
 	public void addNavigationShortcut(final Editor editor)
 	{
+		if (editor == null)
+		{
+			return;
+		}
+		
+		final Component editorComp = editor.getComponent();
+		if(editorComp == null)
+		{
+			return;
+		}
+		
 		final Button button = new Button();
 		button.setPrimaryStyleName("mf-tabbar-button");
 		button.setCaption(editor.getCaption());
@@ -83,7 +95,7 @@ public class WindowPanelsBar extends CustomComponent
 			@Override
 			public void buttonClick(ClickEvent event)
 			{
-				UI.getCurrent().scrollIntoView(editor);
+				UI.getCurrent().scrollIntoView(editorComp);
 			}
 		});
 	}

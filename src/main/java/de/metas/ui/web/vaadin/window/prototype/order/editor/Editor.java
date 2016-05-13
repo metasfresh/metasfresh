@@ -31,8 +31,10 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyName;
  * #L%
  */
 
-public interface Editor extends Component
 {
+	Component getComponent();
+	String getCaption();
+
 	PropertyName getPropertyName();
 
 	Set<PropertyName> getWatchedPropertyNames();
@@ -44,7 +46,7 @@ public interface Editor extends Component
 	boolean isAddingChildEditorsAllowed();
 
 	void addChildEditor(Editor editor);
-	
+
 	List<Editor> getChildEditors();
 
 	Label getLabel();
@@ -52,6 +54,6 @@ public interface Editor extends Component
 	PropertyLayoutInfo getLayoutInfo();
 
 	void setAttribute(final String name, final Object value);
-	
+
 	<T> T getAttribute(final String name);
 }

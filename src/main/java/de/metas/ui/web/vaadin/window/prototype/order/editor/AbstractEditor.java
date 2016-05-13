@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.thirdparty.guava.common.base.Optional;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
@@ -107,6 +108,12 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	protected final EditorListener listener()
 	{
 		return listener;
+	}
+	
+	@Override
+	public Component getComponent()
+	{
+		return this;
 	}
 	
 	@Override

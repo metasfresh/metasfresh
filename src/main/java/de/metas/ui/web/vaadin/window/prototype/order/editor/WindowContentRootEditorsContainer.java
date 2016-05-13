@@ -36,13 +36,13 @@ import de.metas.ui.web.vaadin.window.prototype.order.PropertyDescriptor;
 public class WindowContentRootEditorsContainer extends EditorsContainer
 {
 	private final VerticalLayout content;
-	
+
 	private final List<Editor> editors = new ArrayList<>();
 
 	public WindowContentRootEditorsContainer(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		super(rootPropertyDescriptor);
-		
+
 		content = new VerticalLayout();
 		content.setSizeFull();
 		content.addStyleName("editor-container-content");
@@ -54,13 +54,16 @@ public class WindowContentRootEditorsContainer extends EditorsContainer
 	public void addChildEditor(final Editor editor)
 	{
 		Preconditions.checkNotNull(editor, "editor");
-		
+
 		editors.add(editor);
-		
-		final Component editorComp = editor;
-		content.addComponent(editorComp);
+
+		final Component editorComp = editor.getComponent();
+		if (editorComp != null)
+		{
+			content.addComponent(editorComp);
+		}
 	}
-	
+
 	@Override
 	public List<Editor> getChildEditors()
 	{

@@ -202,15 +202,19 @@ public class WindowViewImpl extends AbstractView
 	}
 
 	@Override
-	protected void updateUI_OnRootPropertyEditorChanged(Editor rootEditor)
+	protected void updateUI_OnRootPropertyEditorChanged(final Editor rootEditor)
 	{
 		rootEditorContainer.removeAllComponents();
-		if(rootEditor != null)
+		if (rootEditor != null)
 		{
-			rootEditorContainer.addComponent(rootEditor);
+			final Component rootEditorComp = rootEditor.getComponent();
+			if (rootEditorComp != null)
+			{
+				rootEditorContainer.addComponent(rootEditorComp);
+			}
 		}
 	}
-	
+
 	@Override
 	protected void updateUI_OnEditorsChanged()
 	{

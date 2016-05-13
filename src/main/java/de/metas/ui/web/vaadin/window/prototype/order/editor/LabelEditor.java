@@ -68,7 +68,7 @@ public class LabelEditor extends AbstractEditor
 		return valueObj == null ? "" : valueObj.toString();
 	}
 
-	public void setContentModel(final ContentMode contentMode)
+	public void setContentMode(final ContentMode contentMode)
 	{
 		valueField.setContentMode(contentMode);
 	}

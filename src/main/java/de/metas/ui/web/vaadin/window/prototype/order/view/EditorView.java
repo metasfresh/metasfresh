@@ -51,7 +51,11 @@ public class EditorView extends AbstractView
 		content.removeAllComponents();
 		if (rootEditor != null)
 		{
-			content.addComponent(rootEditor);
+			final Component rootEditorComp = rootEditor.getComponent();
+			if(rootEditorComp != null)
+			{
+				content.addComponent(rootEditorComp);
+			}
 		}
 	}
 
