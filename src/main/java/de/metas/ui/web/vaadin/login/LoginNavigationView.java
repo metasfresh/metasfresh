@@ -6,6 +6,7 @@ import org.compiere.util.Language;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.event.UIEventBus;
@@ -47,6 +48,8 @@ public class LoginNavigationView extends CustomComponent implements View
 	{
 		if (Application.isTesting())
 		{
+			setCompositionRoot(new Label("Automatically logging in...."));
+			
 			final LoginModel loginModel = new LoginModel();
 			loginModel.authenticate("SuperUser", "System");
 			loginModel.setLanguage(Language.getLanguage("de_DE"));
