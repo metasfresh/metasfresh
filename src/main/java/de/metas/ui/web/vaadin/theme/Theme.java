@@ -1,9 +1,11 @@
 package de.metas.ui.web.vaadin.theme;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.images.Images;
+import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -53,33 +55,43 @@ public class Theme
 			{
 
 				@Override
-				public Optional<Resource> load(final String fileName) throws Exception
+				public Optional<Resource> load(final String fileNameWithoutExt) throws Exception
 				{
-					String fileNameWithExt = Images.RESOURCENAME_ImagesDir + fileName + ".png";
-					InputStream in = Images.RESOURCES_Loader.getResourceAsStream(fileNameWithExt);
+					if (fileNameWithoutExt == null || fileNameWithoutExt.isEmpty())
+					{
+						return Optional.absent();
+					}
+					
+					String fileNameWithExt = fileNameWithoutExt + ".png";
+					InputStream in = Images.RESOURCES_Loader.getResourceAsStream(Images.RESOURCENAME_ImagesDir + fileNameWithExt);
 					if (in == null)
 					{
-						fileNameWithExt = Images.RESOURCENAME_ImagesDir + fileName + ".gif";
-						in = Images.RESOURCES_Loader.getResourceAsStream(fileNameWithExt);
+						fileNameWithExt = fileNameWithoutExt + ".gif";
+						in = Images.RESOURCES_Loader.getResourceAsStream(Images.RESOURCENAME_ImagesDir + fileNameWithExt);
 					}
 					if (in == null)
 					{
-						logger.info("GIF/PNG Not found: " + fileName);
+						logger.info("GIF/PNG Not found: " + fileNameWithoutExt);
 						return Optional.absent();
 					}
 
-					final InputStream inputStream = in;
-					final Resource resource = new StreamResource(new StreamResource.StreamSource()
+					//
+					// Read image bytes
+					final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					byte[] buff = new byte[4096];
+					int len = -1;
+					while((len = in.read(buff, 0, buff.length)) > 0)
 					{
-						private static final long serialVersionUID = 1L;
+						baos.write(buff, 0, len);
+					}
+					final byte[] data = baos.toByteArray();
+					if (data == null || data.length <= 0)
+					{
+						return Optional.absent();
+					}
 
-						@Override
-						public InputStream getStream()
-						{
-							return inputStream;
-						}
-					}, fileNameWithExt);
-
+					//
+					final Resource resource = new StreamResource(() -> new ByteArrayInputStream(data), fileNameWithExt);
 					return Optional.fromNullable(resource);
 				}
 			});
