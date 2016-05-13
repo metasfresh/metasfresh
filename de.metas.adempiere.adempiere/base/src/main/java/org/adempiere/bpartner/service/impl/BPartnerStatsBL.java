@@ -26,11 +26,11 @@ import org.compiere.util.Env;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,6 +44,8 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	public void setSOCreditStatus(final I_C_BPartner_Stats stat, final String soCreditStatus)
 	{
 		stat.setSOCreditStatus(soCreditStatus);
+		
+		InterfaceWrapperHelper.save(stat);
 	}
 
 	@Override
@@ -159,6 +161,8 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	public void setTotalOpenBalance(final I_C_BPartner_Stats stat, final BigDecimal totalOpenBalance)
 	{
 		stat.setTotalOpenBalance(totalOpenBalance);
+		
+		InterfaceWrapperHelper.save(stat);
 	}
 
 	@Override
@@ -201,13 +205,14 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return TotalOpenBalance;
 	}
 
-	
 	// SO Credit Used
 
 	@Override
 	public void setSOCreditUsed(final I_C_BPartner_Stats stat, final BigDecimal creditUsed)
 	{
 		stat.setSO_CreditUsed(creditUsed);
+
+		InterfaceWrapperHelper.save(stat);
 	}
 
 	@Override
@@ -217,7 +222,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		return bpStats.getSoCreditUsed();
 	}
-	
+
 	public BigDecimal calculateSOCreditUsed(final I_C_BPartner_Stats stats)
 	{
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -226,13 +231,15 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		return SO_CreditUsed;
 	}
-	
+
 	// ActualLifeTimeValue
 
 	@Override
 	public void setActualLifeTimeValue(final I_C_BPartner_Stats stat, final BigDecimal actualLifeTimeValue)
 	{
 		stat.setActualLifeTimeValue(actualLifeTimeValue);
+		
+		InterfaceWrapperHelper.save(stat);
 	}
 
 	@Override
@@ -257,7 +264,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		InterfaceWrapperHelper.save(stat);
 	} // setActualLifeTimeValue
-
 
 	@Override
 	public boolean isCreditStopSales(final I_C_BPartner_Stats stat, final BigDecimal grandTotal)
