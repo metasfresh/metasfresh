@@ -1,15 +1,15 @@
 package de.metas.hostkey.spi.impl;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.IHostKeyStorage;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.base.util.CookieUtil;
 import de.metas.ui.web.base.util.IHttpSessionProvider;
 
@@ -68,10 +68,10 @@ public class HttpCookieHostKeyStorage implements IHostKeyStorage
 
 	private static final transient Logger logger = LogManager.getLogger(HttpCookieHostKeyStorage.class);
 
-	private static final String COOKIE_Name = "adempiere.hostkey";
-	private static final String COOKIE_Description = "Used by ADempiere to identify if user logged in from same browser, no matter on which network he/she connects."
+	public static final String COOKIE_Name = "adempiere.hostkey";
+	public static final String COOKIE_Description = "Used by metasfresh to identify if user logged in from same browser, no matter on which network he/she connects."
 			+ " Please note that this information is mandatory for providing host base configuration.";
-	private static int COOKIE_MaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
+	public static int COOKIE_MaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
 
 	private final HttpServletRequest _httpRequest;
 
