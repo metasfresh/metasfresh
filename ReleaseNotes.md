@@ -29,14 +29,14 @@ The actual release notes
 
 ## Features
  - Fresh 271 Allow easy and riskless experimental builds
-    * we can now build the complete metasfresh distributable for an issue branch, without artifact GAV collisions
+    * DevOps - we can now build the complete metasfresh distributable for an issue branch, without artifact GAV collisions
+    * Some changes in the buildsystem that allow us to build and rollout feature branches before they were integrated.
  - FRESH-265 Procurement Candidates: Packvorschrift overwrite
+    * Possibility to Overwrite the default Packing Instructions/ Handling Units for a reported Product Quantity. The Repor Informations come from Procurement Application.
  - FRESH-286 jenkins envInject plugin overwrites BUILD_URL value
-	* introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Fallback to BUILD_URL if the new var is not set
- - FRESH-271 Allow easy and riskless experimental builds
-    * some changes in the buildsystem that allow us to build and rollout feature branches before they were integrated
+    * DevOps - introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Fallback to BUILD_URL if the new var is not set.
  - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
-    * extending the mail config to select a configuration by document type or base type
+    * CRM - Enhancing and extending mail configuration and functionality to select an eMail configuration by document type or base type.
 	
 ## Fixes
  - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
