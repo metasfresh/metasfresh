@@ -1,5 +1,7 @@
 package de.metas.ui.web.vaadin;
 
+import org.compiere.util.KeyNamePair;
+
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
@@ -11,6 +13,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import de.metas.ui.web.vaadin.event.UIEventBus;
+import de.metas.ui.web.vaadin.login.LoginModel;
 import de.metas.ui.web.vaadin.login.LoginPresenter;
 import de.metas.ui.web.vaadin.login.MainView;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
@@ -52,25 +55,42 @@ public class RootUI extends UI
 	protected void init(final VaadinRequest request)
 	{
 		UIEventBus.register(this);
+
+		if (Application.isTesting())
+		{
+			final LoginModel loginModel = new LoginModel();
+			loginModel.authenticate("SuperUser", "System");
+			loginModel.loginComplete(
+					new KeyNamePair(1000000, "Admin") // role
+					, new KeyNamePair(1000000, "?") // client
+					, new KeyNamePair(1000000, "?") // org
+					, (KeyNamePair)null // warehouse
+			);
+		}
+
 		updateContent();
-		
+
 	}
-	
+
 	private final void updateContent()
 	{
-		final Component view;
 		final UserSession userSession = UserSession.getCurrent();
 		if (!userSession.isLoggedIn())
 		{
-			view = new LoginPresenter().getComponent();
+			final Component view = new LoginPresenter().getComponent();
+			setContent(view);
 		}
 		else
 		{
-			view = new MainView();
+			final Component viewOld = getContent();
+//			if(!(viewOld instanceof MainView))
+			{
+				MainView view = new MainView();
+				setContent(view);
+			}
 		}
-		setContent(view);
 	}
-	
+
 	public static RootUI getCurrentRootUI()
 	{
 		return (RootUI)getCurrent();
@@ -80,7 +100,7 @@ public class RootUI extends UI
 	{
 		return getCurrentRootUI().eventBus;
 	}
-	
+
 	@Subscribe
 	public void onUserLoginRequestEvent(final UserLoggedInEvent event)
 	{
