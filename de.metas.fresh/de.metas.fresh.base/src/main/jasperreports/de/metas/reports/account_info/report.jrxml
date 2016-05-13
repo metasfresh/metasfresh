@@ -47,6 +47,9 @@
 	<field name="unionorder" class="java.lang.Integer"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="eurosaldo" class="java.math.BigDecimal"/>
+	<field name="containseur" class="java.lang.Boolean"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
 		<groupHeader>
