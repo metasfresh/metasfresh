@@ -24,5 +24,8 @@ package de.metas.ui.web.vaadin.login.event;
 
 public class UserLoggedInEvent
 {
-
+	public UserLoggedInEvent()
+	{
+		super();
+	}
 }
