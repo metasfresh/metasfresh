@@ -1,5 +1,4 @@
-DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0));
-DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying) ;
+
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying, IN showCurrencyExchange character varying) ;
 CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying, IN showCurrencyExchange character varying) 
 	RETURNS TABLE ( 
@@ -24,7 +23,9 @@ CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID 
 		DocStatus text,
 		ConversionMultiplyRate numeric,
 		EuroSaldo numeric,
-		containsEUR boolean
+		containsEUR boolean,
+		ad_org_id numeric,
+		ad_client_id numeric
 	) AS 
 $$
 SELECT
@@ -54,10 +55,10 @@ SELECT
 	a.value AS A_Value,
 	fa.AmtAcctDr, 
 	fa.AmtAcctCr, 
-	SUM( fa.AmtAcctDr ) OVER () AS AmtAcctDrEnd,
-	SUM( fa.AmtAcctCr ) OVER () AS AmtAcctCrEnd, 
+	SUM( fa.AmtAcctDr ) OVER (PARTITION BY fa.ad_org_id, fa.ad_client_id) AS AmtAcctDrEnd,
+	SUM( fa.AmtAcctCr ) OVER (PARTITION BY fa.ad_org_id, fa.ad_client_id) AS AmtAcctCrEnd, 
 	CarryBalance + SUM( Balance ) OVER ( 
-		PARTITION BY fa.Account_ID 
+		PARTITION BY fa.Account_ID, fa.ad_org_id, fa.ad_client_id
 		ORDER BY fa.Account_ID, fa.DateAcct, fa.Fact_Acct_ID 
 	) AS IterativeBalance,
 	CarryBalance,
@@ -70,9 +71,11 @@ SELECT
 	pa.Name AS Param_Activit_Name,
 	fa.docStatus,
 	ConversionMultiplyRate,
-	CASE WHEN $6 = 'Y' AND ConversionMultiplyRate IS NOT NULL  THEN ConversionMultiplyRate * (CarryBalance + SUM( Balance ) OVER ( 
+	CASE WHEN $6 = 'Y' AND ConversionMultiplyRate IS NOT NULL  THEN ConversionMultiplyRate * (CarryBalance + SUM( Balance ) OVER ( PARTITION BY fa.ad_org_id, fa.ad_client_id
 	)) ELSE NULL END AS EuroSaldo,
-	containsEUR
+	containsEUR,
+	fa.ad_org_id,
+	fa.ad_client_id
 FROM
 	(
 		SELECT 
@@ -91,7 +94,9 @@ FROM
 					(select 1 from C_ElementValue elv where ev.C_ElementValue_ID = elv.C_ElementValue_ID and elv.ShowIntCurrency = 'Y' and elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR'))
 				)		
 			END			
-			AS containsEUR
+			AS containsEUR,
+			fa.ad_org_id,
+			fa.ad_client_id
 		FROM 
 			( 
 				SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id
@@ -106,6 +111,8 @@ FROM
 			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
 			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
 
+			LEFT OUTER JOIN C_Period p ON p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, $2 )
+			LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int))
 		WHERE fa.postingtype = 'A' -- task 09804 don't show/sum other than current (A)
 	) fa
 	LEFT OUTER JOIN GL_JournalLine jl ON fa.Line_ID = jl.GL_JournalLine_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('GL_Journal'))
@@ -159,25 +166,32 @@ CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report ( IN Account_ID nume
 		UnionOrder integer,
 		docStatus text,
 		EuroSaldo numeric,
-		containsEUR boolean
+		containsEUR boolean,
+		ad_org_id numeric,
+		ad_client_id numeric
 	) AS 
 $$
 	SELECT 	DateAcct, Fact_Acct_ID, BP_Name, Description, Account2_ID, a_Value, AmtAcctDr, AmtAcctCr, Saldo, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
-		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::boolean
+		Param_Activity_Name, count(0) OVER (PARTITION BY ad_org_id, ad_client_id) AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::boolean,
+		ad_org_id, 
+		ad_client_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6 )
 	WHERE	Fact_Acct_ID IS NOT NULL
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Anfangssaldo', null::text, null::text, null::numeric, null::numeric, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::boolean
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER (PARTITION BY ad_org_id, ad_client_id) AS overallcount, 1, null::text, null::numeric, null::boolean,
+		ad_org_id, ad_client_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Summe', null::text, null::text, AmtAcctDrEnd, AmtAcctCrEnd, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::boolean
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER (PARTITION BY ad_org_id, ad_client_id) AS overallcount, 3, null::text, null::numeric, null::boolean,
+		ad_org_id, ad_client_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 UNION ALL
 	(SELECT DISTINCT null::date, null::numeric, null, 'Summe in EUR', null::text, null::text, null::numeric, null::numeric, null::numeric, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER (PARTITION BY ad_org_id, ad_client_id) AS overallcount, 4, null::text, EuroSaldo, containsEUR,
+		ad_org_id, ad_client_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 	WHERE containsEUR = 'Y' )
 ORDER BY
