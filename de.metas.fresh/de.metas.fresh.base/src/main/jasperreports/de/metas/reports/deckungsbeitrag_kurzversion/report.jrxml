@@ -85,6 +85,8 @@
 	<field name="balancely_100" class="java.math.BigDecimal"/>
 	<field name="balancely_150" class="java.math.BigDecimal"/>
 	<field name="balancely" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<field name="gross_1000" class="java.math.BigDecimal"/>
 	<field name="gross_2000" class="java.math.BigDecimal"/>
 	<field name="gross_100" class="java.math.BigDecimal"/>
