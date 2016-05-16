@@ -35,19 +35,6 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>de.telecash</groupId>
-			<artifactId>ipgapiClient</artifactId>
-			<version>1966</version>
-		</dependency>
-
-		<!-- required by ipgapiClient -->
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency>
 	</dependencies>
 
 	<build>
