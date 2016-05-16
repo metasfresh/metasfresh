@@ -16,13 +16,14 @@ import com.google.common.cache.LoadingCache;
 import com.vaadin.server.ClassResource;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Component;
 
 import de.metas.logging.LogManager;
 
 public class Theme
 {
 	public static final String NAME = "metasfresh";
-
+	
 	private static final Logger logger = LogManager.getLogger(Theme.class);
 
 	public static Resource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension)
@@ -95,5 +96,24 @@ public class Theme
 					return Optional.fromNullable(resource);
 				}
 			});
+
+	private static final String STYLE_HIDDEN = "mf-hidden";
+	
+	public static void setHidden(final Component comp, final boolean hidden)
+	{
+		if (comp == null)
+		{
+			return;
+		}
+		
+		if (hidden)
+		{
+			comp.addStyleName(STYLE_HIDDEN);
+		}
+		else
+		{
+			comp.removeStyleName(STYLE_HIDDEN);
+		}
+	}
 
 }

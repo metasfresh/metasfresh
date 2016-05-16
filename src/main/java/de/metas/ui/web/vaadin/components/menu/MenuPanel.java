@@ -3,18 +3,15 @@ package de.metas.ui.web.vaadin.components.menu;
 import java.util.List;
 
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
-
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
-
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+
+import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
+import de.metas.ui.web.vaadin.theme.Theme;
 
 /*
  * #%L
@@ -41,26 +38,22 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class MenuPanel extends CustomComponent
 {
-	public static interface MenuItemClickListener
-	{
-		void onMenuItemClicked(final MenuItem menuItem);
-	}
-
+	public static final String STYLE = "mf-menu";
 	//
 	// UI
 	private final TextField searchTextField;
 	private final HorizontalLayout menuGroupsContainer;
 	private final Label nothingFoundLabel;
+	private boolean hiddenByStyle = false;
 
 	//
 	// Listeners
-	private static final MenuItemClickListener CLICKLISTENER_NULL = (menuItem) -> {
-	};
-	private MenuItemClickListener clickListener = CLICKLISTENER_NULL;
+	private final ForwardingMenuItemClickListener clickListener = new ForwardingMenuItemClickListener();
 
 	public MenuPanel()
 	{
 		super();
+		setPrimaryStyleName(STYLE);
 
 		searchTextField = new TextField();
 		searchTextField.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
@@ -68,21 +61,17 @@ public class MenuPanel extends CustomComponent
 		searchTextField.addTextChangeListener(event -> filterMenuItems(event.getText()));
 
 		menuGroupsContainer = new HorizontalLayout();
-		menuGroupsContainer.setPrimaryStyleName("mf-menu");
+		menuGroupsContainer.setPrimaryStyleName(STYLE + "-container");
 
 		nothingFoundLabel = new Label("No results found");
+		nothingFoundLabel.setStyleName(STYLE + "-nothingfound-label");
 
 		setCompositionRoot(new VerticalLayout(searchTextField, menuGroupsContainer));
 	}
 
 	public void setClickListener(final MenuItemClickListener clickListener)
 	{
-		this.clickListener = clickListener == null ? CLICKLISTENER_NULL : clickListener;
-	}
-
-	private void fireClickListener(final MenuItem menuItem)
-	{
-		clickListener.onMenuItemClicked(menuItem);
+		this.clickListener.setDelegate(clickListener);
 	}
 
 	public void setMenuItems(final List<MenuItem> menuItems)
@@ -94,12 +83,12 @@ public class MenuPanel extends CustomComponent
 		{
 			for (final MenuItem groupItem : menuItems)
 			{
-				final MenuGroupPanel itemComp = new MenuGroupPanel(groupItem);
+				final MenuGroupPanel itemComp = new MenuGroupPanel(groupItem, clickListener);
 				menuGroupsContainer.addComponent(itemComp);
 			}
 		}
 
-		nothingFoundLabel.setVisible(false);
+		Theme.setHidden(nothingFoundLabel, true);
 		menuGroupsContainer.addComponent(nothingFoundLabel);
 	}
 
@@ -110,17 +99,11 @@ public class MenuPanel extends CustomComponent
 		final MenuItemFilter filter;
 		if (searchText == null || searchText.trim().isEmpty())
 		{
-			filter = (menuItem) -> {
-				return true;
-			};
+			filter = MenuItemFilter.ACCEPT_ALL;
 		}
 		else
 		{
-			final String searchTextUC = searchText.toUpperCase();
-			filter = (menuItem) -> {
-				final String caption = menuItem.getCaption().toUpperCase();
-				return caption.indexOf(searchTextUC) >= 0;
-			};
+			filter = new ContainsStringMenuItemFilter(searchText);
 		}
 
 		int countDisplayed = 0;
@@ -131,121 +114,24 @@ public class MenuPanel extends CustomComponent
 				final MenuGroupPanel menuGroupPanel = (MenuGroupPanel)menuGroupComp;
 				menuGroupPanel.setFilter(filter);
 
-				if (menuGroupPanel.isVisible())
+				if (!menuGroupPanel.isHiddenByStyle())
 				{
 					countDisplayed++;
 				}
 			}
 		}
 
-		nothingFoundLabel.setVisible(countDisplayed == 0);
+		Theme.setHidden(nothingFoundLabel, countDisplayed > 0);
 	}
 
-	private static interface MenuItemFilter
+	public final void setHiddenByStyle(final boolean hidden)
 	{
-		boolean accept(MenuItem menuItem);
+		Theme.setHidden(this, hidden);
+		this.hiddenByStyle = hidden;
 	}
 
-	private class MenuGroupPanel extends CssLayout
+	public boolean isHiddenByStyle()
 	{
-		private final MenuItem groupItem;
-
-		private final Label captionLabel;
-		private final ComponentContainer content;
-
-		private MenuItemFilter filter = null;
-
-		public MenuGroupPanel(final MenuItem groupItem)
-		{
-			super();
-			setPrimaryStyleName("mf-menu-group");
-			this.groupItem = groupItem;
-
-			captionLabel = new Label();
-			captionLabel.setPrimaryStyleName("mf-menu-group-caption");
-
-			content = new VerticalLayout();
-			content.setPrimaryStyleName("mf-menu-group-content");
-
-			addComponents(captionLabel, content);
-
-			updateFromItem();
-		}
-
-		public void setFilter(final MenuItemFilter filter)
-		{
-			if (this.filter == filter)
-			{
-				return;
-			}
-
-			this.filter = filter;
-			applyFilter();
-		}
-
-		private void applyFilter()
-		{
-			int countDisplayed = 0;
-			for (final Component comp : content)
-			{
-				if (comp instanceof MenuItemComponent)
-				{
-					final MenuItemComponent menuItemComp = (MenuItemComponent)comp;
-
-					final MenuItem menuItem = menuItemComp.getMenuItem();
-					final boolean displayed = filter == null || filter.accept(menuItem);
-					menuItemComp.setVisible(displayed);
-
-					if (displayed)
-					{
-						countDisplayed++;
-					}
-				}
-			}
-
-			//
-			setVisible(countDisplayed > 0);
-		}
-
-		private void updateFromItem()
-		{
-			captionLabel.setValue(groupItem.getCaption());
-
-			content.removeAllComponents();
-			for (final MenuItem menuItem : groupItem.getChildren())
-			{
-				final MenuItemComponent menuItemComp = new MenuItemComponent(menuItem);
-				content.addComponent(menuItemComp);
-			}
-
-			applyFilter();
-		}
-	}
-
-	private class MenuItemComponent extends Button
-	{
-		private final MenuItem menuItem;
-
-		public MenuItemComponent(final MenuItem menuItem)
-		{
-			super();
-			setPrimaryStyleName("mf-menu-item");
-			this.menuItem = menuItem;
-
-			addClickListener(event -> fireClickListener(menuItem));
-
-			updateFromItem();
-		}
-
-		private void updateFromItem()
-		{
-			setCaption(menuItem.getCaption());
-			setIcon(menuItem.getIcon());
-		}
-
-		public MenuItem getMenuItem()
-		{
-			return menuItem;
-		}
+		return hiddenByStyle;
 	}
 }

@@ -15,8 +15,8 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import de.metas.ui.web.vaadin.components.menu.MenuItemClickListener;
 import de.metas.ui.web.vaadin.components.menu.MenuPanel;
-import de.metas.ui.web.vaadin.components.menu.MenuPanel.MenuItemClickListener;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 
 /*
@@ -88,7 +88,7 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		// Lane: menu
 		{
 			menuPanel = new MenuPanel();
-			menuPanel.setVisible(false);
+			menuPanel.setHiddenByStyle(false);
 			
 			content.addComponent(menuPanel);
 		}
@@ -143,17 +143,17 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 	
 	private void toggleMenuPanel()
 	{
-		menuPanel.setVisible(!menuPanel.isVisible());
+		menuPanel.setHiddenByStyle(!menuPanel.isHiddenByStyle());
 	}
 
 	public void showMenuPanel()
 	{
-		menuPanel.setVisible(true);
+		menuPanel.setHiddenByStyle(false);
 	}
 
 	public void hideMenuPanel()
 	{
-		menuPanel.setVisible(false);
+		menuPanel.setHiddenByStyle(true);
 	}
 
 }
