@@ -37,6 +37,8 @@
 	<field name="param_konto" class="java.lang.String"/>
 	<field name="param_vatcode" class="java.lang.String"/>
 	<field name="param_org" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<variable name="baseamt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
 	</variable>
