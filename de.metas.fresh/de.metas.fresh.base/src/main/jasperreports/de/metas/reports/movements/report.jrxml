@@ -29,6 +29,8 @@
 	<field name="activity_from" class="java.lang.String"/>
 	<field name="price" class="java.math.BigDecimal"/>
 	<field name="account" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<variable name="Product_qty" class="java.math.BigDecimal" resetType="Group" resetGroup="product_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{movementqty}]]></variableExpression>
 	</variable>
