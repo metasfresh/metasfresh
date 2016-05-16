@@ -22,6 +22,7 @@ The actual release notes
  - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
 
 ## Fixes
+ - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
  - FRESH-300 client not starting when config is not completed
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
 
