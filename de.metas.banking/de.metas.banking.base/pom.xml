@@ -37,13 +37,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jdtaus</groupId>
-			<artifactId>jdtaus</artifactId>
-			<version>20081202</version>
-			<type>pom</type>
-		</dependency>
-
-		<dependency>
 			<groupId>de.telecash</groupId>
 			<artifactId>ipgapiClient</artifactId>
 			<version>1966</version>
