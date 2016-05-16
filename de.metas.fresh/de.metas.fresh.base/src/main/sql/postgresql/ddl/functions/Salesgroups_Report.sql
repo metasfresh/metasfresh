@@ -13,7 +13,10 @@ CREATE TABLE report.Salesgroups_Report_Sub
 	qtyinvoiceddetailhandel	numeric,	
 	revenuediscounter numeric,			
 	revenuegastro numeric,			
-	revenuedetailhandel numeric
+	revenuedetailhandel numeric,
+	
+	ad_org_id numeric,
+	ad_client_id numeric
 	
 )
 WITH (
@@ -33,13 +36,18 @@ SELECT
 	sum(qtyinvoiceddetailhandel),	
 	sum(revenuediscounter),		
 	sum(revenuegastro),		
-	sum(revenuedetailhandel)
+	sum(revenuedetailhandel),
+	
+	rv.ad_org_id,
+	rv.ad_client_id
 	
 FROM report.RV_Salesgroups rv
 JOIN C_UOM uom on uom.C_UOM_ID = rv.uom
 WHERE rv.DateInvoiced >= $1 AND rv.DateInvoiced <= $2
 GROUP BY 	
-	productsalesgroup, uom.name
+	productsalesgroup, uom.name,
+	rv.ad_org_id,
+	rv.ad_client_id
 	
 	
 	
