@@ -40,7 +40,7 @@ The actual release notes
 	
 ## Fixes
  - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
-	* Fixed the formatting and encoding problem in the mails send by our async processor
+	* Fixed the formatting and encoding problem in the mails sent by our async processor
 	
 # metasfresh 4.16.15
 
