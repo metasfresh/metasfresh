@@ -27,6 +27,8 @@
 	<field name="lineno" class="java.lang.String"/>
 	<field name="amount" class="java.math.BigDecimal"/>
 	<field name="accountname" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<variable name="TotalAmt" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
 	</variable>
