@@ -21,7 +21,7 @@ import de.metas.ui.web.vaadin.event.UIEventBus;
 import de.metas.ui.web.vaadin.login.LoginNavigationView;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
 import de.metas.ui.web.vaadin.session.UserSession;
-import de.metas.ui.web.vaadin.window.prototype.order.WindowViewProvider;
+import de.metas.ui.web.vaadin.window.WindowViewProvider;
 
 /*
  * #%L

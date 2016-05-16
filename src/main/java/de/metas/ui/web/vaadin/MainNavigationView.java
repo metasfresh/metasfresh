@@ -12,7 +12,7 @@ import de.metas.ui.web.vaadin.components.menu.UserMenuProvider;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItemType;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
-import de.metas.ui.web.vaadin.window.prototype.order.WindowViewProvider;
+import de.metas.ui.web.vaadin.window.WindowViewProvider;
 
 /*
  * #%L
