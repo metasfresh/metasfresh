@@ -44,13 +44,6 @@ public class Banking extends AbstractModuleInterceptor
 	@Override
 	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
 	{
-		// TODO: evaluate if this legacy code does make sense, since we have auto-discovery services
-		if (isjdtausAvailable())
-		{
-			// BankingBL is using the Package jdtaus -> next line crashes when its not available.
-			Services.registerService(IBankingBL.class, new BankingBL());
-		}
-
 		super.onInit(engine, client);
 		
 		//
@@ -84,23 +77,5 @@ public class Banking extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
-	}
-
-
-	private boolean isjdtausAvailable()
-	{
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-			classLoader = BankingBL.class.getClassLoader();
-		try
-		{
-			classLoader.loadClass("org.jdtaus.banking.Textschluessel");
-		}
-		catch (Exception ex)
-		{
-			return false;
-		}
-
-		return true;
 	}
 }
