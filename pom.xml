@@ -47,6 +47,12 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		
+		<repository>
+			<id>metas-github-repo</id>
+			<name>metasfresh repository on github</name>
+			<url>https://raw.githubusercontent.com/metasfresh/metasfresh-maven-repo/master/repository</url>
+		</repository>
 
 	</repositories>
 
