@@ -28,8 +28,6 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,10 +39,12 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
+import de.metas.logging.LogManager;
 
 /**
  * Helper monitor which logs the given parameters by using <code>adProcessId</code> when export started. When export finished, it logs the status.
@@ -124,6 +124,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 		final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		pinstance.setAD_Process_ID(adProcessId);
 		pinstance.setAD_User_ID(Env.getAD_User_ID(ctx));
+		pinstance.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		pinstance.setRecord_ID(0); // mandatory
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
