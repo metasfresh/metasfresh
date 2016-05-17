@@ -6,7 +6,6 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 import de.metas.ui.web.vaadin.theme.Theme;
 
 /*

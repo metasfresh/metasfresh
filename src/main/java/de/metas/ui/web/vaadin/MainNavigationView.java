@@ -7,9 +7,10 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
 
+import de.metas.ui.web.vaadin.components.menu.MainMenuItem;
+import de.metas.ui.web.vaadin.components.menu.MainMenuItem.MenuItemType;
+import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItemType;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.WindowViewProvider;
@@ -74,14 +75,15 @@ public class MainNavigationView extends CssLayout implements MFView
 
 	private void runMenuItem(final MenuItem menuItem)
 	{
-		if (menuItem.getType() == MenuItemType.Window)
+		final MainMenuItem mainMenuItem = MainMenuItem.cast(menuItem);
+		if (mainMenuItem.getType() == MenuItemType.Window)
 		{
-			final String viewNameAndParameters = WindowViewProvider.createViewNameAndParameters(menuItem.getElementId());
+			final String viewNameAndParameters = WindowViewProvider.createViewNameAndParameters(mainMenuItem.getElementId());
 			UI.getCurrent().getNavigator().navigateTo(viewNameAndParameters);
 		}
 		else
 		{
-			throw new UnsupportedOperationException("Menu item not supported: " + menuItem);
+			throw new UnsupportedOperationException("Menu item not supported: " + mainMenuItem);
 		}
 
 	}

@@ -16,9 +16,9 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.menu.MenuItemClickListener;
 import de.metas.ui.web.vaadin.components.menu.MenuPanel;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 
 /*
  * #%L

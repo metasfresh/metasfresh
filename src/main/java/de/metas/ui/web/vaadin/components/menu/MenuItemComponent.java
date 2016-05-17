@@ -2,7 +2,6 @@ package de.metas.ui.web.vaadin.components.menu;
 
 import com.vaadin.ui.Button;
 
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 import de.metas.ui.web.vaadin.theme.Theme;
 
 /*

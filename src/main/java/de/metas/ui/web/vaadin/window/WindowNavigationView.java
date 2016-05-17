@@ -1,9 +1,11 @@
 package de.metas.ui.web.vaadin.window;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -12,9 +14,7 @@ import com.vaadin.server.Resource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItemImpl;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItemType;
+import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.descriptor.legacy.VOPropertyDescriptorProvider;
@@ -132,30 +132,31 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 			return ImmutableList.of();
 		}
 		
-		final Map<ActionGroup, MenuItemImpl.Builder> groups = new LinkedHashMap<>();
+		final Map<ActionGroup, List<MenuItem>> groups = new LinkedHashMap<>();
 		for (final Action action : actions)
 		{
 			final ActionGroup actionGroup = action.getActionGroup();
-			MenuItemImpl.Builder menuItemGroupBuilder = groups.get(actionGroup);
-			if(menuItemGroupBuilder == null)
+			List<MenuItem> menuItems = groups.get(actionGroup);
+			if(menuItems == null)
 			{
-				menuItemGroupBuilder = MenuItemImpl.builder()
-						.setCaption(actionGroup.getCaption());
-				groups.put(actionGroup, menuItemGroupBuilder);
+				menuItems = new ArrayList<>();
+				groups.put(actionGroup, menuItems);
 			}
 			
 			final ActionMenuItem menuItem = ActionMenuItem.of(action);
-			menuItemGroupBuilder.addChild(menuItem);
+			menuItems.add(menuItem);
 		}
 		
-		final ImmutableList.Builder<MenuItem> menuItems = ImmutableList.builder();
-		for (final MenuItemImpl.Builder menuItemGroupBuilder : groups.values())
+		final ImmutableList.Builder<MenuItem> rootMenuItems = ImmutableList.builder();
+		for (final Entry<ActionGroup, List<MenuItem>> e : groups.entrySet())
 		{
-			final MenuItem menuItemGroup = menuItemGroupBuilder.build();
-			menuItems.add(menuItemGroup);
+			final ActionGroup actionGroup = e.getKey();
+			final List<MenuItem> groupMenuItems = e.getValue();
+			final MenuItem menuItemGroup = ActionGroupMenuItem.of(actionGroup, groupMenuItems);
+			rootMenuItems.add(menuItemGroup);
 		}
 		
-		return menuItems.build();
+		return rootMenuItems.build();
 	}
 	
 	private void onActionMenuItemClicked(final MenuItem menuItem)
@@ -177,6 +178,43 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		windowPresenter.onActionClicked(action);
 	}
 	
+	private static class ActionGroupMenuItem implements MenuItem
+	{
+		public static final ActionGroupMenuItem of(final ActionGroup actionGroup, final List<MenuItem> menuItems)
+		{
+			return new ActionGroupMenuItem(actionGroup, menuItems);
+		}
+
+		private final ActionGroup actionGroup;
+		private final List<MenuItem> menuItems;
+		
+		private ActionGroupMenuItem(final ActionGroup actionGroup, final List<MenuItem> menuItems)
+		{
+			super();
+			this.actionGroup = actionGroup;
+			this.menuItems = ImmutableList.copyOf(menuItems);
+		}
+
+		@Override
+		public String getCaption()
+		{
+			return actionGroup.getCaption();
+		}
+
+		@Override
+		public Collection<MenuItem> getChildren()
+		{
+			return menuItems;
+		}
+
+		@Override
+		public Resource getIcon()
+		{
+			return null;
+		}
+		
+	}
+	
 	private static class ActionMenuItem implements MenuItem
 	{
 		public static final ActionMenuItem of(final Action action)
@@ -196,18 +234,6 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		public String getCaption()
 		{
 			return action.getCaption();
-		}
-
-		@Override
-		public MenuItemType getType()
-		{
-			return null;
-		}
-
-		@Override
-		public int getElementId()
-		{
-			return 0;
 		}
 
 		@Override

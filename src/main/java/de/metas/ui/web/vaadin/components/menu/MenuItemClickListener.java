@@ -1,7 +1,5 @@
 package de.metas.ui.web.vaadin.components.menu;
 
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
-
 /*
  * #%L
  * metasfresh-webui

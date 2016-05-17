@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin.components.menu;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -16,10 +15,9 @@ import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.vaadin.server.Resource;
 
+import de.metas.ui.web.vaadin.components.menu.MainMenuItem.MenuItemType;
 import de.metas.ui.web.vaadin.theme.Theme;
 
 /*
@@ -52,7 +50,7 @@ public class UserMenuProvider
 		final MTreeNode rootNodeModel = retrieveRootNodeModel();
 
 		final List<MenuItem> menuGroups = new ArrayList<>();
-		final MenuItemImpl.Builder miscMenuGroupBuilder = MenuItemImpl.builder()
+		final MainMenuItem.Builder miscMenuGroupBuilder = MainMenuItem.builder()
 				.setCaption("Misc");
 
 		final Enumeration<?> groupModels = rootNodeModel.children();
@@ -83,7 +81,7 @@ public class UserMenuProvider
 
 	private MenuItem createMenuGroup(final MTreeNode groupModel)
 	{
-		final MenuItemImpl.Builder builder = MenuItemImpl.builder();
+		final MainMenuItem.Builder builder = MainMenuItem.builder();
 		builder.setCaption(groupModel.getName());
 
 		iterateLeafs(groupModel, node -> builder.addChild(createMenuItem(node)));
@@ -93,7 +91,7 @@ public class UserMenuProvider
 
 	private MenuItem createMenuItem(final MTreeNode node)
 	{
-		final MenuItemImpl.Builder builder = MenuItemImpl.builder()
+		final MainMenuItem.Builder builder = MainMenuItem.builder()
 				.setCaption(node.getName());
 		
 		final String iconName = node.getIconName();
@@ -175,138 +173,5 @@ public class UserMenuProvider
 			AD_Tree_ID = 10;    // Menu // FIXME: hardcoded
 		}
 		return AD_Tree_ID;
-	}
-
-	public static enum MenuItemType
-	{
-		Window, Process, Report,
-	}
-
-	public static interface MenuItem
-	{
-		String getCaption();
-
-		int getElementId();
-
-		MenuItemType getType();
-
-		Collection<MenuItem> getChildren();
-
-		Resource getIcon();
-	}
-
-	public static class MenuItemImpl implements MenuItem
-	{
-		public static final Builder builder()
-		{
-			return new Builder();
-		}
-
-		private final String caption;
-		private final Resource icon;
-		private final List<MenuItem> children;
-
-		private MenuItemType type;
-		private int elementId;
-
-		private MenuItemImpl(final Builder builder)
-		{
-			super();
-			this.caption = builder.caption;
-			this.icon = builder.icon;
-			this.children = ImmutableList.copyOf(builder.children);
-
-			type = builder.type;
-			elementId = builder.elementId;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("caption", caption)
-					.add("type", type)
-					.toString();
-		}
-
-		@Override
-		public String getCaption()
-		{
-			return caption;
-		}
-
-		@Override
-		public Collection<MenuItem> getChildren()
-		{
-			return children;
-		}
-
-		@Override
-		public Resource getIcon()
-		{
-			return icon;
-		}
-
-		@Override
-		public MenuItemType getType()
-		{
-			return type;
-		}
-
-		@Override
-		public int getElementId()
-		{
-			return elementId;
-		}
-
-		public static final class Builder
-		{
-			private String caption;
-			private Resource icon;
-			private final List<MenuItem> children = new ArrayList<>();
-
-			private MenuItemType type;
-			private int elementId;
-
-			private Builder()
-			{
-				super();
-			}
-
-			public MenuItemImpl build()
-			{
-				return new MenuItemImpl(this);
-			}
-
-			public Builder setCaption(String caption)
-			{
-				this.caption = caption;
-				return this;
-			}
-
-			public Builder setIcon(Resource icon)
-			{
-				this.icon = icon;
-				return this;
-			}
-
-			public Builder setType(MenuItemType type, int elementId)
-			{
-				this.type = type;
-				this.elementId = elementId;
-				return this;
-			}
-
-			public Builder addChild(final MenuItem child)
-			{
-				children.add(child);
-				return this;
-			}
-
-			public boolean hasChildren()
-			{
-				return !children.isEmpty();
-			}
-		}
 	}
 }

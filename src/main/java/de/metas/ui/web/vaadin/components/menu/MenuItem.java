@@ -1,5 +1,9 @@
 package de.metas.ui.web.vaadin.components.menu;
 
+import java.util.Collection;
+
+import com.vaadin.server.Resource;
+
 /*
  * #%L
  * metasfresh-webui
@@ -22,16 +26,11 @@ package de.metas.ui.web.vaadin.components.menu;
  * #L%
  */
 
-interface MenuItemFilter
+public interface MenuItem
 {
-	MenuItemFilter ACCEPT_ALL = new MenuItemFilter()
-	{
-		@Override
-		public boolean accept(MenuItem menuItem)
-		{
-			return true;
-		}
-	};
+	String getCaption();
 
-	boolean accept(MenuItem menuItem);
+	Resource getIcon();
+
+	Collection<MenuItem> getChildren();
 }
