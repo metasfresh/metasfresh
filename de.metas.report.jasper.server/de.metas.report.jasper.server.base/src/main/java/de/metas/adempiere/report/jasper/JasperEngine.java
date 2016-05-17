@@ -140,11 +140,7 @@ public class JasperEngine extends AbstractReportEngine
 			{
 				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
 				final String tableName = reportContext.getTableNameOrNull();
-				final String orgWhere = userRolePermissions.getOrgWhere(tableName, false);
-				final String clientWhere = userRolePermissions.getClientWhere(false);
-				 
-				securityWhereClause = orgWhere + " AND " + clientWhere;
-				 
+				securityWhereClause = userRolePermissions.getOrgWhere(tableName, false);
 			}
 			else
 			{

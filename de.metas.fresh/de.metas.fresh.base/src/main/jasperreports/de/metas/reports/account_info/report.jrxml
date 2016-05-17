@@ -18,6 +18,9 @@
 	<parameter name="showCurrencyExchange" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
 	$P{Account_ID},
@@ -25,7 +28,8 @@
 	$P{EndDate},
 	$P{C_Activity_ID},
 	$P{DisplayVoidDocuments},
-	$P{showCurrencyExchange}
+	$P{showCurrencyExchange},
+	$P{ad_org_id}
 );]]>
 	</queryString>
 	<field name="dateacct" class="java.sql.Date"/>
@@ -49,7 +53,6 @@
 	<field name="eurosaldo" class="java.math.BigDecimal"/>
 	<field name="containseur" class="java.lang.Boolean"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
 		<groupHeader>

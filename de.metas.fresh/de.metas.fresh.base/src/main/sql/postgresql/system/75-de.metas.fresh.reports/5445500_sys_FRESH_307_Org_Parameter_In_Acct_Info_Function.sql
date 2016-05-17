@@ -30,7 +30,7 @@ IN AD_Org_ID numeric(10,0))
 		ConversionMultiplyRate numeric,
 		EuroSaldo numeric,
 		containsEUR boolean,
-		ad_org_id numeric (10,0)
+		ad_org_id numeric
 	) AS 
 $$
 SELECT
@@ -175,7 +175,7 @@ IN AD_Org_ID numeric(10,0) )
 		docStatus text,
 		EuroSaldo numeric,
 		containsEUR boolean,
-		ad_org_id numeric (10,0)
+		ad_org_id numeric
 	) AS 
 $$
 	SELECT 	DateAcct, Fact_Acct_ID, BP_Name, Description, Account2_ID, a_Value, AmtAcctDr, AmtAcctCr, Saldo, 
