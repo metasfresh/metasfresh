@@ -82,7 +82,7 @@ public class MFNavigator extends Navigator
 
 	private final Set<String> noLoginRequiredViewNames = new HashSet<>();
 	private String redirectAfterLogin;
-	
+
 	private MFNavigator(final UI ui)
 	{
 		super(ui, new MFViewDisplay(ui));
@@ -93,6 +93,12 @@ public class MFNavigator extends Navigator
 			@Override
 			public boolean beforeViewChange(final ViewChangeEvent event)
 			{
+				final View oldView = event.getOldView();
+				if (oldView instanceof MFView)
+				{
+					((MFView)oldView).exit(event);
+				}
+
 				return checkLoggedInAndRedirect(event);
 			}
 
@@ -102,7 +108,7 @@ public class MFNavigator extends Navigator
 			}
 		});
 	}
-	
+
 	@Override
 	public MFViewDisplay getDisplay()
 	{
@@ -134,13 +140,13 @@ public class MFNavigator extends Navigator
 		addView(viewName, viewClass);
 		return this;
 	}
-	
+
 	public MFNavigator addViewProvider(final ViewProvider viewProvider)
 	{
 		addProvider(viewProvider);
 		return this;
 	}
-	
+
 	public MFNavigator setViewNoLoginRequired(final String viewName, final Class<? extends View> viewClass)
 	{
 		addView(viewName, viewClass);
@@ -166,12 +172,12 @@ public class MFNavigator extends Navigator
 		navigateTo(loginViewName);
 		return this;
 	}
-	
+
 	public MFNavigator navigateAfterLogin()
 	{
 		final String redirectAfterLogin = this.redirectAfterLogin;
 		this.redirectAfterLogin = null;
-		
+
 		if (redirectAfterLogin != null)
 		{
 			navigateTo(redirectAfterLogin);
@@ -180,7 +186,7 @@ public class MFNavigator extends Navigator
 		{
 			navigateToDefaultView();
 		}
-		
+
 		return this;
 	}
 
@@ -213,7 +219,7 @@ public class MFNavigator extends Navigator
 				redirectAfterLogin += "/" + event.getParameters();
 			}
 			this.redirectAfterLogin = redirectAfterLogin;
-			
+
 			navigateTo(loginViewName);
 			return false;
 
@@ -245,7 +251,6 @@ public class MFNavigator extends Navigator
 		}
 		return true;
 	}
-	
 
 	public static class CachedViewProvider implements ViewProvider
 	{
@@ -253,7 +258,7 @@ public class MFNavigator extends Navigator
 		{
 			return new CachedViewProvider(viewName, viewClass);
 		}
-		
+
 		private final String viewName;
 		private final Class<? extends View> viewClass;
 
@@ -311,7 +316,7 @@ public class MFNavigator extends Navigator
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		public void resetCache()
 		{
 			viewInstanceSupplier.forget();
