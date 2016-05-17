@@ -15,10 +15,15 @@ The actual release notes
 # metasfresh 4.18.17 (upcoming)
 
 ## Features
+ - FRESH-305 Reduce Warehouse Dropdown List in Wareneingang (POS)
+    * After selecting the source warehouse in Wareneingang POS, check all the Distribution Network Line entries that have this specific warehouse as source. 
+    * Take all the target warehouses for them and only allow those to be eligible as Ziel Lager in Wareneingang POS.
+ - FRESH-312 Project cannot be compiled when downloading from github directly
+    * Adding 3rd-party jars that are not available from the standard maven repos to a github hosted repo. Thx to @mckayERP and @e-Evolution for pointing us to the problem
  - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
  - FRESH-302 make inout print preview faster
  - FRESH-298 Setup Printing Dunning Docs to separate tray for ESR Zahlschein
-    * adjsuted the layout to better match pre-printed paper without having to use calibration
+    * adjusted the layout to better match pre-printed paper without having to use calibration
  - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
 
 ## Fixes
@@ -38,7 +43,7 @@ The actual release notes
     * DevOps - introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Fallback to BUILD_URL if the new var is not set.
  - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
     * CRM - Enhancing and extending mail configuration and functionality to select an eMail configuration by document type or base type.
-	
+
 ## Fixes
  - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
 	* Fixed the formatting and encoding problem in the mails sent by our async processor
