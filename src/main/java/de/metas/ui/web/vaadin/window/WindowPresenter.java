@@ -1,6 +1,8 @@
 package de.metas.ui.web.vaadin.window;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -27,11 +29,13 @@ import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.model.WindowModel;
+import de.metas.ui.web.vaadin.window.model.action.Action;
 import de.metas.ui.web.vaadin.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.ConfirmDiscardChangesModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.PropertyChangedModelEvent;
+import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 
@@ -70,10 +74,11 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	@Autowired(required = true)
 	// @Lazy
 	private WindowView _view;
+	private final Set<ActionsView> _actionsViews = new LinkedHashSet<>();
 
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
 	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
-	
+
 	private Multimap<PropertyName, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
 
 	public WindowPresenter()
@@ -113,6 +118,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		unbindFromModel();
 		setView(null);
+		_actionsViews.clear();
+		viewPropertyNames = ImmutableSet.of();
 	}
 
 	public WindowModel getModel()
@@ -164,6 +171,17 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		unbindFromView();
 		this._view = view;
 		bindToView();
+
+		//
+		// Add remove for actions view
+		if (viewOld instanceof ActionsView)
+		{
+			removeActionsView((ActionsView)viewOld);
+		}
+		if (view instanceof ActionsView)
+		{
+			addActionsView((ActionsView)view);
+		}
 	}
 
 	private WindowView getView()
@@ -211,8 +229,21 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		logger.debug("Updating {} from {}", view, model);
 
 		// view.setTitle(model.getTitle()); // not needed, will come with all properties
+
+		//
+		// Actions
 		view.setPreviousRecordEnabled(model.hasPreviousRecord());
 		view.setNextRecordEnabled(model.hasNextRecord());
+		//
+		final Set<ActionsView> actionsViews = getActionsView();
+		if (!actionsViews.isEmpty())
+		{
+			final List<Action> actions = model.getActions();
+			for (final ActionsView actionsView : actionsViews)
+			{
+				actionsView.setActions(actions);
+			}
+		}
 
 		//
 		// Properties
@@ -231,6 +262,33 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 
 		// TODO Auto-generated method stub
 
+	}
+
+	public void addActionsView(final ActionsView actionsView)
+	{
+		Preconditions.checkNotNull(actionsView);
+
+		if (!_actionsViews.add(actionsView))
+		{
+			// already added
+			return;
+		}
+
+		final WindowModel model = getModel();
+		if (model != null)
+		{
+			actionsView.setActions(model.getActions());
+		}
+	}
+
+	public void removeActionsView(final ActionsView actionsView)
+	{
+		_actionsViews.remove(actionsView);
+	}
+
+	public Set<ActionsView> getActionsView()
+	{
+		return ImmutableSet.copyOf(_actionsViews);
 	}
 
 	@Override
@@ -359,7 +417,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		logger.trace("Got {}", event);
 		updateView((view) -> updateViewFromModel(view));
-		
+
 		fireAllPropertyValueChangedListeners();
 	}
 
@@ -368,7 +426,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		logger.trace("Got {}", event);
 		updateView((view) -> modelPropertyChanged0(view, event));
-		
+
 		firePropertyValueChangedListeners(event.getPropertyName(), event.getValue());
 	}
 
@@ -493,22 +551,22 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		final Throwable ex = event.getThrowable();
 		logger.warn("Got error", ex);
-		
+
 		final String errorMessage = Throwables.getRootCause(ex).getLocalizedMessage();
 		updateView(view -> view.showError(errorMessage));
 	}
-	
+
 	public static interface PropertyValueChangedListener
 	{
 		void valueChanged(PropertyName propertyName, Object value);
 	}
-	
+
 	public void addPropertyValueChangedListener(final PropertyName propertyName, PropertyValueChangedListener listener)
 	{
 		Preconditions.checkNotNull(propertyName, "propertyName not null");
 		Preconditions.checkNotNull(listener, "listener not null");
 		propertyValueChangedListeners.put(propertyName, listener);
-		
+
 		final WindowModel model = getModel();
 		if (model.hasProperty(propertyName))
 		{
@@ -516,7 +574,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			listener.valueChanged(propertyName, value);
 		}
 	}
-	
+
 	private void firePropertyValueChangedListeners(final PropertyName propertyName, final Object value)
 	{
 		for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyName))
@@ -524,19 +582,19 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			listener.valueChanged(propertyName, value);
 		}
 	}
-	
+
 	private void fireAllPropertyValueChangedListeners()
 	{
 		final Set<PropertyName> propertyNames = propertyValueChangedListeners.keySet();
-		if(propertyNames.isEmpty())
+		if (propertyNames.isEmpty())
 		{
 			return;
 		}
-		
+
 		final WindowModel model = getModel();
 		for (final PropertyName propertyName : propertyNames)
 		{
-			if(!model.hasProperty(propertyName))
+			if (!model.hasProperty(propertyName))
 			{
 				continue;
 			}
@@ -546,6 +604,12 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 				listener.valueChanged(propertyName, value);
 			}
 		}
+	}
+
+	public void onActionClicked(final Action action)
+	{
+		final WindowModel model = getModel();
+		model.executeAction(action);
 	}
 
 }

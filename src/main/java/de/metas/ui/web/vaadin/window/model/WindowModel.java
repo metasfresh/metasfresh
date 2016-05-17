@@ -2,20 +2,27 @@ package de.metas.ui.web.vaadin.window.model;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.vaadin.spring.annotation.PrototypeScope;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
+import com.vaadin.server.Resource;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.vaadin.theme.Theme;
 import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.HARDCODED_Order;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
@@ -25,6 +32,9 @@ import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSourceFactory;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
+import de.metas.ui.web.vaadin.window.model.action.Action;
+import de.metas.ui.web.vaadin.window.model.action.Action.Listener;
+import de.metas.ui.web.vaadin.window.model.action.ActionGroup;
 import de.metas.ui.web.vaadin.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
@@ -248,7 +258,7 @@ public class WindowModel
 			loadRecord(values);
 		}
 	}
-	
+
 	private final void loadRecord(final PropertyValuesDTO values)
 	{
 		final PropertyValueCollection properties = getProperties();
@@ -265,7 +275,6 @@ public class WindowModel
 
 		postEvent(AllPropertiesChangedModelEvent.of(this));
 	}
-
 
 	private int getRecordsCount()
 	{
@@ -304,12 +313,12 @@ public class WindowModel
 		final PropertyValueCollection properties = getProperties();
 		return properties.hasChanges();
 	}
-	
+
 	public boolean hasProperty(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		return properties.getPropertyValueOrNull(propertyName) != null;
-		
+
 	}
 
 	public Object getProperty(final PropertyName propertyName)
@@ -345,7 +354,7 @@ public class WindowModel
 			logger.trace("Skip setting propery {} because property value is missing", propertyName);
 			return;
 		}
-		
+
 		if (prop.isReadOnlyForUser())
 		{
 			logger.trace("Skip setting propery {} because property value is readonly for user", propertyName);
@@ -371,7 +380,7 @@ public class WindowModel
 		// Update dependencies
 		updateAllWhichDependOn(propertyName);
 	}
-	
+
 	private final void updateAllDependenciesNoFire()
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
@@ -389,7 +398,7 @@ public class WindowModel
 
 		// TODO: avoid loops because of cyclic dependencies
 		final PropertyValueCollection properties = getProperties();
-		
+
 		properties.getDependencies().consume(propertyName, (dependentPropertyName, dependencyTypes) -> {
 			final PropertyValue dependentPropertyValue = properties.getPropertyValue(dependentPropertyName);
 			if (dependentPropertyValue == null)
@@ -410,7 +419,8 @@ public class WindowModel
 		});
 	}
 
-	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final DependencyValueChangedEvent dependencyChangedEvent, final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
+	private final void updateDependentPropertyValue(final PropertyValue propertyValue, final DependencyValueChangedEvent dependencyChangedEvent,
+			final Map<PropertyName, PropertyChangedModelEvent> eventsCollector)
 	{
 		final Object calculatedValueOld = propertyValue.getValue();
 		propertyValue.onDependentPropertyValueChanged(dependencyChangedEvent);
@@ -425,7 +435,7 @@ public class WindowModel
 
 		//
 		// Collect event
-		if(eventsCollector != null)
+		if (eventsCollector != null)
 		{
 			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
 		}
@@ -537,15 +547,15 @@ public class WindowModel
 	{
 		setRecordIndexAndReload(RECORDINDEX_New);
 	}
-	
+
 	public void newRecordAsCopyById(final Object recordId)
 	{
 		newRecord();
-		
+
 		final PropertyValuesDTO values = getDataSource().retrieveRecordById(recordId);
 		setFromPropertyValuesDTO(values);
 	}
-	
+
 	public void nextRecord(final OnChangesFound onChangesFound)
 	{
 		if (!hasNextRecord())
@@ -613,7 +623,7 @@ public class WindowModel
 		final SaveResult result = dataSource.saveRecord(index, values);
 
 		setRecordIndexAndReload(result.getRecordIndex());
-		
+
 		return result;
 	}
 
@@ -628,4 +638,54 @@ public class WindowModel
 			setRecordIndexAndReload(getRecordIndex());
 		}
 	}
+
+	public List<Action> getActions()
+	{
+		final ActionGroup crudActionGroup = ActionGroup.of("CRUD");
+		final ActionGroup goActionGroup = ActionGroup.of("Go");
+		final ActionGroup helpActionGroup = ActionGroup.of("Help");
+
+		return ImmutableList.<Action> builder()
+				//
+				.add(createAction(crudActionGroup, "Ignore", target -> cancelRecordEditing()))
+				.add(createAction(crudActionGroup, "New", target -> newRecord()))
+				.add(createAction(crudActionGroup, "Save", target -> saveRecord()))
+				.add(createAction(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted))
+				.add(createAction(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted))
+				.add(createAction(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted))
+				.add(createAction(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted))
+				.add(createAction(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
+				//
+				.add(createAction(goActionGroup, "ZoomAcross", ACTIONLISTENER_NotImpleted))
+				.add(createAction(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
+				.add(createAction(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted))
+				//
+				.add(createAction(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted))
+				//
+				.build();
+	}
+
+	private Action createAction(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
+	{
+		final String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		final Resource icon = Theme.getIconSmall(actionId);
+		return Action.selfHandledAction(actionGroup, actionId, caption, icon, listener);
+	}
+
+	public void executeAction(final Action action)
+	{
+		if (action instanceof Action.Listener)
+		{
+			final Listener listener = (Action.Listener)action;
+			listener.handleAction(this);
+		}
+		else
+		{
+			throw new UnsupportedOperationException("Unsupported action: " + action);
+		}
+	}
+
+	private static final Action.Listener ACTIONLISTENER_NotImpleted = target -> {
+		throw new UnsupportedOperationException("Action not implemented");
+	};
 }

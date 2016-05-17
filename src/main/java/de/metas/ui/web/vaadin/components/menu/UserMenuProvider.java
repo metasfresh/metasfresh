@@ -195,7 +195,7 @@ public class UserMenuProvider
 		Resource getIcon();
 	}
 
-	private static class MenuItemImpl implements MenuItem
+	public static class MenuItemImpl implements MenuItem
 	{
 		public static final Builder builder()
 		{

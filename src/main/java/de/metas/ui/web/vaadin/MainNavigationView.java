@@ -3,7 +3,6 @@ package de.metas.ui.web.vaadin;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
@@ -11,6 +10,7 @@ import com.vaadin.ui.UI;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItem;
 import de.metas.ui.web.vaadin.components.menu.UserMenuProvider.MenuItemType;
+import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.WindowViewProvider;
 
@@ -37,7 +37,7 @@ import de.metas.ui.web.vaadin.window.WindowViewProvider;
  */
 
 @SuppressWarnings("serial")
-public class MainNavigationView extends CssLayout implements View
+public class MainNavigationView extends CssLayout implements MFView
 {
 	private List<MenuItem> _rootMenuItems;
 
@@ -52,8 +52,14 @@ public class MainNavigationView extends CssLayout implements View
 	{
 		MFViewDisplay viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
 		viewDisplay.setTitle("Main");
-		viewDisplay.setMenuItems(getMenuItems(), menuItem -> runMenuItem(menuItem));
+		viewDisplay.setMenuItems(() -> getMenuItems(), menuItem -> runMenuItem(menuItem));
 		viewDisplay.showMenuPanel();
+	}
+
+	@Override
+	public void exit(final ViewChangeEvent event)
+	{
+		// nothing
 	}
 
 	private List<MenuItem> getMenuItems()
@@ -62,7 +68,7 @@ public class MainNavigationView extends CssLayout implements View
 		{
 			_rootMenuItems = ImmutableList.copyOf(new UserMenuProvider().getMenuItems());
 		}
-		
+
 		return _rootMenuItems;
 	}
 

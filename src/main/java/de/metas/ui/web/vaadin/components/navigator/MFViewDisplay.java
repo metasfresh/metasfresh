@@ -2,6 +2,7 @@ package de.metas.ui.web.vaadin.components.navigator;
 
 import java.util.List;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
@@ -114,7 +115,7 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		
 		setTitle("-");
 		hideMenuPanel();
-		setMenuItems(ImmutableList.of(), null);
+		setMenuItems(() -> ImmutableList.of(), MenuItemClickListener.NULL);
 	}
 
 	private static final class ViewContainer extends CustomComponent
@@ -135,9 +136,9 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		titleLabel.setValue(title);
 	}
 	
-	public void setMenuItems(final List<MenuItem> menuItems, final MenuItemClickListener clickListener)
+	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier, final MenuItemClickListener clickListener)
 	{
-		menuPanel.setMenuItems(menuItems);
+		menuPanel.setMenuItems(menuItemsSupplier);
 		menuPanel.setClickListener(clickListener);
 	}
 	
