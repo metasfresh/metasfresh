@@ -163,7 +163,9 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		m_trx = ITrx.TRX_None;
 
 		boolean success = false;
-		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
+		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this);
+				final IAutoCloseable contextRestorer = Env.switchContext(m_ctx) // FRESH-314: make sure our derivated context will always be used
+		)
 		{
 			lock();
 
