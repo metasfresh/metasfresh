@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.18.17 (upcoming)
 
 ## Features
+ - FRESH-278 Umsatzreport Geschäftspartner copy and modify
+    * Adding a revenue report that is week-based and also based on the delivered qties, as opposed to the invoiced qties.
  - FRESH-305 Reduce Warehouse Dropdown List in Wareneingang (POS)
     * After selecting the source warehouse in Wareneingang POS, check all the Distribution Network Line entries that have this specific warehouse as source. 
     * Take all the target warehouses for them and only allow those to be eligible as Ziel Lager in Wareneingang POS.
