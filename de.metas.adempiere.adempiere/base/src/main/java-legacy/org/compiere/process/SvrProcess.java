@@ -138,7 +138,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * @param ctx Context
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
-	 * @return true if process was executed successfully
+	 * @return <code>true</code> if process was executed successfully
 	 *
 	 * @see org.compiere.process.ProcessCall#startProcess(Properties, ProcessInfo, ITrx)
 	 */
@@ -149,8 +149,14 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		pi.setClassName(getClass().getName()); // make sure that we have the correct className in place. We need it to get the ProcessClassInfo
 
 		// Preparation
-		m_ctx = Env.coalesce(ctx);
+		// FRESH-314: store #AD_PInstance_ID in a derived context (shall only live as long as this process does).
+		// We might want to access this information (currently in AD_ChangeLog)
+		m_ctx = Env.deriveCtx(Env.coalesce(ctx));
+		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
+
 		m_pi = pi;
+
+
 
 		// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
 		// Later we will set the actual transaction or we will start a local transaction.
@@ -581,13 +587,12 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	/**
 	 * Get Properties
 	 *
-	 * @return context; never returns null
+	 * @return context; never returns <code>null</code>
 	 */
-	// org.adempiere.model.IContextAware#getCtx()
 	@Override
 	public final Properties getCtx()
 	{
-		return m_ctx == null ? Env.getCtx() : m_ctx;
+		return Env.coalesce(m_ctx);
 	}   // getCtx
 
 	/**
@@ -730,7 +735,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		if (m_pi != null)
 			m_pi.addLog(id, date, number, msg);
-		
+
 		if (log.isDebugEnabled())
 		{
 			if (id == 0 && date == null && number == null)
@@ -892,10 +897,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 	}
-	
+
 	/**
 	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 * 
+	 *
 	 * @param recordToSelectAfterExecution
 	 */
 	protected final void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)

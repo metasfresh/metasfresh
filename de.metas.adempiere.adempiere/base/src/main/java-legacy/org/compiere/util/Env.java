@@ -277,6 +277,9 @@ public final class Env
 	public static final int CTXVALUE_AD_Role_ID_System = IUserRolePermissions.SYSTEM_ROLE_ID;
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
+
+	public static final String CTXNAME_AD_PInstance_ID = "#AD_PInstance_ID"; // FRESH-314
+
 	/**
 	 * Comma separated list of AD_Org_IDs of which current User/Role has any access (ro/rw)
 	 *
