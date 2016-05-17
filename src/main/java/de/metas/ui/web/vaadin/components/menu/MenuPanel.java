@@ -2,6 +2,8 @@ package de.metas.ui.web.vaadin.components.menu;
 
 import java.util.List;
 
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
@@ -50,6 +52,9 @@ public class MenuPanel extends CustomComponent
 	// Listeners
 	private final ForwardingMenuItemClickListener clickListener = new ForwardingMenuItemClickListener();
 
+	private boolean menuItemsStaled = false;
+	private Supplier<List<MenuItem>> menuItemsSupplier = null;
+
 	public MenuPanel()
 	{
 		super();
@@ -76,6 +81,29 @@ public class MenuPanel extends CustomComponent
 
 	public void setMenuItems(final List<MenuItem> menuItems)
 	{
+		setMenuItems(() -> menuItems);
+	}
+	
+	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+	{
+		this.menuItemsStaled = true;
+		this.menuItemsSupplier = menuItemsSupplier;
+		
+		if (!isHiddenByStyle())
+		{
+			updateMenuItemsFromSupplierIfStaled();
+		}
+	}
+	
+	private void updateMenuItemsFromSupplierIfStaled()
+	{
+		if (!menuItemsStaled)
+		{
+			return;
+		}
+
+		final List<MenuItem> menuItems = menuItemsSupplier == null ? ImmutableList.of() : menuItemsSupplier.get();
+
 		searchTextField.setValue("");
 		menuGroupsContainer.removeAllComponents();
 
@@ -88,8 +116,13 @@ public class MenuPanel extends CustomComponent
 			}
 		}
 
+		//
 		Theme.setHidden(nothingFoundLabel, true);
 		menuGroupsContainer.addComponent(nothingFoundLabel);
+
+		//
+		menuItemsStaled = false;
+		menuItemsSupplier = null;
 	}
 
 	private void filterMenuItems(final String searchText)
@@ -126,6 +159,16 @@ public class MenuPanel extends CustomComponent
 
 	public final void setHiddenByStyle(final boolean hidden)
 	{
+		if (this.hiddenByStyle == hidden)
+		{
+			return;
+		}
+		
+		if (!hidden)
+		{
+			updateMenuItemsFromSupplierIfStaled();
+		}
+		
 		Theme.setHidden(this, hidden);
 		this.hiddenByStyle = hidden;
 	}
