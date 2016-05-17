@@ -49,6 +49,18 @@ public class Theme
 		final String resourceName = Adempiere.getProductLogoLargeResourceName();
 		return new ClassResource(Images.RESOURCES_Loader, resourceName);
 	}
+	
+	public static Resource getIconSmall(final String name)
+	{
+		final String fileNameWithoutExtension = name + "16";
+		return getImageResourceForNameWithoutExt(fileNameWithoutExtension);
+	}
+
+	public static Resource getIconBig(final String name)
+	{
+		final String fileNameWithoutExtension = name + "24";
+		return getImageResourceForNameWithoutExt(fileNameWithoutExtension);
+	}
 
 	/** Cache: "fileName (without extension)" to {@link Resource} */
 	private static final LoadingCache<String, Optional<Resource>> imageNameWithoutExt2resource = CacheBuilder.newBuilder()
