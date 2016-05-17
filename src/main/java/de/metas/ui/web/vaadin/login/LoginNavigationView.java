@@ -3,12 +3,12 @@ package de.metas.ui.web.vaadin.login;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 
-import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
 import de.metas.ui.web.vaadin.Application;
+import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.event.UIEventBus;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
 
@@ -35,7 +35,7 @@ import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
  */
 
 @SuppressWarnings("serial")
-public class LoginNavigationView extends CustomComponent implements View
+public class LoginNavigationView extends CustomComponent implements MFView
 {
 	public LoginNavigationView()
 	{
@@ -49,7 +49,7 @@ public class LoginNavigationView extends CustomComponent implements View
 		if (Application.isTesting())
 		{
 			setCompositionRoot(new Label("Automatically logging in...."));
-			
+
 			final LoginModel loginModel = new LoginModel();
 			loginModel.authenticate("SuperUser", "System");
 			loginModel.setLanguage(Language.getLanguage("de_DE"));
@@ -59,13 +59,18 @@ public class LoginNavigationView extends CustomComponent implements View
 					, new KeyNamePair(1000000, "?") // org
 					, (KeyNamePair)null // warehouse
 			);
-			
+
 			UIEventBus.post(new UserLoggedInEvent());
-			
+
 			return;
 		}
 
 		setCompositionRoot(new LoginPresenter().getComponent());
 	}
 
+	@Override
+	public void exit(final ViewChangeEvent event)
+	{
+		// nothing
+	}
 }
