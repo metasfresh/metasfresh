@@ -1797,7 +1797,7 @@ public abstract class PO
 		}
 		boolean success = true;
 
-		final String sql = "SELECT "+p_info.getColumnSQL(index)
+		final String sql = "SELECT "+p_info.getColumnSqlForSelect(index)
 			+" FROM "+p_info.getTableName()
 			+" WHERE "+get_WhereClause(false);
 		PreparedStatement pstmt = null;

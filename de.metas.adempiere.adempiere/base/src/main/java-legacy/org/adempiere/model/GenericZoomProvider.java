@@ -189,7 +189,7 @@ public class GenericZoomProvider implements IZoomProvider
 		final MQuery query = new MQuery();
 		if (targetTableInfo.isVirtualColumn(targetColumnName))
 		{
-			final String columnSql = targetTableInfo.getColumnSQL(targetColumnName);
+			final String columnSql = targetTableInfo.getColumnSql(targetColumnName);
 			query.addRestriction("(" + columnSql + ") = " + source.getRecord_ID());
 		}
 		else
