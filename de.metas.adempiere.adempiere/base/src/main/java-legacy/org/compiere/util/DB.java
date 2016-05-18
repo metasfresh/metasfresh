@@ -1979,6 +1979,12 @@ public final class DB
 		//
 		return out.toString();
 	}	// TO_STRING
+	
+	public static String TO_BOOLEAN(final Boolean value)
+	{
+		final String valueStr = DisplayType.toBooleanString(value);
+		return TO_STRING(valueStr);
+	}
 
 	/**
 	 * convenient method to close result set
