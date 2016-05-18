@@ -13,6 +13,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.vaadin.spring.annotation.PrototypeScope;
@@ -645,6 +646,7 @@ public class WindowModel
 	public List<Action> getActions()
 	{
 		final ActionGroup crudActionGroup = ActionGroup.of("CRUD");
+		final ActionGroup reportActionGroup = ActionGroup.of("Report");
 		final ActionGroup goActionGroup = ActionGroup.of("Go");
 		final ActionGroup helpActionGroup = ActionGroup.of("Help");
 
@@ -659,6 +661,10 @@ public class WindowModel
 				.add(createActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted))
 				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
 				//
+				.add(createActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(reportActionGroup, "Print", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(reportActionGroup, "PrintPreview", ACTIONLISTENER_NotImpleted))
+				//
 				.add(createActionWithChildrenProvider(goActionGroup, "ZoomAcross", () -> createZoomAccrossActions()))
 				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
 				.add(createActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted))
@@ -670,14 +676,18 @@ public class WindowModel
 
 	private Action createActionWithListener(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
 	{
-		final String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		caption = Util.cleanAmp(caption);
+		
 		final Resource icon = Theme.getIconSmall(actionId);
 		return Action.selfHandledAction(actionGroup, actionId, caption, icon, listener);
 	}
 
 	private Action createActionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final Action.Provider childrenProvider)
 	{
-		final String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		caption = Util.cleanAmp(caption);
+		
 		final Resource icon = Theme.getIconSmall(actionId);
 		return Action.actionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
 	}
