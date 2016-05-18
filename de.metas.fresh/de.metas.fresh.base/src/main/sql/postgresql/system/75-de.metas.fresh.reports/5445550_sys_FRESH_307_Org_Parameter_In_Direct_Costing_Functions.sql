@@ -1,3 +1,110 @@
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date);
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date, AD_Org_ID numeric(10,0));
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date, AD_Org_ID numeric(10,0)) RETURNS TABLE
+	(
+	Margin text, 
+	l1_Value Character Varying, 
+	L1_Name Character Varying, 
+	
+	L2_Value Character Varying, 
+	L2_Name Character Varying, 
+	
+	L3_Value Character Varying, 
+	L3_Name Character Varying, 
+	
+	Balance_1000 numeric, 
+	Balance_2000 numeric, 
+	Balance_100 numeric, 
+	Balance_150 numeric, 
+	Balance_Other numeric, 
+	Balance numeric, 
+	
+	Budget_1000 numeric, 
+	Budget_2000 numeric, 
+	Budget_100 numeric, 
+	Budget_150 numeric, 
+	Budget numeric, 
+	
+	L1_Multiplicator numeric, 
+	L2_Multiplicator numeric, 
+	L3_Multiplicator numeric, 
+	Seq text,
+	
+	ad_org_id numeric
+	)
+AS 
+$BODY$
+SELECT
+	margin, 
+	l1_value, l1_name, l2_value, l2_name, l3_value, l3_name,
+	Balance_1000 * Multi_1000 AS Balance_1000,
+	Balance_2000 * Multi_2000 AS Balance_2000,
+	Balance_100 * Multi_100 AS Balance_100,
+	Balance_150 * Multi_150 AS Balance_150,
+	Balance_Other * Multi_150 AS Balance_Other,
+	Balance_1000 * Multi_1000 + Balance_2000 * Multi_2000 + Balance_100 * Multi_100 + Balance_150 * Multi_150 + Balance_Other * Multi_150 AS Balance,
+	Budget_1000 * Multi_1000 AS Budget_1000,
+	Budget_2000 * Multi_2000 AS Budget_2000,
+	Budget_100 * Multi_100 AS Budget_100,
+	Budget_150 * Multi_150 AS Budget_150,
+	Budget_1000 * Multi_1000 + Budget_2000 * Multi_2000 + Budget_100 * Multi_100 + Budget_150 * Multi_150 + Budget_Other * Multi_150 AS Budget,
+	acctBalance(l1_ElementValue_ID, 0, 1) AS l1_Multiplicator,
+	acctBalance(l2_ElementValue_ID, 0, 1) AS l2_Multiplicator,
+	acctBalance(l3_ElementValue_ID, 0, 1) AS l3_Multiplicator,
+	SeqNo AS Seq,
+	fa.ad_org_id
+FROM
+	de_metas_endcustomer_fresh_reports.Direct_Costing_selection s
+	LEFT OUTER JOIN (
+		SELECT
+			Account_ID,
+			SUM( CASE WHEN a.Value = '1000' THEN Balance ELSE 0 END ) AS Balance_1000,
+			SUM( CASE WHEN a.Value = '2000' THEN Balance ELSE 0 END ) AS Balance_2000,
+			SUM( CASE WHEN a.Value = '100' THEN Balance ELSE 0 END ) AS Balance_100,
+			SUM( CASE WHEN a.Value = '150' THEN Balance ELSE 0 END ) AS Balance_150,
+			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
+				THEN Balance ELSE 0 END ) AS Balance_Other,
+			
+			SUM( CASE WHEN a.Value = '1000' THEN Budget ELSE 0 END ) AS Budget_1000,
+			SUM( CASE WHEN a.Value = '2000' THEN Budget ELSE 0 END ) AS Budget_2000,
+			SUM( CASE WHEN a.Value = '100' THEN Budget ELSE 0 END ) AS Budget_100,
+			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150,
+			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
+				THEN Budget ELSE 0 END ) AS Budget_Other,
+			fa.ad_org_id
+		FROM
+			(
+				SELECT fa.Account_ID
+					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID) as C_Activity_ID
+					, CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
+					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget,
+					fa.ad_org_id
+				FROM Fact_Acct fa
+				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID)
+				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID)
+				WHERE
+				CASE WHEN postingtype = 'B' THEN
+					dateacct::date <= (select enddate from c_period where c_period_id=report.Get_Period( 1000000, $1 ))
+				ELSE 
+					(dateacct::date <= $1) END
+					AND dateacct::Date >= (
+						SELECT MIN( StartDate )::Date FROM C_Period 
+						WHERE C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000, $1 ))
+					)
+			) fa
+			LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID 
+		GROUP BY Account_ID, fa.ad_org_id
+	) fa ON fa.Account_ID = s.L3_ElementValue_ID 
+WHERE fa.ad_org_id = $2
+ORDER BY
+	SeqNo
+$BODY$
+LANGUAGE sql STABLE
+;
+
 DROP FUNCTION IF EXISTS report.fresh_Direct_Costing (IN Date date, IN showBudget character varying, IN showRemaining character varying) ;
 
 
@@ -303,8 +410,248 @@ FROM
 			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ))
 	) date ON true
 	
-WHERE ad_org_id = $4 :: numeric(10,0)
+WHERE ad_org_id = $4
 ORDER BY
 	seq
  $$ 
 LANGUAGE sql STABLE;
+
+
+
+
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings (Year Date) ;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings (Year Date, AD_Org_ID numeric(10,0) );
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings (Year Date, AD_Org_ID numeric(10,0) ) RETURNS TABLE
+	(
+	l_Value Character Varying, L_Name Character Varying,
+	Balance_1000 numeric, Balance_2000 numeric, Balance_100 numeric, Balance_150 numeric, Balance_Other numeric, Balance numeric, 
+	Budget_1000 numeric, Budget_2000 numeric, Budget_100 numeric, Budget_150 numeric, Budget numeric, 
+	L_Multiplicator numeric,
+	ad_org_id numeric (10,0)
+	)
+AS 
+$BODY$
+SELECT
+	
+	l_value, l_name,
+	Balance_1000 * Multi_1000 AS Balance_1000,
+	Balance_2000 * Multi_2000 AS Balance_2000,
+	Balance_100 * Multi_100 AS Balance_100,
+	Balance_150 * Multi_150 AS Balance_150,
+	Balance_Other * Multi_150 AS Balance_Other,
+	Balance_1000 * Multi_1000 + Balance_2000 * Multi_2000 + Balance_100 * Multi_100 + Balance_150 * Multi_150 + Balance_Other * Multi_150 AS Balance,
+	Budget_1000 * Multi_1000 AS Budget_1000,
+	Budget_2000 * Multi_2000 AS Budget_2000,
+	Budget_100 * Multi_100 AS Budget_100,
+	Budget_150 * Multi_150 AS Budget_150,
+	Budget_1000 * Multi_1000 + Budget_2000 * Multi_2000 + Budget_100 * Multi_100 + Budget_150 * Multi_150 + Budget_Other * Multi_150 AS Budget,
+	acctBalance(l_ElementValue_ID, 0, 1) AS l_Multiplicator,
+	fa.ad_org_id
+
+FROM
+	de_metas_endcustomer_fresh_reports.Direct_Costing_selection_Remainings s
+	LEFT OUTER JOIN (
+		SELECT
+			Account_ID,
+			SUM( CASE WHEN a.Value = '1000' THEN Balance ELSE 0 END ) AS Balance_1000,
+			SUM( CASE WHEN a.Value = '2000' THEN Balance ELSE 0 END ) AS Balance_2000,
+			SUM( CASE WHEN a.Value = '100' THEN Balance ELSE 0 END ) AS Balance_100,
+			SUM( CASE WHEN a.Value = '150' THEN Balance ELSE 0 END ) AS Balance_150,
+			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
+				THEN Balance ELSE 0 END ) AS Balance_Other,
+			
+			SUM( CASE WHEN a.Value = '1000' THEN Budget ELSE 0 END ) AS Budget_1000,
+			SUM( CASE WHEN a.Value = '2000' THEN Budget ELSE 0 END ) AS Budget_2000,
+			SUM( CASE WHEN a.Value = '100' THEN Budget ELSE 0 END ) AS Budget_100,
+			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150,
+			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
+				THEN Budget ELSE 0 END ) AS Budget_Other,
+
+			fa.ad_org_id
+		FROM
+			(
+				SELECT fa.Account_ID
+					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID) as C_Activity_ID
+					, CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
+					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget
+					, fa.ad_org_id
+				FROM Fact_Acct fa
+				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID)
+				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID)
+				WHERE	CASE WHEN postingtype = 'B' THEN
+					dateacct::date <= (select enddate from c_period where c_period_id=report.Get_Period( 1000000, $1 ))
+				ELSE 
+					(dateacct::date <= $1) END
+					AND dateacct::Date >= (
+						SELECT MIN( StartDate )::Date FROM C_Period 
+						WHERE C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000, $1 ))
+					)
+				AND fa.ad_org_id = $2
+			) fa
+			LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID 
+		GROUP BY Account_ID, fa.ad_org_id
+	) fa ON fa.Account_ID = s.L_ElementValue_ID
+WHERE fa.ad_org_id = $2
+$BODY$
+LANGUAGE sql STABLE
+;
+
+
+
+
+
+
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Unused_Balance (Year Date, showBudget character varying, AD_Org_ID numeric(10,0) );
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Unused_Balance (Year Date, showBudget character varying, AD_Org_ID numeric(10,0) ) RETURNS TABLE
+	(
+		l_value character varying,
+		l_name character varying,
+		l_1000 numeric,
+		l_2000 numeric,
+		l_100 numeric,
+		l_150 numeric,
+		l_other numeric,
+		l_all numeric,
+		l_budget_all numeric,
+		
+		
+		balance_1000 numeric,
+		balance_2000 numeric,
+		balance_100 numeric,
+		balance_150 numeric,
+		balance_other numeric,
+		balance numeric,
+		
+		l_multiplicator numeric,
+		
+		budget_1000 numeric,
+		budget_2000 numeric,
+		budget_100 numeric,
+		budget_150 numeric,
+		budget numeric,
+		
+		ad_org_id numeric,
+		
+		
+		gross_1000 numeric,
+		gross_2000 numeric,
+		gross_100 numeric,
+		gross_150 numeric,
+		gross_all numeric,
+		
+		startdate date,
+		enddate date,
+		
+		l_percentage_1000 numeric,
+		l_percentage_2000 numeric,
+		l_percentage_100 numeric,
+		l_percentage_150 numeric,
+		l_percentage_all numeric,
+		
+		l_budget_percentage_1000 numeric,
+		l_budget_percentage_2000 numeric,
+		l_budget_percentage_100 numeric,
+		l_budget_percentage_150 numeric,
+		l_budget_percentage_all numeric,
+		
+		
+		isdisplayother boolean
+		
+	)
+
+AS 
+$BODY$
+
+SELECT
+	* ,
+	ABS( ROUND( Balance_1000 / Gross_1000 * 100, 2 ) ) AS L_Percentage_1000,
+	ABS( ROUND( Balance_2000 / Gross_2000 * 100, 2 ) ) AS L_Percentage_2000,
+	ABS( ROUND( Balance_100 / Gross_100 * 100, 2 ) ) AS L_Percentage_100,
+	ABS( ROUND( Balance_150 / Gross_150 * 100, 2 ) ) AS L_Percentage_150,
+	ABS( ROUND( Balance / Gross_all * 100, 2 ) ) AS L_percentage_All,
+	ABS( ROUND( Balance_1000 / NULLIF( Budget_1000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_1000,
+	ABS( ROUND( Balance_2000 / NULLIF( Budget_2000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_2000,
+	ABS( ROUND( Balance_100 / NULLIF( Budget_100, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_100,
+	ABS( ROUND( Balance_150 / NULLIF( Budget_150, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_150,
+	ABS( ROUND( Balance / NULLIF( Budget, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_All,
+	SUM( Balance_Other ) OVER () != 0 AS isDisplayOther
+FROM
+	(
+	SELECT
+		*,
+		NULLIF( First_agg ( L_1000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_1000,
+		NULLIF( First_agg ( L_2000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_2000,
+		NULLIF( First_agg ( L_100 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_100,
+		NULLIF( First_agg ( L_150 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_150,
+		NULLIF( First_agg ( L_all ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_All
+	FROM
+		(
+		SELECT
+			--
+			-- Balances
+
+			-- Create an Incremental sum for the Margins. This sum will be Displayed in the report
+			-- It is a requirement of the report that the sums are incremental over the margins
+			-- Note: The window function Last_Value does not get the Last Value, but the maximum
+			-- Level
+			L_Value, L_Name,
+			Sum ( Balance_1000 ) OVER ( PARTITION BY L_Value ) AS L_1000,
+			Sum ( Balance_2000 ) OVER ( PARTITION BY L_Value ) AS L_2000,
+			Sum ( Balance_100 ) OVER ( PARTITION BY L_Value ) AS L_100,
+			Sum ( Balance_150 ) OVER ( PARTITION BY L_Value ) AS L_150,
+			Sum ( Balance_other ) OVER ( PARTITION BY L_Value ) AS L_other,
+			Sum ( Balance ) OVER ( PARTITION BY L_Value ) AS L_All,
+			Sum ( Budget ) OVER ( PARTITION BY L_Value ) AS L_Budget_All,
+
+
+
+			Balance_1000, Balance_2000, Balance_100, Balance_150, Balance_other, Balance,
+			L_Multiplicator,
+			--
+			-- Budgets
+
+			Budget_1000, Budget_2000, Budget_100, Budget_150, Budget,
+			ad_org_id
+		FROM
+			(
+			SELECT
+				L_Value, L_Name,
+				-- Preparing an incremantal Sum over all lines, to later extract an incremental sum for margin level
+				Balance_1000,
+				Balance_2000,
+				Balance_100,
+				Balance_150,
+				Balance_other,
+				Balance,
+				Budget_1000,
+				Budget_2000,
+				Budget_100,
+				Budget_150,
+				Budget,
+				L_Multiplicator,
+				ad_org_id
+			FROM
+				de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings($1, $3)
+			) x
+		) y
+	) z
+	LEFT OUTER JOIN (
+		SELECT
+			First_Agg ( StartDate::text ORDER BY PeriodNo )::Date AS StartDate,
+			$1 ::date AS EndDate
+		FROM
+			C_Period
+		WHERE
+			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ))
+	) date ON true
+WHERE ad_org_id = $3
+$BODY$
+LANGUAGE sql STABLE
+;

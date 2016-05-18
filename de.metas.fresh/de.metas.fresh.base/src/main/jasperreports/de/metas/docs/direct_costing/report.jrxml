@@ -13,10 +13,14 @@
 	</parameter>
 	<parameter name="showRemainings" class="java.lang.String"/>
 	<parameter name="showBudget" class="java.lang.String"/>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.fresh_Direct_Costing ($P{Date},
 $P{showBudget},
-$P{showRemainings} )
+$P{showRemainings},
+$P{ad_org_id} )
 ;]]>
 	</queryString>
 	<field name="seq" class="java.lang.String"/>
@@ -76,7 +80,6 @@ $P{showRemainings} )
 	<field name="budget_150" class="java.math.BigDecimal"/>
 	<field name="budget" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<field name="gross_1000" class="java.math.BigDecimal"/>
 	<field name="gross_2000" class="java.math.BigDecimal"/>
 	<field name="gross_100" class="java.math.BigDecimal"/>
