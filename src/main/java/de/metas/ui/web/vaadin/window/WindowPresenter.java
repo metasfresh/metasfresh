@@ -35,6 +35,7 @@ import de.metas.ui.web.vaadin.window.model.event.ConfirmDiscardChangesModelEvent
 import de.metas.ui.web.vaadin.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.PropertyChangedModelEvent;
+import de.metas.ui.web.vaadin.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
@@ -610,6 +611,14 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		final WindowModel model = getModel();
 		model.executeAction(action);
+	}
+	
+	@Subscribe
+	public void modelZoomToWindowEvent(final ZoomToWindowEvent event)
+	{
+		final int windowId = event.getWindowId();
+		final String viewNameAndParameters = WindowViewProvider.createViewNameAndParameters(windowId);
+		UI.getCurrent().getNavigator().navigateTo(viewNameAndParameters);
 	}
 
 }

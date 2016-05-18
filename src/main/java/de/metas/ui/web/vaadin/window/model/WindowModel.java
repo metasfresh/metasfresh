@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -40,6 +42,7 @@ import de.metas.ui.web.vaadin.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.ModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.PropertyChangedModelEvent;
+import de.metas.ui.web.vaadin.window.model.event.ZoomToWindowEvent;
 
 /*
  * #%L
@@ -647,29 +650,36 @@ public class WindowModel
 
 		return ImmutableList.<Action> builder()
 				//
-				.add(createAction(crudActionGroup, "Ignore", target -> cancelRecordEditing()))
-				.add(createAction(crudActionGroup, "New", target -> newRecord()))
-				.add(createAction(crudActionGroup, "Save", target -> saveRecord()))
-				.add(createAction(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted))
-				.add(createAction(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted))
-				.add(createAction(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted))
-				.add(createAction(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted))
-				.add(createAction(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "Ignore", target -> cancelRecordEditing()))
+				.add(createActionWithListener(crudActionGroup, "New", target -> newRecord()))
+				.add(createActionWithListener(crudActionGroup, "Save", target -> saveRecord()))
+				.add(createActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
 				//
-				.add(createAction(goActionGroup, "ZoomAcross", ACTIONLISTENER_NotImpleted))
-				.add(createAction(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
-				.add(createAction(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithChildrenProvider(goActionGroup, "ZoomAcross", () -> createZoomAccrossActions()))
+				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted))
 				//
-				.add(createAction(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted))
 				//
 				.build();
 	}
 
-	private Action createAction(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
+	private Action createActionWithListener(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
 	{
 		final String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
 		final Resource icon = Theme.getIconSmall(actionId);
 		return Action.selfHandledAction(actionGroup, actionId, caption, icon, listener);
+	}
+
+	private Action createActionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final Action.Provider childrenProvider)
+	{
+		final String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
+		final Resource icon = Theme.getIconSmall(actionId);
+		return Action.actionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
 	}
 
 	public void executeAction(final Action action)
@@ -688,4 +698,36 @@ public class WindowModel
 	private static final Action.Listener ACTIONLISTENER_NotImpleted = target -> {
 		throw new UnsupportedOperationException("Action not implemented");
 	};
+
+	private List<Action> createZoomAccrossActions()
+	{
+		final int recordIndex = getRecordIndex();
+		if (recordIndex < 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final ModelDataSource dataSource = getDataSource();
+		final List<ZoomInfo> zoomInfos = dataSource.retrieveZoomAccrossInfos(recordIndex);
+
+		final ImmutableList.Builder<Action> actionsCollector = ImmutableList.builder();
+		for (final ZoomInfo zoomInfo : zoomInfos)
+		{
+			final String actionId = zoomInfo.getId();
+			final String caption = zoomInfo.getLabel();
+			final Resource icon = null;
+			final Action action = Action.selfHandledAction(ActionGroup.NONE, actionId, caption, icon, target -> {
+				postEvent(ZoomToWindowEvent.of(WindowModel.this, zoomInfo));
+			});
+			actionsCollector.add(action);
+		}
+
+		final List<Action> actions = actionsCollector.build();
+		if(actions.isEmpty())
+		{
+			throw new AdempiereException("No zoom targets found");
+		}
+		
+		return actions;
+	}
 }
