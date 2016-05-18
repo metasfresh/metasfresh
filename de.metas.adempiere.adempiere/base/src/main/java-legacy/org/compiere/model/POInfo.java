@@ -699,6 +699,16 @@ public final class POInfo implements Serializable
 		return columnInfo.getColumnSqlForSelect();
 	}   // getColumnSQL
 
+	public String getColumnSQL(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new IllegalArgumentException("Column name " + columnName + " not found in " + this);
+		}
+		return getColumnSQL(columnIndex);
+	}
+
 	/**
 	 * Is Column Virtual?
 	 * 
