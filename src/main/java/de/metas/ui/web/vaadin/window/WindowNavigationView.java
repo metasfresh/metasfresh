@@ -262,11 +262,26 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		private final Action action;
-		
+		private final Supplier<List<MenuItem>> childrenSupplier;
+
 		private ActionMenuItem(final Action action)
 		{
 			super();
 			this.action = action;
+
+			if (action instanceof Action.Provider)
+			{
+				final Action.Provider actionsProvider = (Action.Provider)action;
+
+				childrenSupplier = () -> {
+					final List<Action> childActions = actionsProvider.provideActions();
+					return createMenuItems(childActions);
+				};
+			}
+			else
+			{
+				childrenSupplier = null;
+			}
 		}
 
 		@Override
@@ -278,6 +293,10 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		@Override
 		public List<MenuItem> getChildren()
 		{
+			if (childrenSupplier != null)
+			{
+				return childrenSupplier.get();
+			}
 			return ImmutableList.of();
 		}
 

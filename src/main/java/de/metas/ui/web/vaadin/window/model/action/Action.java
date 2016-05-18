@@ -1,5 +1,7 @@
 package de.metas.ui.web.vaadin.window.model.action;
 
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -37,6 +39,11 @@ public abstract class Action
 	public static Action selfHandledAction(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Listener listener)
 	{
 		return new SelfHandledAction(actionGroup, actionId, caption, icon, listener);
+	}
+	
+	public static Action actionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Provider childrenProvider)
+	{
+		return new ActionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
 	}
 
 	private final String actionId;
@@ -107,6 +114,11 @@ public abstract class Action
 	{
 		void handleAction(Object target);
 	}
+	
+	public static interface Provider
+	{
+		List<Action> provideActions();
+	}
 
 	private static final class ActionImpl extends Action
 	{
@@ -131,5 +143,23 @@ public abstract class Action
 		{
 			listener.handleAction(target);
 		}
+	}
+	
+	private static final class ActionWithChildrenProvider extends Action implements Action.Provider
+	{
+		private final Action.Provider childrenProvider;
+
+		protected ActionWithChildrenProvider(ActionGroup actionGroup, String actionId, String caption, Resource icon, final Action.Provider childrenProvider)
+		{
+			super(actionGroup, actionId, caption, icon);
+			this.childrenProvider = childrenProvider;
+		}
+
+		@Override
+		public List<Action> provideActions()
+		{
+			return childrenProvider.provideActions();
+		}
+		
 	}
 }
