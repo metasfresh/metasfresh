@@ -13,11 +13,11 @@ package de.metas.banking.payment;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -97,7 +97,9 @@ public interface IPaySelectionBL extends ISingletonService
 	void unlinkPaySelectionLineForBankStatement(de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	/**
-	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code> and <code>C_BP_BankAccount_ID</code> from the <code>C_Invoice</code> which it references. If the psl doesn't ferenece an invoice,
+	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code>, <code>C_BP_BankAccount_ID</code> and <code>Reference</code> from the <code>C_Invoice</code> which it references.
+	 * <p>
+	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(de.metas.adempiere.model.I_C_PaySelectionLine)} returns <code>true</code>,
 	 * then the method does nothing.
 	 *
 	 * @param psl
