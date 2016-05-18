@@ -32,7 +32,10 @@ The actual release notes
  - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
  - FRESH-300 client not starting when config is not completed
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
-
+ - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
+    * extending/fixing the views to also find wronmg qtyordered from iol referencing ICs
+	* adding the ddl to our repo
+	
 # metasfresh 4.17.16
 
 ## Features
