@@ -1,13 +1,14 @@
 package de.metas.ui.web.vaadin.window;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.Resource;
@@ -50,21 +51,64 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 	private final int windowId;
 	private MFViewDisplay viewDisplay;
 	private WindowPresenter windowPresenter;
-	
+
 	private List<Action> actions = null;
+	private boolean disposed = false;
 
 	public WindowNavigationView(final int windowId)
 	{
 		super();
 		this.windowId = windowId;
 	}
-	
+
+	public void dispose()
+	{
+		this.disposed = true;
+
+		viewDisplay = null;
+
+		if (windowPresenter != null)
+		{
+			windowPresenter.dispose();
+			windowPresenter = null;
+		}
+
+		actions = null;
+		setCompositionRoot(null);
+	}
+
+	private final void assertNotDisposed()
+	{
+		Preconditions.checkState(!disposed, "view is not disposed");
+	}
+
 	private MFViewDisplay getViewDisplay()
 	{
 		return viewDisplay;
 	}
-	
+
 	private WindowPresenter getWindowPresenter()
+	{
+		if (windowPresenter == null)
+		{
+			assertNotDisposed();
+
+			windowPresenter = new WindowPresenter();
+			windowPresenter.addPropertyValueChangedListener(WindowConstants.PROPERTYNAME_WindowTitle, (propertyName, value) -> {
+				if (viewDisplay != null)
+				{
+					viewDisplay.setTitle(value == null ? "" : value.toString());
+				}
+			});
+
+			final PropertyDescriptor rootPropertyDescriptor = new VOPropertyDescriptorProvider().provideForWindow(windowId);
+			windowPresenter.setRootPropertyDescriptor(rootPropertyDescriptor);
+		}
+
+		return windowPresenter;
+	}
+
+	private WindowPresenter getWindowPresenterIfCreated()
 	{
 		return windowPresenter;
 	}
@@ -72,39 +116,34 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 	@Override
 	public void enter(final ViewChangeEvent event)
 	{
-		this.windowPresenter = new WindowPresenter();
+		assertNotDisposed();
 
 		this.viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
-		if (viewDisplay != null)
-		{
-			windowPresenter.addPropertyValueChangedListener(WindowConstants.PROPERTYNAME_WindowTitle, (propertyName, value) -> {
-				viewDisplay.setTitle(value == null ? "" : value.toString());
-			});
-		}
-		
+
+		final WindowPresenter windowPresenter = getWindowPresenter();
+
+		windowPresenter.removeActionsView(this);
 		windowPresenter.addActionsView(this);
 
-		final PropertyDescriptor rootPropertyDescriptor = new VOPropertyDescriptorProvider().provideForWindow(windowId);
-		windowPresenter.setRootPropertyDescriptor(rootPropertyDescriptor);
-
 		final Component viewComp = windowPresenter.getViewComponent();
-		setCompositionRoot(viewComp);
+		if (viewComp != getCompositionRoot())
+		{
+			setCompositionRoot(viewComp);
+		}
 	}
-	
+
 	@Override
 	public void exit(final ViewChangeEvent event)
 	{
+		final WindowPresenter windowPresenter = getWindowPresenterIfCreated();
 		if (windowPresenter != null)
 		{
-			windowPresenter.dispose();
-			windowPresenter = null;
+			windowPresenter.removeActionsView(this);
 		}
 		
 		viewDisplay = null;
-		
 		actions = null;
-		
-		setCompositionRoot(null);
+		// setCompositionRoot(null);
 	}
 
 	@Override
@@ -115,13 +154,13 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 			return;
 		}
 		this.actions = actions;
-		
+
 		final MFViewDisplay viewDisplay = getViewDisplay();
-		if(viewDisplay == null)
+		if (viewDisplay == null)
 		{
 			return;
 		}
-		
+
 		viewDisplay.setMenuItems(() -> createMenuItems(actions), menuItem -> onActionMenuItemClicked(menuItem));
 	}
 
@@ -131,22 +170,22 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final Map<ActionGroup, List<MenuItem>> groups = new LinkedHashMap<>();
 		for (final Action action : actions)
 		{
 			final ActionGroup actionGroup = action.getActionGroup();
 			List<MenuItem> menuItems = groups.get(actionGroup);
-			if(menuItems == null)
+			if (menuItems == null)
 			{
 				menuItems = new ArrayList<>();
 				groups.put(actionGroup, menuItems);
 			}
-			
+
 			final ActionMenuItem menuItem = ActionMenuItem.of(action);
 			menuItems.add(menuItem);
 		}
-		
+
 		final ImmutableList.Builder<MenuItem> rootMenuItems = ImmutableList.builder();
 		for (final Entry<ActionGroup, List<MenuItem>> e : groups.entrySet())
 		{
@@ -155,10 +194,10 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 			final MenuItem menuItemGroup = ActionGroupMenuItem.of(actionGroup, groupMenuItems);
 			rootMenuItems.add(menuItemGroup);
 		}
-		
+
 		return rootMenuItems.build();
 	}
-	
+
 	private void onActionMenuItemClicked(final MenuItem menuItem)
 	{
 		if (!(menuItem instanceof ActionMenuItem))
@@ -167,7 +206,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		final WindowPresenter windowPresenter = getWindowPresenter();
-		if(windowPresenter == null)
+		if (windowPresenter == null)
 		{
 			return;
 		}
@@ -177,7 +216,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 
 		windowPresenter.onActionClicked(action);
 	}
-	
+
 	private static class ActionGroupMenuItem implements MenuItem
 	{
 		public static final ActionGroupMenuItem of(final ActionGroup actionGroup, final List<MenuItem> menuItems)
@@ -187,7 +226,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 
 		private final ActionGroup actionGroup;
 		private final List<MenuItem> menuItems;
-		
+
 		private ActionGroupMenuItem(final ActionGroup actionGroup, final List<MenuItem> menuItems)
 		{
 			super();
@@ -212,9 +251,9 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		{
 			return null;
 		}
-		
+
 	}
-	
+
 	private static class ActionMenuItem implements MenuItem
 	{
 		public static final ActionMenuItem of(final Action action)

@@ -1,5 +1,13 @@
 package de.metas.ui.web.vaadin.window;
 
+import java.util.concurrent.ExecutionException;
+
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
 
@@ -35,6 +43,26 @@ public class WindowViewProvider implements ViewProvider
 
 	private static final String PREFIX = "/window";
 
+	private final LoadingCache<String, WindowNavigationView> views = CacheBuilder.newBuilder()
+			.maximumSize(10)
+			.removalListener(new RemovalListener<String, WindowNavigationView>()
+			{
+				@Override
+				public void onRemoval(final RemovalNotification<String, WindowNavigationView> notification)
+				{
+					final WindowNavigationView view = notification.getValue();
+					view.dispose();
+				}
+			})
+			.build(new CacheLoader<String, WindowNavigationView>()
+			{
+				@Override
+				public WindowNavigationView load(final String viewNameAndParameters) throws Exception
+				{
+					return createWindowNavigationView(viewNameAndParameters);
+				}
+			});
+
 	@Override
 	public String getViewName(final String viewAndParameters)
 	{
@@ -47,6 +75,18 @@ public class WindowViewProvider implements ViewProvider
 
 	@Override
 	public View getView(final String viewNameAndParameters)
+	{
+		try
+		{
+			return views.get(viewNameAndParameters);
+		}
+		catch (final ExecutionException e)
+		{
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private final WindowNavigationView createWindowNavigationView(final String viewNameAndParameters)
 	{
 		final int windowId = extractWindowId(viewNameAndParameters);
 		return new WindowNavigationView(windowId);
