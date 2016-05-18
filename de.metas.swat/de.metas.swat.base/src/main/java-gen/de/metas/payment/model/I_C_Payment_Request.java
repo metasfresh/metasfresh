@@ -1,27 +1,11 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.payment.model;
 
 
 /** Generated Interface for C_Payment_Request
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Payment_Request 
+public interface I_C_Payment_Request
 {
 
     /** TableName=C_Payment_Request */
@@ -32,7 +16,7 @@ public interface I_C_Payment_Request
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_C_Payment_Request
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Payment_Request, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Request, org.compiere.model.I_AD_Client>(I_C_Payment_Request.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_C_Payment_Request
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -113,7 +97,7 @@ public interface I_C_Payment_Request
 	 * Set Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -123,13 +107,13 @@ public interface I_C_Payment_Request
 	 * Get Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException;
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
 
 	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
 
@@ -142,7 +126,7 @@ public interface I_C_Payment_Request
 	 * Set Rechnung.
 	 * Invoice Identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -152,13 +136,13 @@ public interface I_C_Payment_Request
 	 * Get Rechnung.
 	 * Invoice Identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Invoice_ID();
 
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException;
+	public org.compiere.model.I_C_Invoice getC_Invoice();
 
 	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
@@ -219,6 +203,31 @@ public interface I_C_Payment_Request
     public static final org.adempiere.model.ModelColumn<I_C_Payment_Request, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Payment_Request, org.compiere.model.I_AD_User>(I_C_Payment_Request.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Eingelesene Zeichenkette.
+	 * Im Fall von ESR oder anderen von Zahlschein gelesenen Zahlungsaufforderungen ist dies der komplette vom Schein eingelesene String
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFullPaymentString (java.lang.String FullPaymentString);
+
+	/**
+	 * Get Eingelesene Zeichenkette.
+	 * Im Fall von ESR oder anderen von Zahlschein gelesenen Zahlungsaufforderungen ist dies der komplette vom Schein eingelesene String
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFullPaymentString();
+
+    /** Column definition for FullPaymentString */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Request, Object> COLUMN_FullPaymentString = new org.adempiere.model.ModelColumn<I_C_Payment_Request, Object>(I_C_Payment_Request.class, "FullPaymentString", null);
+    /** Column name FullPaymentString */
+    public static final String COLUMNNAME_FullPaymentString = "FullPaymentString";
 
 	/**
 	 * Set Aktiv.
