@@ -248,19 +248,26 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			logger.debug("Checking zoom provider: {}", zoomProvider);
 
-			for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
+			try
 			{
-				final String zoomInfoId = zoomInfo.getId();
-				if (alreadySeenIds.add(zoomInfoId))
+				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 				{
-					logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
-					result.add(zoomInfo);
-
+					final String zoomInfoId = zoomInfo.getId();
+					if (alreadySeenIds.add(zoomInfoId))
+					{
+						logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
+						result.add(zoomInfo);
+	
+					}
+					else
+					{
+						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, zoomInfoId);
+					}
 				}
-				else
-				{
-					logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, zoomInfoId);
-				}
+			}
+			catch (Exception e)
+			{
+				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source);
 			}
 		}
 
