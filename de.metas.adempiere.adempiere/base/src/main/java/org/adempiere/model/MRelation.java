@@ -29,10 +29,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -45,12 +43,13 @@ import org.compiere.model.MReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class MRelation extends X_AD_Relation
 {
@@ -71,6 +70,7 @@ public class MRelation extends X_AD_Relation
 		super(ctx, rs, trxName);
 	}
 
+	@Override
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder("MRelation[Id=");
@@ -116,21 +116,7 @@ public class MRelation extends X_AD_Relation
 			}
 		}
 	}
-
-	public static Map<I_AD_RelationType, List<PO>> retrieveDestinations(final PO source, final int adWindowId)
-	{
-		final Map<I_AD_RelationType, List<PO>> result = new HashMap<I_AD_RelationType, List<PO>>();
-
-		for (final MRelationType relTypePO : MRelationType.retrieveTypes(source, adWindowId))
-		{
-			final I_AD_RelationType relType = InterfaceWrapperHelper.create(relTypePO, I_AD_RelationType.class);
-
-			result.put(relType, retrieveDestinations(source.getCtx(), relType, source, source.get_TrxName()));
-		}
-
-		return result;
-	}
-
+	
 	private static List<MRelation> retrieve(final Properties ctx, final I_AD_RelationType type, final int recordId, final boolean normalDirection, final String trxName)
 	{
 
