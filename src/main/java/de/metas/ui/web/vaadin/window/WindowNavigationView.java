@@ -87,7 +87,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		return viewDisplay;
 	}
 
-	private WindowPresenter getWindowPresenter()
+	private WindowPresenter getCreateWindowPresenter()
 	{
 		if (windowPresenter == null)
 		{
@@ -108,7 +108,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		return windowPresenter;
 	}
 
-	private WindowPresenter getWindowPresenterIfCreated()
+	private WindowPresenter getWindowPresenter()
 	{
 		return windowPresenter;
 	}
@@ -120,7 +120,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 
 		this.viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
 
-		final WindowPresenter windowPresenter = getWindowPresenter();
+		final WindowPresenter windowPresenter = getCreateWindowPresenter();
 
 		windowPresenter.removeActionsView(this);
 		windowPresenter.addActionsView(this);
@@ -135,7 +135,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 	@Override
 	public void exit(final ViewChangeEvent event)
 	{
-		final WindowPresenter windowPresenter = getWindowPresenterIfCreated();
+		final WindowPresenter windowPresenter = getWindowPresenter();
 		if (windowPresenter != null)
 		{
 			windowPresenter.removeActionsView(this);
