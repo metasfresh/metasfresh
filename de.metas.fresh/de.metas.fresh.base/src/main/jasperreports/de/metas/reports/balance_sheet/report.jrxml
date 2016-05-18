@@ -9,8 +9,11 @@
 	<parameter name="IncludePostingTypeStatistical" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Balance_Sheet_Function ($P{Date},$P{IncludePostingTypeStatistical});]]>
+		<![CDATA[SELECT * FROM report.Balance_Sheet_Function ($P{Date},$P{ad_org_id}, $P{IncludePostingTypeStatistical});]]>
 	</queryString>
 	<field name="parentname1" class="java.lang.String"/>
 	<field name="parentvalue1" class="java.lang.String"/>
@@ -33,7 +36,6 @@
 	<field name="c_calendar_id" class="java.math.BigDecimal"/>
 	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="ad_client_id" class="java.math.BigDecimal"/>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
