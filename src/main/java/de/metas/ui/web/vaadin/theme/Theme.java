@@ -87,6 +87,11 @@ public class Theme
 						logger.info("GIF/PNG Not found: " + fileNameWithoutExt);
 						return Optional.absent();
 					}
+					
+					// FIXME: using StreamResource is not efficient at all because, even if we are caching the resource,
+					// a new URL will be generated for each component where this is used.
+					// I think a better way would be to implement a custom request handler which can cache and serve our icons dynamically.
+					// See: https://vaadin.com/docs/-/part/framework/advanced/advanced-requesthandler.html#advanced.requesthandler
 
 					//
 					// Read image bytes
