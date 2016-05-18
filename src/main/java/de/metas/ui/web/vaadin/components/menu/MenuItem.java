@@ -1,6 +1,6 @@
 package de.metas.ui.web.vaadin.components.menu;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.vaadin.server.Resource;
 
@@ -32,5 +32,5 @@ public interface MenuItem
 
 	Resource getIcon();
 
-	Collection<MenuItem> getChildren();
+	List<MenuItem> getChildren();
 }

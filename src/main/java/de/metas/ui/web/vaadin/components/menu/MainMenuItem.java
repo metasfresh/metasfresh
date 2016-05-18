@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin.components.menu;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.MoreObjects;
@@ -81,7 +80,7 @@ public final class MainMenuItem implements MenuItem
 	}
 
 	@Override
-	public Collection<MenuItem> getChildren()
+	public List<MenuItem> getChildren()
 	{
 		return children;
 	}

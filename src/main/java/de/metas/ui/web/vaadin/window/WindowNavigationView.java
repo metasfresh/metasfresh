@@ -237,7 +237,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		@Override
-		public Collection<MenuItem> getChildren()
+		public List<MenuItem> getChildren()
 		{
 			return ImmutableList.of();
 		}
