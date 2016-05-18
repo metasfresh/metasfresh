@@ -131,6 +131,8 @@ WHERE
 				fa.DocStatus NOT IN ('CL', 'VO', 'RE')
 			)
 			END
+			
+		AND fa.ad_org_id = $7
 ORDER BY 
 	fa.Account_ID,
 	fa.DateAcct::Date, 
