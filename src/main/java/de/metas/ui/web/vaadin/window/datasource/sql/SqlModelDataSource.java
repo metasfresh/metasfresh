@@ -11,11 +11,15 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ZoomInfoFactory;
+import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
@@ -33,6 +37,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gwt.thirdparty.guava.common.base.Joiner;
 import com.google.gwt.thirdparty.guava.common.base.Objects;
@@ -154,7 +159,7 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 		return _records;
 	}
-
+	
 	@Override
 	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
@@ -583,5 +588,86 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 
 		po.set_ValueOfColumnReturningBoolean(columnName, value);
+	}
+
+	@Override
+	public List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex)
+	{
+		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
+		final PropertyValuesDTO record = getRecord(recordIndex);
+		if(record == null)
+		{
+			return ImmutableList.of();
+		}
+		
+		Object keyValue = record.get(keyProperyName);
+		if (NullValue.isNull(keyValue))
+		{
+			keyValue = null;
+		}
+		if (keyValue == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(sqlTableName);
+		final Integer recordId = (Integer)keyValue;
+		
+		final String keyColumnName = sqlField_KeyColumn.getColumnName();
+		final List<String> keyColumnNames = ImmutableList.of(keyColumnName);
+		
+		final IZoomSource zoomSource = new IZoomSource()
+		{
+			
+			@Override
+			public String getTrxName()
+			{
+				return ITrx.TRXNAME_None;
+			}
+			
+			@Override
+			public String getTableName()
+			{
+				return sqlTableName;
+			}
+			
+			@Override
+			public int getRecord_ID()
+			{
+				return recordId;
+			}
+			
+			@Override
+			public List<String> getKeyColumnNames()
+			{
+				return keyColumnNames;
+			}
+			
+			@Override
+			public String getKeyColumnName()
+			{
+				return keyColumnName;
+			}
+			
+			@Override
+			public Properties getCtx()
+			{
+				return SqlModelDataSource.this.getCtx();
+			}
+			
+			@Override
+			public int getAD_Window_ID()
+			{
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public int getAD_Table_ID()
+			{
+				return adTableId;
+			}
+		};
+		return ZoomInfoFactory.get().retrieveZoomInfos(zoomSource);
 	}
 }

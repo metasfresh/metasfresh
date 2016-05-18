@@ -2,7 +2,10 @@ package de.metas.ui.web.vaadin.window.datasource.sql;
 
 import java.util.List;
 
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
@@ -18,12 +21,12 @@ import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,14 +36,14 @@ import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
 public final class NullModelDataSource implements ModelDataSource
 {
 	public static final transient NullModelDataSource instance = new NullModelDataSource();
-	
+
 	private NullModelDataSource()
 	{
 		super();
 	}
 
 	@Override
-	public PropertyValuesDTO getRecord(int index)
+	public PropertyValuesDTO getRecord(final int index)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -52,7 +55,7 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public SaveResult saveRecord(int index, PropertyValuesDTO values)
+	public SaveResult saveRecord(final int index, final PropertyValuesDTO values)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -64,8 +67,14 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public PropertyValuesDTO retrieveRecordById(Object recordId)
+	public PropertyValuesDTO retrieveRecordById(final Object recordId)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex)
+	{
+		return ImmutableList.of();
 	}
 }

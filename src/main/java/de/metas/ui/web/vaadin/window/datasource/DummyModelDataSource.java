@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -39,12 +40,12 @@ import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,12 +56,12 @@ public class DummyModelDataSource implements ModelDataSource
 {
 	private static final Logger logger = LogManager.getLogger(DummyModelDataSource.class);
 
-	private List<PropertyValuesDTO> records = new ArrayList<>();
-	
+	private final List<PropertyValuesDTO> records = new ArrayList<>();
+
 	public DummyModelDataSource(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		super();
-		
+
 		for (int i = 0; i < 10; i++)
 		{
 			records.add(createDummyRecord(i));
@@ -74,7 +75,7 @@ public class DummyModelDataSource implements ModelDataSource
 		{
 			throw new IllegalArgumentException("No record found at index " + index);
 		}
-		
+
 		final PropertyValuesDTO values = records.get(index);
 		logger.debug("Get record {}: {}", index, values);
 		return values;
@@ -126,18 +127,19 @@ public class DummyModelDataSource implements ModelDataSource
 		{
 			throw new IllegalArgumentException("No record found at index " + index);
 		}
-		
+
 		logger.debug("Saving record {}: {}", index, values);
-		
+
 		records.set(index, PropertyValuesDTO.copyOf(values));
-		Object recordId = null; // unknown
+		final Object recordId = null; // unknown
 		return SaveResult.of(index, recordId);
 	}
 
 	@Override
 	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
-		return Suppliers.memoize(new Supplier<List<PropertyValuesDTO>>(){
+		return Suppliers.memoize(new Supplier<List<PropertyValuesDTO>>()
+		{
 
 			@Override
 			public List<PropertyValuesDTO> get()
@@ -148,8 +150,14 @@ public class DummyModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public PropertyValuesDTO retrieveRecordById(Object recordId)
+	public PropertyValuesDTO retrieveRecordById(final Object recordId)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex)
+	{
+		return ImmutableList.of();
 	}
 }

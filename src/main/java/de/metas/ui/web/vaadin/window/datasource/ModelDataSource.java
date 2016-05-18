@@ -2,6 +2,8 @@ package de.metas.ui.web.vaadin.window.datasource;
 
 import java.util.List;
 
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+
 import com.google.common.base.Supplier;
 
 import de.metas.ui.web.vaadin.window.datasource.sql.ModelDataSourceQuery;
@@ -32,7 +34,7 @@ import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
 public interface ModelDataSource
 {
 	PropertyValuesDTO getRecord(int index);
-
+	
 	int getRecordsCount();
 
 	SaveResult saveRecord(int index, PropertyValuesDTO values);
@@ -40,4 +42,6 @@ public interface ModelDataSource
 	Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(ModelDataSourceQuery query);
 
 	PropertyValuesDTO retrieveRecordById(Object recordId);
+	
+	List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex);
 }
