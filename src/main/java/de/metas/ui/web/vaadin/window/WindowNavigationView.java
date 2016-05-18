@@ -164,7 +164,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		viewDisplay.setMenuItems(() -> createMenuItems(actions), menuItem -> onActionMenuItemClicked(menuItem));
 	}
 
-	private List<MenuItem> createMenuItems(final List<Action> actions)
+	private static List<MenuItem> createMenuItems(final List<Action> actions)
 	{
 		if (actions == null || actions.isEmpty())
 		{
@@ -241,7 +241,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		@Override
-		public Collection<MenuItem> getChildren()
+		public List<MenuItem> getChildren()
 		{
 			return menuItems;
 		}
