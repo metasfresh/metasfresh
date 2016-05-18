@@ -1,5 +1,7 @@
 DROP FUNCTION IF EXISTS report.Salesgroups (IN DateFrom timestamp without time zone, In DateTo timestamp without time zone);
 
+DROP FUNCTION IF EXISTS report.Salesgroups (IN DateFrom timestamp without time zone, In DateTo timestamp without time zone, IN ad_org_id numeric(10,0));
+
 DROP TABLE IF EXISTS report.Salesgroups_Report_Sub;
 
 
@@ -15,8 +17,7 @@ CREATE TABLE report.Salesgroups_Report_Sub
 	revenuegastro numeric,			
 	revenuedetailhandel numeric,
 	
-	ad_org_id numeric,
-	ad_client_id numeric
+	ad_org_id numeric
 	
 )
 WITH (
@@ -24,7 +25,7 @@ WITH (
 );
 
 
-CREATE FUNCTION report.Salesgroups(IN DateFrom timestamp without time zone, In DateTo timestamp without time zone) RETURNS SETOF report.Salesgroups_Report_Sub AS
+CREATE FUNCTION report.Salesgroups(IN DateFrom timestamp without time zone, In DateTo timestamp without time zone, IN ad_org_id numeric(10,0)) RETURNS SETOF report.Salesgroups_Report_Sub AS
 $BODY$
 SELECT
 
@@ -38,20 +39,15 @@ SELECT
 	sum(revenuegastro),		
 	sum(revenuedetailhandel),
 	
-	rv.ad_org_id,
-	rv.ad_client_id
+	rv.ad_org_id
 	
 FROM report.RV_Salesgroups rv
 JOIN C_UOM uom on uom.C_UOM_ID = rv.uom
 WHERE rv.DateInvoiced >= $1 AND rv.DateInvoiced <= $2
+	AND rv.ad_org_id = $3
 GROUP BY 	
 	productsalesgroup, uom.name,
-	rv.ad_org_id,
-	rv.ad_client_id
-	
-	
-	
-	
+	rv.ad_org_id
 	
 ORDER BY
 	productsalesgroup ASC$BODY$
