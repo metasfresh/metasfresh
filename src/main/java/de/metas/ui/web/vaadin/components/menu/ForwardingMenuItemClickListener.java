@@ -30,6 +30,11 @@ class ForwardingMenuItemClickListener implements MenuItemClickListener
 	{
 		this.delegate = delegate == null ? MenuItemClickListener.NULL : delegate;
 	}
+	
+	public MenuItemClickListener getDelegate()
+	{
+		return delegate;
+	}
 
 	@Override
 	public void onMenuItemClicked(final MenuItem menuItem)
