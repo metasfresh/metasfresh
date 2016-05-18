@@ -372,7 +372,12 @@ import de.metas.logging.LogManager;
 			set = new TreeSet<Pointcut>();
 			mapPointcuts.put(key, set);
 		}
-		set.add(pointcut);
+		
+		if (!set.add(pointcut))
+		{
+			// shall not happen
+			logger.warn("Pointcut {} was not added because another one was found in the list: {}", pointcut, set);
+		}
 
 		logger.debug("Loaded {}", pointcut);
 	}
