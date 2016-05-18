@@ -19,7 +19,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
+			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.esb.base</artifactId>
 			<version>${project.version}</version>
 		</dependency>

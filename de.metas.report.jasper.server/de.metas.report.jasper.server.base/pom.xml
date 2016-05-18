@@ -126,7 +126,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>org.jxls</groupId>
 			<artifactId>jxls</artifactId>
-			<version>2.2.9</version>
+			<version>2.3.0</version>
 			
 			<exclusions>
 				<exclusion>
@@ -138,7 +138,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>org.jxls</groupId>
 			<artifactId>jxls-poi</artifactId>
-			<version>1.0.9-metas</version>
+			<version>1.0.9</version>
 			<exclusions>
 				<!-- exclude those because jasperreports already brings them -->
 				<exclusion>

@@ -26,8 +26,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -36,6 +34,7 @@ import javax.swing.JPasswordField;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.Check;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
@@ -43,6 +42,9 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Connection Dialog.
@@ -56,30 +58,27 @@ class CConnectionDialog extends CDialog implements ActionListener
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 *  Connection Dialog using current Connection
+	 * Connection Dialog
+	 * 
+	 * @param cc metasfresh connection
 	 */
-	public CConnectionDialog()
-	{
-		this (null);
-	}   //  CConnectionDialog
-
-	/**
-	 *  Connection Dialog
-	 *  @param cc Adempiere Connection
-	 */
-	public CConnectionDialog(CConnection cc)
+	public CConnectionDialog(final CConnection cc)
 	{
 		super((Frame)null, true);
+		
 		try
 		{
 			jbInit();
-			setConnection (cc);
+			setConnection(cc);
+			AdempierePLAF.showCenterScreen(this);
 		}
-		catch(Exception e)
+		catch(Exception ex)
 		{
-			log.error("", e);
+			log.error("", ex);
+			showError("Error", ex);
+			dispose();
+			return;
 		}
-		AdempierePLAF.showCenterScreen(this);
 	}   //  CConnection
 
 	/** Resources							*/
@@ -255,16 +254,13 @@ class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 *  Set Connection
-	 *  @param cc - if null use current connection
+	 *  @param cc
 	 */
-	public void setConnection (CConnection cc)
+	public void setConnection (final CConnection cc)
 	{
+		Check.assumeNotNull(cc, "cc not null");
 		m_cc = cc;
-		if (m_cc == null)
-		{
-			m_cc = CConnection.get();
-			m_cc.setName();
-		}
+		
 		//	Should copy values
 		try
 		{
@@ -297,19 +293,45 @@ class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 *  ActionListener
-	 *  @param e event
+	 *  @param event event
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent event)
+	{
+		try
+		{
+			actionPerformed0(event);
+		}
+		catch (Exception ex)
+		{
+			showError("Error", ex);
+		}
+	}
+	
+	private void actionPerformed0(final ActionEvent e)
 	{
 		if (m_updating)
 			return;
-		Object src = e.getSource();
+		
+		final Object src = e.getSource();
 
 		if (src == bOK)
 		{
 			updateCConnection();
-			m_cc.setName();
+			
+			// Make sure the database connection is OK.
+			// Else, there is no point to continue because it will fail a bit later.
+			if(!m_cc.isDatabaseOK())
+			{
+				cmd_testDB();
+				updateInfo(); // update the UI fields from "m_cc"
+			}
+			if(!m_cc.isDatabaseOK())
+			{
+				// NOTE: we assume an error popup was already displayed to user. 
+				return;
+			}
+			
 			m_ccResult = m_cc;
 			dispose();
 			isCancel = false;
@@ -331,8 +353,9 @@ class CConnectionDialog extends CDialog implements ActionListener
 		updateCConnection();
 		//
 		if (src == bTestApps)
+		{
 			cmd_testApps();
-
+		}
 		//  Database Selection Changed
 		else if (src == dbTypeField)
 		{
@@ -347,7 +370,9 @@ class CConnectionDialog extends CDialog implements ActionListener
 
 		//  Name
 		if (src == nameField)
+		{
 			m_cc.setName(nameField.getText());
+		}
 
 		updateInfo();
 	}   //  actionPerformed
@@ -367,7 +392,9 @@ class CConnectionDialog extends CDialog implements ActionListener
 			}
 		}
 		else
+		{
 			m_cc.setAppsHost("localhost");
+		}
 		//
 		m_cc.setType(dbTypeField.getSelectedItem());
 		m_cc.setDbHost(hostField.getText());
@@ -375,6 +402,8 @@ class CConnectionDialog extends CDialog implements ActionListener
 		m_cc.setDbName(sidField.getText());
 		m_cc.setDbUid(dbUidField.getText());
 		m_cc.setDbPwd(String.valueOf(dbPwdField.getPassword()));
+		
+		m_cc.setName();
 	}
 
 	/**
@@ -443,9 +472,19 @@ class CConnectionDialog extends CDialog implements ActionListener
 		else
 			return bCancel.getIcon();
 	}   //  getStatusIcon
+	
+	private void showError(final String title, final Object messageObj)
+	{
+		JOptionPane.showMessageDialog(this,
+				messageObj, // message
+				title,
+				JOptionPane.ERROR_MESSAGE);
+	}
 
 	/**
-	 *  Test Database connection
+	 * Test Database connection.
+	 * 
+	 * If the database connection is not OK, an error popup will be displayed to user.
 	 */
 	private void cmd_testDB()
 	{
@@ -457,10 +496,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		catch (Exception e)
 		{
 			log.error(e.getMessage(), e);
-			JOptionPane.showMessageDialog(this,
-					e,		// message
-					res.getString("ConnectionError") + ": " + m_cc.getConnectionURL(),
-					JOptionPane.ERROR_MESSAGE);
+			showError(res.getString("ConnectionError") + ": " + m_cc.getConnectionURL(), e);
 		}
 		finally
 		{
@@ -480,13 +516,10 @@ class CConnectionDialog extends CDialog implements ActionListener
 			{
 				return;
 			}
-			Exception e = m_cc.testAppsServer();
+			final Exception e = m_cc.testAppsServer();
 			if (e != null)
 			{
-				JOptionPane.showMessageDialog(this,
-						e.getLocalizedMessage(),
-						res.getString("ServerNotActive") + " - " + m_cc.getAppsHost(),
-						JOptionPane.ERROR_MESSAGE);
+				showError(res.getString("ServerNotActive") + " - " + m_cc.getAppsHost(), e.getLocalizedMessage());
 			}
 		}
 		finally

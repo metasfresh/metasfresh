@@ -1,5 +1,4 @@
 
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric,  date, date, date);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric, character varying, date, date, date);
 
@@ -56,14 +55,15 @@ SELECT
 	x.bpartner, 
 	COALESCE(x.DocumentNo, '') as documentno,
 	COALESCE(x.PrintName, '') as printname,
-	x.MovementDate::date,
+	x.MovementDate::date,	
 	x.Name, --Product
 	SUM(COALESCE(x.Outgoing, 0)) as Outgoing,
 	SUM(COALESCE(x.Incoming, 0)) as Incoming,
 	SUM(COALESCE( x.CarryOutgoing, 0 )) AS CarryOutgoing,
 	SUM(COALESCE( x.CarryIncoming, 0 )) AS CarryIncoming,
-	x.UOMSymbol as UOMSymbol
-	
+	x.UOMSymbol as UOMSymbol,
+	x.m_product_id,
+	x.C_BPartner_ID
 FROM
 
 	(
@@ -87,47 +87,6 @@ FROM
 			INNER JOIN M_Product p ON mbd.M_Product_ID = p.M_Product_ID and case when  $4 >0 then p.M_Product_ID = $4 else 1=1 end
 
 		WHERE	MovementDate::date < $6 AND ( mbd.IsReset = 'N' OR ( mbd.IsReset = 'Y' AND mbd.ResetDateEffective > $7 ))
-		AND 
-			(
-				
-				case when $5 = 'Y' then
-				( exists
-					(select 1 from C_FLatrate_Term ft
-					JOIN C_FLatrate_Data fd on ft.C_Flatrate_Data_ID = fd.C_Flatrate_Data_ID
-					JOIN C_FLatrate_Conditions fc on ft.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID and fc.Type_Conditions = 'Refundable'
-					JOIN C_Flatrate_Matching fm on fm.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID
-					WHERE fd.C_BPartner_ID = mbd.C_BPartner_ID AND
-								(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
-					AND COALESCE( ft.EndDate >= $6, true )
-					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
-					)
-
-				)
-				when $5 = 'N' then
-				(
-				not exists
-					(select 1 from C_FLatrate_Term ft
-					JOIN C_FLatrate_Data fd on ft.C_Flatrate_Data_ID = fd.C_Flatrate_Data_ID
-					JOIN C_FLatrate_Conditions fc on ft.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID and fc.Type_Conditions = 'Refundable'
-					JOIN C_Flatrate_Matching fm on fm.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID
-					WHERE fd.C_BPartner_ID = mbd.C_BPartner_ID AND
-						(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
-
-					AND COALESCE( ft.EndDate >= $6, true )
-					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
-					)
-				)
-				else 
-				(
-					1=1
-				)
-					
-				end
-			)
 		GROUP BY  mbd. C_BPartner_ID,
 	bp.name, 
 	p.M_Product_ID,
@@ -179,47 +138,7 @@ FROM
 			)
 		AND COALESCE( mbd.MovementDate::date >= $6, true )
 		AND COALESCE( mbd.MovementDate::date <= $7, true )
-		AND 
-			(
-				
-				case when $5 = 'Y' then
-				( exists
-					(select 1 from C_FLatrate_Term ft
-					JOIN C_FLatrate_Data fd on ft.C_Flatrate_Data_ID = fd.C_Flatrate_Data_ID
-					JOIN C_FLatrate_Conditions fc on ft.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID and fc.Type_Conditions = 'Refundable'
-					JOIN C_Flatrate_Matching fm on fm.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID
-					WHERE fd.C_BPartner_ID = mbd.C_BPartner_ID AND
-								(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
-					AND COALESCE( ft.EndDate >= $6, true )
-					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
-					)
-
-				)
-				when $5 = 'N' then
-				(
-				not exists
-					(select 1 from C_FLatrate_Term ft
-					JOIN C_FLatrate_Data fd on ft.C_Flatrate_Data_ID = fd.C_Flatrate_Data_ID
-					JOIN C_FLatrate_Conditions fc on ft.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID and fc.Type_Conditions = 'Refundable'
-					JOIN C_Flatrate_Matching fm on fm.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID
-					WHERE fd.C_BPartner_ID = mbd.C_BPartner_ID AND
-						(fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p. M_Product_Category_ID AND fm.M_Product_ID IS NULL))
-
-					AND COALESCE( ft.EndDate >= $6, true )
-					AND COALESCE( ft.StartDate <= $7, true )
-					AND ft.isActive = 'Y'
-					AND ft.docstatus IN ('CO','CL')
-					)
-				)
-				else 
-				(
-					1=1
-				)
-					
-				end
-			)
+		
 			
 GROUP BY
 	mbd. C_BPartner_ID,
@@ -253,12 +172,30 @@ WHERE 1=1
 			end
 			)
 		and case when  $4 >0 then x.M_Product_ID = $4 else 1=1 end
+
+		and (
+			case when $5 = 'Y' then
+				(select * from de_metas_endcustomer_fresh_reports.exists_flatrateterm_for_product_and_bpartner(x.m_product_id, x.C_BPartner_ID, $6, $7 ))
+			when $5 = 'N' then
+			(
+				not (select * from de_metas_endcustomer_fresh_reports.exists_flatrateterm_for_product_and_bpartner(x.m_product_id, x.C_BPartner_ID, $6, $7 ))
+			)
+			else 
+			(
+				1=1
+			)
+					
+				end
+			)
+		
 GROUP BY
-x.bpartner, 
+	x.bpartner,
+	x.C_BPartner_ID,
 	COALESCE(x.DocumentNo, ''),
 	COALESCE(x.PrintName, ''),
 	x.MovementDate::date,
 	x.Name, --Product
+	x.m_product_id,
 	x.UOMSymbol
 Order by 
 
@@ -273,9 +210,6 @@ rez.bpartner, rez.name, rez.movementDate, rez.documentno, rez.printname, rez.Car
   LANGUAGE sql VOLATILE
   COST 100
   ROWS 1000;
-
-
-  
   
   
   

@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0));
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying) ;
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying, IN showCurrencyExchange character varying) ;
@@ -25,7 +24,7 @@ CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID 
 		DocStatus text,
 		ConversionMultiplyRate numeric,
 		EuroSaldo numeric,
-		containsEUR text
+		containsEUR boolean
 	) AS 
 $$
 SELECT
@@ -79,30 +78,34 @@ FROM
 		SELECT 
 			fa.Account_ID, fa.C_Activity_ID, fa.description, DateAcct, Fact_Acct_ID, AD_Table_ID, Line_ID, AmtAcctDr, AmtAcctCr, fa.C_BPartner_ID,
 			ev.value AS Param_Acct_Value, ev.name AS Param_Acct_Name,fa.Record_ID,
-			COALESCE( CASE WHEN isCalculationSwitched THEN AmtAcctDr - AmtAcctCr ELSE AmtAcctCr - AmtAcctDr END, 0 ) AS Balance,
-			COALESCE( CASE WHEN isCalculationSwitched THEN switchedCarryBalance ELSE CarryBalance END, 0 ) AS CarryBalance,
+			COALESCE(AmtAcctDr - AmtAcctCr, 0 ) AS Balance,
+			(de_metas_acct.acctbalanceuntildate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID,$2::date)).Balance AS CarryBalance,
 			fa.DocStatus,
-		    --currencyrate returns the multiplyrate of the conversion rate for: currency from , currency to, date, conversion type, client id and org id
+		        --currencyrate returns the multiplyrate of the conversion rate for: currency from , currency to, date, conversion type, client id and org id
 			currencyrate(c.c_currency_id, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') , $3, (SELECT C_ConversionType_ID FROM C_ConversionType where value ='P'), ci.AD_Client_ID, ci.ad_org_id) AS ConversionMultiplyRate,
-			CASE WHEN fa.C_Currency_ID= (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') THEN 'Y' END AS containsEUR
-			
+			CASE WHEN $6='N' -- we don't need to check if the elementValue has a foreign currency
+			THEN false
+			ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
+				(
+					exists
+					(select 1 from C_ElementValue elv where ev.C_ElementValue_ID = elv.C_ElementValue_ID and elv.ShowIntCurrency = 'Y' and elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR'))
+				)		
+			END			
+			AS containsEUR
 		FROM 
 			( 
-				SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id, Accounttype IN ('A', 'R', 'O') AS isCalculationSwitched 
+				SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id
 				FROM C_ElementValue ev WHERE C_ElementValue_ID = $1 
 			) ev
 			LEFT OUTER JOIN Fact_Acct fa ON fa.Account_ID = ev.C_ElementValue_ID 
 				AND DateAcct >= $2 AND DateAcct <= $3 
 				AND (CASE WHEN $4 IS NOT NULL THEN COALESCE( C_Activity_ID = $4, false ) ELSE TRUE END) -- this used to be COALESCE( C_Activity_ID = $4, true) and it was showing the empty ones too when activity id was set
-			LEFT OUTER JOIN 
-			(
-				SELECT SUM ( AmtAcctDr - AmtAcctCr ) AS switchedCarryBalance,  SUM ( fa.AmtAcctCr - AmtAcctDr ) AS CarryBalance, fa.Account_ID
-				FROM Fact_Acct fa WHERE fa.DateAcct < $2 GROUP BY Account_ID
-			) cb ON cb.Account_ID = C_ElementValue_ID
+		
 			--taking the currency of the client to convert it into euro
 			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=ev.ad_client_id
 			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
 			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
+
 		WHERE fa.postingtype = 'A' -- task 09804 don't show/sum other than current (A)
 	) fa
 	LEFT OUTER JOIN GL_JournalLine jl ON fa.Line_ID = jl.GL_JournalLine_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('GL_Journal'))
@@ -156,27 +159,27 @@ CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report ( IN Account_ID nume
 		UnionOrder integer,
 		docStatus text,
 		EuroSaldo numeric,
-		containsEUR text
+		containsEUR boolean
 	) AS 
 $$
 	SELECT 	DateAcct, Fact_Acct_ID, BP_Name, Description, Account2_ID, a_Value, AmtAcctDr, AmtAcctCr, Saldo, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
-		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::text
+		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::boolean
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6 )
 	WHERE	Fact_Acct_ID IS NOT NULL
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Anfangssaldo', null::text, null::text, null::numeric, null::numeric, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::text
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::boolean
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Summe', null::text, null::text, AmtAcctDrEnd, AmtAcctCrEnd, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::text
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::boolean
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 UNION ALL
 	(SELECT DISTINCT null::date, null::numeric, null, 'Summe in EUR', null::text, null::text, null::numeric, null::numeric, null::numeric, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
-	WHERE containsEUR is not null )
+	WHERE containsEUR = 'Y' )
 ORDER BY
 	UnionOrder, DateAcct, 
 	Fact_Acct_ID

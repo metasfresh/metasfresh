@@ -13,24 +13,29 @@ package org.adempiere.invoice.async.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 
 /**
@@ -55,4 +60,25 @@ public class C_BPartner_UpdateStatsFromInvoice extends WorkpackageProcessorAdapt
 		return Result.SUCCESS;
 	}
 
+	public static void createWorkpackage(final Properties ctx, final Set<Integer> invoiceIds, final String trxName)
+	{
+		if (invoiceIds == null || invoiceIds.isEmpty())
+		{
+			return;
+		}
+
+		final IWorkPackageBuilder newWorkpackage = Services.get(IWorkPackageQueueFactory.class)
+				.getQueueForEnqueuing(ctx, C_BPartner_UpdateStatsFromInvoice.class)
+				.newBlock()
+				.newWorkpackage();
+
+		for (final int invoiceId : invoiceIds)
+		{
+			final ITableRecordReference invoiceRef = new TableRecordReference(I_C_Invoice.Table_Name, invoiceId);
+			newWorkpackage.addElement(invoiceRef);
+		}
+		newWorkpackage
+				.bindToTrxName(trxName)
+				.build();
+	}
 }

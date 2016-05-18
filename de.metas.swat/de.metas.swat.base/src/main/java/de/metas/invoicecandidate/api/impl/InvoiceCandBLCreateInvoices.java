@@ -596,6 +596,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					invoiceLine.setQtyEntered(qtyToInvoice);
 				}
 				invoiceLine.setC_Charge_ID(ilVO.getC_Charge_ID());
+				invoiceLine.setIsPackagingMaterial(cand.isPackagingMaterial()); // task FRESH-273
 
 				//
 				// ASI

@@ -50,6 +50,8 @@ import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -144,15 +146,22 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public String toString()
+	public final String toString()
 	{
-		return "AbstractAttributeStorage ["
-				+ "huAttributePropagatorFactory=" + huAttributePropagatorFactory
-				+ ", storageFactory=" + storageFactory
-				+ ", indexedAttributeValues=" + _indexedAttributeValues
-				+ ", listeners=" + listeners
-				+ ", attributeValueListener=" + attributeValueListener
-				+ "]";
+		final ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+		toString(stringHelper);
+		return stringHelper
+				.add("huAttributePropagatorFactory", huAttributePropagatorFactory)
+				.add("storageFactory", storageFactory)
+				.add("indexedAttributeValues", _indexedAttributeValues)
+				.add("listeners", listeners)
+				.add("attributeValueListener", attributeValueListener)
+				.toString();
+	}
+	
+	protected void toString(final ToStringHelper stringHelper)
+	{
+		// nothing on this level
 	}
 
 	@Override
@@ -233,6 +242,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 						+ "\n Attribute Storage: " + this
 						+ "\n New attribute values: " + attributeValues);
 			}
+			
+			//logger.debug("Setting attribute values: {}", attributeValues, new Exception("trace"));
 
 			final IndexedAttributeValues indexedAttributeValues = IndexedAttributeValues.of(attributeValues);
 			indexedAttributeValues.addAttributeValueListener(attributeValueListener);
