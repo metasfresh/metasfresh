@@ -715,7 +715,6 @@ public class WindowModel
 		{
 			final String actionId = zoomInfo.getId();
 			final String caption = zoomInfo.getLabel();
-			final Resource icon = null;
 			final Action action = Action.selfHandledAction(ActionGroup.NONE, actionId, caption, icon, target -> {
 				postEvent(ZoomToWindowEvent.of(WindowModel.this, zoomInfo));
 			});
