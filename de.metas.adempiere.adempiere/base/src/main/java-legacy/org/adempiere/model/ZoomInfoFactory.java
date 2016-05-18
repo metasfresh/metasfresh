@@ -252,6 +252,12 @@ public class ZoomInfoFactory implements IZoomProvider
 			{
 				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 				{
+					if (zoomInfo.getRecordCount() <= 0)
+					{
+						logger.debug("No target records for destination {}", zoomInfo);
+						continue;
+					}
+
 					final String zoomInfoId = zoomInfo.getId();
 					if (alreadySeenIds.add(zoomInfoId))
 					{

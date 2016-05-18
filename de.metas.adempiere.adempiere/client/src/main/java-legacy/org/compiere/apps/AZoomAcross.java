@@ -124,11 +124,6 @@ public class AZoomAcross
 		final IZoomProvider zoomProvider = ZoomInfoFactory.get();
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 		{
-			if (zoomInfo.getRecordCount() <= 0)
-			{
-				logger.debug("No target records for destination {}", zoomInfo);
-				continue;
-			}
 			zoomInfos.add(zoomInfo);
 		}
 		
