@@ -135,7 +135,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		final Object[] sqlParams = new Object[]{source.getAD_Table_ID(), colId};
+		final Object[] sqlParams = new Object[] { source.getAD_Table_ID(), colId };
 		try
 		{
 			pstmt = DB.prepareStatement(SQL, source.getTrxName());
@@ -455,7 +455,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 			queryWhereClause.append(" AND ").append(destinationKeyCol).append(" IN ( -99 ");
 
-			final List<PO> targets = MRelation.retrieveDestinations(getCtx(), this, source.getAD_Table_ID(), source.getAD_Table_ID(), get_TrxName());
+			final List<PO> targets = MRelation.retrieveDestinations(getCtx(), this, source.getAD_Table_ID(), source.getRecord_ID(), get_TrxName());
 			for (final PO target : targets)
 			{
 				assert target.get_Table_ID() == refTable.getAD_Table_ID() : "target=" + target + "; refTable=" + refTable;
