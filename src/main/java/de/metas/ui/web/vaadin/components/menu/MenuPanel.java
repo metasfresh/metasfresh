@@ -1,14 +1,15 @@
 package de.metas.ui.web.vaadin.components.menu;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -42,35 +43,54 @@ public class MenuPanel extends CustomComponent
 	public static final String STYLE = "mf-menu";
 	//
 	// UI
+	private final VerticalLayout content;
 	private final TextField searchTextField;
-	private final HorizontalLayout menuGroupsContainer;
-	private final Label nothingFoundLabel;
+	private final Button previousPageButton;
 	private boolean hiddenByStyle = false;
+	private MenuPanelPage rootPage;
+	private List<MenuPanelPage> pages = new ArrayList<>();
 
 	//
 	// Listeners
-	private final ForwardingMenuItemClickListener clickListener = new ForwardingMenuItemClickListener();
-
-	private boolean menuItemsStaled = false;
-	private Supplier<List<MenuItem>> menuItemsSupplier = null;
+	private final ForwardingMenuItemClickListener clickListener = new ForwardingMenuItemClickListener()
+	{
+		@Override
+		public void onMenuItemClicked(final MenuItem menuItem)
+		{
+			final Collection<MenuItem> menuItemChildren = menuItem.getChildren();
+			if(menuItemChildren != null && !menuItemChildren.isEmpty())
+			{
+				navigateTo(menuItem);
+			}
+			else
+			{
+				super.onMenuItemClicked(menuItem);
+			}
+		};
+	};
 
 	public MenuPanel()
 	{
 		super();
 		setPrimaryStyleName(STYLE);
 
+		previousPageButton = new Button("Back");
+		previousPageButton.addClickListener(event -> navigateBack());
+		previousPageButton.setVisible(false);
+		
 		searchTextField = new TextField();
 		searchTextField.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
 		searchTextField.setTextChangeTimeout(500);
 		searchTextField.addTextChangeListener(event -> filterMenuItems(event.getText()));
+		
+		final HorizontalLayout toolbarLane = new HorizontalLayout(previousPageButton, searchTextField);
 
-		menuGroupsContainer = new HorizontalLayout();
-		menuGroupsContainer.setPrimaryStyleName(STYLE + "-container");
+		this.content = new VerticalLayout(toolbarLane);
+		setCompositionRoot(content);
 
-		nothingFoundLabel = new Label("No results found");
-		nothingFoundLabel.setStyleName(STYLE + "-nothingfound-label");
-
-		setCompositionRoot(new VerticalLayout(searchTextField, menuGroupsContainer));
+		rootPage = new MenuPanelPage(clickListener);
+		rootPage.setSearchTextField(searchTextField);
+		addNewPage(rootPage);
 	}
 
 	public void setClickListener(final MenuItemClickListener clickListener)
@@ -78,50 +98,132 @@ public class MenuPanel extends CustomComponent
 		this.clickListener.setDelegate(clickListener);
 	}
 
-	public void setMenuItems(final List<MenuItem> menuItems)
+	private MenuPanelPage getCurrentPage()
 	{
-		setMenuItems(() -> menuItems);
+		return pages.get(pages.size() - 1);
 	}
-	
-	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+
+	private MenuPanelPage getPreviousPage()
 	{
-		this.menuItemsStaled = true;
-		this.menuItemsSupplier = menuItemsSupplier;
-		
-		if (!isHiddenByStyle())
+		final int countPages = pages.size();
+		if (countPages > 1)
 		{
-			updateMenuItemsFromSupplierIfStaled();
+			return pages.get(countPages - 2);
+		}
+		else
+		{
+			return null;
 		}
 	}
-	
-	private void updateMenuItemsFromSupplierIfStaled()
+
+	private void removeAllPagesExceptRoot()
 	{
-		if (!menuItemsStaled)
+		for (final Iterator<MenuPanelPage> it = pages.iterator(); it.hasNext();)
+		{
+			final MenuPanelPage page = it.next();
+			if (page == rootPage)
+			{
+				continue;
+			}
+			
+			it.remove();
+			content.removeComponent(page);
+		}
+		
+		rootPage.setVisible(true);
+		
+		previousPageButton.setVisible(false);
+	}
+	
+	private void addNewPage(final MenuPanelPage newPage)
+	{
+		for (final MenuPanelPage page : pages)
+		{
+			page.setVisible(false);
+		}
+		
+		pages.add(newPage);
+		content.addComponent(newPage);
+		
+		if(!isHiddenByStyle())
+		{
+			newPage.updateIfStaled();
+		}
+
+		searchTextField.setValue(""); // reset search field
+		previousPageButton.setVisible(true);
+	}
+	
+	private void removePagesUntil(final MenuPanelPage lastPage)
+	{
+		boolean foundPage = false;
+		for (final MenuPanelPage page : new ArrayList<>(pages))
+		{
+			if (!foundPage)
+			{
+				if (page == lastPage)
+				{
+					foundPage = true;
+				}
+			}
+			else
+			{
+				pages.remove(page);
+				content.removeComponent(page);
+			}
+		}
+		
+		if (!foundPage)
 		{
 			return;
 		}
-
-		final List<MenuItem> menuItems = menuItemsSupplier == null ? ImmutableList.of() : menuItemsSupplier.get();
-
-		searchTextField.setValue("");
-		menuGroupsContainer.removeAllComponents();
-
-		if (menuItems != null && !menuItems.isEmpty())
+		
+		if(!isHiddenByStyle())
 		{
-			for (final MenuItem groupItem : menuItems)
-			{
-				final MenuGroupPanel itemComp = new MenuGroupPanel(groupItem, clickListener);
-				menuGroupsContainer.addComponent(itemComp);
-			}
+			lastPage.updateIfStaled();
+		}
+		lastPage.setVisible(true);
+		
+		searchTextField.setValue(""); // reset search field
+		previousPageButton.setVisible(pages.size() > 1);
+	}
+	
+	public void setRootMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+	{
+		removeAllPagesExceptRoot();
+		
+		final MenuPanelPage page = getCurrentPage();
+		page.setMenuItems(menuItemsSupplier);
+
+		if (!isHiddenByStyle())
+		{
+			page.updateIfStaled();
+		}
+		
+		searchTextField.setValue(""); // reset search field
+	}
+	
+	protected void navigateTo(final MenuItem menuItem)
+	{
+		final MenuPanelPage menuItemPage = new MenuPanelPage(clickListener);
+		menuItemPage.setSearchTextField(searchTextField);
+		menuItemPage.setMenuItems(() -> menuItem.getChildren());
+
+		if(!isHiddenByStyle())
+		{
+			menuItemPage.updateIfStaled();
 		}
 
-		//
-		Theme.setHidden(nothingFoundLabel, true);
-		menuGroupsContainer.addComponent(nothingFoundLabel);
+		addNewPage(menuItemPage);
+	}
 
-		//
-		menuItemsStaled = false;
-		menuItemsSupplier = null;
+	private void navigateBack()
+	{
+		final MenuPanelPage previousPage = getPreviousPage();
+		if(previousPage != null)
+		{
+			removePagesUntil(previousPage);
+		}
 	}
 
 	private void filterMenuItems(final String searchText)
@@ -138,22 +240,7 @@ public class MenuPanel extends CustomComponent
 			filter = new ContainsStringMenuItemFilter(searchText);
 		}
 
-		int countDisplayed = 0;
-		for (final Component menuGroupComp : menuGroupsContainer)
-		{
-			if (menuGroupComp instanceof MenuGroupPanel)
-			{
-				final MenuGroupPanel menuGroupPanel = (MenuGroupPanel)menuGroupComp;
-				menuGroupPanel.setFilter(filter);
-
-				if (!menuGroupPanel.isHiddenByStyle())
-				{
-					countDisplayed++;
-				}
-			}
-		}
-
-		Theme.setHidden(nothingFoundLabel, countDisplayed > 0);
+		getCurrentPage().setFilter(filter);
 	}
 
 	public final void setHiddenByStyle(final boolean hidden)
@@ -162,12 +249,12 @@ public class MenuPanel extends CustomComponent
 		{
 			return;
 		}
-		
+
 		if (!hidden)
 		{
-			updateMenuItemsFromSupplierIfStaled();
+			getCurrentPage().updateIfStaled();
 		}
-		
+
 		Theme.setHidden(this, hidden);
 		this.hiddenByStyle = hidden;
 	}

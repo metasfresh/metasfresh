@@ -138,7 +138,7 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 	
 	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier, final MenuItemClickListener clickListener)
 	{
-		menuPanel.setMenuItems(menuItemsSupplier);
+		menuPanel.setRootMenuItems(menuItemsSupplier);
 		menuPanel.setClickListener(clickListener);
 	}
 	
