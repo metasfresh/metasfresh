@@ -29,11 +29,11 @@ import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.PropertyDescriptor.Builder;
 import de.metas.ui.web.vaadin.window.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.PropertyLayoutInfo;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.PropertyDescriptor.Builder;
 import de.metas.ui.web.vaadin.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.vaadin.window.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.model.TraceHelper;
@@ -138,6 +138,11 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		public RootPropertyDescriptorBuilder add(final GridWindowVO gridWindowVO)
 		{
+			if(rootBuilder != null)
+			{
+				throw new IllegalArgumentException("Cannot add more then one window");
+			}
+			
 			logger.debug("Adding {}", gridWindowVO);
 
 			ctx = gridWindowVO.getCtx();
