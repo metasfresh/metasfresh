@@ -123,4 +123,10 @@ public final class ConstantPropertyValue implements PropertyValue
 	{
 		return true;
 	}
+
+	@Override
+	public boolean isCalculated()
+	{
+		return true;
+	}
 }

@@ -132,6 +132,12 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	}
 
 	@Override
+	public final boolean isCalculated()
+	{
+		return true;
+	}
+
+	@Override
 	public void setValue(final Object value)
 	{
 		// TODO make sure is not called

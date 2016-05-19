@@ -287,4 +287,10 @@ public class ObjectPropertyValue implements PropertyValue
 	{
 		return readOnlyForUser;
 	}
+	
+	@Override
+	public boolean isCalculated()
+	{
+		return false;
+	}
 }

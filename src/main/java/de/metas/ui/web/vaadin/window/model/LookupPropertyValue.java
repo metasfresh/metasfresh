@@ -132,4 +132,10 @@ public class LookupPropertyValue implements PropertyValue
 	{
 		return true;
 	}
+	
+	@Override
+	public final boolean isCalculated()
+	{
+		return true;
+	}
 }

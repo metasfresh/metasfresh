@@ -69,6 +69,12 @@ public class StringExpressionPropertyValue extends ObjectPropertyValue
 	}
 
 	@Override
+	public final boolean isCalculated()
+	{
+		return true;
+	}
+
+	@Override
 	public final void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		if (event.isDependencyType(DependencyType.Value))

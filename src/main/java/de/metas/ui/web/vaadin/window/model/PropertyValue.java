@@ -48,5 +48,9 @@ public interface PropertyValue
 
 	boolean isChanged();
 	
+	/** @return true if value is read-only for user */
 	boolean isReadOnlyForUser();
+	
+	/** @return true if value is calculated and it cannot be set using {@link #setValue(Object)} */
+	boolean isCalculated();
 }
