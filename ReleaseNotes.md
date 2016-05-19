@@ -15,6 +15,9 @@ The actual release notes
 # metasfresh 4.18.17 (upcoming)
 
 ## Features
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * unable to reproduce the issue, but hopefuly if it happens again we will be able to trace it, because:
+    * improved AD_ChangeLog to also olg server-side changes (whhich have no session-id) and aso store the AD_Pinstance_ID if availabe
  - FRESH-320: Swing UI: License aggrement popup shall have an icon down in task bar
  - FRESH-278 Umsatzreport Geschäftspartner copy and modify
     * Adding a revenue report that is week-based and also based on the delivered qties, as opposed to the invoiced qties.
