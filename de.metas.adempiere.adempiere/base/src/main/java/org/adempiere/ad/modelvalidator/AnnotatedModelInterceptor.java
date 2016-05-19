@@ -25,6 +25,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidator;
 import org.reflections.ReflectionUtils;
@@ -146,8 +147,7 @@ import de.metas.logging.LogManager;
 				throw new AdempiereException("Cannot initialize " + annotatedClass + ". Initializer " + init + " failed."
 						+ "\n Method: " + method
 						+ "\n Params:" + params
-						+ "\n Method Descriptor: " + init
-						, Throwables.getRootCause(e));
+						+ "\n Method Descriptor: " + init, Throwables.getRootCause(e));
 			}
 
 			logger.debug("Initializer {} executed successfully.", init);
@@ -372,11 +372,12 @@ import de.metas.logging.LogManager;
 			set = new TreeSet<Pointcut>();
 			mapPointcuts.put(key, set);
 		}
-		
+
 		if (!set.add(pointcut))
 		{
 			// shall not happen
-			logger.warn("Pointcut {} was not added because another one was found in the list: {}", pointcut, set);
+			final String msg = StringUtils.formatMessage("Pointcut {} was not added because another one was found in the list: {}", pointcut, set);
+			new AdempiereException(msg).throwOrLogSevere(Services.get(IDeveloperModeBL.class).isEnabled(), logger);
 		}
 
 		logger.debug("Loaded {}", pointcut);
