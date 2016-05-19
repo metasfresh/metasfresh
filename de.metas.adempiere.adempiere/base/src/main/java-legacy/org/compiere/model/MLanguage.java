@@ -19,14 +19,10 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.language.ILanguageDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
@@ -86,51 +82,6 @@ public class MLanguage extends X_AD_Language
 				.setParameters(new Object[] { AD_Language })
 				.firstOnly();
 	}	// get
-
-	/**
-	 * Maintain all active languages
-	 *
-	 * @param ctx context
-	 */
-	public static void maintain(final Properties ctx)
-	{
-		final List<MLanguage> languages = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsSystemLanguage, true)
-				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsBaseLanguage, false)
-				.orderBy()
-				.addColumn(I_AD_Language.COLUMNNAME_AD_Language)
-				.endOrderBy()
-				.create()
-				.list(MLanguage.class);
-		
-		final List<String> errorLanguages = new ArrayList<>();
-		final List<Throwable> errorCauses = new ArrayList<>();
-		for (final MLanguage language : languages)
-		{
-			try
-			{
-				language.maintain(true);
-			}
-			catch (Exception e)
-			{
-				// collect error
-				errorLanguages.add(language.getAD_Language());
-				errorCauses.add(e);
-			}
-		}
-
-		// If we got some errors, build and throw an exception
-		if (!errorLanguages.isEmpty())
-		{
-			final AdempiereException ex = new AdempiereException("Adding missing translations failed for following languages: " + errorLanguages);
-			for (final Throwable cause : errorCauses)
-			{
-				ex.addSuppressed(cause);
-			}
-			throw ex;
-		}
-	}	// maintain
 
 	// metas: begin: base language
 	/**
@@ -287,8 +238,7 @@ public class MLanguage extends X_AD_Language
 
 		if (getDatePattern() != null)
 		{
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance
-					(DateFormat.SHORT, getLocale());
+			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, getLocale());
 			try
 			{
 				m_dateFormat.applyPattern(getDatePattern());
@@ -430,149 +380,4 @@ public class MLanguage extends X_AD_Language
 		return true;
 	}	// afterSave
 
-	/**************************************************************************
-	 * Maintain Translation
-	 *
-	 * @param add if true add missing records - otherwise delete
-	 * @return number of records deleted/inserted
-	 */
-	public int maintain(final boolean add)
-	{
-		final List<String> trlTableNames = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table.class, getCtx(), ITrx.TRXNAME_None)
-				.addEndsWithQueryFilter(I_AD_Table.COLUMNNAME_TableName, "_Trl")
-				.orderBy()
-				.addColumn(I_AD_Table.COLUMNNAME_TableName)
-				.endOrderBy()
-				.create()
-				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
-		
-		int retNo = 0;
-		final List<String> errorTables = new ArrayList<>();
-		final List<Throwable> errorCauses = new ArrayList<>();
-		for (final String trlTableName : trlTableNames)
-		{
-			try
-			{
-				if (add)
-				{
-					retNo += addTable(trlTableName);
-				}
-				else
-				{
-					retNo += deleteTable(trlTableName);
-				}
-			}
-			catch (final Exception ex)
-			{
-				// collect error
-				errorTables.add(trlTableName + "(" + getAD_Language() + ")");
-				errorCauses.add(ex);
-			}
-		}
-		
-		// If we got some errors, build and throw an exception
-		if (!errorTables.isEmpty())
-		{
-			final AdempiereException ex = new AdempiereException((add ? "Adding" : "Removing") + " missing translations failed for following tables: " + errorTables);
-			for (final Throwable cause : errorCauses)
-			{
-				ex.addSuppressed(cause);
-			}
-			throw ex;
-		}
-		
-		return retNo;
-	}	// maintain
-
-	/**
-	 * Delete Translation
-	 *
-	 * @param trlTableName table name
-	 * @return number of records deleted
-	 */
-	private int deleteTable(final String trlTableName)
-	{
-		final String sql = "DELETE FROM  " + trlTableName + " WHERE AD_Language=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { getAD_Language() }, ITrx.TRXNAME_ThreadInherited);
-		log.debug(trlTableName + " #" + no);
-		log.debug("Removed {} translations for {}", no, trlTableName);
-		return no;
-	}	// deleteTable
-
-	/**
-	 * Add Translation to table
-	 *
-	 * @param trlTableName table name
-	 * @return number of records inserted
-	 */
-	private int addTable(final String trlTableName)
-	{
-		final String baseTableName = trlTableName.substring(0, trlTableName.length() - 4);
-		final POInfo poInfo = POInfo.getPOInfo(baseTableName);
-		if (poInfo == null)
-		{
-			log.error("No POInfo found for {}", baseTableName);
-			return 0;
-		}
-		
-		final List<String> columns = poInfo.getTranslatedColumnNames();
-		if (columns.isEmpty())
-		{
-			log.error("No Columns found for {}", baseTableName);
-			return 0;
-		}
-
-		final String tblAlias = "t";
-		final StringBuilder cols = new StringBuilder();
-		final StringBuilder colsWithAlias = new StringBuilder();
-		for (int i = 0; i < columns.size(); i++)
-		{
-			cols.append(", ").append(columns.get(i));
-			colsWithAlias.append(", ").append(tblAlias + "." + columns.get(i));
-		}
-
-		//
-		// Insert Statement
-		final String trlAlias = "trl";
-		final String adLanguage = getAD_Language();
-		final int AD_User_ID = Env.getAD_User_ID(getCtx());
-		final String keyColumn = baseTableName + "_ID";
-		final StringBuilder insertSql = new StringBuilder();
-		// @formatter:off
-		insertSql.append(" INSERT INTO " + trlTableName + "(")
-			.append("AD_Language")
-			.append(", IsTranslated")
-			.append(", AD_Client_ID")
-			.append(", AD_Org_ID")
-			.append(", Createdby")
-			.append(", UpdatedBy")
-			.append(", " + keyColumn)
-			.append(cols)
-		.append(")")
-		.append("\n SELECT ")
-			.append(DB.TO_STRING(adLanguage)) // AD_Language
-			.append(", ").append(DB.TO_BOOLEAN(false)) // IsTranslated
-			.append(", " + tblAlias + ".AD_Client_ID") // AD_Client_ID
-			.append(", " + tblAlias + ".AD_Org_ID") // AD_Org_ID
-			.append(", " + AD_User_ID) // CreatedBy
-			.append(", " + AD_User_ID) // UpdatedBy
-			.append(", " + tblAlias + "." + keyColumn) // KeyColumn
-			.append(colsWithAlias)
-		.append("\n FROM " + baseTableName + " " + tblAlias)
-			.append("\n LEFT JOIN " + baseTableName + "_Trl " + trlAlias)
-			.append(" ON (")
-			.append(trlAlias + "." + keyColumn + " = " + tblAlias + "." + keyColumn)
-			.append(" AND " + trlAlias + ".AD_Language=" + DB.TO_STRING(adLanguage))
-			.append(")")
-		.append("\n WHERE " + trlAlias + "." + keyColumn + " IS NULL");
-		// @formatter:on
-
-		final int no = DB.executeUpdateEx(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
-		{
-			log.info("Added {} missing translations for {}", no, trlTableName);
-		}
-		return no;
-	}	// addTable
 }	//	MLanguage
