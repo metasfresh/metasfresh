@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_ChangeLog
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_ChangeLog extends org.compiere.model.PO implements I_AD_ChangeLog, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 997498140L;
 
     /** Standard Constructor */
     public X_AD_ChangeLog (Properties ctx, int AD_ChangeLog_ID, String trxName)
@@ -40,7 +24,6 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
         {
 			setAD_ChangeLog_ID (0);
 			setAD_Column_ID (0);
-			setAD_Session_ID (0);
 			setAD_Table_ID (0);
 			setIsCustomization (false);
 			setRecord_ID (0);
@@ -53,32 +36,20 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_ChangeLog[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Change Log.
+	/** Set Änderungsprotokoll.
 		@param AD_ChangeLog_ID 
 		Log of data changes
 	  */
+	@Override
 	public void setAD_ChangeLog_ID (int AD_ChangeLog_ID)
 	{
 		if (AD_ChangeLog_ID < 1) 
@@ -87,9 +58,10 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_ChangeLog_ID, Integer.valueOf(AD_ChangeLog_ID));
 	}
 
-	/** Get Change Log.
+	/** Get Änderungsprotokoll.
 		@return Log of data changes
 	  */
+	@Override
 	public int getAD_ChangeLog_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ChangeLog_ID);
@@ -98,15 +70,23 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Column getAD_Column() throws RuntimeException
-    {
-		return (I_AD_Column)MTable.get(getCtx(), I_AD_Column.Table_Name)
-			.getPO(getAD_Column_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
+	}
 
-	/** Set Column.
+	@Override
+	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
+	}
+
+	/** Set Spalte.
 		@param AD_Column_ID 
 		Column in the table
 	  */
+	@Override
 	public void setAD_Column_ID (int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
@@ -115,9 +95,10 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
 	}
 
-	/** Get Column.
+	/** Get Spalte.
 		@return Column in the table
 	  */
+	@Override
 	public int getAD_Column_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
@@ -126,15 +107,60 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Session getAD_Session() throws RuntimeException
-    {
-		return (I_AD_Session)MTable.get(getCtx(), I_AD_Session.Table_Name)
-			.getPO(getAD_Session_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
+	}
 
-	/** Set Session.
+	@Override
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
+	}
+
+	/** Set Prozess-Instanz.
+		@param AD_PInstance_ID 
+		Instanz eines Prozesses
+	  */
+	@Override
+	public void setAD_PInstance_ID (int AD_PInstance_ID)
+	{
+		if (AD_PInstance_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
+	}
+
+	/** Get Prozess-Instanz.
+		@return Instanz eines Prozesses
+	  */
+	@Override
+	public int getAD_PInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Session getAD_Session() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class);
+	}
+
+	@Override
+	public void setAD_Session(org.compiere.model.I_AD_Session AD_Session)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class, AD_Session);
+	}
+
+	/** Set Nutzersitzung.
 		@param AD_Session_ID 
 		User Session Online or Web
 	  */
+	@Override
 	public void setAD_Session_ID (int AD_Session_ID)
 	{
 		if (AD_Session_ID < 1) 
@@ -143,9 +169,10 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Session_ID, Integer.valueOf(AD_Session_ID));
 	}
 
-	/** Get Session.
+	/** Get Nutzersitzung.
 		@return User Session Online or Web
 	  */
+	@Override
 	public int getAD_Session_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Session_ID);
@@ -154,23 +181,23 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getAD_Session_ID()));
-    }
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
 
-	/** Set Table.
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -179,9 +206,10 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -190,24 +218,26 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** EventChangeLog AD_Reference_ID=53238 */
+	/** 
+	 * EventChangeLog AD_Reference_ID=53238
+	 * Reference name: EventChangeLog
+	 */
 	public static final int EVENTCHANGELOG_AD_Reference_ID=53238;
 	/** Insert = I */
 	public static final String EVENTCHANGELOG_Insert = "I";
@@ -219,7 +249,8 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		@param EventChangeLog 
 		Type of Event in Change Log
 	  */
-	public void setEventChangeLog (String EventChangeLog)
+	@Override
+	public void setEventChangeLog (java.lang.String EventChangeLog)
 	{
 
 		set_Value (COLUMNNAME_EventChangeLog, EventChangeLog);
@@ -228,23 +259,26 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 	/** Get Event Change Log.
 		@return Type of Event in Change Log
 	  */
-	public String getEventChangeLog () 
+	@Override
+	public java.lang.String getEventChangeLog () 
 	{
-		return (String)get_Value(COLUMNNAME_EventChangeLog);
+		return (java.lang.String)get_Value(COLUMNNAME_EventChangeLog);
 	}
 
-	/** Set Customization.
+	/** Set Anpassung/Erweiterung.
 		@param IsCustomization 
 		The change is a customization of the data dictionary and can be applied after Migration
 	  */
+	@Override
 	public void setIsCustomization (boolean IsCustomization)
 	{
 		set_Value (COLUMNNAME_IsCustomization, Boolean.valueOf(IsCustomization));
 	}
 
-	/** Get Customization.
+	/** Get Anpassung/Erweiterung.
 		@return The change is a customization of the data dictionary and can be applied after Migration
 	  */
+	@Override
 	public boolean isCustomization () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCustomization);
@@ -257,44 +291,49 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 		return false;
 	}
 
-	/** Set New Value.
+	/** Set Neuer Wert.
 		@param NewValue 
 		New field value
 	  */
-	public void setNewValue (String NewValue)
+	@Override
+	public void setNewValue (java.lang.String NewValue)
 	{
 		set_ValueNoCheck (COLUMNNAME_NewValue, NewValue);
 	}
 
-	/** Get New Value.
+	/** Get Neuer Wert.
 		@return New field value
 	  */
-	public String getNewValue () 
+	@Override
+	public java.lang.String getNewValue () 
 	{
-		return (String)get_Value(COLUMNNAME_NewValue);
+		return (java.lang.String)get_Value(COLUMNNAME_NewValue);
 	}
 
-	/** Set Old Value.
+	/** Set Alter Wert.
 		@param OldValue 
 		The old file data
 	  */
-	public void setOldValue (String OldValue)
+	@Override
+	public void setOldValue (java.lang.String OldValue)
 	{
 		set_ValueNoCheck (COLUMNNAME_OldValue, OldValue);
 	}
 
-	/** Get Old Value.
+	/** Get Alter Wert.
 		@return The old file data
 	  */
-	public String getOldValue () 
+	@Override
+	public java.lang.String getOldValue () 
 	{
-		return (String)get_Value(COLUMNNAME_OldValue);
+		return (java.lang.String)get_Value(COLUMNNAME_OldValue);
 	}
 
-	/** Set Record ID.
+	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
 	  */
+	@Override
 	public void setRecord_ID (int Record_ID)
 	{
 		if (Record_ID < 0) 
@@ -303,9 +342,10 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Record ID.
+	/** Get Datensatz-ID.
 		@return Direct internal record ID
 	  */
+	@Override
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
@@ -316,46 +356,52 @@ public class X_AD_ChangeLog extends PO implements I_AD_ChangeLog, I_Persistent
 
 	/** Set Redo.
 		@param Redo Redo	  */
-	public void setRedo (String Redo)
+	@Override
+	public void setRedo (java.lang.String Redo)
 	{
 		set_Value (COLUMNNAME_Redo, Redo);
 	}
 
 	/** Get Redo.
 		@return Redo	  */
-	public String getRedo () 
+	@Override
+	public java.lang.String getRedo () 
 	{
-		return (String)get_Value(COLUMNNAME_Redo);
+		return (java.lang.String)get_Value(COLUMNNAME_Redo);
 	}
 
-	/** Set Transaction.
+	/** Set Transaktion.
 		@param TrxName 
 		Name of the transaction
 	  */
-	public void setTrxName (String TrxName)
+	@Override
+	public void setTrxName (java.lang.String TrxName)
 	{
 		set_ValueNoCheck (COLUMNNAME_TrxName, TrxName);
 	}
 
-	/** Get Transaction.
+	/** Get Transaktion.
 		@return Name of the transaction
 	  */
-	public String getTrxName () 
+	@Override
+	public java.lang.String getTrxName () 
 	{
-		return (String)get_Value(COLUMNNAME_TrxName);
+		return (java.lang.String)get_Value(COLUMNNAME_TrxName);
 	}
 
 	/** Set Undo.
 		@param Undo Undo	  */
-	public void setUndo (String Undo)
+	@Override
+	public void setUndo (java.lang.String Undo)
 	{
 		set_Value (COLUMNNAME_Undo, Undo);
 	}
 
 	/** Get Undo.
 		@return Undo	  */
-	public String getUndo () 
+	@Override
+	public java.lang.String getUndo () 
 	{
-		return (String)get_Value(COLUMNNAME_Undo);
+		return (java.lang.String)get_Value(COLUMNNAME_Undo);
 	}
 }
