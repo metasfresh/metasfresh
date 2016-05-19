@@ -15,6 +15,10 @@ The actual release notes
 # metasfresh 4.18.17 (upcoming)
 
 ## Features
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * unable to reproduce the issue, but hopefuly if it happens again we will be able to trace it, because:
+    * improved AD_ChangeLog to also olg server-side changes (whhich have no session-id) and aso store the AD_Pinstance_ID if availabe
+ - FRESH-320: Swing UI: License aggrement popup shall have an icon down in task bar
  - FRESH-278 Umsatzreport Geschäftspartner copy and modify
     * Adding a revenue report that is week-based and also based on the delivered qties, as opposed to the invoiced qties.
  - FRESH-305 Reduce Warehouse Dropdown List in Wareneingang (POS)
@@ -29,6 +33,9 @@ The actual release notes
  - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
 
 ## Fixes
+ - FRESH-318 ESR String Processing not working with multiple partner bank accounts
+    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD wrt their execution ordering 
+    * making sure that annotated model interceptor methods are ordered by their method name 
  - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
  - FRESH-300 client not starting when config is not completed
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats

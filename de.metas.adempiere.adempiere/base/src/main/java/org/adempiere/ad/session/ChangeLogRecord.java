@@ -30,7 +30,7 @@ public final class ChangeLogRecord
 	{
 		return new Builder();
 	}
-	
+
 	private final int AD_Session_ID;
 	private final String trxName;
 	private final int AD_Table_ID;
@@ -42,10 +42,10 @@ public final class ChangeLogRecord
 	private final Object newValue;
 	private final String eventType;
 	private final int AD_User_ID;
+	private final int AD_PInstance_ID;
 
 	private ChangeLogRecord(final Builder builder)
 	{
-		super();
 		AD_Session_ID = builder.AD_Session_ID;
 		trxName = builder.trxName;
 		AD_Table_ID = builder.AD_Table_ID;
@@ -57,6 +57,7 @@ public final class ChangeLogRecord
 		newValue = builder.newValue;
 		eventType = builder.eventType;
 		AD_User_ID = builder.AD_User_ID;
+		AD_PInstance_ID = builder.AD_PInstance_ID;
 	}
 
 	@Override
@@ -114,10 +115,15 @@ public final class ChangeLogRecord
 	{
 		return eventType;
 	}
-	
+
 	public int getAD_User_ID()
 	{
 		return AD_User_ID;
+	}
+
+	public int getAD_PInstance_ID()
+	{
+		return AD_PInstance_ID;
 	}
 
 	public static final class Builder
@@ -133,6 +139,7 @@ public final class ChangeLogRecord
 		private Object newValue;
 		private String eventType;
 		private int AD_User_ID;
+		private int AD_PInstance_ID;
 
 		private Builder()
 		{
@@ -203,10 +210,22 @@ public final class ChangeLogRecord
 			this.eventType = event;
 			return this;
 		}
-		
+
 		public Builder setAD_User_ID(int AD_User_ID)
 		{
 			this.AD_User_ID = AD_User_ID;
+			return this;
+		}
+
+		/**
+		 *
+		 * @param AD_PInstance_ID
+		 * @return
+		 * @task https://metasfresh.atlassian.net/browse/FRESH-314
+		 */
+		public Builder setAD_PInstance_ID(int AD_PInstance_ID)
+		{
+			this.AD_PInstance_ID = AD_PInstance_ID;
 			return this;
 		}
 	}
