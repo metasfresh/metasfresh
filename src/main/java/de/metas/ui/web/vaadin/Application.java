@@ -1,10 +1,12 @@
 package de.metas.ui.web.vaadin;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.report.ReportStarter;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,6 +30,8 @@ import org.springframework.http.MediaType;
 
 import com.vaadin.spring.boot.internal.VaadinServletConfiguration;
 
+import de.metas.adempiere.form.IClientUI;
+import de.metas.ui.web.vaadin.report.VaadinJRViewerProvider;
 import de.metas.ui.web.vaadin.session.VaadinContextProvider;
 
 /*
@@ -67,7 +71,7 @@ public class Application
 	public static final void main(final String[] args)
 	{
 		System.setProperty("PropertyFile", "./metasfresh.properties"); // FIXME: hardcoded
-		
+
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
@@ -89,11 +93,12 @@ public class Application
 	{
 		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
 	}
-	
+
 	@Bean
 	public Adempiere adempiere()
 	{
 		ReportStarter.setReportViewerProvider(VaadinJRViewerProvider.instance);
+		Services.registerService(IClientUI.class, VaadinClientUI.instance);
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		final boolean started = adempiere.startup(RunMode.WEBUI);
@@ -103,8 +108,7 @@ public class Application
 		}
 
 		Env.setContextProvider(new VaadinContextProvider());
-
-//		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
+		// InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
 
 		return adempiere;
 	}
@@ -154,7 +158,7 @@ public class Application
 			return false; // guard against NPE
 		}
 		final Environment environment = context.getEnvironment();
-		if(environment == null)
+		if (environment == null)
 		{
 			return false; // guard against NPE
 		}
