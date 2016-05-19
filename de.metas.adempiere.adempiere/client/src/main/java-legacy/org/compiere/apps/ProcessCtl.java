@@ -40,15 +40,15 @@ import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
 import org.compiere.wf.MWFProcess;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -97,7 +97,7 @@ public class ProcessCtl implements Runnable
 			pi.setThrowable(e); // 03152
 			pi.setSummary(e.getLocalizedMessage());
 			pi.setError(true);
-			log.warn(pi.toString());
+			log.warn(pi.toString(), e);
 			return null;
 		}
 		catch (Error e)
