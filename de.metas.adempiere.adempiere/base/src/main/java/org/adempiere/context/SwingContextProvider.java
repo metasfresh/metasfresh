@@ -10,12 +10,12 @@ package org.adempiere.context;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,8 @@ import org.adempiere.util.lang.NullAutoCloseable;
 public class SwingContextProvider implements ContextProvider
 {
 	private final Properties rootCtx = new Properties();
-	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<Properties>();
+	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<>();
+
 	private final AbstractPropertiesProxy ctxProxy = new AbstractPropertiesProxy()
 	{
 		@Override

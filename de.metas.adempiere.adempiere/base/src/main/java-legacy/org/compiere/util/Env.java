@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -65,6 +65,7 @@ import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import com.google.common.base.Supplier;
 
@@ -277,6 +278,9 @@ public final class Env
 	public static final int CTXVALUE_AD_Role_ID_System = IUserRolePermissions.SYSTEM_ROLE_ID;
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
+
+	public static final String CTXNAME_AD_PInstance_ID = "#AD_PInstance_ID"; // FRESH-314
+
 	/**
 	 * Comma separated list of AD_Org_IDs of which current User/Role has any access (ro/rw)
 	 *
@@ -356,6 +360,8 @@ public final class Env
 
 	/**
 	 * Creates and returns a new empty context which fallbacks to given <code>ctx</code>.
+	 * <p>
+	 * <b>IMPORTANT:</b> do not use this method if you want to do use the derived context as parameter for {@link #switchContext(Properties)}, to avoid a {@link StackOverflowError}. Use {@link #copyCtx(Properties)} instead.
 	 *
 	 * @param ctx
 	 * @return new context
@@ -364,6 +370,24 @@ public final class Env
 	{
 		Check.assumeNotNull(ctx, "ctx not null");
 		return new Properties(ctx);
+	}
+
+	/**
+	 * Creates a new empty context and then copies all values from the original, <b>including</b> defaults.
+	 * <p>
+	 * <b>IMPORTANT:</b> use this method instead of {@link #deriveCtx(Properties)} if you plan to call {@link #switchContext(Properties)} with the result.
+	 *
+	 * @param ctx
+	 * @return
+	 */
+	public static final Properties copyCtx(final Properties ctx)
+	{
+		Check.assumeNotNull(ctx, "ctx not null");
+
+		final Properties newCtx = new Properties();
+		CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
+
+		return newCtx;
 	}
 
 	/**
@@ -661,7 +685,7 @@ public final class Env
 	 * @param TabNo tab no
 	 * @param context context key
 	 * @param value context value
-	 * */
+	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final String value)
 	{
 		if (ctx == null || context == null)
@@ -1201,7 +1225,7 @@ public final class Env
 			throw new IllegalArgumentException("Require Context");
 		String retValue = null;
 		//
-		if (!system)	// User Preferences
+		if (!system)        	// User Preferences
 		{
 			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
@@ -1555,6 +1579,7 @@ public final class Env
 	 * Parse Context replaces global or Window context @tag@ with actual value.
 	 *
 	 * @tag@ are ignored otherwise "" is returned
+	 *
 	 * @param ctx context
 	 * @param WindowNo Number of Window
 	 * @param value Message to be parsed
@@ -1817,7 +1842,9 @@ public final class Env
 			s_windows.set(WindowNo, null);
 	}	// removeWindow
 
-	/** @return true if given windowNo is a valid windowNo and is for a regular window (not the main window) */
+	/**
+	 * @return true if given windowNo is a valid windowNo and is for a regular window (not the main window)
+	 */
 	public static final boolean isRegularWindowNo(final int windowNo)
 	{
 		return windowNo > 0
@@ -1825,7 +1852,9 @@ public final class Env
 				&& windowNo != WINDOW_MAIN;
 	}
 
-	/** @return true if given windowNo is a valid windowNo and is for a regular window or for main window */
+	/**
+	 * @return true if given windowNo is a valid windowNo and is for a regular window or for main window
+	 */
 	public static final boolean isRegularOrMainWindowNo(final int windowNo)
 	{
 		return windowNo == WINDOW_MAIN
@@ -1957,7 +1986,7 @@ public final class Env
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
 		}
-		if (window.getAD_Window_ID() != 0)	// workbench
+		if (window.getAD_Window_ID() != 0)        	// workbench
 		{
 			if (s_hiddenWindows.add(window))
 			{
@@ -2159,10 +2188,7 @@ public final class Env
 	{
 		// Please note that the order is VERY important.
 		// Scopes should be ordered by priority, from lower to higher
-		Exact(0)
-		, Global(100)
-		, Window(200)
-		, Tab(300);
+		Exact(0), Global(100), Window(200), Tab(300);
 
 		private final int priority;
 

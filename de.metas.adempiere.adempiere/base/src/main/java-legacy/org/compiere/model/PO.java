@@ -1175,12 +1175,12 @@ public abstract class PO
 				}
 			}
 		}
-		
+
 		if (log.isTraceEnabled())
 		{
 			log.trace(get_ColumnName(index) + " = " + m_newValues[index] + " (" + (m_newValues[index]==null ? "-" : m_newValues[index].getClass().getName()) + ")");
 		}
-		
+
 		set_Keys (get_ColumnName(index), m_newValues[index]);
 		return true;
 	}   //  set_ValueNoCheck
@@ -2025,7 +2025,7 @@ public abstract class PO
 		{
 			log.trace("Loading special column {}: (NOP)", p_info.getColumnName(index));
 		}
-		
+
 		return null;
 	}   //  loadSpecial
 
@@ -2351,7 +2351,7 @@ public abstract class PO
 					retValue = "";
 			}
 		}
-		
+
 		//
 		// If no translation found or not translated, fallback to original:
 		if (retValue == null)
@@ -2419,14 +2419,6 @@ public abstract class PO
 		}
 
 		//
-		// Don't create change logs if there is no session
-		final MSession session = get_Session();
-		if (session == null)
-		{
-			return;
-		}
-
-		//
 		// Don't create change logs if they are not activated in ChangeLog system/BL
 		if (!Services.get(ISessionBL.class).isChangeLogEnabled())
 		{
@@ -2440,6 +2432,12 @@ public abstract class PO
 		{
 			return;
 		}
+
+		//
+		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
+		final MSession session = get_Session();
+		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
+		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
 
 		final int adClientId = getAD_Client_ID();
 		final boolean isInsertChangeLogEvent = X_AD_ChangeLog.EVENTCHANGELOG_Insert.equals(changeLogType);
@@ -2546,7 +2544,8 @@ public abstract class PO
 			//
 			// Create Change Log record
 			final ChangeLogRecord changeLogRecord = ChangeLogRecord.builder()
-					.setAD_Session_ID(session.getAD_Session_ID())
+					.setAD_Session_ID(adSessionId)
+					.setAD_PInstance_ID(adPInstanceId) // FRESH-314
 					.setTrxName(m_trxName)
 					.setAD_Table_ID(adTableId)
 					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID())
@@ -2558,6 +2557,7 @@ public abstract class PO
 					.setEventType(changeLogType)
 					.setAD_User_ID(adUserId)
 					.build();
+
 			if(changeLogRecords == null)
 			{
 				changeLogRecords = new ArrayList<>();
@@ -4937,20 +4937,20 @@ public abstract class PO
 			return modelTranslationMap.getTranslation(AD_Language);
 		}
 	}
-	
+
 	public IModelTranslationMap get_ModelTranslationMap()
 	{
 		final int id = get_ID();
 		if (id <= 0)
 			return NullModelTranslationMap.instance;
-		
+
 		if (m_translations == null)
 		{
 			m_translations = POInfoModelTranslationMap.of(p_info, id);
 		}
 		return m_translations;
 	}
-	
+
 	private POInfoModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
