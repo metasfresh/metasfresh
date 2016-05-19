@@ -4,14 +4,21 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.apps.ProcessCtl;
+import org.compiere.process.ProcessInfo;
+import org.compiere.report.ReportStarter;
+import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -22,9 +29,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
+import com.vaadin.server.Page;
 import com.vaadin.server.Resource;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.vaadin.report.VaadinJRViewerProvider;
 import de.metas.ui.web.vaadin.theme.Theme;
 import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.HARDCODED_Order;
@@ -663,8 +674,8 @@ public class WindowModel
 				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
 				//
 				.add(createActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(reportActionGroup, "Print", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(reportActionGroup, "PrintPreview", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(reportActionGroup, "Print", event -> print(event, false)))
+				.add(createActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)))
 				//
 				.add(createActionWithChildrenProvider(goActionGroup, "ZoomAcross", () -> createZoomAccrossActions()))
 				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
@@ -740,5 +751,76 @@ public class WindowModel
 		}
 
 		return actions;
+	}
+
+	private void print(final ActionEvent event, final boolean printPreview)
+	{
+		final PropertyDescriptor rootPropertyDescriptor = getRootPropertyDescriptor();
+		final int printProcessId = rootPropertyDescriptor.getPrintProcessId();
+
+		// // Get process defined for this tab
+		// int AD_Process_ID = m_curTab.getAD_Process_ID();
+		// log.info("ID=" + AD_Process_ID);
+		//
+		// // No report defined
+		// if (AD_Process_ID == 0)
+		// {
+		// cmd_report();
+		// return;
+		// }
+
+		// saveRecord();
+
+		ReportStarter.setReportViewerProvider(VaadinJRViewerProvider.instance); // FIXME move it to Application
+
+		final ModelDataSource dataSource = getDataSource();
+		final ITableRecordReference recordRef = dataSource.getTableRecordReference(getRecordIndex());
+
+		//
+		final Properties ctx = Env.getCtx();
+		final int windowNo = 0; // TODO
+		final int table_ID = recordRef.getAD_Table_ID();
+		final int record_ID = recordRef.getRecord_ID();
+		final String title = ""; // TODO
+		final ProcessInfo pi = new ProcessInfo(title, printProcessId, table_ID, record_ID);
+		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
+		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
+		pi.setPrintPreview(printPreview);
+		pi.setWindowNo(windowNo); // metas: 03040
+		// pi.setTabNo(getTabNo()); // TODO
+
+		final ASyncProcess asyncCtrl = new ASyncProcess()
+		{
+			private boolean locked = false;
+
+			@Override
+			public void lockUI(final ProcessInfo pi)
+			{
+				locked = true;
+
+				final Notification notification = new Notification("Executing " + event.getAction().getCaption(), Type.TRAY_NOTIFICATION);
+				notification.setIcon(event.getAction().getIcon());
+				notification.show(Page.getCurrent());
+			}
+
+			@Override
+			public void unlockUI(final ProcessInfo pi)
+			{
+				locked = false;
+			}
+
+			@Override
+			public boolean isUILocked()
+			{
+				return locked;
+			}
+
+			@Override
+			public void executeASync(final ProcessInfo pi)
+			{
+				logger.debug("executeASync: {}", pi);
+			}
+		};
+		ProcessCtl.process(asyncCtrl, windowNo, pi, ITrx.TRX_None); // calls lockUI, unlockUI
 	}
 }

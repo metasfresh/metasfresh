@@ -29,14 +29,15 @@ $v-font-size: 12px;
 // Example variants can be copy/pasted from https://vaadin.com/wiki/-/wiki/Main/Valo+Examples
 
 @import "../valo/valo.scss";
-@import 'mf-menu'; 
-@import 'mf-window'; 
+@import 'mf-menu';
+@import 'mf-window';
+@import 'mf-report-window';
 
 
 @mixin metasfresh {
 	@include valo;
 	@include mf-menu;
 	@include mf-window; 
-	
+	@include mf-report-window; 
 }
 
