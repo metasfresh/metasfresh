@@ -52,7 +52,7 @@ public class LanguageDAO implements ILanguageDAO
 			+ " WHERE " + I_AD_Language.COLUMNNAME_IsBaseLanguage + "=?";
 
 	@Override
-	public final String retrieveBaseLanguage()
+	public String retrieveBaseLanguage()
 	{
 		// NOTE: because this method is called right after database connection is established
 		// we cannot use the Query API which is requiring MLanguage.getBaseLanguage() to be set
