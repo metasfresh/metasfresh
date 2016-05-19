@@ -10,6 +10,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.ibm.icu.math.BigDecimal;
@@ -43,9 +44,6 @@ import de.metas.ui.web.vaadin.window.editor.LookupValue;
 @SuppressWarnings("serial")
 public class PropertyDescriptor implements Serializable
 {
-	// TODO: to be merged with de.metas.ui.web.vaadin.window.descriptor.DataFieldPropertyDescriptor
-	// TODO: to be merged with de.metas.ui.web.vaadin.window.descriptor.DataRowDescriptor
-
 	public static final Builder builder()
 	{
 		return new Builder();
@@ -69,6 +67,10 @@ public class PropertyDescriptor implements Serializable
 	//
 	// Layout properties
 	private final PropertyLayoutInfo layoutInfo;
+	
+	//
+	// Reporting info
+	private final int printProcessId;
 
 	//
 	// SQL related properties
@@ -102,6 +104,10 @@ public class PropertyDescriptor implements Serializable
 		//
 		// Layout
 		layoutInfo = builder.layoutInfo;
+		
+		//
+		// Reporting
+		printProcessId = builder.getPrintProcessId();
 
 		//
 		// SQL related properties
@@ -118,7 +124,7 @@ public class PropertyDescriptor implements Serializable
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
+		final ToStringHelper helper = MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("name", propertyName)
 				.add("type", type)
@@ -126,8 +132,12 @@ public class PropertyDescriptor implements Serializable
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
 				.add("readonly", readonlyLogic)
 				.add("mandatory", mandatoryLogic)
-				.add("display", displayLogic)
-				.toString();
+				.add("display", displayLogic);
+		if(printProcessId > 0)
+		{
+			helper.add("printProcessId", printProcessId);
+		}
+		return helper.toString();
 	}
 
 	public PropertyName getPropertyName()
@@ -225,6 +235,11 @@ public class PropertyDescriptor implements Serializable
 	{
 		return mandatoryLogic;
 	}
+	
+	public int getPrintProcessId()
+	{
+		return printProcessId;
+	}
 
 	public String getSqlTableName()
 	{
@@ -286,6 +301,8 @@ public class PropertyDescriptor implements Serializable
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE; 
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
+		
+		private int printProcessId = -1;
 
 		private Builder()
 		{
@@ -594,6 +611,17 @@ public class PropertyDescriptor implements Serializable
 		private IStringExpression getDefaultValueExpression()
 		{
 			return defaultValueExpression;
+		}
+		
+		public Builder setPrintProcessId(final int printProcessId)
+		{
+			this.printProcessId = printProcessId;
+			return this;
+		}
+		
+		private int getPrintProcessId()
+		{
+			return printProcessId > 0 ? printProcessId : -1;
 		}
 	}
 }

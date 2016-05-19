@@ -154,6 +154,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			try
 			{
 				createAndAddTab(rootBuilder, rootTab);
+				rootBuilder.setPrintProcessId(rootTab.getPrint_Process_ID());
 			}
 			finally
 			{
