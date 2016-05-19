@@ -34,80 +34,22 @@
 			because whether an artifact is found should not depend on a specific user's 
 			settings.xml -->
 		<repository>
-			<id>metas-mvn-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/groups/public/</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		
-		<repository>
 			<id>metas-github-repo</id>
 			<name>metasfresh repository on github</name>
 			<url>https://raw.githubusercontent.com/metasfresh/metasfresh-maven-repo/master/repository</url>
 		</repository>
-
 	</repositories>
 
-	<pluginRepositories>
-		<!-- We define our repos also as plugin repos, because at least the maven-assembly-plugin 
-			depends on our shared assembly descriptors, which are not in http://repository.apache.org -->
-		<pluginRepository>
-			<id>metas-mvn-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/groups/public/</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.8.1</version>
-				<configuration>
-					<!-- defining our nexus as sole remote repo, to omit mvn site plugin trying a lot of invalid repo URLs -->
-					<remoteRepositories>
-						<remoteRepository>http://dedep901:8081/nexus/content/groups/public/</remoteRepository>
-					</remoteRepositories>
-				</configuration>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>dependencies</report>
-							<report>license</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-		</plugins>
-	</reporting>
-	
 	<distributionManagement>
-
+		<!-- 
+		Where to deploy build artifacts; if you can't rach this repo, you can stil make your own builds
+		TODO: think about moving with the repo to a public place with much more storage :-) 
+		-->
 		<repository>
 			<id>metas-nexus-repo</id>
 			<name>Maven metas Repository</name>
 			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
 		</repository>
-
-		<!-- Publish the versioned releases here -->
 		<snapshotRepository>
 			<id>metas-nexus-repo</id>
 			<name>Maven metas Repository</name>
