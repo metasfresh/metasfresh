@@ -264,8 +264,11 @@ public class LanguageDAO implements ILanguageDAO
 			.append(", IsTranslated")
 			.append(", AD_Client_ID")
 			.append(", AD_Org_ID")
-			.append(", Createdby")
+			.append(", Created")
+			.append(", CreatedBy")
+			.append(", Updated")
 			.append(", UpdatedBy")
+			.append(", IsActive")
 			.append(", " + keyColumn)
 			.append(cols)
 		.append(")")
@@ -274,8 +277,11 @@ public class LanguageDAO implements ILanguageDAO
 			.append(", ").append(DB.TO_BOOLEAN(false)) // IsTranslated
 			.append(", " + tblAlias + ".AD_Client_ID") // AD_Client_ID
 			.append(", " + tblAlias + ".AD_Org_ID") // AD_Org_ID
+			.append(", now()") // Created
 			.append(", " + AD_User_ID) // CreatedBy
+			.append(", now()") // Updated
 			.append(", " + AD_User_ID) // UpdatedBy
+			.append(", ").append(DB.TO_BOOLEAN(true)) // IsActive
 			.append(", " + tblAlias + "." + keyColumn) // KeyColumn
 			.append(colsWithAlias)
 		.append("\n FROM " + baseTableName + " " + tblAlias)
