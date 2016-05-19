@@ -73,23 +73,46 @@ public class LanguageDAO implements ILanguageDAO
 				.firstOnly(I_AD_Language.class);
 	}
 
-	@Override
-	public void addAllMissingTranslations(final Properties ctx)
+	private List<I_AD_Language> retrieveSystemLanguages(final Properties ctx)
 	{
-		final List<I_AD_Language> languages = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsSystemLanguage, true)
-				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsBaseLanguage, false)
+				.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(I_AD_Language.COLUMNNAME_AD_Language)
 				.endOrderBy()
 				.create()
 				.list(I_AD_Language.class);
+	}
+
+	private List<String> retrieveTrlTableNames(final Properties ctx)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
+				.addEndsWithQueryFilter(I_AD_Table.COLUMNNAME_TableName, "_Trl")
+				.orderBy()
+				.addColumn(I_AD_Table.COLUMNNAME_TableName)
+				.endOrderBy()
+				.create()
+				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
+	}
+
+	@Override
+	public void addAllMissingTranslations(final Properties ctx)
+	{
+		final List<I_AD_Language> languages = retrieveSystemLanguages(ctx);
 
 		final List<String> errorLanguages = new ArrayList<>();
 		final List<Throwable> errorCauses = new ArrayList<>();
 		for (final I_AD_Language language : languages)
 		{
+			// Skip base language
+			if (language.isBaseLanguage())
+			{
+				continue;
+			}
+			
 			try
 			{
 				addRemoveLanguageTranslations(language, true);
@@ -134,14 +157,7 @@ public class LanguageDAO implements ILanguageDAO
 		Check.assumeNotNull(language, "language not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(language);
 
-		final List<String> trlTableNames = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
-				.addEndsWithQueryFilter(I_AD_Table.COLUMNNAME_TableName, "_Trl")
-				.orderBy()
-				.addColumn(I_AD_Table.COLUMNNAME_TableName)
-				.endOrderBy()
-				.create()
-				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
+		final List<String> trlTableNames = retrieveTrlTableNames(ctx);
 
 		int retNo = 0;
 		final List<String> errorTables = new ArrayList<>();
