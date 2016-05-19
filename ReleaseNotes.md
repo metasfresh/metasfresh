@@ -29,6 +29,9 @@ The actual release notes
  - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
 
 ## Fixes
+ - FRESH-318 ESR String Processing not working with multiple partner bank accounts
+    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD wrt their execution ordering 
+    * making sure that annotated model interceptor methods are ordered by their method name 
  - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
  - FRESH-300 client not starting when config is not completed
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
