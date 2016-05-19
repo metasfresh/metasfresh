@@ -115,7 +115,8 @@ public class ProcessCtl implements Runnable
 		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
 		// Get Parameters (Dialog)
-		ProcessParameter para = new ProcessParameter(Env.getFrame((Container)parent), WindowNo, pi);
+		final Container parentContainer = (parent instanceof Container) ? (Container)parent : null;
+		ProcessParameter para = new ProcessParameter(Env.getFrame(parentContainer), WindowNo, pi);
 		if (para.initDialog())
 		{
 			para.setVisible(true);
