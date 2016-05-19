@@ -149,14 +149,14 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		pi.setClassName(getClass().getName()); // make sure that we have the correct className in place. We need it to get the ProcessClassInfo
 
 		// Preparation
-		// FRESH-314: store #AD_PInstance_ID in a derived context (shall only live as long as this process does).
+		// FRESH-314: store #AD_PInstance_ID in a copied context (shall only live as long as this process does).
 		// We might want to access this information (currently in AD_ChangeLog)
-		m_ctx = Env.deriveCtx(Env.coalesce(ctx));
+		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
+		m_ctx = Env.copyCtx(Env.coalesce(ctx));
+
 		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
 
 		m_pi = pi;
-
-
 
 		// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
 		// Later we will set the actual transaction or we will start a local transaction.
@@ -164,7 +164,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 		boolean success = false;
 		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this);
-				final IAutoCloseable contextRestorer = Env.switchContext(m_ctx) // FRESH-314: make sure our derivated context will always be used
+				final IAutoCloseable contextRestorer = Env.switchContext(m_ctx) // FRESH-314: make sure our derived context will always be used
 		)
 		{
 			lock();
