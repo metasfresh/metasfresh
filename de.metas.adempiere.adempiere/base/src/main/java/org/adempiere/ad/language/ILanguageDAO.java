@@ -38,6 +38,8 @@ public interface ILanguageDAO extends ISingletonService
 	 */
 	String retrieveBaseLanguage();
 
+	I_AD_Language retrieveByAD_Language(Properties ctx, String adLanguage);
+
 	/**
 	 * Add all missing translations for all active languages and for all tables.
 	 *

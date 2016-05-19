@@ -64,6 +64,16 @@ public class LanguageDAO implements ILanguageDAO
 	}
 
 	@Override
+	public I_AD_Language retrieveByAD_Language(final Properties ctx, final String adLanguage)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_Language.COLUMNNAME_AD_Language, adLanguage)
+				.create()
+				.firstOnly(I_AD_Language.class);
+	}
+
+	@Override
 	public void addAllMissingTranslations(final Properties ctx)
 	{
 		final List<I_AD_Language> languages = Services.get(IQueryBL.class)

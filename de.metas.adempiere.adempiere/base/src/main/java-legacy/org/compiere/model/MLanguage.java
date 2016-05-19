@@ -57,21 +57,6 @@ public class MLanguage extends X_AD_Language
 
 	private static final Logger s_log = LogManager.getLogger(MLanguage.class);
 
-
-	/**
-	 * Get Language Model from AD_Language
-	 *
-	 * @param ctx context
-	 * @param AD_Language language e.g. en_US
-	 * @return language or null
-	 */
-	public static MLanguage get(final Properties ctx, final String AD_Language)
-	{
-		return new Query(ctx, Table_Name, COLUMNNAME_AD_Language + "=?", null)
-				.setParameters(new Object[] { AD_Language })
-				.firstOnly();
-	}	// get
-
 	// metas: begin: base language
 	/**
 	 * Load the BaseLanguage from AD_Language table and set it to {@link Language} class using {@link Language#setBaseLanguage(Language)} method. If Env.getCtx() has no <code>#AD_Language</code> set,
