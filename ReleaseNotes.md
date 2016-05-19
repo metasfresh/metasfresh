@@ -16,32 +16,37 @@ The actual release notes
 
 ## Features
  - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
-    * unable to reproduce the issue, but hopefuly if it happens again we will be able to trace it, because:
-    * improved AD_ChangeLog to also olg server-side changes (whhich have no session-id) and aso store the AD_Pinstance_ID if availabe
+    * We could'nt reproduce this issue. We improved AD_ChangeLog to also log server-side changes (which have no session-id) and also store the AD_Pinstance_ID if available. If it happens again we will be will be able to trace it.
  - FRESH-320: Swing UI: License aggrement popup shall have an icon down in task bar
+    * Adding an Icon in License agreement popup.
  - FRESH-278 Umsatzreport Geschäftspartner copy and modify
-    * Adding a revenue report that is week-based and also based on the delivered qties, as opposed to the invoiced qties.
+    * Adding a revenue report that is week-based and also based on the delivered quantities. The original revenue report still exits, but is based on invoiced quantities instead.
  - FRESH-305 Reduce Warehouse Dropdown List in Wareneingang (POS)
-    * After selecting the source warehouse in Wareneingang POS, check all the Distribution Network Line entries that have this specific warehouse as source. 
-    * Take all the target warehouses for them and only allow those to be eligible as Ziel Lager in Wareneingang POS.
+    * After selecting the source warehouse in Wareneingang POS, check all the Distribution Network Line entries that have this specific warehouse as source and provide the Target Warehouses for selection in Target Warehouse Dropdown List.
  - FRESH-312 Project cannot be compiled when downloading from github directly
-    * Adding 3rd-party jars that are not available from the standard maven repos to a github hosted repo. Thx to @mckayERP and @e-Evolution for pointing us to the problem
- - FRESH-228 Change jxls-poi version from 2.0.8 to 2.0.9 when it will be released
+    * Adding 3rd-party jars that are not available from the standard maven repos to a github hosted repo. Thanks a lot to @mckayERP and @e-Evolution for pointing us to the issue.
+ - FRESH-228 Change jxls-poi version from 1.0.8 to 1.0.9 when it will be released
+    * Updated to jxls-poi 1.0.9
  - FRESH-302 make inout print preview faster
+    * Improved the InOut Print Preview Performance. Is now nearly 50% faster as before.
  - FRESH-298 Setup Printing Dunning Docs to separate tray for ESR Zahlschein
-    * adjusted the layout to better match pre-printed paper without having to use calibration
+    * Adjusted the layout of Jasper Dunning Documents to better match pre-printed paper without having to use calibration.
  - FRESH-304 Report Konten-Information Rev+Exp accounts Saldovortrag year end
+    * Switching the Report "Account -Information" to automatic Year-End initialization of Revenue and Expense Account balance.
 
 ## Fixes
  - FRESH-318 ESR String Processing not working with multiple partner bank accounts
-    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD wrt their execution ordering 
+    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD with their execution order. 
     * making sure that annotated model interceptor methods are ordered by their method name 
  - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
+    * The creation of InOuts shall consider the Picked Quantities of LU-TU via Picking Terminal, when Inout Creations is done from Inout-Candidate Window with Parm PickedQty = 'Y'.
  - FRESH-300 client not starting when config is not completed
+    * Fixed a Bug that appeared in Client/ Org Setup when this initially was cancelled or not completed.
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+    * Additional Fix.
  - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
-    * extending/fixing the views to also find wronmg qtyordered from iol referencing ICs
-	* adding the ddl to our repo
+    * Extending/ fixing the views to also find wrong Quantity ordered from Inout Lines referencing Invoice Candidates.
+	* adding the ddl to our repository
 	
 # metasfresh 4.17.16
 
