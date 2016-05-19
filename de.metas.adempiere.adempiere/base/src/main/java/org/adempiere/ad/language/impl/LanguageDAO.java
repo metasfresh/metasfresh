@@ -135,7 +135,7 @@ public class LanguageDAO implements ILanguageDAO
 			}
 			throw ex;
 		}
-	}	// maintain
+	}
 
 	@Override
 	public int addMissingTranslations(final I_AD_Language language)
@@ -149,7 +149,6 @@ public class LanguageDAO implements ILanguageDAO
 	{
 		final boolean add = false;
 		return addRemoveLanguageTranslations(language, add);
-		
 	}
 
 	private int addRemoveLanguageTranslations(final I_AD_Language language, final boolean add)
@@ -195,7 +194,7 @@ public class LanguageDAO implements ILanguageDAO
 		}
 
 		return retNo;
-	}	// maintain
+	}
 
 	/**
 	 * Delete Translation
@@ -210,9 +209,9 @@ public class LanguageDAO implements ILanguageDAO
 		final String adLanguage = language.getAD_Language();
 		final String sql = "DELETE FROM  " + trlTableName + " WHERE AD_Language=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Removed {} translations for {}", no, trlTableName);
+		logger.info("Removed {} translations for {} ({})", no, trlTableName, adLanguage);
 		return no;
-	}	// deleteTable
+	}
 
 	/**
 	 * Add Translation to table
@@ -296,9 +295,8 @@ public class LanguageDAO implements ILanguageDAO
 		final int no = DB.executeUpdateEx(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.info("Added {} missing translations for {}", no, trlTableName);
+			logger.info("Added {} missing translations for {} ({})", no, trlTableName, adLanguage);
 		}
 		return no;
-	}	// addTable
-
+	}
 }
