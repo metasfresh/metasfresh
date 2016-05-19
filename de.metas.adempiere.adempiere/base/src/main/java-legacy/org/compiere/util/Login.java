@@ -913,7 +913,7 @@ public class Login
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				Env.setContext(m_ctx, "$Element_" + rs.getString("ElementType"), true);
+				Env.setContext(m_ctx, Env.CTXNAME_AcctSchemaElementPrefix + rs.getString("ElementType"), true);
 			}
 			DB.close(rs, pstmt);
 
