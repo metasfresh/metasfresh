@@ -17,7 +17,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.process.ProcessInfo;
-import org.compiere.report.ReportStarter;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -35,7 +34,6 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.report.VaadinJRViewerProvider;
 import de.metas.ui.web.vaadin.theme.Theme;
 import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.HARDCODED_Order;
@@ -770,8 +768,6 @@ public class WindowModel
 		// }
 
 		// saveRecord();
-
-		ReportStarter.setReportViewerProvider(VaadinJRViewerProvider.instance); // FIXME move it to Application
 
 		final ModelDataSource dataSource = getDataSource();
 		final ITableRecordReference recordRef = dataSource.getTableRecordReference(getRecordIndex());

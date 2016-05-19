@@ -93,6 +93,8 @@ public class Application
 	@Bean
 	public Adempiere adempiere()
 	{
+		ReportStarter.setReportViewerProvider(VaadinJRViewerProvider.instance);
+
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		final boolean started = adempiere.startup(RunMode.WEBUI);
 		if (!started)
