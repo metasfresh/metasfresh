@@ -18,7 +18,8 @@ The actual release notes
 
 ## Fixes
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
-
+ - FRESH-312 Project cannot be compiled when downloading from github directly
+    * removed references to our internal maven repo, fixed a wrong groupid and provided a public keystore for development purposes
 # metasfresh 4.18.17
 
 ## Features
