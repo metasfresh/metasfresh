@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.window.datasource.sql;
 import java.util.List;
 
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -76,5 +77,11 @@ public final class NullModelDataSource implements ModelDataSource
 	public List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex)
 	{
 		return ImmutableList.of();
+	}
+
+	@Override
+	public ITableRecordReference getTableRecordReference(int recordIndex)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

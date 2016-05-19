@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -159,5 +160,11 @@ public class DummyModelDataSource implements ModelDataSource
 	public List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex)
 	{
 		return ImmutableList.of();
+	}
+
+	@Override
+	public ITableRecordReference getTableRecordReference(int recordIndex)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

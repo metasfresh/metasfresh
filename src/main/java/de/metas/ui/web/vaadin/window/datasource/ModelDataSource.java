@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.window.datasource;
 import java.util.List;
 
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.base.Supplier;
 
@@ -44,4 +45,6 @@ public interface ModelDataSource
 	PropertyValuesDTO retrieveRecordById(Object recordId);
 	
 	List<ZoomInfo> retrieveZoomAccrossInfos(final int recordIndex);
+
+	ITableRecordReference getTableRecordReference(int recordIndex);
 }

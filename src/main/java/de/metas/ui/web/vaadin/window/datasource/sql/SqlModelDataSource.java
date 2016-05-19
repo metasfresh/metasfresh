@@ -22,7 +22,9 @@ import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -159,7 +161,29 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 		return _records;
 	}
+
+	@Override
+	public ITableRecordReference getTableRecordReference(final int recordIndex)
+	{
+		final PropertyValuesDTO record = getRecord(recordIndex);
+		final int recordId = getRecordId(record);
+		
+		return new TableRecordReference(sqlTableName, recordId);
+	}
+
+	private final Integer getRecordId(final PropertyValuesDTO record)
+	{
+		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
+
+		Object keyValue = record.get(keyProperyName);
+		if (NullValue.isNull(keyValue))
+		{
+			keyValue = null;
+		}
 	
+		return (Integer)keyValue;
+	}
+
 	@Override
 	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
@@ -472,24 +496,17 @@ public class SqlModelDataSource implements ModelDataSource
 
 	private SaveResult saveRecord0(final int recordIndex, final PropertyValuesDTO values)
 	{
-		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
-
-		Object keyValue = values.get(keyProperyName);
-		if (NullValue.isNull(keyValue))
+		final Integer recordId = getRecordId(values);
+		if (recordId != null && recordIndex < 0)
 		{
-			keyValue = null;
-		}
-
-		if (keyValue != null && recordIndex < 0)
-		{
-			throw new IllegalArgumentException("Cannot save values as a new record because the values contains an existing ID: " + keyValue);
+			throw new IllegalArgumentException("Cannot save values as a new record because the values contains an existing ID: " + recordId);
 		}
 
 		//
 		// Load the PO / Create new PO instance
 		final PO po;
 		final PropertyValuesDTO valuesOld;
-		if (keyValue == null)
+		if (recordId == null)
 		{
 			// new
 			po = TableModelLoader.instance.newPO(getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
@@ -497,7 +514,6 @@ public class SqlModelDataSource implements ModelDataSource
 		}
 		else
 		{
-			final int recordId = (Integer)keyValue;
 			final boolean checkCache = false;
 			po = TableModelLoader.instance.getPO(getCtx(), sqlTableName, recordId, checkCache, ITrx.TRXNAME_ThreadInherited);
 			valuesOld = getRecord(recordIndex);
