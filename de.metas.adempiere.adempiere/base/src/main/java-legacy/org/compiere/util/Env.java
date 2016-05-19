@@ -1794,17 +1794,17 @@ public final class Env
 			return null;
 		}
 
-		JFrame retValue = null;
 		try
 		{
-			retValue = getFrame(s_windows.get(WindowNo));
+			return getFrame(s_windows.get(WindowNo));
 		}
 		catch (Exception e)
 		{
-			s_log.error(e.toString());
+			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
 		}
-		return retValue;
-	}	// getWindow
+		
+		return null;
+	}
 
 	/**
 	 * Remove window from active list
