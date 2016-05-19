@@ -666,6 +666,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		//
 		return result;
 	}
+
+	@Override
+	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	{
+		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
+	}
 	
 	@Override
 	protected final List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames)

@@ -32,24 +32,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_User_SaveCustomInfo;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.MCountry;
-import org.compiere.model.MLanguage;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_User_SaveCustomInfo;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.logging.LogManager;
 
 /**
  * @author cg
@@ -132,7 +133,7 @@ public class CountryDAO implements ICountryDAO
 	private void loadAllCountries(Properties ctx)
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx);
-		MLanguage lang = MLanguage.get(ctx, client.getAD_Language());
+		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(ctx, client.getAD_Language());
 		MCountry usa = null;
 		//
 		s_countries = new CCache<String, I_C_Country>("C_Country", 250, 0);
