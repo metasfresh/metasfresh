@@ -783,6 +783,31 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return new ArrayList<>(result);
 	}
+	
+	@Override
+	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	{
+		final List<T> records = list();
+
+		final List<AT> result = new ArrayList<>();
+
+		for (final T record : records)
+		{
+			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
+			
+			@SuppressWarnings("unchecked")
+			final AT value = (AT)valueObj;
+			
+			if(result.contains(value))
+			{
+				continue;
+			}
+			
+			result.add(value);
+		}
+
+		return result;
+	}
 
 	@Override
 	public void addUnion(final IQuery<T> query, final boolean distinct)
