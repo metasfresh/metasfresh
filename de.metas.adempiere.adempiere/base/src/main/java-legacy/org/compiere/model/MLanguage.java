@@ -57,17 +57,6 @@ public class MLanguage extends X_AD_Language
 
 	private static final Logger s_log = LogManager.getLogger(MLanguage.class);
 
-	/**
-	 * Get Language Model from Language
-	 *
-	 * @param ctx context
-	 * @param lang language
-	 * @return language
-	 */
-	public static MLanguage get(final Properties ctx, final Language lang)
-	{
-		return get(ctx, lang.getAD_Language());
-	}	// getMLanguage
 
 	/**
 	 * Get Language Model from AD_Language
@@ -141,9 +130,6 @@ public class MLanguage extends X_AD_Language
 
 	};
 
-	// /** Logger */
-	// private static Logger s_log = CLogMgt.getLogger(MLanguage.class);
-
 	/**************************************************************************
 	 * Standard Constructor
 	 *
@@ -168,38 +154,6 @@ public class MLanguage extends X_AD_Language
 		super(ctx, rs, trxName);
 	}	// MLanguage
 
-	/**
-	 * Create Language
-	 *
-	 * @param ctx context
-	 * @param AD_Language language code
-	 * @param Name name
-	 * @param CountryCode country code
-	 * @param LanguageISO language code
-	 * @param trxName transaction
-	 */
-	private MLanguage(final Properties ctx, final String AD_Language, final String Name,
-			final String CountryCode, final String LanguageISO, final String trxName)
-	{
-		super(ctx, 0, trxName);
-		setAD_Language(AD_Language);	// en_US
-		setIsBaseLanguage(false);
-		setIsSystemLanguage(false);
-		setName(Name);
-		setCountryCode(CountryCode);	// US
-		setLanguageISO(LanguageISO);	// en
-	}	// MLanguage
-
-	/** Locale */
-	private Locale m_locale = null;
-	/** Date Format */
-	private SimpleDateFormat m_dateFormat = null;
-
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
@@ -207,106 +161,6 @@ public class MLanguage extends X_AD_Language
 				+ ",Language=" + getLanguageISO() + ",Country=" + getCountryCode()
 				+ "]";
 	}	// toString
-
-	/**
-	 * Get Locale
-	 *
-	 * @return Locale
-	 */
-	public Locale getLocale()
-	{
-		if (m_locale == null)
-		{
-			m_locale = new Locale(getLanguageISO(), getCountryCode());
-		}
-		return m_locale;
-	}	// getLocale
-
-	/**
-	 * Get (Short) Date Format.
-	 * The date format must parseable by org.compiere.grid.ed.MDocDate
-	 * i.e. leading zero for date and month
-	 *
-	 * @return date format MM/dd/yyyy - dd.MM.yyyy
-	 */
-	public SimpleDateFormat getDateFormat()
-	{
-		if (m_dateFormat != null)
-		{
-			return m_dateFormat;
-		}
-
-		if (getDatePattern() != null)
-		{
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, getLocale());
-			try
-			{
-				m_dateFormat.applyPattern(getDatePattern());
-			}
-			catch (final Exception e)
-			{
-				log.error(getDatePattern() + " - " + e);
-				m_dateFormat = null;
-			}
-		}
-
-		if (m_dateFormat == null)
-		{
-			// Fix Locale Date format
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance
-					(DateFormat.SHORT, getLocale());
-			String sFormat = m_dateFormat.toPattern();
-			// some short formats have only one M and d (e.g. ths US)
-			if (sFormat.indexOf("MM") == -1 && sFormat.indexOf("dd") == -1)
-			{
-				String nFormat = "";
-				for (int i = 0; i < sFormat.length(); i++)
-				{
-					if (sFormat.charAt(i) == 'M')
-					{
-						nFormat += "MM";
-					}
-					else if (sFormat.charAt(i) == 'd')
-					{
-						nFormat += "dd";
-					}
-					else
-					{
-						nFormat += sFormat.charAt(i);
-					}
-				}
-				// System.out.println(sFormat + " => " + nFormat);
-				m_dateFormat.applyPattern(nFormat);
-			}
-			// Unknown short format => use JDBC
-			if (m_dateFormat.toPattern().length() != 8)
-			{
-				m_dateFormat.applyPattern("yyyy-MM-dd");
-			}
-
-			// 4 digit year
-			if (m_dateFormat.toPattern().indexOf("yyyy") == -1)
-			{
-				sFormat = m_dateFormat.toPattern();
-				String nFormat = "";
-				for (int i = 0; i < sFormat.length(); i++)
-				{
-					if (sFormat.charAt(i) == 'y')
-					{
-						nFormat += "yy";
-					}
-					else
-					{
-						nFormat += sFormat.charAt(i);
-					}
-				}
-				m_dateFormat.applyPattern(nFormat);
-			}
-		}
-		//
-		m_dateFormat.setLenient(true);
-		return m_dateFormat;
-	}   // getDateFormat
 
 	/**
 	 * Set AD_Language_ID
@@ -331,53 +185,39 @@ public class MLanguage extends X_AD_Language
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		final String dp = getDatePattern();
-		if (is_ValueChanged("DatePattern") && dp != null && dp.length() > 0)
+		final String datePattern = getDatePattern();
+		if (is_ValueChanged(COLUMNNAME_DatePattern) && !Check.isEmpty(datePattern))
 		{
-			if (dp.indexOf("MM") == -1)
+			if (datePattern.indexOf("MM") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Month (MM)");
 			}
-			if (dp.indexOf("dd") == -1)
+			if (datePattern.indexOf("dd") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Day (dd)");
 			}
-			if (dp.indexOf("yy") == -1)
+			if (datePattern.indexOf("yy") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Year (yy)");
 			}
 
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, getLocale());
+			final Locale locale = new Locale(getLanguageISO(), getCountryCode());
+			final SimpleDateFormat dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
 			try
 			{
-				m_dateFormat.applyPattern(dp);
+				dateFormat.applyPattern(datePattern);
 			}
 			catch (final Exception e)
 			{
-				m_dateFormat = null;
 				throw new AdempiereException("@Error@ @DatePattern@ - " + e.getMessage(), e);
 			}
 		}
+		
 		if (newRecord)
 		{
 			setAD_Language_ID();
 		}
+		
 		return true;
-	}	// beforeSae
-
-	/**
-	 * AfterSave
-	 *
-	 * @param newRecord new
-	 * @param success success
-	 * @return true if saved
-	 */
-	@Override
-	protected boolean afterSave(final boolean newRecord, final boolean success)
-	{
-		final int no = TranslationTable.getActiveLanguages(true);
-		log.debug("Active Languages=" + no);
-		return true;
-	}	// afterSave
-
-}	//	MLanguage
+	}
+}
