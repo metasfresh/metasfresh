@@ -70,13 +70,13 @@
 
 		<!-- Printing ESB module -->
 		<dependency>
-			<groupId>de.metas.esb</groupId>
+			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
 			<version>${de.metas.printing.esb.camel.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.esb</groupId>
+			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
 			<version>${de.metas.printing.esb.camel.version}</version>
 			<type>test-jar</type>
