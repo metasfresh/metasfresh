@@ -427,7 +427,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Table High Volume	*/
 	public  boolean     IsHighVolume = false;
 	/** Process			*/
-	public	int		    AD_Process_ID = 0;
+	private int		    AD_Process_ID = 0;
 	/** Commot Warning	*/
 	public  String	    CommitWarning;
 	/** Where			*/
@@ -733,5 +733,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	public String getName()
 	{
 		return Name;
+	}
+	
+	public int getPrint_Process_ID()
+	{
+		return AD_Process_ID;
 	}
 }   //  MTabVO
