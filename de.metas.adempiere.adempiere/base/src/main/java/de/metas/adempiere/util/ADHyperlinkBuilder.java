@@ -90,6 +90,7 @@ public class ADHyperlinkBuilder
 	public String createShowWindowHTML(String text, String tableName, String whereClause)
 	{
 		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		final Map<String, String> params = new LinkedHashMap<>(); // we use LinkedHashMap because we need a predictable order; tests are depending on this.
 		params.put("AD_Table_ID", Integer.toString(AD_Table_ID));
 		params.put("WhereClause", whereClause);
 
