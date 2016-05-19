@@ -21,8 +21,6 @@ import java.io.InvalidClassException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
