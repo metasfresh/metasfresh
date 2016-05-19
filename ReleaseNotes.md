@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.18.17 (upcoming)
 
 ## Features
+ - FRESH-320: Swing UI: License aggrement popup shall have an icon down in task bar
  - FRESH-278 Umsatzreport Geschäftspartner copy and modify
     * Adding a revenue report that is week-based and also based on the delivered qties, as opposed to the invoiced qties.
  - FRESH-305 Reduce Warehouse Dropdown List in Wareneingang (POS)
