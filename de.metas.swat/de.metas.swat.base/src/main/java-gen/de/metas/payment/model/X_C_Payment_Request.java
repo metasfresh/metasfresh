@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.payment.model;
 
@@ -32,7 +16,7 @@ public class X_C_Payment_Request extends org.compiere.model.PO implements I_C_Pa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1048361384L;
+	private static final long serialVersionUID = -1889533975L;
 
     /** Standard Constructor */
     public X_C_Payment_Request (Properties ctx, int C_Payment_Request_ID, String trxName)
@@ -58,14 +42,6 @@ public class X_C_Payment_Request extends org.compiere.model.PO implements I_C_Pa
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_Payment_Request[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Betrag.
@@ -184,6 +160,25 @@ public class X_C_Payment_Request extends org.compiere.model.PO implements I_C_Pa
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Eingelesene Zeichenkette.
+		@param FullPaymentString 
+		Im Fall von ESR oder anderen von Zahlschein gelesenen Zahlungsaufforderungen ist dies der komplette vom Schein eingelesene String
+	  */
+	@Override
+	public void setFullPaymentString (java.lang.String FullPaymentString)
+	{
+		set_Value (COLUMNNAME_FullPaymentString, FullPaymentString);
+	}
+
+	/** Get Eingelesene Zeichenkette.
+		@return Im Fall von ESR oder anderen von Zahlschein gelesenen Zahlungsaufforderungen ist dies der komplette vom Schein eingelesene String
+	  */
+	@Override
+	public java.lang.String getFullPaymentString () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_FullPaymentString);
 	}
 
 	/** Set Referenz.

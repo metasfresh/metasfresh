@@ -137,9 +137,9 @@ public class JexlCustomFunctions
 			throw new IllegalArgumentException(
 					"Invalid month value '" + monthOneBased + "'. It shall be between 1 and 12.");
 		}
-
-		final int yearFrom = TimeUtil.getYearFromTimestamp(dateStart);
-		final int yearTo = TimeUtil.getYearFromTimestamp(dateEnd);
+		
+		final int yearFrom = dateStart == null ? year : TimeUtil.getYearFromTimestamp(dateStart);
+		final int yearTo = dateEnd == null ? year : TimeUtil.getYearFromTimestamp(dateEnd);
 
 		// if year is after endDate, false
 		if (year > yearTo)

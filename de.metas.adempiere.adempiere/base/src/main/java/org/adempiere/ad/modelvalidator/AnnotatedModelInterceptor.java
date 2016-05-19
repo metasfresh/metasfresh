@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
@@ -35,9 +37,9 @@ import de.metas.logging.LogManager;
 
 /**
  * Wrapping class which introspect an object, identifies it's pointcuts (ModelChange, DocValidate etc) and maps them to {@link ModelValidator} interface.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 /* package */class AnnotatedModelInterceptor implements IModelInterceptor
 {
@@ -47,7 +49,7 @@ import de.metas.logging.LogManager;
 	private final transient Class<?> annotatedClass;
 	/**
 	 * Model class which is intercepted.
-	 * 
+	 *
 	 * Specified by {@link Interceptor} annotation.
 	 */
 	private Class<?> modelClass = null;
@@ -58,13 +60,16 @@ import de.metas.logging.LogManager;
 
 	private final transient List<InterceptorInit> initializers = new ArrayList<InterceptorInit>();
 
-	/** Map PointcutType(TableName,PointcutType) -> pointcuts list */
-	private final transient Map<PointcutKey, List<Pointcut>> mapPointcuts = new HashMap<PointcutKey, List<Pointcut>>();
+	/**
+	 * Map PointcutType(TableName,PointcutType) -> pointcuts list.<br>
+	 * FRESH-318: order then, because without a specified ordering, java7 executes them in a different ordering that java8.
+	 */
+	private final transient Map<PointcutKey, SortedSet<Pointcut>> mapPointcuts = new HashMap<PointcutKey, SortedSet<Pointcut>>();
 
 	private int clientId = -1;
 
 	/**
-	 * 
+	 *
 	 * @param annotatedObject
 	 * @throws AdempiereException if annotations were not correctly used
 	 */
@@ -79,7 +84,7 @@ import de.metas.logging.LogManager;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if annotated class has any pointcuts (ModelChange, DocValidate etc)
 	 */
 	public boolean hasPointcuts()
@@ -88,7 +93,7 @@ import de.metas.logging.LogManager;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if it has no initializers, no pointcuts, no nothing
 	 */
 	public boolean isEmpty()
@@ -361,13 +366,18 @@ import de.metas.logging.LogManager;
 
 		// Add to map
 		final PointcutKey key = mkKey(pointcut);
-		List<Pointcut> list = mapPointcuts.get(key);
-		if (list == null)
+		SortedSet<Pointcut> set = mapPointcuts.get(key);
+		if (set == null)
 		{
-			list = new ArrayList<Pointcut>();
-			mapPointcuts.put(key, list);
+			set = new TreeSet<Pointcut>();
+			mapPointcuts.put(key, set);
 		}
-		list.add(pointcut);
+		
+		if (!set.add(pointcut))
+		{
+			// shall not happen
+			logger.warn("Pointcut {} was not added because another one was found in the list: {}", pointcut, set);
+		}
 
 		logger.debug("Loaded {}", pointcut);
 	}
@@ -380,9 +390,9 @@ import de.metas.logging.LogManager;
 		}
 
 		logger.debug("Binding pointcuts for {}", annotatedClass);
-		for (Map.Entry<PointcutKey, List<Pointcut>> e : mapPointcuts.entrySet())
+		for (Map.Entry<PointcutKey, SortedSet<Pointcut>> e : mapPointcuts.entrySet())
 		{
-			final List<Pointcut> list = e.getValue();
+			final Set<Pointcut> list = e.getValue();
 			if (list == null || list.isEmpty())
 			{
 				continue;
@@ -436,13 +446,13 @@ import de.metas.logging.LogManager;
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(po);
 		final PointcutKey key = mkKey(tableName, type);
-		final List<Pointcut> list = mapPointcuts.get(key);
+		final SortedSet<Pointcut> list = mapPointcuts.get(key);
 		if (list == null || list.isEmpty())
 		{
 			return;
 		}
 
-		for (IPointcut info : list)
+		for (final IPointcut info : list)
 		{
 			execute(info, po, timing);
 		}
@@ -506,10 +516,10 @@ import de.metas.logging.LogManager;
 						{
 							deactivate(); // make sure it won't be executed twice
 							InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited); // make sure we use the RIGHT transaction!
-							
+
 							executeNow(po, pointcut, timing);
 						}
-						
+
 						@Override
 						public String toString()
 						{
@@ -522,7 +532,7 @@ import de.metas.logging.LogManager;
 					});
 		}
 	}
-	
+
 	private final void executeNow(final Object po, final IPointcut pointcut, final int timing)
 	{
 		final Object model = InterfaceWrapperHelper.create(po, pointcut.getModelClass());
@@ -537,7 +547,7 @@ import de.metas.logging.LogManager;
 			}
 
 			logger.debug("Executing: {}", pointcut);
-			
+
 			if (pointcut.isMethodRequiresTiming())
 			{
 				final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
@@ -556,7 +566,7 @@ import de.metas.logging.LogManager;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param timing
 	 * @return true if timing is new (before, after)
 	 */
@@ -594,7 +604,6 @@ import de.metas.logging.LogManager;
 		return result;
 	}
 
-	@SuppressWarnings("PMD")
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -656,7 +665,6 @@ import de.metas.logging.LogManager;
 			return result;
 		}
 
-		@SuppressWarnings("PMD")
 		@Override
 		public boolean equals(Object obj)
 		{

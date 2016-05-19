@@ -10,18 +10,17 @@ package org.adempiere.ad.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -30,11 +29,13 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.EqualsBuilder;
 
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 
-/* package */final class Pointcut implements IPointcut
+/* package */final class Pointcut implements IPointcut, Comparable<Pointcut>
 {
 	private final PointcutType type;
 	private final Method method;
@@ -140,7 +141,7 @@ import com.google.common.primitives.Ints;
 
 	/**
 	 * Sets timing parameter type.
-	 * 
+	 *
 	 * @param methodTimingParameterType timing parameter type or <code>null</code> if no timing parameter is required.
 	 */
 	protected void setMethodTimingParameterType(final Class<?> methodTimingParameterType)
@@ -201,7 +202,7 @@ import com.google.common.primitives.Ints;
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see de.metas.adempiere.modelvalidator.IPointcut#getType()
 	 */
 	@Override
@@ -277,7 +278,7 @@ import com.google.common.primitives.Ints;
 
 	/**
 	 * Build the list of columns that needs to be checked for changes.
-	 * 
+	 *
 	 * @return
 	 */
 	private final Set<String> buildColumnsToCheckForChanges()
@@ -330,5 +331,62 @@ import com.google.common.primitives.Ints;
 		{
 			return ImmutableSet.of();
 		}
+	}
+
+	/**
+	 * Returns <code>true</code> if the other instance is also a PointCut and if {@link #compareTo(Pointcut)} returns 0.<br>
+	 * Just added this method because the javadoc of {@link java.util.SortedSet} states that {@link #equals(Object)} and {@link #compareTo(Pointcut)} need to be consistent.
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
+	 */
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		final Pointcut other = EqualsBuilder.getOther(this, obj);
+		if (other == null)
+		{
+			return false;
+		}
+
+		// we use PointCut in a sorted set, so equals has to be consistent with compareTo()
+		if (compareTo(other) == 0)
+		{
+			return true;
+		}
+
+		return false;
+	};
+
+	/**
+	 * Compares this instance with the given {@link Pointcut} by comparing their.
+	 * <ul>
+	 * <li>TableName</li>
+	 * <li>Method's name</li>
+	 * <li>Method's declaring class name</li>
+	 * </ul>
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
+	 */
+	@Override
+	public int compareTo(Pointcut o)
+	{
+		return ComparisonChain.start()
+
+		.compare(getTableName(), o.getTableName())
+
+		.compare(getMethod() == null ? null : getMethod().getDeclaringClass().getName(),
+				o.getMethod() == null ? null : o.getMethod().getDeclaringClass().getName())
+
+		.compare(getMethod() == null ? null : getMethod().getName(),
+				o.getMethod() == null ? null : o.getMethod().getName())
+
+		.compare(getMethod() == null ? null : getMethod().getName(),
+				o.getMethod() == null ? null : o.getMethod().getName())
+
+		.result();
 	}
 }
