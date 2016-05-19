@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.18.17 (upcoming)
+# metasfresh 4.x.x (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.18.17
 
 ## Features
  - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
