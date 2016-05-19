@@ -153,16 +153,13 @@ public class PropertyValueCollection
 
 	public void setValuesFromMap(final PropertyValuesDTO values)
 	{
+		System.out.println(getPropertyNames());
+		System.out.println(values);
 		for (final PropertyValue propertyValue : getPropertyValues())
 		{
-			if (ConstantPropertyValue.isConstant(propertyValue))
+			if (propertyValue.isCalculated())
 			{
-				logger.debug("Skip setting value to {} because it's constant", propertyValue);
-				continue;
-			}
-			else if(propertyValue.isReadOnlyForUser())
-			{
-				logger.debug("Skip setting value to {} because it's readonly for user", propertyValue);
+				logger.debug("Skip setting value to {} because it's calculated", propertyValue);
 				continue;
 			}
 
