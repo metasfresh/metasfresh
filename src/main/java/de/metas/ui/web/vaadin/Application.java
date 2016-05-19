@@ -3,8 +3,10 @@ package de.metas.ui.web.vaadin;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
@@ -14,12 +16,14 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomi
 import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 
 import com.vaadin.spring.boot.internal.VaadinServletConfiguration;
@@ -50,6 +54,7 @@ import de.metas.ui.web.vaadin.session.VaadinContextProvider;
 
 @Configuration
 @ComponentScan
+@ServletComponentScan({ "de.metas", "org.adempiere" })
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
 @EnableConfigurationProperties
 // Make config here (vaadinServlet) override stuff in VaadinServletConfiguration
@@ -62,22 +67,15 @@ public class Application
 	public static final void main(final String[] args)
 	{
 		System.setProperty("PropertyFile", "./metasfresh.properties"); // FIXME: hardcoded
+		
+		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+		Ini.setRunMode(RunMode.WEBUI);
 
 		final ConfigurableApplicationContext context = new SpringApplicationBuilder(Application.class)
 				.headless(false) // FIXME: developing... we need it for now, in case CConnection is poping the config swing window
 				.run(args);
 
 		Application.context = context;
-
-		final boolean started = Env.getSingleAdempiereInstance().startup(RunMode.WEBUI);
-		if (!started)
-		{
-			throw new AdempiereException("Cannot start webui");
-		}
-
-		Env.setContextProvider(new VaadinContextProvider());
-
-//		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
 	}
 
 	private static ConfigurableApplicationContext context;
@@ -90,6 +88,23 @@ public class Application
 	public static final void autowire(final Object bean)
 	{
 		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
+	}
+	
+	@Bean
+	public Adempiere adempiere()
+	{
+		final Adempiere adempiere = Env.getSingleAdempiereInstance();
+		final boolean started = adempiere.startup(RunMode.WEBUI);
+		if (!started)
+		{
+			throw new AdempiereException("Cannot start webui");
+		}
+
+		Env.setContextProvider(new VaadinContextProvider());
+
+//		InterfaceWrapperHelper.registerHelper(FieldGroupModelWrapperHelper.instance);
+
+		return adempiere;
 	}
 
 	/**
@@ -131,10 +146,16 @@ public class Application
 	 */
 	public static boolean isTesting()
 	{
-		if (getContext() == null && getContext().getEnvironment() == null)
+		final ApplicationContext context = getContext();
+		if (context == null)
 		{
 			return false; // guard against NPE
 		}
-		return getContext().getEnvironment().acceptsProfiles(PROFILE_NAME_TESTING);
+		final Environment environment = context.getEnvironment();
+		if(environment == null)
+		{
+			return false; // guard against NPE
+		}
+		return environment.acceptsProfiles(PROFILE_NAME_TESTING);
 	}
 }

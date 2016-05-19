@@ -158,6 +158,11 @@
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.report.jasper.server</groupId>
+			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 	</dependencies>
 
