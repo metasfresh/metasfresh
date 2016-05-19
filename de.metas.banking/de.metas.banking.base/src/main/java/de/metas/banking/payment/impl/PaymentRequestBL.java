@@ -52,6 +52,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		clone.setC_BP_BankAccount(request.getC_BP_BankAccount());
 		clone.setAmount(request.getAmount());
 		clone.setReference(request.getReference());
+		clone.setFullPaymentString(request.getFullPaymentString()); // FRESH-318
 		return clone;
 	}
 

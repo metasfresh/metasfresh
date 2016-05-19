@@ -10,12 +10,12 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.util.lang.ObjectUtils;
+
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 
@@ -34,6 +36,7 @@ public class PaymentString implements IPaymentString
 {
 	private final List<String> collectedErrors;
 
+	private final String rawPaymentString;
 	private final String postAccountNo;
 	private final String innerAccountNo;
 	private final BigDecimal amount;
@@ -48,6 +51,7 @@ public class PaymentString implements IPaymentString
 	private IPaymentStringDataProvider dataProvider = null;
 
 	public PaymentString(final List<String> collectedErrors,
+			final String rawPaymentString,
 			final String postAccountNo,
 			final String innerAccountNo,
 			final BigDecimal amount,
@@ -63,6 +67,7 @@ public class PaymentString implements IPaymentString
 
 		this.collectedErrors = collectedErrors;
 
+		this.rawPaymentString = rawPaymentString;
 		this.postAccountNo = postAccountNo;
 		this.innerAccountNo = innerAccountNo;
 		this.amount = amount;
@@ -153,11 +158,18 @@ public class PaymentString implements IPaymentString
 		return documentNo;
 	}
 
+	/**
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
+	 */
+	@Override
+	public String getRawPaymentString()
+	{
+		return rawPaymentString;
+	}
+
 	@Override
 	public String toString()
 	{
-		return String
-				.format("PaymentString [collectedErrors=%s, postAccountNo=%s, innerAccountNo=%s, amount=%s, referenceNoComplete=%s, referenceNoToMatch=%s, paymentDate=%s, accountDate=%s, orgValue=%s, bpValue=%s, documentNo=%s, dataProvider=%s]",
-						collectedErrors, postAccountNo, innerAccountNo, amount, referenceNoComplete, referenceNoToMatch, paymentDate, accountDate, orgValue, bpValue, documentNo, dataProvider);
+		return ObjectUtils.toString(this);
 	}
 }

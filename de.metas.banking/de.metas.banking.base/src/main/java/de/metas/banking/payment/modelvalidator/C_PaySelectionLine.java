@@ -13,11 +13,11 @@ package de.metas.banking.payment.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,7 +28,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -59,41 +58,28 @@ public class C_PaySelectionLine
 	 *
 	 * @param paySelectionLine
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void updateFromPaymentRequest(final I_C_PaySelectionLine paySelectionLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
+	public void updateFromPaymentRequestOrInvoice(final I_C_PaySelectionLine paySelectionLine)
 	{
-		// don't touch processed lines
 		if (paySelectionLine.isProcessed())
 		{
-			return;
+			return; // don't touch processed lines, nothing to do
 		}
 
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
+		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(paySelectionLine))
 		{
-			// already updated
-			return;
+			return; // already updated, nothing to do
 		}
 
-		paymentRequestBL.updatePaySelectionLineFromPaymentRequestIfExists(paySelectionLine);
-
-		//
-		// 08297: After trying to set the Reference from the payment request, fallback (if still empty) to the Invoice's POReference
-		final boolean trimWhitespaces = true;
-		if (Check.isEmpty(paySelectionLine.getReference(), trimWhitespaces))
+		// see if we can update from a payment request
+		final boolean updated = paymentRequestBL.updatePaySelectionLineFromPaymentRequestIfExists(paySelectionLine);
+		if (!updated)
 		{
-			final I_C_Invoice invoice = paySelectionLine.getC_Invoice();
-			if (invoice == null)
-			{
-				return;
-			}
-
-			final String invoicePOReference = invoice.getPOReference();
-			if (Check.isEmpty(invoicePOReference, trimWhitespaces))
-			{
-				return;
-			}
-			paySelectionLine.setReference(invoicePOReference);
+			// fallback and update from the invoice
+			paySelectionBL.updateFromInvoice(paySelectionLine);
 		}
 	}
 
@@ -123,19 +109,8 @@ public class C_PaySelectionLine
 		final I_C_Currency baCurrency = bankAccount.getC_Currency();
 
 		throw new AdempiereException(ctx, MSG_PaySelectionLine_Invoice_InvalidCurrency, new Object[] {
-				invoice.getDocumentNo(), // invoice
-				iCurrency.getISO_Code(),  // Actual
+				invoice.getDocumentNo(),     // invoice
+				iCurrency.getISO_Code(),      // Actual
 				baCurrency.getISO_Code() }); // Expected
-	}
-
-	/**
-	 * Invokes {@link IPaySelectionBL#updateFromInvoice(I_C_PaySelectionLine)}.
-	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
-	public void updateFromInvoice(final I_C_PaySelectionLine psl)
-	{
-		Services.get(IPaySelectionBL.class).updateFromInvoice(psl);
 	}
 }
