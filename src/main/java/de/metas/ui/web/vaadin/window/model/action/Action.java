@@ -40,7 +40,7 @@ public abstract class Action
 	{
 		return new SelfHandledAction(actionGroup, actionId, caption, icon, listener);
 	}
-	
+
 	public static Action actionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Provider childrenProvider)
 	{
 		return new ActionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
@@ -110,11 +110,49 @@ public abstract class Action
 		return icon;
 	}
 
+	public static class ActionEvent
+	{
+		public static final ActionEvent of(final Action action, final Object target)
+		{
+			return new ActionEvent(action, target);
+		}
+
+		private final Action action;
+		private final Object target;
+
+		private ActionEvent(Action action, Object target)
+		{
+			super();
+			this.action = action;
+			this.target = target;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("action", action)
+					.add("target", target)
+					.toString();
+		}
+
+		public Action getAction()
+		{
+			return action;
+		}
+
+		public Object getTarget()
+		{
+			return target;
+		}
+	}
+
 	public static interface Listener
 	{
-		void handleAction(Object target);
+		void handleAction(ActionEvent event);
 	}
-	
+
 	public static interface Provider
 	{
 		List<Action> provideActions();
@@ -139,12 +177,12 @@ public abstract class Action
 		}
 
 		@Override
-		public void handleAction(final Object target)
+		public void handleAction(final ActionEvent event)
 		{
-			listener.handleAction(target);
+			listener.handleAction(event);
 		}
 	}
-	
+
 	private static final class ActionWithChildrenProvider extends Action implements Action.Provider
 	{
 		private final Action.Provider childrenProvider;
@@ -160,6 +198,6 @@ public abstract class Action
 		{
 			return childrenProvider.provideActions();
 		}
-		
+
 	}
 }

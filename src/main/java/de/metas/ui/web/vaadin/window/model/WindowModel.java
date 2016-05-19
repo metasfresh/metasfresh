@@ -36,6 +36,7 @@ import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSourceFactory;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
 import de.metas.ui.web.vaadin.window.model.action.Action;
+import de.metas.ui.web.vaadin.window.model.action.Action.ActionEvent;
 import de.metas.ui.web.vaadin.window.model.action.Action.Listener;
 import de.metas.ui.web.vaadin.window.model.action.ActionGroup;
 import de.metas.ui.web.vaadin.window.model.event.AllPropertiesChangedModelEvent;
@@ -652,9 +653,9 @@ public class WindowModel
 
 		return ImmutableList.<Action> builder()
 				//
-				.add(createActionWithListener(crudActionGroup, "Ignore", target -> cancelRecordEditing()))
-				.add(createActionWithListener(crudActionGroup, "New", target -> newRecord()))
-				.add(createActionWithListener(crudActionGroup, "Save", target -> saveRecord()))
+				.add(createActionWithListener(crudActionGroup, "Ignore", event -> cancelRecordEditing()))
+				.add(createActionWithListener(crudActionGroup, "New", event -> newRecord()))
+				.add(createActionWithListener(crudActionGroup, "Save", event -> saveRecord()))
 				.add(createActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted))
 				.add(createActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted))
 				.add(createActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted))
@@ -678,7 +679,7 @@ public class WindowModel
 	{
 		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
 		caption = Util.cleanAmp(caption);
-		
+
 		final Resource icon = Theme.getIconSmall(actionId);
 		return Action.selfHandledAction(actionGroup, actionId, caption, icon, listener);
 	}
@@ -687,7 +688,7 @@ public class WindowModel
 	{
 		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
 		caption = Util.cleanAmp(caption);
-		
+
 		final Resource icon = Theme.getIconSmall(actionId);
 		return Action.actionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
 	}
@@ -697,7 +698,7 @@ public class WindowModel
 		if (action instanceof Action.Listener)
 		{
 			final Listener listener = (Action.Listener)action;
-			listener.handleAction(this);
+			listener.handleAction(ActionEvent.of(action, this));
 		}
 		else
 		{
@@ -705,8 +706,8 @@ public class WindowModel
 		}
 	}
 
-	private static final Action.Listener ACTIONLISTENER_NotImpleted = target -> {
-		throw new UnsupportedOperationException("Action not implemented");
+	private static final Action.Listener ACTIONLISTENER_NotImpleted = event -> {
+		throw new UnsupportedOperationException("Action not implemented: " + event.getAction());
 	};
 
 	private List<Action> createZoomAccrossActions()
@@ -733,11 +734,11 @@ public class WindowModel
 		}
 
 		final List<Action> actions = actionsCollector.build();
-		if(actions.isEmpty())
+		if (actions.isEmpty())
 		{
 			throw new AdempiereException("No zoom targets found");
 		}
-		
+
 		return actions;
 	}
 }
