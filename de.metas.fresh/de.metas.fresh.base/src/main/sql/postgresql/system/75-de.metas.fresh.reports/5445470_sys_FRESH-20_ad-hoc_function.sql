@@ -40,6 +40,6 @@ ORDER BY p.Value --, mt.Lot
 $BODY$
   LANGUAGE sql STABLE
 ;
-COMMENT ON FUNCTION report.fresh_monthly_warehouse_stats(date) IS 'Statistik für monatliche Lagermeldung; Valie examples for "month_enddate" are 2016-01-31 or 2016-02-29. Also see issue FRESH-20.';
+COMMENT ON FUNCTION report.fresh_monthly_warehouse_stats(date) IS 'Statistik fÃ¼r monatliche Lagermeldung; Valie examples for "month_enddate" are 2016-01-31 or 2016-02-29. Also see issue FRESH-20.';
 
 --select * from report.fresh_monthly_warehouse_stats('2016-04-30');
