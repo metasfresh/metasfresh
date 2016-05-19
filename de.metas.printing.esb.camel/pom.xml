@@ -11,6 +11,7 @@
 		<relativePath>../../de.metas.esb/pom.xml</relativePath>
 	</parent>
 
+	<groupId>de.metas.printing.esb</groupId>
 	<artifactId>de.metas.printing.esb.camel</artifactId>
 
 	<description>Metas :: Components :: Request-Response Framework for Mass Printing (SMX-4.5.2)</description>

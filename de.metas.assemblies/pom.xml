@@ -13,28 +13,6 @@
 
 	<description>Shared assembly descriptors for metas projects</description>
 
-	<distributionManagement>
-
-		<site>
-			<id>metas-mvn-site</id>
-			<url>scpexe://denas901:/var/www/localhost/htdocs/project-sites/${project.groupId}.${project.artifactId}</url>
-		</site>
-
-		<repository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
-		</repository>
-
-		<!-- Publish the versioned releases here -->
-		<snapshotRepository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-
-	</distributionManagement>
-
 	<build>
 		<extensions>
 			<extension>
