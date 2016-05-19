@@ -17,6 +17,7 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-327 Subsequent change of logo not working correctly without cache reset
 
 # metasfresh 4.18.17
 
