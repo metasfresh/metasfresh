@@ -756,18 +756,13 @@ public class WindowModel
 		final PropertyDescriptor rootPropertyDescriptor = getRootPropertyDescriptor();
 		final int printProcessId = rootPropertyDescriptor.getPrintProcessId();
 
-		// // Get process defined for this tab
-		// int AD_Process_ID = m_curTab.getAD_Process_ID();
-		// log.info("ID=" + AD_Process_ID);
-		//
-		// // No report defined
-		// if (AD_Process_ID == 0)
-		// {
-		// cmd_report();
-		// return;
-		// }
+		if (printProcessId <= 0)
+		{
+			// TODO: call report
+			throw new UnsupportedOperationException("No print process defined");
+		}
 
-		// saveRecord();
+		saveRecord();
 
 		final ModelDataSource dataSource = getDataSource();
 		final ITableRecordReference recordRef = dataSource.getTableRecordReference(getRecordIndex());
