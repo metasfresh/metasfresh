@@ -448,6 +448,21 @@ public class GridWindowVO implements Serializable
 	{
 		return Tabs;
 	}
+	
+	public String getName()
+	{
+		return Name;
+	}
+	
+	public String getDescription()
+	{
+		return Description;
+	}
+	
+	public String getHelp()
+	{
+		return Help;
+	}
 // metas: end
 }   //  MWindowVO
 
