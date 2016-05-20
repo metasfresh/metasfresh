@@ -153,6 +153,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			final String rootTableName = rootTab.getTableName();
 			rootBuilder = PropertyDescriptor.builder()
 					.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
+					.setCaption(gridWindowVO.getName())
 					.setSqlTableName(rootTableName);
 
 			this.parent_SqlTableName = rootTableName;
