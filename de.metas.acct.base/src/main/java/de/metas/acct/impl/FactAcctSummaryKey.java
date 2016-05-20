@@ -4,7 +4,6 @@ import java.util.Date;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -60,13 +59,13 @@ final class FactAcctSummaryKey implements IFactAcctSummaryKey
 		C_AcctSchema_ID = log.getC_AcctSchema_ID();
 		postingType = log.getPostingType();
 		C_Period_ID = log.getC_Period_ID();
-
+		
 		final Date dateAcct = log.getDateAcct();
 		Check.assumeNotNull(dateAcct, "dateAcct not null for {}", log);
 		dateAcctMs = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY).getTime();
 
 		AD_Client_ID = log.getAD_Client_ID();
-		AD_Org_ID = Env.CTXVALUE_AD_Org_ID_System;
+		AD_Org_ID = log.getAD_Org_ID(); // FRESH-326: set the AD_Org from the log
 		PA_ReportCube_ID = -1;
 		_hashKey = Util.mkKey(C_ElementValue_ID, C_AcctSchema_ID, postingType, C_Period_ID, dateAcctMs, AD_Client_ID, AD_Org_ID, PA_ReportCube_ID);
 	}
