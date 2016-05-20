@@ -52,7 +52,7 @@ public class SessionDAO implements ISessionDAO
 			+ "," + I_AD_ChangeLog.COLUMNNAME_Record_ID
 			//
 			+ "," + I_AD_ChangeLog.COLUMNNAME_AD_Session_ID
-			// + "," + I_AD_ChangeLog.COLUMNNAME_AD_ChangeLog_ID
+			+ "," + I_AD_ChangeLog.COLUMNNAME_AD_PInstance_ID
 			+ "," + I_AD_ChangeLog.COLUMNNAME_EventChangeLog
 			+ "," + I_AD_ChangeLog.COLUMNNAME_OldValue
 			+ "," + I_AD_ChangeLog.COLUMNNAME_NewValue
@@ -104,7 +104,7 @@ public class SessionDAO implements ISessionDAO
 				{
 					continue;
 				}
-				
+
 				// Null handling
 				final Object oldValue = record.getOldValue();
 				final Object newValue = record.getNewValue();
@@ -136,6 +136,7 @@ public class SessionDAO implements ISessionDAO
 						, record.getRecord_ID() //
 						//
 						, record.getAD_Session_ID()
+						, record.getAD_PInstance_ID() // FRESH-314
 						, record.getEventType() // EventChangeLog (type)
 						, oldValue == null ? CHANGELOG_NullValue : oldValue.toString() //
 						, newValue == null ? CHANGELOG_NullValue : newValue.toString() //
@@ -155,7 +156,6 @@ public class SessionDAO implements ISessionDAO
 				pstmt.executeBatch();
 				logger.trace("Created {} records", countCreated);
 			}
-			
 		}
 		catch (final Exception e)
 		{

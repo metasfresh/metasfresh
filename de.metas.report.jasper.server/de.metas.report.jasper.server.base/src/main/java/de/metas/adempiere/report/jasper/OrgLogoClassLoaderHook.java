@@ -22,23 +22,26 @@ package de.metas.adempiere.report.jasper;
  * #L%
  */
 
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.util.CCache;
+import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.logging.LogManager;
 
 /**
  * Logo hook: called by {@link JasperClassLoader} in order to intercept logo picture resources and provide the actual logo for current organization.
@@ -67,7 +70,10 @@ class OrgLogoClassLoaderHook
 
 	//
 	// Caching (static)
-	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = new CCache<>(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID", 10, 0);
+	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = new CCache<Integer, Optional<File>>(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID", 10, 0)
+			.addResetForTableName(I_AD_ClientInfo.Table_Name) // FRESH-327
+			.addResetForTableName(I_AD_OrgInfo.Table_Name) // FRESH-327
+			;
 	private final Callable<Optional<File>> orgLogoLocalFileLoader;
 
 	private OrgLogoClassLoaderHook(final int adOrgId)
@@ -135,7 +141,9 @@ class OrgLogoClassLoaderHook
 		return logoFile;
 	}
 
-	/** @return true if given resourceName is a logo image */
+	/**
+	 * @return true if given resourceName is a logo image
+	 */
 	private boolean isLogoResourceName(final String resourceName)
 	{
 		// Skip if no resourceName

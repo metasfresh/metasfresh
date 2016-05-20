@@ -13,15 +13,14 @@ package de.metas.adempiere.form.terminal.table.swing;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.util.ArrayList;
@@ -51,8 +50,8 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 		implements TableCellRenderer, TableCellEditor
 {
 	/**
-* 
-*/
+	* 
+	*/
 	private static final long serialVersionUID = 3496090951647091453L;
 
 	private final ITerminalFactory terminalFactory;
@@ -85,7 +84,8 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 		ITerminalComboboxField editor = modelColumnIndex2editor.get(columnIndexModel);
 		if (editor == null)
 		{
-			editor = createEditor(columnIndexView);
+			// task FRESH-305: Create a new, empty combobox. It will be filled afterwards with the needed info.
+			editor = terminalFactory.createTerminalCombobox("");
 			modelColumnIndex2editor.put(columnIndexModel, editor);
 		}
 
@@ -93,26 +93,30 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 		return editor;
 	}
 
-	private ITerminalComboboxField createEditor(final int columnIndexView)
+	/**
+	 * Update the editor with the correct info required by the current columnIndexView.
+	 * 
+	 * @param editor
+	 * @param columnIndexView
+	 */
+	private void updateEditorValues(final ITerminalComboboxField editor, final int columnIndexView)
 	{
 		final ITerminalContext terminalContext = swingTerminalTable.getTerminalContext();
 		final ITableColumnInfo columnInfo = swingTerminalTable.getTableColumnInfo(columnIndexView);
 		final String lookupTableName = columnInfo.getLookupTableName();
 		final String lookupColumnName = columnInfo.getLookupColumnName();
 
-		final ITerminalComboboxField editor = terminalFactory.createTerminalCombobox("");
-
 		final POInfo poInfo = POInfo.getPOInfo(lookupTableName);
 
-		final Lookup lookup = poInfo.getColumnLookup(terminalContext.getCtx(), poInfo.getColumnIndex(lookupColumnName));
+		final Lookup lookup = poInfo.getColumnLookup(terminalContext.getCtx(), terminalContext.getWindowNo(), poInfo.getColumnIndex(lookupColumnName));
 		final List<Object> valuesObj = lookup.getData(
-				false, // mandatory,
-				true, // onlyValidated,
-				true, // onlyActive,
+				false,  // mandatory,
+				true,  // onlyValidated,
+				true,  // onlyActive,
 				false // temporary
-				);
+		);
 
-		List<NamePair> values = new ArrayList<>();
+		final List<NamePair> values = new ArrayList<>();
 		for (final Object valueObj : valuesObj)
 		{
 			final NamePair value = (NamePair)valueObj;
@@ -120,8 +124,6 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 		}
 
 		editor.setValues(values);
-
-		return editor;
 	}
 
 	private ITerminalComboboxField getCurrentEditor()
@@ -155,10 +157,12 @@ import de.metas.adempiere.form.terminal.table.ITableColumnInfo;
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int rowIndexView, int columnIndexView)
 	{
-
 		final ITerminalComboboxField editor = getEditor(columnIndexView);
 
+		// task FRESH-305: Make sure the editor contains information that is up to date with the context
+		updateEditorValues(editor, columnIndexView);
 		editor.setValue(value);
+
 		return SwingTerminalFactory.getUI(editor);
 	}
 

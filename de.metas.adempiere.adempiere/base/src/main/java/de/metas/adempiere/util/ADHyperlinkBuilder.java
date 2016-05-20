@@ -28,9 +28,8 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,8 +41,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 public class ADHyperlinkBuilder
 {
@@ -89,7 +90,7 @@ public class ADHyperlinkBuilder
 	public String createShowWindowHTML(String text, String tableName, String whereClause)
 	{
 		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final Map<String, String> params = new HashMap<>();
+		final Map<String, String> params = new LinkedHashMap<>(); // we use LinkedHashMap because we need a predictable order; tests are depending on this.
 		params.put("AD_Table_ID", Integer.toString(AD_Table_ID));
 		params.put("WhereClause", whereClause);
 

@@ -10,12 +10,12 @@ package de.metas.payment.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,6 +83,7 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 		final String documentNo = removeLeftZeros(esrReferenceNoComplete.substring(18, 26));
 
 		final IPaymentString paymentString = new PaymentString(collectedErrors,
+				paymentText, // FRESH-318
 				postAccountNo,
 				innerPaymentString,
 				amount,

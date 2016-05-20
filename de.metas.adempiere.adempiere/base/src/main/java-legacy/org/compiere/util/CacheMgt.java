@@ -33,10 +33,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -117,6 +120,12 @@ public final class CacheMgt
 	 */
 	public boolean register(final CacheInterface instance)
 	{
+		final Boolean registerWeak = null; // auto
+		return register(instance, registerWeak);
+	}
+	
+	private boolean register(final CacheInterface instance, final Boolean registerWeak)
+	{
 		if (instance == null)
 		{
 			return false;
@@ -126,7 +135,7 @@ public final class CacheMgt
 		try
 		{
 			final String tableName = getTableNameOrNull(instance);
-			final boolean registerWeak;
+			final boolean registerWeakEffective;
 			if (tableName != null)
 			{
 				//
@@ -139,15 +148,15 @@ public final class CacheMgt
 				}
 				count.incrementAndGet();
 
-				registerWeak = true;
+				registerWeakEffective = registerWeak == null ? true : registerWeak;
 			}
 			else
 			{
 				// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
-				registerWeak = false;
+				registerWeakEffective = registerWeak == null ? false : registerWeak;
 			}
 
-			return cacheInstances.add(instance, registerWeak);
+			return cacheInstances.add(instance, registerWeakEffective);
 		}
 		finally
 		{
@@ -512,6 +521,105 @@ public final class CacheMgt
 			// log but don't fail
 			log.warn("Error while reseting {}", cacheInstance, e);
 			return 0;
+		}
+	}
+	
+	/**
+	 * Adds an listener which will be fired when the cache for given table is about to be reset.
+	 * 
+	 * @param tableName
+	 * @param cacheResetListener
+	 */
+	public void addCacheResetListener(final String tableName, final ICacheResetListener cacheResetListener)
+	{
+		final Boolean registerWeak = Boolean.FALSE;
+		register(new CacheResetListener2CacheInterface(tableName, cacheResetListener), registerWeak);
+	}
+
+	private static final class CacheResetListener2CacheInterface implements ITableAwareCacheInterface
+	{
+		private final String tableName;
+		private final ICacheResetListener listener;
+
+		public CacheResetListener2CacheInterface(final String tableName, final ICacheResetListener listener)
+		{
+			super();
+			Check.assumeNotEmpty(tableName, "tableName not empty");
+			this.tableName = tableName;
+			Check.assumeNotNull(listener, "listener not null");
+			this.listener = listener;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("tableName", tableName)
+					.add("listener", listener)
+					.toString();
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return new HashcodeBuilder()
+					.append(tableName)
+					.append(listener)
+					.toHashcode();
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			if (obj == null)
+			{
+				return false;
+			}
+
+			final CacheResetListener2CacheInterface other = EqualsBuilder.getOther(this, obj);
+			if (other == null)
+			{
+				return false;
+			}
+			return new EqualsBuilder()
+					.append(this.tableName, other.tableName)
+					.append(this.listener, other.listener)
+					.isEqual();
+		}
+
+		@Override
+		public int size()
+		{
+			return 1;
+		}
+
+		@Override
+		public String getName()
+		{
+			return tableName;
+		}
+
+		@Override
+		public String getTableName()
+		{
+			return tableName;
+		}
+
+		@Override
+		public int reset()
+		{
+			final Object key = null;
+			return listener.reset(tableName, key);
+		}
+
+		@Override
+		public int resetForRecordId(String tableName, Object key)
+		{
+			return listener.reset(tableName, key);
 		}
 	}
 

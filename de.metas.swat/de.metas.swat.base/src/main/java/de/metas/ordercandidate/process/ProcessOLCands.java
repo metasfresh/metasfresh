@@ -10,18 +10,17 @@ package de.metas.ordercandidate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -33,9 +32,19 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 
+/**
+ * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
+ * <p>
+ * The actual work is done by {@link IOLCandBL#process(java.util.Properties, I_C_OLCandProcessor, org.adempiere.util.ILoggable, String)}
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ProcessOLCands extends SvrProcess
 {
 	private int olCandProcessorId;

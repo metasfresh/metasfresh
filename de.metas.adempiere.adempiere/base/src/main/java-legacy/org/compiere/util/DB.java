@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
+import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,7 +62,6 @@ import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MLanguage;
 import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
@@ -191,7 +191,7 @@ public final class DB
 
 		// Language check
 		log.info("After migration: Language maintainance");
-		MLanguage.maintain(ctx);
+		Services.get(ILanguageDAO.class).addAllMissingTranslations(ctx);
 
 		// Sequence check
 		log.info("After migration: Sequence check");
@@ -1979,6 +1979,12 @@ public final class DB
 		//
 		return out.toString();
 	}	// TO_STRING
+	
+	public static String TO_BOOLEAN(final Boolean value)
+	{
+		final String valueStr = DisplayType.toBooleanString(value);
+		return TO_STRING(valueStr);
+	}
 
 	/**
 	 * convenient method to close result set
