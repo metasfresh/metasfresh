@@ -31,15 +31,15 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.Format;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -327,34 +327,54 @@ public abstract class AbstractTerminalNumericField
 	@Override
 	protected final void setFieldValue(final BigDecimal value, final boolean fireEvent)
 	{
+		final BigDecimal valueOld = this._valueOld; // backup for event
+		
 		//
 		// Fix value to set
-		final BigDecimal valueToSet;
+		final BigDecimal valueNew;
 		if (value == null)
 		{
-			valueToSet = Env.ZERO;
+			valueNew = Env.ZERO;
 		}
 		else
 		{
 			// Qty Editor it shall be a small component and we don't want to clutter it with pointless trailing zeros (06112)
-			valueToSet = NumberUtils.stripTrailingDecimalZeros(value);
+			valueNew = NumberUtils.stripTrailingDecimalZeros(value);
 		}
 
-		final BigDecimal valueOld2 = valueOld; // backup for event
-		final BigDecimal valueNew2 = valueToSet; // backup for event
-		final boolean changed = valueOld != null && valueOld.compareTo(valueToSet) != 0;
-
-		fNumber.setText(valueToSet.toString());
-		valueOld = valueToSet;
-
-		if (fireEvent && changed)
+		//
+		// Get the number editor
+		final ITerminalTextField fNumber = this.fNumber;
+		if (isDisposed() || fNumber == null)
 		{
-			// getTerminalPanel().valueChanged(this);
-			firePropertyChange(ITerminalField.ACTION_ValueChanged, valueOld2, valueNew2);
+			// shall not happen but we are throwing an exception because we got a weird case (FRESH-331)
+			new TerminalException("Atempt to set value but field is disposed."
+					+ "\n field: " + this
+					+ "\n value: " + valueOld + "->" + valueNew
+					+ "\n fireEvent: " + fireEvent
+					+ "\n fNumber: " + fNumber)
+							.throwOrLogWarningIfDeveloperMode(log);
+			return;
+		}
+
+		//
+		// Actually setting the new value
+		fNumber.setText(valueNew.toString());
+		this._valueOld = valueNew;
+
+		//
+		// Fire event
+		if (fireEvent)
+		{
+			final boolean changed = valueOld == null || valueOld.compareTo(valueNew) != 0;
+			if(changed)
+			{
+				firePropertyChange(ITerminalField.ACTION_ValueChanged, valueOld, valueNew);
+			}
 		}
 	}
-
-	BigDecimal valueOld = null;
+	
+	private BigDecimal _valueOld = null;
 
 	public void incValue()
 	{
