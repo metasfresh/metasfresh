@@ -521,24 +521,6 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	}
 
 	@Override
-	public void viewNewRecord()
-	{
-		updateModel((model) -> model.newRecord());
-	}
-
-	@Override
-	public void viewSaveEditing()
-	{
-		updateModel((model) -> model.saveRecord());
-	}
-
-	@Override
-	public void viewCancelEditing()
-	{
-		updateModel((model) -> model.cancelRecordEditing());
-	}
-
-	@Override
 	public ListenableFuture<Object> viewRequestValue(final PropertyName propertyName)
 	{
 		final WindowModel model = getModel();

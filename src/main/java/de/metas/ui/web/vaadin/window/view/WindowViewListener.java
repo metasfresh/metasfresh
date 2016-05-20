@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
+import de.metas.ui.web.vaadin.window.model.action.Action;
 
 /*
  * #%L
@@ -45,16 +46,10 @@ public interface WindowViewListener
 	/** View asked to move to previous record */
 	void viewPreviousRecord(OnChangesFound onChangesFound);
 
-	void viewNewRecord();
-
-	/** View asked to save the current editing */
-	void viewSaveEditing();
-
-	/** View asked to cancel the current editing */
-	void viewCancelEditing();
-
 	/** View is asking for a value update */
 	ListenableFuture<Object> viewRequestValue(PropertyName propertyName);
 
 	ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
+
+	void onActionClicked(Action action);
 }

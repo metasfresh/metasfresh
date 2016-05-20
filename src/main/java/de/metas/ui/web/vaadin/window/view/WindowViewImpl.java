@@ -1,7 +1,11 @@
 package de.metas.ui.web.vaadin.window.view;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.vaadin.spring.annotation.PrototypeScope;
 
+import com.google.common.collect.ImmutableList;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
@@ -13,6 +17,7 @@ import de.metas.ui.web.vaadin.window.WindowConstants;
 import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.LabelEditor;
+import de.metas.ui.web.vaadin.window.model.action.Action;
 
 /*
  * #%L
@@ -39,7 +44,7 @@ import de.metas.ui.web.vaadin.window.editor.LabelEditor;
 @org.springframework.stereotype.Component
 @PrototypeScope
 @SuppressWarnings("serial")
-public class WindowViewImpl extends AbstractView
+public class WindowViewImpl extends AbstractView implements ActionsView
 {
 	// services
 	// private static final Logger logger = LogManager.getLogger(WindowViewImpl.class);
@@ -78,21 +83,6 @@ public class WindowViewImpl extends AbstractView
 			actionsPanel = new HorizontalLayout();
 			actionsPanel.addStyleName(STYLE + "-actions-lane");
 			content.addComponent(actionsPanel);
-
-			final Button btnNew = new Button();
-			btnNew.setCaption("New");
-			btnNew.addClickListener(e -> getWindowViewListener().viewNewRecord());
-			actionsPanel.addComponent(btnNew);
-
-			final Button btnSave = new Button();
-			btnSave.setCaption("Save");
-			btnSave.addClickListener(e -> getWindowViewListener().viewSaveEditing());
-			actionsPanel.addComponent(btnSave);
-
-			final Button btnCancel = new Button();
-			btnCancel.setCaption("Cancel");
-			btnCancel.addClickListener(e -> getWindowViewListener().viewCancelEditing());
-			actionsPanel.addComponent(btnCancel);
 		}
 
 		//
@@ -218,4 +208,33 @@ public class WindowViewImpl extends AbstractView
 	{
 		btnPreviousRecord.setEnabled(enabled);
 	}
+
+	@Override
+	public void setActions(final List<Action> actions)
+	{
+		if (Objects.equals(this._actions, actions))
+		{
+			return;
+		}
+		
+		this._actions = ImmutableList.copyOf(actions);
+		
+		actionsPanel.removeAllComponents();
+		for (final Action action : _actions)
+		{
+			if (!action.isToolbarAction())
+			{
+				continue;
+			}
+			
+			final Button btn = new Button();
+			btn.setCaption(action.getCaption());
+			btn.setIcon(action.getIcon());
+			btn.addClickListener(event -> getWindowViewListener().onActionClicked(action));
+			actionsPanel.addComponent(btn);
+			
+		}
+	}
+	
+	private List<Action> _actions = null;
 }
