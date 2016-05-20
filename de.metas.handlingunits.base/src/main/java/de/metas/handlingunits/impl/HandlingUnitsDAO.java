@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -54,8 +52,12 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -74,6 +76,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.logging.LogManager;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
@@ -485,6 +488,23 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.list(I_M_HU_PI.class);
 	}
+	
+	@Override
+	public List<I_M_HU_PI> retrieveAvailablePIsForOrg(final Properties ctx, final int adOrgId)
+	{
+		final ImmutableList.Builder<I_M_HU_PI> huPIsForOrg = ImmutableList.builder();
+		for (final I_M_HU_PI huPI : retrieveAvailablePIs(ctx))
+		{
+			if (huPI.getAD_Org_ID() != adOrgId)
+			{
+				continue;
+			}
+			huPIsForOrg.add(huPI);
+		}
+		
+		return huPIsForOrg.build();
+	}
+
 
 	@Override
 	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator)
