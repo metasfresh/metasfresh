@@ -17,6 +17,11 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-329: periods missing in dropdown because of no translations
+ - FRESH-327 Subsequent change of logo not working correctly without cache reset
+ - FRESH-312 Project cannot be compiled when downloading from github directly
+    * removed references to our internal maven repo, fixed a wrong groupid and provided a public keystore for development purposes
+ - FRESH-302 make inout print preview faster
 
 # metasfresh 4.18.17
 

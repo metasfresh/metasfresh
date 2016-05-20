@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -55,6 +53,9 @@ import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -664,6 +665,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		//
 		return result;
+	}
+
+	@Override
+	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	{
+		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
 	}
 	
 	@Override

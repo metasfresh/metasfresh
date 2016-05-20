@@ -279,6 +279,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	@Override
 	public int resetForRecordId(final String tableName, final Object key)
 	{
+		if (tableName == null)
+		{
+			return reset();
+		}
+		
 		//
 		// Try matching by cache's TableName (if any)
 		final String cacheTableName = getTableName();
@@ -500,5 +505,37 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		{
 			cache.invalidateAll();
 		}
+	}
+	
+	/**
+	 * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
+	 * 
+	 * @param tableName
+	 * @return this
+	 */
+	public CCache<K, V> addResetForTableName(final String tableName)
+	{
+		Check.assumeNotEmpty(tableName, "tableName not empty");
+		CacheMgt.get().addCacheResetListener(tableName, new ICacheResetListener()
+		{
+			@Override
+			public int reset(final String tableNameToReset, final Object key)
+			{
+				if (tableName != null && !Check.equals(tableName, tableNameToReset))
+				{
+					return 0;
+				}
+				
+				return CCache.this.reset();
+			}
+			
+			@Override
+			public String toString()
+			{
+				return "->" + CCache.this.toString();
+			}
+		});
+		
+		return this;
 	}
 }	// CCache
