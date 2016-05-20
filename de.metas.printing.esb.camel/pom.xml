@@ -8,7 +8,7 @@
 		<groupId>de.metas.esb</groupId>
 		<artifactId>de.metas.esb</artifactId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../../de.metas.esb/pom.xml</relativePath>
+		<relativePath>../de.metas.esb/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.printing.esb</groupId>
