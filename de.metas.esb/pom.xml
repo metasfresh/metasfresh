@@ -5,7 +5,6 @@
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent.general</artifactId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.esb</groupId>
@@ -39,7 +38,7 @@
 	<modules>
 		<module>../de.metas.document.archive.esb</module>
 		<module>../de.metas.edi.esb.camel</module>
-		<module>../de.metas.printing.esb</module>
+		<module>../de.metas.printing.esb.camel</module>
 	</modules>
 	
 	<dependencyManagement>

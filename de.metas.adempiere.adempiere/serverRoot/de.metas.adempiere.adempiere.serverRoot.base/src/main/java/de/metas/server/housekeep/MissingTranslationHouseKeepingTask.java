@@ -1,8 +1,9 @@
 package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
+import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.util.ILoggable;
-import org.compiere.model.MLanguage;
+import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 /*
@@ -33,6 +34,6 @@ public class MissingTranslationHouseKeepingTask implements IStartupHouseKeepingT
 	@Override
 	public void executeTask(ILoggable loggable)
 	{
-		MLanguage.maintain(Env.getCtx());
+		Services.get(ILanguageDAO.class).addAllMissingTranslations(Env.getCtx());
 	}
 }

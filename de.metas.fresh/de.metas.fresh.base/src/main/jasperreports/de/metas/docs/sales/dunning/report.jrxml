@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="237"/>
 	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
 	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -33,7 +33,7 @@
 		<band height="280" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement uuid="3779eea3-77cc-4294-93da-2a9ea38437b2" key="subreport-7" mode="Transparent" x="295" y="113" width="300" height="134"/>
+				<reportElement uuid="3779eea3-77cc-4294-93da-2a9ea38437b2" key="subreport-7" mode="Transparent" x="295" y="131" width="300" height="134"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -61,7 +61,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d" key="subreport-8" mode="Transparent" x="22" y="100" width="225" height="100"/>
+				<reportElement uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d" key="subreport-8" mode="Transparent" x="22" y="118" width="225" height="100"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -72,7 +72,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef" key="subreport-4" x="0" y="31" width="595" height="85"/>
+				<reportElement uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef" key="subreport-4" x="0" y="49" width="595" height="85"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
@@ -119,7 +119,7 @@
 		<band height="350" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="245"/>
+				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="130" width="595" height="220"/>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
 				</subreportParameter>

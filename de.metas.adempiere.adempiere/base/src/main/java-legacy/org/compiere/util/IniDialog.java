@@ -25,11 +25,11 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
@@ -38,7 +38,11 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.swing.CDialog;
+import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Init Dialog
@@ -73,6 +77,7 @@ public final class IniDialog extends CDialog implements ActionListener
 	public static final boolean accept()
 	{
 		IniDialog id = new IniDialog();
+		
 		if (id.isAccepted())
 		{
 			log.info("License Accepted");
@@ -81,13 +86,14 @@ public final class IniDialog extends CDialog implements ActionListener
 		System.exit(10);
 		return false;       // never executed.
 	}
-
+	
 	/**
 	 * Constructor
+	 * @param parenta 
 	 */
 	private IniDialog()
 	{
-		super();
+		super(createDummyParentFrame());
 		try
 		{
 			jbInit();
@@ -103,6 +109,21 @@ public final class IniDialog extends CDialog implements ActionListener
 			cmd_reject();
 		}
 	}   // IniDialog
+	
+	/**
+	 * Creates a dummy parent for this dialog. We need it because we want to have an icon in the task bar (FRESH-320).
+	 * 
+	 * @see http://stackoverflow.com/questions/8006502/show-jdialog-on-taskbar
+	 */
+	private static final CFrame createDummyParentFrame()
+	{
+		final CFrame dummyFrame = new CFrame();
+		dummyFrame.setUndecorated(true);
+		dummyFrame.setVisible(true);
+		dummyFrame.setLocationRelativeTo(null);
+		dummyFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		return dummyFrame;
+	}
 
 	private static final URL getLicenseURL()
 	{
@@ -163,7 +184,13 @@ public final class IniDialog extends CDialog implements ActionListener
 	 */
 	private void jbInit() throws Exception
 	{
-		setTitle(Adempiere.getName() + " - " + s_res.getString("Adempiere_License"));
+		final String title = Adempiere.getName() + " - " + s_res.getString("Adempiere_License");
+
+		final JFrame dummyParentFrame = getOwner();
+		dummyParentFrame.setTitle(title);
+		dummyParentFrame.setIconImages(getIconImages());
+		
+		setTitle(title);
 		southLabel.setText(s_res.getString("Do_you_accept"));
 		bReject.setText(s_res.getString("No"));
 		bAccept.setText(s_res.getString("Yes_I_Understand"));
@@ -208,10 +235,34 @@ public final class IniDialog extends CDialog implements ActionListener
 	@Override
 	public final void dispose()
 	{
+		if(_disposed)
+		{
+			return;
+		}
+		_disposed = true;
+		
 		super.dispose();
+		
 		if (!m_accept)
+		{
 			cmd_reject();
-	}   // dispose
+		}
+		
+		final JFrame dummyParentFrame = getOwner();
+		dummyParentFrame.dispose();
+	}
+	
+	private boolean _disposed = false;
+
+	/**
+	 * @return our dummy parent frame
+	 * @see #createDummyParentFrame()
+	 */
+	@Override
+	public JFrame getOwner()
+	{
+		return (JFrame) super.getOwner();
+	}
 
 	/**
 	 * Is Accepted

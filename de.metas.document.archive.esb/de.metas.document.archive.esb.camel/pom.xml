@@ -119,15 +119,24 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-
-						<Bundle-Version>${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						<!--  
+						Note about Bundle-Version:
+						
+						We want to avoid this error:
+						Invalid value for Bundle-Version, FRESH-307-SNAPSHOT-149 does not match [0-9]{1,9}(\.[0-9]{1,9}(\.[0-9]{1,9}(\.[0-9A-Za-z_-]+)?)?)?
+						since we want to have the info about which branch and which build# in the version and this string currently is "FRESH-307-SNAPSHOT-149",
+						we set the bundle version to 0.0.0.FRESH-307-SNAPSHOT-149
+						
+						Thx to http://www.regexpal.com/
+						-->
+						<Bundle-Version>0.0.0.${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include dependent artifacts in our bundle. Don't make it an extra 
 							bundle, unless there is *another* OSGI-bundle that also needs those dependencies -->
 						<Private-Package>
 							de.metas.document.archive.esb.api.*,
 							de.metas.document.archive.esb.base.*,
-							de.metas.util.*,
+							org.adempiere.util.*,
 							{local-packages}
 						</Private-Package>
 					</instructions>

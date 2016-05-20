@@ -16,9 +16,8 @@
  *****************************************************************************/
 package org.compiere.install;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
+import org.adempiere.ad.language.ILanguageDAO;
+import org.adempiere.util.Services;
 import org.compiere.model.MLanguage;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -32,6 +31,9 @@ import org.compiere.process.SvrProcess;
  */
 public class LanguageMaintenance extends SvrProcess
 {
+	// services
+	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+	
 	/**	The Language ID			*/
 	private int		p_AD_Language_ID = 0;
 	/** Maintenance Mode		*/
@@ -50,6 +52,7 @@ public class LanguageMaintenance extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -71,6 +74,7 @@ public class LanguageMaintenance extends SvrProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		m_language = new MLanguage (getCtx(), p_AD_Language_ID, get_TrxName());
@@ -87,7 +91,7 @@ public class LanguageMaintenance extends SvrProcess
 		if (MAINTENANCEMODE_Delete.equals(p_MaintenanceMode)
 			|| MAINTENANCEMODE_ReCreate.equals(p_MaintenanceMode))
 		{
-			deleteNo = m_language.maintain(false);
+			deleteNo = languageDAO.removeTranslations(m_language);
 		}
 		//	Add
 		if (MAINTENANCEMODE_Add.equals(p_MaintenanceMode)
@@ -95,7 +99,7 @@ public class LanguageMaintenance extends SvrProcess
 		{
 			if (m_language.isActive() && m_language.isSystemLanguage())
 			{
-				insertNo = m_language.maintain(true);
+				insertNo = languageDAO.addMissingTranslations(m_language);
 			}
 			else
 				throw new Exception ("Language not active System Language");
