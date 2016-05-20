@@ -348,11 +348,13 @@ public abstract class AbstractTerminalNumericField
 		if (isDisposed() || fNumber == null)
 		{
 			// shall not happen but we are throwing an exception because we got a weird case (FRESH-331)
-			throw new TerminalException("Atempt to set value but field is disposed."
+			new TerminalException("Atempt to set value but field is disposed."
 					+ "\n field: " + this
 					+ "\n value: " + valueOld + "->" + valueNew
 					+ "\n fireEvent: " + fireEvent
-					+ "\n fNumber: " + fNumber);
+					+ "\n fNumber: " + fNumber)
+							.throwOrLogWarningIfDeveloperMode(log);
+			return;
 		}
 
 		//
