@@ -181,4 +181,10 @@ public class NumberField<T extends Number> extends CustomField<T>
 	{
 		content.selectAll();
 	}
+	
+	@Override
+	public void setReadOnly(final boolean readOnly)
+	{
+		content.setReadOnly(readOnly);
+	}
 }
