@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -291,7 +292,14 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 
 	public void removeActionsView(final ActionsView actionsView)
 	{
-		_actionsViews.remove(actionsView);
+		if (!_actionsViews.remove(actionsView))
+		{
+			// does not exist
+			return;
+		}
+
+		// also reset the actions
+		actionsView.setActions(ImmutableList.of());
 	}
 
 	public Set<ActionsView> getActionsView()
