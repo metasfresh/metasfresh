@@ -1,14 +1,8 @@
-package de.metas.server.housekeep;
-
-import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.ad.language.ILanguageDAO;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
-import org.compiere.util.Env;
+package org.compiere.util;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.serverRoot.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -28,12 +22,14 @@ import org.compiere.util.Env;
  * #L%
  */
 
-public class MissingTranslationHouseKeepingTask implements IStartupHouseKeepingTask
+/**
+ * Cache reset listener.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @see CacheMgt#addCacheResetListener(String, ICacheResetListener)
+ */
+public interface ICacheResetListener
 {
-
-	@Override
-	public void executeTask(ILoggable loggable)
-	{
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(Env.getCtx());
-	}
+	int reset(String tableName, Object key);
 }

@@ -16,29 +16,25 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
+
+import de.metas.logging.LogManager;
 
 /**
  * Language Model
@@ -60,49 +56,6 @@ public class MLanguage extends X_AD_Language
 	private static final long serialVersionUID = 6415602943484245447L;
 
 	private static final Logger s_log = LogManager.getLogger(MLanguage.class);
-
-	/**
-	 * Get Language Model from Language
-	 *
-	 * @param ctx context
-	 * @param lang language
-	 * @return language
-	 */
-	public static MLanguage get(final Properties ctx, final Language lang)
-	{
-		return get(ctx, lang.getAD_Language());
-	}	// getMLanguage
-
-	/**
-	 * Get Language Model from AD_Language
-	 *
-	 * @param ctx context
-	 * @param AD_Language language e.g. en_US
-	 * @return language or null
-	 */
-	public static MLanguage get(final Properties ctx, final String AD_Language)
-	{
-		return new Query(ctx, Table_Name, COLUMNNAME_AD_Language + "=?", null)
-				.setParameters(new Object[] { AD_Language })
-				.firstOnly();
-	}	// get
-
-	/**
-	 * Maintain all active languages
-	 *
-	 * @param ctx context
-	 */
-	public static void maintain(final Properties ctx)
-	{
-		final List<MLanguage> list = new Query(ctx, Table_Name, "IsSystemLanguage=? AND IsBaseLanguage=?", null)
-				.setParameters(new Object[] { true, false })
-				.setOnlyActiveRecords(true)
-				.list();
-		for (final MLanguage language : list)
-		{
-			language.maintain(true);
-		}
-	}	// maintain
 
 	// metas: begin: base language
 	/**
@@ -162,9 +115,6 @@ public class MLanguage extends X_AD_Language
 
 	};
 
-	// /** Logger */
-	// private static Logger s_log = CLogMgt.getLogger(MLanguage.class);
-
 	/**************************************************************************
 	 * Standard Constructor
 	 *
@@ -189,38 +139,6 @@ public class MLanguage extends X_AD_Language
 		super(ctx, rs, trxName);
 	}	// MLanguage
 
-	/**
-	 * Create Language
-	 *
-	 * @param ctx context
-	 * @param AD_Language language code
-	 * @param Name name
-	 * @param CountryCode country code
-	 * @param LanguageISO language code
-	 * @param trxName transaction
-	 */
-	private MLanguage(final Properties ctx, final String AD_Language, final String Name,
-			final String CountryCode, final String LanguageISO, final String trxName)
-	{
-		super(ctx, 0, trxName);
-		setAD_Language(AD_Language);	// en_US
-		setIsBaseLanguage(false);
-		setIsSystemLanguage(false);
-		setName(Name);
-		setCountryCode(CountryCode);	// US
-		setLanguageISO(LanguageISO);	// en
-	}	// MLanguage
-
-	/** Locale */
-	private Locale m_locale = null;
-	/** Date Format */
-	private SimpleDateFormat m_dateFormat = null;
-
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
@@ -228,107 +146,6 @@ public class MLanguage extends X_AD_Language
 				+ ",Language=" + getLanguageISO() + ",Country=" + getCountryCode()
 				+ "]";
 	}	// toString
-
-	/**
-	 * Get Locale
-	 *
-	 * @return Locale
-	 */
-	public Locale getLocale()
-	{
-		if (m_locale == null)
-		{
-			m_locale = new Locale(getLanguageISO(), getCountryCode());
-		}
-		return m_locale;
-	}	// getLocale
-
-	/**
-	 * Get (Short) Date Format.
-	 * The date format must parseable by org.compiere.grid.ed.MDocDate
-	 * i.e. leading zero for date and month
-	 *
-	 * @return date format MM/dd/yyyy - dd.MM.yyyy
-	 */
-	public SimpleDateFormat getDateFormat()
-	{
-		if (m_dateFormat != null)
-		{
-			return m_dateFormat;
-		}
-
-		if (getDatePattern() != null)
-		{
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance
-					(DateFormat.SHORT, getLocale());
-			try
-			{
-				m_dateFormat.applyPattern(getDatePattern());
-			}
-			catch (final Exception e)
-			{
-				log.error(getDatePattern() + " - " + e);
-				m_dateFormat = null;
-			}
-		}
-
-		if (m_dateFormat == null)
-		{
-			// Fix Locale Date format
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance
-					(DateFormat.SHORT, getLocale());
-			String sFormat = m_dateFormat.toPattern();
-			// some short formats have only one M and d (e.g. ths US)
-			if (sFormat.indexOf("MM") == -1 && sFormat.indexOf("dd") == -1)
-			{
-				String nFormat = "";
-				for (int i = 0; i < sFormat.length(); i++)
-				{
-					if (sFormat.charAt(i) == 'M')
-					{
-						nFormat += "MM";
-					}
-					else if (sFormat.charAt(i) == 'd')
-					{
-						nFormat += "dd";
-					}
-					else
-					{
-						nFormat += sFormat.charAt(i);
-					}
-				}
-				// System.out.println(sFormat + " => " + nFormat);
-				m_dateFormat.applyPattern(nFormat);
-			}
-			// Unknown short format => use JDBC
-			if (m_dateFormat.toPattern().length() != 8)
-			{
-				m_dateFormat.applyPattern("yyyy-MM-dd");
-			}
-
-			// 4 digit year
-			if (m_dateFormat.toPattern().indexOf("yyyy") == -1)
-			{
-				sFormat = m_dateFormat.toPattern();
-				String nFormat = "";
-				for (int i = 0; i < sFormat.length(); i++)
-				{
-					if (sFormat.charAt(i) == 'y')
-					{
-						nFormat += "yy";
-					}
-					else
-					{
-						nFormat += sFormat.charAt(i);
-					}
-				}
-				m_dateFormat.applyPattern(nFormat);
-			}
-		}
-		//
-		m_dateFormat.setLenient(true);
-		return m_dateFormat;
-	}   // getDateFormat
 
 	/**
 	 * Set AD_Language_ID
@@ -353,204 +170,39 @@ public class MLanguage extends X_AD_Language
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		final String dp = getDatePattern();
-		if (is_ValueChanged("DatePattern") && dp != null && dp.length() > 0)
+		final String datePattern = getDatePattern();
+		if (is_ValueChanged(COLUMNNAME_DatePattern) && !Check.isEmpty(datePattern))
 		{
-			if (dp.indexOf("MM") == -1)
+			if (datePattern.indexOf("MM") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Month (MM)");
 			}
-			if (dp.indexOf("dd") == -1)
+			if (datePattern.indexOf("dd") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Day (dd)");
 			}
-			if (dp.indexOf("yy") == -1)
+			if (datePattern.indexOf("yy") == -1)
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - No Year (yy)");
 			}
 
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, getLocale());
+			final Locale locale = new Locale(getLanguageISO(), getCountryCode());
+			final SimpleDateFormat dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
 			try
 			{
-				m_dateFormat.applyPattern(dp);
+				dateFormat.applyPattern(datePattern);
 			}
 			catch (final Exception e)
 			{
-				m_dateFormat = null;
 				throw new AdempiereException("@Error@ @DatePattern@ - " + e.getMessage(), e);
 			}
 		}
+		
 		if (newRecord)
 		{
 			setAD_Language_ID();
 		}
+		
 		return true;
-	}	// beforeSae
-
-	/**
-	 * AfterSave
-	 *
-	 * @param newRecord new
-	 * @param success success
-	 * @return true if saved
-	 */
-	@Override
-	protected boolean afterSave(final boolean newRecord, final boolean success)
-	{
-		final int no = TranslationTable.getActiveLanguages(true);
-		log.debug("Active Languages=" + no);
-		return true;
-	}	// afterSave
-
-	/**************************************************************************
-	 * Maintain Translation
-	 *
-	 * @param add if true add missing records - otherwise delete
-	 * @return number of records deleted/inserted
-	 */
-	public int maintain(final boolean add)
-	{
-		final String sql = "SELECT TableName FROM AD_Table WHERE TableName LIKE '%_Trl' ORDER BY TableName";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		int retNo = 0;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				if (add)
-				{
-					retNo += addTable(rs.getString(1));
-				}
-				else
-				{
-					retNo += deleteTable(rs.getString(1));
-				}
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return retNo;
-	}	// maintain
-
-	/**
-	 * Delete Translation
-	 *
-	 * @param tableName table name
-	 * @return number of records deleted
-	 */
-	private int deleteTable(final String tableName)
-	{
-		final String sql = "DELETE FROM  " + tableName + " WHERE AD_Language=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { getAD_Language() }, get_TrxName());
-		log.debug(tableName + " #" + no);
-		return no;
-	}	// deleteTable
-
-	/**
-	 * Add Translation to table
-	 *
-	 * @param trlTableName table name
-	 * @return number of records inserted
-	 */
-	private int addTable(final String trlTableName)
-	{
-		final String baseTable = trlTableName.substring(0, trlTableName.length() - 4);
-		final String sql = "SELECT c.ColumnName "
-				+ "FROM AD_Column c"
-				+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-				+ "WHERE t.TableName=?"
-				+ "  AND c.IsTranslated='Y' AND c.IsActive='Y' "
-				+ "ORDER BY c.ColumnName";
-		final ArrayList<String> columns = new ArrayList<String>(5);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setString(1, baseTable);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				columns.add(rs.getString(1));
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		// Columns
-		if (columns.size() == 0)
-		{
-			log.error("No Columns found for " + baseTable);
-			return 0;
-		}
-
-		final String tblAlias = "t";
-
-		final StringBuilder cols = new StringBuilder();
-		final StringBuilder colsWithAlias = new StringBuilder();
-		for (int i = 0; i < columns.size(); i++)
-		{
-			cols.append(", ").append(columns.get(i));
-			colsWithAlias.append(", ").append(tblAlias + "." + columns.get(i));
-		}
-
-		//
-		// Insert Statement
-		final String trlAlias = "trl";
-		final int AD_User_ID = Env.getAD_User_ID(getCtx());
-		final String keyColumn = baseTable + "_ID";
-		final StringBuilder insertSql = new StringBuilder();
-		// @formatter:off
-		insertSql
-		.append(" INSERT INTO " + trlTableName + "(")
-			.append("AD_Language, ")
-			.append("IsTranslated, ")
-			.append("AD_Client_ID, ")
-			.append("AD_Org_ID, ")
-			.append("Createdby, ")
-			.append("UpdatedBy, ")
-			.append(keyColumn)
-			.append(cols)
-		.append(")")
-		.append("\n SELECT ")
-			.append("'" + getAD_Language() + "', ")
-			.append("'N', ")
-			.append(tblAlias + ".AD_Client_ID, ")
-			.append(tblAlias + ".AD_Org_ID, ")
-			.append(AD_User_ID + ", ")
-			.append(AD_User_ID + ", ")
-			.append(tblAlias + "." + keyColumn)
-			.append(colsWithAlias)
-		.append("\n FROM " + baseTable + " " + tblAlias)
-			.append(" LEFT JOIN " + baseTable + "_Trl " + trlAlias)
-			.append("            ON " + trlAlias + "." + keyColumn + " = " + tblAlias + "." + keyColumn)
-			.append("			 AND " + trlAlias + ".AD_Language='" + getAD_Language() + "'")
-		.append("\n WHERE " + trlAlias + "." + keyColumn + " IS NULL");
-		// @formatter:on
-
-		final int no = DB.executeUpdateEx(insertSql.toString(), null, get_TrxName());
-		if (no != 0)
-		{
-			log.info(trlTableName + " #" + no);
-		}
-		return no;
-	}	// addTable
-}	//	MLanguage
+	}
+}
