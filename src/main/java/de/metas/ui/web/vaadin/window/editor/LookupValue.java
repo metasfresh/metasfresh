@@ -30,13 +30,13 @@ public class LookupValue
 	{
 		return new LookupValue(id, displayName, longDisplayName);
 	}
-	
+
 	public static final LookupValue of(final Object id, final String displayName)
 	{
 		final String longDisplayName = null;
 		return new LookupValue(id, displayName, longDisplayName);
 	}
-	
+
 	public static final LookupValue cast(final Object obj)
 	{
 		return (LookupValue)obj;
@@ -49,7 +49,24 @@ public class LookupValue
 	private LookupValue(final Object id, final String displayName, final String longDisplayName)
 	{
 		super();
-		this.id = id;
+
+		if (id == null)
+		{
+			throw new NullPointerException("id");
+		}
+		else if (id instanceof Integer)
+		{
+			this.id = id;
+		}
+		else if (id instanceof String)
+		{
+			this.id = id;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid id type: " + id + " (" + id.getClass() + ")");
+		}
+
 		this.displayName = displayName;
 		this.longDisplayName = longDisplayName;
 	}
@@ -59,7 +76,7 @@ public class LookupValue
 	{
 		return displayName;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -75,11 +92,11 @@ public class LookupValue
 		{
 			return false;
 		}
-		
+
 		final LookupValue other = (LookupValue)obj;
 		return Objects.equals(this.id, other.id);
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
