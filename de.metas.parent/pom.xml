@@ -1315,7 +1315,7 @@
 				They are supposed to make sure that a build on a local dev workstatation won't fail.
 				To sign a "real" build for production, they need to be overwritten from outside (=>handled by jenkins and/or the RM).
 				-->
-				<keystore.version>1.4.0-dev</keystore.version>
+				<keystore.version>1.4.0_dev</keystore.version>
 				<keystore.alias>metas_dev</keystore.alias>
 				<keystore.store.password>metas_dev</keystore.store.password>
 				<keystore.key.password>metas_dev</keystore.key.password>
