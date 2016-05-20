@@ -61,7 +61,9 @@ public final class HARDCODED_Order
 	public static final PropertyName ORDER_TotalLines = PropertyName.of(I_C_Order.COLUMNNAME_TotalLines);
 
 	public static final String STRINGEXPRESSION_TitleSummary = ""
-			+ "Order window - @" + ORDER_DocumentNo + "/-@";
+			//+ "@" + WindowConstants.PROPERTYNAME_WindowRoot + "/@"
+			+ "Window"
+			+ " - @" + ORDER_DocumentNo + "/-@";
 	public static final String STRINGEXPRESSION_RecordSummary = ""
 			+ "@" + ORDER_DocumentNo + "/-@"
 			+ "\n@" + ORDER_DatePromised + "/-@"
