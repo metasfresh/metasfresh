@@ -43,10 +43,10 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.logging.LogManager;
 
 public class PriceListBL implements IPriceListBL
 {
@@ -170,7 +170,8 @@ public class PriceListBL implements IPriceListBL
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
 			final I_C_Country country,
 			final Timestamp date,
-			final boolean isSoTrx, Boolean processedPLVFiltering)
+			final boolean isSoTrx,
+			final Boolean processedPLVFiltering)
 	{
 		if (country == null)
 		{
