@@ -17,6 +17,8 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-331 Double click needed for weighing machine and occasional NPE
+    * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
  - FRESH-312 Project cannot be compiled when downloading from github directly
