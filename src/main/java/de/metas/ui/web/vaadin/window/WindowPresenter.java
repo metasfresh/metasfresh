@@ -86,6 +86,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		super();
 		Application.autowire(this);
+		
+		setView(this._view, null);
 	}
 
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
@@ -168,7 +170,12 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		{
 			return;
 		}
-
+		
+		setView(view, viewOld);
+	}
+	
+	private final void setView(final WindowView view, final WindowView viewOld)
+	{
 		unbindFromView();
 		this._view = view;
 		bindToView();
@@ -607,6 +614,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		}
 	}
 
+	@Override
 	public void onActionClicked(final Action action)
 	{
 		final WindowModel model = getModel();
