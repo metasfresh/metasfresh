@@ -70,19 +70,19 @@
 	<field name="param_product_category" class="java.lang.String"/>
 	<field name="param_attributes" class="java.lang.String"/>
 	<variable name="sameperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
-		<variableExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></variableExpression>
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="compperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
-		<variableExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></variableExpression>
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="sameperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
-		<variableExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></variableExpression>
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="compperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
-		<variableExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></variableExpression>
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="perioddifferencetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
@@ -92,12 +92,12 @@
 		<variableExpression><![CDATA[$V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})]]></variableExpression>
 	</variable>
 	<variable name="perioddiffpercentagetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
-		<variableExpression><![CDATA[(($V{perioddifferencetotal_pc}).signum() != 0 && $V{compperiodtotal_pc}.signum() != 0) ?
-$V{perioddifferencetotal_pc}.divide($V{compperiodtotal_pc}, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")) : null]]></variableExpression>
+		<variableExpression><![CDATA[(($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).signum() != 0 && $V{compperiodtotal_pc}.signum() != 0) ?
+($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).divide($V{compperiodtotal_pc}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
 	</variable>
 	<variable name="perioddiffpercentagetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
-		<variableExpression><![CDATA[($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).compareTo(BigDecimal.ZERO) != 0 && $V{compperiodtotal_bp}.compareTo(BigDecimal.ZERO) != 0 ?
- ( $V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).divide($V{compperiodtotal_bp}, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")) : null]]></variableExpression>
+		<variableExpression><![CDATA[(($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).signum() != 0 && $V{compperiodtotal_bp}.signum() != 0) ?
+($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).divide($V{compperiodtotal_bp}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
 	</variable>
 	<group name="BPartner" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{bp_name}]]></groupExpression>
@@ -286,6 +286,20 @@ $V{perioddifferencetotal_pc}.divide($V{compperiodtotal_pc}, 2, RoundingMode.HALF
 					</textElement>
 					<text><![CDATA[]]></text>
 				</staticText>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="417" y="44" width="90" height="12"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Währung"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="507" y="44" width="145" height="12"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["CHF"]]></textFieldExpression>
+				</textField>
 			</band>
 			<band height="24">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
