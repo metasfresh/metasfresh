@@ -60,6 +60,6 @@ public class TextEditor extends FieldEditor<String>
 	@Override
 	protected String convertToView(final Object valueObj)
 	{
-		return valueObj == null ? "" : valueObj.toString();
+		return valueObj == null ? null : valueObj.toString();
 	}
 }
