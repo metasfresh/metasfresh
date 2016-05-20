@@ -2,10 +2,17 @@ package de.metas.ui.web.vaadin.window.model.action;
 
 import java.util.List;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.vaadin.server.Resource;
+
+import de.metas.ui.web.vaadin.theme.Theme;
 
 /*
  * #%L
@@ -31,33 +38,25 @@ import com.vaadin.server.Resource;
 
 public abstract class Action
 {
-	public static Action of(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon)
+	public static Builder builder()
 	{
-		return new ActionImpl(actionGroup, actionId, caption, icon);
+		return new Builder();
 	}
-
-	public static Action selfHandledAction(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Listener listener)
-	{
-		return new SelfHandledAction(actionGroup, actionId, caption, icon, listener);
-	}
-
-	public static Action actionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Provider childrenProvider)
-	{
-		return new ActionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
-	}
-
+	
 	private final String actionId;
 	private final ActionGroup actionGroup;
 	private final String caption;
 	private final Resource icon;
+	private final boolean toolbarAction;
 
-	protected Action(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon)
+	protected Action(final Builder builder)
 	{
 		super();
-		this.actionId = Preconditions.checkNotNull(actionId, "actionId");
-		this.actionGroup = actionGroup == null ? ActionGroup.NONE : actionGroup;
-		this.caption = Preconditions.checkNotNull(caption, "caption");
-		this.icon = icon;
+		this.actionId = Preconditions.checkNotNull(builder.actionId, "actionId");
+		this.actionGroup = builder.actionGroup == null ? ActionGroup.NONE : builder.actionGroup;
+		this.caption = Preconditions.checkNotNull(builder.caption, "caption");
+		this.icon = builder.icon;
+		this.toolbarAction = builder.toolbarAction;
 	}
 
 	@Override
@@ -109,6 +108,11 @@ public abstract class Action
 	{
 		return icon;
 	}
+	
+	public boolean isToolbarAction()
+	{
+		return toolbarAction;
+	}
 
 	public static class ActionEvent
 	{
@@ -157,12 +161,106 @@ public abstract class Action
 	{
 		List<Action> provideActions();
 	}
+	
+	public static class Builder
+	{
+		private ActionGroup actionGroup = ActionGroup.NONE;
+		private String actionId;
+		private String caption;
+		private Resource icon;
+		private Action.Listener listener;
+		private Action.Provider childrenProvider;
+		
+		private boolean toolbarAction = false;
+		
+		private Builder()
+		{
+			super();
+		}
+		
+		public Action build()
+		{
+			if (childrenProvider != null)
+			{
+				return new ActionWithChildrenProvider(this);
+			}
+			else if (listener != null)
+			{
+				return new SelfHandledAction(this);
+			}
+			else
+			{
+				return new ActionImpl(this);
+			}
+		}
+		
+		public Builder setActionGroup(ActionGroup actionGroup)
+		{
+			this.actionGroup = actionGroup;
+			return this;
+		}
+		
+		public Builder setActionIdAndUpdateFromAD_Messages(final String adMessage)
+		{
+			setActionId(adMessage);
+			
+			String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMessage);
+			caption = Util.cleanAmp(caption);
+			setCaption(caption);
+
+			final Resource icon = Theme.getIconSmall(actionId);
+			setIcon(icon);
+
+			return this;
+		}
+		
+		public Builder setActionId(String actionId)
+		{
+			this.actionId = actionId;
+			return this;
+		}
+		
+		public Builder setCaption(String caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+		
+		public Builder setIcon(Resource icon)
+		{
+			this.icon = icon;
+			return this;
+		}
+		
+		public Builder setListener(Action.Listener listener)
+		{
+			this.listener = listener;
+			return this;
+		}
+		
+		public Builder setChildrenProvider(Action.Provider childrenProvider)
+		{
+			this.childrenProvider = childrenProvider;
+			return this;
+		}
+		
+		public Builder setToolbarAction(boolean toolbarAction)
+		{
+			this.toolbarAction = toolbarAction;
+			return this;
+		}
+		public Builder setToolbarAction()
+		{
+			setToolbarAction(true);
+			return this;
+		}
+	}
 
 	private static final class ActionImpl extends Action
 	{
-		protected ActionImpl(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon)
+		protected ActionImpl(final Builder builder)
 		{
-			super(actionGroup, actionId, caption, icon);
+			super(builder);
 		}
 	}
 
@@ -170,10 +268,10 @@ public abstract class Action
 	{
 		private final Action.Listener listener;
 
-		protected SelfHandledAction(final ActionGroup actionGroup, final String actionId, final String caption, final Resource icon, final Action.Listener listener)
+		protected SelfHandledAction(final Builder builder)
 		{
-			super(actionGroup, actionId, caption, icon);
-			this.listener = Preconditions.checkNotNull(listener, "listener not null");
+			super(builder);
+			this.listener = Preconditions.checkNotNull(builder.listener, "listener not null");
 		}
 
 		@Override
@@ -187,10 +285,10 @@ public abstract class Action
 	{
 		private final Action.Provider childrenProvider;
 
-		protected ActionWithChildrenProvider(ActionGroup actionGroup, String actionId, String caption, Resource icon, final Action.Provider childrenProvider)
+		protected ActionWithChildrenProvider(final Builder builder)
 		{
-			super(actionGroup, actionId, caption, icon);
-			this.childrenProvider = childrenProvider;
+			super(builder);
+			this.childrenProvider = builder.childrenProvider;
 		}
 
 		@Override

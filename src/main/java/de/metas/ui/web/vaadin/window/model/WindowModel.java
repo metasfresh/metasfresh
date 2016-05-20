@@ -12,14 +12,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.vaadin.spring.annotation.PrototypeScope;
@@ -29,7 +26,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 import com.vaadin.server.Page;
-import com.vaadin.server.Resource;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 
@@ -662,44 +658,44 @@ public class WindowModel
 
 		return ImmutableList.<Action> builder()
 				//
-				.add(createActionWithListener(crudActionGroup, "Ignore", event -> cancelRecordEditing()))
-				.add(createActionWithListener(crudActionGroup, "New", event -> newRecord()))
-				.add(createActionWithListener(crudActionGroup, "Save", event -> saveRecord()))
-				.add(createActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(crudActionGroup, "Ignore", event -> cancelRecordEditing()).setToolbarAction().build())
+				.add(createActionWithListener(crudActionGroup, "New", event -> newRecord()).setToolbarAction().build())
+				.add(createActionWithListener(crudActionGroup, "Save", event -> saveRecord()).setToolbarAction().build())
+				.add(createActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted).build())
 				//
-				.add(createActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(reportActionGroup, "Print", event -> print(event, false)))
-				.add(createActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)))
+				.add(createActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(reportActionGroup, "Print", event -> print(event, false)).build())
+				.add(createActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)).build())
 				//
 				.add(createActionWithChildrenProvider(goActionGroup, "ZoomAcross", () -> createZoomAccrossActions()))
-				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted))
-				.add(createActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted).build())
+				.add(createActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted).build())
 				//
-				.add(createActionWithListener(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted))
+				.add(createActionWithListener(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted).build())
 				//
 				.build();
 	}
 
-	private Action createActionWithListener(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
+	private Action.Builder createActionWithListener(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
 	{
-		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
-		caption = Util.cleanAmp(caption);
-
-		final Resource icon = Theme.getIconSmall(actionId);
-		return Action.selfHandledAction(actionGroup, actionId, caption, icon, listener);
+		return Action.builder()
+				.setActionGroup(actionGroup)
+				.setActionIdAndUpdateFromAD_Messages(actionId)
+				.setActionId(actionId)
+				.setListener(listener);
 	}
 
 	private Action createActionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final Action.Provider childrenProvider)
 	{
-		String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionId);
-		caption = Util.cleanAmp(caption);
-
-		final Resource icon = Theme.getIconSmall(actionId);
-		return Action.actionWithChildrenProvider(actionGroup, actionId, caption, icon, childrenProvider);
+		return Action.builder()
+				.setActionGroup(actionGroup)
+				.setActionIdAndUpdateFromAD_Messages(actionId)
+				.setChildrenProvider(childrenProvider)
+				.build();
 	}
 
 	public void executeAction(final Action action)
@@ -733,12 +729,14 @@ public class WindowModel
 		final ImmutableList.Builder<Action> actionsCollector = ImmutableList.builder();
 		for (final ZoomInfo zoomInfo : zoomInfos)
 		{
-			final String actionId = zoomInfo.getId();
-			final String caption = zoomInfo.getLabel();
-			final Resource icon = Theme.getImageResourceForNameWithoutExt(Theme.ICONNAME_Window);
-			final Action action = Action.selfHandledAction(ActionGroup.NONE, actionId, caption, icon, target -> {
-				postEvent(ZoomToWindowEvent.of(WindowModel.this, zoomInfo));
-			});
+			final Action action = Action.builder()
+					.setActionId(zoomInfo.getId())
+					.setCaption(zoomInfo.getLabel())
+					.setIcon(Theme.getImageResourceForNameWithoutExt(Theme.ICONNAME_Window))
+					.setListener(target -> {
+						postEvent(ZoomToWindowEvent.of(WindowModel.this, zoomInfo));
+					})
+					.build();
 			actionsCollector.add(action);
 		}
 
