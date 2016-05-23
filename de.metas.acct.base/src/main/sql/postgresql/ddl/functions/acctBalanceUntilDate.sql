@@ -1,11 +1,26 @@
 -- Function: de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character)
 
--- DROP FUNCTION de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character);
+ DROP FUNCTION IF EXISTS de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character);
 
 DROP FUNCTION IF EXISTS   de_metas_acct.acctbalanceuntildate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date,  ad_org_id numeric, p_includepostingtypestatistical character);
 
+
+/* 
+
+-- This type shall be already in the database. Do not create it again
+
+CREATE TYPE de_metas_acct.BalanceAmt AS
+(
+	Balance numeric
+    , Debit numeric
+    , Credit numeric
+);
+
+ */
+ 
+
 CREATE OR REPLACE FUNCTION de_metas_acct.acctbalanceuntildate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date,  ad_org_id numeric, p_includepostingtypestatistical character DEFAULT 'N'::bpchar)
-  RETURNS de_metas_acct.balanceamt AS
+  RETURNS de_metas_acct.BalanceAmt AS
 $BODY$
 -- NOTE: we use COALESCE(SUM(..)) just to make sure we are not returning null
 SELECT ROW(SUM((Balance).Balance), SUM((Balance).Debit), SUM((Balance).Credit))::de_metas_acct.BalanceAmt
