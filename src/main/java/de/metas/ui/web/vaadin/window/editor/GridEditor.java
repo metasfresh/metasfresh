@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L
@@ -113,8 +114,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	{
 		if (getPropertyName().equals(propertyName))
 		{
-			@SuppressWarnings("unchecked")
-			final List<PropertyValuesDTO> rowValuesList = (List<PropertyValuesDTO>)value;
+			final PropertyValuesListDTO rowValuesList = PropertyValuesListDTO.cast(value);
 	
 			// FIXME: this is NOT optimum at all
 			{

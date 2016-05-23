@@ -3,7 +3,6 @@ package de.metas.ui.web.vaadin.window.shared.datatype;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
 import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.model.SqlLazyLookupDataSource;
 
 /*
  * #%L
@@ -123,8 +121,8 @@ public final class PropertyValuesDTO implements Serializable
 				, Integer.class, BigDecimal.class //
 				, Date.class, Timestamp.class // FIXME: i think we shall avoid Timestamp
 				, Boolean.class //
-				, SqlLazyLookupDataSource.class // FIXME: tolerate it for now
-				, ArrayList.class // FIXME: tolerate it for now => introduce a new datatype for List<PropertyValuesDTO>
+				, LookupDataSourceServiceDTO.class //
+				, PropertyValuesListDTO.class //
 				, LookupValue.class //
 				, ComposedValue.class //
 		);

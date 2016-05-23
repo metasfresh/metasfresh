@@ -1,6 +1,5 @@
 package de.metas.ui.web.vaadin.window.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +14,7 @@ import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L
@@ -132,13 +132,13 @@ public class GridPropertyValue extends ObjectPropertyValue
 	@Override
 	public Object getValue()
 	{
-		final List<PropertyValuesDTO> rowValuesList = new ArrayList<>(rows.size());
+		final PropertyValuesListDTO.Builder rowValuesList = PropertyValuesListDTO.builder();
 		for (final GridRow row : rows.values())
 		{
 			final PropertyValuesDTO rowValues = row.getValuesAsMap();
 			rowValuesList.add(rowValues);
 		}
-		return rowValuesList;
+		return rowValuesList.build();
 	}
 
 	public Object setValueAt(final Object rowIdObj, final PropertyName propertyName, final Object value)

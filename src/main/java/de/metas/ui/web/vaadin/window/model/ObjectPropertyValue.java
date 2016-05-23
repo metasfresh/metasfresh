@@ -256,7 +256,7 @@ public class ObjectPropertyValue implements PropertyValue
 		{
 			return null;
 		}
-		return lookupPropertyValue.getValue();
+		return lookupPropertyValue.getLookupDataSource();
 	}
 
 	public Object getInitialValue()

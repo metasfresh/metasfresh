@@ -36,6 +36,11 @@ public class LookupValue
 		final String longDisplayName = null;
 		return new LookupValue(id, displayName, longDisplayName);
 	}
+	
+	public static final LookupValue unknownId(final int id)
+	{
+		return LookupValue.of(id, "<" + id + ">");
+	}
 
 	public static final LookupValue cast(final Object obj)
 	{

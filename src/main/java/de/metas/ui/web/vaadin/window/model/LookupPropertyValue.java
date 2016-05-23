@@ -10,6 +10,7 @@ import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.SqlLookupDescriptor;
 import de.metas.ui.web.vaadin.window.WindowConstants;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupDataSourceServiceDTO;
 
 /*
  * #%L
@@ -45,10 +46,10 @@ public class LookupPropertyValue implements PropertyValue
 	{
 		return (LookupPropertyValue)propertyValue;
 	}
-	
+
 	private final PropertyName propertyName;
-	/** i.e. the value */
 	private final LookupDataSource lookupDataSource;
+	private final LookupDataSourceServiceDTO value;
 
 	LookupPropertyValue(final PropertyDescriptor descriptor)
 	{
@@ -58,6 +59,8 @@ public class LookupPropertyValue implements PropertyValue
 
 		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
 		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
+
+		this.value = LookupDataSourceServiceDTO.of(lookupDataSource);
 	}
 
 	@Override
@@ -87,7 +90,12 @@ public class LookupPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public LookupDataSource getValue()
+	public LookupDataSourceServiceDTO getValue()
+	{
+		return value;
+	}
+
+	/* package */LookupDataSource getLookupDataSource()
 	{
 		return lookupDataSource;
 	}
@@ -101,7 +109,7 @@ public class LookupPropertyValue implements PropertyValue
 	@Override
 	public void setValue(final Object value)
 	{
-		// TODO: make sure it's not called
+		throw new UnsupportedOperationException("setting " + this + "'s value is not allowed");
 	}
 
 	public Object getInitialValue()
@@ -126,13 +134,13 @@ public class LookupPropertyValue implements PropertyValue
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isReadOnlyForUser()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public final boolean isCalculated()
 	{

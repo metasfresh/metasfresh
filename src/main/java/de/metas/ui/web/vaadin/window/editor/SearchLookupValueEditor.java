@@ -17,7 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.model.LookupDataSource;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupDataSourceServiceDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
@@ -129,7 +129,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	private final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
 	{
 		private final int pageLength;
-		private LookupDataSource _lookupDataSource;
+		private LookupDataSourceServiceDTO _lookupDataSourceService;
 		private LookupValue _currentValue;
 
 		public ComboDataSource(int pageLength)
@@ -149,31 +149,33 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 
 		public void setLookupDataSourceFromObject(Object value)
 		{
-			if (value instanceof LookupDataSource)
+			if (value instanceof LookupDataSourceServiceDTO)
 			{
-				setLookupDataSource((LookupDataSource)value);
+				final LookupDataSourceServiceDTO lookupDataSourceService = LookupDataSourceServiceDTO.cast(value);
+				setLookupDataSourceService(lookupDataSourceService);
 			}
 			else
 			{
 				// TODO
-				setLookupDataSource(null);
+				setLookupDataSourceService(null);
 			}
 		}
 
-		public void setLookupDataSource(final LookupDataSource lookupDataSource)
+		public void setLookupDataSourceService(final LookupDataSourceServiceDTO lookupDataSource)
 		{
-			this._lookupDataSource = lookupDataSource;
+			this._lookupDataSourceService = lookupDataSource;
 		}
 		
-		private LookupDataSource getLookupDataSource()
+		private LookupDataSourceServiceDTO getLookupDataSourceService()
 		{
-			if (_lookupDataSource == null)
+			if (_lookupDataSourceService == null)
 			{
 				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyName);
 				try
 				{
-					_lookupDataSource = (LookupDataSource)futureValue.get(10, TimeUnit.SECONDS);
-					if(_lookupDataSource == null)
+					final Object valueObj = futureValue.get(10, TimeUnit.SECONDS);
+					_lookupDataSourceService = LookupDataSourceServiceDTO.cast(valueObj);
+					if(_lookupDataSourceService == null)
 					{
 						logger.warn("Got no lookupDataSource for {}", valuesPropertyName);
 					}
@@ -183,7 +185,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 					logger.warn("Failed retrieving future lookup data source", e);
 				}
 			}
-			return _lookupDataSource;
+			return _lookupDataSourceService;
 		}
 		
 		public void setCurrentValue(final Object newValue)
@@ -194,11 +196,12 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			}
 			else if (newValue instanceof LookupValue)
 			{
-				this._currentValue = (LookupValue)newValue;
+				this._currentValue = LookupValue.cast(newValue);
 			}
 			else if (newValue instanceof Integer)
 			{
-				this._currentValue = LookupValue.of(newValue, "<" + newValue + ">");
+				final int id = (int)newValue;
+				this._currentValue = LookupValue.unknownId(id);
 			}
 			else
 			{
@@ -214,13 +217,18 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		@Override
 		public int size(final String filter)
 		{
-			final LookupDataSource lookupDataSource = getLookupDataSource();
-			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
-			if (askDataSource)
+			final LookupDataSourceServiceDTO lookupDataSourceService = getLookupDataSourceService();
+			if (lookupDataSourceService != null)
 			{
-				return lookupDataSource.size(filter);
+				final int size = lookupDataSourceService.sizeIfValidFilter(filter);
+				if(size != LookupDataSourceServiceDTO.SIZE_InvalidFilter)
+				{
+					return size;
+				}
 			}
-			
+
+			//
+			// Fallback (when filter is not valid or there is no datasource service)
 			final LookupValue currentValue = getCurrentValue();
 			return currentValue == null ? 0 : 1;
 		}
@@ -228,16 +236,20 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		@Override
 		public List<LookupValue> findEntities(final int firstRow, final String filter)
 		{
-			final LookupDataSource lookupDataSource = getLookupDataSource();
-			final boolean askDataSource = lookupDataSource != null && lookupDataSource.isValidFilter(filter);
-			if (askDataSource)
+			final LookupDataSourceServiceDTO lookupDataSourceService = getLookupDataSourceService();
+			if(lookupDataSourceService != null)
 			{
-				return lookupDataSource.findEntities(filter, firstRow, pageLength);
+				final List<LookupValue> values = lookupDataSourceService.findEntitiesIfValidFilter(filter, firstRow, pageLength);
+				if(values != null)
+				{
+					return values; 
+				}
 			}
-			
+
+			//
+			// Fallback (when filter is not valid or there is no datasource service)
 			final LookupValue currentValue = getCurrentValue();
 			return currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
 		}
-
 	}
 }

@@ -19,6 +19,7 @@ import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L
@@ -237,11 +238,11 @@ final class GridEditorDataContainer extends AbstractContainer
 		return true;
 	}
 
-	public void setContent(final List<PropertyValuesDTO> rowValuesList)
+	public void setContent(final PropertyValuesListDTO rowValuesList)
 	{
 		rows.clear();
 
-		for (final PropertyValuesDTO rowValues : rowValuesList)
+		for (final PropertyValuesDTO rowValues : rowValuesList.getList())
 		{
 			final Object rowId = rowValues.get(WindowConstants.PROPERTYNAME_GridRowId);
 			final GridRowItem rowItem = addItem(rowId);
