@@ -13,11 +13,11 @@ package org.adempiere.pricing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
@@ -169,42 +168,42 @@ public class PricingBL implements IPricingBL
 		final Timestamp priceDate = pricingCtxToUse.getPriceDate();
 
 		//
-		// Set M_PriceList from pricingSystem, date and country
+		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
+		// if set and there is one in the pricingCtx, also check if it is consistent.
 		if (pricingCtxToUse.getM_PricingSystem_ID() > 0
-				&& pricingCtxToUse.getPriceDate() != null
+				&& priceDate != null
 				&& pricingCtxToUse.getM_Product_ID() > 0
 				&& pricingCtxToUse.getC_Country_ID() > 0)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-			final de.metas.adempiere.model.I_M_ProductPrice productPrice = priceListBL.getCurrentProductPrice(
-					new PlainContextAware(ctx, pricingCtx.getTrxName()),
+			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getM_PricingSystem(),
-					pricingCtx.getM_Product(),
 					pricingCtx.getC_Country(),
-					pricingCtx.isSOTrx());
-			if (productPrice != null)
+					pricingCtxToUse.getPriceDate(),
+					pricingCtx.isSOTrx(),
+					null);
+
+			if (computedPLV != null)
 			{
-				final I_M_PriceList_Version computedPLV = productPrice.getM_PriceList_Version();
-	
 				final int priceListId = computedPLV.getM_PriceList_ID();
 				pricingCtxToUse.setM_PriceList_ID(priceListId);
-	
+
 				// while we are at it, do a little sanity check and also set the PLV-ID
-				Check.assume(pricingCtxToUse.getM_PriceList_Version_ID()<=0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
+				Check.assume(pricingCtxToUse.getM_PriceList_Version_ID() <= 0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
-						pricingCtxToUse, // 0
-						pricingCtxToUse.getM_PriceList_Version(), // 1
-						pricingCtxToUse.getM_PricingSystem(), // 2
-						pricingCtx.getM_Product(), // 3
-						pricingCtx.getC_Country(), // 4
-						pricingCtx.isSOTrx(), // 5
+						pricingCtxToUse,  // 0
+						pricingCtxToUse.getM_PriceList_Version(),  // 1
+						pricingCtxToUse.getM_PricingSystem(),  // 2
+						pricingCtx.getM_Product(),  // 3
+						pricingCtx.getC_Country(),  // 4
+						pricingCtx.isSOTrx(),  // 5
 						computedPLV);
 				pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
 			}
 		}
 
 		//
-		// Set M_PriceList_Version_ID from PL and date
+		// Set M_PriceList_Version_ID from PL and date, if necessary.
 		if (pricingCtxToUse.getM_PriceList_Version_ID() <= 0
 				&& pricingCtxToUse.getM_PriceList_ID() > 0
 				&& priceDate != null)

@@ -37,6 +37,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -133,7 +134,20 @@ public class JasperEngine extends AbstractReportEngine
 			conn = getConnection();
 			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
 					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
-			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo);
+
+			final String securityWhereClause; 
+			if (reportContext.isApplySecuritySettings())
+			{
+				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
+				final String tableName = reportContext.getTableNameOrNull();
+				securityWhereClause = userRolePermissions.getOrgWhere(tableName, false);
+			}
+			else
+			{
+				securityWhereClause = null;
+			}
+			
+			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
 
 			//
 			// Fill the report
