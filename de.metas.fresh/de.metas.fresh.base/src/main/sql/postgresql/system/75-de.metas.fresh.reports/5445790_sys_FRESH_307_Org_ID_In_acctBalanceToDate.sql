@@ -1,4 +1,4 @@
-
+drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date,   p_IncludePostingTypeStatistical char);
 drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric,  p_IncludePostingTypeStatistical char(1));
 
 /* 

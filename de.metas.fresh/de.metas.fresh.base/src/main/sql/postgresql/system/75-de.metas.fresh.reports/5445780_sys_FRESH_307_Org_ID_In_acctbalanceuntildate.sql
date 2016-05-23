@@ -1,6 +1,6 @@
 -- Function: de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character)
 
--- DROP FUNCTION de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character);
+ DROP FUNCTION IF EXISTS de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character);
 
 DROP FUNCTION IF EXISTS   de_metas_acct.acctbalanceuntildate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date,  ad_org_id numeric, p_includepostingtypestatistical character);
 
