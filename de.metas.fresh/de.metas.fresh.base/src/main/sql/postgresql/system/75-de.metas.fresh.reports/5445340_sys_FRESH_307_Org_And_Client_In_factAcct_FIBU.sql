@@ -1,4 +1,4 @@
-544534DROP FUNCTION IF EXISTS report.Fresh_Fact_Acct_Fibo_Report ( IN DateFrom date, IN DateTo date, IN AccountID numeric);
+DROP FUNCTION IF EXISTS report.Fresh_Fact_Acct_Fibo_Report ( IN DateFrom date, IN DateTo date, IN AccountID numeric);
 CREATE FUNCTION report.Fresh_Fact_Acct_Fibo_Report ( IN DateFrom date, IN DateTo date, IN AccountID numeric) 
 	RETURNS TABLE ( 
 		DocumentNumber text, 
