@@ -2,6 +2,21 @@
 
 #
 # NOTE: this script does not to any parameter parsing anymore. It is driven by environment variables.
+# Those environment variables are:
+# 	DATABASE						if "true", then execute the migration scripts against the database specified in the local.properties
+#									optional; if not set, then "false" is assumed
+#	MINOR							if "true", then rollout the code and jasper report files
+#									optional; if not set, then "false" is assumed
+#	VALIDATE_MIGRATION				if "true", then create a copy of a reference DB and execute the migration scripts against that DB
+#									optional; if not set, then "false" is assumed
+#	VALIDATE_MIGRATION_DROP_TEST_DB if "true", and the migration scripts were sucesfully validated against the reference DB's copy, then that copy is dropped
+#									mandatory if $VALIDATE_MIGRATION="true"
+#	LOCAL_ROLLOUT_FILE	
+#	ROLLOUT_FILE_URL
+#	ROLLOUT_BUILD_URL
+#	LOCAL_ROLLOUT_FILE
+#	TARGET_USER
+#	TARGET_HOST
 #
 
 #Don't do anything by default
@@ -11,18 +26,18 @@ fi
 if [ "$MINOR" == "" ]; then
 	MINOR="false"
 fi
+if [ "$VALIDATE_MIGRATION" == "" ]; then
+	# FRESH-336
+	VALIDATE_MIGRATION="false"
+fi
 
-# ROLLOUT_BUILD_URL and DIST_ARCHIVE are mandatory, *unless* ROLLOUT_FILE_URL is set 
-#if [ "ROLLOUT_BUILD_URL" == "" ]; then
-#	ROLLOUT_BUILD_URL="NOT_YET_SPECIFIED"
-#fi
-#if [ "DIST_ARCHIVE" == "" ]; then
-#	DIST_ARCHIVE="NOT_YET_SPECIFIED"
-#fi
+# note that ROLLOUT_BUILD_URL and DIST_ARCHIVE are mandatory, *unless* either ROLLOUT_FILE_URL or LOCAL_ROLLOUT_FILE are set 
+if [ "$LOCAL_ROLLOUT_FILE" == "" ]; then
+	LOCAL_ROLLOUT_FILE="NOT_SPECIFIED"
+fi
 if [ "$ROLLOUT_FILE_URL" == "" ]; then
 	ROLLOUT_FILE_URL="NOT_SPECIFIED"
 fi
-
 
 # Note that in recent rollout jobs, 
 # BUILD_URL is not the URL of the build that contains the rollout artifact, but instead the URL of the job that is actually performing the rollout.
@@ -90,30 +105,47 @@ prepare()
 	check_var DATABASE ${DATABASE:-NOT_SET}
 	check_var MINOR ${MINOR:-NOT_SET}
 	
-	if [ "$ROLLOUT_FILE_URL" == "NOT_SPECIFIED" ]; then
+	if [ "$LOCAL_ROLLOUT_FILE" != "NOT_SPECIFIED" ]; then
 	
-		trace prepare "Setting ROLLOUT_FILE_URL from ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+		trace prepare "LOCAL_ROLLOUT_FILE was already set. Ignoring ROLLOUT_FILE_URL, ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+		check_var LOCAL_ROLLOUT_FILE "${LOCAL_ROLLOUT_FILE}"
+	
+		DIST_FILE=$LOCAL_ROLLOUT_FILE
+		check_var DIST_FILE $DIST_FILE
 
-		# FRESH-286:
-		# In jenkins, the envInject plugin aparently overwrites our BUILD_URL build parameter with the URL of the currently running job.
-		# We therefore introduce the ROLLOUT_BUILD_URL, but provide a fallback for those cases where the ROLLOUT_BUILD_URL is not specified, 
-		# but the BUILD_URL is actually the desired one
-		check_var_fallback ROLLOUT_BUILD_URL ${ROLLOUT_BUILD_URL:-NOT_SET} BUILD_URL ${BUILD_URL:-NOT_SET}
-		check_var DIST_ARCHIVE ${DIST_ARCHIVE:-NOT_SET}
-					
-		ROLLOUT_FILE_URL=${ROLLOUT_BUILD_URL}/${DIST_ARCHIVE}
-		check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"
-	else
-		trace prepare "ROLLOUT_FILE_URL was already set. Ignoring ROLLOUT_BUILD_URL and DIST_ARCHIVE"
-		check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"
+	else 
+		if [ "$ROLLOUT_FILE_URL" != "NOT_SPECIFIED" ]; then
+		
+			trace prepare "ROLLOUT_FILE_URL was already set. Ignoring ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+			check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"
+
+		else
+			trace prepare "Setting ROLLOUT_FILE_URL from ROLLOUT_BUILD_URL and DIST_ARCHIVE"
+
+			# FRESH-286:
+			# In jenkins, the envInject plugin aparently overwrites our BUILD_URL build parameter with the URL of the currently running job.
+			# We therefore introduce the ROLLOUT_BUILD_URL, but provide a fallback for those cases where the ROLLOUT_BUILD_URL is not specified, 
+			# but the BUILD_URL is actually the desired one
+			check_var_fallback ROLLOUT_BUILD_URL ${ROLLOUT_BUILD_URL:-NOT_SET} BUILD_URL ${BUILD_URL:-NOT_SET}
+			check_var DIST_ARCHIVE ${DIST_ARCHIVE:-NOT_SET}
+						
+			ROLLOUT_FILE_URL=${ROLLOUT_BUILD_URL}/${DIST_ARCHIVE}
+			check_var ROLLOUT_FILE_URL "${ROLLOUT_FILE_URL}"	fi
+		
+			check_var ROLLOUT_DIR ${ROLLOUT_DIR:-NOT_SET}
+			check_var TARGET_HOST ${TARGET_HOST:-NOT_SET}
+			check_var SSH_PORT ${SSH_PORT:-NOT_SET}
+		fi
+		
+		# basename should also work with an URL, and note that DIST_ARCHIVE might not actually be set after all
+		DIST_FILE=$(basename ${ROLLOUT_FILE_URL})
+		check_var DIST_FILE $DIST_FILE
+
+		trace prepare "Downloading rollout file from URL ${ROLLOUT_FILE_URL}"
+		wget --no-verbose ${ROLLOUT_FILE_URL}
+
 	fi
 	
-	check_var ROLLOUT_DIR ${ROLLOUT_DIR:-NOT_SET}
-	check_var TARGET_HOST ${TARGET_HOST:-NOT_SET}
-	check_var SSH_PORT ${SSH_PORT:-NOT_SET}
-		
-	
-		
 	if [ "$DATABASE" = "false" ] && [ "$MINOR" = "false" ]; 
 	then
 		trace prepare "============================================================================================"
@@ -125,28 +157,9 @@ prepare()
 		START_STOP="true"
 	fi
 		
-	if [ "$ROLLOUT_DIR" = "NOT_YET_SPECIFIED" ]  && [ "$ROLLOUT_FILE_URL" = "NOT_YET_SPECIFIED" ]; 
-	then
-		trace prepare "At least one of -d or the environment variable 'ROLLOUT_FILE_URL' (alternative: ROLLOUT_BUILD_URL and DIST_ARCHIVE) needs to be set"
-		exit 1
-	fi
-	
-	if [ "$ROLLOUT_DIR" != "NOT_YET_SPECIFIED" ] && [ "$ROLLOUT_FILE_URL" != "NOT_YET_SPECIFIED" ]; 
-	then
-		trace prepare "ignoring ROLLOUT_FILE_URL because a rollout dir is set"
-		exit 1
-	fi
-
-	# basename should also work with an URL, and note that DIST_ARCHIVE might not actually be set after all
-	DIST_FILE=$(basename ${ROLLOUT_FILE_URL})
-	check_var DIST_FILE $DIST_FILE
-
-	trace prepare "Downloading rollout file"
-							
-	wget --no-verbose ${ROLLOUT_FILE_URL}
 		
 	ROLLOUT_DIR=${WORKSPACE}
-		
+	
 	check_var ROLLOUT_DIR "${ROLLOUT_DIR}"
 
 	check_var TARGET_HOST "${TARGET_HOST}"
@@ -174,11 +187,6 @@ rollout_common()
 	trace rollout_common "Extracting the file ${DIST_FILE} on ${TARGET_HOST}"
 	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "cd ${REMOTE_DIR} && tar -xf ${REMOTE_DIR}/${DIST_FILE}"
 	
-	ssh -p ${SSH_PORT} -q ${TARGET_USER}@${TARGET_HOST} [[ -f /etc/init.d/adempiere_server ]] && WRAPPER_APP="adempiere_server"
-
-	trace rollout_common "Stopping $WRAPPER_APP on ${TARGET_HOST}"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo /etc/init.d/${WRAPPER_APP} stop"
-		
 	trace rollout_common END
 }
 
@@ -200,6 +208,49 @@ rollout_minor()
 	trace rollout_minor "Done with remote script minor_remote.sh"
 	
 	trace rollout_minor END
+}
+
+#
+# FRESH-336
+# Similar to rollout_database() in that it invokes sql_remote.sh, 
+# but it calls that script with "-n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}".
+# The two variables are taken from local.properties
+#
+# TODO: incorporate the part that drops the test-DB into the java migration tool
+#
+validate_migration()
+{
+	trace validate_migration BEGIN
+	
+	check_var VALIDATE_MIGRATION_TEMPLATE_DB ${VALIDATE_MIGRATION_TEMPLATE_DB:-NOT_SET}
+	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
+	check_var VALIDATE_MIGRATION_DROP_TEST_DB ${VALIDATE_MIGRATION_DROP_TEST_DB:-NOT_SET}
+	
+	trace validate_migration "Making remote script sql_remote.sh executable"
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh" 
+	
+	trace validate_migration "Invoking remote script sql_remote.sh to verify our migration scripts against a short-lived copy of ${VALIDATE_MIGRATION_TEMPLATE_DB}."
+	trace validate_migration "=========================================================="
+
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "${REMOTE_EXEC_DIR}/sql_remote.sh -d ${REMOTE_EXEC_DIR}/.. -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}" 
+	trace validate_migration "=========================================================="
+	trace validate_migration "Done with remote script sql_remote.sh"
+
+	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
+	
+	if [ "$VALIDATE_MIGRATION_DROP_TEST_DB" == "true" ]; then
+		trace validate_migration "Dropping test database ${VALIDATE_MIGRATION_TEST_DB}"
+		
+		check_std_tool psql
+		check_var METASFRESH_DB_SERVER ${METASFRESH_DB_SERVER}
+		check_var METASFRESH_DB_NAME ${METASFRESH_DB_NAME}
+		check_var METASFRESH_DB_USER ${METASFRESH_DB_USER}
+		
+		PSQL_PARAMS="--host $METASFRESH_DB_SERVER --dbname $METASFRESH_DB_NAME --username $METASFRESH_DB_USER"	
+		echo "DROP DATABASE ${VALIDATE_MIGRATION_TEST_DB};" | psql ${PSQL_PARAMS}
+	fi
+	
+	trace validate_migration END
 }
 
 rollout_database()
@@ -271,6 +322,11 @@ check_ssh()
 }
 
 prepare
+
+if [ "$VALIDATE_MIGRATION" == "true" ]; then
+	# FRESH-336
+	validate_migration
+fi
 
 if [ "$START_STOP" = "true" ]; 
 then
