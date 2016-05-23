@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#title           :metasfresh_release.sh
+#title           :build_new_release.sh
 #description     :This Shell-Script will create a new build-version, using the files and database from the Source Server
 #		  After the build-process is completed, the script will upload the zipped build to the webserver
 #		  On user-request, the script will also create a package from the rollout-files and provide them
