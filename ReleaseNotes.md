@@ -17,6 +17,8 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-307 New Organisation: Financial Data of existing Org
+ - FRESH-326 Set the Correct Org in Fact_Acct_Summary
  - FRESH-331 Double click needed for weighing machine and occasional NPE
     * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
