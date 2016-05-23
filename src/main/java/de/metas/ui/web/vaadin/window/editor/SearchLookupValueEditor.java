@@ -9,6 +9,8 @@ import org.vaadin.viritin.fields.LazyComboBox;
 import org.vaadin.viritin.fields.LazyComboBox.FilterableCountProvider;
 import org.vaadin.viritin.fields.LazyComboBox.FilterablePagingProvider;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
@@ -51,6 +53,8 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 
 	private final int pageLength = 10;
 	private ComboDataSource _comboDataSource;
+	
+	private LookupDataSourceServiceSupplier lookupDataSourceServiceSupplier;
 
 	public SearchLookupValueEditor(final PropertyDescriptor descriptor)
 	{
@@ -90,7 +94,8 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		if (_comboDataSource == null)
 		{
-			_comboDataSource = new ComboDataSource(pageLength);
+			lookupDataSourceServiceSupplier = new LookupDataSourceServiceSupplier();
+			_comboDataSource = new ComboDataSource(getPropertyName(), lookupDataSourceServiceSupplier, pageLength);
 		}
 		return _comboDataSource;
 	}
@@ -112,7 +117,8 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		}
 		else if (Objects.equals(valuesPropertyName, propertyName))
 		{
-			getComboDataSource().setLookupDataSourceFromObject(value);
+			final LookupDataSourceServiceDTO lookupDataSourceService = LookupDataSourceServiceDTO.cast(value);
+			lookupDataSourceServiceSupplier.set(lookupDataSourceService);
 		}
 		else
 		{
@@ -125,48 +131,18 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		return LookupValue.cast(valueObj);
 	}
-
-	private final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
+	
+	private final class LookupDataSourceServiceSupplier implements Supplier<LookupDataSourceServiceDTO>
 	{
-		private final int pageLength;
 		private LookupDataSourceServiceDTO _lookupDataSourceService;
-		private LookupValue _currentValue;
-
-		public ComboDataSource(int pageLength)
-		{
-			super();
-			if (pageLength <= 0)
-			{
-				throw new IllegalArgumentException("pageLength <= 0");
-			}
-			this.pageLength = pageLength;
-		}
-
-		public int getPageLength()
-		{
-			return pageLength;
-		}
-
-		public void setLookupDataSourceFromObject(Object value)
-		{
-			if (value instanceof LookupDataSourceServiceDTO)
-			{
-				final LookupDataSourceServiceDTO lookupDataSourceService = LookupDataSourceServiceDTO.cast(value);
-				setLookupDataSourceService(lookupDataSourceService);
-			}
-			else
-			{
-				// TODO
-				setLookupDataSourceService(null);
-			}
-		}
-
-		public void setLookupDataSourceService(final LookupDataSourceServiceDTO lookupDataSource)
-		{
-			this._lookupDataSourceService = lookupDataSource;
-		}
 		
-		private LookupDataSourceServiceDTO getLookupDataSourceService()
+		public void set(final LookupDataSourceServiceDTO lookupDataSourceService)
+		{
+			this._lookupDataSourceService = lookupDataSourceService;
+		}
+
+		@Override
+		public LookupDataSourceServiceDTO get()
 		{
 			if (_lookupDataSourceService == null)
 			{
@@ -188,6 +164,41 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			return _lookupDataSourceService;
 		}
 		
+	}
+
+	private static final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
+	{
+		private final PropertyName propertyName;
+		private final LookupDataSourceServiceSupplier _lookupDataSourceServiceSupplier;
+		
+		private final int pageLength;
+		private LookupValue _currentValue;
+
+		public ComboDataSource(final PropertyName propertyName, final LookupDataSourceServiceSupplier lookupDataSourceServiceSupplier, final int pageLength)
+		{
+			super();
+			
+			this.propertyName = propertyName;
+			
+			this._lookupDataSourceServiceSupplier = Preconditions.checkNotNull(lookupDataSourceServiceSupplier, "lookupDataSourceServiceSupplier");
+			
+			if (pageLength <= 0)
+			{
+				throw new IllegalArgumentException("pageLength <= 0");
+			}
+			this.pageLength = pageLength;
+		}
+
+		public int getPageLength()
+		{
+			return pageLength;
+		}
+
+		private LookupDataSourceServiceDTO getLookupDataSourceService()
+		{
+			return _lookupDataSourceServiceSupplier.get();
+		}
+		
 		public void setCurrentValue(final Object newValue)
 		{
 			if(newValue == null)
@@ -205,7 +216,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			}
 			else
 			{
-				logger.warn("Editor {} does not support value: {}", getPropertyName(), newValue);
+				logger.warn("Editor {} does not support value: {}", propertyName, newValue);
 			}
 		}
 		
