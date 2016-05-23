@@ -4,6 +4,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.procurement.base.event.impl.PMMQtyReportEventsProcessor;
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 
 /*
@@ -19,15 +20,21 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * Workpackage processor to create {@link I_PMM_PurchaseCandidate}s from {@link I_PMM_QtyReport_Event}s.<br>
+ * The actual work is done by {@link PMMQtyReportEventsProcessor}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PMM_QtyReport_Event_Processor extends WorkpackageProcessorAdapter
 {
 	public static final void scheduleOnTrxCommit(final I_PMM_QtyReport_Event event)
