@@ -17,6 +17,7 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-278 Umsatzreport Geschäftspartner copy and modify details
  - FRESH-333 Procurement candidate prices not updated correctly
  - FRESH-307 New Organisation: Financial Data of existing Org
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
