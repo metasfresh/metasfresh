@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000079"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="182"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -37,6 +37,9 @@
 	<parameter name="Comp_Week_End" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_Currency_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_week_report(
 	$P{Base_Year_Start},
@@ -50,7 +53,8 @@
 	$P{C_BPartner_ID},
 	$P{M_Product_ID},
 	$P{M_Product_Category_ID},
-	$P{M_AttributeSetInstance_ID}
+	$P{M_AttributeSetInstance_ID},
+	$P{C_Currency_ID}
 );]]>
 	</queryString>
 	<field name="bp_name" class="java.lang.String"/>
@@ -69,6 +73,7 @@
 	<field name="param_product" class="java.lang.String"/>
 	<field name="param_product_category" class="java.lang.String"/>
 	<field name="param_attributes" class="java.lang.String"/>
+	<field name="param_currency" class="java.lang.String"/>
 	<variable name="sameperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -298,10 +303,31 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["CHF"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="237" y="116" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="327" y="116" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="417" y="116" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="24">
+			<band height="36">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
 					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="507" y="12" width="70" height="12"/>
@@ -345,6 +371,34 @@
 					</textElement>
 					<text><![CDATA[]]></text>
 				</staticText>
+				<staticText>
+					<reportElement uuid="0b1339b5-489c-46e8-8352-de5c9dc7c837" x="37" y="24" width="200" height="12"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="327" y="24" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="237" y="24" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="417" y="24" width="90" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>

@@ -18,3 +18,8 @@ UPDATE AD_Process_Para SET AD_Reference_ID=19,Updated=TO_TIMESTAMP('2016-05-20 1
 UPDATE AD_Process_Para SET DefaultValue='318',Updated=TO_TIMESTAMP('2016-05-20 15:31:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540963
 ;
 
+-- 23.05.2016 11:51
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT C_Currency_ID AS DefaultValue FROM C_Currency WHERE iso_code = ''CHF''',Updated=TO_TIMESTAMP('2016-05-23 11:51:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540963
+;
+
