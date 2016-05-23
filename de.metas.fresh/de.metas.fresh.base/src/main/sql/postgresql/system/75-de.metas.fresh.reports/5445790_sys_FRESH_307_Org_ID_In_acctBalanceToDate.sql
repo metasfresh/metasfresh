@@ -1,7 +1,9 @@
 
 drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric,  p_IncludePostingTypeStatistical char(1));
-DROP TYPE if exists BalanceAmt ;
-DROP TYPE if exists de_metas_acct.BalanceAmt ;
+
+/* 
+
+-- This type shall be already in the database. Do not create it again
 
 CREATE TYPE de_metas_acct.BalanceAmt AS
 (
@@ -10,6 +12,7 @@ CREATE TYPE de_metas_acct.BalanceAmt AS
     , Credit numeric
 );
 
+ */
 create or replace function de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_AD_Org_ID numeric(10,0),  p_IncludePostingTypeStatistical char(1) = 'N')
 RETURNS de_metas_acct.BalanceAmt AS
 $BODY$
