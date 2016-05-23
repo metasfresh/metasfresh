@@ -492,10 +492,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI> retrieveAvailablePIsForOrg(final Properties ctx, final int adOrgId)
 	{
+		final int clientOrgID = Env.CTXVALUE_AD_Org_ID_System;
 		final ImmutableList.Builder<I_M_HU_PI> huPIsForOrg = ImmutableList.builder();
 		for (final I_M_HU_PI huPI : retrieveAvailablePIs(ctx))
 		{
-			if (huPI.getAD_Org_ID() != adOrgId)
+			if (huPI.getAD_Org_ID() != adOrgId && huPI.getAD_Org_ID() != clientOrgID)
 			{
 				continue;
 			}
