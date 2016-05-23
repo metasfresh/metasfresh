@@ -187,11 +187,6 @@ rollout_common()
 	trace rollout_common "Extracting the file ${DIST_FILE} on ${TARGET_HOST}"
 	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "cd ${REMOTE_DIR} && tar -xf ${REMOTE_DIR}/${DIST_FILE}"
 	
-	ssh -p ${SSH_PORT} -q ${TARGET_USER}@${TARGET_HOST} [[ -f /etc/init.d/adempiere_server ]] && WRAPPER_APP="adempiere_server"
-
-	trace rollout_common "Stopping $WRAPPER_APP on ${TARGET_HOST}"
-	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "sudo /etc/init.d/${WRAPPER_APP} stop"
-		
 	trace rollout_common END
 }
 
