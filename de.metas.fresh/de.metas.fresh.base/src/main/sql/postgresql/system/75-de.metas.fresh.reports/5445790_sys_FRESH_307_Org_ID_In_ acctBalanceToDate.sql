@@ -1,8 +1,7 @@
-drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date) CASCADE;
-drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date) CASCADE;
-drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_IncludePostingTypeStatistical char(1)) CASCADE;
-DROP TYPE if exists BalanceAmt CASCADE;
-DROP TYPE if exists de_metas_acct.BalanceAmt CASCADE;
+
+drop function if exists de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric,  p_IncludePostingTypeStatistical char(1));
+DROP TYPE if exists BalanceAmt ;
+DROP TYPE if exists de_metas_acct.BalanceAmt ;
 
 CREATE TYPE de_metas_acct.BalanceAmt AS
 (

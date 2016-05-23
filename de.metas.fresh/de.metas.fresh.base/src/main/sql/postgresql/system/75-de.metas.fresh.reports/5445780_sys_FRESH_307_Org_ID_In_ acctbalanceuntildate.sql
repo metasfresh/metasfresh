@@ -4,20 +4,27 @@
 
 DROP FUNCTION IF EXISTS   de_metas_acct.acctbalanceuntildate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date,  ad_org_id numeric, p_includepostingtypestatistical character);
 
+CREATE TYPE de_metas_acct.BalanceAmtUntilDate AS
+(
+      Balance numeric
+    , Debit numeric
+    , Credit numeric
+);
+
 CREATE OR REPLACE FUNCTION de_metas_acct.acctbalanceuntildate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date,  ad_org_id numeric, p_includepostingtypestatistical character DEFAULT 'N'::bpchar)
-  RETURNS de_metas_acct.balanceamt AS
+  RETURNS de_metas_acct.BalanceAmtUntilDate AS
 $BODY$
 -- NOTE: we use COALESCE(SUM(..)) just to make sure we are not returning null
-SELECT ROW(SUM((Balance).Balance), SUM((Balance).Debit), SUM((Balance).Credit))::de_metas_acct.BalanceAmt
+SELECT ROW(SUM((Balance).Balance), SUM((Balance).Debit), SUM((Balance).Credit))::de_metas_acct.BalanceAmtUntilDate
 FROM (
 	(
 		SELECT
 			(case
 				-- When the account is Expense/Revenue => we shall consider only the Year to Date amount
-				when ev.AccountType in ('E', 'R') and fas.DateAcct>=date_trunc('year', $3) then ROW(fas.AmtAcctDr_YTD - fas.AmtAcctCr_YTD, fas.AmtAcctDr_YTD, fas.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
-				when ev.AccountType in ('E', 'R') then ROW(0, 0, 0)::de_metas_acct.BalanceAmt
+				when ev.AccountType in ('E', 'R') and fas.DateAcct>=date_trunc('year', $3) then ROW(fas.AmtAcctDr_YTD - fas.AmtAcctCr_YTD, fas.AmtAcctDr_YTD, fas.AmtAcctCr_YTD)::de_metas_acct.BalanceAmtUntilDate
+				when ev.AccountType in ('E', 'R') then ROW(0, 0, 0)::de_metas_acct.BalanceAmtUntilDate
 				-- For any other account => we consider from the beginning to Date amount
-				else ROW(fas.AmtAcctDr - fas.AmtAcctCr, fas.AmtAcctDr, fas.AmtAcctCr)::de_metas_acct.BalanceAmt
+				else ROW(fas.AmtAcctDr - fas.AmtAcctCr, fas.AmtAcctDr, fas.AmtAcctCr)::de_metas_acct.BalanceAmtUntilDate
 			end) as Balance
 		FROM Fact_Acct_Summary fas
 		INNER JOIN C_ElementValue ev on (ev.C_ElementValue_ID=fas.Account_ID)
@@ -37,10 +44,10 @@ FROM (
 		SELECT
 			(case
 				-- When the account is Expense/Revenue => we shall consider only the Year to Date amount
-				when ev.AccountType in ('E', 'R') and fas.DateAcct>=date_trunc('year', $3) then ROW(fas.AmtAcctDr_YTD - fas.AmtAcctCr_YTD, fas.AmtAcctDr_YTD, fas.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
-				when ev.AccountType in ('E', 'R') then ROW(0, 0, 0)::de_metas_acct.BalanceAmt
+				when ev.AccountType in ('E', 'R') and fas.DateAcct>=date_trunc('year', $3) then ROW(fas.AmtAcctDr_YTD - fas.AmtAcctCr_YTD, fas.AmtAcctDr_YTD, fas.AmtAcctCr_YTD)::de_metas_acct.BalanceAmtUntilDate
+				when ev.AccountType in ('E', 'R') then ROW(0, 0, 0)::de_metas_acct.BalanceAmtUntilDate
 				-- For any other account => we consider from the beginning to Date amount
-				else ROW(fas.AmtAcctDr - fas.AmtAcctCr, fas.AmtAcctDr, fas.AmtAcctCr)::de_metas_acct.BalanceAmt
+				else ROW(fas.AmtAcctDr - fas.AmtAcctCr, fas.AmtAcctDr, fas.AmtAcctCr)::de_metas_acct.BalanceAmtUntilDate
 			end) as Balance
 		FROM Fact_Acct_Summary fas
 		INNER JOIN C_ElementValue ev on (ev.C_ElementValue_ID=fas.Account_ID)
@@ -58,7 +65,7 @@ FROM (
 	-- Default value:
 	UNION ALL
 	(
-		SELECT ROW(0, 0, 0)::de_metas_acct.BalanceAmt
+		SELECT ROW(0, 0, 0)::de_metas_acct.BalanceAmtUntilDate
 	)
 ) t
 $BODY$
