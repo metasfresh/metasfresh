@@ -2,17 +2,15 @@ package de.metas.ui.web.vaadin.window.model;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
+import de.metas.ui.web.vaadin.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
@@ -97,26 +95,12 @@ public class GridPropertyValue extends ObjectPropertyValue
 	@Override
 	public void setValue(final Object value)
 	{
-		final List<PropertyValuesDTO> rowValuesList;
-		if (value == null)
-		{
-			rowValuesList = ImmutableList.of();
-		}
-		else if (value instanceof Supplier<?>)
-		{
-			@SuppressWarnings("unchecked")
-			final Supplier<List<PropertyValuesDTO>> supplier = (Supplier<List<PropertyValuesDTO>>)value;
-			rowValuesList = supplier.get();
-		}
-		else
-		{
-			rowValuesList = (List<PropertyValuesDTO>)value;
-		}
+		final PropertyValuesListDTO rowValuesList = LazyPropertyValuesListDTO.getPropertyValuesListDTO(value);
 
 		//
 		//
 		rows.clear();
-		for (final PropertyValuesDTO rowValues : rowValuesList)
+		for (final PropertyValuesDTO rowValues : rowValuesList.getList())
 		{
 			final GridRow row = GridRow.of(columnDescriptors, rowValues);
 			final GridRowId rowId = row.getRowId();

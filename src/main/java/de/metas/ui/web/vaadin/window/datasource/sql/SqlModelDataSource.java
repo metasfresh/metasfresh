@@ -37,8 +37,6 @@ import org.springframework.context.annotation.Lazy;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gwt.thirdparty.guava.common.base.Joiner;
@@ -51,9 +49,11 @@ import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
 import de.metas.ui.web.vaadin.window.service.LocationService;
+import de.metas.ui.web.vaadin.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L
@@ -155,7 +155,7 @@ public class SqlModelDataSource implements ModelDataSource
 				{
 					final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
 							.build();
-					_records = retriveRecords(query);
+					_records = retriveRecords(query).getList();
 				}
 			}
 		}
@@ -167,7 +167,7 @@ public class SqlModelDataSource implements ModelDataSource
 	{
 		final PropertyValuesDTO record = getRecord(recordIndex);
 		final int recordId = getRecordId(record);
-		
+
 		return new TableRecordReference(sqlTableName, recordId);
 	}
 
@@ -180,14 +180,14 @@ public class SqlModelDataSource implements ModelDataSource
 		{
 			keyValue = null;
 		}
-	
+
 		return (Integer)keyValue;
 	}
 
 	@Override
-	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
+	public LazyPropertyValuesListDTO retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
-		return Suppliers.memoize(() -> retriveRecords(query));
+		return LazyPropertyValuesListDTO.memoize(() -> retriveRecords(query));
 	}
 
 	@Override
@@ -202,29 +202,30 @@ public class SqlModelDataSource implements ModelDataSource
 	{
 		// TODO: optimize
 
-		final List<PropertyValuesDTO> records = retriveRecords(query);
-		if (records.isEmpty())
+		final PropertyValuesListDTO records = retriveRecords(query);
+		final List<PropertyValuesDTO> recordsList = records.getList();
+		if (recordsList.isEmpty())
 		{
 			return null;
 		}
-		else if (records.size() > 1)
+		else if (recordsList.size() > 1)
 		{
 			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
-					+ "\nRecords: " + Joiner.on("\n").join(records));
+					+ "\nRecords: " + Joiner.on("\n").join(recordsList));
 		}
 		else
 		{
-			return records.get(0);
+			return recordsList.get(0);
 		}
 	}
 
-	private final List<PropertyValuesDTO> retriveRecords(final ModelDataSourceQuery query)
+	private final PropertyValuesListDTO retriveRecords(final ModelDataSourceQuery query)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSql(sqlParams, query);
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final List<PropertyValuesDTO> records = new ArrayList<>();
+		final PropertyValuesListDTO.Builder recordsCollector = PropertyValuesListDTO.builder();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -235,7 +236,7 @@ public class SqlModelDataSource implements ModelDataSource
 			while (rs.next())
 			{
 				final PropertyValuesDTO record = retriveRecord(rs);
-				records.add(record);
+				recordsCollector.add(record);
 			}
 		}
 		catch (final SQLException e)
@@ -247,7 +248,9 @@ public class SqlModelDataSource implements ModelDataSource
 			DB.close(rs, pstmt);
 		}
 
-		logger.trace("Retrieved {} records.", records.size());
+		final PropertyValuesListDTO records = recordsCollector.build();
+		if (logger.isTraceEnabled())
+			logger.trace("Retrieved {} records.", records.getList().size());
 		return records;
 	}
 
@@ -280,7 +283,7 @@ public class SqlModelDataSource implements ModelDataSource
 			final PropertyName propertyName = e.getKey();
 			final ModelDataSource dataSource = e.getValue();
 
-			final Supplier<List<PropertyValuesDTO>> dataSourceValue = dataSource.retrieveRecordsSupplier(query);
+			final LazyPropertyValuesListDTO dataSourceValue = dataSource.retrieveRecordsSupplier(query);
 			data.put(propertyName, dataSourceValue);
 		}
 
@@ -611,11 +614,11 @@ public class SqlModelDataSource implements ModelDataSource
 	{
 		final PropertyName keyProperyName = sqlField_KeyColumn.getPropertyName();
 		final PropertyValuesDTO record = getRecord(recordIndex);
-		if(record == null)
+		if (record == null)
 		{
 			return ImmutableList.of();
 		}
-		
+
 		Object keyValue = record.get(keyProperyName);
 		if (NullValue.isNull(keyValue))
 		{
@@ -628,56 +631,56 @@ public class SqlModelDataSource implements ModelDataSource
 
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(sqlTableName);
 		final Integer recordId = (Integer)keyValue;
-		
+
 		final String keyColumnName = sqlField_KeyColumn.getColumnName();
 		final List<String> keyColumnNames = ImmutableList.of(keyColumnName);
-		
+
 		final IZoomSource zoomSource = new IZoomSource()
 		{
-			
+
 			@Override
 			public String getTrxName()
 			{
 				return ITrx.TRXNAME_None;
 			}
-			
+
 			@Override
 			public String getTableName()
 			{
 				return sqlTableName;
 			}
-			
+
 			@Override
 			public int getRecord_ID()
 			{
 				return recordId;
 			}
-			
+
 			@Override
 			public List<String> getKeyColumnNames()
 			{
 				return keyColumnNames;
 			}
-			
+
 			@Override
 			public String getKeyColumnName()
 			{
 				return keyColumnName;
 			}
-			
+
 			@Override
 			public Properties getCtx()
 			{
 				return SqlModelDataSource.this.getCtx();
 			}
-			
+
 			@Override
 			public int getAD_Window_ID()
 			{
 				// TODO Auto-generated method stub
 				return 0;
 			}
-			
+
 			@Override
 			public int getAD_Table_ID()
 			{

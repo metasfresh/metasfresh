@@ -38,12 +38,12 @@ public final class PropertyValuesListDTO
 		}
 		return new PropertyValuesListDTO(list);
 	}
-	
+
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
-	
+
 	public static final PropertyValuesListDTO cast(final Object valueObj)
 	{
 		return (PropertyValuesListDTO)valueObj;
@@ -96,7 +96,7 @@ public final class PropertyValuesListDTO
 			}
 			return new PropertyValuesListDTO(list.build());
 		}
-		
+
 		public Builder add(final PropertyValuesDTO values)
 		{
 			list.add(values);

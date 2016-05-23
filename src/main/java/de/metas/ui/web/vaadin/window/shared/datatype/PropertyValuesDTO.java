@@ -3,13 +3,11 @@ package de.metas.ui.web.vaadin.window.shared.datatype;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
@@ -119,10 +117,11 @@ public final class PropertyValuesDTO implements Serializable
 				, GridRowId.class //
 				, String.class //
 				, Integer.class, BigDecimal.class //
-				, Date.class, Timestamp.class // FIXME: i think we shall avoid Timestamp
+				, java.util.Date.class, Timestamp.class // FIXME: i think we shall avoid Timestamp, but since Timestamp extends Date, i think it's fine for now
 				, Boolean.class //
 				, LookupDataSourceServiceDTO.class //
 				, PropertyValuesListDTO.class //
+				, LazyPropertyValuesListDTO.class //
 				, LookupValue.class //
 				, ComposedValue.class //
 		);
@@ -155,14 +154,6 @@ public final class PropertyValuesDTO implements Serializable
 				if (allowedValueTypes.contains(valueClass))
 				{
 					// ok
-				}
-				else if (Supplier.class.isAssignableFrom(valueClass))
-				{
-					// tolerate it for now
-
-					// e.g.
-					// Suppliers.memoize(de.metas.ui.web.vaadin.window.datasource.sql.SqlModelDataSource$$Lambda$34/1396214905@5e071179)
-					// see de.metas.ui.web.vaadin.window.datasource.sql.SqlModelDataSource.retrieveRecordsSupplier(ModelDataSourceQuery)
 				}
 				else
 				{

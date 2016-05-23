@@ -5,9 +5,8 @@ import java.util.List;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.google.common.base.Supplier;
-
 import de.metas.ui.web.vaadin.window.datasource.sql.ModelDataSourceQuery;
+import de.metas.ui.web.vaadin.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -40,7 +39,7 @@ public interface ModelDataSource
 
 	SaveResult saveRecord(int index, PropertyValuesDTO values);
 
-	Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(ModelDataSourceQuery query);
+	LazyPropertyValuesListDTO retrieveRecordsSupplier(ModelDataSourceQuery query);
 
 	PropertyValuesDTO retrieveRecordById(Object recordId);
 	

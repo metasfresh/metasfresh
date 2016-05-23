@@ -20,16 +20,16 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.datasource.sql.ModelDataSourceQuery;
+import de.metas.ui.web.vaadin.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L
@@ -137,17 +137,9 @@ public class DummyModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
+	public LazyPropertyValuesListDTO retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
-		return Suppliers.memoize(new Supplier<List<PropertyValuesDTO>>()
-		{
-
-			@Override
-			public List<PropertyValuesDTO> get()
-			{
-				return ImmutableList.copyOf(records);
-			}
-		});
+		return LazyPropertyValuesListDTO.memoize(() -> PropertyValuesListDTO.of(records));
 	}
 
 	@Override

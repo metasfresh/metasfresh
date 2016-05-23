@@ -5,11 +5,11 @@ import java.util.List;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
+import de.metas.ui.web.vaadin.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -62,7 +62,7 @@ public final class NullModelDataSource implements ModelDataSource
 	}
 
 	@Override
-	public Supplier<List<PropertyValuesDTO>> retrieveRecordsSupplier(final ModelDataSourceQuery query)
+	public LazyPropertyValuesListDTO retrieveRecordsSupplier(final ModelDataSourceQuery query)
 	{
 		throw new UnsupportedOperationException();
 	}
