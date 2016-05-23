@@ -88,6 +88,7 @@ public class LocalJasperServer implements IJasperServer
 			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, pinstance.getAD_Client_ID());
 			Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, pinstance.getAD_Org_ID());
 			Env.setContext(ctx, Env.CTXNAME_AD_User_ID, pinstance.getAD_User_ID());
+			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, pinstance.getAD_Role_ID());
 
 			// Override the context using the values from record (if any)
 			// NOTE: setting the AD_Org_ID from document (if any) is very important for retrieving things like organization logo which is displayed in reports.

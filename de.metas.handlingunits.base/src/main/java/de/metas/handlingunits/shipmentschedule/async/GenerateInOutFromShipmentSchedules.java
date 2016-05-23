@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.async;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -43,6 +41,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
+import org.slf4j.Logger;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -73,6 +73,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.logging.LogManager;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -136,8 +137,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			shipmentDocDocAction = null; // let the document as it is, don't complete it
 		}
 
-		final boolean createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
-		final boolean manualPackingMaterial = true;
+		boolean createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
+		boolean manualPackingMaterial = true;
+
+		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
+		// task FRESH-251
+		// In case of using the qty Picked entries, the logic will be similar with shipment creation from HU, therefore the packinglines and manualPackingMaterial flags will be disabled
+		if (isUseQtyPicked)
+		{
+			createPackingLines = false; // the packing lines shall only be created when the shipments are completed
+			manualPackingMaterial = false; // use the HUs!
+
+		}
 		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, localTrxName);
 
 		return Result.SUCCESS;
@@ -245,9 +256,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		// Load all QtyPicked records that have no InOutLine yet
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
 
+		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
+
 		if (qtyPickedRecords.isEmpty())
 		{
-			final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
 			if (isUseQtyPicked)
 			{
 				// the parameter insists that we use qtyPicked records, but there aren't any
@@ -294,7 +306,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			// Considering only those lines which have an LU
 			// NOTE: this shall not happen because we already created the LUs
-			if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0)
+			// Task FRESH-251 : In case the qty Picked are used, only add the LU if it was required by the qty picked
+			if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0 && !isUseQtyPicked)
 			{
 				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
 				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
@@ -343,7 +356,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		//
 		// Case: this shipment schedule line was at least partial picked
 		// => take all TUs which does not have an LU and add them to LUs
-		else
+		else if (!isUseQtyPicked)
 		{
 			createLUsForTUs(schedule, qtyPickedRecords);
 		}
@@ -426,9 +439,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				huContext,
 				schedule.getM_Product(),
 				qtyToDeliver,
-				shipmentScheduleBL.getC_UOM(schedule),  // uom
+				shipmentScheduleBL.getC_UOM(schedule),      // uom
 				SystemTime.asDate(),
-				schedule,  // reference model
+				schedule,      // reference model
 				false // forceQtyAllocation
 		);
 

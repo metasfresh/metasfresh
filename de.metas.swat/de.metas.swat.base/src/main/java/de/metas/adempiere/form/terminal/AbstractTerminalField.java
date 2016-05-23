@@ -25,16 +25,17 @@ package de.metas.adempiere.form.terminal;
 
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.CompositeTerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 {
@@ -110,21 +111,36 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	@Override
 	public final void setValue(final Object value, final boolean fireEvent)
 	{
+		//
+		// Make sure we are not setting values to an disposed component.
+		if (isDisposed())
+		{
+			final TerminalException ex = new TerminalException("Atempt to set value but field is disposed. Set was ignored."
+					+ "\n field: " + this
+					+ "\n value: " + value
+					+ "\n fireEvent: " + fireEvent);
+			logger.warn(ex.getLocalizedMessage(), ex);
+			return;
+		}
+
+		//
+		// Convert value to type
+		final T valueConv;
 		try
 		{
-			// Make sure we are not setting values to an disposed component.
-			if (isDisposed())
-			{
-				final TerminalException ex = new TerminalException("Atempt to set value but field is disposed. Set was ignored."
-						+ "\n field: " + this
-						+ "\n value: " + value
-						+ "\n fireEvent: " + fireEvent);
-				logger.warn(ex.getLocalizedMessage(), ex);
-				return;
-			}
-
-			final T valueConv = convertValueToType(value);
+			valueConv = convertValueToType(value);
 			constraints.evaluate(this, valueConv);
+		}
+		catch (Exception ex)
+		{
+			showWarningAndRequestFocus(ex);
+			return;
+		}
+
+		//
+		// Actually set the field value
+		try
+		{
 			setFieldValue(valueConv, fireEvent);
 		}
 		catch (final Exception ex)
@@ -238,6 +254,8 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 		disposed = true;
 		constraints.clear();
 		listeners.clear();
+		
+		logger.trace("Disposed terminal field: {}", this);
 	}
 
 	protected final boolean isDisposed()

@@ -29,8 +29,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -58,14 +56,16 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class PriceListDAO implements IPriceListDAO
 {
@@ -467,7 +467,8 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrievePriceListVersionOrNull(final org.compiere.model.I_M_PriceList priceList,
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(
+			final org.compiere.model.I_M_PriceList priceList,
 			final Date date,
 			final Boolean processed)
 	{

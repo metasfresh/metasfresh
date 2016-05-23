@@ -313,6 +313,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
 
+		// FRESH-314: also store #AD_PInstance_ID, we might want to access this information (currently in AD_ChangeLog)
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_PInstance_ID, workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
+
 		//
 		// Session: N/A
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Session_ID, Env.CTXVALUE_AD_SESSION_ID_NONE);

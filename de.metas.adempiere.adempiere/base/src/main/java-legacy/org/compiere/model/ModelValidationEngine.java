@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.script.ScriptEngine;
 
@@ -64,8 +62,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
  * Model Validation Engine
@@ -73,12 +74,17 @@ import com.google.common.collect.ImmutableList;
  * @author Jorg Janke
  * @version $Id: ModelValidationEngine.java,v 1.2 2006/07/30 00:58:38 jjanke Exp $
  *
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>FR [ 1670025 ] ModelValidator.afterLoadPreferences will be useful <li>BF [ 1679692 ] fireDocValidate doesn't treat exceptions as errors <li>FR [
- *         1724662 ] Support Email should contain model validators info <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
- *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332 <li>BF [ 2819617 ] NPE if script validator rule
- *         returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
- *
- * @author Tobias Schoeneberg, t.schoeneberg@metas.de <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <ul>
+ *         <li>FR [ 1670025 ] ModelValidator.afterLoadPreferences will be useful
+ *         <li>BF [ 1679692 ] fireDocValidate doesn't treat exceptions as errors
+ *         <li>FR [ 1724662 ] Support Email should contain model validators info
+ *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
+ *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332
+ *         <li>BF [ 2819617 ] NPE if script validator rule  returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
+ *         </ul>
+ * @author Tobias Schoeneberg, t.schoeneberg@metas.de
+ *         <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
  */
 public class ModelValidationEngine implements IModelValidationEngine
 {

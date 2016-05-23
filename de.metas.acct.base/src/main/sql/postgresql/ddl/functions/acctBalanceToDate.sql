@@ -11,7 +11,7 @@ CREATE TYPE de_metas_acct.BalanceAmt AS
     , Credit numeric
 );
 
-create or replace function de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_IncludePostingTypeStatistical char(1) = 'N')
+create or replace function de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_AD_Org_ID numeric(10,0),  p_IncludePostingTypeStatistical char(1) = 'N')
 RETURNS de_metas_acct.BalanceAmt AS
 $BODY$
 -- NOTE: we use COALESCE(SUM(..)) just to make sure we are not returning null
@@ -34,6 +34,7 @@ FROM (
 			and fas.PostingType='A'
 			and fas.PA_ReportCube_ID is null
 			and fas.DateAcct <= $3 -- p_DateAcct
+			and fas.ad_org_id = $4 -- p_AD_Org_ID
 		ORDER BY fas.DateAcct DESC
 		LIMIT 1
 	)
@@ -51,12 +52,13 @@ FROM (
 		FROM Fact_Acct_Summary fas
 		INNER JOIN C_ElementValue ev on (ev.C_ElementValue_ID=fas.Account_ID)
 		WHERE true
-			and $4='Y' -- p_IncludePostingTypeStatistical
+			and $5='Y' -- p_IncludePostingTypeStatistical
 			and fas.Account_ID=$1 -- p_Account_ID
 			and fas.C_AcctSchema_ID=$2 -- p_C_AcctSchema_ID
 			and fas.PostingType='S'
 			and fas.PA_ReportCube_ID is null
 			and fas.DateAcct <= $3 -- p_DateAcct
+			and fas.ad_org_id = $4 -- p_AD_Org_ID
 		ORDER BY fas.DateAcct DESC
 		LIMIT 1
 	)

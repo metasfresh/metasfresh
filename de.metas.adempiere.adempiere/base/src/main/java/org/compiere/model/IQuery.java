@@ -354,6 +354,15 @@ public interface IQuery<T>
 	List<Map<String, Object>> listDistinct(String... columnNames);
 
 	/**
+	 * Selects DISTINCT given column and return the result as a list.
+	 * 
+	 * @param columnName
+	 * @param valueType value type
+	 * @see #listColumns(String...) 
+	 */
+	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+
+	/**
 	 * Gets an immutable {@link Map} of records.
 	 * 
 	 * @param modelClass

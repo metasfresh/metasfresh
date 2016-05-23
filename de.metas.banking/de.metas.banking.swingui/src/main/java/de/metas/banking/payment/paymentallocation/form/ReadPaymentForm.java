@@ -487,6 +487,7 @@ final class ReadPaymentForm
 					return;
 				}
 				paymentRequestTemplate.setReference(parsedPaymentString.getReferenceNoComplete());
+				paymentRequestTemplate.setFullPaymentString(parsedPaymentString.getRawPaymentString());
 			}
 		});
 
@@ -739,7 +740,7 @@ final class ReadPaymentForm
 	{
 		return invoiceCandidatesTableModel.getLatestDocumentDateOfSelectedRows();
 	}
-	
+
 	/**
 	 * task 09643
 	 * @returns the latest accounting date of all selected invoice candidates.

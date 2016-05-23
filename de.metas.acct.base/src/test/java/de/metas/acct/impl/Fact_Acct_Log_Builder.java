@@ -62,7 +62,7 @@ public class Fact_Acct_Log_Builder
 	{
 		final I_Fact_Acct_Log log = InterfaceWrapperHelper.create(ctx, I_Fact_Acct_Log.class, trxName);
 		//
-		log.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
+		log.setAD_Org_ID(Env.getAD_Org_ID(ctx));
 		log.setC_AcctSchema_ID(C_AcctSchema_ID);
 		log.setC_ElementValue_ID(C_ElementValue_ID);
 		log.setC_Period(period);

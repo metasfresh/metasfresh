@@ -1,5 +1,7 @@
 package org.adempiere.ad.language;
 
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,8 +24,8 @@ package org.adempiere.ad.language;
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Language;
 
 public interface ILanguageDAO extends ISingletonService
 {
@@ -36,4 +38,28 @@ public interface ILanguageDAO extends ISingletonService
 	 */
 	String retrieveBaseLanguage();
 
+	I_AD_Language retrieveByAD_Language(Properties ctx, String adLanguage);
+
+	/**
+	 * Add all missing translations for all active languages and for all tables.
+	 *
+	 * @param ctx context
+	 */
+	void addAllMissingTranslations(Properties ctx);
+
+	/**
+	 * Add missing language translations
+	 *
+	 * @param language
+	 * @return number of records inserted
+	 */
+	int addMissingTranslations(I_AD_Language language);
+
+	/**
+	 * Remove language translations
+	 *
+	 * @param language
+	 * @return number of records deleted
+	 */
+	int removeTranslations(I_AD_Language language);
 }

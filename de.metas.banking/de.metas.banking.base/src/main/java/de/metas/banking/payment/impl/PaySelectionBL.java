@@ -13,11 +13,11 @@ package de.metas.banking.payment.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,6 +46,7 @@ import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -54,7 +55,9 @@ public class PaySelectionBL implements IPaySelectionBL
 {
 	private static final String MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = "CannotReactivate_PaySelectionLineInBankStatement";
 
-	/** @return true if given pay selection line is imported in a bank statement */
+	/**
+	 * @return true if given pay selection line is imported in a bank statement
+	 */
 	private boolean isInBankStatement(final I_C_PaySelectionLine psl)
 	{
 		return psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0;
@@ -180,6 +183,13 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
 	{
+		final I_C_PaySelectionLine pslExt = InterfaceWrapperHelper.create(psl, I_C_PaySelectionLine.class);
+
+		if (Services.get(IPaymentRequestBL.class).isUpdatedFromPaymentRequest(pslExt))
+		{
+			return;
+		}
+
 		if (psl.getC_Invoice_ID() <= 0)
 		{
 			return; // nothing to do yet, but as C_PaySelectionLine.C_Invoice_ID is mandatory, we only need to make sure this method is eventually called from a model interceptor
@@ -187,7 +197,6 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
-		final I_C_PaySelectionLine pslExt = InterfaceWrapperHelper.create(psl, I_C_PaySelectionLine.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pslExt);
 
 		final int partnerID = pslExt.getC_Invoice().getC_BPartner_ID();
@@ -230,6 +239,24 @@ public class PaySelectionBL implements IPaySelectionBL
 			{
 				pslExt.setC_BP_BankAccount_ID(secondaryAcct);
 			}
+		}
+
+		// 08297: After trying to set the Reference from the payment request, fallback (if still empty) to the Invoice's POReference
+		final boolean trimWhitespaces = true;
+		if (Check.isEmpty(pslExt.getReference(), trimWhitespaces))
+		{
+			final I_C_Invoice invoice = pslExt.getC_Invoice();
+			if (invoice == null)
+			{
+				return;
+			}
+
+			final String invoicePOReference = invoice.getPOReference();
+			if (Check.isEmpty(invoicePOReference, trimWhitespaces))
+			{
+				return;
+			}
+			pslExt.setReference(invoicePOReference);
 		}
 	}
 
@@ -335,7 +362,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		psl.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(psl);
 	}
-	
+
 	@Override
 	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine bankStatementLine)
 	{
@@ -355,11 +382,10 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 	}
 
-
 	@Override
 	public void reActivate(final I_C_PaySelection paySelection)
 	{
-		if(!paySelection.isProcessed())
+		if (!paySelection.isProcessed())
 		{
 			// already re-activated, nothing to do
 			return;

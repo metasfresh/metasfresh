@@ -25,8 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,17 +36,22 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.adempiere.ad.language.ILanguageDAO;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.MLanguage;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -382,8 +385,8 @@ public class Translation
 		}
 		
 		//	Validate Translation
-		log.info("Start Validating ... " + language);
-		language.maintain(true);
+		log.info("Start Validating ... {}", language);
+		Services.get(ILanguageDAO.class).addMissingTranslations(language);
 		return "";
 	}	//	validateLanguage
 
@@ -427,7 +430,7 @@ public class Translation
 
 		for (int i = 0; i < trlTables.size(); i++)
 		{
-			String table = (String)trlTables.get(i);
+			String table = trlTables.get(i);
 			if (mode.startsWith("i"))
 				importTrl(directory, -1, AD_Language, table);
 			else

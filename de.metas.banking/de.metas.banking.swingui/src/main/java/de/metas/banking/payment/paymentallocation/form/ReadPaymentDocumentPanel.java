@@ -10,12 +10,12 @@ package de.metas.banking.payment.paymentallocation.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,8 +34,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,8 +41,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -66,11 +62,11 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
@@ -80,7 +76,10 @@ import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.payment.model.I_C_Payment_Request;
+import net.miginfocom.swing.MigLayout;
 
 class ReadPaymentDocumentPanel
 		implements ActionListener
@@ -160,7 +159,7 @@ class ReadPaymentDocumentPanel
 	ReadPaymentDocumentPanel(final int WindowNo, final Window window, final int AD_Org_ID)
 	{
 		super();
-		
+
 		_window = window;
 
 		//
@@ -220,12 +219,12 @@ class ReadPaymentDocumentPanel
 
 		init();
 	}
-	
+
 	public Component getComponent()
 	{
 		return mainPanel;
 	}
-	
+
 	public I_C_Payment_Request getCreatedPaymentRequest()
 	{
 		return paymentRequest;
@@ -516,6 +515,7 @@ class ReadPaymentDocumentPanel
 		if (paymentString != null)
 		{
 			paymentRequest.setReference(paymentString.getReferenceNoComplete());
+			paymentRequest.setFullPaymentString(paymentString.getRawPaymentString());
 		}
 
 		//
@@ -634,7 +634,7 @@ class ReadPaymentDocumentPanel
 		}
 		Env.clearWinContext(windowNo);
 	}
-	
+
 	public Optional<ReadPaymentPanelResult> getResultIfValid()
 	{
 		final I_C_Payment_Request paymentRequestTemplate = getCreatedPaymentRequest();
@@ -675,6 +675,7 @@ class ReadPaymentDocumentPanel
 		}
 		final String reference = parsedPaymentString.getReferenceNoComplete();
 		paymentRequestTemplate.setReference(reference);
+		paymentRequestTemplate.setFullPaymentString(parsedPaymentString.getRawPaymentString()); // FRESH-318
 
 		resultBuilder.setPaymentRequestTemplate(paymentRequestTemplate);
 		resultBuilder.setPaymentReference(reference);

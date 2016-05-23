@@ -41,7 +41,6 @@ import de.metas.adempiere.ait.test.IntegrationTestSuite;
 	test.integration.banking.PaymentTestListener.class
 })
 @SuiteClasses({
-		de.schaeffer.pay.service.impl.TeleCashBLIntT.class,
 		test.integration.banking.PaymentTestDriver.class
 })
 public class AllTests

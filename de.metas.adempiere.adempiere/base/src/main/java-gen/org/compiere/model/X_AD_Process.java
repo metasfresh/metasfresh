@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1200454418L;
+	private static final long serialVersionUID = -2070150932L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -44,9 +28,13 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 // Y
 			setEntityType (null);
 // U
+			setIsApplySecuritySettings (false);
+// N
 			setIsBetaFunctionality (false);
 			setIsReport (false);
 			setIsServerProcess (false);
+			setIsUseBPartnerLanguage (true);
+// Y
 			setName (null);
 			setRefreshAllAfterExecution (false);
 // N
@@ -400,6 +388,29 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
+	/** Set IsApplySecuritySettings.
+		@param IsApplySecuritySettings IsApplySecuritySettings	  */
+	@Override
+	public void setIsApplySecuritySettings (boolean IsApplySecuritySettings)
+	{
+		set_Value (COLUMNNAME_IsApplySecuritySettings, Boolean.valueOf(IsApplySecuritySettings));
+	}
+
+	/** Get IsApplySecuritySettings.
+		@return IsApplySecuritySettings	  */
+	@Override
+	public boolean isApplySecuritySettings () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsApplySecuritySettings);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Beta-Funktionalität.
 		@param IsBetaFunctionality 
 		This functionality is considered Beta
@@ -495,6 +506,29 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isServerProcess () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsServerProcess);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsUseBPartnerLanguage.
+		@param IsUseBPartnerLanguage IsUseBPartnerLanguage	  */
+	@Override
+	public void setIsUseBPartnerLanguage (boolean IsUseBPartnerLanguage)
+	{
+		set_Value (COLUMNNAME_IsUseBPartnerLanguage, Boolean.valueOf(IsUseBPartnerLanguage));
+	}
+
+	/** Get IsUseBPartnerLanguage.
+		@return IsUseBPartnerLanguage	  */
+	@Override
+	public boolean isUseBPartnerLanguage () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsUseBPartnerLanguage);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
