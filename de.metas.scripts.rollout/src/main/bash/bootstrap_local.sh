@@ -11,6 +11,10 @@ fi
 if [ "$MINOR" == "" ]; then
 	MINOR="false"
 fi
+if [ "$VALIDATE_MIGRATION" == "" ]; then
+	# FRESH-336
+	VALIDATE_MIGRATION="false"
+fi
 
 # ROLLOUT_BUILD_URL and DIST_ARCHIVE are mandatory, *unless* ROLLOUT_FILE_URL is set 
 #if [ "ROLLOUT_BUILD_URL" == "" ]; then
@@ -202,6 +206,49 @@ rollout_minor()
 	trace rollout_minor END
 }
 
+#
+# FRESH-336
+# Similar to rollout_database() in that it invokes sql_remote.sh, 
+# but it calls that script with "-n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}".
+# The two variables are taken from local.properties
+#
+# TODO: incorporate the part that drops the test-DB into the java migration tool
+#
+validate_migration()
+{
+	trace validate_migration BEGIN
+	
+	check_var VALIDATE_MIGRATION_TEMPLATE_DB ${VALIDATE_MIGRATION_TEMPLATE_DB:-NOT_SET}
+	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
+	check_var VALIDATE_MIGRATION_DROP_TEST_DB ${VALIDATE_MIGRATION_DROP_TEST_DB:-NOT_SET}
+	
+	trace validate_migration "Making remote script sql_remote.sh executable"
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh" 
+	
+	trace validate_migration "Invoking remote script sql_remote.sh to verify our migration scripts against a short-lived copy of ${VALIDATE_MIGRATION_TEMPLATE_DB}."
+	trace validate_migration "=========================================================="
+
+	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "${REMOTE_EXEC_DIR}/sql_remote.sh -d ${REMOTE_EXEC_DIR}/.. -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}" 
+	trace validate_migration "=========================================================="
+	trace validate_migration "Done with remote script sql_remote.sh"
+
+	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
+	
+	if [ "$VALIDATE_MIGRATION_TEST_DB" == "true" ]; then
+		trace validate_migration "Dropping test database ${VALIDATE_MIGRATION_TEST_DB}"
+		
+		check_std_tool psql
+		check_var METASFRESH_DB_SERVER ${METASFRESH_DB_SERVER}
+		check_var METASFRESH_DB_NAME ${METASFRESH_DB_NAME}
+		check_var METASFRESH_DB_USER ${METASFRESH_DB_USER}
+		
+		PSQL_PARAMS="--host $METASFRESH_DB_SERVER --dbname $METASFRESH_DB_NAME --username $METASFRESH_DB_USER"	
+		echo "DROP DATABASE ${VALIDATE_MIGRATION_TEST_DB};" | psql ${PSQL_PARAMS}
+	fi
+	
+	trace validate_migration END
+}
+
 rollout_database()
 {
 	trace rollout_database BEGIN
@@ -271,6 +318,11 @@ check_ssh()
 }
 
 prepare
+
+if [ "$VALIDATE_MIGRATION" == "true" ]; then
+	# FRESH-336
+	validate_migration
+fi
 
 if [ "$START_STOP" = "true" ]; 
 then
