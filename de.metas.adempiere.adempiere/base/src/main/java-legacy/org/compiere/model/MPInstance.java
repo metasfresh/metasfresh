@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -111,6 +112,7 @@ public class MPInstance extends X_AD_PInstance
 		}
 		setRecord_ID(Record_ID);
 		setAD_User_ID(Env.getAD_User_ID(ctx));
+		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
 		DB.saveConstraints();
 		try
@@ -173,6 +175,7 @@ public class MPInstance extends X_AD_PInstance
 		}
 		setRecord_ID (Record_ID);
 		setAD_User_ID(Env.getAD_User_ID(ctx));
+		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		setIsProcessing (false);
 	}	//	MPInstance
 	

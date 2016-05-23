@@ -103,6 +103,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				//
 				.orderBy()
 				.addColumn(I_Fact_Acct_Log.COLUMN_AD_Client_ID)
+				.addColumn(I_Fact_Acct_Log.COLUMN_AD_Org_ID)
 				.addColumn(I_Fact_Acct_Log.COLUMN_C_ElementValue_ID)
 				.addColumn(I_Fact_Acct_Log.COLUMN_C_AcctSchema_ID)
 				.addColumn(I_Fact_Acct_Log.COLUMN_PostingType)

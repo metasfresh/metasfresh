@@ -21,6 +21,8 @@ import java.util.concurrent.Executor;
 
 import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
  * #%L
  * de.metas.report.jasper.server.base
@@ -53,14 +55,16 @@ class JasperJdbcConnection implements Connection
 {
 	private final Connection delegate;
 	private final String queryInfo;
+	private final String securityWhereClause;
 
-	public JasperJdbcConnection(final Connection delegate, final String queryInfo)
+	public JasperJdbcConnection(final Connection delegate, final String queryInfo, final String securityWhereClause)
 	{
 		super();
 		Check.assumeNotNull(delegate, "delegate not null");
 		this.delegate = delegate;
 
 		this.queryInfo = normalizeQueryInfo(queryInfo);
+		this.securityWhereClause = Check.isEmpty(securityWhereClause, true) ? null : securityWhereClause;
 	}
 
 	private static final String normalizeQueryInfo(final String queryInfo)
@@ -76,6 +80,14 @@ class JasperJdbcConnection implements Connection
 
 	}
 
+	private final String customizeSql(final String sql)
+	{
+		String sqlCustomized = addQueryInfo(sql);
+		sqlCustomized = injectSecurityWhereClauses(sqlCustomized, securityWhereClause);
+		
+		return sqlCustomized;
+	}
+	
 	private final String addQueryInfo(final String sql)
 	{
 		if (queryInfo == null)
@@ -89,6 +101,67 @@ class JasperJdbcConnection implements Connection
 
 		final String sqlWithInfo = queryInfo + sql;
 		return sqlWithInfo;
+	}
+	
+	@VisibleForTesting
+	final static String injectSecurityWhereClauses(final String sql, final String securityWhereClause)
+	{
+		if(sql == null)
+		{
+			return null;
+		}
+		if (securityWhereClause == null)
+		{
+			return sql;
+		}
+		
+		final StringBuilder sqlCustomized = new StringBuilder();
+
+		// Cut off last ORDER BY clause
+		final String orderBy;
+		final int idxOrderBy = sql.lastIndexOf("ORDER BY ");
+		
+		final int lastIdxOfSemicolon = sql.lastIndexOf(";");
+		final int idxSemicolon = lastIdxOfSemicolon > -1? lastIdxOfSemicolon : sql.length() ;
+		
+		if (idxOrderBy != -1)
+		{
+			orderBy = sql.substring(idxOrderBy, idxSemicolon);
+			sqlCustomized.append(sql.substring(0, idxOrderBy));
+		}
+		
+		
+		else if(idxSemicolon != -1)
+		{
+			orderBy = null;
+			sqlCustomized.append(sql.substring(0, idxSemicolon));
+		}
+		else
+		{
+			orderBy = null;
+			sqlCustomized.append(sql);
+		}
+		
+		// Do we have to add WHERE or AND
+		if (sql.indexOf(" WHERE ") == -1)
+		{
+			sqlCustomized.append("\nWHERE ");
+		}
+		else
+		{
+			sqlCustomized.append("\nAND ");
+		}
+		
+		sqlCustomized.append(securityWhereClause);
+		
+		if (orderBy != null)
+		{
+			sqlCustomized.append("\n").append(orderBy);
+		}
+
+		sqlCustomized.append(";");
+		
+		return sqlCustomized.toString();
 	}
 
 	@Override
@@ -112,19 +185,19 @@ class JasperJdbcConnection implements Connection
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql));
+		return delegate.prepareStatement(customizeSql(sql));
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql) throws SQLException
 	{
-		return delegate.prepareCall(addQueryInfo(sql));
+		return delegate.prepareCall(customizeSql(sql));
 	}
 
 	@Override
 	public String nativeSQL(String sql) throws SQLException
 	{
-		return delegate.nativeSQL(addQueryInfo(sql));
+		return delegate.nativeSQL(customizeSql(sql));
 	}
 
 	@Override
@@ -226,13 +299,13 @@ class JasperJdbcConnection implements Connection
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql), resultSetType, resultSetConcurrency);
+		return delegate.prepareStatement(customizeSql(sql), resultSetType, resultSetConcurrency);
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
 	{
-		return delegate.prepareCall(addQueryInfo(sql), resultSetType, resultSetConcurrency);
+		return delegate.prepareCall(customizeSql(sql), resultSetType, resultSetConcurrency);
 	}
 
 	@Override
@@ -292,31 +365,31 @@ class JasperJdbcConnection implements Connection
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql), resultSetType, resultSetConcurrency, resultSetHoldability);
+		return delegate.prepareStatement(customizeSql(sql), resultSetType, resultSetConcurrency, resultSetHoldability);
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
 	{
-		return delegate.prepareCall(addQueryInfo(sql), resultSetType, resultSetConcurrency, resultSetHoldability);
+		return delegate.prepareCall(customizeSql(sql), resultSetType, resultSetConcurrency, resultSetHoldability);
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql), autoGeneratedKeys);
+		return delegate.prepareStatement(customizeSql(sql), autoGeneratedKeys);
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql), columnIndexes);
+		return delegate.prepareStatement(customizeSql(sql), columnIndexes);
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException
 	{
-		return delegate.prepareStatement(addQueryInfo(sql), columnNames);
+		return delegate.prepareStatement(customizeSql(sql), columnNames);
 	}
 
 	@Override
