@@ -1,11 +1,9 @@
-package de.metas.ui.web.vaadin.window;
+package de.metas.ui.web.vaadin.window.shared.datatype;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 import com.google.common.base.Objects;
-
-import de.metas.ui.web.vaadin.window.editor.NullValue;
 
 /*
  * #%L

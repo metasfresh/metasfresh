@@ -50,10 +50,10 @@ import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
-import de.metas.ui.web.vaadin.window.editor.NullValue;
-import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.service.LocationService;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

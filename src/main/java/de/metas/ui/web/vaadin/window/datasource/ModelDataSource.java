@@ -8,7 +8,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import com.google.common.base.Supplier;
 
 import de.metas.ui.web.vaadin.window.datasource.sql.ModelDataSourceQuery;
-import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

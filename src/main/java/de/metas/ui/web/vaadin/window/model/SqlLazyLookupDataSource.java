@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.vaadin.window.SqlLookupDescriptor;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
  * #%L

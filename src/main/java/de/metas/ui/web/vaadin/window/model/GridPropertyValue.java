@@ -11,9 +11,10 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

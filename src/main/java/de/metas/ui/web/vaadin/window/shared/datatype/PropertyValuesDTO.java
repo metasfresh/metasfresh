@@ -1,4 +1,4 @@
-package de.metas.ui.web.vaadin.window.model;
+package de.metas.ui.web.vaadin.window.shared.datatype;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -14,10 +14,8 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
 
-import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
-import de.metas.ui.web.vaadin.window.editor.NullValue;
+import de.metas.ui.web.vaadin.window.model.SqlLazyLookupDataSource;
 
 /*
  * #%L

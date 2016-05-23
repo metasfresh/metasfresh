@@ -22,8 +22,8 @@ import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.EditorFactory;
 import de.metas.ui.web.vaadin.window.editor.GridEditor;
-import de.metas.ui.web.vaadin.window.editor.NullValue;
-import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

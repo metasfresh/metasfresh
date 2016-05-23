@@ -35,8 +35,8 @@ import de.metas.ui.web.vaadin.window.PropertyLayoutInfo;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
 import de.metas.ui.web.vaadin.window.descriptor.IPropertyDescriptorProvider;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.model.TraceHelper;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
  * #%L

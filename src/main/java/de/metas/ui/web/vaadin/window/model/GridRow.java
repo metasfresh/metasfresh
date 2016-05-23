@@ -8,11 +8,12 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.editor.NullValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
+import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

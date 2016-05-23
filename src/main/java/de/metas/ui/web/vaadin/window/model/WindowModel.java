@@ -31,7 +31,6 @@ import com.vaadin.ui.Notification.Type;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.theme.Theme;
-import de.metas.ui.web.vaadin.window.GridRowId;
 import de.metas.ui.web.vaadin.window.HARDCODED_Order;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
@@ -50,6 +49,8 @@ import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.ModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.vaadin.window.model.event.ZoomToWindowEvent;
+import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

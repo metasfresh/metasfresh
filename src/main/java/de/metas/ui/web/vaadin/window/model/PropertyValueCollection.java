@@ -20,8 +20,9 @@ import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
 import de.metas.ui.web.vaadin.window.model.PropertyNameDependenciesMap.DependencyType;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

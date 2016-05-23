@@ -1,4 +1,4 @@
-package de.metas.ui.web.vaadin.window.editor;
+package de.metas.ui.web.vaadin.window.shared.datatype;
 
 import java.util.Objects;
 

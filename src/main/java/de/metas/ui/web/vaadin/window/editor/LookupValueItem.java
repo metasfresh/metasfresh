@@ -6,6 +6,8 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
 
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+
 /*
  * #%L
  * metasfresh-webui

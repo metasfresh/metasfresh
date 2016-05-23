@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.model.event;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

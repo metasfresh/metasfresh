@@ -2,7 +2,7 @@ package de.metas.ui.web.vaadin.window.model;
 
 import java.util.List;
 
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
  * #%L

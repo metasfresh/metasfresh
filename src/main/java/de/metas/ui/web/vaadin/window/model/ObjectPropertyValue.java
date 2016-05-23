@@ -19,8 +19,8 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
-import de.metas.ui.web.vaadin.window.editor.NullValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
 
 /*
  * #%L

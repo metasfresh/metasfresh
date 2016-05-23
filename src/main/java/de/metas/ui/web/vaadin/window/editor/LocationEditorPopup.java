@@ -14,6 +14,7 @@ import de.metas.ui.web.vaadin.window.datasource.SaveResult;
 import de.metas.ui.web.vaadin.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.vaadin.window.model.WindowModel;
 import de.metas.ui.web.vaadin.window.service.LocationService;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 import de.metas.ui.web.vaadin.window.view.EditorView;
 
 /*

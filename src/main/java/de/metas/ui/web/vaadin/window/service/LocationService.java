@@ -10,7 +10,7 @@ import com.vaadin.spring.annotation.UIScope;
 
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ILocationBL;
-import de.metas.ui.web.vaadin.window.editor.LookupValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
  * #%L

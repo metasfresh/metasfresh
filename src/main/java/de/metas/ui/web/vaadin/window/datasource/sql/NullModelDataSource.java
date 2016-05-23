@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
-import de.metas.ui.web.vaadin.window.model.PropertyValuesDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L
