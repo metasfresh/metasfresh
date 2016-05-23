@@ -43,22 +43,28 @@ public final class NullEditorListener implements EditorListener
 	}
 
 	@Override
-	public ListenableFuture<Object> requestValue(PropertyName propertyName)
+	public ListenableFuture<Object> requestValue(final PropertyName propertyName)
 	{
 		final Object value = null;
 		return Futures.immediateFuture(value);
 	}
 
 	@Override
-	public void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value)
+	public void gridValueChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
 	{
 		// nothing
 	}
 
 	@Override
-	public ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
+	public ListenableFuture<Object> requestGridValue(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
 	{
 		final Object value = null;
 		return Futures.immediateFuture(value);
+	}
+
+	@Override
+	public void gridNewRow(final PropertyName gridPropertyName)
+	{
+		throw new UnsupportedOperationException("New grid row not supported for " + gridPropertyName);
 	}
 }

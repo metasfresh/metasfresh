@@ -40,6 +40,8 @@ public interface WindowViewListener
 	/** View notified a grid property value has been changed */
 	void viewGridPropertyChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
 	
+	void viewGridNewRow(PropertyName gridPropertyName);
+	
 	/** View asked to move to next record */
 	void viewNextRecord(OnChangesFound onChangesFound);
 	

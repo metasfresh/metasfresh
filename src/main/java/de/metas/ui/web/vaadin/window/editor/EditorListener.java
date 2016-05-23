@@ -33,6 +33,8 @@ public interface EditorListener
 	ListenableFuture<Object> requestValue(PropertyName propertyName);
 
 	void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
+	
+	void gridNewRow(PropertyName gridPropertyName);
 
 	ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 }

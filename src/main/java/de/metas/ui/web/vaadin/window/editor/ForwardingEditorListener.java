@@ -53,4 +53,10 @@ public abstract class ForwardingEditorListener implements EditorListener
 	{
 		return getDelegate().requestGridValue(gridPropertyName, rowId, propertyName);
 	}
+	
+	@Override
+	public void gridNewRow(PropertyName gridPropertyName)
+	{
+		getDelegate().gridNewRow(gridPropertyName);
+	}
 }

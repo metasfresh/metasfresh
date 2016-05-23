@@ -342,6 +342,12 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			viewSettingPropertyNames.remove(propertyName);
 		}
 	}
+	
+	@Override
+	public void viewGridNewRow(final PropertyName gridPropertyName)
+	{
+		updateModel(model -> model.gridNewRow(gridPropertyName));
+	}
 
 	@Override
 	public void viewGridPropertyChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
@@ -361,7 +367,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			viewSettingPropertyNames.remove(cellPropertyName);
 		}
 	}
-
+	
 	private static final PropertyName buildGridCellPropertyName(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
 	{
 		return PropertyName.of(gridPropertyName + "." + rowId + "." + propertyName);

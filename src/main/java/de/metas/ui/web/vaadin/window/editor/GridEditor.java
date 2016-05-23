@@ -5,9 +5,12 @@ import java.util.List;
 import org.slf4j.Logger;
 
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasChildMeasurementHint.ChildMeasurementHint;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.VerticalLayout;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
@@ -42,21 +45,44 @@ public class GridEditor extends DocumentSectionEditorsContainer
 {
 	static final Logger logger = LogManager.getLogger(GridEditor.class);
 
-	private final GridTableFieldFactory fieldFactory;
+	private GridTableFieldFactory fieldFactory;
 	private GridEditorDataContainer containerDataSource;
+
+	// UI
+	private Table table;
 
 
 	public GridEditor(final PropertyDescriptor propertyDescriptor)
 	{
 		super(propertyDescriptor);
 
-		final Table table = getContent();
+	}
+
+	@Override
+	protected Component createPanelContent()
+	{
+		final Button btnNewRow = new Button("New", event->onNewRecord());
+		
+		final HorizontalLayout toolbarPanel = new HorizontalLayout(btnNewRow);
+		this.table = createTable();
+		
+		final VerticalLayout content = new VerticalLayout(toolbarPanel, table);
+		
+		return content;
+	}
+	
+	final Table createTable()
+	{
+		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		fieldFactory = new GridTableFieldFactory(propertyDescriptor);
+		containerDataSource = new GridEditorDataContainer(propertyDescriptor);
+
+		final Table table = new Table();
+		table.setChildMeasurementHint(ChildMeasurementHint.MEASURE_NEVER);
 		table.setEditable(true);
 
-		this.fieldFactory = new GridTableFieldFactory(propertyDescriptor);
 		table.setTableFieldFactory(fieldFactory);
 
-		containerDataSource = new GridEditorDataContainer(propertyDescriptor);
 		table.setContainerDataSource(containerDataSource);
 		for (Object propertyId : containerDataSource.getContainerPropertyIds())
 		{
@@ -67,20 +93,13 @@ public class GridEditor extends DocumentSectionEditorsContainer
 		table.setChildMeasurementHint(ChildMeasurementHint.MEASURE_NEVER);
 		table.setColumnCollapsingAllowed(true);
 		table.setPageLength(5);
-	}
-
-	@Override
-	protected Component createPanelContent()
-	{
-		final Table table = new Table();
-		table.setChildMeasurementHint(ChildMeasurementHint.MEASURE_NEVER);
+		
 		return table;
 	}
 
-	@Override
-	protected Table getContent()
+	private Table getTable()
 	{
-		return (Table)super.getContent();
+		return table;
 	}
 
 	@Override
@@ -123,7 +142,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 				containerDataSourceNew.setEditorListener(getEditorListener());
 				//
 				containerDataSource = containerDataSourceNew;
-				getContent().setContainerDataSource(containerDataSourceNew);
+				getTable().setContainerDataSource(containerDataSourceNew);
 	
 				// containerDataSource.setContent(rowValuesList);
 			}
@@ -144,7 +163,12 @@ public class GridEditor extends DocumentSectionEditorsContainer
 
 	public void newRow(final Object rowId, final PropertyValuesDTO rowValues)
 	{
-		final GridRowItem row = containerDataSource.addItem(rowId);
-		row.setValues(rowValues);
+		containerDataSource.addItem(rowId, rowValues);
 	}
+	
+	private void onNewRecord()
+	{
+		getEditorListener().gridNewRow(getPropertyName());
+	}
+
 }

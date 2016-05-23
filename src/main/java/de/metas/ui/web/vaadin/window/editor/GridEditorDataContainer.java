@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -31,12 +31,12 @@ import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,13 +45,13 @@ import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 
 @SuppressWarnings("serial")
 final class GridEditorDataContainer extends AbstractContainer
-		implements Container.ItemSetChangeNotifier, Container.Ordered
+		implements Container.ItemSetChangeNotifier, Container.Ordered, Container.Indexed
 {
 	private final PropertyDescriptor descriptor;
 	private final Collection<PropertyName> visiblePropertyNames;
 
-	private final Map<GridRowId, GridRowItem> rows = new LinkedHashMap<>();
-	private final List<GridRowId> rowIds = new ArrayList<>();
+	private final LinkedHashMap<GridRowId, GridRowItem> rows = new LinkedHashMap<>();
+	private final List<GridRowId> visibleRowIds = new ArrayList<>();
 
 	private EditorListener editorListener = NullEditorListener.instance;
 	private final Property.ValueChangeListener cellValueChangedListenerDelegate = new Property.ValueChangeListener()
@@ -66,7 +66,7 @@ final class GridEditorDataContainer extends AbstractContainer
 		};
 
 		@Override
-		public void valueChange(Property.ValueChangeEvent event)
+		public void valueChange(final Property.ValueChangeEvent event)
 		{
 			if (editorListener == null)
 			{
@@ -98,42 +98,42 @@ final class GridEditorDataContainer extends AbstractContainer
 			}
 			propertyNames.add(childPropertyDescriptor.getPropertyName());
 		}
-		this.visiblePropertyNames = propertyNames.build();
+		visiblePropertyNames = propertyNames.build();
 	}
 
 	public void setEditorListener(final EditorListener listener)
 	{
-		this.editorListener = listener != null ? listener : NullEditorListener.instance;
+		editorListener = listener != null ? listener : NullEditorListener.instance;
 	}
 
 	@Override
-	public void addItemSetChangeListener(Container.ItemSetChangeListener listener)
+	public void addItemSetChangeListener(final Container.ItemSetChangeListener listener)
 	{
 		super.addItemSetChangeListener(listener);
 	}
 
 	@Override
 	@Deprecated
-	public void addListener(Container.ItemSetChangeListener listener)
+	public void addListener(final Container.ItemSetChangeListener listener)
 	{
 		super.addListener(listener);
 	}
 
 	@Override
-	public void removeItemSetChangeListener(Container.ItemSetChangeListener listener)
+	public void removeItemSetChangeListener(final Container.ItemSetChangeListener listener)
 	{
 		super.removeItemSetChangeListener(listener);
 	}
 
 	@Override
 	@Deprecated
-	public void removeListener(Container.ItemSetChangeListener listener)
+	public void removeListener(final Container.ItemSetChangeListener listener)
 	{
 		super.removeListener(listener);
 	}
 
 	@Override
-	public GridRowItem getItem(Object itemId)
+	public GridRowItem getItem(final Object itemId)
 	{
 		final GridRowId rowId = GridRowId.of(itemId);
 		return rows.get(rowId);
@@ -164,7 +164,7 @@ final class GridEditorDataContainer extends AbstractContainer
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public Property getContainerProperty(Object itemId, Object propertyId)
+	public Property getContainerProperty(final Object itemId, final Object propertyId)
 	{
 		final GridRowId rowId = GridRowId.of(itemId);
 		final GridRowItem row = rows.get(rowId);
@@ -176,7 +176,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public Class<?> getType(Object propertyId)
+	public Class<?> getType(final Object propertyId)
 	{
 		return descriptor.getChildPropertyDescriptorsAsMap().get(propertyId).getValueType();
 	}
@@ -188,20 +188,46 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public boolean containsId(Object itemId)
+	public boolean containsId(final Object itemId)
 	{
 		final GridRowId rowId = GridRowId.of(itemId);
 		return rows.containsKey(rowId);
 	}
 
-	@Override
-	public GridRowItem addItem(Object itemId) throws UnsupportedOperationException
+	private GridRowItem createGridRowItem(final Object itemId, final PropertyValuesDTO rowValues)
 	{
 		final GridRowId rowId = GridRowId.of(itemId);
-		final GridRowItem rowItem = new GridRowItem(rowId, this.descriptor.getChildPropertyDescriptorsAsMap());
+		final GridRowItem rowItem = new GridRowItem(rowId, descriptor.getChildPropertyDescriptorsAsMap());
+		rowItem.setValues(rowValues);
 		rowItem.addValueChangeListener(cellValueChangedListenerDelegate);
+
+		return rowItem;
+	}
+
+	@Override
+	public GridRowItem addItem(final Object itemId)
+	{
+		return addItem(itemId, PropertyValuesDTO.of());
+	}
+
+	public GridRowItem addItem(final Object itemId, final PropertyValuesDTO rowValues)
+	{
+		final GridRowItem rowItem = addItemNoFire(itemId, rowValues);
+
+		// TODO: fire a more specific event
+		fireItemSetChange();
+
+		return rowItem;
+	}
+
+	private GridRowItem addItemNoFire(final Object itemId, final PropertyValuesDTO rowValues)
+	{
+		final GridRowItem rowItem = createGridRowItem(itemId, rowValues);
+		final GridRowId rowId = rowItem.getRowId();
+
 		rows.put(rowId, rowItem);
-		rowIds.add(rowId);
+		visibleRowIds.add(rowId);
+
 		return rowItem;
 	}
 
@@ -212,7 +238,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public boolean removeItem(Object itemId) throws UnsupportedOperationException
+	public boolean removeItem(final Object itemId) throws UnsupportedOperationException
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
@@ -220,13 +246,13 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException
+	public boolean addContainerProperty(final Object propertyId, final Class<?> type, final Object defaultValue) throws UnsupportedOperationException
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException
+	public boolean removeContainerProperty(final Object propertyId) throws UnsupportedOperationException
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -234,19 +260,38 @@ final class GridEditorDataContainer extends AbstractContainer
 	@Override
 	public boolean removeAllItems() throws UnsupportedOperationException
 	{
+		if (!removeAllItemsNoFire())
+		{
+			return false;
+		}
+
+		// TODO: fire a more specific event
+		fireItemSetChange();
+
+		return true;
+	}
+
+	private boolean removeAllItemsNoFire()
+	{
+		if (rows.isEmpty() && visibleRowIds.isEmpty())
+		{
+			return false;
+		}
+
 		rows.clear();
+		visibleRowIds.clear();
+
 		return true;
 	}
 
 	public void setContent(final PropertyValuesListDTO rowValuesList)
 	{
-		rows.clear();
+		removeAllItemsNoFire();
 
 		for (final PropertyValuesDTO rowValues : rowValuesList.getList())
 		{
 			final Object rowId = rowValues.get(WindowConstants.PROPERTYNAME_GridRowId);
-			final GridRowItem rowItem = addItem(rowId);
-			rowItem.setValues(rowValues); // FIXME: this is firing events to model!!!
+			addItemNoFire(rowId, rowValues);
 		}
 
 		fireItemSetChange();
@@ -254,21 +299,23 @@ final class GridEditorDataContainer extends AbstractContainer
 
 	private List<GridRowId> getVisibleItemIds()
 	{
-		return rowIds;
+		return visibleRowIds;
 	}
 
-	public int indexOfId(Object itemId)
+	@Override
+	public int indexOfId(final Object itemId)
 	{
 		return getVisibleItemIds().indexOf(itemId);
 	}
 
-	public GridRowId getIdByIndex(int index)
+	@Override
+	public GridRowId getIdByIndex(final int index)
 	{
 		return getVisibleItemIds().get(index);
 	}
 
 	@Override
-	public Object nextItemId(Object itemId)
+	public Object nextItemId(final Object itemId)
 	{
 		final int index = indexOfId(itemId);
 		if (index >= 0 && index < size() - 1)
@@ -283,9 +330,9 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public Object prevItemId(Object itemId)
+	public Object prevItemId(final Object itemId)
 	{
-		int index = indexOfId(itemId);
+		final int index = indexOfId(itemId);
 		if (index > 0)
 		{
 			return getIdByIndex(index - 1);
@@ -324,7 +371,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public boolean isFirstId(Object itemId)
+	public boolean isFirstId(final Object itemId)
 	{
 		if (itemId == null)
 		{
@@ -334,7 +381,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public boolean isLastId(Object itemId)
+	public boolean isLastId(final Object itemId)
 	{
 		if (itemId == null)
 		{
@@ -344,14 +391,37 @@ final class GridEditorDataContainer extends AbstractContainer
 	}
 
 	@Override
-	public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException
+	public Object addItemAfter(final Object previousItemId) throws UnsupportedOperationException
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException
+	public Item addItemAfter(final Object previousItemId, final Object newItemId) throws UnsupportedOperationException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<?> getItemIds(final int startIndex, final int numberOfItems)
+	{
+		final List<GridRowId> rowIds = getVisibleItemIds();
+		final int toIndex = startIndex + numberOfItems;
+		final List<GridRowId> sublist = rowIds.subList(startIndex, toIndex);
+		return ImmutableList.copyOf(sublist);
+	}
+
+	@Override
+	public Object addItemAt(final int index) throws UnsupportedOperationException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Item addItemAt(final int index, final Object newItemId) throws UnsupportedOperationException
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
