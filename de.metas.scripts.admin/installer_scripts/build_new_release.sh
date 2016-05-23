@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #title           :metasfresh_release.sh
-#description     :This Shell-Script will create a new build-version, using the files and database from mf15master
+#description     :This Shell-Script will create a new build-version, using the files and database from the Source Server
 #		  After the build-process is completed, the script will upload the zipped build to the webserver
 #		  On user-request, the script will also create a package from the rollout-files and provide them
 #		  on the webserver as "Update-Package"
@@ -9,7 +9,7 @@
 #date            :2016-01-22
 #version         :0.1    
 #usage           :/bin/bash metasfresh_release.sh
-#notes           :This script requires root-privileges on mf15pack901 (this server) and ssh-access on metasfresh@mf15master
+#notes           :This script requires root-privileges on this server and ssh-access on the Source Server
 #		  and ssh-privileges to the webserver in order to upload the release-packages.
 #                 Modify parameters below as you need
 #IMPORTANT       :
