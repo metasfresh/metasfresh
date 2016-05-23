@@ -10,6 +10,7 @@ import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 
 /*
  * #%L

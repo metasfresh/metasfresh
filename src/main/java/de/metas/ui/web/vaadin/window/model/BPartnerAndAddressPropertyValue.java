@@ -3,8 +3,8 @@ package de.metas.ui.web.vaadin.window.model;
 import java.util.Map;
 
 import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.model.PropertyNameDependenciesMap.DependencyType;
+import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 
 /*
  * #%L

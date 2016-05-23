@@ -126,6 +126,7 @@ public final class PropertyValuesDTO implements Serializable
 				, SqlLazyLookupDataSource.class // FIXME: tolerate it for now
 				, ArrayList.class // FIXME: tolerate it for now => introduce a new datatype for List<PropertyValuesDTO>
 				, LookupValue.class //
+				, ComposedValue.class //
 		);
 
 		private final ImmutableMap.Builder<PropertyName, Object> valuesBuilder = ImmutableMap.builder();

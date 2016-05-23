@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.ibm.icu.math.BigDecimal;
 
 import de.metas.ui.web.vaadin.window.datasource.sql.SqlModelDataSource;
-import de.metas.ui.web.vaadin.window.editor.ComposedValue;
+import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*

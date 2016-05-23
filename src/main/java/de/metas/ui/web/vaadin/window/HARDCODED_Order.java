@@ -10,8 +10,8 @@ import org.compiere.util.TimeUtil;
 import com.vaadin.server.VaadinService;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.ui.web.vaadin.window.editor.ComposedValue;
 import de.metas.ui.web.vaadin.window.model.WindowModel;
+import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
