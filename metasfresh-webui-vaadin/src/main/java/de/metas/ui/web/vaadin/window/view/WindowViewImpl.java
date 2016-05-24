@@ -202,12 +202,14 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 	public void setNextRecordEnabled(final boolean enabled)
 	{
 		btnNextRecord.setEnabled(enabled);
+		btnNextRecord.setVisible(enabled);
 	}
 
 	@Override
 	public void setPreviousRecordEnabled(final boolean enabled)
 	{
 		btnPreviousRecord.setEnabled(enabled);
+		btnPreviousRecord.setVisible(enabled);
 	}
 
 	@Override
