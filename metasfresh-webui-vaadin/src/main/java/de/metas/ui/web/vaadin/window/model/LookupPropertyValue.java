@@ -1,5 +1,6 @@
 package de.metas.ui.web.vaadin.window.model;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.MoreObjects;
@@ -11,6 +12,7 @@ import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.SqlLookupDescriptor;
 import de.metas.ui.web.vaadin.window.WindowConstants;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupDataSourceServiceDTO;
+import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -60,7 +62,7 @@ public class LookupPropertyValue implements PropertyValue
 		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
 		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 
-		this.value = LookupDataSourceServiceDTO.of(lookupDataSource);
+		this.value = LookupDataSourceServiceDTOImpl.of(lookupDataSource);
 	}
 
 	@Override
@@ -145,5 +147,56 @@ public class LookupPropertyValue implements PropertyValue
 	public final boolean isCalculated()
 	{
 		return true;
+	}
+	
+	private static class LookupDataSourceServiceDTOImpl extends LookupDataSourceServiceDTO
+	{
+		// TODO: the implementation of LookupDataSourceServiceDTO shall be simple serializable POJO and not an LookupDataSource wrapper 
+		
+		public static final LookupDataSourceServiceDTO of(final LookupDataSource lookupDataSource)
+		{
+			return new LookupDataSourceServiceDTOImpl(lookupDataSource);
+		}
+
+		public static final int SIZE_InvalidFilter = -100;
+
+		private final LookupDataSource lookupDataSource;
+
+		private LookupDataSourceServiceDTOImpl(final LookupDataSource lookupDataSource)
+		{
+			super();
+			this.lookupDataSource = lookupDataSource;
+		}
+
+		/**
+		 * @param filter
+		 * @return size or {@link #SIZE_InvalidFilter} if the filter is not valid
+		 */
+		@Override
+		public int sizeIfValidFilter(final String filter)
+		{
+			if (!lookupDataSource.isValidFilter(filter))
+			{
+				return SIZE_InvalidFilter;
+			}
+			return lookupDataSource.size(filter);
+		}
+
+		/**
+		 * 
+		 * @param filter
+		 * @param firstRow
+		 * @param pageLength
+		 * @return {@link LookupValue}s list or <code>null</code> if the filter is not valid
+		 */
+		@Override
+		public List<LookupValue> findEntitiesIfValidFilter(final String filter, final int firstRow, final int pageLength)
+		{
+			if (!lookupDataSource.isValidFilter(filter))
+			{
+				return null;
+			}
+			return lookupDataSource.findEntities(filter, firstRow, pageLength);
+		}
 	}
 }

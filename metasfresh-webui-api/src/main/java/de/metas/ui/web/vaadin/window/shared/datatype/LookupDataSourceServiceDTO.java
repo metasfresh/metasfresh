@@ -2,8 +2,6 @@ package de.metas.ui.web.vaadin.window.shared.datatype;
 
 import java.util.List;
 
-import de.metas.ui.web.vaadin.window.model.LookupDataSource;
-
 /*
  * #%L
  * metasfresh-webui
@@ -26,15 +24,8 @@ import de.metas.ui.web.vaadin.window.model.LookupDataSource;
  * #L%
  */
 
-public class LookupDataSourceServiceDTO
+public abstract class LookupDataSourceServiceDTO
 {
-	// TODO: the implementation of LookupDataSourceServiceDTO shall be simple serializable POJO and not an LookupDataSource wrapper 
-	
-	public static final LookupDataSourceServiceDTO of(final LookupDataSource lookupDataSource)
-	{
-		return new LookupDataSourceServiceDTO(lookupDataSource);
-	}
-
 	public static final LookupDataSourceServiceDTO cast(final Object valueObj)
 	{
 		return (LookupDataSourceServiceDTO)valueObj;
@@ -42,26 +33,11 @@ public class LookupDataSourceServiceDTO
 
 	public static final int SIZE_InvalidFilter = -100;
 
-	private final LookupDataSource lookupDataSource;
-
-	private LookupDataSourceServiceDTO(final LookupDataSource lookupDataSource)
-	{
-		super();
-		this.lookupDataSource = lookupDataSource;
-	}
-
 	/**
 	 * @param filter
 	 * @return size or {@link #SIZE_InvalidFilter} if the filter is not valid
 	 */
-	public int sizeIfValidFilter(final String filter)
-	{
-		if (!lookupDataSource.isValidFilter(filter))
-		{
-			return SIZE_InvalidFilter;
-		}
-		return lookupDataSource.size(filter);
-	}
+	public abstract int sizeIfValidFilter(final String filter);
 
 	/**
 	 * 
@@ -70,12 +46,5 @@ public class LookupDataSourceServiceDTO
 	 * @param pageLength
 	 * @return {@link LookupValue}s list or <code>null</code> if the filter is not valid
 	 */
-	public List<LookupValue> findEntitiesIfValidFilter(final String filter, final int firstRow, final int pageLength)
-	{
-		if (!lookupDataSource.isValidFilter(filter))
-		{
-			return null;
-		}
-		return lookupDataSource.findEntities(filter, firstRow, pageLength);
-	}
+	public abstract List<LookupValue> findEntitiesIfValidFilter(final String filter, final int firstRow, final int pageLength);
 }

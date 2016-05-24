@@ -1,14 +1,14 @@
-/target/
-/.settings/
-.classpath
-.project
-metasfresh.properties
-/log/
-/activemq-data/
-src/main/webapp/VAADIN/themes/metasfresh/styles.css
-/src/main/webapp/VAADIN/widgetsets/
+**/target/
+**/.settings/
+**/.classpath
+**/.project
+**/metasfresh.properties
+metasfresh-webui-vaadin/log/
+metasfresh-webui-vaadin/activemq-data/
+metasfresh-webui-vaadin/src/main/webapp/VAADIN/themes/metasfresh/styles.css
+metasfresh-webui-vaadin/src/main/webapp/VAADIN/widgetsets/
 
-src/main/webapp/VAADIN/themes/metasfresh/styles.scss.cache
+metasfresh-webui-vaadin/src/main/webapp/VAADIN/themes/metasfresh/styles.scss.cache
 
 hs_err*.log
 

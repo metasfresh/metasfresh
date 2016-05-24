@@ -9,7 +9,7 @@ import java.util.Set;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.vaadin.window.PropertyName;
 
