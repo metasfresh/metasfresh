@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
+	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	// SOCreditStatus
 
@@ -171,22 +172,34 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		final IBPartnerStats bpStats = BPartnerStats.of(stats);
 
 		return bpStats.getTotalOpenBalance();
+		
+		
 	}
 
+	public void updateSOCreditUsed(final I_C_BPartner_Stats stat)
+	{		
+		final BigDecimal soCreditUsed = bpartnerStatsDAO.retrieveSOCreditUsed(stat);
+		
+		stat.setSO_CreditUsed(soCreditUsed);
+		
+		InterfaceWrapperHelper.save(stat);
+	}
+	
 	@Override
 	public void updateTotalOpenBalance(final I_C_BPartner_Stats stat)
 	{
-		final BigDecimal soCreditUsed = calculateSOCreditUsed(stat);
-		final BigDecimal totalOpenBalance = calculateTotalOpenBalance(stat);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		
+		
+		
+		final BigDecimal totalOpenBalance = bpartnerStatsDAO.retrieveTotalOpenBalance(stat);
 
-		if (soCreditUsed != null)
-		{
-			stat.setSO_CreditUsed(soCreditUsed);
-		}
-		if (totalOpenBalance != null)
-		{
+		
+		
+		
+		
 			stat.setTotalOpenBalance(totalOpenBalance);
-		}
+		
 
 		final String soCreditStatus = calculateSOCreditStatus(stat, Env.ZERO);
 
