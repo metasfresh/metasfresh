@@ -84,7 +84,7 @@ public class LocationEditorPopup extends Window
 		final VerticalLayout content = new VerticalLayout(locationPresenter.getViewComponent(), btnSave);
 		setContent(content);
 
-		setErrorHandler(locationPresenter);
+		setErrorHandler(event -> locationPresenter.onError(event.getThrowable()));
 	}
 
 	public LookupValue getLookupValue()

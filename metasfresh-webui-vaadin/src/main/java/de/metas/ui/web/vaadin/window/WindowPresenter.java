@@ -19,8 +19,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.vaadin.server.ErrorEvent;
-import com.vaadin.server.ErrorHandler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
@@ -65,8 +63,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class WindowPresenter implements WindowViewListener, ErrorHandler
+public class WindowPresenter implements WindowViewListener
 {
 	private static final Logger logger = LogManager.getLogger(WindowPresenter.class);
 
@@ -89,7 +86,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 	{
 		super();
 		Application.autowire(this);
-		
+
 		setView(this._view, null);
 	}
 
@@ -173,10 +170,10 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		{
 			return;
 		}
-		
+
 		setView(view, viewOld);
 	}
-	
+
 	private final void setView(final WindowView view, final WindowView viewOld)
 	{
 		unbindFromView();
@@ -344,7 +341,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			viewSettingPropertyNames.remove(propertyName);
 		}
 	}
-	
+
 	@Override
 	public void viewGridNewRow(final PropertyName gridPropertyName)
 	{
@@ -369,7 +366,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 			viewSettingPropertyNames.remove(cellPropertyName);
 		}
 	}
-	
+
 	private static final PropertyName buildGridCellPropertyName(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
 	{
 		return PropertyName.of(gridPropertyName + "." + rowId + "." + propertyName);
@@ -552,10 +549,8 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		return Futures.immediateFuture(value);
 	}
 
-	@Override
-	public void error(final ErrorEvent event)
+	public void onError(final Throwable ex)
 	{
-		final Throwable ex = event.getThrowable();
 		logger.warn("Got error", ex);
 
 		final String errorMessage = Throwables.getRootCause(ex).getLocalizedMessage();
@@ -618,7 +613,7 @@ public class WindowPresenter implements WindowViewListener, ErrorHandler
 		final WindowModel model = getModel();
 		model.executeAction(action);
 	}
-	
+
 	@Subscribe
 	public void modelZoomToWindowEvent(final ZoomToWindowEvent event)
 	{
