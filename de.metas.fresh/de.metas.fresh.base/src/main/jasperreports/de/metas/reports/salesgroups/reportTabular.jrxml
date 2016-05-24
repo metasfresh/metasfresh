@@ -5,8 +5,11 @@
 	<property name="ireport.y" value="0"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[select * from report.Salesgroups($P{DateFrom}, $P{DateTo});]]>
+		<![CDATA[select * from report.Salesgroups($P{DateFrom}, $P{DateTo},$P{ad_org_id});]]>
 	</queryString>
 	<field name="productsalesgroup" class="java.lang.String"/>
 	<field name="uom" class="java.lang.String"/>
@@ -16,6 +19,7 @@
 	<field name="revenuediscounter" class="java.math.BigDecimal"/>
 	<field name="revenuegastro" class="java.math.BigDecimal"/>
 	<field name="revenuedetailhandel" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>

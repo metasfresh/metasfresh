@@ -12,11 +12,27 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.x.x
 
 ## Features
 
 ## Fixes
+
+# metasfresh 4.19.18
+
+## Features
+ - FRESH-335 create an initial contributor's guideline
+
+## Fixes
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * fixed a problem with creating AD_ChangeLogs
+ - FRESH-311 Packvorschriften from different Org shown in Leergut
+ - FRESH-278 Umsatzreport Geschäftspartner copy and modify details
+ - FRESH-333 Procurement candidate prices not updated correctly
+ - FRESH-307 New Organisation: Financial Data of existing Org
+ - FRESH-326 Set the Correct Org in Fact_Acct_Summary
+ - FRESH-331 Double click needed for weighing machine and occasional NPE
+    * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
  - FRESH-312 Project cannot be compiled when downloading from github directly

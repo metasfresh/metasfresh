@@ -2,6 +2,7 @@ DROP VIEW IF EXISTS report.RV_Salesgroups;
 
 Create VIEW report.RV_Salesgroups AS
 select x.DateInvoiced, x.ProductSalesgroup,  x.uom, x.asi_inausland, x.asi_adr, x.asi_country,
+
 Case When 
 	x.PartnerSalesGroupValue = '0010' 
 	THEN x.qtyInvoiced
@@ -42,7 +43,9 @@ Case When
 	THEN x.revenue
 	ELSE 0
 	END
-	AS RevenueDetailhandel
+	AS RevenueDetailhandel,
+	
+x.ad_org_id
 
 
 from
@@ -77,6 +80,8 @@ SELECT
 	,(SELECT ai_value FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = il.M_AttributeSetInstance_ID AND at_value='1000000') AS asi_inausland-- inausland
 	,(SELECT ai_value FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = il.M_AttributeSetInstance_ID AND at_value='1000015') AS asi_adr-- adr
 	,(SELECT ai_value FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = il.M_AttributeSetInstance_ID AND at_value='1000001') AS asi_country-- country
+	
+	, i.ad_org_id
 
 FROM C_InvoiceLine il
 JOIN C_Invoice i on il.C_Invoice_ID = i.C_Invoice_ID
