@@ -18,6 +18,7 @@ The actual release notes
  - FRESH-335 create an initial contributor's guideline
 
 ## Fixes
+ - FRESH-311 Packvorschriften from different Org shown in Leergut
  - FRESH-278 Umsatzreport Geschäftspartner copy and modify details
  - FRESH-333 Procurement candidate prices not updated correctly
  - FRESH-307 New Organisation: Financial Data of existing Org
