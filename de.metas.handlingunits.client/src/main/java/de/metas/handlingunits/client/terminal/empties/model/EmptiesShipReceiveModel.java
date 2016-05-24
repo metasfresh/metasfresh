@@ -163,7 +163,8 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	{
 		final List<EmptiesKey> luEmpties = new ArrayList<EmptiesKey>();
 		final List<EmptiesKey> tuEmpties = new ArrayList<EmptiesKey>();
-		final List<I_M_HU_PI> huPIs = handlingUnitsDAO.retrieveAvailablePIs(getTerminalContext().getCtx());
+		final int adOrgID = Env.getAD_Org_ID(getTerminalContext().getCtx());
+		final List<I_M_HU_PI> huPIs = handlingUnitsDAO.retrieveAvailablePIsForOrg(getTerminalContext().getCtx(), adOrgID);
 		for (final I_M_HU_PI huPI : huPIs)
 		{
 			// Skip PIs which does not have an UnitType set

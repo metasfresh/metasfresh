@@ -242,4 +242,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return {@link I_M_HU_Status} or <code>null</code>.
 	 */
 	I_M_HU_Status retrieveHUStatus(Properties ctx, String huStatusValue);
+
+	/**
+	 * @param ctx
+	 * @param adOrgId
+	 * @return all available (i.e. active) HU PIs from system, for the given org_id and for org 0
+	 */
+	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
 }
