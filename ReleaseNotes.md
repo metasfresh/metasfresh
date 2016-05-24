@@ -24,6 +24,8 @@ The actual release notes
  - FRESH-335 create an initial contributor's guideline
 
 ## Fixes
+ - FRESH-338 Async not running
+    * fixed an additional problem with creating AD_ChangeLogs
  - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
     * fixed a problem with creating AD_ChangeLogs
  - FRESH-311 Packvorschriften from different Org shown in Leergut
