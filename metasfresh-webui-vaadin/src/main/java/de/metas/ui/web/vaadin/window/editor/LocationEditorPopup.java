@@ -7,8 +7,8 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+import de.metas.ui.web.Application;
 import de.metas.ui.web.service.ILocationService;
-import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.WindowPresenter;
 import de.metas.ui.web.vaadin.window.view.EditorView;
 import de.metas.ui.web.window.datasource.SaveResult;

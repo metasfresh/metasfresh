@@ -31,8 +31,8 @@ import de.metas.ui.web.window.HARDCODED_Order;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
+import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
-import de.metas.ui.web.window.datasource.ModelDataSourceFactory;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.Action;
@@ -86,7 +86,7 @@ public class WindowModel
 
 	//
 	// Data source
-	private final ModelDataSourceFactory dataSourceFactory = new ModelDataSourceFactory();
+	private final IDataSourceFactory dataSourceFactory = Services.get(IDataSourceFactory.class);
 	private final Object _dataSourceSync = new Object();
 	private ModelDataSource _dataSource = null;
 

@@ -25,7 +25,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.Application;
+import de.metas.ui.web.Application;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;

@@ -1,9 +1,8 @@
 package de.metas.ui.web.window.datasource;
 
-import org.springframework.stereotype.Service;
+import java.util.List;
 
-import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -27,11 +26,13 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
  * #L%
  */
 
-@Service
-public class ModelDataSourceFactory
+public interface LookupDataSource
 {
-	public ModelDataSource createDataSource(final PropertyDescriptor rootPropertyDescriptor)
-	{
-		return new SqlModelDataSource(rootPropertyDescriptor);
-	}
+	boolean isValidFilter(String filter);
+
+	int size(String filter);
+
+	List<LookupValue> findEntities(String filter, int firstRow, int pageLength);
+
+	LookupValue findById(Object id);
 }

@@ -1,4 +1,4 @@
-package de.metas.ui.web.vaadin;
+package de.metas.ui.web;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -35,6 +35,7 @@ import de.metas.ui.web.service.IImageProvider;
 import de.metas.ui.web.service.IWebProcessCtl;
 import de.metas.ui.web.service.impl.VaadinImageProvider;
 import de.metas.ui.web.service.impl.VaadinWebProcessCtl;
+import de.metas.ui.web.vaadin.VaadinClientUI;
 import de.metas.ui.web.vaadin.report.VaadinJRViewerProvider;
 import de.metas.ui.web.vaadin.session.VaadinContextProvider;
 

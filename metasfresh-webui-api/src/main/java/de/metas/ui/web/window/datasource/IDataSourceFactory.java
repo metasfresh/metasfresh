@@ -1,8 +1,8 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.datasource;
 
-import java.util.List;
+import org.adempiere.util.ISingletonService;
 
-import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L
@@ -26,13 +26,9 @@ import de.metas.ui.web.window.shared.datatype.LookupValue;
  * #L%
  */
 
-public interface LookupDataSource
+public interface IDataSourceFactory extends ISingletonService
 {
-	boolean isValidFilter(String filter);
+	ModelDataSource createDataSource(PropertyDescriptor rootPropertyDescriptor);
 
-	int size(String filter);
-
-	List<LookupValue> findEntities(String filter, int firstRow, int pageLength);
-
-	LookupValue findById(Object id);
+	LookupDataSource createLookupDataSource(PropertyDescriptor propertyDescriptor);
 }

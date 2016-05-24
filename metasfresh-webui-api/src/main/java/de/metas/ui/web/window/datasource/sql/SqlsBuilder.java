@@ -4,12 +4,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
-import de.metas.ui.web.window.datasource.ModelDataSourceFactory;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
 
@@ -43,7 +44,7 @@ final class SqlsBuilder
 		return new SqlsBuilder();
 	}
 
-	private ModelDataSourceFactory dataSourceFactory = new ModelDataSourceFactory();
+	private final IDataSourceFactory dataSourceFactory = Services.get(IDataSourceFactory.class);
 
 	private final Map<String, SqlTable> _tablesByAlias = new LinkedHashMap<>();
 	private final Map<PropertyName, SqlField> sqlFields = new LinkedHashMap<>();

@@ -7,7 +7,7 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.vaadin.Application;
+import de.metas.ui.web.Application;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.event.UIEventBus;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;

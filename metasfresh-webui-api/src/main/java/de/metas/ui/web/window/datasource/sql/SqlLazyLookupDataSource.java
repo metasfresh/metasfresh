@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.datasource.sql;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datasource.LookupDataSource;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 
@@ -54,7 +55,7 @@ public class SqlLazyLookupDataSource implements LookupDataSource
 	
 	private ImmutableList<LookupValue> _lastPage = ImmutableList.of();
 
-	SqlLazyLookupDataSource(final SqlLookupDescriptor sqlLookupDescriptor)
+	public SqlLazyLookupDataSource(final SqlLookupDescriptor sqlLookupDescriptor)
 	{
 		super();
 		this.sqlLookupDescriptor = sqlLookupDescriptor;

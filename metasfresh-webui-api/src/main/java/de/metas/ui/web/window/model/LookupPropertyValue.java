@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datasource.LookupDataSource;
+import de.metas.ui.web.window.datasource.sql.SqlLazyLookupDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.datatype.LookupDataSourceServiceDTO;
