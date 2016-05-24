@@ -48,8 +48,7 @@ prepare()
 	
 	check_vars_server
 	check_rollout_user
-	
-	check_dir_exists $INSTALL_DIR
+
 	check_dir_exists $JAVA_HOME
 	
 	export JAVA_HOME=$JAVA_HOME
