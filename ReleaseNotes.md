@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.19.18 (upcoming)
+# metasfresh 4.x.x
+
+## Features
+
+## Fixes
+
+# metasfresh 4.19.18
 
 ## Features
  - FRESH-335 create an initial contributor's guideline
