@@ -29,7 +29,6 @@ import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.WindowModel;
 import de.metas.ui.web.window.model.action.Action;
@@ -130,11 +129,6 @@ public class WindowPresenter implements WindowViewListener
 		return _model;
 	}
 
-	public void setModelDataSource(final ModelDataSource modelDataSource)
-	{
-		updateModel(model -> model.setDataSource(modelDataSource));
-	}
-
 	private final void bindToModel()
 	{
 		if (_registeredToModelEventBus)
@@ -144,7 +138,7 @@ public class WindowPresenter implements WindowViewListener
 		}
 
 		final WindowModel model = getModel();
-		model.getEventBus().register(this);
+		model.subscribe(this);
 		_registeredToModelEventBus = true;
 		logger.trace("Bound presenter {} to model {}", this, model);
 	}
@@ -158,7 +152,7 @@ public class WindowPresenter implements WindowViewListener
 		}
 
 		final WindowModel model = getModel();
-		model.getEventBus().unregister(this);
+		model.unsubscribe(this);
 		_registeredToModelEventBus = false;
 		logger.trace("Unbound presenter {} from model {}", this, model);
 	}
