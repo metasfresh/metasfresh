@@ -8,7 +8,7 @@ import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.window.PropertyName;
 
 /*
  * #%L

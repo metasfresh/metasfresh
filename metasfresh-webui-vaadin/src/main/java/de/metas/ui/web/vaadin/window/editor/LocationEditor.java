@@ -6,9 +6,9 @@ import java.util.Objects;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.TextArea;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /*
  * #%L

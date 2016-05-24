@@ -11,9 +11,9 @@ import com.vaadin.ui.Field;
 import com.vaadin.ui.TableFieldFactory;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.datatype.GridRowId;
 
 /*
  * #%L

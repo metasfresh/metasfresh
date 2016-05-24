@@ -12,7 +12,7 @@ import com.vaadin.ui.Notification;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.service.IWebProcessCtl;
 import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
-import de.metas.ui.web.vaadin.window.model.action.Action.ActionEvent;
+import de.metas.ui.web.window.model.action.Action.ActionEvent;
 
 /*
  * #%L

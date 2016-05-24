@@ -2,8 +2,8 @@ package de.metas.ui.web.vaadin.window.editor;
 
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

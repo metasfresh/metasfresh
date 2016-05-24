@@ -14,9 +14,9 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 
 /*
  * #%L

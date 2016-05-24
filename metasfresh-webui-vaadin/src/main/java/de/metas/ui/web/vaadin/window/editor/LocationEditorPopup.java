@@ -10,12 +10,12 @@ import com.vaadin.ui.Window;
 import de.metas.ui.web.service.ILocationService;
 import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.WindowPresenter;
-import de.metas.ui.web.vaadin.window.datasource.SaveResult;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.descriptor.legacy.VOPropertyDescriptorProvider;
-import de.metas.ui.web.vaadin.window.model.WindowModel;
-import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 import de.metas.ui.web.vaadin.window.view.EditorView;
+import de.metas.ui.web.window.datasource.SaveResult;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
+import de.metas.ui.web.window.model.WindowModel;
+import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /*
  * #%L

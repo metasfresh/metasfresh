@@ -4,9 +4,9 @@ import java.util.Set;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
-import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.vaadin.window.model.action.Action;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.WindowConstants.OnChangesFound;
+import de.metas.ui.web.window.model.action.Action;
 
 /*
  * #%L

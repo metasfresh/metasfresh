@@ -26,21 +26,22 @@ import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.Application;
-import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.model.WindowModel;
-import de.metas.ui.web.vaadin.window.model.action.Action;
-import de.metas.ui.web.vaadin.window.model.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.vaadin.window.model.event.ConfirmDiscardChangesModelEvent;
-import de.metas.ui.web.vaadin.window.model.event.GridPropertyChangedModelEvent;
-import de.metas.ui.web.vaadin.window.model.event.GridRowAddedModelEvent;
-import de.metas.ui.web.vaadin.window.model.event.PropertyChangedModelEvent;
-import de.metas.ui.web.vaadin.window.model.event.ZoomToWindowEvent;
-import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.WindowConstants.OnChangesFound;
+import de.metas.ui.web.window.datasource.ModelDataSource;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.model.WindowModel;
+import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
+import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
+import de.metas.ui.web.window.model.event.GridPropertyChangedModelEvent;
+import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
+import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
+import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
+import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
  * #%L

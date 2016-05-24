@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Panel;
 
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

@@ -14,11 +14,11 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.VerticalLayout;
 
 import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
-import de.metas.ui.web.vaadin.window.WindowConstants;
-import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.LabelEditor;
-import de.metas.ui.web.vaadin.window.model.action.Action;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.WindowConstants.OnChangesFound;
+import de.metas.ui.web.window.model.action.Action;
 
 /*
  * #%L

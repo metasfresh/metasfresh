@@ -20,11 +20,12 @@ import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
 import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.descriptor.legacy.VOPropertyDescriptorProvider;
-import de.metas.ui.web.vaadin.window.model.action.Action;
-import de.metas.ui.web.vaadin.window.model.action.ActionGroup;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
+import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.action.ActionGroup;
 
 /*
  * #%L

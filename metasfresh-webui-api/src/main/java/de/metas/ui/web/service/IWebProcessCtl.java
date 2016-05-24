@@ -3,7 +3,7 @@ package de.metas.ui.web.service;
 import org.adempiere.util.ISingletonService;
 import org.compiere.process.ProcessInfo;
 
-import de.metas.ui.web.vaadin.window.model.action.Action.ActionEvent;
+import de.metas.ui.web.window.model.action.Action.ActionEvent;
 
 /*
  * #%L

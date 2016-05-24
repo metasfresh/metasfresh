@@ -6,7 +6,7 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

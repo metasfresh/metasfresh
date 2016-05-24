@@ -10,14 +10,16 @@ import org.compiere.util.TimeUtil;
 import com.vaadin.server.VaadinService;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptorType;
-import de.metas.ui.web.vaadin.window.descriptor.PropertyLayoutInfo;
-import de.metas.ui.web.vaadin.window.descriptor.SqlLookupDescriptor;
-import de.metas.ui.web.vaadin.window.model.WindowModel;
-import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
-import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
-import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
+import de.metas.ui.web.window.model.WindowModel;
+import de.metas.ui.web.window.shared.datatype.ComposedValue;
+import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /*
  * #%L

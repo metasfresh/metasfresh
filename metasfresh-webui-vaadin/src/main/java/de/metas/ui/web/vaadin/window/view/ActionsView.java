@@ -2,7 +2,7 @@ package de.metas.ui.web.vaadin.window.view;
 
 import java.util.List;
 
-import de.metas.ui.web.vaadin.window.model.action.Action;
+import de.metas.ui.web.window.model.action.Action;
 
 /*
  * #%L

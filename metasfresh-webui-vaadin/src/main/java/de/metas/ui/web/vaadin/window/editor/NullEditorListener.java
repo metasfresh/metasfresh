@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.window.PropertyName;
 
 /*
  * #%L
