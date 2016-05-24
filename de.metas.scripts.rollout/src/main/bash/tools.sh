@@ -54,10 +54,10 @@ check_var()
 	
 	if [[ "$var" = "" || "$var" = "NOT_SET" ]]
 	then
-		trace "check_vars" "Variable/Param '${varName}' must be set"
+		trace "check_var" "Variable/Param '${varName}' must be set"
 		exit 1
 	fi
-	trace "check_vars" "Variable/Param '${varName}' is set to ${var}"
+	trace "check_var" "Variable/Param '${varName}' is set to ${var}"
 	
 	return 0
 }
@@ -113,8 +113,7 @@ check_exit_code()
 check_vars_server()
 {
 	trace check_vars_server BEGIN
-	
-	check_var "INSTALL_DIR" $INSTALL_DIR
+
 	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
 	check_var "JAVA_HOME" $JAVA_HOME
 		
