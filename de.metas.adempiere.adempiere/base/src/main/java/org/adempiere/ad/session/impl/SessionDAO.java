@@ -71,7 +71,7 @@ public class SessionDAO implements ISessionDAO
 			+ ", ?" // Record_ID
 	//
 			+ ", ?" // AD_Session_ID
-	// + ", ?" // AD_ChangeLog_ID
+			+ ", ?" // AD_PInstance_ID FRESH-314
 			+ ", ?" // EventChangeLog
 			+ ", ?" // OldValue
 			+ ", ?" // NewValue
