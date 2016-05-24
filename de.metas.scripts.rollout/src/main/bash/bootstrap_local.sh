@@ -3,20 +3,29 @@
 #
 # NOTE: this script does not to any parameter parsing anymore. It is driven by environment variables.
 # Those environment variables are:
-# 	DATABASE						if "true", then execute the migration scripts against the database specified in the local.properties
-#									optional; if not set, then "false" is assumed
-#	MINOR							if "true", then rollout the code and jasper report files
-#									optional; if not set, then "false" is assumed
-#	VALIDATE_MIGRATION				if "true", then create a copy of a reference DB and execute the migration scripts against that DB
-#									optional; if not set, then "false" is assumed
-#	VALIDATE_MIGRATION_DROP_TEST_DB if "true", and the migration scripts were sucesfully validated against the reference DB's copy, then that copy is dropped
-#									mandatory if $VALIDATE_MIGRATION="true"
-#	LOCAL_ROLLOUT_FILE	
-#	ROLLOUT_FILE_URL
-#	ROLLOUT_BUILD_URL
-#	LOCAL_ROLLOUT_FILE
-#	TARGET_USER
-#	TARGET_HOST
+#
+# 	DATABASE			if "true", then execute the migration scripts against the database specified in the local.properties
+#						optional; if not set, then "false" is assumed
+#
+#	MINOR				if "true", then rollout the code and jasper report files
+#						optional; if not set, then "false" is assumed
+#
+#	VALIDATE_MIGRATION	if "true", then create a copy of a reference DB and execute the migration scripts against that DB
+#						optional; if not set, then "false" is assumed
+#
+#	LOCAL_ROLLOUT_FILE	if set, then the script will not attempt to download the distributable tar.gz, but assume that it's already lying in the workspace
+#						needs to be a "local" filename, without path
+#
+#	ROLLOUT_FILE_URL	if set and LOCAL_ROLLOUT_FILE is not set, then the script will attempt to wget the distributable tar.gz from this URL
+#
+#	ROLLOUT_BUILD_URL	if neither LOCAL_ROLLOUT_FILE nor ROLLOUT_FILE_URL are set, then the script will construct an URL 
+#						by combining this variable with DIST_ARCHIVE and then attempt to wget the distributable tar.gz from there
+#
+#	DIST_ARCHIVE		see ROLLOUT_BUILD_URL
+#
+#	TARGET_HOST			the hostname of the rollout target server
+#
+#	TARGET_USER			the user this script will attempt to login with when ssh'ing to the rollout server
 #
 
 #Don't do anything by default
@@ -214,9 +223,6 @@ rollout_minor()
 # FRESH-336
 # Similar to rollout_database() in that it invokes sql_remote.sh, 
 # but it calls that script with "-n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}".
-# The two variables are taken from local.properties
-#
-# TODO: incorporate the part that drops the test-DB into the java migration tool
 #
 validate_migration()
 {
@@ -224,7 +230,6 @@ validate_migration()
 	
 	check_var VALIDATE_MIGRATION_TEMPLATE_DB ${VALIDATE_MIGRATION_TEMPLATE_DB:-NOT_SET}
 	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
-	check_var VALIDATE_MIGRATION_DROP_TEST_DB ${VALIDATE_MIGRATION_DROP_TEST_DB:-NOT_SET}
 	
 	trace validate_migration "Making remote script sql_remote.sh executable"
 	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "chmod a+x ${REMOTE_EXEC_DIR}/sql_remote.sh" 
@@ -237,19 +242,7 @@ validate_migration()
 	trace validate_migration "Done with remote script sql_remote.sh"
 
 	check_var VALIDATE_MIGRATION_TEST_DB ${VALIDATE_MIGRATION_TEST_DB:-NOT_SET}
-	
-	if [ "$VALIDATE_MIGRATION_DROP_TEST_DB" == "true" ]; then
-		trace validate_migration "Dropping test database ${VALIDATE_MIGRATION_TEST_DB}"
 		
-		check_std_tool psql
-		check_var METASFRESH_DB_SERVER ${METASFRESH_DB_SERVER}
-		check_var METASFRESH_DB_NAME ${METASFRESH_DB_NAME}
-		check_var METASFRESH_DB_USER ${METASFRESH_DB_USER}
-		
-		PSQL_PARAMS="--host $METASFRESH_DB_SERVER --dbname $METASFRESH_DB_NAME --username $METASFRESH_DB_USER"	
-		echo "DROP DATABASE ${VALIDATE_MIGRATION_TEST_DB};" | psql ${PSQL_PARAMS}
-	fi
-	
 	trace validate_migration END
 }
 
