@@ -8,10 +8,10 @@ import org.compiere.util.DisplayType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
-import de.metas.ui.web.vaadin.window.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 

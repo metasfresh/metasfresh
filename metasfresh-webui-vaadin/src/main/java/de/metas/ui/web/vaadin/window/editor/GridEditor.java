@@ -13,8 +13,8 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesListDTO;
 

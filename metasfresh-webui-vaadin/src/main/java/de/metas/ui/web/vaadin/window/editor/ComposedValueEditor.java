@@ -8,8 +8,8 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.shared.datatype.ComposedValue;
 
 /*

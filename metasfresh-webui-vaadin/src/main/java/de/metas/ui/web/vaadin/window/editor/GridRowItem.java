@@ -8,8 +8,8 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeListener;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
 import de.metas.ui.web.vaadin.window.shared.datatype.NullValue;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;

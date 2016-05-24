@@ -1,7 +1,7 @@
 package de.metas.ui.web.vaadin.window.view;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.shared.datatype.PropertyValuesDTO;
 
 /*

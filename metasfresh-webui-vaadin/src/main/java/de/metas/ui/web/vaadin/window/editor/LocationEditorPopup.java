@@ -1,19 +1,19 @@
 package de.metas.ui.web.vaadin.window.editor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.adempiere.util.Services;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+import de.metas.ui.web.service.ILocationService;
 import de.metas.ui.web.vaadin.Application;
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.WindowPresenter;
 import de.metas.ui.web.vaadin.window.datasource.SaveResult;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.vaadin.window.model.WindowModel;
-import de.metas.ui.web.vaadin.window.service.LocationService;
 import de.metas.ui.web.vaadin.window.shared.datatype.LookupValue;
 import de.metas.ui.web.vaadin.window.view.EditorView;
 
@@ -42,10 +42,10 @@ import de.metas.ui.web.vaadin.window.view.EditorView;
 @SuppressWarnings("serial")
 public class LocationEditorPopup extends Window
 {
+	// services
+	private final ILocationService locationService = Services.get(ILocationService.class);
+	
 	private static final String STYLE = "mf-editor-location-popup";
-
-	@Autowired(required = true)
-	private LocationService locationService;
 
 	private LookupValue lookupValue;
 

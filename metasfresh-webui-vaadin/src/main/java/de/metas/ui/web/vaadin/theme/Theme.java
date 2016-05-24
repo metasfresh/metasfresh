@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutionException;
 import org.adempiere.images.Images;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.Adempiere;
-import org.compiere.model.MTreeNode;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -26,9 +25,6 @@ public class Theme
 	/** Theme name */
 	public static final String NAME = "metasfresh";
 
-	public static final String ICONNAME_Window = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
-	public static final String ICONNAME_Report = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
-	
 	private static final Logger logger = LogManager.getLogger(Theme.class);
 	
 	public static Resource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension)

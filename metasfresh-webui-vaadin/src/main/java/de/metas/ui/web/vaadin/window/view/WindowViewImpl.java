@@ -13,6 +13,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.VerticalLayout;
 
+import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
 import de.metas.ui.web.vaadin.window.WindowConstants;
 import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.editor.Editor;
@@ -229,7 +230,7 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 			
 			final Button btn = new Button();
 			btn.setCaption(action.getCaption());
-			btn.setIcon(action.getIcon());
+			btn.setIcon(VaadinImageResource.getResource(action.getIcon()));
 			btn.addClickListener(event -> getWindowViewListener().onActionClicked(action));
 			actionsPanel.addComponent(btn);
 			

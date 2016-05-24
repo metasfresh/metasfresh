@@ -9,7 +9,7 @@ import org.compiere.util.DisplayType;
 import com.vaadin.data.util.converter.StringToIntegerConverter;
 import com.vaadin.ui.AbstractField;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

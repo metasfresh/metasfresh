@@ -7,7 +7,7 @@ import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

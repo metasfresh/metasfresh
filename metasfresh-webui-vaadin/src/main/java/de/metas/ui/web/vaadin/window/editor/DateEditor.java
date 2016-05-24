@@ -11,7 +11,7 @@ import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.DateField;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

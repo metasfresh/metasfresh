@@ -8,7 +8,7 @@ import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.VerticalLayout;
 
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 
 /*
  * #%L

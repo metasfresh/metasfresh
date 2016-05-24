@@ -12,9 +12,9 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.AbstractProperty;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.vaadin.window.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.PropertyName;
 import de.metas.ui.web.vaadin.window.WindowConstants;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.shared.datatype.GridRowId;
 
 /*

@@ -31,6 +31,10 @@ import org.springframework.http.MediaType;
 import com.vaadin.spring.boot.internal.VaadinServletConfiguration;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.ui.web.service.IImageProvider;
+import de.metas.ui.web.service.IWebProcessCtl;
+import de.metas.ui.web.service.impl.VaadinImageProvider;
+import de.metas.ui.web.service.impl.VaadinWebProcessCtl;
 import de.metas.ui.web.vaadin.report.VaadinJRViewerProvider;
 import de.metas.ui.web.vaadin.session.VaadinContextProvider;
 
@@ -99,6 +103,8 @@ public class Application
 	{
 		ReportStarter.setReportViewerProvider(VaadinJRViewerProvider.instance);
 		Services.registerService(IClientUI.class, VaadinClientUI.instance);
+		Services.registerService(IImageProvider.class, new VaadinImageProvider());
+		Services.registerService(IWebProcessCtl.class, new VaadinWebProcessCtl());
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		final boolean started = adempiere.startup(RunMode.WEBUI);

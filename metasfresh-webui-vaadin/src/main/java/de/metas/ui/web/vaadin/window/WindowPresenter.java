@@ -28,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.Application;
 import de.metas.ui.web.vaadin.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.vaadin.window.datasource.ModelDataSource;
+import de.metas.ui.web.vaadin.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.vaadin.window.model.WindowModel;
 import de.metas.ui.web.vaadin.window.model.action.Action;
 import de.metas.ui.web.vaadin.window.model.event.AllPropertiesChangedModelEvent;

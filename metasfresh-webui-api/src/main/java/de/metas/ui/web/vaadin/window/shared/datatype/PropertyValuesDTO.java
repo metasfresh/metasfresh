@@ -126,6 +126,10 @@ public final class PropertyValuesDTO implements Serializable
 				, ComposedValue.class //
 		);
 
+		private static final ImmutableList<Class<?>> allowedBaseValueTypes = ImmutableList.of( //
+				LookupDataSourceServiceDTO.class // FIXME: see de.metas.ui.web.vaadin.window.model.LookupPropertyValue.LookupDataSourceServiceDTOImpl 
+		);
+
 		private final ImmutableMap.Builder<PropertyName, Object> valuesBuilder = ImmutableMap.builder();
 
 		private Builder()
@@ -145,26 +149,42 @@ public final class PropertyValuesDTO implements Serializable
 
 		public Builder put(final PropertyName propertyName, final Object value)
 		{
-			//
-			// Validate the value type
-			// NOTE: the aim is to have primitive or well known values types because, later, we want to serialize to JSON
-			if (value != null)
-			{
-				final Class<? extends Object> valueClass = value.getClass();
-				if (allowedValueTypes.contains(valueClass))
-				{
-					// ok
-				}
-				else
-				{
-					throw new IllegalArgumentException("Invalid value class: " + valueClass
-							+ "\n Allowed types are: " + allowedValueTypes);
-				}
-			}
+			validateValueType(propertyName, value);
 
 			final Object valueNotNull = NullValue.valueOrNull(value);
 			valuesBuilder.put(propertyName, valueNotNull);
 			return this;
+		}
+
+		private final void validateValueType(final PropertyName propertyName, final Object value)
+		{
+			// NOTE: the aim is to have primitive or well known values types because, later, we want to serialize to JSON
+			
+			//
+			if (value == null)
+			{
+				return; // OK
+			}
+
+			//
+			final Class<? extends Object> valueClass = value.getClass();
+			if (allowedValueTypes.contains(valueClass))
+			{
+				return; // OK
+			}
+			
+			//
+			for (final Class<?> baseType : allowedBaseValueTypes)
+			{
+				if (baseType.isAssignableFrom(valueClass))
+				{
+					return; // OK
+				}
+			}
+
+			//
+			throw new IllegalArgumentException("Invalid " + propertyName + "=" + value + " (" + valueClass + ")"
+					+ "\n Allowed types are: " + allowedValueTypes);
 		}
 	}
 
