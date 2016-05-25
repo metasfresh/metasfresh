@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 
 import de.metas.logging.LogManager;
@@ -37,8 +36,9 @@ import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.Action;
 import de.metas.ui.web.window.model.action.Action.ActionEvent;
-import de.metas.ui.web.window.model.action.Action.Listener;
 import de.metas.ui.web.window.model.action.ActionGroup;
+import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.model.action.ActionsManager;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
@@ -72,7 +72,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 @Component
 @Scope("prototype")
-/* package */class WindowModelImpl implements WindowModel
+public class WindowModelImpl implements WindowModel
 {
 	private static final Logger logger = LogManager.getLogger(WindowModelImpl.class);
 
@@ -97,9 +97,12 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 	private int _recordIndex = RECORDINDEX_Unknown;
 	private int _recordIndexPrev = RECORDINDEX_Unknown;
 
+	private final ActionsManager _actionsManager;
+
 	public WindowModelImpl()
 	{
 		super();
+		_actionsManager = createActionsManager();
 	}
 
 	@Override
@@ -641,106 +644,88 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 		}
 	}
 
-	@Override
-	public List<Action> getActions()
+	private ActionsManager createActionsManager()
 	{
 		final ActionGroup crudActionGroup = ActionGroup.of("CRUD");
 		final ActionGroup reportActionGroup = ActionGroup.of("Report");
 		final ActionGroup goActionGroup = ActionGroup.of("Go");
 		final ActionGroup helpActionGroup = ActionGroup.of("Help");
 
-		return ImmutableList.<Action> builder()
+		return ActionsManager.newInstance()
+				.newActionWithListener(crudActionGroup, "Ignore", event -> cancelRecordEditing()).setToolbarAction().buildAndAdd()
+				.newActionWithListener(crudActionGroup, "New", event -> newRecord()).setToolbarAction().buildAndAdd()
+				.newActionWithListener(crudActionGroup, "Save", event -> saveRecord()).setToolbarAction().buildAndAdd()
+				.newActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted).buildAndAdd()
 				//
-				.add(createActionWithListener(crudActionGroup, "Ignore", event -> cancelRecordEditing()).setToolbarAction().build())
-				.add(createActionWithListener(crudActionGroup, "New", event -> newRecord()).setToolbarAction().build())
-				.add(createActionWithListener(crudActionGroup, "Save", event -> saveRecord()).setToolbarAction().build())
-				.add(createActionWithListener(crudActionGroup, "Copy", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(crudActionGroup, "CopyDetails", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(crudActionGroup, "Delete", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(crudActionGroup, "DeleteSelection", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(crudActionGroup, "Refresh", ACTIONLISTENER_NotImpleted).build())
+				.newActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(reportActionGroup, "Print", event -> print(event, false)).buildAndAdd()
+				.newActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)).buildAndAdd()
 				//
-				.add(createActionWithListener(reportActionGroup, "Report", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(reportActionGroup, "Print", event -> print(event, false)).build())
-				.add(createActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)).build())
+				.addActionWithManagerProvider(goActionGroup, "ZoomAcross", (parentAction) -> createZoomAccrossActions())
+				.newActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted).buildAndAdd()
+				.newActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted).buildAndAdd()
 				//
-				.add(createActionWithChildrenProvider(goActionGroup, "ZoomAcross", () -> createZoomAccrossActions()))
-				.add(createActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted).build())
-				.add(createActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted).build())
-				//
-				.add(createActionWithListener(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted).build())
-				//
-				.build();
+				.newActionWithListener(helpActionGroup, "Help", ACTIONLISTENER_NotImpleted).buildAndAdd();
 	}
 
-	private Action.Builder createActionWithListener(final ActionGroup actionGroup, final String actionId, final Action.Listener listener)
+	private ActionsManager getActionsManager()
 	{
-		return Action.builder()
-				.setActionGroup(actionGroup)
-				.setActionIdAndUpdateFromAD_Messages(actionId)
-				.setActionId(actionId)
-				.setListener(listener);
-	}
-
-	private Action createActionWithChildrenProvider(final ActionGroup actionGroup, final String actionId, final Action.Provider childrenProvider)
-	{
-		return Action.builder()
-				.setActionGroup(actionGroup)
-				.setActionIdAndUpdateFromAD_Messages(actionId)
-				.setChildrenProvider(childrenProvider)
-				.build();
+		return _actionsManager;
 	}
 
 	@Override
-	public void executeAction(final Action action)
+	public ActionsList getActions()
 	{
-		if (action instanceof Action.Listener)
-		{
-			final Listener listener = (Action.Listener)action;
-			listener.handleAction(ActionEvent.of(action, this));
-		}
-		else
-		{
-			throw new UnsupportedOperationException("Unsupported action: " + action);
-		}
+		return getActionsManager().getActionsList();
+	}
+
+	@Override
+	public ActionsList getChildActions(String actionId)
+	{
+		return getActionsManager().getChildActions(actionId);
+	}
+
+	@Override
+	public void executeAction(final String actionId)
+	{
+		getActionsManager().executeAction(actionId, this);
 	}
 
 	private static final Action.Listener ACTIONLISTENER_NotImpleted = event -> {
 		throw new UnsupportedOperationException("Action not implemented: " + event.getAction());
 	};
 
-	private List<Action> createZoomAccrossActions()
+	private ActionsManager createZoomAccrossActions()
 	{
 		final int recordIndex = getRecordIndex();
 		if (recordIndex < 0)
 		{
-			return ImmutableList.of();
+			return ActionsManager.newInstance();
 		}
 
 		final ModelDataSource dataSource = getDataSource();
 		final List<ZoomInfo> zoomInfos = dataSource.retrieveZoomAccrossInfos(recordIndex);
-
-		final ImmutableList.Builder<Action> actionsCollector = ImmutableList.builder();
-		for (final ZoomInfo zoomInfo : zoomInfos)
-		{
-			final Action action = Action.builder()
-					.setActionId(zoomInfo.getId())
-					.setCaption(zoomInfo.getLabel())
-					.setIcon(Services.get(IImageProvider.class).getImageResourceForNameWithoutExt(IImageProvider.ICONNAME_Window))
-					.setListener(target -> {
-						postEvent(ZoomToWindowEvent.of(WindowModelImpl.this, zoomInfo));
-					})
-					.build();
-			actionsCollector.add(action);
-		}
-
-		final List<Action> actions = actionsCollector.build();
-		if (actions.isEmpty())
+		if (zoomInfos.isEmpty())
 		{
 			throw new AdempiereException("No zoom targets found");
 		}
 
-		return actions;
+		final ActionsManager actionsManager = ActionsManager.newInstance();
+		for (final ZoomInfo zoomInfo : zoomInfos)
+		{
+			actionsManager.newAction()
+					.setActionId("Zoom_" + zoomInfo.getId())
+					.setCaption(zoomInfo.getLabel())
+					.setIcon(Services.get(IImageProvider.class).getImageResourceForNameWithoutExt(IImageProvider.ICONNAME_Window))
+					.setListener(target -> postEvent(ZoomToWindowEvent.of(WindowModelImpl.this, zoomInfo)))
+					.buildAndAdd();
+		}
+		
+		return actionsManager;
 	}
 
 	private void print(final ActionEvent event, final boolean printPreview)

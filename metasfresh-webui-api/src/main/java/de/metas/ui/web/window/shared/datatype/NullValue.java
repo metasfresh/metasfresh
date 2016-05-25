@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.shared.datatype;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /*
  * #%L
  * de.metas.ui.web.vaadin
@@ -22,25 +26,44 @@ package de.metas.ui.web.window.shared.datatype;
  * #L%
  */
 
-public final class NullValue
+public final class NullValue implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	public static final Object valueOrNull(final Object value)
 	{
 		return value == null ? instance : value;
 	}
-	
+
 	public static final boolean isNull(final Object value)
 	{
-		return value == null || value == instance;
+		if (value == null || value == instance)
+		{
+			return true;
+		}
+		
+		if (value instanceof NullValue)
+		{
+			// FIXME: this shall not happen... but currently happens because of how we serialize/deserialize from JSON
+			return true;
+		}
+		
+		return false;
 	}
-	
+
+	@JsonCreator
+	public static final NullValue getInstance()
+	{
+		return instance;
+	}
+
 	public static final transient NullValue instance = new NullValue();
-	
+
 	private NullValue()
 	{
 		super();
 	}
-	
+
 	@Override
 	public String toString()
 	{

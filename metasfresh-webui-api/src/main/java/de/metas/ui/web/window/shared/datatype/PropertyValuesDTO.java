@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -72,6 +73,7 @@ public final class PropertyValuesDTO implements Serializable
 
 	private static final transient PropertyValuesDTO EMPTY = new PropertyValuesDTO();
 
+	@JsonProperty("values") 
 	private final ImmutableMap<PropertyName, Object> values;
 
 	/** empty constructor */
@@ -81,10 +83,10 @@ public final class PropertyValuesDTO implements Serializable
 		values = ImmutableMap.of();
 	}
 
-	private PropertyValuesDTO(final Map<PropertyName, Object> values)
+	private PropertyValuesDTO(@JsonProperty("values") final Map<PropertyName, Object> values)
 	{
 		super();
-		this.values = ImmutableMap.copyOf(values);
+		this.values = values == null ? ImmutableMap.of() : ImmutableMap.copyOf(values);
 	}
 
 	@Override
@@ -121,7 +123,7 @@ public final class PropertyValuesDTO implements Serializable
 				, Boolean.class //
 				, LookupDataSourceServiceDTO.class //
 				, PropertyValuesListDTO.class //
-				, LazyPropertyValuesListDTO.class //
+				, LazyPropertyValuesListDTO.class // NOTE: this one is used only in model
 				, LookupValue.class //
 				, ComposedValue.class //
 		);

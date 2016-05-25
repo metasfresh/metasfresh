@@ -26,6 +26,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.action.Action;
 import de.metas.ui.web.window.model.action.ActionGroup;
+import de.metas.ui.web.window.model.action.ActionsList;
 
 /*
  * #%L
@@ -56,7 +57,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 	private MFViewDisplay viewDisplay;
 	private WindowPresenter windowPresenter;
 
-	private List<Action> actions = null;
+	private ActionsList actions = null;
 	private boolean disposed = false;
 
 	public WindowNavigationView(final int windowId)
@@ -123,6 +124,10 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		assertNotDisposed();
 
 		this.viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
+		if(viewDisplay != null)
+		{
+			viewDisplay.setMenuItemClickListener(menuItem -> onActionMenuItemClicked(menuItem));
+		}
 
 		final WindowPresenter windowPresenter = getCreateWindowPresenter();
 
@@ -151,7 +156,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 	}
 
 	@Override
-	public void setActions(final List<Action> actions)
+	public void setActions(final ActionsList actions)
 	{
 		if (Objects.equal(this.actions, actions))
 		{
@@ -165,10 +170,10 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 			return;
 		}
 
-		viewDisplay.setMenuItems(() -> createMenuItems(actions), menuItem -> onActionMenuItemClicked(menuItem));
+		viewDisplay.setMenuItems(() -> createMenuItems(actions));
 	}
 
-	private static List<MenuItem> createMenuItems(final List<Action> actions)
+	private List<MenuItem> createMenuItems(final ActionsList actions)
 	{
 		if (actions == null || actions.isEmpty())
 		{
@@ -186,7 +191,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 				groups.put(actionGroup, menuItems);
 			}
 
-			final ActionMenuItem menuItem = ActionMenuItem.of(action);
+			final ActionMenuItem menuItem = new ActionMenuItem(action);
 			menuItems.add(menuItem);
 		}
 
@@ -218,7 +223,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		final ActionMenuItem actionMenuItem = (ActionMenuItem)menuItem;
 		final Action action = actionMenuItem.getAction();
 
-		windowPresenter.onActionClicked(action);
+		windowPresenter.onActionClicked(action.getActionId());
 	}
 
 	private static class ActionGroupMenuItem implements MenuItem
@@ -258,27 +263,20 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 
 	}
 
-	private static class ActionMenuItem implements MenuItem
+	class ActionMenuItem implements MenuItem
 	{
-		public static final ActionMenuItem of(final Action action)
-		{
-			return new ActionMenuItem(action);
-		}
-
 		private final Action action;
 		private final Supplier<List<MenuItem>> childrenSupplier;
 
-		private ActionMenuItem(final Action action)
+		ActionMenuItem(final Action action)
 		{
 			super();
 			this.action = action;
 
-			if (action instanceof Action.Provider)
+			if (action.isProvidingChildActions())
 			{
-				final Action.Provider actionsProvider = (Action.Provider)action;
-
 				childrenSupplier = () -> {
-					final List<Action> childActions = actionsProvider.provideActions();
+					final ActionsList childActions = getWindowPresenter().viewRequestChildActions(action.getActionId());
 					return createMenuItems(childActions);
 				};
 			}

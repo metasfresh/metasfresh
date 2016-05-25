@@ -1,12 +1,11 @@
 package de.metas.ui.web.window.model.action;
 
-import java.util.List;
-
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -36,27 +35,49 @@ import de.metas.ui.web.service.IImageProvider.IImageResource;
  * #L%
  */
 
-public abstract class Action
+public class Action
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
-	
+
 	private final String actionId;
 	private final ActionGroup actionGroup;
 	private final String caption;
 	private final IImageResource icon;
 	private final boolean toolbarAction;
+	private final boolean providingChildActions;
 
 	protected Action(final Builder builder)
 	{
 		super();
-		this.actionId = Preconditions.checkNotNull(builder.actionId, "actionId");
-		this.actionGroup = builder.actionGroup == null ? ActionGroup.NONE : builder.actionGroup;
-		this.caption = Preconditions.checkNotNull(builder.caption, "caption");
-		this.icon = builder.icon;
-		this.toolbarAction = builder.toolbarAction;
+		actionId = Preconditions.checkNotNull(builder.actionId, "actionId");
+		actionGroup = builder.actionGroup == null ? ActionGroup.NONE : builder.actionGroup;
+		caption = Preconditions.checkNotNull(builder.caption, "caption");
+		icon = builder.icon;
+		toolbarAction = builder.toolbarAction;
+		providingChildActions = builder.providingChildActions;
+	}
+
+	protected Action(
+			@JsonProperty("actionId") final String actionId //
+			, @JsonProperty("actionGroup") final ActionGroup actionGroup //
+			, @JsonProperty("caption") final String caption //
+			, @JsonProperty("icon") final IImageResource icon //
+			, @JsonProperty("toolbarAction") final boolean toolbarAction //
+			, @JsonProperty("providingChildActions") final boolean providingChildActions //
+	)
+	{
+		this(builder()
+				.setActionId(actionId)
+				.setActionGroup(actionGroup)
+				.setCaption(caption)
+				.setIcon(icon)
+				.setToolbarAction(toolbarAction)
+				.setProvidingChildActions(providingChildActions)
+		//
+		);
 	}
 
 	@Override
@@ -94,6 +115,11 @@ public abstract class Action
 		return Objects.equal(actionId, other.actionId);
 	}
 
+	public String getActionId()
+	{
+		return actionId;
+	}
+
 	public ActionGroup getActionGroup()
 	{
 		return actionGroup;
@@ -108,10 +134,15 @@ public abstract class Action
 	{
 		return icon;
 	}
-	
+
 	public boolean isToolbarAction()
 	{
 		return toolbarAction;
+	}
+
+	public boolean isProvidingChildActions()
+	{
+		return providingChildActions;
 	}
 
 	public static class ActionEvent
@@ -124,7 +155,7 @@ public abstract class Action
 		private final Action action;
 		private final Object target;
 
-		private ActionEvent(Action action, Object target)
+		private ActionEvent(final Action action, final Object target)
 		{
 			super();
 			this.action = action;
@@ -157,53 +188,36 @@ public abstract class Action
 		void handleAction(ActionEvent event);
 	}
 
-	public static interface Provider
-	{
-		List<Action> provideActions();
-	}
-	
 	public static class Builder
 	{
 		private ActionGroup actionGroup = ActionGroup.NONE;
 		private String actionId;
 		private String caption;
 		private IImageResource icon;
-		private Action.Listener listener;
-		private Action.Provider childrenProvider;
-		
+
 		private boolean toolbarAction = false;
-		
-		private Builder()
+		private boolean providingChildActions;
+
+		protected Builder()
 		{
 			super();
 		}
-		
+
 		public Action build()
 		{
-			if (childrenProvider != null)
-			{
-				return new ActionWithChildrenProvider(this);
-			}
-			else if (listener != null)
-			{
-				return new SelfHandledAction(this);
-			}
-			else
-			{
-				return new ActionImpl(this);
-			}
+			return new Action(this);
 		}
-		
-		public Builder setActionGroup(ActionGroup actionGroup)
+
+		public Builder setActionGroup(final ActionGroup actionGroup)
 		{
 			this.actionGroup = actionGroup;
 			return this;
 		}
-		
+
 		public Builder setActionIdAndUpdateFromAD_Messages(final String adMessage)
 		{
 			setActionId(adMessage);
-			
+
 			String caption = Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMessage);
 			caption = Util.cleanAmp(caption);
 			setCaption(caption);
@@ -213,89 +227,41 @@ public abstract class Action
 
 			return this;
 		}
-		
-		public Builder setActionId(String actionId)
+
+		public Builder setActionId(final String actionId)
 		{
 			this.actionId = actionId;
 			return this;
 		}
-		
-		public Builder setCaption(String caption)
+
+		public Builder setCaption(final String caption)
 		{
 			this.caption = caption;
 			return this;
 		}
-		
-		public Builder setIcon(IImageResource icon)
+
+		public Builder setIcon(final IImageResource icon)
 		{
 			this.icon = icon;
 			return this;
 		}
-		
-		public Builder setListener(Action.Listener listener)
+
+		public Builder setProvidingChildActions(final boolean providingChildActions)
 		{
-			this.listener = listener;
+			this.providingChildActions = providingChildActions;
 			return this;
 		}
-		
-		public Builder setChildrenProvider(Action.Provider childrenProvider)
-		{
-			this.childrenProvider = childrenProvider;
-			return this;
-		}
-		
-		public Builder setToolbarAction(boolean toolbarAction)
+
+		public Builder setToolbarAction(final boolean toolbarAction)
 		{
 			this.toolbarAction = toolbarAction;
 			return this;
 		}
+
 		public Builder setToolbarAction()
 		{
 			setToolbarAction(true);
 			return this;
 		}
-	}
-
-	private static final class ActionImpl extends Action
-	{
-		protected ActionImpl(final Builder builder)
-		{
-			super(builder);
-		}
-	}
-
-	private static final class SelfHandledAction extends Action implements Action.Listener
-	{
-		private final Action.Listener listener;
-
-		protected SelfHandledAction(final Builder builder)
-		{
-			super(builder);
-			this.listener = Preconditions.checkNotNull(builder.listener, "listener not null");
-		}
-
-		@Override
-		public void handleAction(final ActionEvent event)
-		{
-			listener.handleAction(event);
-		}
-	}
-
-	private static final class ActionWithChildrenProvider extends Action implements Action.Provider
-	{
-		private final Action.Provider childrenProvider;
-
-		protected ActionWithChildrenProvider(final Builder builder)
-		{
-			super(builder);
-			this.childrenProvider = builder.childrenProvider;
-		}
-
-		@Override
-		public List<Action> provideActions()
-		{
-			return childrenProvider.provideActions();
-		}
-
 	}
 }

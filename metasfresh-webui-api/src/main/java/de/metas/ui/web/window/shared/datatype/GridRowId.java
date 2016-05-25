@@ -3,6 +3,7 @@ package de.metas.ui.web.window.shared.datatype;
 import java.io.Serializable;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 /*
@@ -27,7 +28,6 @@ import com.google.common.base.Objects;
  * #L%
  */
 
-
 @SuppressWarnings("serial")
 public final class GridRowId implements Serializable
 {
@@ -35,7 +35,7 @@ public final class GridRowId implements Serializable
 	{
 		return new GridRowId(UUID.randomUUID().toString());
 	}
-	
+
 	public static final GridRowId of(final Object obj)
 	{
 		if (NullValue.isNull(obj))
@@ -48,25 +48,26 @@ public final class GridRowId implements Serializable
 		}
 		else
 		{
-			throw new IllegalArgumentException("Invalid row id: "+obj+" ("+obj.getClass()+")");
+			throw new IllegalArgumentException("Invalid row id: " + obj + " (" + obj.getClass() + ")");
 		}
 	}
 
+	@JsonProperty("id")
 	private final String id;
-	private Integer _hashCode = null;
-	
-	private GridRowId(final String id)
+	private transient Integer _hashCode = null;
+
+	private GridRowId(@JsonProperty("id") final String id)
 	{
 		super();
 		this.id = id;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return id;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -82,15 +83,15 @@ public final class GridRowId implements Serializable
 		{
 			return false;
 		}
-		
+
 		final GridRowId other = (GridRowId)obj;
 		return Objects.equal(this.id, other.id);
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
-		if(_hashCode == null)
+		if (_hashCode == null)
 		{
 			_hashCode = Objects.hashCode(id);
 		}

@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -64,7 +65,7 @@ public class LookupPropertyValue implements PropertyValue
 		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
 		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 
-		this.value = LookupDataSourceServiceDTOImpl.of(lookupDataSource);
+		this.value = new LookupDataSourceServiceDTOImpl(propertyName);
 	}
 
 	@Override
@@ -153,18 +154,53 @@ public class LookupPropertyValue implements PropertyValue
 
 	private static class LookupDataSourceServiceDTOImpl extends LookupDataSourceServiceDTO
 	{
+		@JsonProperty("propertyName")
+		private final PropertyName propertyName;
+
+		public LookupDataSourceServiceDTOImpl(@JsonProperty("propertyName") final PropertyName propertyName)
+		{
+			super();
+			this.propertyName = propertyName;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("propertyName", propertyName)
+					.toString();
+		}
+
+		@Override
+		public int sizeIfValidFilter(String filter)
+		{
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public List<LookupValue> findEntitiesIfValidFilter(String filter, int firstRow, int pageLength)
+		{
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
+	private static class LookupDataSourceServiceDTOImpl_OLD extends LookupDataSourceServiceDTO
+	{
 		// TODO: the implementation of LookupDataSourceServiceDTO shall be simple serializable POJO and not an LookupDataSource wrapper
 
 		public static final LookupDataSourceServiceDTO of(final LookupDataSource lookupDataSource)
 		{
-			return new LookupDataSourceServiceDTOImpl(lookupDataSource);
+			return new LookupDataSourceServiceDTOImpl_OLD(lookupDataSource);
 		}
 
 		public static final int SIZE_InvalidFilter = -100;
 
 		private final LookupDataSource lookupDataSource;
 
-		private LookupDataSourceServiceDTOImpl(final LookupDataSource lookupDataSource)
+		private LookupDataSourceServiceDTOImpl_OLD(final LookupDataSource lookupDataSource)
 		{
 			super();
 			this.lookupDataSource = lookupDataSource;

@@ -1,13 +1,12 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
 import java.util.Set;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
@@ -49,8 +48,6 @@ public interface WindowModel
 
 	void nextRecord(OnChangesFound onChangesFound);
 
-	List<Action> getActions();
-
 	/**
 	 * Gets a map of all "selected" property name and their values.
 	 *
@@ -83,5 +80,9 @@ public interface WindowModel
 
 	Object getGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 
-	void executeAction(Action action);
+	ActionsList getActions();
+
+	void executeAction(String actionId);
+
+	ActionsList getChildActions(String actionId);
 }

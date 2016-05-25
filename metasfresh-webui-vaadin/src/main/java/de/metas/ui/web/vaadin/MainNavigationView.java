@@ -53,7 +53,8 @@ public class MainNavigationView extends CssLayout implements MFView
 	{
 		MFViewDisplay viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
 		viewDisplay.setTitle("Main");
-		viewDisplay.setMenuItems(() -> getMenuItems(), menuItem -> runMenuItem(menuItem));
+		viewDisplay.setMenuItemClickListener(menuItem -> runMenuItem(menuItem));
+		viewDisplay.setMenuItems(() -> getMenuItems());
 		viewDisplay.showMenuPanel();
 	}
 

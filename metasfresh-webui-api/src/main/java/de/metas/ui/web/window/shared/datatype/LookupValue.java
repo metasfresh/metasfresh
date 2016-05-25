@@ -1,6 +1,10 @@
 package de.metas.ui.web.window.shared.datatype;
 
+import java.io.Serializable;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /*
  * #%L
@@ -24,9 +28,11 @@ import java.util.Objects;
  * #L%
  */
 
-public class LookupValue
+@SuppressWarnings("serial")
+public class LookupValue implements Serializable
 {
-	public static final LookupValue of(final Object id, final String displayName, final String longDisplayName)
+	@JsonCreator
+	public static final LookupValue of(@JsonProperty("id") final Object id, @JsonProperty("n") final String displayName, @JsonProperty("ln") final String longDisplayName)
 	{
 		return new LookupValue(id, displayName, longDisplayName);
 	}
@@ -36,7 +42,7 @@ public class LookupValue
 		final String longDisplayName = null;
 		return new LookupValue(id, displayName, longDisplayName);
 	}
-	
+
 	public static final LookupValue unknownId(final int id)
 	{
 		return LookupValue.of(id, "<" + id + ">");
@@ -44,11 +50,25 @@ public class LookupValue
 
 	public static final LookupValue cast(final Object obj)
 	{
-		return (LookupValue)obj;
+		if (obj == null)
+		{
+			return null;
+		}
+		else if (obj instanceof LookupValue)
+		{
+			return (LookupValue)obj;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot cast '" + obj + "' (" + obj.getClass() + ") to " + LookupValue.class);
+		}
 	}
 
+	@JsonProperty("id")
 	private final Object id;
+	@JsonProperty("n")
 	private final String displayName;
+	@JsonProperty("ln")
 	private final String longDisplayName;
 
 	private LookupValue(final Object id, final String displayName, final String longDisplayName)

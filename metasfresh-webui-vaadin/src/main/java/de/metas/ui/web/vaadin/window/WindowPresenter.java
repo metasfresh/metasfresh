@@ -2,7 +2,6 @@ package de.metas.ui.web.vaadin.window;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -30,8 +28,10 @@ import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.model.JSONProxyWindowModel;
 import de.metas.ui.web.window.model.WindowModel;
-import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.WindowModelImpl;
+import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
 import de.metas.ui.web.window.model.event.GridPropertyChangedModelEvent;
@@ -66,9 +66,10 @@ public class WindowPresenter implements WindowViewListener
 {
 	private static final Logger logger = LogManager.getLogger(WindowPresenter.class);
 
-	@Autowired(required = true)
-	// @Lazy
-	private WindowModel _model;
+//	@Autowired(required = true)
+//	// @Lazy
+//	private WindowModel _model;
+	private WindowModel _model = new JSONProxyWindowModel(new WindowModelImpl());
 	private boolean _registeredToModelEventBus = false;
 
 	@Autowired(required = true)
@@ -240,7 +241,7 @@ public class WindowPresenter implements WindowViewListener
 		final Set<ActionsView> actionsViews = getActionsView();
 		if (!actionsViews.isEmpty())
 		{
-			final List<Action> actions = model.getActions();
+			final ActionsList actions = model.getActions();
 			for (final ActionsView actionsView : actionsViews)
 			{
 				actionsView.setActions(actions);
@@ -292,7 +293,7 @@ public class WindowPresenter implements WindowViewListener
 		}
 
 		// also reset the actions
-		actionsView.setActions(ImmutableList.of());
+		actionsView.setActions(ActionsList.EMPTY);
 	}
 
 	public Set<ActionsView> getActionsView()
@@ -602,10 +603,17 @@ public class WindowPresenter implements WindowViewListener
 	}
 
 	@Override
-	public void onActionClicked(final Action action)
+	public void onActionClicked(final String actionId)
 	{
 		final WindowModel model = getModel();
-		model.executeAction(action);
+		model.executeAction(actionId);
+	}
+	
+	@Override
+	public ActionsList viewRequestChildActions(String actionId)
+	{
+		final WindowModel model = getModel();
+		return model.getChildActions(actionId);
 	}
 
 	@Subscribe

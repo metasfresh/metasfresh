@@ -6,7 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.action.ActionsList;
 
 /*
  * #%L
@@ -53,5 +53,7 @@ public interface WindowViewListener
 
 	ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 
-	void onActionClicked(Action action);
+	void onActionClicked(String actionId);
+	
+	ActionsList viewRequestChildActions(final String actionId);
 }

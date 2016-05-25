@@ -21,6 +21,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.LookupDataSourceServiceDTO;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.datatype.NullValue;
 
 /*
  * #%L
@@ -82,8 +83,9 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			@Override
 			protected void setInternalValue(Object newValue)
 			{
-				getComboDataSource().setCurrentValue(newValue);
-				super.setInternalValue(newValue);
+				final LookupValue lookupValue = toLookupValue(newValue);
+				getComboDataSource().setCurrentValue(lookupValue);
+				super.setInternalValue(lookupValue);
 			}
 		};
 		
@@ -112,8 +114,9 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		if (Objects.equals(getPropertyName(), propertyName))
 		{
-			getComboDataSource().setCurrentValue(value);
-			super.setValue(propertyName, value);
+			final LookupValue lookupValue = toLookupValue(value);
+			getComboDataSource().setCurrentValue(lookupValue);
+			super.setValue(propertyName, lookupValue);
 		}
 		else if (Objects.equals(valuesPropertyName, propertyName))
 		{
@@ -129,8 +132,31 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	@Override
 	protected LookupValue convertToView(Object valueObj)
 	{
-		return LookupValue.cast(valueObj);
+		return toLookupValue(valueObj);
 	}
+	
+	private static final LookupValue toLookupValue(final Object valueObj)
+	{
+		if(NullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		else if (valueObj instanceof LookupValue)
+		{
+			return LookupValue.cast(valueObj);
+		}
+		else if (valueObj instanceof Integer)
+		{
+			final int id = (int)valueObj;
+			return LookupValue.unknownId(id);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot cast '" + valueObj + "' (" + valueObj.getClass() + ") to " + LookupValue.class);
+		}
+		
+	}
+	
 	
 	private final class LookupDataSourceServiceSupplier implements Supplier<LookupDataSourceServiceDTO>
 	{
@@ -199,25 +225,9 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			return _lookupDataSourceServiceSupplier.get();
 		}
 		
-		public void setCurrentValue(final Object newValue)
+		public void setCurrentValue(final LookupValue newValue)
 		{
-			if(newValue == null)
-			{
-				this._currentValue = null;
-			}
-			else if (newValue instanceof LookupValue)
-			{
-				this._currentValue = LookupValue.cast(newValue);
-			}
-			else if (newValue instanceof Integer)
-			{
-				final int id = (int)newValue;
-				this._currentValue = LookupValue.unknownId(id);
-			}
-			else
-			{
-				logger.warn("Editor {} does not support value: {}", propertyName, newValue);
-			}
+			this._currentValue = newValue;
 		}
 		
 		private LookupValue getCurrentValue()

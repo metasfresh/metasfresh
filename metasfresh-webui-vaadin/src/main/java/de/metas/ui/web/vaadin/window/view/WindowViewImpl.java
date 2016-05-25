@@ -1,11 +1,9 @@
 package de.metas.ui.web.vaadin.window.view;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.vaadin.spring.annotation.PrototypeScope;
 
-import com.google.common.collect.ImmutableList;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
@@ -19,6 +17,7 @@ import de.metas.ui.web.vaadin.window.editor.LabelEditor;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.model.action.Action;
+import de.metas.ui.web.window.model.action.ActionsList;
 
 /*
  * #%L
@@ -65,7 +64,6 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 	// Editors (UI)
 	private LabelEditor recordSummaryEditor;
 	private LabelEditor recordAdditionalSummaryEditor;
-
 
 	public WindowViewImpl()
 	{
@@ -167,7 +165,7 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 		//
 		// Register editors
 		{
-//			registerEditor(titleEditor);
+			// registerEditor(titleEditor);
 			registerEditor(recordSummaryEditor);
 			registerEditor(recordAdditionalSummaryEditor);
 		}
@@ -213,15 +211,17 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 	}
 
 	@Override
-	public void setActions(final List<Action> actions)
+	public void setActions(final ActionsList actions)
 	{
 		if (Objects.equals(this._actions, actions))
 		{
 			return;
 		}
-		
-		this._actions = ImmutableList.copyOf(actions);
-		
+
+		this._actions = ActionsList.copyOf(actions);
+
+		//
+		// Toolbar actions
 		actionsPanel.removeAllComponents();
 		for (final Action action : _actions)
 		{
@@ -229,15 +229,17 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 			{
 				continue;
 			}
-			
+
+			final String actionId = action.getActionId();
+
 			final Button btn = new Button();
 			btn.setCaption(action.getCaption());
 			btn.setIcon(VaadinImageResource.getResource(action.getIcon()));
-			btn.addClickListener(event -> getWindowViewListener().onActionClicked(action));
+			btn.addClickListener(event -> getWindowViewListener().onActionClicked(actionId));
 			actionsPanel.addComponent(btn);
-			
+
 		}
 	}
-	
-	private List<Action> _actions = null;
+
+	private ActionsList _actions = null;
 }

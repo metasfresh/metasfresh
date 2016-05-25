@@ -115,7 +115,7 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		
 		setTitle("-");
 		hideMenuPanel();
-		setMenuItems(() -> ImmutableList.of(), MenuItemClickListener.NULL);
+		setMenuItems(() -> ImmutableList.of());
 	}
 
 	private static final class ViewContainer extends CustomComponent
@@ -136,10 +136,14 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		titleLabel.setValue(title);
 	}
 	
-	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier, final MenuItemClickListener clickListener)
+	public void setMenuItemClickListener(final MenuItemClickListener clickListener)
+	{
+		menuPanel.setClickListener(clickListener);
+	}
+	
+	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
 	{
 		menuPanel.setRootMenuItems(menuItemsSupplier);
-		menuPanel.setClickListener(clickListener);
 	}
 	
 	private void toggleMenuPanel()

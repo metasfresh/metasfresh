@@ -1,8 +1,10 @@
 package de.metas.ui.web.service.impl;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vaadin.server.Resource;
 
 import de.metas.ui.web.service.IImageProvider;
+import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource.ResourceType;
 import de.metas.ui.web.vaadin.theme.Theme;
 
 /*
@@ -15,12 +17,12 @@ import de.metas.ui.web.vaadin.theme.Theme;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,16 +33,7 @@ public class VaadinImageProvider implements IImageProvider
 {
 	public static final class VaadinImageResource implements IImageResource
 	{
-		public static final VaadinImageResource of(final Resource resource)
-		{
-			if (resource == null)
-			{
-				return null;
-			}
-			return new VaadinImageResource(resource);
-		}
-
-		public static final Resource getResource(IImageResource imageResource)
+		public static final Resource getResource(final IImageResource imageResource)
 		{
 			if (imageResource == null)
 			{
@@ -50,33 +43,62 @@ public class VaadinImageProvider implements IImageProvider
 			final VaadinImageResource vaadinImageResource = (VaadinImageResource)imageResource;
 			return vaadinImageResource.getResource();
 		}
+		
+		public static enum ResourceType
+		{
+			IconSmall,
+			Image,
+		}
 
-		private final Resource resource;
-
-		private VaadinImageResource(Resource resource)
+		@JsonProperty("n")
+		private final String resourceName;
+		@JsonProperty("t")
+		private final ResourceType resourceType;
+		
+		public VaadinImageResource(@JsonProperty("n") final String resourceName, @JsonProperty("t") final ResourceType resourceType)
 		{
 			super();
-			this.resource = resource;
+			this.resourceName = resourceName;
+			this.resourceType = resourceType;
 		}
-
-		public Resource getResource()
+		
+		public String getResourceName()
 		{
-			return resource;
+			return resourceName;
+		}
+		
+		public ResourceType getResourceType()
+		{
+			return resourceType;
+		}
+
+		protected Resource getResource()
+		{
+			if (resourceType == ResourceType.IconSmall)
+			{
+				return Theme.getIconSmall(getResourceName());
+			}
+			else if (resourceType == ResourceType.Image)
+			{
+				return Theme.getImageResourceForNameWithoutExt(getResourceName());
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown resource type: "+resourceType);
+			}
 		}
 	}
 
 	@Override
-	public IImageResource getIconSmall(String name)
+	public IImageResource getIconSmall(final String name)
 	{
-		final Resource resource = Theme.getIconSmall(name);
-		return VaadinImageResource.of(resource);
+		return new VaadinImageResource(name, ResourceType.IconSmall);
 	}
 
 	@Override
-	public IImageResource getImageResourceForNameWithoutExt(String fileNameWithoutExtension)
+	public IImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension)
 	{
-		final Resource resource = Theme.getImageResourceForNameWithoutExt(fileNameWithoutExtension);
-		return VaadinImageResource.of(resource);
+		return new VaadinImageResource(fileNameWithoutExtension, ResourceType.Image);
 	}
 
 }

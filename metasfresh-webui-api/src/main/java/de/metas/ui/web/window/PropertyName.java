@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
@@ -37,7 +39,7 @@ public final class PropertyName implements Serializable
 	{
 		return new PropertyName(name);
 	}
-	
+
 	public static final PropertyName cast(final Object propertyNameObj)
 	{
 		return (PropertyName)propertyNameObj;
@@ -53,19 +55,19 @@ public final class PropertyName implements Serializable
 	public static final PropertyName of(final PropertyName parent, final String name)
 	{
 		// FIXME: atm if we also append the parent's name to given name we will break a lot of display/readonly/mandatory/etc logics
-		if(true) return new PropertyName(name);
-		
-		
+		if (true)
+			return new PropertyName(name);
+
 		return new PropertyName(parent.name + "/" + name);
 	}
-	
+
 	public static final Set<PropertyName> toSet(final Collection<String> names)
 	{
 		if (names == null || names.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		final ImmutableSet.Builder<PropertyName> builder = ImmutableSet.builder();
 		for (final String name : names)
 		{
@@ -75,9 +77,10 @@ public final class PropertyName implements Serializable
 		return builder.build();
 	}
 
+	@JsonProperty("n")
 	private final String name;
 
-	private PropertyName(final String name)
+	private PropertyName(@JsonProperty("n") final String name)
 	{
 		super();
 		this.name = Preconditions.checkNotNull(name, "name shall not be null");
@@ -118,6 +121,7 @@ public final class PropertyName implements Serializable
 	/**
 	 * @return human friendly, localized name
 	 */
+	@JsonIgnore
 	public String getCaption()
 	{
 		// TODO: implement it. atm this method is really a placeholder. In future it might be that we will really move it from here.

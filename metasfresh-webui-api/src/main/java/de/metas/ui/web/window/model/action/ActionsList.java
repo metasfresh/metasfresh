@@ -1,15 +1,20 @@
 package de.metas.ui.web.window.model.action;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
- * metasfresh-webui
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -30,47 +35,47 @@ import com.google.common.base.Objects;
  */
 
 @SuppressWarnings("serial")
-public final class ActionGroup implements Serializable
+public final class ActionsList implements Serializable, Iterable<Action>
 {
 	@JsonCreator
-	public static final ActionGroup of(@JsonProperty("caption") final String caption)
+	public static final ActionsList of(@JsonProperty("actions") final List<Action> actions)
 	{
-		if (caption == null || caption.trim().isEmpty())
+		if (actions == null || actions.isEmpty())
 		{
-			return NONE;
+			return EMPTY;
 		}
-		return new ActionGroup(caption);
+		return new ActionsList(actions);
 	}
 
-	public static final ActionGroup NONE = new ActionGroup();
-
-	@JsonProperty("caption")
-	private final String caption;
-
-	private ActionGroup(final String caption)
+	public static final ActionsList copyOf(ActionsList actionsList)
 	{
-		super();
-		this.caption = caption;
+		// NOTE: we assume it's immutable
+		return actionsList;
 	}
 
-	private ActionGroup()
+	public static final transient ActionsList EMPTY = new ActionsList(ImmutableList.of());
+
+	@JsonProperty("actions")
+	private final List<Action> actions;
+
+	private ActionsList(final Collection<Action> actions)
 	{
 		super();
-		caption = "";
+		this.actions = ImmutableList.copyOf(actions);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("caption", caption)
+				.addValue(actions)
 				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hashCode(caption);
+		return actions.hashCode();
 	}
 
 	@Override
@@ -84,17 +89,26 @@ public final class ActionGroup implements Serializable
 		{
 			return false;
 		}
-		if (!(obj instanceof ActionGroup))
+
+		if (obj.getClass() != getClass())
 		{
 			return false;
 		}
 
-		final ActionGroup other = (ActionGroup)obj;
-		return Objects.equal(caption, other.caption);
+		final ActionsList other = (ActionsList)obj;
+
+		return Objects.equals(actions, other.actions);
 	}
 
-	public String getCaption()
+	@Override
+	public Iterator<Action> iterator()
 	{
-		return caption;
+		return actions.iterator();
+	}
+
+	@JsonIgnore
+	public boolean isEmpty()
+	{
+		return actions.isEmpty();
 	}
 }

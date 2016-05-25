@@ -1,11 +1,8 @@
-package de.metas.ui.web.vaadin.window.view;
-
-import de.metas.ui.web.window.model.action.Action;
-import de.metas.ui.web.window.model.action.ActionsList;
+package de.metas.ui.web.window.model.action;
 
 /*
  * #%L
- * metasfresh-webui
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -25,13 +22,8 @@ import de.metas.ui.web.window.model.action.ActionsList;
  * #L%
  */
 
-/**
- * Implementations of this interface are displaying {@link Action}s.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface ActionsView
+
+public interface ActionsManagerProvider
 {
-	void setActions(ActionsList actions);
+	ActionsManager provideActionsManager(final Action parentAction);
 }
