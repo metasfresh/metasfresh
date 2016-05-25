@@ -12,10 +12,12 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x
+# metasfresh 4.20.x
 
 ## Features
-
+ - FRESH-326 Set the Correct Org in Fact_Acct_Summary
+    * changed the migration script to be more repeatable 
+ 
 ## Fixes
 
 # metasfresh 4.19.18
