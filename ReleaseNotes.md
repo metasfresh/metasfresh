@@ -12,13 +12,14 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.20.x
+# metasfresh 4.20.19
 
 ## Features
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
     * changed the migration script to be more repeatable 
  
 ## Fixes
+ - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
 
 # metasfresh 4.19.18
 
