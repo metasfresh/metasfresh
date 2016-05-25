@@ -12,12 +12,20 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.19.18 (upcoming)
+# metasfresh 4.x.x
+
+## Features
+
+## Fixes
+
+# metasfresh 4.19.18
 
 ## Features
  - FRESH-335 create an initial contributor's guideline
 
 ## Fixes
+ - FRESH-338 Async not running
+    * fixed an additional problem with creating AD_ChangeLogs
  - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
     * fixed a problem with creating AD_ChangeLogs
  - FRESH-311 Packvorschriften from different Org shown in Leergut
