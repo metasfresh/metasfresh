@@ -20,6 +20,8 @@ The actual release notes
  
 ## Fixes
  - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * some polishing around AD_ChangeLog creation
 
 # metasfresh 4.19.18
 
