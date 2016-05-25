@@ -1,34 +1,10 @@
 package de.metas.ordercandidate.process;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
+import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 
@@ -36,6 +12,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
+import de.metas.process.Param;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
@@ -47,7 +24,16 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
  */
 public class ProcessOLCands extends SvrProcess
 {
+	@Param(mandatory = true, parameterName = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID)
 	private int olCandProcessorId;
+
+	@Override
+	protected void prepare()
+	{
+		// Display process logs only if the process failed.
+		// NOTE: we do that because this process is called from window Gear and user shall only see the status line, and no popup shall be displayed.
+		setShowProcessLogs(ShowProcessLogs.OnError);
+	}
 
 	@Override
 	protected String doIt() throws Exception
@@ -95,25 +81,5 @@ public class ProcessOLCands extends SvrProcess
 			return error[0].getMessage();
 		}
 		return "@Success@";
-	}
-
-	@Override
-	protected void prepare()
-	{
-		final ProcessInfoParameter[] para = getParameter();
-
-		for (int i = 0; i < para.length; i++)
-		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-			{
-				continue;
-			}
-
-			if (name.equals(I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID))
-			{
-				olCandProcessorId = ((BigDecimal)para[i].getParameter()).intValue();
-			}
-		}
 	}
 }
