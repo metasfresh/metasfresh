@@ -12,6 +12,7 @@ import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -147,32 +148,32 @@ public class JSONProxyWindowModel implements WindowModel
 	}
 
 	@Override
-	public boolean hasProperty(final PropertyName propertyName)
+	public boolean hasProperty(final PropertyPath propertyPath)
 	{
 		// TODO
-		return delegate.hasProperty(testJSON(propertyName, PropertyName.class));
+		return delegate.hasProperty(testJSON(propertyPath, PropertyPath.class));
 	}
 
 	@Override
-	public void setProperty(final PropertyName propertyName, final Object value)
+	public void setProperty(final PropertyPath propertyPath, final Object value)
 	{
 		delegate.setProperty( //
-				testJSON(propertyName, PropertyName.class) //
+				testJSON(propertyPath, PropertyPath.class) //
 				, testJSON(value) //
 		);
 	}
 
 	@Override
-	public Object getProperty(final PropertyName propertyName)
+	public Object getProperty(final PropertyPath propertyPath)
 	{
-		final Object value = delegate.getProperty(testJSON(propertyName, PropertyName.class));
+		final Object value = delegate.getProperty(testJSON(propertyPath, PropertyPath.class));
 		return testJSON(value);
 	}
 
 	@Override
-	public Object getPropertyOrNull(final PropertyName propertyName)
+	public Object getPropertyOrNull(final PropertyPath propertyPath)
 	{
-		final Object value = delegate.getPropertyOrNull(testJSON(propertyName, PropertyName.class));
+		final Object value = delegate.getPropertyOrNull(testJSON(propertyPath, PropertyPath.class));
 		return testJSON(value);
 	}
 
@@ -194,29 +195,6 @@ public class JSONProxyWindowModel implements WindowModel
 	{
 		final GridRowId rowId = delegate.gridNewRow(testJSON(gridPropertyName, PropertyName.class));
 		return testJSON(rowId, GridRowId.class);
-	}
-
-	@Override
-	public void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
-	{
-		delegate.setGridProperty(
-				testJSON(gridPropertyName, PropertyName.class) //
-				, testJSON(rowId) //
-				, testJSON(propertyName, PropertyName.class) //
-				, testJSON(value) //
-		);
-	}
-
-	@Override
-	public Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
-	{
-		final Object value = delegate.getGridProperty(
-				testJSON(gridPropertyName, PropertyName.class) //
-				, testJSON(rowId) //
-				, testJSON(propertyName, PropertyName.class) //
-		);
-
-		return testJSON(value);
 	}
 
 	@Override

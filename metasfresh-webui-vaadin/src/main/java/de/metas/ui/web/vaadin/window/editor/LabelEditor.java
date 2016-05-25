@@ -3,8 +3,6 @@ package de.metas.ui.web.vaadin.window.editor;
 import java.util.List;
 
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
 
@@ -41,16 +39,7 @@ public class LabelEditor extends AbstractEditor
 	{
 		super(propertyName);
 		setCompositionRoot(valueField);
-
-		valueField.addValueChangeListener(new ValueChangeListener()
-		{
-
-			@Override
-			public void valueChange(ValueChangeEvent event)
-			{
-				listener().valueChange(propertyName, valueField.getValue());
-			}
-		});
+		valueField.addValueChangeListener(event -> listener().valueChange(getPropertyPath(), valueField.getValue()));
 	}
 
 	@Override
@@ -72,7 +61,7 @@ public class LabelEditor extends AbstractEditor
 	{
 		valueField.setContentMode(contentMode);
 	}
-	
+
 	@Override
 	public boolean isAddingChildEditorsAllowed()
 	{

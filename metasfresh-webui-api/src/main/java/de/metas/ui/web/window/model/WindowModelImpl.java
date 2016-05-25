@@ -40,12 +40,12 @@ import de.metas.ui.web.window.model.action.ActionGroup;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.model.action.ActionsManager;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.model.event.ModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -319,23 +319,75 @@ public class WindowModelImpl implements WindowModel
 	}
 
 	@Override
-	public boolean hasProperty(final PropertyName propertyName)
+	public boolean hasProperty(final PropertyPath propertyPath)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		return properties.getPropertyValueOrNull(propertyName) != null;
-
+		if (propertyPath.isGridProperty())
+		{
+			final GridPropertyValue gridPropertyValue = GridPropertyValue.cast(properties.getPropertyValueOrNull(propertyPath.getGridPropertyName()));
+			if(gridPropertyValue == null)
+			{
+				return false;
+			}
+			
+			return gridPropertyValue.hasProperty(propertyPath.getRowId(), propertyPath.getPropertyName());
+		}
+		else
+		{
+			return properties.getPropertyValueOrNull(propertyPath.getPropertyName()) != null;
+		}
 	}
-
+	
 	@Override
-	public Object getProperty(final PropertyName propertyName)
+	public Object getProperty(final PropertyPath propertyPath)
+	{
+		if (propertyPath.isGridProperty())
+		{
+			return getGridProperty(propertyPath.getGridPropertyName(), propertyPath.getRowId(), propertyPath.getPropertyName());
+		}
+		else
+		{
+			return getProperty(propertyPath.getPropertyName());
+		}
+	}
+	
+
+	private Object getProperty(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		final PropertyValue propertyValue = properties.getPropertyValue(propertyName);
 		return propertyValue.getValue();
 	}
+	
+	private Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
+	{
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValueOrNull(gridPropertyName));
+		if (gridProp == null)
+		{
+			// TODO: handle missing model property
+			logger.trace("Skip getting propery {} because property value is missing", propertyName);
+			return null;
+		}
 
+		final Object value = gridProp.getValueAt(rowId, propertyName);
+		return value;
+	}
+	
 	@Override
-	public Object getPropertyOrNull(final PropertyName propertyName)
+	public Object getPropertyOrNull(PropertyPath propertyPath)
+	{
+		if (propertyPath.isGridProperty())
+		{
+			return getGridProperty(propertyPath.getGridPropertyName(), propertyPath.getRowId(), propertyPath.getPropertyName());
+		}
+		else
+		{
+			return getPropertyOrNull(propertyPath.getPropertyName());
+		}
+	}
+
+	private Object getPropertyOrNull(final PropertyName propertyName)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		final PropertyValue propertyValue = properties.getPropertyValueOrNull(propertyName);
@@ -345,27 +397,40 @@ public class WindowModelImpl implements WindowModel
 		}
 		return propertyValue.getValue();
 	}
-
+	
 	@Override
-	public void setProperty(final PropertyName propertyName, final Object value)
+	public void setProperty(PropertyPath propertyPath, Object value)
+	{
+		if (propertyPath.isGridProperty())
+		{
+			setGridProperty(propertyPath, value);
+		}
+		else
+		{
+			setProperty0(propertyPath, value);
+		}
+	}
+
+	private void setProperty0(final PropertyPath propertyPath, final Object value)
 	{
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("Setting property: {}={} ({})", propertyName, value, value == null ? null : value.getClass());
+			logger.trace("Setting property: {}={} ({})", propertyPath, value, value == null ? null : value.getClass());
 		}
 
 		final PropertyValueCollection properties = getPropertiesLoaded();
+		final PropertyName propertyName = propertyPath.getPropertyName();
 		final PropertyValue prop = properties.getPropertyValue(propertyName);
 		if (prop == null)
 		{
 			// TODO: handle missing model property
-			logger.trace("Skip setting propery {} because property value is missing", propertyName);
+			logger.trace("Skip setting propery {} because property value is missing", propertyPath);
 			return;
 		}
 
 		if (prop.isReadOnlyForUser())
 		{
-			logger.trace("Skip setting propery {} because property value is readonly for user", propertyName);
+			logger.trace("Skip setting propery {} because property value is readonly for user", propertyPath);
 			return;
 		}
 
@@ -382,12 +447,47 @@ public class WindowModelImpl implements WindowModel
 		prop.setValue(value);
 
 		// Fire event
-		postEvent(PropertyChangedModelEvent.of(this, propertyName, value, valueOld));
+		postEvent(PropertyChangedModelEvent.of(this, propertyPath, value, valueOld));
 
 		//
 		// Update dependencies
 		updateAllWhichDependOn(propertyName);
 	}
+	
+	private void setGridProperty(final PropertyPath propertyPath, final Object value)
+	{
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Setting grid property {}={} ({})", propertyPath, value, value == null ? null : value.getClass());
+		}
+
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final PropertyName gridPropertyName = propertyPath.getGridPropertyName(); 
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
+		if (gridProp == null)
+		{
+			// TODO: handle missing model property
+			logger.trace("Skip setting propery {} because property value is missing", propertyPath);
+			return;
+		}
+
+		final Object rowId = propertyPath.getRowId();
+		final PropertyName propertyName = propertyPath.getPropertyName();
+		final Object valueOld = gridProp.setValueAt(rowId, propertyName, value);
+
+		//
+		// Check if it's an actual value change
+		if (Check.equals(value, valueOld))
+		{
+			return;
+		}
+
+		// Fire event
+		postEvent(PropertyChangedModelEvent.of(this, propertyPath, value, valueOld));
+
+		// TODO: process dependencies
+	}
+
 
 	private final void updateAllDependenciesNoFire()
 	{
@@ -445,56 +545,9 @@ public class WindowModelImpl implements WindowModel
 		// Collect event
 		if (eventsCollector != null)
 		{
-			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyName, calculatedValueNew, calculatedValueOld));
+			final PropertyPath propertyPath = PropertyPath.of(propertyName);
+			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyPath, calculatedValueNew, calculatedValueOld));
 		}
-	}
-
-	@Override
-	public void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
-	{
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Setting grid property {}, {}: {}={} ({})", gridPropertyName, rowId, propertyName, value, value == null ? null : value.getClass());
-		}
-
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
-		if (gridProp == null)
-		{
-			// TODO: handle missing model property
-			logger.trace("Skip setting propery {} because property value is missing", propertyName);
-			return;
-		}
-
-		final Object valueOld = gridProp.setValueAt(rowId, propertyName, value);
-
-		//
-		// Check if it's an actual value change
-		if (Check.equals(value, valueOld))
-		{
-			return;
-		}
-
-		// Fire event
-		postEvent(GridPropertyChangedModelEvent.of(this, gridPropertyName, rowId, propertyName, value, valueOld));
-
-		// TODO: process dependencies
-	}
-
-	@Override
-	public Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
-	{
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValueOrNull(gridPropertyName));
-		if (gridProp == null)
-		{
-			// TODO: handle missing model property
-			logger.trace("Skip setting propery {} because property value is missing", propertyName);
-			return null;
-		}
-
-		final Object value = gridProp.getValueAt(rowId, propertyName);
-		return value;
 	}
 
 	@Override
@@ -533,9 +586,9 @@ public class WindowModelImpl implements WindowModel
 
 		for (final Map.Entry<PropertyName, Object> e : values.entrySet())
 		{
-			final PropertyName propertyName = e.getKey();
+			final PropertyPath propertyPath = PropertyPath.of(e.getKey());
 			final Object value = e.getValue();
-			setProperty(propertyName, value);
+			setProperty(propertyPath, value);
 		}
 	}
 

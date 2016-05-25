@@ -82,7 +82,7 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 			public void valueChange(final Property.ValueChangeEvent event)
 			{
 				final T valueNew = valueField.getValue();
-				listener().valueChange(getPropertyName(), valueNew);
+				listener().valueChange(getPropertyPath(), valueNew);
 			}
 		});
 	}

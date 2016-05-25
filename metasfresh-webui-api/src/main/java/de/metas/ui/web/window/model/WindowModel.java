@@ -8,6 +8,7 @@ import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -56,13 +57,13 @@ public interface WindowModel
 	 */
 	PropertyValuesDTO getPropertyValuesDTO(Set<PropertyName> selectedPropertyNames);
 
-	boolean hasProperty(PropertyName propertyName);
+	boolean hasProperty(PropertyPath propertyPath);
 
-	void setProperty(PropertyName propertyName, Object value);
+	void setProperty(PropertyPath propertyPath, Object value);
 
-	Object getProperty(PropertyName propertyName);
+	Object getProperty(PropertyPath propertyPath);
 
-	Object getPropertyOrNull(PropertyName propertyName);
+	Object getPropertyOrNull(PropertyPath propertyPath);
 
 	void newRecordAsCopyById(Object recordId);
 
@@ -75,10 +76,6 @@ public interface WindowModel
 	 * @return the ID of newly created now
 	 */
 	GridRowId gridNewRow(PropertyName gridPropertyName);
-
-	void setGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
-
-	Object getGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 
 	ActionsList getActions();
 

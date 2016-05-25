@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -31,27 +32,15 @@ public abstract class ForwardingEditorListener implements EditorListener
 	protected abstract EditorListener getDelegate();
 
 	@Override
-	public void valueChange(PropertyName propertyName, Object value)
+	public void valueChange(PropertyPath propertyPath, Object value)
 	{
-		getDelegate().valueChange(propertyName, value);
+		getDelegate().valueChange(propertyPath, value);
 	}
 
 	@Override
-	public ListenableFuture<Object> requestValue(PropertyName propertyName)
+	public ListenableFuture<Object> requestValue(PropertyPath propertyPath)
 	{
-		return getDelegate().requestValue(propertyName);
-	}
-
-	@Override
-	public void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value)
-	{
-		getDelegate().gridValueChanged(gridPropertyName, rowId, propertyName, value);
-	}
-	
-	@Override
-	public ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
-	{
-		return getDelegate().requestGridValue(gridPropertyName, rowId, propertyName);
+		return getDelegate().requestValue(propertyPath);
 	}
 	
 	@Override

@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -35,10 +36,8 @@ public interface WindowViewListener
 	void viewSubscribeToValueChanges(Set<PropertyName> propertyNames);
 
 	/** View notified a property value has been changed */
-	void viewPropertyChanged(PropertyName propertyName, Object value);
+	void viewPropertyChanged(PropertyPath propertyPath, Object value);
 
-	/** View notified a grid property value has been changed */
-	void viewGridPropertyChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
 	
 	void viewGridNewRow(PropertyName gridPropertyName);
 	
@@ -49,9 +48,7 @@ public interface WindowViewListener
 	void viewPreviousRecord(OnChangesFound onChangesFound);
 
 	/** View is asking for a value update */
-	ListenableFuture<Object> viewRequestValue(PropertyName propertyName);
-
-	ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
+	ListenableFuture<Object> viewRequestValue(PropertyPath propertyPath);
 
 	void onActionClicked(String actionId);
 	

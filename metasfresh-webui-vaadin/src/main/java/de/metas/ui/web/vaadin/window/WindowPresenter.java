@@ -34,10 +34,10 @@ import de.metas.ui.web.window.model.WindowModelImpl;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
-import de.metas.ui.web.window.model.event.GridPropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -66,9 +66,9 @@ public class WindowPresenter implements WindowViewListener
 {
 	private static final Logger logger = LogManager.getLogger(WindowPresenter.class);
 
-//	@Autowired(required = true)
-//	// @Lazy
-//	private WindowModel _model;
+	// @Autowired(required = true)
+	// // @Lazy
+	// private WindowModel _model;
 	private WindowModel _model = new JSONProxyWindowModel(new WindowModelImpl());
 	private boolean _registeredToModelEventBus = false;
 
@@ -80,7 +80,7 @@ public class WindowPresenter implements WindowViewListener
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
 	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
 
-	private Multimap<PropertyName, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
+	private Multimap<PropertyPath, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
 
 	public WindowPresenter()
 	{
@@ -262,9 +262,6 @@ public class WindowPresenter implements WindowViewListener
 		}
 		//
 		fireAllPropertyValueChangedListeners();
-
-		// TODO Auto-generated method stub
-
 	}
 
 	public void addActionsView(final ActionsView actionsView)
@@ -317,23 +314,23 @@ public class WindowPresenter implements WindowViewListener
 		updateViewFromModel(getView());
 	}
 
-	private final Set<PropertyName> viewSettingPropertyNames = new HashSet<>();
+	private final Set<PropertyPath> viewSettingPropertyNames = new HashSet<>();
 
 	@Override
-	public void viewPropertyChanged(final PropertyName propertyName, final Object value)
+	public void viewPropertyChanged(final PropertyPath propertyPath, final Object value)
 	{
-		logger.trace("Got view property changed: {}={} ({})", propertyName, value, (value == null ? "-" : value.getClass()));
+		logger.trace("Got view property changed: {}={} ({})", propertyPath, value, (value == null ? "-" : value.getClass()));
 		logger.trace("UI: {}", UI.getCurrent());
 
-		viewSettingPropertyNames.add(propertyName);
+		viewSettingPropertyNames.add(propertyPath);
 		try
 		{
 			logger.trace("Updating model's property");
-			updateModel((model) -> model.setProperty(propertyName, value));
+			updateModel((model) -> model.setProperty(propertyPath, value));
 		}
 		finally
 		{
-			viewSettingPropertyNames.remove(propertyName);
+			viewSettingPropertyNames.remove(propertyPath);
 		}
 	}
 
@@ -341,30 +338,6 @@ public class WindowPresenter implements WindowViewListener
 	public void viewGridNewRow(final PropertyName gridPropertyName)
 	{
 		updateModel(model -> model.gridNewRow(gridPropertyName));
-	}
-
-	@Override
-	public void viewGridPropertyChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
-	{
-		logger.trace("Got view grid property changed - {}, {}: {}={} ({})", gridPropertyName, rowId, propertyName, value, (value == null ? "-" : value.getClass()));
-
-		final PropertyName cellPropertyName = buildGridCellPropertyName(gridPropertyName, rowId, propertyName);
-
-		viewSettingPropertyNames.add(cellPropertyName);
-		try
-		{
-			logger.trace("Updating model's property");
-			updateModel((model) -> model.setGridProperty(gridPropertyName, rowId, propertyName, value));
-		}
-		finally
-		{
-			viewSettingPropertyNames.remove(cellPropertyName);
-		}
-	}
-
-	private static final PropertyName buildGridCellPropertyName(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
-	{
-		return PropertyName.of(gridPropertyName + "." + rowId + "." + propertyName);
 	}
 
 	private final UI getUI()
@@ -443,50 +416,26 @@ public class WindowPresenter implements WindowViewListener
 		logger.trace("Got {}", event);
 		updateView((view) -> modelPropertyChanged0(view, event));
 
-		firePropertyValueChangedListeners(event.getPropertyName(), event.getValue());
+		firePropertyValueChangedListeners(event.getPropertyPath(), event.getValue());
 	}
 
 	private void modelPropertyChanged0(final WindowView view, final PropertyChangedModelEvent event)
 	{
-		final PropertyName propertyName = event.getPropertyName();
+		final PropertyPath propertyPath = event.getPropertyPath();
 
-		if (viewSettingPropertyNames.contains(propertyName))
+		if (viewSettingPropertyNames.contains(propertyPath))
 		{
-			logger.trace("Skip updating the view because this property is currently updating from view: {}", propertyName);
+			logger.trace("Skip updating the view because this property is currently updating from view: {}", propertyPath);
 			return;
 		}
 
-		if (!viewPropertyNames.contains(propertyName))
+		if (!propertyPath.isGridProperty() && !viewPropertyNames.contains(propertyPath.getPropertyName()))
 		{
-			logger.trace("Skip updating the view because this property is not interesting for view: {}", propertyName);
+			logger.trace("Skip updating the view because this property is not interesting for view: {}", propertyPath);
 		}
 
 		final Object value = event.getValue();
-		view.setProperty(propertyName, value);
-	}
-
-	@Subscribe
-	public void modelGridPropertyChanged(final GridPropertyChangedModelEvent event)
-	{
-		logger.trace("Got {}", event);
-		updateView((view) -> modelGridPropertyChanged0(view, event));
-	}
-
-	private void modelGridPropertyChanged0(final WindowView view, final GridPropertyChangedModelEvent event)
-	{
-		final PropertyName gridPropertyName = event.getGridPropertyName();
-		final Object rowId = event.getRowId();
-		final PropertyName propertyName = event.getPropertyName();
-		final PropertyName cellPropertyName = buildGridCellPropertyName(gridPropertyName, rowId, propertyName);
-
-		if (viewSettingPropertyNames.contains(cellPropertyName))
-		{
-			logger.trace("Skip updating the view because this property is currently updating from view: {}", cellPropertyName);
-			return;
-		}
-
-		final Object value = event.getValue();
-		view.setGridProperty(gridPropertyName, rowId, propertyName, value);
+		view.setProperty(propertyPath, value);
 	}
 
 	@Subscribe
@@ -529,18 +478,10 @@ public class WindowPresenter implements WindowViewListener
 	}
 
 	@Override
-	public ListenableFuture<Object> viewRequestValue(final PropertyName propertyName)
+	public ListenableFuture<Object> viewRequestValue(final PropertyPath propertyPath)
 	{
 		final WindowModel model = getModel();
-		final Object value = model.getPropertyOrNull(propertyName);
-		return Futures.immediateFuture(value);
-	}
-
-	@Override
-	public ListenableFuture<Object> viewRequestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName)
-	{
-		final WindowModel model = getModel();
-		final Object value = model.getGridProperty(gridPropertyName, rowId, propertyName);
+		final Object value = model.getPropertyOrNull(propertyPath);
 		return Futures.immediateFuture(value);
 	}
 
@@ -554,50 +495,50 @@ public class WindowPresenter implements WindowViewListener
 
 	public static interface PropertyValueChangedListener
 	{
-		void valueChanged(PropertyName propertyName, Object value);
+		void valueChanged(PropertyPath propertyPath, Object value);
 	}
 
-	public void addPropertyValueChangedListener(final PropertyName propertyName, PropertyValueChangedListener listener)
+	public void addPropertyValueChangedListener(final PropertyPath propertyPath, PropertyValueChangedListener listener)
 	{
-		Preconditions.checkNotNull(propertyName, "propertyName not null");
+		Preconditions.checkNotNull(propertyPath, "propertyPath not null");
 		Preconditions.checkNotNull(listener, "listener not null");
-		propertyValueChangedListeners.put(propertyName, listener);
+		propertyValueChangedListeners.put(propertyPath, listener);
 
 		final WindowModel model = getModel();
-		if (model.hasProperty(propertyName))
+		if (model.hasProperty(propertyPath))
 		{
-			final Object value = model.getProperty(propertyName);
-			listener.valueChanged(propertyName, value);
+			final Object value = model.getProperty(propertyPath);
+			listener.valueChanged(propertyPath, value);
 		}
 	}
 
-	private void firePropertyValueChangedListeners(final PropertyName propertyName, final Object value)
+	private void firePropertyValueChangedListeners(final PropertyPath propertyPath, final Object value)
 	{
-		for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyName))
+		for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyPath))
 		{
-			listener.valueChanged(propertyName, value);
+			listener.valueChanged(propertyPath, value);
 		}
 	}
 
 	private void fireAllPropertyValueChangedListeners()
 	{
-		final Set<PropertyName> propertyNames = propertyValueChangedListeners.keySet();
-		if (propertyNames.isEmpty())
+		final Set<PropertyPath> propertyPaths = propertyValueChangedListeners.keySet();
+		if (propertyPaths.isEmpty())
 		{
 			return;
 		}
 
 		final WindowModel model = getModel();
-		for (final PropertyName propertyName : propertyNames)
+		for (final PropertyPath propertyPath : propertyPaths)
 		{
-			if (!model.hasProperty(propertyName))
+			if (!model.hasProperty(propertyPath))
 			{
 				continue;
 			}
-			final Object value = model.getProperty(propertyName);
-			for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyName))
+			final Object value = model.getProperty(propertyPath);
+			for (final PropertyValueChangedListener listener : propertyValueChangedListeners.get(propertyPath))
 			{
-				listener.valueChanged(propertyName, value);
+				listener.valueChanged(propertyPath, value);
 			}
 		}
 	}
@@ -608,7 +549,7 @@ public class WindowPresenter implements WindowViewListener
 		final WindowModel model = getModel();
 		model.executeAction(actionId);
 	}
-	
+
 	@Override
 	public ActionsList viewRequestChildActions(String actionId)
 	{

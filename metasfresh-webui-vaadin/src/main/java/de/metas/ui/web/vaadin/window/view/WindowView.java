@@ -2,6 +2,7 @@ package de.metas.ui.web.vaadin.window.view;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -40,9 +41,7 @@ public interface WindowView
 
 	void setProperties(PropertyValuesDTO propertiesAsMap);
 	
-	void setProperty(PropertyName propertyName, final Object value);
-
-	void setGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
+	void setProperty(PropertyPath propertyPath, final Object value);
 
 	void gridNewRow(PropertyName gridPropertyName, Object rowId, PropertyValuesDTO rowValues);
 

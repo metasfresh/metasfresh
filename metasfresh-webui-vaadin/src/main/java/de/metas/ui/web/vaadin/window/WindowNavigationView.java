@@ -27,6 +27,7 @@ import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.action.Action;
 import de.metas.ui.web.window.model.action.ActionGroup;
 import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -99,12 +100,14 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 			assertNotDisposed();
 
 			windowPresenter = new WindowPresenter();
-			windowPresenter.addPropertyValueChangedListener(WindowConstants.PROPERTYNAME_WindowTitle, (propertyName, value) -> {
-				if (viewDisplay != null)
-				{
-					viewDisplay.setTitle(value == null ? "" : value.toString());
-				}
-			});
+			windowPresenter.addPropertyValueChangedListener(
+					PropertyPath.of(WindowConstants.PROPERTYNAME_WindowTitle) //
+					, (propertyPath, value) -> {
+						if (viewDisplay != null)
+						{
+							viewDisplay.setTitle(value == null ? "" : value.toString());
+						}
+					});
 
 			final PropertyDescriptor rootPropertyDescriptor = new VOPropertyDescriptorProvider().provideForWindow(windowId);
 			windowPresenter.setRootPropertyDescriptor(rootPropertyDescriptor);
@@ -124,7 +127,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		assertNotDisposed();
 
 		this.viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
-		if(viewDisplay != null)
+		if (viewDisplay != null)
 		{
 			viewDisplay.setMenuItemClickListener(menuItem -> onActionMenuItemClicked(menuItem));
 		}
@@ -149,7 +152,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		{
 			windowPresenter.removeActionsView(this);
 		}
-		
+
 		viewDisplay = null;
 		actions = null;
 		// setCompositionRoot(null);

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.vaadin.window.editor.EditorListener;
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -43,47 +44,25 @@ public class WindowViewListener2EditorListenerWrapper implements EditorListener
 	}
 
 	@Override
-	public void valueChange(final PropertyName propertyName, final Object value)
+	public void valueChange(final PropertyPath propertyPath, final Object value)
 	{
 		final WindowViewListener windowViewListener = getWindowViewListener();
 		if (windowViewListener == null)
 		{
 			return;
 		}
-		windowViewListener.viewPropertyChanged(propertyName, value);
+		windowViewListener.viewPropertyChanged(propertyPath, value);
 	}
 
 	@Override
-	public ListenableFuture<Object> requestValue(final PropertyName propertyName)
+	public ListenableFuture<Object> requestValue(final PropertyPath propertyPath)
 	{
 		final WindowViewListener windowViewListener = getWindowViewListener();
 		if (windowViewListener == null)
 		{
 			return Futures.immediateFuture(null);
 		}
-		return windowViewListener.viewRequestValue(propertyName);
-	}
-
-	@Override
-	public void gridValueChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
-	{
-		final WindowViewListener windowViewListener = getWindowViewListener();
-		if (windowViewListener == null)
-		{
-			return;
-		}
-		windowViewListener.viewGridPropertyChanged(gridPropertyName, rowId, propertyName, value);
-	}
-
-	@Override
-	public ListenableFuture<Object> requestGridValue(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
-	{
-		final WindowViewListener windowViewListener = getWindowViewListener();
-		if (windowViewListener == null)
-		{
-			return Futures.immediateFuture(null);
-		}
-		return windowViewListener.viewRequestGridValue(gridPropertyName, rowId, propertyName);
+		return windowViewListener.viewRequestValue(propertyPath);
 	}
 
 	@Override

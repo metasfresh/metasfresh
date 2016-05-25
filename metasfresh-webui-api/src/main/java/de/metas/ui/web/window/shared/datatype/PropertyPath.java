@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.PropertyName;
 
@@ -59,9 +60,16 @@ public final class PropertyPath implements Serializable
 			, @JsonProperty("propertyName") final PropertyName propertyName)
 	{
 		super();
+
 		this.gridPropertyName = gridPropertyName;
+
 		this.rowId = rowId;
-		this.propertyName = propertyName;
+		if (gridPropertyName != null)
+		{
+			Preconditions.checkNotNull(rowId, "rowId");
+		}
+
+		this.propertyName = Preconditions.checkNotNull(propertyName, "propertyName");
 	}
 
 	@Override
@@ -81,7 +89,7 @@ public final class PropertyPath implements Serializable
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -98,9 +106,9 @@ public final class PropertyPath implements Serializable
 		}
 
 		final PropertyPath other = (PropertyPath)obj;
-		return Objects.equals(this.gridPropertyName, other.gridPropertyName)
-				&& Objects.equals(this.rowId, other.rowId)
-				&& Objects.equals(this.propertyName, other.propertyName);
+		return Objects.equals(gridPropertyName, other.gridPropertyName)
+				&& Objects.equals(rowId, other.rowId)
+				&& Objects.equals(propertyName, other.propertyName);
 	}
 
 	public PropertyName getPropertyName()

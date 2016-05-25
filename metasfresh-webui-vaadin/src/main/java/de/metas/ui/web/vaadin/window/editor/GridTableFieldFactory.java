@@ -14,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -102,15 +103,17 @@ final class GridTableFieldFactory implements TableFieldFactory
 		}
 
 		@Override
-		public void valueChange(final PropertyName propertyName, final Object value)
+		public void valueChange(final PropertyPath propertyPath, final Object value)
 		{
-			gridValueChanged(gridPropertyName, gridRowId, propertyName, value);
+			final PropertyPath gridPropertyPath = PropertyPath.of(gridPropertyName, gridRowId, propertyPath.getPropertyName());
+			getDelegate().valueChange(gridPropertyPath, value);
 		}
 
 		@Override
-		public ListenableFuture<Object> requestValue(final PropertyName propertyName)
+		public ListenableFuture<Object> requestValue(final PropertyPath propertyPath)
 		{
-			return requestGridValue(gridPropertyName, gridRowId, propertyName);
+			final PropertyPath gridPropertyPath = PropertyPath.of(gridPropertyName, gridRowId, propertyPath.getPropertyName());
+			return getDelegate().requestValue(gridPropertyPath);
 		}
 	}
 

@@ -22,6 +22,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.LookupDataSourceServiceDTO;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -172,7 +173,8 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		{
 			if (_lookupDataSourceService == null)
 			{
-				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyName);
+				final PropertyPath valuesPropertyPath = PropertyPath.of(valuesPropertyName);
+				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyPath);
 				try
 				{
 					final Object valueObj = futureValue.get(10, TimeUnit.SECONDS);

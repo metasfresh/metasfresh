@@ -67,7 +67,7 @@ public class LocationEditor extends AbstractEditor
 				
 				if(!Objects.equals(valueOld, value))
 				{
-					listener().valueChange(propertyName, this.value);
+					listener().valueChange(getPropertyPath(), this.value);
 				}
 			}
 		}

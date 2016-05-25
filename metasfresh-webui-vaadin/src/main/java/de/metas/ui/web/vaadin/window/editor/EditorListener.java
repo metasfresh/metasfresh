@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -28,13 +29,9 @@ import de.metas.ui.web.window.PropertyName;
 
 public interface EditorListener
 {
-	void valueChange(PropertyName propertyName, Object value);
+	void valueChange(PropertyPath propertyPath, Object value);
 
-	ListenableFuture<Object> requestValue(PropertyName propertyName);
+	ListenableFuture<Object> requestValue(PropertyPath propertyPath);
 
-	void gridValueChanged(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value);
-	
 	void gridNewRow(PropertyName gridPropertyName);
-
-	ListenableFuture<Object> requestGridValue(PropertyName gridPropertyName, Object rowId, PropertyName propertyName);
 }

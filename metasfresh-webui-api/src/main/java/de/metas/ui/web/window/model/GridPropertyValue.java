@@ -149,4 +149,17 @@ public class GridPropertyValue extends ObjectPropertyValue
 
 		return row.getValue(propertyName);
 	}
+	
+	public boolean hasProperty(final Object rowIdObj, final PropertyName propertyName)
+	{
+		final GridRowId rowId = GridRowId.of(rowIdObj);
+
+		final GridRow row = rows.get(rowId);
+		if (row == null)
+		{
+			return false;
+		}
+
+		return row.hasProperty(propertyName);
+	}
 }

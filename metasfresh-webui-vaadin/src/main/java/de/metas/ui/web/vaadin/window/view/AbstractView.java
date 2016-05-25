@@ -23,6 +23,7 @@ import de.metas.ui.web.vaadin.window.editor.GridEditor;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.NullValue;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -246,7 +247,19 @@ public abstract class AbstractView implements WindowView
 	}
 
 	@Override
-	public final void setProperty(final PropertyName propertyName, Object value)
+	public void setProperty(PropertyPath propertyPath, Object value)
+	{
+		if(propertyPath.isGridProperty())
+		{
+			setGridProperty(propertyPath.getGridPropertyName(), propertyPath.getRowId(), propertyPath.getPropertyName(), value);
+		}
+		else
+		{
+			setProperty(propertyPath.getPropertyName(), value);
+		}
+	}
+	
+	private final void setProperty(final PropertyName propertyName, Object value)
 	{
 		logger.trace("Setting propery: {}={}", propertyName, value);
 		final Editor editor = getEditor(propertyName);
@@ -264,12 +277,33 @@ public abstract class AbstractView implements WindowView
 
 		editor.setValue(propertyName, value);
 	}
+	
+	private final void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, Object value)
+	{
+		logger.trace("Setting grid propery {}, {}: {}={}", gridPropertyName, rowId, propertyName, value);
+
+		final GridEditor editor = getGridEditor(gridPropertyName);
+		if (editor == null)
+		{
+			// TODO: handle missing editor
+			logger.trace("Skip setting {} because there is no editor for it", gridPropertyName);
+			return;
+		}
+
+		if (NullValue.isNull(value))
+		{
+			value = null;
+		}
+
+		editor.setValueAt(rowId, propertyName, value);
+	}
+
 
 	private Set<PropertyName> getWatchedPropertyNames()
 	{
 		return _propertyName2editor.keySet();
 	}
-
+	
 	protected final Editor getEditor(final PropertyName propertyName)
 	{
 		return _propertyName2editor.get(propertyName);
@@ -288,27 +322,6 @@ public abstract class AbstractView implements WindowView
 			return (GridEditor)editor;
 		}
 		return null;
-	}
-
-	@Override
-	public final void setGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, Object value)
-	{
-		logger.trace("Setting grid propery {}, {}: {}={}", gridPropertyName, rowId, propertyName, value);
-
-		final GridEditor editor = getGridEditor(gridPropertyName);
-		if (editor == null)
-		{
-			// TODO: handle missing editor
-			logger.trace("Skip setting {} because there is no editor for it", gridPropertyName);
-			return;
-		}
-
-		if (NullValue.isNull(value))
-		{
-			value = null;
-		}
-
-		editor.setValueAt(rowId, propertyName, value);
 	}
 
 	@Override

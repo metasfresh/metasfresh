@@ -3,7 +3,7 @@ package de.metas.ui.web.window.model.event;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -29,19 +29,19 @@ import de.metas.ui.web.window.PropertyName;
 
 public class PropertyChangedModelEvent extends ModelEvent
 {
-	public static final PropertyChangedModelEvent of(final Object model, final PropertyName propertyName, final Object value, final Object valueOld)
+	public static final PropertyChangedModelEvent of(final Object model, final PropertyPath propertyPath, final Object value, final Object valueOld)
 	{
-		return new PropertyChangedModelEvent(model, propertyName, value, valueOld);
+		return new PropertyChangedModelEvent(model, propertyPath, value, valueOld);
 	}
 
-	private final PropertyName propertyName;
+	private final PropertyPath propertyPath;
 	private final Object value;
 	private final Object valueOld;
 
-	private PropertyChangedModelEvent(final Object model, final PropertyName propertyName, final Object value, final Object valueOld)
+	private PropertyChangedModelEvent(final Object model, final PropertyPath propertyPath, final Object value, final Object valueOld)
 	{
 		super(model);
-		this.propertyName = Preconditions.checkNotNull(propertyName, "propertyName not null");
+		this.propertyPath = Preconditions.checkNotNull(propertyPath, "propertyPath not null");
 		this.value = value;
 		this.valueOld = valueOld;
 	}
@@ -50,15 +50,15 @@ public class PropertyChangedModelEvent extends ModelEvent
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("propertyName", propertyName)
+				.add("propertyPath", propertyPath)
 				.add("value", value)
 				.add("valueOld", valueOld)
 				.toString();
 	}
 
-	public PropertyName getPropertyName()
+	public PropertyPath getPropertyPath()
 	{
-		return propertyName;
+		return propertyPath;
 	}
 
 	public Object getValue()

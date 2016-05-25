@@ -18,6 +18,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
 
@@ -77,8 +78,9 @@ final class GridEditorDataContainer extends AbstractContainer
 			final GridCellProperty cell = (GridCellProperty)event.getProperty();
 			final GridRowId rowId = cell.getRowId();
 			final PropertyName propertyName = cell.getPropertyName();
+			final PropertyPath propertyPath = PropertyPath.of(gridPropertyName, rowId, propertyName);
 			final Object value = cell.getValue();
-			editorListener.gridValueChanged(gridPropertyName, rowId, propertyName, value);
+			editorListener.valueChange(propertyPath, value);
 		}
 	};
 

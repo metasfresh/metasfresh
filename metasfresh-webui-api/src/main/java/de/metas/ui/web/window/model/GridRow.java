@@ -148,4 +148,10 @@ public final class GridRow
 		final Object value = propertyValue.getValue();
 		return value;
 	}
+	
+	public boolean hasProperty(final PropertyName propertyName)
+	{
+		final PropertyValue propertyValue = propertyValues.getPropertyValueOrNull(propertyName);
+		return propertyValue != null;
+	}
 }

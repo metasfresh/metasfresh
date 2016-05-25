@@ -17,6 +17,7 @@ import com.vaadin.ui.Label;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -48,6 +49,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	
 	// Descriptors
 	private final PropertyDescriptor propertyDescriptor;
+	private final PropertyPath propertyPath;
 	private final PropertyName propertyName;
 	private final ImmutableSet<PropertyName> watchedPropertyNames;
 	
@@ -72,6 +74,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 		addStyleName(STYLE);
 		this.propertyDescriptor = propertyDescriptor;
 		this.propertyName = propertyName;
+		this.propertyPath = PropertyPath.of(propertyName);
 		
 		final ImmutableSet.Builder<PropertyName> watchedPropertyNames = ImmutableSet.builder();
 		collectWatchedPropertyNamesOnInit(watchedPropertyNames);
@@ -111,9 +114,14 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	}
 	
 	@Override
-	public Component getComponent()
+	public final Component getComponent()
 	{
 		return this;
+	}
+	
+	public final PropertyPath getPropertyPath()
+	{
+		return propertyPath;
 	}
 	
 	@Override

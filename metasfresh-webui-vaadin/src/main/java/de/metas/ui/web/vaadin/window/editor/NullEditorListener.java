@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
@@ -37,26 +38,13 @@ public final class NullEditorListener implements EditorListener
 	}
 
 	@Override
-	public void valueChange(final PropertyName propertyName, final Object value)
+	public void valueChange(final PropertyPath propertyPath, final Object value)
 	{
 		// nothing
 	}
 
 	@Override
-	public ListenableFuture<Object> requestValue(final PropertyName propertyName)
-	{
-		final Object value = null;
-		return Futures.immediateFuture(value);
-	}
-
-	@Override
-	public void gridValueChanged(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName, final Object value)
-	{
-		// nothing
-	}
-
-	@Override
-	public ListenableFuture<Object> requestGridValue(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
+	public ListenableFuture<Object> requestValue(final PropertyPath propertyPath)
 	{
 		final Object value = null;
 		return Futures.immediateFuture(value);

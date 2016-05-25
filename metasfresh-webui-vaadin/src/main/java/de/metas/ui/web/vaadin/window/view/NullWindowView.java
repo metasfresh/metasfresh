@@ -4,6 +4,7 @@ import com.vaadin.ui.Component;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /*
@@ -74,13 +75,7 @@ public class NullWindowView implements WindowView
 	}
 
 	@Override
-	public void setProperty(PropertyName propertyName, Object value)
-	{
-		// nothing
-	}
-
-	@Override
-	public void setGridProperty(PropertyName gridPropertyName, Object rowId, PropertyName propertyName, Object value)
+	public void setProperty(PropertyPath propertyPath, Object value)
 	{
 		// nothing
 	}
