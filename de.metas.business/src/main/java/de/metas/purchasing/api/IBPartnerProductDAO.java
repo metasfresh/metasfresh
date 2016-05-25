@@ -28,7 +28,6 @@ package de.metas.purchasing.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -46,18 +45,11 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * Retrieves all C_BPartner_Products for selected vendor
 	 * 
 	 * @param ctx
-	 * @param Vendor_ID
+	 * @param Vendor_ID C_BPartner_ID
 	 * @param filter
 	 * @return C_BPartner_Products for Vendor_ID
 	 */
-	List<I_C_BPartner_Product> retrieveBPartnerForProduct(Properties ctx, int Vendor_ID, IQueryFilter<org.compiere.model.I_C_BPartner_Product> filter);
-
-	/**
-	 * @param ctx
-	 * @param product
-	 * @return the current vendor of the selected product
-	 */
-	I_C_BPartner_Product getCurrentVendor(Properties ctx, I_M_Product product);
+	List<I_C_BPartner_Product> retrieveBPartnerForProduct(Properties ctx, int Vendor_ID, int productId, int orgId);
 
 	/**
 	 * Retrieves single {@link I_C_BPartner_Product} association for the given product and partner. THe association must have the given ad_Org_ID or ad_org_id = 0

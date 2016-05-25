@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -55,13 +54,17 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
 	@Override
-	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final IQueryFilter<org.compiere.model.I_C_BPartner_Product> filter)
+	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
 	{
 		// the original was using table M_Product_PO instead of C_BPartner_Product
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<org.compiere.model.I_C_BPartner_Product> queryFilters = queryBL.createCompositeQueryFilter(org.compiere.model.I_C_BPartner_Product.class);
 		queryFilters.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true);
+
+		// FRESH-334 only the BP_Products of the given org or of the org 0 are eligible
+
+		queryFilters.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
 
 		if (Vendor_ID > 0)
 		{
@@ -72,36 +75,21 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 			queryFilters.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
 		}
 
-		if (filter != null)
-		{
-			queryFilters.addFilter(filter);
-		}
+		queryFilters.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
 
 		return queryBL
 				.createQueryBuilder(org.compiere.model.I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
 				.filter(queryFilters)
+				// FRESH-334 order by orgID descending. The non 0 org has priority over *
+				.orderBy()
+				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy()
 				.create()
 				.list(I_C_BPartner_Product.class);
 	}
 
 	@Override
-	public I_C_BPartner_Product getCurrentVendor(final Properties ctx, final I_M_Product product)
-	{
-		Check.assumeNotNull(product, "product not null");
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
-
-		.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
-				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true)
-				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-
-		.create()
-				.firstOnly(I_C_BPartner_Product.class);
-	}
-
-	@Override
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final I_AD_Org organization )
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final I_AD_Org organization)
 	{
 		Check.assumeNotNull(partner, "partner not null");
 		Check.assumeNotNull(product, "product not null");
@@ -110,7 +98,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final int bpartnerId = partner.getC_BPartner_ID();
 		final int productId = product.getM_Product_ID();
 		final int orgId = organization.getAD_Org_ID();
-		
+
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId);
 	}
 
@@ -137,7 +125,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
-					.first(I_C_BPartner_Product.class);
+				.first(I_C_BPartner_Product.class);
 	}
 
 	@Override
