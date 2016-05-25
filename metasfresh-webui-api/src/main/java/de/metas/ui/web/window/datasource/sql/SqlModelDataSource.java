@@ -150,7 +150,8 @@ public class SqlModelDataSource implements ModelDataSource
 				{
 					final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
 							.build();
-					_records = retriveRecords(query).getList();
+					final List<PropertyValuesDTO> records = retriveRecords(query).getList();
+					_records = new ArrayList<>(records); // NOTE: make sure it's mutable because we want to change it on save, delete etc
 				}
 			}
 		}
