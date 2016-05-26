@@ -40,9 +40,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatsUpdaterFromInvoice;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
-import org.adempiere.invoice.async.spi.impl.AsyncBPartnerStatsInvoiceUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
 import org.adempiere.model.POWrapper;
@@ -175,9 +173,8 @@ public class SwatValidator implements ModelValidator
 		//
 		// Services
 	
-		//task FRESH-152
+		//task FRESH-152: BPartner Stats Updater
 		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());	
-		Services.registerService(IBPartnerStatsUpdaterFromInvoice.class, new AsyncBPartnerStatsInvoiceUpdater());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);
