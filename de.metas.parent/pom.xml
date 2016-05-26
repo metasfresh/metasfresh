@@ -66,6 +66,7 @@
 	<modules>
 		<module>../de.metas.reactor</module>
 		<module>../de.metas.reactor.ait</module>
+		<module>../de.metas.esb</module>
 	</modules>
 
 	<dependencyManagement>
