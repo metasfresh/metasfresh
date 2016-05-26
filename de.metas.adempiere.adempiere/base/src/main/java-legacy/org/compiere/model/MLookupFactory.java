@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -37,6 +35,9 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Create MLookups
@@ -176,6 +177,7 @@ public class MLookupFactory
 		boolean IsParent, String ValidationCode)
 	{
 		final MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID, language, ColumnName, AD_Reference_Value_ID, IsParent, -1);
+		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
 		return info;
 	}
