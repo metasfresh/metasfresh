@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.action;
+package de.metas.ui.web.window.shared.action;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public final class ActionsList implements Serializable, Iterable<Action>
 		return new ActionsList(actions);
 	}
 
-	public static final ActionsList copyOf(ActionsList actionsList)
+	public static final ActionsList copyOf(final ActionsList actionsList)
 	{
 		// NOTE: we assume it's immutable
 		return actionsList;

@@ -16,8 +16,8 @@ import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.LabelEditor;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.window.model.action.Action;
-import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.ActionsList;
 
 /*
  * #%L

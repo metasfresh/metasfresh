@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model.action;
 
+import de.metas.ui.web.window.shared.action.Action;
+
 /*
  * #%L
  * metasfresh-webui-api

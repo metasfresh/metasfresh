@@ -22,9 +22,9 @@ import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.model.action.Action;
-import de.metas.ui.web.window.model.action.ActionGroup;
-import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.ActionGroup;
+import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*

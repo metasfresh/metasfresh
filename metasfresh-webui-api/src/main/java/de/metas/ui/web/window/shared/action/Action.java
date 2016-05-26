@@ -1,4 +1,6 @@
-package de.metas.ui.web.window.model.action;
+package de.metas.ui.web.window.shared.action;
+
+import java.io.Serializable;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -35,21 +37,28 @@ import de.metas.ui.web.service.IImageProvider.IImageResource;
  * #L%
  */
 
-public class Action
+@SuppressWarnings("serial")
+public final class Action implements Serializable
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
 
+	@JsonProperty("actionId")
 	private final String actionId;
+	@JsonProperty("actionGroup")
 	private final ActionGroup actionGroup;
+	@JsonProperty("caption")
 	private final String caption;
+	@JsonProperty("icon")
 	private final IImageResource icon;
+	@JsonProperty("toolbarAction")
 	private final boolean toolbarAction;
+	@JsonProperty("providingChildActions")
 	private final boolean providingChildActions;
 
-	protected Action(final Builder builder)
+	private Action(final Builder builder)
 	{
 		super();
 		actionId = Preconditions.checkNotNull(builder.actionId, "actionId");
@@ -60,7 +69,8 @@ public class Action
 		providingChildActions = builder.providingChildActions;
 	}
 
-	protected Action(
+	/** JSON constructor */
+	private Action(
 			@JsonProperty("actionId") final String actionId //
 			, @JsonProperty("actionGroup") final ActionGroup actionGroup //
 			, @JsonProperty("caption") final String caption //

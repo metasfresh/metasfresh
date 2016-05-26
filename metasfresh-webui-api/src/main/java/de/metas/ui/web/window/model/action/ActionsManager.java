@@ -7,7 +7,10 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.service.IImageProvider.IImageResource;
-import de.metas.ui.web.window.model.action.Action.ActionEvent;
+import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.ActionGroup;
+import de.metas.ui.web.window.shared.action.ActionsList;
+import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 
 /*
  * #%L

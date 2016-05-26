@@ -1,7 +1,7 @@
 package de.metas.ui.web.vaadin.window.view;
 
-import de.metas.ui.web.window.model.action.Action;
-import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.ActionsList;
 
 /*
  * #%L

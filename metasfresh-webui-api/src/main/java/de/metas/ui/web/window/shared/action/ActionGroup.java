@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.action;
+package de.metas.ui.web.window.shared.action;
 
 import java.io.Serializable;
 
