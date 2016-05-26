@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.vaadin.window.editor.EditorListener;
-import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
@@ -65,17 +64,6 @@ public class WindowViewListener2EditorListenerWrapper implements EditorListener
 		}
 		return windowViewListener.viewRequestValue(propertyPath);
 	}
-
-	@Override
-	public void gridNewRow(final PropertyName gridPropertyName)
-	{
-		final WindowViewListener windowViewListener = getWindowViewListener();
-		if (windowViewListener == null)
-		{
-			return;
-		}
-		windowViewListener.viewGridNewRow(gridPropertyName);
-	};
 
 	@Override
 	public void executeCommand(final ViewCommand command)

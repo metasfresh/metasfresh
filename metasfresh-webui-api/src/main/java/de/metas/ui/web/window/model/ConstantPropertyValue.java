@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
@@ -134,8 +133,8 @@ public final class ConstantPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	public ListenableFuture<ViewCommandResult> executeCommand(final ModelCommand command) throws Exception
 	{
-		return ViewCommandHelper.notSupported(command, this);
+		return ModelCommandHelper.notSupported(command, this);
 	}
 }

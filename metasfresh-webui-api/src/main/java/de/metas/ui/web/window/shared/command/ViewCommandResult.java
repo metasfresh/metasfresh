@@ -2,6 +2,7 @@ package de.metas.ui.web.window.shared.command;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -31,15 +32,22 @@ import com.google.common.base.MoreObjects;
 @SuppressWarnings("serial")
 public final class ViewCommandResult implements Serializable
 {
-	public static final ViewCommandResult of(final Object resultObj)
+	@JsonCreator
+	public static final ViewCommandResult of(@JsonProperty("r") final Object resultObj)
 	{
+		if(resultObj == null)
+		{
+			return NULL;
+		}
 		return new ViewCommandResult(resultObj);
 	}
+	
+	public static final transient ViewCommandResult NULL = new ViewCommandResult(null);
 
 	@JsonProperty("r")
 	private final Object resultObj;
 
-	private ViewCommandResult(@JsonProperty("r") final Object resultObj)
+	private ViewCommandResult(final Object resultObj)
 	{
 		this.resultObj = resultObj;
 	}

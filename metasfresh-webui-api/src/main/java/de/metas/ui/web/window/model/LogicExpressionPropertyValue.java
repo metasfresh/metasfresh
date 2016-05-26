@@ -18,7 +18,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.model.PropertyNameDependenciesMap.DependencyType;
-import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
@@ -178,7 +177,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command)
+	public ListenableFuture<ViewCommandResult> executeCommand(final ModelCommand command)
 	{
 		throw new UnsupportedOperationException("Command not supported: " + command);
 	}

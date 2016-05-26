@@ -13,7 +13,6 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
-import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
@@ -197,13 +196,6 @@ public class JSONProxyWindowModel implements WindowModel
 	{
 		final SaveResult saveResult = delegate.saveRecord();
 		return testJSON(saveResult, SaveResult.class);
-	}
-
-	@Override
-	public GridRowId gridNewRow(final PropertyName gridPropertyName)
-	{
-		final GridRowId rowId = delegate.gridNewRow(testJSON(gridPropertyName, PropertyName.class));
-		return testJSON(rowId, GridRowId.class);
 	}
 
 	@Override

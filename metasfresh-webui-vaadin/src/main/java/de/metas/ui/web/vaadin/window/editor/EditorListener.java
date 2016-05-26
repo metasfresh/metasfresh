@@ -2,7 +2,6 @@ package de.metas.ui.web.vaadin.window.editor;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
@@ -34,8 +33,6 @@ public interface EditorListener
 	void valueChange(PropertyPath propertyPath, Object value);
 
 	ListenableFuture<Object> requestValue(PropertyPath propertyPath);
-
-	void gridNewRow(PropertyName gridPropertyName);
 
 	void executeCommand(ViewCommand command);
 

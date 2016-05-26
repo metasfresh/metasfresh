@@ -10,7 +10,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
+import de.metas.ui.web.window.shared.command.GridCommands;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.LazyPropertyValuesListDTO;
@@ -60,13 +61,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 		this.columnDescriptors = builder.getPropertyDescriptor().getChildPropertyDescriptors();
 	}
 
-	public GridRow newRow()
-	{
-		final PropertyValuesDTO values = PropertyValuesDTO.of();
-		return newRow(values);
-	}
-
-	public GridRow newRow(final PropertyValuesDTO values)
+	private GridRow newRow(final PropertyValuesDTO values)
 	{
 		final GridRow row = GridRow.of(columnDescriptors, values);
 		rows.put(row.getRowId(), row);
@@ -183,10 +178,27 @@ public class GridPropertyValue extends ObjectPropertyValue
 	}
 
 	@Override
-	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	public ListenableFuture<ViewCommandResult> executeCommand(final ModelCommand command) throws Exception
 	{
 		final PropertyPath propertyPath = command.getPropertyPath();
-		final PropertyValue propertyValue = getPropertyValue(propertyPath);
-		return propertyValue.executeCommand(command);
+		if (propertyPath.isGridProperty())
+		{
+			final PropertyValue propertyValue = getPropertyValue(propertyPath);
+			return propertyValue.executeCommand(command);
+		}
+		
+		final String commandId = command.getCommandId();
+		if (GridCommands.COMMAND_GridNewRow.equals(commandId))
+		{
+			final GridRow row = newRow(PropertyValuesDTO.of());
+			final GridRowId rowId = row.getRowId();
+			final PropertyValuesDTO rowValues = row.getValuesAsMap();
+			
+			command.postEvent(GridRowAddedModelEvent.of(getName(), rowId, rowValues));
+			
+			return ModelCommandHelper.noResult();
+		}
+		
+		return ModelCommandHelper.notSupported(command, this);
 	}
 }

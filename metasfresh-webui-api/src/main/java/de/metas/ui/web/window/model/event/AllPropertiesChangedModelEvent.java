@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.model.event;
 
-import com.google.common.base.MoreObjects;
-
 /*
  * #%L
  * de.metas.ui.web.vaadin
@@ -33,13 +31,6 @@ public class AllPropertiesChangedModelEvent extends ModelEvent
 
 	private AllPropertiesChangedModelEvent(final Object model)
 	{
-		super(model);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.toString();
+		super();
 	}
 }

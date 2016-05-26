@@ -15,7 +15,6 @@ import de.metas.ui.web.window.datasource.sql.SqlLazyLookupDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
-import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 
@@ -155,7 +154,7 @@ public class LookupPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	public ListenableFuture<ViewCommandResult> executeCommand(final ModelCommand command) throws Exception
 	{
 		final String commandId = command.getCommandId();
 		if (LookupDataSourceQueryCommand.COMMAND_Size.equals(commandId))
@@ -171,7 +170,7 @@ public class LookupPropertyValue implements PropertyValue
 				size = lookupDataSource.size(filter);
 			}
 
-			return ViewCommandHelper.result(size);
+			return ModelCommandHelper.result(size);
 		}
 		else if (LookupDataSourceQueryCommand.COMMAND_Find.equals(commandId))
 		{
@@ -188,11 +187,11 @@ public class LookupPropertyValue implements PropertyValue
 				entries = lookupDataSource.findEntities(filter, firstRow, pageLength);
 			}
 
-			return ViewCommandHelper.result(entries);
+			return ModelCommandHelper.result(entries);
 		}
 		else
 		{
-			return ViewCommandHelper.notSupported(command, this);
+			return ModelCommandHelper.notSupported(command, this);
 		}
 	}
 }

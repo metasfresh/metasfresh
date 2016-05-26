@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.model.event;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
@@ -40,20 +40,19 @@ public class PropertyChangedModelEvent extends ModelEvent
 
 	private PropertyChangedModelEvent(final Object model, final PropertyPath propertyPath, final Object value, final Object valueOld)
 	{
-		super(model);
+		super();
 		this.propertyPath = Preconditions.checkNotNull(propertyPath, "propertyPath not null");
 		this.value = value;
 		this.valueOld = valueOld;
 	}
 
 	@Override
-	public String toString()
+	protected void toString(ToStringHelper toStringHelper)
 	{
-		return MoreObjects.toStringHelper(this)
+		toStringHelper
 				.add("propertyPath", propertyPath)
 				.add("value", value)
-				.add("valueOld", valueOld)
-				.toString();
+				.add("valueOld", valueOld);
 	}
 
 	public PropertyPath getPropertyPath()

@@ -2,7 +2,6 @@ package de.metas.ui.web.vaadin.window.editor;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
@@ -42,12 +41,6 @@ public abstract class ForwardingEditorListener implements EditorListener
 	public ListenableFuture<Object> requestValue(final PropertyPath propertyPath)
 	{
 		return getDelegate().requestValue(propertyPath);
-	}
-
-	@Override
-	public void gridNewRow(final PropertyName gridPropertyName)
-	{
-		getDelegate().gridNewRow(gridPropertyName);
 	}
 
 	@Override

@@ -39,9 +39,6 @@ public interface WindowViewListener
 
 	/** View notified a property value has been changed */
 	void viewPropertyChanged(PropertyPath propertyPath, Object value);
-
-	
-	void viewGridNewRow(PropertyName gridPropertyName);
 	
 	/** View asked to move to next record */
 	void viewNextRecord(OnChangesFound onChangesFound);

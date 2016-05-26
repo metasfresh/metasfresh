@@ -2,7 +2,8 @@ package de.metas.ui.web.window.model.event;
 
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.base.Preconditions;
 
 /*
  * #%L
@@ -14,12 +15,12 @@ import com.google.common.base.MoreObjects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,16 +38,14 @@ public class ZoomToWindowEvent extends ModelEvent
 
 	private ZoomToWindowEvent(final Object model, final ZoomInfo zoomInfo)
 	{
-		super(model);
-		this.zoomInfo = zoomInfo;
+		super();
+		this.zoomInfo = Preconditions.checkNotNull(zoomInfo, "zoomInfo");
 	}
 
 	@Override
-	public String toString()
+	protected void toString(final ToStringHelper toStringHelper)
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("zoomInfo", zoomInfo)
-				.toString();
+		toStringHelper.add("zoomInfo", zoomInfo);
 	}
 
 	public int getWindowId()

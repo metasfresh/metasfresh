@@ -1,8 +1,8 @@
-package de.metas.ui.web.window.model.event;
+package de.metas.ui.web.window.shared.command;
 
 /*
  * #%L
- * de.metas.ui.web.vaadin
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -22,14 +22,14 @@ package de.metas.ui.web.window.model.event;
  * #L%
  */
 
-public class ConfirmDiscardChangesModelEvent extends ModelEvent
+public final class GridCommands
 {
-	public static final ConfirmDiscardChangesModelEvent of(final Object model)
-	{
-		return new ConfirmDiscardChangesModelEvent(model);
-	}
+	/**
+	 * Ask the model to create a new grid row.
+	 */
+	public static final String COMMAND_GridNewRow = "gridNewRow";
 
-	public ConfirmDiscardChangesModelEvent(Object model)
+	private GridCommands()
 	{
 		super();
 	}

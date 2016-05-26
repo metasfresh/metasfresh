@@ -15,6 +15,8 @@ import com.vaadin.ui.VerticalLayout;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.command.GridCommands;
+import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
 
@@ -61,7 +63,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	@Override
 	protected Component createPanelContent()
 	{
-		final Button btnNewRow = new Button("New", event->onNewRecord());
+		final Button btnNewRow = new Button("New", event->fireNewRecordCommand());
 		
 		final HorizontalLayout toolbarPanel = new HorizontalLayout(btnNewRow);
 		this.table = createTable();
@@ -166,9 +168,12 @@ public class GridEditor extends DocumentSectionEditorsContainer
 		containerDataSource.addItem(rowId, rowValues);
 	}
 	
-	private void onNewRecord()
+	private void fireNewRecordCommand()
 	{
-		getEditorListener().gridNewRow(getPropertyName());
+		getEditorListener().executeCommand(ViewCommand.builder()
+				.setPropertyPath(getPropertyPath())
+				.setCommandId(GridCommands.COMMAND_GridNewRow)
+				.build());
 	}
 
 }

@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.model.event;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+
 /*
  * #%L
  * de.metas.ui.web.vaadin
@@ -30,19 +33,20 @@ package de.metas.ui.web.window.model.event;
  */
 public abstract class ModelEvent
 {
-	private final Object model;
-
-	protected ModelEvent(final Object model)
+	protected ModelEvent()
 	{
 		super();
-		this.model = model;
 	}
 
-	/**
-	 * @return source model which triggered the event
-	 */
-	public final Object getModel()
+	@Override
+	public final String toString()
 	{
-		return model;
+		final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
+		return toStringHelper.toString();
+	}
+
+	protected void toString(final ToStringHelper toStringHelper)
+	{
+		// nothing on this level
 	}
 }

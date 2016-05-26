@@ -6,7 +6,6 @@ import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
@@ -31,14 +30,14 @@ import de.metas.ui.web.window.shared.command.ViewCommandResult;
  * #L%
  */
 
-final class ViewCommandHelper
+final class ModelCommandHelper
 {
-	public static ListenableFuture<ViewCommandResult> notSupported(final ViewCommand command, final PropertyValue propertyValue)
+	public static ListenableFuture<ViewCommandResult> notSupported(final ModelCommand command, final PropertyValue propertyValue)
 	{
 		return Futures.immediateFailedCheckedFuture(new UnsupportedOperationException("Command " + command + " not supported by " + propertyValue));
 	}
 
-	public static ListenableFuture<ViewCommandResult> error(final String message, final ViewCommand command, final PropertyValue propertyValue)
+	public static ListenableFuture<ViewCommandResult> error(final String message, final ModelCommand command, final PropertyValue propertyValue)
 	{
 		return Futures.immediateFailedCheckedFuture(new RuntimeException("Error while executing " + command + " on " + propertyValue + ": " + message));
 	}
@@ -46,6 +45,11 @@ final class ViewCommandHelper
 	public static ListenableFuture<ViewCommandResult> result(final Object resultObj)
 	{
 		return Futures.immediateFuture(ViewCommandResult.of(resultObj));
+	}
+	
+	public static ListenableFuture<ViewCommandResult> noResult()
+	{
+		return Futures.immediateFuture(ViewCommandResult.of(null));
 	}
 
 	public static ViewCommandResult extractResult(final ListenableFuture<ViewCommandResult> futureResult)
@@ -61,7 +65,7 @@ final class ViewCommandHelper
 
 	}
 
-	private ViewCommandHelper()
+	private ModelCommandHelper()
 	{
 		super();
 	}

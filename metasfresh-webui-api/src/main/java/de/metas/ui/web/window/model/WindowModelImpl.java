@@ -41,13 +41,11 @@ import de.metas.ui.web.window.model.action.ActionGroup;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.model.action.ActionsManager;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.model.event.ModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
-import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
@@ -536,25 +534,6 @@ public class WindowModelImpl implements WindowModel
 	}
 
 	@Override
-	public GridRowId gridNewRow(final PropertyName gridPropertyName)
-	{
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue grid = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
-		if (grid == null)
-		{
-			throw new IllegalArgumentException("No such grid property found for " + gridPropertyName);
-		}
-
-		final GridRow row = grid.newRow(PropertyValuesDTO.of());
-		final GridRowId rowId = row.getRowId();
-		final PropertyValuesDTO rowValues = row.getValuesAsMap();
-
-		postEvent(GridRowAddedModelEvent.of(this, gridPropertyName, rowId, rowValues));
-
-		return rowId;
-	}
-
-	@Override
 	public PropertyValuesDTO getPropertyValuesDTO(final Set<PropertyName> selectedPropertyNames)
 	{
 		if (selectedPropertyNames.isEmpty())
@@ -799,9 +778,9 @@ public class WindowModelImpl implements WindowModel
 	}
 
 	@Override
-	public ViewCommandResult executeCommand(final ViewCommand command) throws Exception
+	public ViewCommandResult executeCommand(final ViewCommand viewCommand) throws Exception
 	{
-		final PropertyPath propertyPath = command.getPropertyPath();
+		final PropertyPath propertyPath = viewCommand.getPropertyPath();
 		final PropertyValueCollection properties = getPropertiesLoaded();
 		final PropertyValue propertyValue;
 		if (propertyPath.isGridProperty())
@@ -813,7 +792,63 @@ public class WindowModelImpl implements WindowModel
 			propertyValue = properties.getPropertyValue(propertyPath.getPropertyName());
 		}
 
-		final ListenableFuture<ViewCommandResult> futureResult = propertyValue.executeCommand(command);
-		return ViewCommandHelper.extractResult(futureResult);
+		final ModelCommand modelCommand = new ModelCommandImpl(viewCommand);
+		final ListenableFuture<ViewCommandResult> futureResult = propertyValue.executeCommand(modelCommand);
+		return ModelCommandHelper.extractResult(futureResult);
+	}
+
+	private final class ModelCommandImpl implements ModelCommand
+	{
+		private final ViewCommand viewCommand;
+
+		private ModelCommandImpl(final ViewCommand viewCommand)
+		{
+			super();
+			this.viewCommand = viewCommand;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("viewCommand", viewCommand)
+					.toString();
+		}
+
+		@Override
+		public PropertyPath getPropertyPath()
+		{
+			return viewCommand.getPropertyPath();
+		}
+
+		@Override
+		public String getCommandId()
+		{
+			return viewCommand.getCommandId();
+		}
+
+		@Override
+		public <PT> PT getParameter(final String parameterName)
+		{
+			return viewCommand.getParameter(parameterName);
+		}
+
+		@Override
+		public int getParameterAsInt(final String parameterName, final int defaultValue)
+		{
+			return viewCommand.getParameterAsInt(parameterName, defaultValue);
+		}
+
+		@Override
+		public String getParameterAsString(final String parameterName)
+		{
+			return viewCommand.getParameterAsString(parameterName);
+		}
+
+		@Override
+		public <ET extends ModelEvent> void postEvent(final ET event)
+		{
+			WindowModelImpl.this.postEvent(event);
+		}
 	}
 }

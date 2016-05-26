@@ -9,7 +9,6 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
-import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
@@ -70,14 +69,6 @@ public interface WindowModel
 	void newRecordAsCopyById(Object recordId);
 
 	SaveResult saveRecord();
-
-	/**
-	 * Ask the model to create a new grid row.
-	 *
-	 * @param gridPropertyName
-	 * @return the ID of newly created now
-	 */
-	GridRowId gridNewRow(PropertyName gridPropertyName);
 
 	ActionsList getActions();
 

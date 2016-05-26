@@ -21,7 +21,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datasource.LookupDataSource;
-import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
@@ -298,8 +297,8 @@ public class ObjectPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	public ListenableFuture<ViewCommandResult> executeCommand(final ModelCommand command) throws Exception
 	{
-		return ViewCommandHelper.notSupported(command, this);
+		return ModelCommandHelper.notSupported(command, this);
 	}
 }

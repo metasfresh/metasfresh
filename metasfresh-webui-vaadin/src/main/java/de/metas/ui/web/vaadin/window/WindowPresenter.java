@@ -337,12 +337,6 @@ public class WindowPresenter implements WindowViewListener
 		}
 	}
 
-	@Override
-	public void viewGridNewRow(final PropertyName gridPropertyName)
-	{
-		updateModel(model -> model.gridNewRow(gridPropertyName));
-	}
-
 	private final UI getUI()
 	{
 		final WindowView view = getView();
@@ -579,20 +573,29 @@ public class WindowPresenter implements WindowViewListener
 			}
 			catch (final Exception ex)
 			{
+				if (callback == null)
+				{
+					throw Throwables.propagate(ex);
+				}
+
 				callback.onError(ex);
 				return;
 			}
 
-			try
+			if (callback != null)
 			{
-				callback.onResult(command, result);
-			}
-			catch (final Exception e)
-			{
-				logger.error("Failed while setting the result {} to {} for {}", result, callback, command);
-				throw Throwables.propagate(e);
+				try
+				{
+					callback.onResult(command, result);
+				}
+				catch (final Exception e)
+				{
+					logger.error("Failed while setting the result {} to {} for {}", result, callback, command);
+					throw Throwables.propagate(e);
+				}
 			}
 		});
+
 	}
 
 }

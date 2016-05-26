@@ -1,8 +1,11 @@
-package de.metas.ui.web.window.model.event;
+package de.metas.ui.web.window.model;
+
+import de.metas.ui.web.window.model.event.ModelEvent;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
  * #%L
- * de.metas.ui.web.vaadin
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -22,15 +25,17 @@ package de.metas.ui.web.window.model.event;
  * #L%
  */
 
-public class ConfirmDiscardChangesModelEvent extends ModelEvent
+public interface ModelCommand
 {
-	public static final ConfirmDiscardChangesModelEvent of(final Object model)
-	{
-		return new ConfirmDiscardChangesModelEvent(model);
-	}
+	PropertyPath getPropertyPath();
 
-	public ConfirmDiscardChangesModelEvent(Object model)
-	{
-		super();
-	}
+	String getCommandId();
+
+	<PT> PT getParameter(String parameterName);
+
+	int getParameterAsInt(String parameterName, int defaultValue);
+
+	public String getParameterAsString(String parameterName);
+
+	<ET extends ModelEvent> void postEvent(ET event);
 }
