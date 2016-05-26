@@ -1,16 +1,18 @@
 package de.metas.ui.web.window.model.action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.service.IImageProvider.IImageResource;
 import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window.shared.action.ActionGroup;
 import de.metas.ui.web.window.shared.action.ActionsList;
-import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 
 /*
  * #%L
@@ -41,15 +43,22 @@ public class ActionsManager
 		return new ActionsManager();
 	}
 
-	private final Map<String, Action> _actions = new LinkedHashMap<>();
-	private final Map<String, Action.Listener> _actionListeners = new HashMap<>();
+	private final List<Action> actionsList = new ArrayList<>();
+	private ActionsList _actionsListImmutable; // lazy/cached
 
-	private final Map<String, ActionsManagerProvider> _actionsManagerProviders = new HashMap<>();
-	private final Map<String, ActionsManager> _childActionsManagers = new HashMap<>();
+	private final Map<String, ActionInstance> _actions = new HashMap<>();
 
 	private ActionsManager()
 	{
 		super();
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("actions", actionsList)
+				.toString();
 	}
 
 	public ActionBuilder newAction()
@@ -78,37 +87,48 @@ public class ActionsManager
 
 	public ActionsManager addAction(final Action action)
 	{
-		final String actionId = action.getActionId();
-		_actions.put(actionId, action);
+		Preconditions.checkNotNull(action, "action not null");
+
+		if (actionsList.contains(action))
+		{
+			return this;
+		}
+
+		actionsList.add(action);
+
+		final ActionInstance actionInstance = new ActionInstance(action);
+		_actions.put(actionInstance.getActionId(), actionInstance);
+
+		_actionsListImmutable = null; // reset cache
 
 		return this;
 	}
 
+	private ActionInstance getActionInstance(final String actionId)
+	{
+		final ActionInstance actionInstance = getActionInstanceOrNull(actionId);
+		if (actionInstance == null)
+		{
+			throw new IllegalArgumentException("No action found for ID=" + actionId);
+		}
+		return actionInstance;
+	}
+
+	private ActionInstance getActionInstanceOrNull(final String actionId)
+	{
+		return _actions.get(actionId);
+	}
+
 	public ActionsManager setListener(final String actionId, final Action.Listener actionListener)
 	{
-		_actionListeners.put(actionId, actionListener);
+		getActionInstance(actionId).setListener(actionListener);
 		return this;
 	}
 
 	public ActionsManager setProvider(final String actionId, final ActionsManagerProvider actionProvider)
 	{
-		_actionsManagerProviders.put(actionId, actionProvider);
+		getActionInstance(actionId).setProvider(actionProvider);
 		return this;
-	}
-
-	private Action getActionOrNull(final String actionId)
-	{
-		return _actions.get(actionId);
-	}
-
-	private Action getAction(final String actionId)
-	{
-		final Action action = getActionOrNull(actionId);
-		if (action == null)
-		{
-			throw new IllegalArgumentException("No action found for ID=" + actionId);
-		}
-		return action;
 	}
 
 	public void executeAction(final String actionId, final Object target)
@@ -124,27 +144,33 @@ public class ActionsManager
 
 	private void executeActionNow(final String actionId, final Object target)
 	{
-		final Action action = getAction(actionId);
-		final Action.Listener actionListener = _actionListeners.get(actionId);
+		final ActionInstance actionInstance = getActionInstance(actionId);
+		final Action.Listener actionListener = actionInstance.getListener();
 		if (actionListener != null)
 		{
-			actionListener.handleAction(ActionEvent.of(action, target));
+			actionListener.handleAction(ActionEvent.of(actionInstance.getAction(), target));
 		}
 		else
 		{
-			throw new UnsupportedOperationException("Unsupported action: " + action);
+			throw new UnsupportedOperationException("Unsupported action: " + actionInstance);
 		}
 	}
 
 	private ActionsManager findActionsManager(final String actionId)
 	{
-		if (getActionOrNull(actionId) != null)
+		if (getActionInstanceOrNull(actionId) != null)
 		{
 			return this;
 		}
 
-		for (final ActionsManager childActionManager : _childActionsManagers.values())
+		for (final ActionInstance actionInstance : _actions.values())
 		{
+			final ActionsManager childActionManager = actionInstance.getChildActionsManager();
+			if (childActionManager == null)
+			{
+				continue;
+			}
+
 			final ActionsManager actionManager = childActionManager.findActionsManager(actionId);
 			if (actionManager != null)
 			{
@@ -157,23 +183,93 @@ public class ActionsManager
 
 	public ActionsList getActionsList()
 	{
-		return ActionsList.of(ImmutableList.copyOf(_actions.values()));
+		if (_actionsListImmutable == null)
+		{
+			_actionsListImmutable = ActionsList.of(actionsList);
+		}
+		return _actionsListImmutable;
 	}
 
 	public ActionsList getChildActions(final String parentActionId)
 	{
-		final ActionsManagerProvider provider = _actionsManagerProviders.get(parentActionId);
+		final ActionInstance actionInstance = getActionInstance(parentActionId);
+		final ActionsManagerProvider provider = actionInstance.getProvider();
 		if (provider == null)
 		{
 			throw new IllegalArgumentException("No children provider found for " + parentActionId);
 		}
 
-		final Action parentAction = getAction(parentActionId);
+		final ActionInstance parentActionInstance = getActionInstance(parentActionId);
 
-		final ActionsManager childActionsManager = provider.provideActionsManager(parentAction);
-		_childActionsManagers.put(parentActionId, childActionsManager);
+		final ActionsManager childActionsManager = provider.provideActionsManager(parentActionInstance.getAction());
+		actionInstance.setChildActionsManager(childActionsManager);
 
 		return childActionsManager.getActionsList();
+	}
+
+	private static final class ActionInstance
+	{
+		private final Action action;
+		private Action.Listener listener;
+		private ActionsManagerProvider provider;
+		private ActionsManager childActionsManager;
+
+		private ActionInstance(final Action action)
+		{
+			super();
+			this.action = action;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("action", action)
+					.add("listener", listener)
+					.add("provider", provider)
+					.toString();
+		}
+
+		public String getActionId()
+		{
+			return action.getActionId();
+		}
+
+		public Action getAction()
+		{
+			return action;
+		}
+
+		public void setListener(final Action.Listener listener)
+		{
+			this.listener = listener;
+		}
+
+		public Action.Listener getListener()
+		{
+			return listener;
+		}
+
+		public void setProvider(final ActionsManagerProvider provider)
+		{
+			this.provider = provider;
+		}
+
+		public ActionsManagerProvider getProvider()
+		{
+			return provider;
+		}
+
+		public void setChildActionsManager(final ActionsManager childActionsManager)
+		{
+			this.childActionsManager = childActionsManager;
+		}
+
+		public ActionsManager getChildActionsManager()
+		{
+			return childActionsManager;
+		}
 	}
 
 	public final class ActionBuilder extends Action.Builder
@@ -272,6 +368,5 @@ public class ActionsManager
 			super.setToolbarAction(toolbarAction);
 			return this;
 		}
-
 	}
 }
