@@ -8,7 +8,7 @@ import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.VerticalLayout;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ public class WindowContentRootEditorsContainer extends EditorsContainer
 
 	private final List<Editor> editors = new ArrayList<>();
 
-	public WindowContentRootEditorsContainer(final PropertyDescriptor rootPropertyDescriptor)
+	public WindowContentRootEditorsContainer(final ViewPropertyDescriptor rootPropertyDescriptor)
 	{
 		super(rootPropertyDescriptor);
 

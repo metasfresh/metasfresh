@@ -14,11 +14,11 @@ import com.vaadin.ui.VerticalLayout;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.command.GridCommands;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	private Table table;
 
 
-	public GridEditor(final PropertyDescriptor propertyDescriptor)
+	public GridEditor(final ViewPropertyDescriptor propertyDescriptor)
 	{
 		super(propertyDescriptor);
 
@@ -75,7 +75,7 @@ public class GridEditor extends DocumentSectionEditorsContainer
 	
 	final Table createTable()
 	{
-		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		final ViewPropertyDescriptor propertyDescriptor = getPropertyDescriptor();
 		fieldFactory = new GridTableFieldFactory(propertyDescriptor);
 		containerDataSource = new GridEditorDataContainer(propertyDescriptor);
 

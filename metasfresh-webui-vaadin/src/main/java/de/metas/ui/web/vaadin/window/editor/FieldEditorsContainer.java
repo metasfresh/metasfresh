@@ -12,8 +12,8 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -51,7 +51,7 @@ public class FieldEditorsContainer extends DocumentSectionEditorsContainer
 
 	private final Map<PropertyName, Editor> childEditors = new LinkedHashMap<>();
 
-	public FieldEditorsContainer(final PropertyDescriptor descriptor)
+	public FieldEditorsContainer(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}

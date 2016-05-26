@@ -9,12 +9,12 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -115,17 +115,21 @@ public class JSONProxyWindowModel implements WindowModel
 	}
 
 	@Override
-	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	public void setRootPropertyDescriptorFromWindow(int windowId)
 	{
-		// TODO
-		delegate.setRootPropertyDescriptor(rootPropertyDescriptor);
-		// delegate.setRootPropertyDescriptor(testJSON(rootPropertyDescriptor, PropertyDescriptor.class));
+		delegate.setRootPropertyDescriptorFromWindow(windowId);
+	}
+	
+	@Override
+	public ViewPropertyDescriptor getViewRootPropertyDescriptor()
+	{
+		final ViewPropertyDescriptor viewRootPropertyDescriptor = delegate.getViewRootPropertyDescriptor();
+		return testJSON(viewRootPropertyDescriptor, ViewPropertyDescriptor.class);
 	}
 
 	@Override
 	public boolean hasPreviousRecord()
 	{
-		// TODO
 		return delegate.hasPreviousRecord();
 	}
 
@@ -138,7 +142,6 @@ public class JSONProxyWindowModel implements WindowModel
 	@Override
 	public boolean hasNextRecord()
 	{
-		// TODO
 		return delegate.hasNextRecord();
 	}
 
@@ -158,7 +161,6 @@ public class JSONProxyWindowModel implements WindowModel
 	@Override
 	public boolean hasProperty(final PropertyPath propertyPath)
 	{
-		// TODO
 		return delegate.hasProperty(testJSON(propertyPath, PropertyPath.class));
 	}
 

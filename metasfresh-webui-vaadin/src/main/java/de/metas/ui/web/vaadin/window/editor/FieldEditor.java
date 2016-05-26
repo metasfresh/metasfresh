@@ -22,7 +22,7 @@ import com.vaadin.ui.Label;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -62,7 +62,7 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 //	private boolean mandatory = false;
 	private boolean displayed = true;
 
-	public FieldEditor(final PropertyDescriptor descriptor)
+	public FieldEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 		addStyleName(STYLE_Field);

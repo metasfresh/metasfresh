@@ -9,10 +9,10 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeListener;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -45,14 +45,14 @@ final class GridRowItem implements Item, Property.ValueChangeNotifier
 	private final Map<PropertyName, GridCellProperty> propertyName2cell;
 	
 
-	GridRowItem(final GridRowId rowId, final Map<PropertyName, PropertyDescriptor> cellDescriptors)
+	GridRowItem(final GridRowId rowId, final Map<PropertyName, ViewPropertyDescriptor> cellDescriptors)
 	{
 		super();
 		this.rowId = rowId;
 
 		final ImmutableMap.Builder<PropertyName, GridCellProperty> cellsBuilder = ImmutableMap.<PropertyName, GridCellProperty> builder();
 		final ImmutableMap.Builder<PropertyName, GridCellProperty> propertyName2cellBuilder = ImmutableMap.<PropertyName, GridCellProperty> builder();
-		for (final PropertyDescriptor cellDescriptor : cellDescriptors.values())
+		for (final ViewPropertyDescriptor cellDescriptor : cellDescriptors.values())
 		{
 			final GridCellProperty cell = new GridCellProperty(rowId, cellDescriptor);
 			

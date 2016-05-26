@@ -7,7 +7,7 @@ import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 @SuppressWarnings("serial")
 public class TextEditor extends FieldEditor<String>
 {
-	public TextEditor(final PropertyDescriptor descriptor)
+	public TextEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}
@@ -43,7 +43,7 @@ public class TextEditor extends FieldEditor<String>
 	protected AbstractField<String> createValueField()
 	{
 		final AbstractTextField valueField;
-		final int displayType = getPropertyDescriptor().getSqlDisplayType();
+		final int displayType = getPropertyDescriptor().getDisplayType();
 		if (displayType == DisplayType.TextLong || displayType == DisplayType.Memo || displayType == DisplayType.Text)
 		{
 			valueField = new TextArea();

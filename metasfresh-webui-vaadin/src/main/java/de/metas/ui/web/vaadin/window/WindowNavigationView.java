@@ -22,8 +22,6 @@ import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.action.Action;
 import de.metas.ui.web.window.model.action.ActionGroup;
 import de.metas.ui.web.window.model.action.ActionsList;
@@ -109,8 +107,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 						}
 					});
 
-			final PropertyDescriptor rootPropertyDescriptor = new VOPropertyDescriptorProvider().provideForWindow(windowId);
-			windowPresenter.setRootPropertyDescriptor(rootPropertyDescriptor);
+			windowPresenter.setRootPropertyDescriptorFromWindow(windowId);
 		}
 
 		return windowPresenter;

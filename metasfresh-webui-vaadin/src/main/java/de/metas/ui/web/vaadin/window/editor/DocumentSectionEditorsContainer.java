@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Panel;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -43,7 +43,7 @@ public abstract class DocumentSectionEditorsContainer extends EditorsContainer
 	private final Panel panel;
 	private final Component content;
 
-	public DocumentSectionEditorsContainer(final PropertyDescriptor descriptor)
+	public DocumentSectionEditorsContainer(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 		addStyleName(STYLE);

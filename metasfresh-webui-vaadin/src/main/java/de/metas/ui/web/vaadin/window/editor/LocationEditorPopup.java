@@ -11,9 +11,8 @@ import de.metas.ui.web.Application;
 import de.metas.ui.web.service.ILocationService;
 import de.metas.ui.web.vaadin.window.WindowPresenter;
 import de.metas.ui.web.vaadin.window.view.EditorView;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datasource.SaveResult;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.WindowModel;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 
@@ -67,13 +66,11 @@ public class LocationEditorPopup extends Window
 
 		this.lookupValue = lookupValue;
 
-		final PropertyDescriptor locationPropertyDescriptor = new VOPropertyDescriptorProvider().provideForWindow(121); // FIXME: hardcoded
-
 		this.locationPresenter = new WindowPresenter();
 
 		final EditorView locationView = new EditorView();
 		locationPresenter.setView(locationView);
-		locationPresenter.setRootPropertyDescriptor(locationPropertyDescriptor);
+		locationPresenter.setRootPropertyDescriptorFromWindow(WindowConstants.AD_WINDOW_ID_Location);
 
 		final WindowModel locationModel = locationPresenter.getModel();
 		locationModel.newRecordAsCopyById(lookupValue == null ? null : lookupValue.getId());

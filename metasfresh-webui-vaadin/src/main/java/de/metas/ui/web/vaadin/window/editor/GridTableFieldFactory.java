@@ -12,10 +12,10 @@ import com.vaadin.ui.TableFieldFactory;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -45,23 +45,23 @@ final class GridTableFieldFactory implements TableFieldFactory
 	private static final Logger logger = LogManager.getLogger(GridTableFieldFactory.class);
 
 	private final PropertyName gridPropertyName;
-	private final Map<PropertyName, PropertyDescriptor> descriptors;
+	private final Map<PropertyName, ViewPropertyDescriptor> descriptors;
 	private final EditorFactory editorsFactory = new EditorFactory();
 
 	private EditorListener editorListener = NullEditorListener.instance;
 
-	public GridTableFieldFactory(final PropertyDescriptor propertyDescriptor)
+	public GridTableFieldFactory(final ViewPropertyDescriptor propertyDescriptor)
 	{
 		super();
 		gridPropertyName = propertyDescriptor.getPropertyName();
-		descriptors = propertyDescriptor.getChildPropertyDescriptorsAsMap();
+		descriptors = propertyDescriptor.getChildDescriptors();
 	}
 
 	@Override
 	public Field<?> createField(final Container container, final Object itemId, final Object propertyId, final Component uiContext)
 	{
 		final PropertyName propertyName = PropertyName.cast(propertyId);
-		final PropertyDescriptor propertyDescriptor = descriptors.get(propertyName);
+		final ViewPropertyDescriptor propertyDescriptor = descriptors.get(propertyName);
 		if (propertyDescriptor == null)
 		{
 			logger.warn("No descriptor found for {}", propertyName);

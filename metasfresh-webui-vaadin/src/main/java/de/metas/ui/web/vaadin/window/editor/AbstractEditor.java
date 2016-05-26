@@ -15,9 +15,9 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	protected static final String STYLE_ValueField = "mf-editor-value";
 	
 	// Descriptors
-	private final PropertyDescriptor propertyDescriptor;
+	private final ViewPropertyDescriptor propertyDescriptor;
 	private final PropertyPath propertyPath;
 	private final PropertyName propertyName;
 	private final ImmutableSet<PropertyName> watchedPropertyNames;
@@ -63,12 +63,12 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 		this(propertyName, null);
 	}
 	
-	public AbstractEditor(final PropertyDescriptor propertyDescriptor)
+	public AbstractEditor(final ViewPropertyDescriptor propertyDescriptor)
 	{
 		this(propertyDescriptor.getPropertyName(), propertyDescriptor);
 	}
 
-	private AbstractEditor(final PropertyName propertyName, final PropertyDescriptor propertyDescriptor)
+	private AbstractEditor(final PropertyName propertyName, final ViewPropertyDescriptor propertyDescriptor)
 	{
 		super();
 		addStyleName(STYLE);
@@ -136,7 +136,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 		return watchedPropertyNames;
 	}
 	
-	protected final PropertyDescriptor getPropertyDescriptor()
+	protected final ViewPropertyDescriptor getPropertyDescriptor()
 	{
 		return propertyDescriptor;
 	}
@@ -144,7 +144,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	@Override
 	public final String getCaption()
 	{
-		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		final ViewPropertyDescriptor propertyDescriptor = getPropertyDescriptor();
 		if(propertyDescriptor != null)
 		{
 			return propertyDescriptor.getCaption();
@@ -161,7 +161,7 @@ public abstract class AbstractEditor extends CustomComponent implements Editor
 	@Override
 	public final PropertyLayoutInfo getLayoutInfo()
 	{
-		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
+		final ViewPropertyDescriptor propertyDescriptor = getPropertyDescriptor();
 		return propertyDescriptor == null ? PropertyLayoutInfo.DEFAULT : propertyDescriptor.getLayoutInfo();
 	}
 	

@@ -10,10 +10,10 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 public class EditorFactory
 {
-	public Editor createEditor(final PropertyDescriptor descriptor)
+	public Editor createEditor(final ViewPropertyDescriptor descriptor)
 	{
 		if (descriptor.getType() == PropertyDescriptorType.Tabular)
 		{
@@ -59,15 +59,15 @@ public class EditorFactory
 		}
 	}
 
-	private EditorsContainer createEditorContainer(final PropertyDescriptor descriptor)
+	private EditorsContainer createEditorContainer(final ViewPropertyDescriptor descriptor)
 	{
 		return new FieldEditorsContainer(descriptor);
 	}
 
-	private Editor createValueEditor(final PropertyDescriptor descriptor)
+	private Editor createValueEditor(final ViewPropertyDescriptor descriptor)
 	{
 		final Class<?> valueType = descriptor.getValueType();
-		final int displayType = descriptor.getSqlDisplayType();
+		final int displayType = descriptor.getDisplayType();
 
 		if (String.class.equals(valueType))
 		{
@@ -109,14 +109,14 @@ public class EditorFactory
 		}
 	}
 	
-	public Editor createEditorsRecursivelly(final PropertyDescriptor descriptor)
+	public Editor createEditorsRecursivelly(final ViewPropertyDescriptor descriptor)
 	{
 		Preconditions.checkNotNull(descriptor, "descriptor");
 		final Editor editor = createEditor(descriptor);
 
 		if (editor.isAddingChildEditorsAllowed())
 		{
-			for (final PropertyDescriptor childDescriptor : descriptor.getChildPropertyDescriptors())
+			for (final ViewPropertyDescriptor childDescriptor : descriptor.getChildDescriptorsList())
 			{
 				final Editor childEditor = createEditorsRecursivelly(childDescriptor);
 				editor.addChildEditor(childEditor);

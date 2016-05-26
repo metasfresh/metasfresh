@@ -28,7 +28,6 @@ import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.JSONProxyWindowModel;
 import de.metas.ui.web.window.model.WindowModel;
 import de.metas.ui.web.window.model.WindowModelImpl;
@@ -93,7 +92,7 @@ public class WindowPresenter implements WindowViewListener
 		setView(_view, null);
 	}
 
-	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	public void setRootPropertyDescriptorFromWindow(final int windowId)
 	{
 		final WindowModel model = getModel();
 		final WindowView view = getView();
@@ -105,11 +104,11 @@ public class WindowPresenter implements WindowViewListener
 
 		//
 		// Set root property descriptor to model and view
+		model.setRootPropertyDescriptorFromWindow(windowId);
 		if (view != null)
 		{
-			view.setRootPropertyDescriptor(rootPropertyDescriptor);
+			view.setRootPropertyDescriptor(model.getViewRootPropertyDescriptor());
 		}
-		model.setRootPropertyDescriptor(rootPropertyDescriptor);
 
 		//
 		// Register back all listeners

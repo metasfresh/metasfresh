@@ -18,13 +18,13 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -59,7 +59,7 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	private final int pageLength = LookupDataSourceQueryCommand.DEFAULT_PageLength;
 	private ComboDataSource _comboDataSource;
 
-	public SearchLookupValueEditor(final PropertyDescriptor descriptor)
+	public SearchLookupValueEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}

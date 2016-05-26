@@ -6,7 +6,7 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 @SuppressWarnings("serial")
 public class CheckboxEditor extends FieldEditor<Boolean>
 {
-	public CheckboxEditor(PropertyDescriptor descriptor)
+	public CheckboxEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}

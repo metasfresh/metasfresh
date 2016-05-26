@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
@@ -19,6 +18,7 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -42,8 +42,7 @@ import de.metas.ui.web.window.shared.datatype.LookupValue;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class PropertyDescriptor implements Serializable
+public final class PropertyDescriptor
 {
 	public static final Builder builder()
 	{
@@ -57,7 +56,7 @@ public class PropertyDescriptor implements Serializable
 	private final Class<?> valueType;
 	private final String composedValuePartName;
 	private final ImmutableMap<PropertyName, PropertyDescriptor> childPropertyDescriptors;
-	private Set<PropertyName> _allPropertyNames; // lazy
+	private transient Set<PropertyName> _allPropertyNames; // lazy
 	private final String caption;
 	private final IStringExpression defaultValueExpression;
 
@@ -82,6 +81,8 @@ public class PropertyDescriptor implements Serializable
 	private final int sqlDisplayType;
 	private final SqlLookupDescriptor sqlLookupDescriptor;
 	private final boolean readOnlyForUser;
+	
+	private ViewPropertyDescriptor _viewPropertyDescriptor; // lazy
 
 	public PropertyDescriptor(final Builder builder)
 	{
@@ -279,6 +280,35 @@ public class PropertyDescriptor implements Serializable
 		return false;
 	}
 
+	public ViewPropertyDescriptor toViewPropertyDescriptor()
+	{
+		if(_viewPropertyDescriptor == null)
+		{
+			final ViewPropertyDescriptor.Builder builder = ViewPropertyDescriptor.builder()
+					.setPropertyName(getPropertyName())
+					.setCaption(getCaption())
+					.setType(getType())
+					.setValueType(getValueType())
+					.setDisplayType(getSqlDisplayType())
+					.setLayoutInfo(getLayoutInfo());
+			
+			for (final Map.Entry<PropertyName, PropertyDescriptor> e : getChildPropertyDescriptorsAsMap().entrySet())
+			{
+				final PropertyDescriptor childModelDescriptor = e.getValue();
+				final ViewPropertyDescriptor childViewDescriptor = childModelDescriptor.toViewPropertyDescriptor();
+				builder.addChildDescriptor(childViewDescriptor);
+			}
+
+			_viewPropertyDescriptor = builder.build();
+		}
+		return _viewPropertyDescriptor;
+	}
+	
+	
+	
+	
+	
+	
 	public static final class Builder
 	{
 		private PropertyName propertyName;

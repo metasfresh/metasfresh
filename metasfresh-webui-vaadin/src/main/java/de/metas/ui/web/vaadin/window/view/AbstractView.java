@@ -21,10 +21,10 @@ import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.EditorFactory;
 import de.metas.ui.web.vaadin.window.editor.GridEditor;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -162,7 +162,7 @@ public abstract class AbstractView implements WindowView
 	}
 
 	@Override
-	public final void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	public final void setRootPropertyDescriptor(final ViewPropertyDescriptor rootPropertyDescriptor)
 	{
 		//
 		// Create all editors recursively

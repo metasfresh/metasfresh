@@ -3,7 +3,7 @@ package de.metas.ui.web.vaadin.window.editor;
 import com.vaadin.ui.Label;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 @SuppressWarnings("serial")
 public abstract class EditorsContainer extends AbstractEditor
 {
-	public EditorsContainer(final PropertyDescriptor descriptor)
+	public EditorsContainer(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}
@@ -49,7 +49,7 @@ public abstract class EditorsContainer extends AbstractEditor
 
 	public final boolean isDocumentFragment()
 	{
-		final PropertyDescriptor descriptor = getPropertyDescriptor();
+		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
 		return descriptor != null && descriptor.isDocumentFragment();
 	}
 

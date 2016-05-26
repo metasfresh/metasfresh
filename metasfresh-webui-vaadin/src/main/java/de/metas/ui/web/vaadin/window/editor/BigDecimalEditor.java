@@ -10,7 +10,7 @@ import org.compiere.util.DisplayType;
 import com.vaadin.data.util.converter.StringToBigDecimalConverter;
 import com.vaadin.ui.AbstractField;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 @SuppressWarnings("serial")
 public class BigDecimalEditor extends FieldEditor<BigDecimal>
 {
-	public BigDecimalEditor(final PropertyDescriptor descriptor)
+	public BigDecimalEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}
@@ -47,8 +47,8 @@ public class BigDecimalEditor extends FieldEditor<BigDecimal>
 	{
 		//
 		// Create the converter
-		final PropertyDescriptor descriptor = getPropertyDescriptor();
-		int displayType = descriptor == null ? DisplayType.Number : descriptor.getSqlDisplayType();
+		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
+		int displayType = descriptor == null ? DisplayType.Number : descriptor.getDisplayType();
 		if (!DisplayType.isNumeric(displayType))
 		{
 			displayType = DisplayType.Number;

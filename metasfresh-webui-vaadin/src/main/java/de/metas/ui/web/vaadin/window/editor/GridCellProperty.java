@@ -14,8 +14,8 @@ import com.vaadin.data.util.AbstractProperty;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ class GridCellProperty extends AbstractProperty<Object>
 {
 	private static final Logger logger = LogManager.getLogger(GridCellProperty.class);
 
-	private final PropertyDescriptor descriptor;
+	private final ViewPropertyDescriptor descriptor;
 	private final GridRowId rowId;
 	private Object value;
 
@@ -58,7 +58,7 @@ class GridCellProperty extends AbstractProperty<Object>
 	private boolean mandatory = false;
 	private boolean displayed = true;
 
-	public GridCellProperty(final GridRowId rowId, final PropertyDescriptor descriptor)
+	public GridCellProperty(final GridRowId rowId, final ViewPropertyDescriptor descriptor)
 	{
 		super();
 		this.rowId = rowId;

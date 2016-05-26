@@ -15,12 +15,12 @@ import com.vaadin.data.util.AbstractContainer;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
 final class GridEditorDataContainer extends AbstractContainer
 		implements Container.ItemSetChangeNotifier, Container.Ordered, Container.Indexed
 {
-	private final PropertyDescriptor descriptor;
+	private final ViewPropertyDescriptor descriptor;
 	private final Collection<PropertyName> visiblePropertyNames;
 
 	private final LinkedHashMap<GridRowId, GridRowItem> rows = new LinkedHashMap<>();
@@ -84,13 +84,13 @@ final class GridEditorDataContainer extends AbstractContainer
 		}
 	};
 
-	public GridEditorDataContainer(final PropertyDescriptor descriptor)
+	public GridEditorDataContainer(final ViewPropertyDescriptor descriptor)
 	{
 		super();
 		this.descriptor = descriptor;
 
 		final ImmutableSet.Builder<PropertyName> propertyNames = ImmutableSet.builder();
-		for (final PropertyDescriptor childPropertyDescriptor : descriptor.getChildPropertyDescriptors())
+		for (final ViewPropertyDescriptor childPropertyDescriptor : descriptor.getChildDescriptorsList())
 		{
 			final PropertyLayoutInfo layoutInfo = childPropertyDescriptor.getLayoutInfo();
 			final boolean visible = layoutInfo == null || layoutInfo.isDisplayed();
@@ -149,7 +149,7 @@ final class GridEditorDataContainer extends AbstractContainer
 
 	public String getHeader(final Object propertyId)
 	{
-		final PropertyDescriptor childPropertyDescriptor = descriptor.getChildPropertyDescriptorsAsMap().get(propertyId);
+		final ViewPropertyDescriptor childPropertyDescriptor = descriptor.getChildDescriptors().get(propertyId);
 		if (childPropertyDescriptor != null)
 		{
 			return childPropertyDescriptor.getCaption();
@@ -180,7 +180,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	@Override
 	public Class<?> getType(final Object propertyId)
 	{
-		return descriptor.getChildPropertyDescriptorsAsMap().get(propertyId).getValueType();
+		return descriptor.getChildDescriptors().get(propertyId).getValueType();
 	}
 
 	@Override
@@ -199,7 +199,7 @@ final class GridEditorDataContainer extends AbstractContainer
 	private GridRowItem createGridRowItem(final Object itemId, final PropertyValuesDTO rowValues)
 	{
 		final GridRowId rowId = GridRowId.of(itemId);
-		final GridRowItem rowItem = new GridRowItem(rowId, descriptor.getChildPropertyDescriptorsAsMap());
+		final GridRowItem rowItem = new GridRowItem(rowId, descriptor.getChildDescriptors());
 		rowItem.setValues(rowValues);
 		rowItem.addValueChangeListener(cellValueChangedListenerDelegate);
 

@@ -9,7 +9,7 @@ import org.compiere.util.DisplayType;
 import com.vaadin.data.util.converter.StringToIntegerConverter;
 import com.vaadin.ui.AbstractField;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 @SuppressWarnings("serial")
 public class IntegerEditor extends FieldEditor<Integer>
 {
-	public IntegerEditor(final PropertyDescriptor descriptor)
+	public IntegerEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}
@@ -46,8 +46,8 @@ public class IntegerEditor extends FieldEditor<Integer>
 	{
 		//
 		// Create the converter
-		final PropertyDescriptor descriptor = getPropertyDescriptor();
-		int displayType = descriptor == null ? DisplayType.Integer : descriptor.getSqlDisplayType();
+		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
+		int displayType = descriptor == null ? DisplayType.Integer : descriptor.getDisplayType();
 		if (!DisplayType.isNumeric(displayType))
 		{
 			displayType = DisplayType.Integer;

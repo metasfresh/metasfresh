@@ -1,9 +1,9 @@
 package de.metas.ui.web.vaadin.window.view;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ public interface WindowView
 	
 	void setListener(WindowViewListener listener);
 
-	void setRootPropertyDescriptor(PropertyDescriptor rootPropertyDescriptor);
+	void setRootPropertyDescriptor(ViewPropertyDescriptor rootPropertyDescriptor);
 
 	void setNextRecordEnabled(boolean enabled);
 

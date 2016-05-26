@@ -9,8 +9,8 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class ComposedValueEditor extends AbstractEditor
 	@SuppressWarnings("unused")
 	private ComposedValue value;
 
-	public ComposedValueEditor(final PropertyDescriptor descriptor)
+	public ComposedValueEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 		addStyleName(STYLE);

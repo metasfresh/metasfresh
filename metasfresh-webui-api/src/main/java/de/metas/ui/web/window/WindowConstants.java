@@ -34,7 +34,9 @@ public final class WindowConstants
 	public static final PropertyName PROPERTYNAME_IsActive = PropertyName.of("IsActive");
 	public static final PropertyName PROPERTYNAME_Processed = PropertyName.of("Processed");
 	public static final PropertyName PROPERTYNAME_Processing = PropertyName.of("Processing");
-
+	
+	public static final int AD_WINDOW_ID_Location = 121; // FIXME: hardcoded
+	
 	public static enum OnChangesFound
 	{
 		Discard, Ask,

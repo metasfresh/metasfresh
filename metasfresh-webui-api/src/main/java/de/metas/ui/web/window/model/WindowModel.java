@@ -5,12 +5,12 @@ import java.util.Set;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -40,7 +40,9 @@ public interface WindowModel
 
 	void unsubscribe(Object subscriberObj);
 
-	void setRootPropertyDescriptor(PropertyDescriptor rootPropertyDescriptor);
+	void setRootPropertyDescriptorFromWindow(final int windowId);
+
+	ViewPropertyDescriptor getViewRootPropertyDescriptor();
 
 	boolean hasPreviousRecord();
 

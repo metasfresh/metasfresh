@@ -34,7 +34,9 @@ import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.datasource.SaveResult;
+import de.metas.ui.web.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.action.Action;
 import de.metas.ui.web.window.model.action.Action.ActionEvent;
 import de.metas.ui.web.window.model.action.ActionGroup;
@@ -48,6 +50,7 @@ import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -82,6 +85,7 @@ public class WindowModelImpl implements WindowModel
 
 	//
 	// Properties
+	private final IPropertyDescriptorProvider propertyDescriptorProvider = new VOPropertyDescriptorProvider();
 	private PropertyDescriptor _rootPropertyDescriptor;
 	private PropertyValueCollection _properties = PropertyValueCollection.EMPTY;
 
@@ -115,9 +119,15 @@ public class WindowModelImpl implements WindowModel
 				.add("recordIndex", _recordIndex)
 				.toString();
 	}
-
+	
 	@Override
-	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
+	public void setRootPropertyDescriptorFromWindow(int windowId)
+	{
+		final PropertyDescriptor rootPropertyDescriptor = propertyDescriptorProvider.provideForWindow(windowId);
+		setRootPropertyDescriptor(rootPropertyDescriptor);
+	}
+
+	private void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
 	{
 		if (_rootPropertyDescriptor == rootPropertyDescriptor)
 		{
@@ -162,6 +172,17 @@ public class WindowModelImpl implements WindowModel
 		{
 			setRecordIndexAndReload(RECORDINDEX_New);
 		}
+	}
+	
+	@Override
+	public ViewPropertyDescriptor getViewRootPropertyDescriptor()
+	{
+		final PropertyDescriptor rootPropertyDescriptor = _rootPropertyDescriptor;
+		if (rootPropertyDescriptor == null)
+		{
+			return null;
+		}
+		return rootPropertyDescriptor.toViewPropertyDescriptor();
 	}
 
 	private final <ET extends ModelEvent> void postEvent(final ET event)

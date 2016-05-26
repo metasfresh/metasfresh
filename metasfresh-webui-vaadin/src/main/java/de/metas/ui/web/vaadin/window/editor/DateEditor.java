@@ -11,7 +11,7 @@ import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.DateField;
 
-import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ public class DateEditor extends FieldEditor<Date>
 {
 	private final SimpleDateFormat dateFormat;
 
-	public DateEditor(final PropertyDescriptor descriptor)
+	public DateEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
 		
@@ -48,7 +48,7 @@ public class DateEditor extends FieldEditor<Date>
 
 		//
 		// Display Type
-		int displayType = getPropertyDescriptor().getSqlDisplayType();
+		int displayType = getPropertyDescriptor().getDisplayType();
 		if (!DisplayType.isDate(displayType))
 		{
 			// Make sure the display type is about Dates
