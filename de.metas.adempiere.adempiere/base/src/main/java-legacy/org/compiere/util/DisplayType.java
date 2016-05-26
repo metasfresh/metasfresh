@@ -247,7 +247,8 @@ public final class DisplayType
 		return displayType == Location
 				|| displayType == Locator
 				|| displayType == Account
-				|| displayType == PAttribute;
+				|| displayType == PAttribute
+				|| displayType == Assignment;
 	}
 	
 	/**
