@@ -5,13 +5,13 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 	
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version it -->
-	<version>1.0_IT-SNAPSHOT</version>
+	<version>3-development-SNAPSHOT</version>
 	
 	<packaging>pom</packaging>
 
@@ -213,8 +213,8 @@
 			Duplicate classes found:
 		
 			  Found in:
-			    de.metas.swat:de.metas.swat.swingui:jar:1.0_IT-SNAPSHOT:compile
-			    de.metas.swat:de.metas.swat.swingui:jar:1.0_IT-SNAPSHOT:compile
+			    de.metas.swat:de.metas.swat.swingui:jar:3-development-SNAPSHOT:compile
+			    de.metas.swat:de.metas.swat.swingui:jar:3-development-SNAPSHOT:compile
 			Notes:
 			*an alternative would be to explicitly ignore the artifacts' classes, 
 			 but i don't see the pattern of when just an another artifact is flagged as duplicate of itself, 
@@ -574,7 +574,7 @@
 					00:00:34.798 [INFO] Adding ignorable dependency: null:jmockit:null
 					00:00:34.799 [INFO]   Adding ignore: org.junit.runner.Runner
 					00:00:34.800 [WARNING] Could not find junit:junit:jar:4.11:test at null
-					00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:1.0_IT-SNAPSHOT:compile at null
+					00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3-development-SNAPSHOT:compile at null
 					00:00:34.802 [WARNING] Could not find org.hamcrest:hamcrest-all:jar:1.3:test at null
 					00:00:34.803 [WARNING] Could not find org.jmockit:jmockit:jar:1.20:test at null
 					-->

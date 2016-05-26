@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.printing</artifactId>
 		<groupId>de.metas.printing</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>

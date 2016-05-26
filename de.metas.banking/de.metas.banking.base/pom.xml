@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.metas.banking</groupId>
 		<artifactId>de.metas.banking</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 
