@@ -29,13 +29,13 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.serverRoot</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.scripts.rollout</groupId>
 			<artifactId>de.metas.scripts.rollout</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<type>tar.gz</type>
 			<classifier>dist</classifier>
 			<exclusions>
@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<type>jar</type>
 		</dependency>
 
@@ -61,7 +61,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.swingui</artifactId>
 			<classifier>client</classifier>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<type>zip</type>
 		</dependency>
 
@@ -70,7 +70,7 @@ we currenty don't have a usecase for it. maybe we will remove it alltogether.
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client-webapp</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<type>war</type>
 		</dependency>
 -->
@@ -82,7 +82,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -90,7 +90,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -98,7 +98,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.aggregation</groupId>
 			<artifactId>de.metas.aggregation</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 			<exclusions>
@@ -112,7 +112,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -120,7 +120,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -128,7 +128,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -136,7 +136,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.banking</groupId>
 			<artifactId>de.metas.banking.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -144,7 +144,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -152,7 +152,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.device.adempiere</groupId>
 			<artifactId>de.metas.device.adempiere</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -161,7 +161,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -169,7 +169,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -177,7 +177,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.document</groupId>
 			<artifactId>de.metas.document.refid</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -185,13 +185,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -199,7 +199,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.edi</groupId>
 			<artifactId>de.metas.edi</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -207,7 +207,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>jasper</classifier>
 			<exclusions>
 				<exclusion>
@@ -219,7 +219,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -227,13 +227,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -241,7 +241,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -249,7 +249,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -257,7 +257,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -265,7 +265,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -273,7 +273,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
 			<artifactId>de.metas.payment.sepa</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -281,13 +281,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<artifactId>de.metas.printing.base</artifactId>
 			<groupId>de.metas.printing</groupId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<artifactId>de.metas.printing.base</artifactId>
 			<groupId>de.metas.printing</groupId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -295,13 +295,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -309,7 +309,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -317,7 +317,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -388,7 +388,7 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>de.metas.fresh</groupId>
 									<artifactId>de.metas.fresh.base</artifactId>
-									<version>${project.version}</version>
+									<version>${metasfresh-dependency.version}</version>
 									<classifier>jasper</classifier>
 								</artifactItem>
 							</artifactItems>
@@ -408,7 +408,7 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.base</artifactId>
-									<version>${project.version}</version>
+									<version>${metasfresh-dependency.version}</version>
 									<classifier>jasper</classifier>
 								</artifactItem>
 							</artifactItems>
@@ -434,7 +434,7 @@ note: when adding new records, please roughly order them by alphabet.
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.swingui</artifactId>
 									<classifier>client</classifier>
-									<version>${project.version}</version>
+									<version>${metasfresh-dependency.version}</version>
 									<type>zip</type>
 									<destFileName>metasfresh-client.zip</destFileName>
 								</artifactItem>
@@ -516,7 +516,7 @@ note: when adding new records, please roughly order them by alphabet.
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.serverRoot</artifactId>
-									<version>${project.version}</version>
+									<version>${metasfresh-dependency.version}</version>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
