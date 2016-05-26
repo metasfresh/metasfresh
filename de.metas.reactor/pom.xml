@@ -82,7 +82,6 @@
 
 		<module>../de.metas.printing.common</module>
 		<module>../de.metas.printing.esb.client</module>
-		<module>../de.metas.printing.esb.client-webapp</module>
 
 		<module>../de.metas.fresh</module>
 		

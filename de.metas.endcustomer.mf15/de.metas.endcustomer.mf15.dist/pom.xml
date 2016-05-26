@@ -65,16 +65,6 @@
 			<type>zip</type>
 		</dependency>
 
-<!--
-we currenty don't have a usecase for it. maybe we will remove it alltogether. 
-		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.client-webapp</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-			<type>war</type>
-		</dependency>
--->
-
 <!-- 
 SQL and jasper dependencies:
 note: when adding new records, please roughly order them by alphabet.
@@ -520,24 +510,6 @@ note: when adding new records, please roughly order them by alphabet.
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
-						</configuration>
-					</execution>
-
-					<!-- these are not sharing adempiere-classes and therefore can be deployed 
-						individually for a greater flexibility -->
-					<execution>
-						<id>copy-additional-deployables</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<excludeTransitive>true</excludeTransitive>
-							<includeArtifactIds>
-								de.metas.printing.esb.client-webapp
-							</includeArtifactIds>
-							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
-							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 						</configuration>
 					</execution>
 
