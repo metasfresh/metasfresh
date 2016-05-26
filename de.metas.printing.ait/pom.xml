@@ -264,7 +264,10 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${metasfresh-dependency.version}</version>
+				<!-- 
+				Looks like there is no version range supported here, so for the time beeing, we try our luck with ${project.version}.
+				-->
+				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
