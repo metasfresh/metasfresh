@@ -27,6 +27,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyPath;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class PropertyChangedModelEvent extends ModelEvent
 {
 	public static final PropertyChangedModelEvent of(final Object model, final PropertyPath propertyPath, final Object value, final Object valueOld)

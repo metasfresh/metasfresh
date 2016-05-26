@@ -22,6 +22,7 @@ package de.metas.ui.web.window.model.event;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class ConfirmDiscardChangesModelEvent extends ModelEvent
 {
 	public static final ConfirmDiscardChangesModelEvent of(final Object model)

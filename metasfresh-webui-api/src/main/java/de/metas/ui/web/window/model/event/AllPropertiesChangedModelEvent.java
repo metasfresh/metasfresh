@@ -22,6 +22,7 @@ package de.metas.ui.web.window.model.event;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class AllPropertiesChangedModelEvent extends ModelEvent
 {
 	public static final AllPropertiesChangedModelEvent of(final Object model)

@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class ZoomToWindowEvent extends ModelEvent
 {
 	public static ZoomToWindowEvent of(final Object model, final ZoomInfo zoomInfo)

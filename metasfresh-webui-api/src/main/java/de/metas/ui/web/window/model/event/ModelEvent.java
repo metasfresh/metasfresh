@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model.event;
 
+import java.io.Serializable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
@@ -31,7 +33,8 @@ import com.google.common.base.MoreObjects.ToStringHelper;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class ModelEvent
+@SuppressWarnings("serial")
+public abstract class ModelEvent implements Serializable
 {
 	protected ModelEvent()
 	{

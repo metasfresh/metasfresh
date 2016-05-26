@@ -27,6 +27,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class GridRowAddedModelEvent extends ModelEvent
 {
 	public static final GridRowAddedModelEvent of(final PropertyName gridPropertyName, final Object rowId, final PropertyValuesDTO rowValues)
