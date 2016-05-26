@@ -96,33 +96,16 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 				this.recordSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordSummary);
 				recordSummaryEditor.addStyleName(STYLE + "-record-summary-label");
 				recordSummaryEditor.setContentMode(ContentMode.PREFORMATTED);
-				// recordSummaryEditor.setEditorListener(editorListener);
 
 				btnPreviousRecord = new Button();
 				btnPreviousRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
 				btnPreviousRecord.setIcon(FontAwesome.CARET_LEFT);
-				btnPreviousRecord.addClickListener(new Button.ClickListener()
-				{
-
-					@Override
-					public void buttonClick(Button.ClickEvent event)
-					{
-						getWindowViewListener().viewPreviousRecord(OnChangesFound.Ask);
-					}
-				});
+				btnPreviousRecord.addClickListener(event->getWindowViewListener().viewPreviousRecord(OnChangesFound.Ask));
 
 				btnNextRecord = new Button();
 				btnNextRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
 				btnNextRecord.setIcon(FontAwesome.CARET_RIGHT);
-				btnNextRecord.addClickListener(new Button.ClickListener()
-				{
-
-					@Override
-					public void buttonClick(Button.ClickEvent event)
-					{
-						getWindowViewListener().viewNextRecord(OnChangesFound.Ask);
-					}
-				});
+				btnNextRecord.addClickListener(event->getWindowViewListener().viewNextRecord(OnChangesFound.Ask));
 
 				final HorizontalLayout recordNavigationComp = new HorizontalLayout(btnPreviousRecord, recordSummaryEditor, btnNextRecord);
 				recordNavigationComp.addStyleName(STYLE + "-record-nav");
@@ -140,7 +123,6 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 				this.recordAdditionalSummaryEditor = new LabelEditor(WindowConstants.PROPERTYNAME_RecordAditionalSummary);
 				recordAdditionalSummaryEditor.addStyleName(STYLE + "-record-addsummary-label");
 				recordAdditionalSummaryEditor.setContentMode(ContentMode.PREFORMATTED);
-				// recordAdditionalSummaryEditor.setEditorListener(editorListener);
 				panelSummary.addComponent(recordAdditionalSummaryEditor);
 			}
 		}

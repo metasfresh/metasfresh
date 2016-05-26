@@ -3,16 +3,14 @@ package de.metas.ui.web.vaadin.window.view;
 import java.util.IdentityHashMap;
 
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-
-import de.metas.ui.web.vaadin.window.editor.Editor;
-import de.metas.ui.web.vaadin.window.editor.EditorsContainer;
-import de.metas.ui.web.vaadin.window.editor.GridEditor;
-
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
+
+import de.metas.ui.web.vaadin.window.editor.Editor;
+import de.metas.ui.web.vaadin.window.editor.EditorsContainer;
+import de.metas.ui.web.vaadin.window.editor.GridEditor;
 
 /*
  * #%L
@@ -90,15 +88,7 @@ public class WindowPanelsBar extends CustomComponent
 		button.setCaption(editor.getCaption());
 		content.addComponent(button);
 		
-		button.addClickListener(new Button.ClickListener()
-		{
-			
-			@Override
-			public void buttonClick(ClickEvent event)
-			{
-				UI.getCurrent().scrollIntoView(editorComp);
-			}
-		});
+		button.addClickListener(event->UI.getCurrent().scrollIntoView(editorComp));
 	}
 
 }
