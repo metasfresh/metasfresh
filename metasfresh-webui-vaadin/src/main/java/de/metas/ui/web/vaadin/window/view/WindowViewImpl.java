@@ -15,7 +15,6 @@ import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
 import de.metas.ui.web.vaadin.window.editor.Editor;
 import de.metas.ui.web.vaadin.window.editor.LabelEditor;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.shared.action.Action;
 import de.metas.ui.web.window.shared.action.ActionsList;
 
@@ -43,7 +42,6 @@ import de.metas.ui.web.window.shared.action.ActionsList;
 
 @org.springframework.stereotype.Component
 @PrototypeScope
-@SuppressWarnings("serial")
 public class WindowViewImpl extends AbstractView implements ActionsView
 {
 	// services
@@ -100,12 +98,12 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 				btnPreviousRecord = new Button();
 				btnPreviousRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
 				btnPreviousRecord.setIcon(FontAwesome.CARET_LEFT);
-				btnPreviousRecord.addClickListener(event->getWindowViewListener().viewPreviousRecord(OnChangesFound.Ask));
+				btnPreviousRecord.addClickListener(event->commitChangesAndFireAction(WindowConstants.ACTION_PreviousRecord));
 
 				btnNextRecord = new Button();
 				btnNextRecord.setPrimaryStyleName(STYLE + "-record-nav-btn");
 				btnNextRecord.setIcon(FontAwesome.CARET_RIGHT);
-				btnNextRecord.addClickListener(event->getWindowViewListener().viewNextRecord(OnChangesFound.Ask));
+				btnNextRecord.addClickListener(event->commitChangesAndFireAction(WindowConstants.ACTION_NextRecord));
 
 				final HorizontalLayout recordNavigationComp = new HorizontalLayout(btnPreviousRecord, recordSummaryEditor, btnNextRecord);
 				recordNavigationComp.addStyleName(STYLE + "-record-nav");
@@ -224,4 +222,10 @@ public class WindowViewImpl extends AbstractView implements ActionsView
 	}
 
 	private ActionsList _actions = null;
+	
+	private final void commitChangesAndFireAction(final String actionId)
+	{
+		commitChanges();
+		getWindowViewListener().onActionClicked(actionId);		
+	}
 }

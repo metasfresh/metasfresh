@@ -35,6 +35,9 @@ public final class WindowConstants
 	public static final PropertyName PROPERTYNAME_Processed = PropertyName.of("Processed");
 	public static final PropertyName PROPERTYNAME_Processing = PropertyName.of("Processing");
 	
+	public static final String ACTION_PreviousRecord = "Previous";
+	public static final String ACTION_NextRecord = "Next";
+	
 	public static final int AD_WINDOW_ID_Location = 121; // FIXME: hardcoded
 	
 	public static enum OnChangesFound

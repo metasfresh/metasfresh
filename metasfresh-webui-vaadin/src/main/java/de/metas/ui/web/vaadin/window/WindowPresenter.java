@@ -27,7 +27,6 @@ import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.model.JSONProxyWindowModel;
 import de.metas.ui.web.window.model.WindowModel;
 import de.metas.ui.web.window.model.WindowModelImpl;
@@ -451,26 +450,6 @@ public class WindowPresenter implements WindowViewListener
 	public void modelConfirmDiscardChanges(final ConfirmDiscardChangesModelEvent event)
 	{
 		updateView((view) -> view.confirmDiscardChanges());
-	}
-
-	@Override
-	public void viewNextRecord(final OnChangesFound onChangesFound)
-	{
-		final WindowView view = getView();
-		Preconditions.checkNotNull(view, "view");
-		view.commitChanges();
-
-		updateModel((model) -> model.nextRecord(onChangesFound));
-	}
-
-	@Override
-	public void viewPreviousRecord(final OnChangesFound onChangesFound)
-	{
-		final WindowView view = getView();
-		Preconditions.checkNotNull(view, "view");
-		view.commitChanges();
-
-		updateModel((model) -> model.previousRecord(onChangesFound));
 	}
 
 	@Override

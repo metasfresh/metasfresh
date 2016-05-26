@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
@@ -40,15 +39,10 @@ public interface WindowViewListener
 	/** View notified a property value has been changed */
 	void viewPropertyChanged(PropertyPath propertyPath, Object value);
 	
-	/** View asked to move to next record */
-	void viewNextRecord(OnChangesFound onChangesFound);
-	
-	/** View asked to move to previous record */
-	void viewPreviousRecord(OnChangesFound onChangesFound);
-
 	/** View is asking for a value update */
 	ListenableFuture<Object> viewRequestValue(PropertyPath propertyPath);
 
+	/** View requested an action to be executed */
 	void onActionClicked(String actionId);
 	
 	ActionsList viewRequestChildActions(final String actionId);

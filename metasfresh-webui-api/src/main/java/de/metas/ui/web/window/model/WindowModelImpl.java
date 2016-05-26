@@ -43,9 +43,9 @@ import de.metas.ui.web.window.model.event.ModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.window.shared.action.Action;
+import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window.shared.action.ActionGroup;
 import de.metas.ui.web.window.shared.action.ActionsList;
-import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
@@ -703,6 +703,8 @@ public class WindowModelImpl implements WindowModel
 				.newActionWithListener(reportActionGroup, "Print", event -> print(event, false)).buildAndAdd()
 				.newActionWithListener(reportActionGroup, "PrintPreview", event -> print(event, true)).buildAndAdd()
 				//
+				.newActionWithListener(goActionGroup, WindowConstants.ACTION_PreviousRecord, event -> previousRecord(OnChangesFound.Ask)).buildAndAdd()
+				.newActionWithListener(goActionGroup, WindowConstants.ACTION_NextRecord, event -> nextRecord(OnChangesFound.Ask)).buildAndAdd()
 				.addActionWithManagerProvider(goActionGroup, "ZoomAcross", (parentAction) -> createZoomAccrossActions())
 				.newActionWithListener(goActionGroup, "Request", ACTIONLISTENER_NotImpleted).buildAndAdd()
 				.newActionWithListener(goActionGroup, "Archive", ACTIONLISTENER_NotImpleted).buildAndAdd()
