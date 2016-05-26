@@ -356,7 +356,14 @@ public abstract class AbstractView implements WindowView
 	@Override
 	public void showError(final String message)
 	{
-		Notification.show(message, Notification.Type.WARNING_MESSAGE);
+		try
+		{
+			Notification.show(message, Notification.Type.WARNING_MESSAGE);
+		}
+		catch (Exception e)
+		{
+			logger.error("Failed displaying error message: {}", message, e);
+		}
 	}
 	
 	private void showError(final ErrorEvent event)

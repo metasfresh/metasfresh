@@ -3,8 +3,11 @@ package de.metas.ui.web.window.model;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
  * #%L
@@ -53,4 +56,6 @@ public interface PropertyValue
 	
 	/** @return true if value is calculated and it cannot be set using {@link #setValue(Object)} */
 	boolean isCalculated();
+
+	ListenableFuture<ViewCommandResult> executeCommand(ViewCommand command) throws Exception;
 }

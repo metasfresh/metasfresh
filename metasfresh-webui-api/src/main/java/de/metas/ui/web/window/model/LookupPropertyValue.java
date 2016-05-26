@@ -3,10 +3,10 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
@@ -14,7 +14,9 @@ import de.metas.ui.web.window.datasource.LookupDataSource;
 import de.metas.ui.web.window.datasource.sql.SqlLazyLookupDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
-import de.metas.ui.web.window.shared.datatype.LookupDataSourceServiceDTO;
+import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /*
@@ -41,20 +43,20 @@ import de.metas.ui.web.window.shared.datatype.LookupValue;
 
 /**
  * Lookup values provider as {@link PropertyValue} node.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class LookupPropertyValue implements PropertyValue
 {
-	/* package */ static final LookupPropertyValue cast(PropertyValue propertyValue)
+	/* package */ static final LookupPropertyValue cast(final PropertyValue propertyValue)
 	{
 		return (LookupPropertyValue)propertyValue;
 	}
 
 	private final PropertyName propertyName;
 	private final LookupDataSource lookupDataSource;
-	private final LookupDataSourceServiceDTO value;
+	private final LookupDataSourceQueryCommand value;
 
 	/* package */ LookupPropertyValue(final PropertyDescriptor descriptor)
 	{
@@ -63,9 +65,9 @@ public class LookupPropertyValue implements PropertyValue
 		this.propertyName = WindowConstants.lookupValuesName(propertyName);
 
 		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
-		this.lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
+		lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
 
-		this.value = new LookupDataSourceServiceDTOImpl(propertyName);
+		value = null; // new LookupDataSourceServiceDTOImpl(propertyName);
 	}
 
 	@Override
@@ -95,7 +97,7 @@ public class LookupPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public LookupDataSourceServiceDTO getValue()
+	public LookupDataSourceQueryCommand getValue()
 	{
 		return value;
 	}
@@ -152,89 +154,45 @@ public class LookupPropertyValue implements PropertyValue
 		return true;
 	}
 
-	private static class LookupDataSourceServiceDTOImpl extends LookupDataSourceServiceDTO
+	@Override
+	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
 	{
-		@JsonProperty("propertyName")
-		private final PropertyName propertyName;
-
-		public LookupDataSourceServiceDTOImpl(@JsonProperty("propertyName") final PropertyName propertyName)
+		final String commandId = command.getCommandId();
+		if (LookupDataSourceQueryCommand.COMMAND_Size.equals(commandId))
 		{
-			super();
-			this.propertyName = propertyName;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("propertyName", propertyName)
-					.toString();
-		}
-
-		@Override
-		public int sizeIfValidFilter(String filter)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public List<LookupValue> findEntitiesIfValidFilter(String filter, int firstRow, int pageLength)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-	}
-
-	private static class LookupDataSourceServiceDTOImpl_OLD extends LookupDataSourceServiceDTO
-	{
-		// TODO: the implementation of LookupDataSourceServiceDTO shall be simple serializable POJO and not an LookupDataSource wrapper
-
-		public static final LookupDataSourceServiceDTO of(final LookupDataSource lookupDataSource)
-		{
-			return new LookupDataSourceServiceDTOImpl_OLD(lookupDataSource);
-		}
-
-		public static final int SIZE_InvalidFilter = -100;
-
-		private final LookupDataSource lookupDataSource;
-
-		private LookupDataSourceServiceDTOImpl_OLD(final LookupDataSource lookupDataSource)
-		{
-			super();
-			this.lookupDataSource = lookupDataSource;
-		}
-
-		/**
-		 * @param filter
-		 * @return size or {@link #SIZE_InvalidFilter} if the filter is not valid
-		 */
-		@Override
-		public int sizeIfValidFilter(final String filter)
-		{
+			final String filter = command.getParameterAsString(LookupDataSourceQueryCommand.PARAMETER_Filter);
+			final int size;
 			if (!lookupDataSource.isValidFilter(filter))
 			{
-				return SIZE_InvalidFilter;
+				size = LookupDataSourceQueryCommand.SIZE_InvalidFilter;
 			}
-			return lookupDataSource.size(filter);
-		}
+			else
+			{
+				size = lookupDataSource.size(filter);
+			}
 
-		/**
-		 * 
-		 * @param filter
-		 * @param firstRow
-		 * @param pageLength
-		 * @return {@link LookupValue}s list or <code>null</code> if the filter is not valid
-		 */
-		@Override
-		public List<LookupValue> findEntitiesIfValidFilter(final String filter, final int firstRow, final int pageLength)
+			return ViewCommandHelper.result(size);
+		}
+		else if (LookupDataSourceQueryCommand.COMMAND_Find.equals(commandId))
 		{
+			final String filter = command.getParameterAsString(LookupDataSourceQueryCommand.PARAMETER_Filter);
+			final List<LookupValue> entries;
 			if (!lookupDataSource.isValidFilter(filter))
 			{
-				return null;
+				entries = null;
 			}
-			return lookupDataSource.findEntities(filter, firstRow, pageLength);
+			else
+			{
+				final int firstRow = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_FirstRow, 0);
+				final int pageLength = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_PageLength, LookupDataSourceQueryCommand.DEFAULT_PageLength);
+				entries = lookupDataSource.findEntities(filter, firstRow, pageLength);
+			}
+
+			return ViewCommandHelper.result(entries);
+		}
+		else
+		{
+			return ViewCommandHelper.notSupported(command, this);
 		}
 	}
 }

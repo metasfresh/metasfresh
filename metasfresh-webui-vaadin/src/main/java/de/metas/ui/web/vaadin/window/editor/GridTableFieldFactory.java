@@ -13,6 +13,7 @@ import com.vaadin.ui.TableFieldFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
@@ -102,18 +103,40 @@ final class GridTableFieldFactory implements TableFieldFactory
 			return editorListener;
 		}
 
+		private final PropertyPath toGridPropertyPath(final PropertyPath propertyPath)
+		{
+			return PropertyPath.of(gridPropertyName, gridRowId, propertyPath.getPropertyName());
+		}
+
 		@Override
 		public void valueChange(final PropertyPath propertyPath, final Object value)
 		{
-			final PropertyPath gridPropertyPath = PropertyPath.of(gridPropertyName, gridRowId, propertyPath.getPropertyName());
+			final PropertyPath gridPropertyPath = toGridPropertyPath(propertyPath);
 			getDelegate().valueChange(gridPropertyPath, value);
 		}
 
 		@Override
 		public ListenableFuture<Object> requestValue(final PropertyPath propertyPath)
 		{
-			final PropertyPath gridPropertyPath = PropertyPath.of(gridPropertyName, gridRowId, propertyPath.getPropertyName());
+			final PropertyPath gridPropertyPath = toGridPropertyPath(propertyPath);
 			return getDelegate().requestValue(gridPropertyPath);
+		}
+
+		private final ViewCommand toGridViewCommand(final ViewCommand command)
+		{
+			return command.changePropertyPath(toGridPropertyPath(command.getPropertyPath()));
+		}
+
+		@Override
+		public void executeCommand(final ViewCommand command)
+		{
+			super.executeCommand(toGridViewCommand(command));
+		}
+
+		@Override
+		public void executeCommand(final ViewCommand command, final ViewCommandCallback callback)
+		{
+			super.executeCommand(toGridViewCommand(command), callback);
 		}
 	}
 

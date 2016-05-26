@@ -81,8 +81,8 @@ public final class GridRow
 		}
 
 		propertyValues = valuesBuilder.build();
-		
-		if(logger.isTraceEnabled())
+
+		if (logger.isTraceEnabled())
 		{
 			logger.trace("{}", PropertyValues.toStringRecursivelly(propertyValues.getPropertyValues()));
 		}
@@ -148,10 +148,20 @@ public final class GridRow
 		final Object value = propertyValue.getValue();
 		return value;
 	}
-	
+
 	public boolean hasProperty(final PropertyName propertyName)
 	{
 		final PropertyValue propertyValue = propertyValues.getPropertyValueOrNull(propertyName);
 		return propertyValue != null;
+	}
+
+	/* package */PropertyValue getPropertyValue(final PropertyName propertyName)
+	{
+		final PropertyValue propertyValue = propertyValues.getPropertyValueOrNull(propertyName);
+		if (propertyValue == null)
+		{
+			throw new IllegalArgumentException("Property " + propertyName + " not found in " + this);
+		}
+		return propertyValue;
 	}
 }

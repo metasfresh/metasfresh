@@ -6,11 +6,15 @@ import java.util.Map;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.LazyPropertyValuesListDTO;
+import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
 
@@ -42,14 +46,14 @@ public class GridPropertyValue extends ObjectPropertyValue
 	{
 		return (GridPropertyValue)propertyValue;
 	}
-	
+
 	// private static final Logger logger = LogManager.getLogger(GridPropertyValue.class);
 
 	private final Collection<PropertyDescriptor> columnDescriptors;
 
 	private final LinkedHashMap<GridRowId, GridRow> rows = new LinkedHashMap<>();
 
-	/* package */GridPropertyValue(final PropertyValueBuilder builder)
+	/* package */ GridPropertyValue(final PropertyValueBuilder builder)
 	{
 		super(builder);
 
@@ -136,7 +140,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 		}
 		return row.setValue(propertyName, value);
 	}
-	
+
 	public Object getValueAt(final Object rowIdObj, final PropertyName propertyName)
 	{
 		final GridRowId rowId = GridRowId.of(rowIdObj);
@@ -149,7 +153,7 @@ public class GridPropertyValue extends ObjectPropertyValue
 
 		return row.getValue(propertyName);
 	}
-	
+
 	public boolean hasProperty(final Object rowIdObj, final PropertyName propertyName)
 	{
 		final GridRowId rowId = GridRowId.of(rowIdObj);
@@ -161,5 +165,28 @@ public class GridPropertyValue extends ObjectPropertyValue
 		}
 
 		return row.hasProperty(propertyName);
+	}
+
+	private PropertyValue getPropertyValue(final PropertyPath propertyPath)
+	{
+		final Object rowIdObj = propertyPath.getRowId();
+		final GridRowId rowId = GridRowId.of(rowIdObj);
+		final GridRow row = rows.get(rowId);
+		if (row == null)
+		{
+			throw new IllegalArgumentException("Row not found for " + propertyPath + " in " + this);
+		}
+
+		final PropertyName propertyName = propertyPath.getPropertyName();
+		final PropertyValue propertyValue = row.getPropertyValue(propertyName);
+		return propertyValue;
+	}
+
+	@Override
+	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	{
+		final PropertyPath propertyPath = command.getPropertyPath();
+		final PropertyValue propertyValue = getPropertyValue(propertyPath);
+		return propertyValue.executeCommand(command);
 	}
 }

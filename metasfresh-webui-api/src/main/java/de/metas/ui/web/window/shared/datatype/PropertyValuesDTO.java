@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 
 /*
  * #%L
@@ -121,7 +122,7 @@ public final class PropertyValuesDTO implements Serializable
 				, Integer.class, BigDecimal.class //
 				, java.util.Date.class, Timestamp.class // FIXME: i think we shall avoid Timestamp, but since Timestamp extends Date, i think it's fine for now
 				, Boolean.class //
-				, LookupDataSourceServiceDTO.class //
+				, LookupDataSourceQueryCommand.class //
 				, PropertyValuesListDTO.class //
 				, LazyPropertyValuesListDTO.class // NOTE: this one is used only in model
 				, LookupValue.class //
@@ -129,7 +130,7 @@ public final class PropertyValuesDTO implements Serializable
 		);
 
 		private static final ImmutableList<Class<?>> allowedBaseValueTypes = ImmutableList.of( //
-				LookupDataSourceServiceDTO.class // FIXME: see de.metas.ui.web.vaadin.window.model.LookupPropertyValue.LookupDataSourceServiceDTOImpl 
+				LookupDataSourceQueryCommand.class // FIXME: see de.metas.ui.web.vaadin.window.model.LookupPropertyValue.LookupDataSourceServiceDTOImpl 
 		);
 
 		private final ImmutableMap.Builder<PropertyName, Object> valuesBuilder = ImmutableMap.builder();

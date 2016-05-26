@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
@@ -54,5 +55,17 @@ public final class NullEditorListener implements EditorListener
 	public void gridNewRow(final PropertyName gridPropertyName)
 	{
 		throw new UnsupportedOperationException("New grid row not supported for " + gridPropertyName);
+	}
+	
+	@Override
+	public void executeCommand(ViewCommand command)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public void executeCommand(ViewCommand command, ViewCommandCallback callback)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

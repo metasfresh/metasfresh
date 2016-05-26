@@ -7,6 +7,8 @@ import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
@@ -82,4 +84,6 @@ public interface WindowModel
 	void executeAction(String actionId);
 
 	ActionsList getChildActions(String actionId);
+
+	ViewCommandResult executeCommand(ViewCommand command) throws Exception;
 }

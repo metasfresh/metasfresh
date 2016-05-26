@@ -4,9 +4,11 @@ import java.util.Set;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
@@ -53,4 +55,6 @@ public interface WindowViewListener
 	void onActionClicked(String actionId);
 	
 	ActionsList viewRequestChildActions(final String actionId);
+
+	void viewCommandExecute(ViewCommand command, ViewCommandCallback callback);
 }

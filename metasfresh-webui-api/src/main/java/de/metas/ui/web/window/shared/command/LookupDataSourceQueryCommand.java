@@ -1,6 +1,4 @@
-package de.metas.ui.web.window.shared.datatype;
-
-import java.util.List;
+package de.metas.ui.web.window.shared.command;
 
 /*
  * #%L
@@ -24,27 +22,15 @@ import java.util.List;
  * #L%
  */
 
-public abstract class LookupDataSourceServiceDTO
+public final class LookupDataSourceQueryCommand
 {
-	public static final LookupDataSourceServiceDTO cast(final Object valueObj)
-	{
-		return (LookupDataSourceServiceDTO)valueObj;
-	}
+	public static final String COMMAND_Size = "size";
+	public static final String COMMAND_Find = "find";
+	
+	public static final String PARAMETER_Filter = "filter";
+	public static final String PARAMETER_FirstRow = "firstRow";
+	public static final String PARAMETER_PageLength = "pageLength";
+	public static final int DEFAULT_PageLength = 10;
 
 	public static final int SIZE_InvalidFilter = -100;
-
-	/**
-	 * @param filter
-	 * @return size or {@link #SIZE_InvalidFilter} if the filter is not valid
-	 */
-	public abstract int sizeIfValidFilter(final String filter);
-
-	/**
-	 * 
-	 * @param filter
-	 * @param firstRow
-	 * @param pageLength
-	 * @return {@link LookupValue}s list or <code>null</code> if the filter is not valid
-	 */
-	public abstract List<LookupValue> findEntitiesIfValidFilter(final String filter, final int firstRow, final int pageLength);
 }

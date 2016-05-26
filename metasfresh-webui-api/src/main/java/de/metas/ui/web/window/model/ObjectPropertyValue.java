@@ -15,11 +15,14 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datasource.LookupDataSource;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 
@@ -63,23 +66,22 @@ public class ObjectPropertyValue implements PropertyValue
 	private final ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
 	private final boolean readOnlyForUser;
 
-	
 	/* package */ ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
 		propertyName = builder.getPropertyName();
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
-		
+
 		valueType = builder.getValueType();
 		displayType = builder.getDisplayType();
-		
+
 		defaultValueExpression = builder.getDefaultValueExpression();
 		initialValue = builder.getInitialValue();
 		value = initialValue;
-		
+
 		readOnlyForUser = builder.isReadOnlyForUser();
-		
+
 		dependencies = PropertyNameDependenciesMap.EMPTY;
 	}
 
@@ -109,12 +111,12 @@ public class ObjectPropertyValue implements PropertyValue
 	{
 		// nothing on this level
 	}
-	
+
 	public Class<?> getValueType()
 	{
 		return valueType;
 	}
-	
+
 	private int getDisplayType()
 	{
 		return displayType;
@@ -135,11 +137,11 @@ public class ObjectPropertyValue implements PropertyValue
 	public Optional<String> getValueAsString()
 	{
 		final Object value = this.value;
-		if(value == null)
+		if (value == null)
 		{
 			return Optional.absent();
 		}
-		
+
 		final String valueStr = convertToDisplayString(value);
 		return Optional.fromNullable(valueStr);
 	}
@@ -152,7 +154,7 @@ public class ObjectPropertyValue implements PropertyValue
 
 	private Object convertToValueType(final Object valueObj)
 	{
-		if(NullValue.isNull(valueObj))
+		if (NullValue.isNull(valueObj))
 		{
 			return null;
 		}
@@ -161,13 +163,13 @@ public class ObjectPropertyValue implements PropertyValue
 			// no particular value type specified => nothing to convert
 			return valueObj;
 		}
-		
+
 		final Class<?> valueObjClass = valueObj.getClass();
 		if (valueType.isAssignableFrom(valueObjClass))
 		{
 			return valueObj;
 		}
-		
+
 		else if (String.class.isAssignableFrom(valueType))
 		{
 			return valueObj.toString();
@@ -176,7 +178,7 @@ public class ObjectPropertyValue implements PropertyValue
 		{
 			return DisplayType.convertToDisplayType(valueObj.toString(), null, DisplayType.DateTime);
 		}
-		else if(Boolean.class.isAssignableFrom(valueType))
+		else if (Boolean.class.isAssignableFrom(valueType))
 		{
 			return DisplayType.toBoolean(valueObj);
 		}
@@ -192,15 +194,15 @@ public class ObjectPropertyValue implements PropertyValue
 		{
 			return new java.math.BigDecimal(valueObj.toString());
 		}
-		else if(LookupValue.class.isAssignableFrom(valueType))
+		else if (LookupValue.class.isAssignableFrom(valueType))
 		{
 			final LookupDataSource lookupDataSource = getLookupDataSource();
-			if(lookupDataSource == null)
+			if (lookupDataSource == null)
 			{
 				logger.warn("No lookup datasource found for {}", this);
 				return null; // TODO: throw ex?
 			}
-			
+
 			final LookupValue lookupValue = lookupDataSource.findById(valueObj);
 			return lookupValue;
 		}
@@ -210,12 +212,12 @@ public class ObjectPropertyValue implements PropertyValue
 			return null;
 		}
 	}
-	
+
 	private String convertToDisplayString(final Object value)
 	{
 		final int displayType = getDisplayType();
-		
-		if(value == null)
+
+		if (value == null)
 		{
 			return "";
 		}
@@ -247,13 +249,13 @@ public class ObjectPropertyValue implements PropertyValue
 			return value.toString();
 		}
 	}
-	
+
 	private LookupDataSource getLookupDataSource()
 	{
 		// TODO: optimize
 		final PropertyName lookupPropertyName = WindowConstants.lookupValuesName(getName());
 		final LookupPropertyValue lookupPropertyValue = LookupPropertyValue.cast(getChildPropertyValues().get(lookupPropertyName));
-		if(lookupPropertyValue == null)
+		if (lookupPropertyValue == null)
 		{
 			return null;
 		}
@@ -282,16 +284,22 @@ public class ObjectPropertyValue implements PropertyValue
 	{
 		return !Check.equals(value, initialValue);
 	}
-	
+
 	@Override
 	public boolean isReadOnlyForUser()
 	{
 		return readOnlyForUser;
 	}
-	
+
 	@Override
 	public boolean isCalculated()
 	{
 		return false;
+	}
+
+	@Override
+	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	{
+		return ViewCommandHelper.notSupported(command, this);
 	}
 }

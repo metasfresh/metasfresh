@@ -4,22 +4,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import org.adempiere.util.concurrent.FutureValue;
 import org.slf4j.Logger;
 import org.vaadin.viritin.fields.LazyComboBox;
 import org.vaadin.viritin.fields.LazyComboBox.FilterableCountProvider;
 import org.vaadin.viritin.fields.LazyComboBox.FilterablePagingProvider;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.shared.datatype.LookupDataSourceServiceDTO;
+import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
@@ -34,12 +36,12 @@ import de.metas.ui.web.window.shared.datatype.PropertyPath;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,25 +51,24 @@ import de.metas.ui.web.window.shared.datatype.PropertyPath;
 @SuppressWarnings("serial")
 public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(SearchLookupValueEditor.class);
 
 	private PropertyName valuesPropertyName;
 
-	private final int pageLength = 10;
+	private final int pageLength = LookupDataSourceQueryCommand.DEFAULT_PageLength;
 	private ComboDataSource _comboDataSource;
-	
-	private LookupDataSourceServiceSupplier lookupDataSourceServiceSupplier;
 
 	public SearchLookupValueEditor(final PropertyDescriptor descriptor)
 	{
 		super(descriptor);
 	}
-	
+
 	@Override
 	protected void collectWatchedPropertyNamesOnInit(final ImmutableSet.Builder<PropertyName> watchedPropertyNames)
 	{
 		super.collectWatchedPropertyNamesOnInit(watchedPropertyNames);
-		
+
 		valuesPropertyName = WindowConstants.lookupValuesName(getPropertyName());
 		watchedPropertyNames.add(valuesPropertyName);
 	}
@@ -77,19 +78,19 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		final ComboDataSource comboDataSource = getComboDataSource();
 		final int pageLength = comboDataSource.getPageLength();
-		
+
 		@SuppressWarnings("unchecked")
 		final LazyComboBox<LookupValue> valueField = new LazyComboBox<LookupValue>(LookupValue.class, comboDataSource, comboDataSource, pageLength)
 		{
 			@Override
-			protected void setInternalValue(Object newValue)
+			protected void setInternalValue(final Object newValue)
 			{
 				final LookupValue lookupValue = toLookupValue(newValue);
 				getComboDataSource().setCurrentValue(lookupValue);
 				super.setInternalValue(lookupValue);
 			}
 		};
-		
+
 		return valueField;
 	}
 
@@ -97,8 +98,9 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	{
 		if (_comboDataSource == null)
 		{
-			lookupDataSourceServiceSupplier = new LookupDataSourceServiceSupplier();
-			_comboDataSource = new ComboDataSource(getPropertyName(), lookupDataSourceServiceSupplier, pageLength);
+			final PropertyPath propertyPath = getPropertyPath();
+			final PropertyPath valuesPropertyPath = PropertyPath.of(propertyPath.getGridPropertyName(), propertyPath.getRowId(), WindowConstants.lookupValuesName(propertyPath.getPropertyName()));
+			_comboDataSource = new ComboDataSource(valuesPropertyPath, getEditorListener(), pageLength);
 		}
 		return _comboDataSource;
 	}
@@ -111,7 +113,14 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	}
 
 	@Override
-	public void setValue(final PropertyName propertyName, Object value)
+	public void setEditorListener(final EditorListener listener)
+	{
+		super.setEditorListener(listener);
+		getComboDataSource().setHandler(listener);
+	}
+
+	@Override
+	public void setValue(final PropertyName propertyName, final Object value)
 	{
 		if (Objects.equals(getPropertyName(), propertyName))
 		{
@@ -119,11 +128,11 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			getComboDataSource().setCurrentValue(lookupValue);
 			super.setValue(propertyName, lookupValue);
 		}
-		else if (Objects.equals(valuesPropertyName, propertyName))
-		{
-			final LookupDataSourceServiceDTO lookupDataSourceService = LookupDataSourceServiceDTO.cast(value);
-			lookupDataSourceServiceSupplier.set(lookupDataSourceService);
-		}
+		// else if (Objects.equals(valuesPropertyName, propertyName))
+		// {
+		// final LookupDataSourceServiceDTO lookupDataSourceService = LookupDataSourceServiceDTO.cast(value);
+		// lookupDataSourceServiceSupplier.set(lookupDataSourceService);
+		// }
 		else
 		{
 			super.setValue(propertyName, value);
@@ -131,14 +140,14 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 	}
 
 	@Override
-	protected LookupValue convertToView(Object valueObj)
+	protected LookupValue convertToView(final Object valueObj)
 	{
 		return toLookupValue(valueObj);
 	}
-	
+
 	private static final LookupValue toLookupValue(final Object valueObj)
 	{
-		if(NullValue.isNull(valueObj))
+		if (NullValue.isNull(valueObj))
 		{
 			return null;
 		}
@@ -155,66 +164,35 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 		{
 			throw new IllegalArgumentException("Cannot cast '" + valueObj + "' (" + valueObj.getClass() + ") to " + LookupValue.class);
 		}
-		
-	}
-	
-	
-	private final class LookupDataSourceServiceSupplier implements Supplier<LookupDataSourceServiceDTO>
-	{
-		private LookupDataSourceServiceDTO _lookupDataSourceService;
-		
-		public void set(final LookupDataSourceServiceDTO lookupDataSourceService)
-		{
-			this._lookupDataSourceService = lookupDataSourceService;
-		}
 
-		@Override
-		public LookupDataSourceServiceDTO get()
-		{
-			if (_lookupDataSourceService == null)
-			{
-				final PropertyPath valuesPropertyPath = PropertyPath.of(valuesPropertyName);
-				final ListenableFuture<Object> futureValue = getEditorListener().requestValue(valuesPropertyPath);
-				try
-				{
-					final Object valueObj = futureValue.get(10, TimeUnit.SECONDS);
-					_lookupDataSourceService = LookupDataSourceServiceDTO.cast(valueObj);
-					if(_lookupDataSourceService == null)
-					{
-						logger.warn("Got no lookupDataSource for {}", valuesPropertyName);
-					}
-				}
-				catch (Exception e)
-				{
-					logger.warn("Failed retrieving future lookup data source", e);
-				}
-			}
-			return _lookupDataSourceService;
-		}
-		
 	}
 
 	private static final class ComboDataSource implements FilterablePagingProvider<LookupValue>, FilterableCountProvider
 	{
-		private final PropertyName propertyName;
-		private final LookupDataSourceServiceSupplier _lookupDataSourceServiceSupplier;
-		
+		private final PropertyPath valuesPropertyPath;
+		private EditorListener handler = NullEditorListener.instance;
+
 		private final int pageLength;
 		private LookupValue _currentValue;
 
-		public ComboDataSource(final PropertyName propertyName, final LookupDataSourceServiceSupplier lookupDataSourceServiceSupplier, final int pageLength)
+		public ComboDataSource(final PropertyPath valuesPropertyPath, final EditorListener handler, final int pageLength)
 		{
 			super();
-			
-			this.propertyName = propertyName;
-			
-			this._lookupDataSourceServiceSupplier = Preconditions.checkNotNull(lookupDataSourceServiceSupplier, "lookupDataSourceServiceSupplier");
-			
+
+			this.valuesPropertyPath = valuesPropertyPath;
+
 			if (pageLength <= 0)
 			{
 				throw new IllegalArgumentException("pageLength <= 0");
 			}
 			this.pageLength = pageLength;
+
+			setHandler(handler);
+		}
+
+		public void setHandler(final EditorListener handler)
+		{
+			this.handler = handler == null ? NullEditorListener.instance : handler;
 		}
 
 		public int getPageLength()
@@ -222,57 +200,105 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 			return pageLength;
 		}
 
-		private LookupDataSourceServiceDTO getLookupDataSourceService()
-		{
-			return _lookupDataSourceServiceSupplier.get();
-		}
-		
 		public void setCurrentValue(final LookupValue newValue)
 		{
-			this._currentValue = newValue;
+			_currentValue = newValue;
 		}
-		
+
 		private LookupValue getCurrentValue()
 		{
-			return this._currentValue;
+			return _currentValue;
 		}
+
+		private ImmutableList<LookupValue> returnInvalidResult = null;
 
 		@Override
 		public int size(final String filter)
 		{
-			final LookupDataSourceServiceDTO lookupDataSourceService = getLookupDataSourceService();
-			if (lookupDataSourceService != null)
+			returnInvalidResult = null;
+
+			final int size = executeCommand(ViewCommand.builder()
+					.setPropertyPath(valuesPropertyPath)
+					.setCommandId(LookupDataSourceQueryCommand.COMMAND_Size)
+					.setParameter(LookupDataSourceQueryCommand.PARAMETER_Filter, filter)
+					.build());
+
+			if (size != LookupDataSourceQueryCommand.SIZE_InvalidFilter)
 			{
-				final int size = lookupDataSourceService.sizeIfValidFilter(filter);
-				if(size != LookupDataSourceServiceDTO.SIZE_InvalidFilter)
-				{
-					return size;
-				}
+				return size;
 			}
 
 			//
 			// Fallback (when filter is not valid or there is no datasource service)
 			final LookupValue currentValue = getCurrentValue();
-			return currentValue == null ? 0 : 1;
+			final ImmutableList<LookupValue> returnInvalidResult = currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
+			this.returnInvalidResult = returnInvalidResult;
+			return returnInvalidResult.size();
 		}
 
 		@Override
 		public List<LookupValue> findEntities(final int firstRow, final String filter)
 		{
-			final LookupDataSourceServiceDTO lookupDataSourceService = getLookupDataSourceService();
-			if(lookupDataSourceService != null)
+			final ImmutableList<LookupValue> returnInvalidResult = this.returnInvalidResult;
+			if (returnInvalidResult != null)
 			{
-				final List<LookupValue> values = lookupDataSourceService.findEntitiesIfValidFilter(filter, firstRow, pageLength);
-				if(values != null)
-				{
-					return values; 
-				}
+				return returnInvalidResult;
+			}
+
+			final List<LookupValue> values = executeCommand(ViewCommand.builder()
+					.setPropertyPath(valuesPropertyPath)
+					.setCommandId(LookupDataSourceQueryCommand.COMMAND_Find)
+					.setParameter(LookupDataSourceQueryCommand.PARAMETER_Filter, filter)
+					.setParameter(LookupDataSourceQueryCommand.PARAMETER_FirstRow, firstRow)
+					.setParameter(LookupDataSourceQueryCommand.PARAMETER_PageLength, pageLength)
+					.build());
+			if (values != null)
+			{
+				return ImmutableList.copyOf(values);
 			}
 
 			//
 			// Fallback (when filter is not valid or there is no datasource service)
 			final LookupValue currentValue = getCurrentValue();
-			return currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
+			final List<LookupValue> fallbackValues = currentValue == null ? ImmutableList.of() : ImmutableList.of(currentValue);
+			return fallbackValues;
+		}
+
+		private <ResultType> ResultType executeCommand(final ViewCommand command)
+		{
+			try
+			{
+				final FutureValue<ResultType> futureValue = new FutureValue<>();
+				handler.executeCommand(command, new ViewCommandCallback()
+				{
+
+					@Override
+					public void onResult(final ViewCommand command, final ViewCommandResult result)
+					{
+						try
+						{
+							final ResultType resultCasted = result.getValue();
+							futureValue.set(resultCasted);
+						}
+						catch (final Exception ex)
+						{
+							futureValue.setError(ex);
+						}
+					}
+
+					@Override
+					public void onError(final Exception error)
+					{
+						futureValue.setError(error);
+					}
+				});
+
+				return futureValue.get(10, TimeUnit.SECONDS);
+			}
+			catch (final Exception e)
+			{
+				throw Throwables.propagate(Throwables.getRootCause(e));
+			}
 		}
 	}
 }

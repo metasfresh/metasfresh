@@ -13,10 +13,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.model.PropertyNameDependenciesMap.DependencyType;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
  * #%L
@@ -28,12 +31,12 @@ import de.metas.ui.web.window.model.PropertyNameDependenciesMap.DependencyType;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -72,7 +75,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 
 		if (logicExpressionParams.isEmpty())
 		{
-			this.value = logicExpression.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
+			value = logicExpression.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
 		}
 	}
 
@@ -106,7 +109,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	}
 
 	@Override
-	public void onDependentPropertyValueChanged(DependencyValueChangedEvent event)
+	public void onDependentPropertyValueChanged(final DependencyValueChangedEvent event)
 	{
 		if (event.isDependencyType(dependencyType))
 		{
@@ -115,12 +118,12 @@ public class LogicExpressionPropertyValue implements PropertyValue
 				final PropertyValueCollection values = event.getValues();
 				final Evaluatee evalCtx = values.asEvaluatee();
 				final Boolean valueNew = logicExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
-				this.value = valueNew;
+				value = valueNew;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Failed evaluating expression '{}' for {}. Using default value: {}", logicExpression, getName(), defaultValue, e);
-				this.value = defaultValue;
+				value = defaultValue;
 			}
 		}
 	}
@@ -147,7 +150,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	public Object getValue()
 	{
 		final Boolean value = this.value;
-		if(value == null)
+		if (value == null)
 		{
 			logger.warn("Value was not calculated for {}. Returning default: {}", getName(), defaultValue);
 			return defaultValue;
@@ -172,5 +175,11 @@ public class LogicExpressionPropertyValue implements PropertyValue
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command)
+	{
+		throw new UnsupportedOperationException("Command not supported: " + command);
 	}
 }

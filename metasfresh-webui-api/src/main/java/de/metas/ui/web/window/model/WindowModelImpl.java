@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.service.IImageProvider;
@@ -44,6 +45,8 @@ import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.model.event.ModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
@@ -325,11 +328,11 @@ public class WindowModelImpl implements WindowModel
 		if (propertyPath.isGridProperty())
 		{
 			final GridPropertyValue gridPropertyValue = GridPropertyValue.cast(properties.getPropertyValueOrNull(propertyPath.getGridPropertyName()));
-			if(gridPropertyValue == null)
+			if (gridPropertyValue == null)
 			{
 				return false;
 			}
-			
+
 			return gridPropertyValue.hasProperty(propertyPath.getRowId(), propertyPath.getPropertyName());
 		}
 		else
@@ -337,82 +340,65 @@ public class WindowModelImpl implements WindowModel
 			return properties.getPropertyValueOrNull(propertyPath.getPropertyName()) != null;
 		}
 	}
-	
+
 	@Override
 	public Object getProperty(final PropertyPath propertyPath)
 	{
 		if (propertyPath.isGridProperty())
 		{
-			return getGridProperty(propertyPath.getGridPropertyName(), propertyPath.getRowId(), propertyPath.getPropertyName());
+			return getGridProperty(propertyPath);
 		}
 		else
 		{
-			return getProperty(propertyPath.getPropertyName());
+			final PropertyValueCollection properties = getPropertiesLoaded();
+			final PropertyValue propertyValue = properties.getPropertyValue(propertyPath.getPropertyName());
+			return propertyValue.getValue();
 		}
 	}
-	
 
-	private Object getProperty(final PropertyName propertyName)
+	private Object getGridProperty(final PropertyPath propertyPath)
 	{
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		final PropertyValue propertyValue = properties.getPropertyValue(propertyName);
-		return propertyValue.getValue();
-	}
-	
-	private Object getGridProperty(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
-	{
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValueOrNull(gridPropertyName));
+		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValueOrNull(propertyPath.getGridPropertyName()));
 		if (gridProp == null)
 		{
 			// TODO: handle missing model property
-			logger.trace("Skip getting propery {} because property value is missing", propertyName);
+			logger.trace("Skip getting propery {} because property value is missing", propertyPath);
 			return null;
 		}
 
-		final Object value = gridProp.getValueAt(rowId, propertyName);
+		final Object value = gridProp.getValueAt(propertyPath.getRowId(), propertyPath.getPropertyName());
 		return value;
 	}
-	
+
 	@Override
-	public Object getPropertyOrNull(PropertyPath propertyPath)
+	public Object getPropertyOrNull(final PropertyPath propertyPath)
 	{
 		if (propertyPath.isGridProperty())
 		{
-			return getGridProperty(propertyPath.getGridPropertyName(), propertyPath.getRowId(), propertyPath.getPropertyName());
+			return getGridProperty(propertyPath);
 		}
 		else
 		{
-			return getPropertyOrNull(propertyPath.getPropertyName());
+			final PropertyValueCollection properties = getPropertiesLoaded();
+			final PropertyValue propertyValue = properties.getPropertyValueOrNull(propertyPath.getPropertyName());
+			if (propertyValue == null)
+			{
+				return null;
+			}
+			return propertyValue.getValue();
 		}
 	}
 
-	private Object getPropertyOrNull(final PropertyName propertyName)
-	{
-		final PropertyValueCollection properties = getPropertiesLoaded();
-		final PropertyValue propertyValue = properties.getPropertyValueOrNull(propertyName);
-		if (propertyValue == null)
-		{
-			return null;
-		}
-		return propertyValue.getValue();
-	}
-	
 	@Override
-	public void setProperty(PropertyPath propertyPath, Object value)
+	public void setProperty(final PropertyPath propertyPath, final Object value)
 	{
 		if (propertyPath.isGridProperty())
 		{
 			setGridProperty(propertyPath, value);
+			return;
 		}
-		else
-		{
-			setProperty0(propertyPath, value);
-		}
-	}
 
-	private void setProperty0(final PropertyPath propertyPath, final Object value)
-	{
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("Setting property: {}={} ({})", propertyPath, value, value == null ? null : value.getClass());
@@ -453,7 +439,7 @@ public class WindowModelImpl implements WindowModel
 		// Update dependencies
 		updateAllWhichDependOn(propertyName);
 	}
-	
+
 	private void setGridProperty(final PropertyPath propertyPath, final Object value)
 	{
 		if (logger.isTraceEnabled())
@@ -462,7 +448,7 @@ public class WindowModelImpl implements WindowModel
 		}
 
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		final PropertyName gridPropertyName = propertyPath.getGridPropertyName(); 
+		final PropertyName gridPropertyName = propertyPath.getGridPropertyName();
 		final GridPropertyValue gridProp = GridPropertyValue.cast(properties.getPropertyValue(gridPropertyName));
 		if (gridProp == null)
 		{
@@ -487,7 +473,6 @@ public class WindowModelImpl implements WindowModel
 
 		// TODO: process dependencies
 	}
-
 
 	private final void updateAllDependenciesNoFire()
 	{
@@ -737,7 +722,7 @@ public class WindowModelImpl implements WindowModel
 	}
 
 	@Override
-	public ActionsList getChildActions(String actionId)
+	public ActionsList getChildActions(final String actionId)
 	{
 		return getActionsManager().getChildActions(actionId);
 	}
@@ -777,7 +762,7 @@ public class WindowModelImpl implements WindowModel
 					.setListener(target -> postEvent(ZoomToWindowEvent.of(WindowModelImpl.this, zoomInfo)))
 					.buildAndAdd();
 		}
-		
+
 		return actionsManager;
 	}
 
@@ -811,5 +796,24 @@ public class WindowModelImpl implements WindowModel
 		// pi.setTabNo(getTabNo()); // TODO
 
 		Services.get(IWebProcessCtl.class).reportAsync(pi, event);
+	}
+
+	@Override
+	public ViewCommandResult executeCommand(final ViewCommand command) throws Exception
+	{
+		final PropertyPath propertyPath = command.getPropertyPath();
+		final PropertyValueCollection properties = getPropertiesLoaded();
+		final PropertyValue propertyValue;
+		if (propertyPath.isGridProperty())
+		{
+			propertyValue = properties.getPropertyValue(propertyPath.getGridPropertyName());
+		}
+		else
+		{
+			propertyValue = properties.getPropertyValue(propertyPath.getPropertyName());
+		}
+
+		final ListenableFuture<ViewCommandResult> futureResult = propertyValue.executeCommand(command);
+		return ViewCommandHelper.extractResult(futureResult);
 	}
 }

@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 
 @SuppressWarnings("serial")
-public class LookupValue implements Serializable
+public final class LookupValue implements Serializable
 {
 	@JsonCreator
 	public static final LookupValue of(@JsonProperty("id") final Object id, @JsonProperty("n") final String displayName, @JsonProperty("ln") final String longDisplayName)
@@ -103,7 +103,7 @@ public class LookupValue implements Serializable
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -119,13 +119,13 @@ public class LookupValue implements Serializable
 		}
 
 		final LookupValue other = (LookupValue)obj;
-		return Objects.equals(this.id, other.id);
+		return Objects.equals(id, other.id);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hashCode(this.id);
+		return Objects.hashCode(id);
 	}
 
 	public Object getId()

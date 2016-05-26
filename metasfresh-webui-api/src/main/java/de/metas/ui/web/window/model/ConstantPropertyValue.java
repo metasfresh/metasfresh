@@ -5,8 +5,11 @@ import java.util.Map;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 
 /*
  * #%L
@@ -117,7 +120,7 @@ public final class ConstantPropertyValue implements PropertyValue
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isReadOnlyForUser()
 	{
@@ -128,5 +131,11 @@ public final class ConstantPropertyValue implements PropertyValue
 	public boolean isCalculated()
 	{
 		return true;
+	}
+
+	@Override
+	public ListenableFuture<ViewCommandResult> executeCommand(final ViewCommand command) throws Exception
+	{
+		return ViewCommandHelper.notSupported(command, this);
 	}
 }

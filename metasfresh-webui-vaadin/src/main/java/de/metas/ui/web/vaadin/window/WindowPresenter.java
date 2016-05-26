@@ -22,6 +22,7 @@ import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.Application;
+import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
@@ -37,6 +38,8 @@ import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
 import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
@@ -69,7 +72,7 @@ public class WindowPresenter implements WindowViewListener
 	// @Autowired(required = true)
 	// // @Lazy
 	// private WindowModel _model;
-	private WindowModel _model = new JSONProxyWindowModel(new WindowModelImpl());
+	private final WindowModel _model = new JSONProxyWindowModel(new WindowModelImpl());
 	private boolean _registeredToModelEventBus = false;
 
 	@Autowired(required = true)
@@ -80,14 +83,14 @@ public class WindowPresenter implements WindowViewListener
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
 	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
 
-	private Multimap<PropertyPath, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
+	private final Multimap<PropertyPath, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
 
 	public WindowPresenter()
 	{
 		super();
 		Application.autowire(this);
 
-		setView(this._view, null);
+		setView(_view, null);
 	}
 
 	public void setRootPropertyDescriptor(final PropertyDescriptor rootPropertyDescriptor)
@@ -160,7 +163,7 @@ public class WindowPresenter implements WindowViewListener
 
 	public void setView(final WindowView view)
 	{
-		final WindowView viewOld = this._view;
+		final WindowView viewOld = _view;
 		if (viewOld == view)
 		{
 			return;
@@ -172,7 +175,7 @@ public class WindowPresenter implements WindowViewListener
 	private final void setView(final WindowView view, final WindowView viewOld)
 	{
 		unbindFromView();
-		this._view = view;
+		_view = view;
 		bindToView();
 
 		//
@@ -255,7 +258,7 @@ public class WindowPresenter implements WindowViewListener
 			final PropertyValuesDTO values = model.getPropertyValuesDTO(viewPropertyNames);
 			view.setProperties(values);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.warn("Failed updating the view from model", e);
 			view.showError(e.getLocalizedMessage());
@@ -303,12 +306,12 @@ public class WindowPresenter implements WindowViewListener
 	{
 		Preconditions.checkNotNull(propertyNames, "propertyNames");
 		final Set<PropertyName> viewPropertyNamesNew = ImmutableSet.copyOf(propertyNames);
-		if (Objects.equals(this.viewPropertyNames, propertyNames))
+		if (Objects.equals(viewPropertyNames, propertyNames))
 		{
 			return;
 		}
 
-		this.viewPropertyNames = viewPropertyNamesNew;
+		viewPropertyNames = viewPropertyNamesNew;
 		logger.trace("View subscribed to following property names: {}", propertyNames);
 
 		updateViewFromModel(getView());
@@ -319,7 +322,7 @@ public class WindowPresenter implements WindowViewListener
 	@Override
 	public void viewPropertyChanged(final PropertyPath propertyPath, final Object value)
 	{
-		logger.trace("Got view property changed: {}={} ({})", propertyPath, value, (value == null ? "-" : value.getClass()));
+		logger.trace("Got view property changed: {}={} ({})", propertyPath, value, value == null ? "-" : value.getClass());
 		logger.trace("UI: {}", UI.getCurrent());
 
 		viewSettingPropertyNames.add(propertyPath);
@@ -388,7 +391,7 @@ public class WindowPresenter implements WindowViewListener
 			consumer.accept(model);
 			return;
 		}
-		catch (Exception modelException)
+		catch (final Exception modelException)
 		{
 			handleModelException(modelException);
 			return;
@@ -498,7 +501,7 @@ public class WindowPresenter implements WindowViewListener
 		void valueChanged(PropertyPath propertyPath, Object value);
 	}
 
-	public void addPropertyValueChangedListener(final PropertyPath propertyPath, PropertyValueChangedListener listener)
+	public void addPropertyValueChangedListener(final PropertyPath propertyPath, final PropertyValueChangedListener listener)
 	{
 		Preconditions.checkNotNull(propertyPath, "propertyPath not null");
 		Preconditions.checkNotNull(listener, "listener not null");
@@ -551,7 +554,7 @@ public class WindowPresenter implements WindowViewListener
 	}
 
 	@Override
-	public ActionsList viewRequestChildActions(String actionId)
+	public ActionsList viewRequestChildActions(final String actionId)
 	{
 		final WindowModel model = getModel();
 		return model.getChildActions(actionId);
@@ -563,6 +566,33 @@ public class WindowPresenter implements WindowViewListener
 		final int windowId = event.getWindowId();
 		final String viewNameAndParameters = WindowViewProvider.createViewNameAndParameters(windowId);
 		UI.getCurrent().getNavigator().navigateTo(viewNameAndParameters);
+	}
+
+	@Override
+	public void viewCommandExecute(final ViewCommand command, final ViewCommandCallback callback)
+	{
+		updateModel(model -> {
+			final ViewCommandResult result;
+			try
+			{
+				result = model.executeCommand(command);
+			}
+			catch (final Exception ex)
+			{
+				callback.onError(ex);
+				return;
+			}
+
+			try
+			{
+				callback.onResult(command, result);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed while setting the result {} to {} for {}", result, callback, command);
+				throw Throwables.propagate(e);
+			}
+		});
 	}
 
 }

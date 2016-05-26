@@ -1,5 +1,10 @@
 package de.metas.ui.web.window.shared.datatype;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /*
  * #%L
  * de.metas.ui.web.vaadin
@@ -10,32 +15,37 @@ package de.metas.ui.web.window.shared.datatype;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ComposedValue
+@SuppressWarnings("serial")
+public final class ComposedValue implements Serializable
 {
-	public static final ComposedValue of(final Object id, final String displayName, final String longDisplayName)
+	@JsonCreator
+	public static final ComposedValue of(@JsonProperty("id") final Object id, @JsonProperty("n") final String displayName, @JsonProperty("ln") final String longDisplayName)
 	{
 		return new ComposedValue(id, displayName, longDisplayName);
 	}
-	
+
 	public static final ComposedValue cast(final Object valueObj)
 	{
 		return (ComposedValue)valueObj;
 	}
 
+	@JsonProperty("id")
 	private final Object id;
+	@JsonProperty("n")
 	private final String displayName;
+	@JsonProperty("ln")
 	private final String longDisplayName;
 
 	private ComposedValue(final Object id, final String displayName, final String longDisplayName)

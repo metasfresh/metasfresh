@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.vaadin.window.editor.EditorListener;
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 
 /*
@@ -75,4 +76,23 @@ public class WindowViewListener2EditorListenerWrapper implements EditorListener
 		}
 		windowViewListener.viewGridNewRow(gridPropertyName);
 	};
+
+	@Override
+	public void executeCommand(final ViewCommand command)
+	{
+		final ViewCommandCallback callback = null;
+		executeCommand(command, callback);
+	}
+
+	@Override
+	public void executeCommand(final ViewCommand command, final ViewCommandCallback callback)
+	{
+		final WindowViewListener windowViewListener = getWindowViewListener();
+		if (windowViewListener == null)
+		{
+			return;
+		}
+
+		windowViewListener.viewCommandExecute(command, callback);
+	}
 }

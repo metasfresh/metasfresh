@@ -11,6 +11,8 @@ import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.model.action.ActionsList;
+import de.metas.ui.web.window.shared.command.ViewCommand;
+import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
@@ -39,7 +41,7 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 
 /**
  * Class used to make sure all our DTO objects are serializable/deserializable to/from JSON.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -66,29 +68,36 @@ public class JSONProxyWindowModel implements WindowModel
 
 	private Object testJSON(final Object valueObj)
 	{
-		Class<?> type = valueObj == null ? Object.class : valueObj.getClass();
+		final Class<?> type = valueObj == null ? Object.class : valueObj.getClass();
 		return testJSON(valueObj, type);
 	}
 
 	private <T> T testJSON(final Object valueObj, final Class<T> type)
 	{
 		String jsonStr = null;
+		T value = null;
 		try
 		{
 			jsonStr = jsonObjectMapper.writeValueAsString(valueObj);
-			System.out.println("------------------------------------------------------------------------");
-			System.out.println("JSON: " + jsonStr);
-			System.out.println("------------------------------------------------------------------------");
-			final T value = jsonObjectMapper.readValue(jsonStr, type);
+			value = jsonObjectMapper.readValue(jsonStr, type);
 			return value;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			final String errmsg = "Cannot serialize/deserialize value"
 					+ "\n valueObj: " + valueObj
 					+ "\n type: " + type
 					+ "\n jsonStr: " + jsonStr;
 			throw new IllegalArgumentException(errmsg, ex);
+		}
+		finally
+		{
+			System.out.println("------------------------------------------------------------------------");
+			System.out.println("Value input: " + valueObj + ", type=" + type);
+			System.out.println("JSON: " + jsonStr);
+			System.out.println("Value output: " + value + ", type=" + (value == null ? "-" : value.getClass()));
+			System.out.println("------------------------------------------------------------------------");
+			
 		}
 	}
 
@@ -211,9 +220,17 @@ public class JSONProxyWindowModel implements WindowModel
 	}
 
 	@Override
-	public ActionsList getChildActions(String actionId)
+	public ActionsList getChildActions(final String actionId)
 	{
 		final ActionsList actions = delegate.getChildActions(actionId);
 		return testJSON(actions, ActionsList.class);
+	}
+
+	@Override
+	public ViewCommandResult executeCommand(final ViewCommand command) throws Exception
+	{
+		final ViewCommand commandAfterJSON = testJSON(command, ViewCommand.class);
+		final ViewCommandResult result = delegate.executeCommand(commandAfterJSON);
+		return testJSON(result, ViewCommandResult.class);
 	}
 }
