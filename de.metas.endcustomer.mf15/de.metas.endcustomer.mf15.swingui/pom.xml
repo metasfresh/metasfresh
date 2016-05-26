@@ -13,7 +13,7 @@
 
 	<properties>
 		<dist.dir>target/swingui</dist.dir>
-		<mainJar>${project.name}-${project.version}.jar</mainJar>
+		<mainJar>${project.name}-${metasfresh-dependency.version}.jar</mainJar>
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		
@@ -87,13 +87,13 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
@@ -102,7 +102,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

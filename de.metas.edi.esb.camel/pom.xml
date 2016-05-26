@@ -27,7 +27,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
+				<version>${metasfresh-dependency.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -202,7 +202,7 @@
 						
 						Thx to http://www.regexpal.com/
 						-->
-						<Bundle-Version>0.0.0.${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						<Bundle-Version>0.0.0.${metasfresh-dependency.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include de.metas.printing.esb.api in our bundle. Don't make it 
 							an extra bundle, unless there is *another* OSGI-bundle such as esb.printing 

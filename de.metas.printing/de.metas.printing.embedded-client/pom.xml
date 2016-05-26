@@ -19,27 +19,27 @@
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		<!-- if we add printing dep, then we introduce dep cycles
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		-->
 
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
 			<!-- NOTE: this one is needed for de.metas.printing.client.endpoint.LoopbackPrintConnectionEndpoint -->
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.esb.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 	</dependencies>
 

@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<!-- this is required when we run with -Dorg.adempiere.server.embedded=true -->
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

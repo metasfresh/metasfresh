@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.ait</groupId>
 			<artifactId>de.metas.adempiere.ait</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 	</dependencies>
 

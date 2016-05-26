@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 
 			<exclusions>
 				<exclusion>

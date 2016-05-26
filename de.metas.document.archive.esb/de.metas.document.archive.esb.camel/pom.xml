@@ -17,13 +17,13 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.api</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		
 		<!-- Apache CAMEL dependencies -->
@@ -100,7 +100,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
+				<version>${metasfresh-dependency.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -129,7 +129,7 @@
 						
 						Thx to http://www.regexpal.com/
 						-->
-						<Bundle-Version>0.0.0.${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						<Bundle-Version>0.0.0.${metasfresh-dependency.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include dependent artifacts in our bundle. Don't make it an extra 
 							bundle, unless there is *another* OSGI-bundle that also needs those dependencies -->

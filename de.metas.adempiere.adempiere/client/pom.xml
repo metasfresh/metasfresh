@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
-			<version>${project.version}</version>			
+			<version>${metasfresh-dependency.version}</version>			
 			<scope>runtime</scope>
 		</dependency>			
 -->	

@@ -20,10 +20,17 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.commons.cxf</groupId>
+			<artifactId>de.metas.commons.cxf</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.api</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>

@@ -17,8 +17,8 @@
 	<description>Print Processing (Mass &amp; Single) - AITs</description>
 
 	<properties>
-		<de.metas.printing.esb.camel.version>${project.version}</de.metas.printing.esb.camel.version>
-		<de.metas.printing.printing-client.version>${project.version}</de.metas.printing.printing-client.version>
+		<de.metas.printing.esb.camel.version>${metasfresh-dependency.version}</de.metas.printing.esb.camel.version>
+		<de.metas.printing.printing-client.version>${metasfresh-dependency.version}</de.metas.printing.printing-client.version>
 	</properties>
 
 	<dependencies>
@@ -264,7 +264,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
+				<version>${metasfresh-dependency.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

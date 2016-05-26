@@ -13,9 +13,9 @@
 
 	<description>Wraps the printing client jar into a web application (war) to make it available as applet</description>
 	
-	<!-- value usually equals ${project.version}, but for releases they need to differ temporarily -->
+	<!-- value usually equals ${metasfresh-dependency.version}, but for releases they need to differ temporarily -->
 	<properties>
-		<printing-client.version>${project.version}</printing-client.version>
+		<printing-client.version>${metasfresh-dependency.version}</printing-client.version>
 	</properties>
 
 	<dependencies>
@@ -47,7 +47,7 @@
 									<classifier>jar-with-dependencies</classifier>
 									<type>jar</type>
 									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}</outputDirectory>
+									<outputDirectory>${project.build.directory}/${project.artifactId}-${metasfresh-dependency.version}</outputDirectory>
 									<destFileName>printing-client.jar</destFileName>
 								</artifactItem>
 							</artifactItems>

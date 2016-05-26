@@ -8,6 +8,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
+<!-- temporarly only !! -->
+	<version>1-master-SNAPSHOT</version>
 	<groupId>de.metas.procurement</groupId>
 	<artifactId>de.metas.procurement.sync-api</artifactId>
 

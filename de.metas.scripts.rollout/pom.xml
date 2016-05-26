@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.cli</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<exclusions>
 			<!-- we want just the all-in-one-jar..additional stuff only makes the banDuplicateClasses enforcer rule nervous -->
 				<exclusion>

@@ -60,7 +60,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>de.metas.report.jasper.commons</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 	</dependencies>
 </project>

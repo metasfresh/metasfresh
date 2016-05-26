@@ -44,7 +44,7 @@
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
