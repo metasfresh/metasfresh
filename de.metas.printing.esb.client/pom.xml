@@ -23,7 +23,7 @@
 
 		<dependency>
 			<groupId>de.metas.commons.cxf</groupId>
-			<artifactId>de.metas.commons.cxf</artifactId>
+			<artifactId>metasfresh-commons-cxf</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
