@@ -13,6 +13,7 @@ import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
 /*
  * #%L
@@ -151,7 +152,7 @@ final class SqlsBuilder
 					.setPropertyName(PropertyName.of(keyColumnName))
 					.setSqlColumnName(keyColumnName)
 					.setType(PropertyDescriptorType.Value)
-					.setValueType(Integer.class)
+					.setValueType(PropertyDescriptorValueType.ID)
 					.build();
 			addProperty(propertyDescriptor, sqlTable);
 			
@@ -166,7 +167,7 @@ final class SqlsBuilder
 					.setPropertyName(PropertyName.of(sqlParentLinkColumnName))
 					.setSqlColumnName(sqlParentLinkColumnName)
 					.setType(PropertyDescriptorType.Value)
-					.setValueType(Integer.class)
+					.setValueType(PropertyDescriptorValueType.ID)
 					.build();
 			addProperty(propertyDescriptor, sqlTable);
 			

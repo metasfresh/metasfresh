@@ -1,12 +1,11 @@
 package de.metas.ui.web.vaadin.window.editor;
 
-import org.compiere.util.DisplayType;
-
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -43,8 +42,9 @@ public class TextEditor extends FieldEditor<String>
 	protected AbstractField<String> createValueField()
 	{
 		final AbstractTextField valueField;
-		final int displayType = getPropertyDescriptor().getDisplayType();
-		if (displayType == DisplayType.TextLong || displayType == DisplayType.Memo || displayType == DisplayType.Text)
+		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
+		final PropertyDescriptorValueType valueType = descriptor == null ? PropertyDescriptorValueType.Text : descriptor.getValueType();
+		if (valueType == PropertyDescriptorValueType.TextLong)
 		{
 			valueField = new TextArea();
 		}

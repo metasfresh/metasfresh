@@ -4,11 +4,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import org.compiere.util.DisplayType;
-
 import com.vaadin.data.util.converter.StringToIntegerConverter;
 import com.vaadin.ui.AbstractField;
 
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -47,12 +46,8 @@ public class IntegerEditor extends FieldEditor<Integer>
 		//
 		// Create the converter
 		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
-		int displayType = descriptor == null ? DisplayType.Integer : descriptor.getDisplayType();
-		if (!DisplayType.isNumeric(displayType))
-		{
-			displayType = DisplayType.Integer;
-		}
-		final IntegerConverter converter = new IntegerConverter(displayType);
+		final PropertyDescriptorValueType valueType = descriptor == null ? PropertyDescriptorValueType.Integer : descriptor.getValueType();
+		final IntegerConverter converter = new IntegerConverter(valueType);
 
 		//
 		// Create the field
@@ -68,18 +63,18 @@ public class IntegerEditor extends FieldEditor<Integer>
 
 	private static final class IntegerConverter extends StringToIntegerConverter
 	{
-		private final int displayType;
+		private final PropertyDescriptorValueType valueType;
 
-		public IntegerConverter(final int displayType)
+		public IntegerConverter(final PropertyDescriptorValueType valueType)
 		{
 			super();
-			this.displayType = displayType;
+			this.valueType = valueType;
 		}
 
 		@Override
 		protected NumberFormat getFormat(final Locale locale)
 		{
-			final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
+			final DecimalFormat numberFormat = ViewPropertyDescriptorValueTypeHelper.getNumberFormat(valueType);
 			return numberFormat;
 		}
 	}

@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -150,17 +149,17 @@ public abstract class FieldEditor<T> extends AbstractEditor implements Field<T>
 		}
 		else if (Objects.equals(this.propertyName_ReadOnly, propertyName))
 		{
-			final boolean readOnly = DisplayType.toBoolean(value);
+			final boolean readOnly = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(value);
 			setReadonly(readOnly);
 		}
 		else if (Objects.equals(this.propertyName_Mandatory, propertyName))
 		{
-			final boolean mandatory = DisplayType.toBoolean(value);
+			final boolean mandatory = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(value);
 			setMandatory(mandatory);
 		}
 		else if (Objects.equals(this.propertyName_Displayed, propertyName))
 		{
-			final boolean displayed = DisplayType.toBoolean(value);
+			final boolean displayed = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(value);
 			setDisplayed(displayed);
 		}
 	}

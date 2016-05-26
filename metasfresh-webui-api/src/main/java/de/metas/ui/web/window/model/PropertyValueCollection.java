@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -319,7 +318,7 @@ public class PropertyValueCollection
 			}
 			else if (value instanceof Boolean)
 			{
-				return DisplayType.toBooleanString((Boolean)value);
+				return ModelPropertyDescriptorValueTypeHelper.convertToString((Boolean)value);
 			}
 			else if (value instanceof String)
 			{

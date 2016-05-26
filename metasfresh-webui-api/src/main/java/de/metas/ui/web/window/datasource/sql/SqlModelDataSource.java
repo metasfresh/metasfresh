@@ -5,6 +5,7 @@ import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.TimeUtil;
@@ -47,11 +47,13 @@ import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.datasource.ModelDataSourceQuery;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.model.ModelPropertyDescriptorValueTypeHelper;
 import de.metas.ui.web.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
 /*
  * #%L
@@ -356,7 +358,8 @@ public class SqlModelDataSource implements ModelDataSource
 	private Object retrieveField(final ResultSet rs, final SqlField sqlField) throws SQLException
 	{
 		final String columnName = sqlField.getColumnName();
-		final int displayType = sqlField.getDisplayType();
+		final PropertyDescriptorValueType valueType = sqlField.getValueType();
+		final Class<?> valueClass = ModelPropertyDescriptorValueTypeHelper.getValueClass(valueType);
 		boolean encrypted = sqlField.isEncrypted();
 
 		final Object value;
@@ -376,44 +379,33 @@ public class SqlModelDataSource implements ModelDataSource
 			}
 			encrypted = false;
 		}
-		else if (DisplayType.Location == displayType)
+		else if (valueType == PropertyDescriptorValueType.Location)
 		{
 			// FIXME: implement it efficiently - see https://metasfresh.atlassian.net/browse/FRESH-287 - Precalculate C_Location display address
 			final int locationId = rs.getInt(columnName);
 			value = locationService.findLookupValueById(locationId);
 			encrypted = false;
 		}
-		// Integer, ID, Lookup (UpdatedBy is a numeric column)
-		// FIXME: hardcoded
-		else if (displayType == DisplayType.Integer
-				|| DisplayType.isID(displayType)
-						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct")
-								|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))
-				|| "CreatedBy".equals(columnName)
-				|| "UpdatedBy".equals(columnName)
-				|| "Record_ID".equals(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
-		)
+		else if(java.lang.String.class == valueClass)
+		{
+			value = rs.getString(columnName);
+		}
+		else if (java.lang.Integer.class == valueClass)
 		{
 			final int valueInt = rs.getInt(columnName);
 			value = rs.wasNull() ? null : valueInt;
 		}
-		// Number
-		else if (DisplayType.isNumeric(displayType))
+		else if (java.math.BigDecimal.class == valueClass)
 		{
 			value = rs.getBigDecimal(columnName);
 		}
-		// Date
-		else if (DisplayType.isDate(displayType))
+		else if (java.util.Date.class.isAssignableFrom(valueClass))
 		{
-			value = rs.getTimestamp(columnName);
-		}
-		// RowID or Key (and Selection)
-		else if (displayType == DisplayType.RowID)
-		{
-			value = null;
+			final Timestamp valueTS = rs.getTimestamp(columnName);
+			value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
 		}
 		// YesNo
-		else if (displayType == DisplayType.YesNo)
+		else if (Boolean.class == valueClass)
 		{
 			String valueStr = rs.getString(columnName);
 			if (encrypted)
@@ -422,43 +414,45 @@ public class SqlModelDataSource implements ModelDataSource
 				encrypted = false;
 			}
 
-			value = DisplayType.toBoolean(valueStr, false);
+			value = ModelPropertyDescriptorValueTypeHelper.convertToBoolean(valueStr);
 		}
 		// LOB
-		else if (DisplayType.isLOB(displayType))
+		else if (byte[].class == valueClass)
 		{
 			final Object valueObj = rs.getObject(columnName);
+			final byte[] valueBytes;
 			if (rs.wasNull())
 			{
-				value = null;
+				valueBytes = null;
 			}
 			else if (valueObj instanceof Clob)
 			{
 				final Clob lob = (Clob)valueObj;
 				final long length = lob.length();
-				value = lob.getSubString(1, (int)length);
+				valueBytes = lob.getSubString(1, (int)length).getBytes();
 			}
 			else if (valueObj instanceof Blob)
 			{
 				final Blob lob = (Blob)valueObj;
 				final long length = lob.length();
-				value = lob.getBytes(1, (int)length);
+				valueBytes = lob.getBytes(1, (int)length);
 			}
 			else if (valueObj instanceof String)
 			{
-				value = valueObj;
+				valueBytes = ((String)valueObj).getBytes();
 			}
 			else if (valueObj instanceof byte[])
 			{
-				value = valueObj;
+				valueBytes = (byte[])valueObj;
 			}
 			else
 			{
 				logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, sqlField);
-				value = null;
+				valueBytes = null;
 			}
+			//
+			value = valueBytes;
 		}
-		// String
 		else
 		{
 			value = rs.getString(columnName);

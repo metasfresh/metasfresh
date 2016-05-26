@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor.legacy;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,10 +31,10 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.PropertyDescriptors;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor.Builder;
-import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.descriptor.PropertyDescriptors;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 
 /*
@@ -138,11 +137,11 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 
 		public RootPropertyDescriptorBuilder add(final GridWindowVO gridWindowVO)
 		{
-			if(rootBuilder != null)
+			if (rootBuilder != null)
 			{
 				throw new IllegalArgumentException("Cannot add more then one window");
 			}
-			
+
 			logger.debug("Adding {}", gridWindowVO);
 
 			ctx = gridWindowVO.getCtx();
@@ -156,7 +155,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setCaption(gridWindowVO.getName())
 					.setSqlTableName(rootTableName);
 
-			this.parent_SqlTableName = rootTableName;
+			parent_SqlTableName = rootTableName;
 			try
 			{
 				createAndAddTab(rootBuilder, rootTab);
@@ -246,7 +245,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 		{
 			boolean foundParentTab = false;
 			final List<GridTabVO> childTabs = new ArrayList<>();
-			for (final GridTabVO tab : this.gridTabVOs)
+			for (final GridTabVO tab : gridTabVOs)
 			{
 				if (!foundParentTab)
 				{
@@ -313,8 +312,8 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setSqlParentLinkColumnName(getParentLinkColumnNameOrNull(includedGridTabVO));
 			tabIdsAdded.add(includedGridTabVO.getAD_Tab_ID());
 
-			final String parent_SqlTableName_Old = this.parent_SqlTableName;
-			this.parent_SqlTableName = includedTableName;
+			final String parent_SqlTableName_Old = parent_SqlTableName;
+			parent_SqlTableName = includedTableName;
 			try
 			{
 				// Add fields directly to tab builder (without creating field groups)
@@ -325,7 +324,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			}
 			finally
 			{
-				this.parent_SqlTableName = parent_SqlTableName_Old;
+				parent_SqlTableName = parent_SqlTableName_Old;
 			}
 
 			return includedTabBuilder;
@@ -373,7 +372,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			final Builder fieldBuilder = PropertyDescriptor.builder()
 					.setType(PropertyDescriptorType.Value)
 					.setPropertyName(propertyName)
-					.setValueType(getValueType(gridFieldVO))
+					.setValueType(extractValueType(gridFieldVO))
 					.setCaption(gridFieldVO.getHeader())
 					.setLayoutInfo(createLayoutInfo(gridFieldVO))
 					//
@@ -387,7 +386,6 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			// SQL related metas info (shall be factored out of the descriptor);
 					.setSqlColumnName(gridFieldVO.getColumnName())
 					.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
-					.setSqlDisplayType(gridFieldVO.getDisplayType())
 					.setSQL_AD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
 					//
 					;
@@ -469,43 +467,95 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.build();
 		}
 
-		private static Class<?> getValueType(final GridFieldVO field)
+		private static PropertyDescriptorValueType extractValueType(final GridFieldVO field)
 		{
 			final int displayType = field.getDisplayType();
-			final Class<?> valueType;
-			if (DisplayType.isAnyLookup(displayType))
+			
+			if (displayType == DisplayType.List)
 			{
-				valueType = LookupValue.class;
+				return PropertyDescriptorValueType.List;
 			}
-			else if (DisplayType.isID(displayType))
+			else if (displayType == DisplayType.Location)
 			{
-				valueType = Integer.class;
+				return PropertyDescriptorValueType.Location;
 			}
-			else if (DisplayType.isDate(displayType))
+			else if (displayType == DisplayType.PAttribute)
 			{
-				valueType = Date.class;
+				return PropertyDescriptorValueType.PAttribute;
+			}
+			else if (displayType == DisplayType.Assignment)
+			{
+				return PropertyDescriptorValueType.ResourceAssignment;
+			}
+			else if (DisplayType.isAnyLookup(displayType))
+			{
+				return PropertyDescriptorValueType.SearchLookup;
+			}
+			else if (displayType == DisplayType.ID)
+			{
+				return PropertyDescriptorValueType.ID;
+			}
+			//
+			else if (displayType == DisplayType.Date)
+			{
+				return PropertyDescriptorValueType.Date;
+			}
+			else if (displayType == DisplayType.Time)
+			{
+				return PropertyDescriptorValueType.Time;
+			}
+			else if (displayType == DisplayType.DateTime)
+			{
+				return PropertyDescriptorValueType.DateTime;
+			}
+			//
+			else if (displayType == DisplayType.TextLong || displayType == DisplayType.Memo || displayType == DisplayType.Text)
+			{
+				return PropertyDescriptorValueType.TextLong;
 			}
 			else if (DisplayType.isText(displayType))
 			{
-				valueType = String.class;
+				return PropertyDescriptorValueType.Text;
 			}
+			//
 			else if (DisplayType.Integer == displayType)
 			{
-				valueType = Integer.class;
+				return PropertyDescriptorValueType.Integer;
 			}
-			else if (DisplayType.isNumeric(displayType))
+			else if (displayType == DisplayType.Amount)
 			{
-				valueType = java.math.BigDecimal.class;
+				return PropertyDescriptorValueType.Amount;
 			}
-			else if (DisplayType.YesNo == displayType)
+			else if (displayType == DisplayType.Number)
 			{
-				valueType = java.lang.Boolean.class;
+				return PropertyDescriptorValueType.Number;
 			}
+			else if (displayType == DisplayType.CostPrice)
+			{
+				return PropertyDescriptorValueType.CostPrice;
+			}
+			else if (displayType == DisplayType.Quantity)
+			{
+				return PropertyDescriptorValueType.Quantity;
+			}
+			//
+			else if (displayType == DisplayType.YesNo)
+			{
+				return PropertyDescriptorValueType.YesNo;
+			}
+			else if (displayType == DisplayType.Button)
+			{
+				return PropertyDescriptorValueType.Button;
+			}
+			else if (displayType == DisplayType.Binary)
+			{
+				return PropertyDescriptorValueType.Binary;
+			}
+			//
 			else
 			{
-				valueType = String.class;
+				throw new IllegalArgumentException("Unknown displayType=" + displayType + " of " + field);
 			}
-			return valueType;
 		}
 
 	}

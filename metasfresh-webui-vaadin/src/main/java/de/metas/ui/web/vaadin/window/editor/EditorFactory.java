@@ -3,16 +3,13 @@ package de.metas.ui.web.vaadin.window.editor;
 import java.util.Map;
 import java.util.Set;
 
-import org.compiere.util.DisplayType;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.shared.datatype.ComposedValue;
-import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -39,6 +36,41 @@ import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 public class EditorFactory
 {
+	private static interface EditorInstanceFactory
+	{
+		Editor createEditor(final ViewPropertyDescriptor descriptor);
+	}
+
+	private static final Map<PropertyDescriptorValueType, EditorInstanceFactory> valueType2editorInstanceFactory = ImmutableMap.<PropertyDescriptorValueType, EditorInstanceFactory> builder()
+			//
+			.put(PropertyDescriptorValueType.Text, TextEditor::new)
+			.put(PropertyDescriptorValueType.TextLong, TextEditor::new)
+			//
+			.put(PropertyDescriptorValueType.Date, DateEditor::new)
+			.put(PropertyDescriptorValueType.DateTime, DateEditor::new)
+			.put(PropertyDescriptorValueType.Time, DateEditor::new)
+			//
+			.put(PropertyDescriptorValueType.Integer, IntegerEditor::new)
+			.put(PropertyDescriptorValueType.Amount, BigDecimalEditor::new)
+			.put(PropertyDescriptorValueType.Number, BigDecimalEditor::new)
+			.put(PropertyDescriptorValueType.CostPrice, BigDecimalEditor::new)
+			.put(PropertyDescriptorValueType.Quantity, BigDecimalEditor::new)
+			//
+			.put(PropertyDescriptorValueType.List, SearchLookupValueEditor::new)
+			.put(PropertyDescriptorValueType.SearchLookup, SearchLookupValueEditor::new)
+			.put(PropertyDescriptorValueType.Location, LocationEditor::new)
+			.put(PropertyDescriptorValueType.PAttribute, SearchLookupValueEditor::new)
+			.put(PropertyDescriptorValueType.ResourceAssignment, SearchLookupValueEditor::new)
+			.put(PropertyDescriptorValueType.ID, IntegerEditor::new)
+			//
+			.put(PropertyDescriptorValueType.YesNo, CheckboxEditor::new)
+			.put(PropertyDescriptorValueType.Button, TextEditor::new)
+			.put(PropertyDescriptorValueType.ComposedValue, ComposedValueEditor::new)
+			//
+			// .put(PropertyDescriptorValueType., Editor::new)
+			//
+			.build();
+
 	public Editor createEditor(final ViewPropertyDescriptor descriptor)
 	{
 		if (descriptor.getType() == PropertyDescriptorType.Tabular)
@@ -66,49 +98,16 @@ public class EditorFactory
 
 	private Editor createValueEditor(final ViewPropertyDescriptor descriptor)
 	{
-		final Class<?> valueType = descriptor.getValueType();
-		final int displayType = descriptor.getDisplayType();
-
-		if (String.class.equals(valueType))
-		{
-			return new TextEditor(descriptor);
-		}
-		else if (java.util.Date.class.equals(valueType))
-		{
-			return new DateEditor(descriptor);
-		}
-		else if (java.math.BigDecimal.class.equals(valueType))
-		{
-			return new BigDecimalEditor(descriptor);
-		}
-		else if (Integer.class.equals(valueType))
-		{
-			return new IntegerEditor(descriptor);
-		}
-		else if (LookupValue.class.isAssignableFrom(valueType))
-		{
-			if (displayType == DisplayType.Location)
-			{
-				return new LocationEditor(descriptor);
-			}
-			
-//			return new ComboLookupValueEditor(descriptor);
-			return new SearchLookupValueEditor(descriptor);
-		}
-		else if (ComposedValue.class.isAssignableFrom(valueType))
-		{
-			return new ComposedValueEditor(descriptor);
-		}
-		else if (Boolean.class.isAssignableFrom(valueType))
-		{
-			return new CheckboxEditor(descriptor);
-		}
-		else
+		final PropertyDescriptorValueType valueType = descriptor.getValueType();
+		final EditorInstanceFactory editorInstanceFactory = valueType2editorInstanceFactory.get(valueType);
+		if(editorInstanceFactory == null)
 		{
 			throw new IllegalArgumentException("Unsupported property for " + valueType + " (descriptor: " + descriptor);
 		}
+		
+		return editorInstanceFactory.createEditor(descriptor);
 	}
-	
+
 	public Editor createEditorsRecursivelly(final ViewPropertyDescriptor descriptor)
 	{
 		Preconditions.checkNotNull(descriptor, "descriptor");
@@ -125,7 +124,7 @@ public class EditorFactory
 
 		return editor;
 	}
-	
+
 	public Map<PropertyName, Editor> getAllWatchedPropertyNamesAndEditors(final Editor rootEditor)
 	{
 		Preconditions.checkNotNull(rootEditor, "rootEditor");
@@ -146,7 +145,7 @@ public class EditorFactory
 				editorsCollector.put(editorWatchedPropertyName, editor);
 			}
 		}
-		
+
 		for (final Editor childEditor : editor.getChildEditors())
 		{
 			collectAllWatchedPropertyNamesAndEditors(editorsCollector, childEditor);

@@ -49,9 +49,7 @@ public final class ViewPropertyDescriptor implements Serializable
 	@JsonProperty("type")
 	private final PropertyDescriptorType type;
 	@JsonProperty("valueType")
-	private final Class<?> valueType;
-	@JsonProperty("displayType")
-	private final int displayType;
+	private final PropertyDescriptorValueType valueType;
 	@JsonProperty("layoutInfo")
 	private final PropertyLayoutInfo layoutInfo;
 	@JsonProperty("childDescriptors")
@@ -64,7 +62,6 @@ public final class ViewPropertyDescriptor implements Serializable
 		caption = builder.caption;
 		type = builder.type;
 		valueType = builder.valueType;
-		displayType = builder.displayType;
 		layoutInfo = builder.layoutInfo;
 		childDescriptors = builder.getChildDescriptors();
 	}
@@ -74,8 +71,7 @@ public final class ViewPropertyDescriptor implements Serializable
 			@JsonProperty("propertyName") final PropertyName propertyName //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("type") final PropertyDescriptorType type //
-			, @JsonProperty("valueType") final Class<?> valueType //
-			, @JsonProperty("displayType") final int displayType //
+			, @JsonProperty("valueType") final PropertyDescriptorValueType valueType //
 			, @JsonProperty("layoutInfo") final PropertyLayoutInfo layoutInfo //
 			, @JsonProperty("childDescriptors") final ImmutableMap<PropertyName, ViewPropertyDescriptor> childDescriptors //
 	)
@@ -85,7 +81,6 @@ public final class ViewPropertyDescriptor implements Serializable
 				.setCaption(caption)
 				.setType(type)
 				.setValueType(valueType)
-				.setDisplayType(displayType)
 				.setLayoutInfo(layoutInfo)
 				.setChildDescriptors(childDescriptors));
 	}
@@ -121,14 +116,9 @@ public final class ViewPropertyDescriptor implements Serializable
 		return valueType != null;
 	}
 
-	public Class<?> getValueType()
+	public PropertyDescriptorValueType getValueType()
 	{
 		return valueType;
-	}
-
-	public int getDisplayType()
-	{
-		return displayType;
 	}
 
 	public PropertyLayoutInfo getLayoutInfo()
@@ -158,8 +148,7 @@ public final class ViewPropertyDescriptor implements Serializable
 		private PropertyName propertyName;
 		private String caption;
 		private PropertyDescriptorType type;
-		private Class<?> valueType;
-		private int displayType;
+		private PropertyDescriptorValueType valueType;
 		private PropertyLayoutInfo layoutInfo;
 		private Map<PropertyName, ViewPropertyDescriptor> _childDescriptors = null;
 
@@ -191,15 +180,9 @@ public final class ViewPropertyDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setValueType(final Class<?> valueType)
+		public Builder setValueType(final PropertyDescriptorValueType valueType)
 		{
 			this.valueType = valueType;
-			return this;
-		}
-
-		public Builder setDisplayType(final int displayType)
-		{
-			this.displayType = displayType;
 			return this;
 		}
 

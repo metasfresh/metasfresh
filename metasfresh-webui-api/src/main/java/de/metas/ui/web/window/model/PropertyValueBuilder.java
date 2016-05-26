@@ -11,6 +11,7 @@ import de.metas.ui.web.window.HARDCODED_Order;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
 /*
  * #%L
@@ -210,25 +211,9 @@ public final class PropertyValueBuilder
 		return IStringExpression.NULL;
 	}
 
-	public Class<?> getValueType()
+	public PropertyDescriptorValueType getValueType()
 	{
 		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
-		if (propertyDescriptor != null)
-		{
-			return propertyDescriptor.getValueType();
-		}
-
-		return null;
-	}
-
-	public int getDisplayType()
-	{
-		final PropertyDescriptor propertyDescriptor = getPropertyDescriptor();
-		if (propertyDescriptor != null)
-		{
-			return propertyDescriptor.getSqlDisplayType();
-		}
-
-		return -1;
+		return propertyDescriptor == null ? null : propertyDescriptor.getValueType();
 	}
 }

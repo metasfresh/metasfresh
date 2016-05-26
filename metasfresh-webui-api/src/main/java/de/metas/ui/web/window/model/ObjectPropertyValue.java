@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.text.Format;
 import java.util.Map;
 
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -24,6 +23,7 @@ import de.metas.ui.web.window.datasource.LookupDataSource;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.NullValue;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
 /*
  * #%L
@@ -55,8 +55,7 @@ public class ObjectPropertyValue implements PropertyValue
 	private final String composedValuePartName;
 	private final PropertyNameDependenciesMap dependencies;
 
-	private final Class<?> valueType;
-	private final int displayType;
+	private PropertyDescriptorValueType _valueType;
 
 	private final IStringExpression defaultValueExpression;
 	private final Object initialValue;
@@ -65,6 +64,7 @@ public class ObjectPropertyValue implements PropertyValue
 	private final ImmutableMap<PropertyName, PropertyValue> _childPropertyValues;
 	private final boolean readOnlyForUser;
 
+
 	/* package */ ObjectPropertyValue(final PropertyValueBuilder builder)
 	{
 		super();
@@ -72,8 +72,7 @@ public class ObjectPropertyValue implements PropertyValue
 		composedValuePartName = builder.getComposedValuePartName();
 		_childPropertyValues = ImmutableMap.copyOf(builder.getChildPropertyValues());
 
-		valueType = builder.getValueType();
-		displayType = builder.getDisplayType();
+		this._valueType = builder.getValueType();
 
 		defaultValueExpression = builder.getDefaultValueExpression();
 		initialValue = builder.getInitialValue();
@@ -111,17 +110,12 @@ public class ObjectPropertyValue implements PropertyValue
 		// nothing on this level
 	}
 
-	public Class<?> getValueType()
+	public final PropertyDescriptorValueType getValueType()
 	{
-		return valueType;
+		return _valueType;
 	}
 
-	private int getDisplayType()
-	{
-		return displayType;
-	}
-
-	public IStringExpression getDefaultValueExpression()
+	public final IStringExpression getDefaultValueExpression()
 	{
 		return defaultValueExpression;
 	}
@@ -157,31 +151,34 @@ public class ObjectPropertyValue implements PropertyValue
 		{
 			return null;
 		}
+		
+		final PropertyDescriptorValueType valueType = getValueType();
 		if (valueType == null)
 		{
 			// no particular value type specified => nothing to convert
 			return valueObj;
 		}
+		
+		final Class<?> valueClass = ModelPropertyDescriptorValueTypeHelper.getValueClass(valueType);
 
 		final Class<?> valueObjClass = valueObj.getClass();
-		if (valueType.isAssignableFrom(valueObjClass))
+		if (valueClass.isAssignableFrom(valueObjClass))
 		{
 			return valueObj;
 		}
-
-		else if (String.class.isAssignableFrom(valueType))
+		else if (String.class.isAssignableFrom(valueClass))
 		{
 			return valueObj.toString();
 		}
-		else if (java.util.Date.class.isAssignableFrom(valueType))
+		else if (java.util.Date.class.isAssignableFrom(valueClass))
 		{
 			return DisplayType.convertToDisplayType(valueObj.toString(), null, DisplayType.DateTime);
 		}
-		else if (Boolean.class.isAssignableFrom(valueType))
+		else if (Boolean.class.isAssignableFrom(valueClass))
 		{
 			return DisplayType.toBoolean(valueObj);
 		}
-		else if (Integer.class.isAssignableFrom(valueType))
+		else if (Integer.class.isAssignableFrom(valueClass))
 		{
 			if (valueObj instanceof Number)
 			{
@@ -189,11 +186,11 @@ public class ObjectPropertyValue implements PropertyValue
 			}
 			return DisplayType.convertToDisplayType(valueObj.toString(), null, DisplayType.Integer);
 		}
-		else if (java.math.BigDecimal.class.isAssignableFrom(valueType))
+		else if (java.math.BigDecimal.class.isAssignableFrom(valueClass))
 		{
 			return new java.math.BigDecimal(valueObj.toString());
 		}
-		else if (LookupValue.class.isAssignableFrom(valueType))
+		else if (LookupValue.class.isAssignableFrom(valueClass))
 		{
 			final LookupDataSource lookupDataSource = getLookupDataSource();
 			if (lookupDataSource == null)
@@ -207,15 +204,13 @@ public class ObjectPropertyValue implements PropertyValue
 		}
 		else
 		{
-			logger.warn("Cannot convert '{}' to '{}'", valueObj, valueType);
+			logger.warn("Cannot convert '{}' to '{}'", valueObj, valueClass);
 			return null;
 		}
 	}
 
 	private String convertToDisplayString(final Object value)
 	{
-		final int displayType = getDisplayType();
-
 		if (value == null)
 		{
 			return "";
@@ -233,15 +228,12 @@ public class ObjectPropertyValue implements PropertyValue
 			final String adMessage = DisplayType.toBooleanString((Boolean)value);
 			return Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMessage);
 		}
-		else if (value instanceof java.util.Date)
+
+		final PropertyDescriptorValueType valueType = getValueType();
+		final Format format = ModelPropertyDescriptorValueTypeHelper.getFormat(valueType);
+		if (format != null)
 		{
-			final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
-			return dateFormat.format(value);
-		}
-		else if (DisplayType.isNumeric(displayType))
-		{
-			final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
-			return numberFormat.format(value);
+			return format.format(value);
 		}
 		else
 		{

@@ -4,13 +4,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.compiere.util.DisplayType;
-
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.DateField;
 
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -43,45 +42,35 @@ public class DateEditor extends FieldEditor<Date>
 	public DateEditor(final ViewPropertyDescriptor descriptor)
 	{
 		super(descriptor);
-		
+
 		final DateField valueField = getValueField();
 
 		//
-		// Display Type
-		int displayType = getPropertyDescriptor().getDisplayType();
-		if (!DisplayType.isDate(displayType))
-		{
-			// Make sure the display type is about Dates
-			displayType = DisplayType.Date;
-		}
-		
-		//
-		// Date resolution
+		final PropertyDescriptorValueType valueType = descriptor == null ? PropertyDescriptorValueType.Date : descriptor.getValueType();
 		final Resolution resolution;
-		if (displayType == DisplayType.Date)
+		if (valueType == PropertyDescriptorValueType.Date)
 		{
 			resolution = Resolution.DAY;
 		}
-		else if (displayType == DisplayType.DateTime)
+		else if (valueType == PropertyDescriptorValueType.DateTime)
 		{
 			resolution = Resolution.MINUTE;
 		}
-		else if (displayType == DisplayType.Time)
+		else if (valueType == PropertyDescriptorValueType.Time)
 		{
 			// TODO: implement TimeEditor. Consider using https://vaadin.com/directory#!addon/timefield or something more nicer
 			resolution = Resolution.SECOND;
 		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot detect resolution for displayType="+displayType);
+			throw new IllegalArgumentException("Cannot detect resolution for displayType=" + valueType);
 		}
-		valueField.setResolution(resolution);
 		
 		//
-		// Date format
-		this.dateFormat = DisplayType.getDateFormat(displayType);
-		final String dateFormatPattern = dateFormat.toPattern();
-		valueField.setDateFormat(dateFormatPattern);
+		valueField.setResolution(resolution);
+		
+		this.dateFormat = ViewPropertyDescriptorValueTypeHelper.getDateFormat(valueType);
+		valueField.setDateFormat(dateFormat.toPattern());
 	}
 
 	@Override
@@ -90,7 +79,7 @@ public class DateEditor extends FieldEditor<Date>
 		final DateField dateField = new DateField();
 		return dateField;
 	}
-	
+
 	@Override
 	protected DateField getValueField()
 	{

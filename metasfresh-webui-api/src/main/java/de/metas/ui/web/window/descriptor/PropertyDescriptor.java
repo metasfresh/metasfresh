@@ -1,13 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -17,8 +15,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
-import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
@@ -55,7 +53,7 @@ public final class PropertyDescriptor
 	// General properties
 	private final PropertyName propertyName;
 	private final PropertyDescriptorType type;
-	private final Class<?> valueType;
+	private final PropertyDescriptorValueType valueType;
 	private final String composedValuePartName;
 	private final ImmutableMap<PropertyName, PropertyDescriptor> childPropertyDescriptors;
 	private transient Set<PropertyName> _allPropertyNames; // lazy
@@ -80,8 +78,8 @@ public final class PropertyDescriptor
 	private final String sqlParentLinkColumnName;
 	private final String sqlColumnName;
 	private final String sqlColumnSql;
-	private final int sqlDisplayType;
 	private final SqlLookupDescriptor sqlLookupDescriptor;
+	
 	private final boolean readOnlyForUser;
 	
 	private ViewPropertyDescriptor _viewPropertyDescriptor; // lazy
@@ -119,7 +117,6 @@ public final class PropertyDescriptor
 		sqlParentLinkColumnName = builder.sqlParentLinkColumnName;
 		sqlColumnName = builder.sqlColumnName;
 		sqlColumnSql = builder.sqlColumnSql;
-		sqlDisplayType = builder.getSqlDisplayType();
 		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
 		
 		readOnlyForUser = builder.isReadOnlyForUser();
@@ -154,7 +151,7 @@ public final class PropertyDescriptor
 		return type;
 	}
 
-	public Class<?> getValueType()
+	public PropertyDescriptorValueType getValueType()
 	{
 		return valueType;
 	}
@@ -270,12 +267,6 @@ public final class PropertyDescriptor
 		return sqlLookupDescriptor;
 	}
 
-	public int getSqlDisplayType()
-	{
-		// TODO Auto-generated method stub
-		return sqlDisplayType;
-	}
-
 	public boolean isSqlEncrypted()
 	{
 		// TODO Auto-generated method stub
@@ -291,7 +282,6 @@ public final class PropertyDescriptor
 					.setCaption(getCaption())
 					.setType(getType())
 					.setValueType(getValueType())
-					.setDisplayType(getSqlDisplayType())
 					.setLayoutInfo(getLayoutInfo());
 			
 			for (final Map.Entry<PropertyName, PropertyDescriptor> e : getChildPropertyDescriptorsAsMap().entrySet())
@@ -315,7 +305,7 @@ public final class PropertyDescriptor
 	{
 		private PropertyName propertyName;
 		private PropertyDescriptorType type = PropertyDescriptorType.Value;
-		private Class<?> valueType;
+		private PropertyDescriptorValueType _valueType;
 		private final ImmutableMap.Builder<PropertyName, PropertyDescriptor> childPropertyDescriptors = ImmutableMap.builder();
 		private String composedValuePartName;
 		private String caption;
@@ -327,7 +317,6 @@ public final class PropertyDescriptor
 		private String sqlParentLinkColumnName;
 		private String sqlColumnName;
 		private String sqlColumnSql;
-		private Integer sqlDisplayType;
 		private SqlLookupDescriptor sqlLookupDescriptor;
 		private int sql_AD_Reference_Value_ID;
 		
@@ -391,9 +380,9 @@ public final class PropertyDescriptor
 		public Builder setType(PropertyDescriptorType type)
 		{
 			this.type = type;
-			if (type == PropertyDescriptorType.ComposedValue && valueType == null)
+			if (type == PropertyDescriptorType.ComposedValue && _valueType == null)
 			{
-				setValueType(ComposedValue.class);
+				setValueType(PropertyDescriptorValueType.ComposedValue);
 			}
 			return this;
 		}
@@ -403,15 +392,15 @@ public final class PropertyDescriptor
 			return type;
 		}
 
-		public Builder setValueType(final Class<?> valueType)
+		public Builder setValueType(final PropertyDescriptorValueType valueType)
 		{
-			this.valueType = valueType;
+			this._valueType = valueType;
 			return this;
 		}
 		
-		public Class<?> getValueType()
+		public PropertyDescriptorValueType getValueType()
 		{
-			return this.valueType;
+			return this._valueType;
 		}
 
 		public Builder addChildPropertyDescriptor(final PropertyDescriptor childPropertyDescriptor)
@@ -489,57 +478,6 @@ public final class PropertyDescriptor
 			return this;
 		}
 
-		public Builder setSqlDisplayType(int sqlDisplayType)
-		{
-			this.sqlDisplayType = sqlDisplayType;
-			return this;
-		}
-
-		public int getSqlDisplayType()
-		{
-			// TODO: cache the actual value
-			
-			if (sqlDisplayType != null)
-			{
-				return sqlDisplayType;
-			}
-
-			//
-			// Figure out the display type based on value type
-			// FIXME: i think, in final version this part will be completely removed
-			final Class<?> valueType = this.valueType;
-			if (valueType == null)
-			{
-
-			}
-			else if (java.util.Date.class.isAssignableFrom(valueType))
-			{
-				return DisplayType.Date;
-			}
-			else if (String.class.isAssignableFrom(valueType))
-			{
-				return DisplayType.String;
-			}
-			else if (Integer.class.equals(valueType))
-			{
-				return DisplayType.Integer;
-			}
-			else if (BigDecimal.class.equals(valueType))
-			{
-				return DisplayType.Number;
-			}
-			else if (LookupValue.class.isAssignableFrom(valueType))
-			{
-				return DisplayType.Search;
-			}
-			else if (Boolean.class.isAssignableFrom(valueType))
-			{
-				return DisplayType.YesNo;
-			}
-
-			return -1;
-		}
-
 		public Builder setSqlLookupDescriptor(SqlLookupDescriptor sqlLookupDescriptor)
 		{
 			this.sqlLookupDescriptor = sqlLookupDescriptor;
@@ -554,18 +492,13 @@ public final class PropertyDescriptor
 			}
 
 			// FIXME: i think, in final version this part will be completely removed
-			final int sqlDisplayType = getSqlDisplayType();
 			if (sqlColumnName != null)
 			{
-				if (DisplayType.isLookup(sqlDisplayType))
+				final PropertyDescriptorValueType valueType = getValueType();
+				if (valueType != null && valueType.isLookup())
 				{
-					return SqlLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
+					return SqlLookupDescriptor.of(valueType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
 				}
-				else if (DisplayType.PAttribute == sqlDisplayType)
-				{
-					return SqlLookupDescriptor.of(sqlDisplayType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
-				}
-				
 			}
 
 			return sqlLookupDescriptor;
@@ -591,8 +524,8 @@ public final class PropertyDescriptor
 		
 		private boolean isReadOnlyForUser()
 		{
-			final int sqlDisplayType = getSqlDisplayType();
-			if(DisplayType.ID == sqlDisplayType)
+			final PropertyDescriptorValueType valueType = getValueType();
+			if(valueType == PropertyDescriptorValueType.ID)
 			{
 				return true;
 			}

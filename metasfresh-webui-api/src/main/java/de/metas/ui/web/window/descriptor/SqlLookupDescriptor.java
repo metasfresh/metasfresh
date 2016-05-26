@@ -20,6 +20,9 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
 
+import de.metas.ui.web.window.model.ModelPropertyDescriptorValueTypeHelper;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
+
 /*
  * #%L
  * metasfresh-webui
@@ -44,15 +47,9 @@ import org.compiere.util.ValueNamePair;
 
 public class SqlLookupDescriptor
 {
-	public static final SqlLookupDescriptor of(final int displayType, final String columnName, final int AD_Reference_Value_ID)
+	public static final SqlLookupDescriptor of(final PropertyDescriptorValueType valueType, final String columnName, final int AD_Reference_Value_ID)
 	{
-		return new SqlLookupDescriptor(displayType, columnName, AD_Reference_Value_ID);
-	}
-
-	public static final SqlLookupDescriptor of(final int displayType, final String columnName)
-	{
-		final int AD_Reference_Value_ID = 0;
-		return new SqlLookupDescriptor(displayType, columnName, AD_Reference_Value_ID);
+		return new SqlLookupDescriptor(valueType, columnName, AD_Reference_Value_ID);
 	}
 
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
@@ -71,7 +68,7 @@ public class SqlLookupDescriptor
 	private IStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private int entityTypeIndex = -1;
 
-	SqlLookupDescriptor(final int displayType, final String columnName, final int AD_Reference_Value_ID)
+	private SqlLookupDescriptor(final PropertyDescriptorValueType valueType, final String columnName, final int AD_Reference_Value_ID)
 	{
 		super();
 		final Properties ctx = Env.getCtx();
@@ -79,8 +76,8 @@ public class SqlLookupDescriptor
 		final Language language = Env.getLanguage(ctx);
 		final boolean IsParent = false;
 		final String ValidationCode = null; // TODO
-		
-		if (DisplayType.PAttribute == displayType && AD_Reference_Value_ID <= 0)
+
+		if (valueType == PropertyDescriptorValueType.PAttribute && AD_Reference_Value_ID <= 0)
 		{
 			numericKey = true;
 			valueClass = KeyNamePair.class;
@@ -88,8 +85,18 @@ public class SqlLookupDescriptor
 		}
 		else
 		{
-			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
-			numericKey = MLookupInfo.isNumericKey(columnName);
+			final MLookupInfo lookupInfo;
+			if (valueType == PropertyDescriptorValueType.List)
+			{
+				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+			}
+			else
+			{
+				final int displayType = ModelPropertyDescriptorValueTypeHelper.getSqlDisplayType(valueType);
+				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+			}
+			
+			numericKey = lookupInfo.isNumericKey();
 			valueClass = numericKey ? KeyNamePair.class : ValueNamePair.class;
 			setSqlExpressions(lookupInfo);
 		}
@@ -105,7 +112,7 @@ public class SqlLookupDescriptor
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
 			if (!Check.isEmpty(lookup_SqlWhere, true))
 			{
-				
+
 				sqlWhereFinal.append(" /* lookup where clause */ ").append("(").append(lookup_SqlWhere).append(")");
 			}
 
@@ -151,7 +158,8 @@ public class SqlLookupDescriptor
 				.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
 				.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
 				.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
-				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
+				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the
+																															 // AD_Ref_List.AD_Reference_ID=....
 				.toString();
 
 		//
@@ -167,7 +175,7 @@ public class SqlLookupDescriptor
 		sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
 		sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
 		sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
-		
+
 		if (lookupInfo.isQueryHasEntityType())
 		{
 			this.entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
@@ -266,7 +274,7 @@ public class SqlLookupDescriptor
 	{
 		return sqlForFetchingDisplayNameByIdExpression;
 	}
-	
+
 	public String getSqlForFetchingDisplayNameById(final String sqlKeyColumn)
 	{
 		final Evaluatee ctx = Evaluatees.ofSingleton(SQL_PARAM_KeyId.toStringWithoutMarkers(), sqlKeyColumn);
@@ -278,7 +286,7 @@ public class SqlLookupDescriptor
 	{
 		return valueClass;
 	}
-	
+
 	public int getEntityTypeIndex()
 	{
 		return entityTypeIndex;

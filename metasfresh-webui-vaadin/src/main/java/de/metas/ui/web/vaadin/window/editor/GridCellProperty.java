@@ -2,7 +2,6 @@ package de.metas.ui.web.vaadin.window.editor;
 
 import java.util.Set;
 
-import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -15,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -141,17 +141,17 @@ class GridCellProperty extends AbstractProperty<Object>
 		}
 		else if (Objects.equal(propertyName, propertyName_Readonly))
 		{
-			final boolean readonly = DisplayType.toBoolean(newValue);
+			final boolean readonly = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(newValue);
 			setReadOnly(readonly);
 		}
 		else if (Objects.equal(propertyName, propertyName_Displayed))
 		{
-			final boolean displayed = DisplayType.toBoolean(newValue);
+			final boolean displayed = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(newValue);
 			setDisplayed(displayed);
 		}
 		else if (Objects.equal(propertyName, propertyName_Mandatory))
 		{
-			final boolean mandatory = DisplayType.toBoolean(newValue);
+			final boolean mandatory = ViewPropertyDescriptorValueTypeHelper.convertToBoolean(newValue);
 			setMandatory(mandatory);
 		}
 		else if (Objects.equal(propertyName, propertyName_LookupValues))
@@ -174,7 +174,8 @@ class GridCellProperty extends AbstractProperty<Object>
 	@Override
 	public Class<? extends Object> getType()
 	{
-		return descriptor.getValueType();
+		final PropertyDescriptorValueType valueType = descriptor == null ? null : descriptor.getValueType();
+		return ViewPropertyDescriptorValueTypeHelper.getValueClass(valueType);
 	}
 
 	public final boolean isMandatory()

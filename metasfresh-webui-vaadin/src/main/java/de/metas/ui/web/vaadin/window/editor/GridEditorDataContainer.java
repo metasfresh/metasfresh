@@ -19,6 +19,7 @@ import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
@@ -180,7 +181,8 @@ final class GridEditorDataContainer extends AbstractContainer
 	@Override
 	public Class<?> getType(final Object propertyId)
 	{
-		return descriptor.getChildDescriptors().get(propertyId).getValueType();
+		final PropertyDescriptorValueType valueType = descriptor.getChildDescriptors().get(propertyId).getValueType();
+		return ViewPropertyDescriptorValueTypeHelper.getValueClass(valueType);
 	}
 
 	@Override

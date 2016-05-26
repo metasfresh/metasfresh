@@ -5,11 +5,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import org.compiere.util.DisplayType;
-
 import com.vaadin.data.util.converter.StringToBigDecimalConverter;
 import com.vaadin.ui.AbstractField;
 
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
@@ -48,12 +47,8 @@ public class BigDecimalEditor extends FieldEditor<BigDecimal>
 		//
 		// Create the converter
 		final ViewPropertyDescriptor descriptor = getPropertyDescriptor();
-		int displayType = descriptor == null ? DisplayType.Number : descriptor.getDisplayType();
-		if (!DisplayType.isNumeric(displayType))
-		{
-			displayType = DisplayType.Number;
-		}
-		final BigDecimalConverter converter = new BigDecimalConverter(displayType);
+		final PropertyDescriptorValueType valueType = descriptor == null ? PropertyDescriptorValueType.Number : descriptor.getValueType();
+		final BigDecimalConverter converter = new BigDecimalConverter(valueType);
 
 		//
 		// Create the field
@@ -69,18 +64,18 @@ public class BigDecimalEditor extends FieldEditor<BigDecimal>
 
 	private static final class BigDecimalConverter extends StringToBigDecimalConverter
 	{
-		private final int displayType;
+		private final PropertyDescriptorValueType valueType;
 
-		public BigDecimalConverter(final int displayType)
+		public BigDecimalConverter(final PropertyDescriptorValueType valueType)
 		{
 			super();
-			this.displayType = displayType;
+			this.valueType = valueType;
 		}
 
 		@Override
 		protected NumberFormat getFormat(final Locale locale)
 		{
-			final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
+			final DecimalFormat numberFormat = ViewPropertyDescriptorValueTypeHelper.getNumberFormat(valueType);
 			numberFormat.setParseBigDecimal(true);
 			return numberFormat;
 		}

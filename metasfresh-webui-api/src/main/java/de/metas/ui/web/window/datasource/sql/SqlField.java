@@ -7,6 +7,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
 /*
  * #%L
@@ -49,10 +50,11 @@ final class SqlField
 	private final String displayColumnSql;
 	private final Boolean numericKey;
 
-	private final int displayType;
+	private final PropertyDescriptorValueType valueType;
 	private final boolean encrypted;
 
 	private final boolean keyColumn;
+
 
 	/** Builder constructor */
 	private SqlField(final SqlTable sqlTable, final PropertyDescriptor fieldDescriptor)
@@ -60,7 +62,7 @@ final class SqlField
 		super();
 		this.sqlTable = sqlTable;
 		propertyName = fieldDescriptor.getPropertyName();
-		displayType = fieldDescriptor.getSqlDisplayType();
+		this.valueType = fieldDescriptor.getValueType();
 		encrypted = fieldDescriptor.isSqlEncrypted();
 
 		columnName = fieldDescriptor.getSqlColumnName();
@@ -138,9 +140,9 @@ final class SqlField
 		return displayColumnSql;
 	}
 
-	public int getDisplayType()
+	public PropertyDescriptorValueType getValueType()
 	{
-		return displayType;
+		return valueType;
 	}
 
 	public boolean isEncrypted()

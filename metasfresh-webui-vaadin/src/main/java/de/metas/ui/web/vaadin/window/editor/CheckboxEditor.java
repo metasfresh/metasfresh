@@ -1,7 +1,5 @@
 package de.metas.ui.web.vaadin.window.editor;
 
-import org.compiere.util.DisplayType;
-
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Label;
@@ -56,6 +54,6 @@ public class CheckboxEditor extends FieldEditor<Boolean>
 	@Override
 	protected Boolean convertToView(Object valueObj)
 	{
-		return DisplayType.toBoolean(valueObj, false);
+		return ViewPropertyDescriptorValueTypeHelper.convertToBoolean(valueObj);
 	}
 }
