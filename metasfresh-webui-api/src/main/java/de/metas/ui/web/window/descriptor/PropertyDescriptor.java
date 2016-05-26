@@ -18,6 +18,8 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*

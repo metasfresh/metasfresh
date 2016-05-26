@@ -32,11 +32,11 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.descriptor.PropertyDescriptors;
-import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor.Builder;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 
 /*
  * #%L

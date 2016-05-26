@@ -12,7 +12,7 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*

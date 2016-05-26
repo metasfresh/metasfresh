@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.shared.descriptor;
 
 /*
  * #%L

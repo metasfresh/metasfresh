@@ -19,10 +19,10 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.model.PropertyNameDependenciesMap.DependencyType;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 
 /*
  * #%L

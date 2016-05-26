@@ -12,7 +12,7 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 
 /*
  * #%L

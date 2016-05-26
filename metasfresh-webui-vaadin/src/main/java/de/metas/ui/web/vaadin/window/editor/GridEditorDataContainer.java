@@ -15,11 +15,11 @@ import com.vaadin.data.util.AbstractContainer;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*

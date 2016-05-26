@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.window.HARDCODED_Order;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 
 /*
  * #%L

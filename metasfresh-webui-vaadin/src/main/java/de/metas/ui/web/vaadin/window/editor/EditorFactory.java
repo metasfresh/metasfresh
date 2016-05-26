@@ -10,9 +10,9 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
 /*
