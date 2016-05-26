@@ -20,7 +20,7 @@
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
 		
-		<!-- our spring-boot-admin webui rarely changes, so always include our "standard" version in this distributable -->		
+		<!-- our spring-boot-admin webui rarely changes, so always include our "standard" version in this distributable -->
 		<de.metas.admin.webui.version>3-development-SNAPSHOT</de.metas.admin.webui.version>
 	</properties>
 
@@ -243,7 +243,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
@@ -303,7 +303,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
@@ -311,6 +311,44 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+		
+		<!-- we used to just get the following deployables with the dependencies-plugin's copy goal, but there we need to give a version. Ranges are jot allowed.
+		since we want to work with the range, we not declare the dependencies here, and can then further down use the copy-dependencies goal instead of the copy goal.
+		-->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.swingui</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>client</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.client</artifactId>
+			<classifier>jar-with-dependencies</classifier>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.edi.esb</groupId>
+			<artifactId>de.metas.edi.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.document.archive.esb</groupId>
+			<artifactId>de.metas.document.archive.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.admin.webui</groupId>
+			<artifactId>de.metas.admin.webui</artifactId>
+			<version>${de.metas.admin.webui.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -320,7 +358,7 @@ note: when adding new records, please roughly order them by alphabet.
 				<executions>
 					<execution>
 						<id>copy-misc-files</id>
-            			<phase>prepare-package</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
@@ -361,27 +399,27 @@ note: when adding new records, please roughly order them by alphabet.
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
 							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 					<execution>
 						<!-- 
-							Then we extract the first the fresh and finally the endcustomer specific jasper files, and we want them to overwrite the generic files if they have the same name.
+						Then we extract the first the fresh-specific jasper files  and finally the endcustomer-specific jasper files, 
+						and we want them to overwrite the generic files if they have the same name.
 						-->
 						<id>unpack-jasper-fresh</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
+							<type>jar</type>
+							<includeArtifactIds>de.metas.fresh.base</includeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
 							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
-							<artifactItems>
-								<artifactItem>
-									<groupId>de.metas.fresh</groupId>
-									<artifactId>de.metas.fresh.base</artifactId>
-									<version>${metasfresh-dependency.version}</version>
-									<classifier>jasper</classifier>
-								</artifactItem>
-							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
@@ -390,27 +428,29 @@ note: when adding new records, please roughly order them by alphabet.
 						<id>unpack-jasper-endcustomer</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
+							<type>jar</type>
+							<includeArtifactIds>${project.groupId}.base</includeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
 							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.base</artifactId>
-									<version>${metasfresh-dependency.version}</version>
-									<classifier>jasper</classifier>
-								</artifactItem>
-							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 
 
-					<!-- Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc -->
+					<!-- 
+						Build deploy/download folder: metasfresh client zip. 
+						Note that we want to set the target file name, which is something, the copy goal offers, but not the copy-dependencies goal.
+						Fortunately, the client-zip has the same parent pom like this project and we can be sure that it will have the same version.
+						Therefore, we don't need to provide a wversion range and can thus use the copy goal.  
+					-->
 					<execution>
-						<id>copy-metasfresh-download</id>
+						<id>copy-metasfresh-download-client-zip</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy</goal>
@@ -419,42 +459,54 @@ note: when adding new records, please roughly order them by alphabet.
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<overWrite>true</overWrite>
+										
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.swingui</artifactId>
 									<classifier>client</classifier>
-									<version>${metasfresh-dependency.version}</version>
+									<version>${project.version}</version>
 									<type>zip</type>
 									<destFileName>metasfresh-client.zip</destFileName>
 								</artifactItem>
-								<artifactItem>
-									<groupId>de.metas.printing.esb</groupId>
-									<artifactId>de.metas.printing.esb.camel</artifactId>
-									<version>${esb.bundles.version}</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>de.metas.printing.esb</groupId>
-									<artifactId>de.metas.printing.esb.client</artifactId>
-									<version>${esb.bundles.version}</version>
-									<classifier>jar-with-dependencies</classifier>
-								</artifactItem>
-								<artifactItem>
-									<groupId>de.metas.edi.esb</groupId>
-									<artifactId>de.metas.edi.esb.camel</artifactId>
-									<version>${esb.bundles.version}</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>de.metas.document.archive.esb</groupId>
-									<artifactId>de.metas.document.archive.esb.camel</artifactId>
-									<version>${esb.bundles.version}</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>de.metas.admin.webui</groupId>
-									<artifactId>de.metas.admin.webui</artifactId>
-									<version>${de.metas.admin.webui.version}</version>
-								</artifactItem>
 							</artifactItems>
+						</configuration>
+					</execution>
+					<!-- 
+						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
+						These bundles are buid somewhere else and therefore we need to resolve them with a version range.
+						We did this by specifying them as dependencies further up. they were already resolved and now, we only need to copy them,
+						without specifying a particular version at this place. 
+					-->
+					<execution>
+						<id>copy-metasfresh-download-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-depdendencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
+							<includeArtifactIds>de.metas.printing.esb.camel,de.metas.edi.esb.camel,de.metas.document.archive.esb.camel,de.metas.admin.webui</includeArtifactIds>
+							<type>jar</type>
+							<excludeTransitive>true</excludeTransitive>	
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-download-jars-with-depdendencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-depdendencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
+							<includeArtifactIds>de.metas.printing.esb.client</includeArtifactIds>
+							<classifier>jar-with-dependencies</classifier>
+							<type>jar</type>
+							<excludeTransitive>true</excludeTransitive>	
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 
