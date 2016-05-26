@@ -30,7 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -571,8 +572,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 			bpartnerIds.add(bpartnerId);
 		}
 
-		// FRESH-152 : This update is no longer needed since the bp stats are updated on the concrete document's completion
-		// updateBP(bpartnerIds);
+		// Update BP Statistics
+
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(Env.getCtx(), bpartnerIds, ITrx.TRXNAME_None);
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -916,15 +919,16 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	 */
 	private void updateBP(final Set<Integer> bpartnerIds)
 	{
-		final Boolean disabled = IBPartnerTotalOpenBalanceUpdater.DYNATTR_DisableUpdateTotalOpenBalances.getValue(this);
+		final Boolean disabled = IBPartnerStatisticsUpdater.DYNATTR_DisableUpdateTotalOpenBalances.getValue(this);
 		if (disabled != null && disabled)
 		{
 			return;
 		}
 
-		final IBPartnerTotalOpenBalanceUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerTotalOpenBalanceUpdater.class);
+		// FRESH-152 update bpartner stats
+		final IBPartnerStatisticsUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
-		bpartnerTotalOpenBalanceUpdater.updateTotalOpenBalances(getCtx(), bpartnerIds, get_TrxName());
+		bpartnerTotalOpenBalanceUpdater.updateBPartnerStatistics(getCtx(), bpartnerIds, get_TrxName());
 
 	}	// updateBP
 

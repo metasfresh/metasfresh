@@ -18,11 +18,11 @@ import org.compiere.model.I_C_BPartner_Stats;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,38 +37,13 @@ import org.compiere.model.I_C_BPartner_Stats;
  */
 public interface IBPartnerStatsBL extends ISingletonService
 {
-
 	/**
-	 * Set the ActualLifeTime given as parameter in the bpartner statistics and save. 
-	 * 
-	 * @param stat
-	 * @param actualLifeTimeValue
-	 */
-	void setActualLifeTimeValue(I_C_BPartner_Stats stat, BigDecimal actualLifeTimeValue);
-
-	/**
-	 * Set the CreditUsed given as parameter in the bpartner statistics and save. 
-	 * 
-	 * @param stat
-	 * @param creditUsed
-	 */
-	void setSOCreditUsed(I_C_BPartner_Stats stat, BigDecimal creditUsed);
-
-	/**
-	 * Set the SOCreditStatus given as parameter in the bpartner statistics and save. 
+	 * Set the SOCreditStatus given as parameter in the bpartner statistics and save.
 	 * 
 	 * @param stat
 	 * @param soCreditStatus
 	 */
 	void setSOCreditStatus(I_C_BPartner_Stats stat, String soCreditStatus);
-
-	/**
-	 * Set the TotalOpenBalance given as parameter in the bpartner statistics and save. 
-	 * 
-	 * @param stat
-	 * @param totalOpenBalance
-	 */
-	void setTotalOpenBalance(I_C_BPartner_Stats stat, BigDecimal totalOpenBalance);
 
 	/**
 	 * Get the current SOCrditStatus value form the given bp stats
@@ -103,6 +78,26 @@ public interface IBPartnerStatsBL extends ISingletonService
 	BigDecimal getSOCreditUsed(I_C_BPartner_Stats stats);
 
 	/**
+	 * Calculate the future/simulated TotalOpenBalance for the given {@link I_C_BPartner_Stats} entry.
+	 * No updating
+	 * 
+	 * @param stats
+	 * @return
+	 */
+
+	BigDecimal calculateTotalOpenBalance(I_C_BPartner_Stats stats);
+
+	/**
+	 * Calculate the future/simulated SOCreditStatus for the given {@link I_C_BPartner_Stats} entry.
+	 * No updating
+	 * 
+	 * @param stat
+	 * @param additionalAmt
+	 * @return
+	 */
+	String calculateSOCreditStatus(I_C_BPartner_Stats stat, BigDecimal additionalAmt);
+
+	/**
 	 * Set the ActualLifeTimeValue value in the {@link I_C_BPartner_Stats} entry
 	 * 
 	 * @param stats
@@ -124,23 +119,11 @@ public interface IBPartnerStatsBL extends ISingletonService
 	void updateSOCreditStatus(I_C_BPartner_Stats stat);
 
 	/**
-	 * Calculate the future/simulated TotalOpenBalance for the given {@link I_C_BPartner_Stats} entry.
-	 * No updating
-	 * 
-	 * @param stats
-	 * @return
-	 */
-	BigDecimal calculateTotalOpenBalance(I_C_BPartner_Stats stats);
-
-	/**
-	 * Calculate the future/simulated SOCreditStatus for the given {@link I_C_BPartner_Stats} entry.
-	 * No updating
+	 * Update SO_Credit used based on the legacy sql
 	 * 
 	 * @param stat
-	 * @param additionalAmt
-	 * @return
 	 */
-	String calculateSOCreditStatus(I_C_BPartner_Stats stat, BigDecimal additionalAmt);
+	void updateSOCreditUsed(I_C_BPartner_Stats stat);
 
 	/**
 	 * Logic to tell whether or not the given grandTotal makes the credit stop for the given BPartner stats.

@@ -1,41 +1,13 @@
 package org.adempiere.invoice.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
@@ -47,10 +19,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MPriceList;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.IDocActionBL;
@@ -290,85 +260,5 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			sb.append(" - ").append(invoice.getDescription());
 		}
 		return sb.toString();
-	}
-
-	@Override
-	protected void updateBPartnerStatistics(final I_C_Invoice invoice)
-	{
-		// Services
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
-		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(invoice.getC_BPartner());
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
-		final I_C_BPartner partner = invoice.getC_BPartner();
-
-		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
-
-		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
-				ctx,
-				invoicePO.getGrandTotal(true),     	// CM adjusted
-				invoice.getC_Currency_ID(),
-				invoice.getDateAcct(),
-				invoice.getC_ConversionType_ID(),
-				invoice.getAD_Client_ID(),
-				invoice.getAD_Org_ID());
-
-		final BigDecimal actualLifeTimeValue = bpartnerStatsBL.getActualLifeTimeValue(stats);
-		final BigDecimal soCreditUsed = bpartnerStatsBL.getSOCreditUsed(stats);
-		final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-
-		// Total Balance
-		BigDecimal newBalance = totalOpenBalance;
-		if (newBalance == null)
-		{
-			newBalance = Env.ZERO;
-		}
-		if (invoice.isSOTrx())
-		{
-			newBalance = newBalance.add(invAmt);
-			//
-			if (partner.getFirstSale() == null)
-			{
-				partner.setFirstSale(invoice.getDateInvoiced());
-			}
-			BigDecimal newLifeAmt = actualLifeTimeValue;
-			if (newLifeAmt == null)
-			{
-				newLifeAmt = invAmt;
-			}
-			else
-			{
-				newLifeAmt = newLifeAmt.add(invAmt);
-			}
-
-			BigDecimal newCreditAmt = soCreditUsed;
-			if (newCreditAmt == null)
-			{
-				newCreditAmt = invAmt;
-			}
-			else
-			{
-				newCreditAmt = newCreditAmt.add(invAmt);
-			}
-			//
-			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
-					+ ") BP Life=" + actualLifeTimeValue + "->" + newLifeAmt
-					+ ", Credit=" + soCreditUsed + "->" + newCreditAmt
-					+ ", Balance=" + totalOpenBalance + " -> " + newBalance);
-
-			bpartnerStatsBL.setActualLifeTimeValue(stats, newLifeAmt);
-			bpartnerStatsBL.setSOCreditUsed(stats, newCreditAmt);
-
-		}     	// SO
-		else
-		{
-			newBalance = newBalance.subtract(invAmt);
-			log.debug("GrandTotal=" + invoicePO.getGrandTotal(true) + "(" + invAmt
-					+ ") Balance=" + totalOpenBalance + " -> " + newBalance);
-		}
-
-		bpartnerStatsBL.setTotalOpenBalance(stats, newBalance);
 	}
 }

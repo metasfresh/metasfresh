@@ -69,12 +69,4 @@ public class PlainInvoiceBL extends AbstractInvoiceBL
 	{
 		throw new UnsupportedOperationException();
 	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
-	protected void updateBPartnerStatistics(I_C_Invoice invoice)
-	{
-	}
 }

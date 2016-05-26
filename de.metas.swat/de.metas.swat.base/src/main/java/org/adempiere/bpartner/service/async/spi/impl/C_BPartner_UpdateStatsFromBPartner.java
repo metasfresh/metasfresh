@@ -54,29 +54,29 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			return;
 		}
-		
+
 		for (final Integer bpartnerId : bpartnerIds)
 		{
 			if (bpartnerId == null || bpartnerId <= 0)
 			{
 				continue;
 			}
-			
+
 			SCHEDULER.schedule(BPartnerToUpdate.of(ctx, bpartnerId, trxName));
 		}
 	}
-	
+
 	private static final class BPartnerToUpdate
 	{
 		public static BPartnerToUpdate of(Properties ctx, int bpartnerId, String trxName)
 		{
 			return new BPartnerToUpdate(ctx, bpartnerId, trxName);
 		}
-		
+
 		private final Properties ctx;
 		private final String trxName;
 		private final int bpartnerId;
-		
+
 		private BPartnerToUpdate(Properties ctx, int bpartnerId, String trxName)
 		{
 			super();
@@ -84,7 +84,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			this.bpartnerId = bpartnerId;
 			this.trxName = trxName;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -108,13 +108,13 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			return bpartnerId;
 		}
 	}
-	
+
 	private static final WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate>(C_BPartner_UpdateStatsFromBPartner.class)
 	{
 		@Override
 		protected boolean isEligibleForScheduling(final BPartnerToUpdate model)
 		{
-			return model != null && model.getC_BPartner_ID() > 0; 
+			return model != null && model.getC_BPartner_ID() > 0;
 		};
 
 		@Override
@@ -136,7 +136,6 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		}
 	};
 
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
@@ -150,10 +149,10 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 
 			bpartnerStatsBL.updateTotalOpenBalance(stats);
-			bpartnerStatsBL.updateSOCreditStatus(stats);
 			bpartnerStatsBL.updateActualLifeTimeValue(stats);
-		//	bpartnerStatsBL.u
-			
+			bpartnerStatsBL.updateSOCreditUsed(stats);
+			bpartnerStatsBL.updateSOCreditStatus(stats);
+
 		}
 
 		return Result.SUCCESS;

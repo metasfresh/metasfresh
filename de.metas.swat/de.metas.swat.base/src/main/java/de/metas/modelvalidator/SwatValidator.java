@@ -39,13 +39,9 @@ import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
-import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
-import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatsUpdaterFromInvoice;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerActualLifeTimeUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerSOCreditStatusUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.invoice.async.spi.impl.AsyncBPartnerStatsInvoiceUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
@@ -178,10 +174,9 @@ public class SwatValidator implements ModelValidator
 
 		//
 		// Services
-		Services.registerService(IBPartnerTotalOpenBalanceUpdater.class, new AsyncBPartnerTotalOpenBalanceUpdater());
+	
 		//task FRESH-152
-		Services.registerService(IBPartnerActualLifeTimeValueUpdater.class, new AsyncBPartnerActualLifeTimeUpdater());
-		Services.registerService(IBPartnerSOCreditStatusUpdater.class, new AsyncBPartnerSOCreditStatusUpdater());		
+		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());	
 		Services.registerService(IBPartnerStatsUpdaterFromInvoice.class, new AsyncBPartnerStatsInvoiceUpdater());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);

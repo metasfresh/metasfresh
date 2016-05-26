@@ -1,42 +1,38 @@
 /******************************************************************************
- * Copyright (C) 2009 Low Heng Sin                                            *
- * Copyright (C) 2009 Idalica Corporation                                     *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Copyright (C) 2009 Low Heng Sin *
+ * Copyright (C) 2009 Idalica Corporation *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.compiere.apps.form;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_M_Cost;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class Merge
 {
@@ -68,7 +64,7 @@ public class Merge
 	/** Tables to delete (not update) for M_Product */
 	public static String[] s_delete_Product = new String[] { "M_Product_PO", "M_Replenish", "T_Replenish",
 			"M_ProductPrice", "M_Product_Costing",
-			"M_Cost",    // teo_sarca [ 1704554 ]
+			"M_Cost",       // teo_sarca [ 1704554 ]
 			"M_Product_Trl", "M_Product_Acct" };		// M_Storage
 
 	public String[] m_columnName = null;
@@ -133,7 +129,7 @@ public class Merge
 			{
 				String tName = rs.getString(1);
 				String cName = rs.getString(2);
-				if (!TableName.equals(tName))   	// to be sure - sql should prevent it
+				if (!TableName.equals(tName))      	// to be sure - sql should prevent it
 				{
 					int count = mergeTable(tName, cName, from_ID, to_ID);
 					if (count < 0)
@@ -281,22 +277,10 @@ public class Merge
 					if (invoice.testAllocation())
 						invoice.save();
 				}
-				//
-				// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
-				try
-				{
-					Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-							.updateTotalOpenBalances(Env.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), ITrx.TRXNAME_None);
 
-					Services.get(IBPartnerActualLifeTimeValueUpdater.class)
-							.updateActualLifeTimeValue(Env.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), ITrx.TRXNAME_None);
-				}
-				catch (SQLException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
+				// task FRESH-152. Update bpartner stats
+				Services.get(IBPartnerStatisticsUpdater.class)
+						.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), ITrx.TRXNAME_None);
 			}
 		}
 		else if (ColumnName.equals(M_PRODUCT_ID))
