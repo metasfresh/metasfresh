@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.banking</groupId>
-		<artifactId>de.metas.banking</artifactId>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
 		<version>3-development-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 
