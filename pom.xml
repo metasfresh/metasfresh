@@ -40,7 +40,7 @@
 			Using of ${metasfresh-dependency.version} is deprecated.
 			See https://github.com/metasfresh/metasfresh-documentation/blob/master/infrastructure/CI_infrastructure.md for explanations.
 			-->
-		<metasfresh-dependency.version>[1-master-SNAPSHOT],[${metasfresh-dependency.version}]</metasfresh-dependency.version>
+		<metasfresh-dependency.version>[1-master-SNAPSHOT],[${project.version}]</metasfresh-dependency.version>
 	</properties>
 
 	<repositories>
