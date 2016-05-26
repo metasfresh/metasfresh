@@ -400,7 +400,7 @@ public class PropertyValueCollection
 
 				//
 				// Lookup values provider property: i.e. PropertyName#values
-				if (propertyDescriptor.isValueProperty() && propertyDescriptor.getSqlLookupDescriptor() != null)
+				if (propertyDescriptor.isValueProperty() && propertyDescriptor.getValueType().isLookup())
 				{
 					final PropertyValue lookupPropertyValue = new LookupPropertyValue(propertyDescriptor);
 					builder.addChildPropertyValue(lookupPropertyValue);

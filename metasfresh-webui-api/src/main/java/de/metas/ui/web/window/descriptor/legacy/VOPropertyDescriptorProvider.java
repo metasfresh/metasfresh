@@ -33,6 +33,8 @@ import de.metas.ui.web.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.PropertyDescriptors;
+import de.metas.ui.web.window.descriptor.SqlDataBindingInfo;
+import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
@@ -153,7 +155,9 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			rootBuilder = PropertyDescriptor.builder()
 					.setPropertyName(WindowConstants.PROPERTYNAME_WindowRoot)
 					.setCaption(gridWindowVO.getName())
-					.setSqlTableName(rootTableName);
+					.setDataBindingInfo(SqlDataBindingInfo.builder()
+							.setSqlTableName(rootTableName)
+							.build());
 
 			parent_SqlTableName = rootTableName;
 			try
@@ -308,8 +312,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setPropertyName(includedTabPropertyName)
 					.setType(PropertyDescriptorType.Tabular)
 					.setCaption(includedGridTabVO.getName())
-					.setSqlTableName(includedTableName)
-					.setSqlParentLinkColumnName(getParentLinkColumnNameOrNull(includedGridTabVO));
+					.setDataBindingInfo(SqlDataBindingInfo.builder()
+							.setSqlTableName(includedTableName)
+							.setSqlParentLinkColumnName(getParentLinkColumnNameOrNull(includedGridTabVO))
+							.build());
 			tabIdsAdded.add(includedGridTabVO.getAD_Tab_ID());
 
 			final String parent_SqlTableName_Old = parent_SqlTableName;
@@ -369,10 +375,12 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 		private void createAndAddField(final PropertyDescriptor.Builder parentBuilder, final GridFieldVO gridFieldVO)
 		{
 			final PropertyName propertyName = PropertyName.of(parentBuilder.getPropertyName(), gridFieldVO.getColumnName());
+			final PropertyDescriptorValueType valueType = extractValueType(gridFieldVO);
+			
 			final Builder fieldBuilder = PropertyDescriptor.builder()
 					.setType(PropertyDescriptorType.Value)
 					.setPropertyName(propertyName)
-					.setValueType(extractValueType(gridFieldVO))
+					.setValueType(valueType)
 					.setCaption(gridFieldVO.getHeader())
 					.setLayoutInfo(createLayoutInfo(gridFieldVO))
 					//
@@ -383,12 +391,14 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setMandatoryLogic(extractMandatoryLogic(propertyName, gridFieldVO))
 					.setDisplayLogic(extractDisplayLogic(propertyName, gridFieldVO))
 
-			// SQL related metas info (shall be factored out of the descriptor);
-					.setSqlColumnName(gridFieldVO.getColumnName())
-					.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
-					.setSQL_AD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-					//
-					;
+			// SQL related meta info
+					.setDataBindingInfo(SqlDataBindingInfo.builder()
+							.setSqlColumnName(gridFieldVO.getColumnName())
+							.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
+							.setSqlLookupDescriptor(valueType.isLookup() ? SqlLookupDescriptor.of(valueType, gridFieldVO.getColumnName(), gridFieldVO.getAD_Reference_Value_ID()) : null)
+							.build())
+							//
+							;
 
 			final PropertyDescriptor fieldDescriptor = fieldBuilder.build();
 			parentBuilder.addChildPropertyDescriptor(fieldDescriptor);
@@ -470,7 +480,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 		private static PropertyDescriptorValueType extractValueType(final GridFieldVO field)
 		{
 			final int displayType = field.getDisplayType();
-			
+
 			if (displayType == DisplayType.List)
 			{
 				return PropertyDescriptorValueType.List;

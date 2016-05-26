@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.SqlDataBindingInfo;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
@@ -31,7 +32,6 @@ import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
  * #L%
  */
 
-
 final class SqlField
 {
 	public static final SqlField of(final SqlTable sqlTable, final PropertyDescriptor fieldDescriptor)
@@ -55,20 +55,21 @@ final class SqlField
 
 	private final boolean keyColumn;
 
-
 	/** Builder constructor */
 	private SqlField(final SqlTable sqlTable, final PropertyDescriptor fieldDescriptor)
 	{
 		super();
 		this.sqlTable = sqlTable;
-		propertyName = fieldDescriptor.getPropertyName();
+		this.propertyName = fieldDescriptor.getPropertyName();
 		this.valueType = fieldDescriptor.getValueType();
-		encrypted = fieldDescriptor.isSqlEncrypted();
 
-		columnName = fieldDescriptor.getSqlColumnName();
+		final SqlDataBindingInfo sqlDataBindingInfo = SqlDataBindingInfo.extractFrom(fieldDescriptor);
+		encrypted = sqlDataBindingInfo.isSqlEncrypted();
+
+		columnName = sqlDataBindingInfo.getSqlColumnName();
 		Check.assumeNotEmpty(columnName, "columnName is not empty");
 
-		String columnSql = fieldDescriptor.getSqlColumnSql();
+		String columnSql = sqlDataBindingInfo.getSqlColumnSql();
 		if (Check.isEmpty(columnSql, true))
 		{
 			columnSql = columnName;
@@ -77,7 +78,7 @@ final class SqlField
 
 		//
 		// Display column
-		final SqlLookupDescriptor lookupDescriptor = fieldDescriptor.getSqlLookupDescriptor();
+		final SqlLookupDescriptor lookupDescriptor = sqlDataBindingInfo.getSqlLookupDescriptor();
 		if (lookupDescriptor != null)
 		{
 			usingDisplayColumn = true;
@@ -95,7 +96,7 @@ final class SqlField
 
 		this.keyColumn = columnName.equalsIgnoreCase(sqlTable.getKeyColumnName());
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -109,7 +110,7 @@ final class SqlField
 	{
 		return propertyName;
 	}
-	
+
 	public SqlTable getSqlTable()
 	{
 		return sqlTable;

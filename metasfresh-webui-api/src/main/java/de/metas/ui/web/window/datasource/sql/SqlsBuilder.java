@@ -12,6 +12,7 @@ import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.SqlDataBindingInfo;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 
@@ -128,11 +129,13 @@ final class SqlsBuilder
 
 	public SqlsBuilder addRootProperty(final PropertyDescriptor rootPropertyDescriptor)
 	{
+		final SqlDataBindingInfo sqlDataBindingInfo = SqlDataBindingInfo.extractFrom(rootPropertyDescriptor);
+		
 		final String tableAlias = TABLEALIAS_Master;
-		final String tableName = rootPropertyDescriptor.getSqlTableName();
+		final String tableName = sqlDataBindingInfo.getSqlTableName();
 		final SqlTable sqlTable = addTable(tableName, tableAlias);
 		
-		this.sqlParentLinkColumnName = rootPropertyDescriptor.getSqlParentLinkColumnName();
+		this.sqlParentLinkColumnName = sqlDataBindingInfo.getSqlParentLinkColumnName();
 		if (Check.isEmpty(sqlParentLinkColumnName, true))
 		{
 			sqlParentLinkColumnName = null;
@@ -150,9 +153,11 @@ final class SqlsBuilder
 			final String keyColumnName = sqlTable.getKeyColumnName();
 			final PropertyDescriptor propertyDescriptor = PropertyDescriptor.builder()
 					.setPropertyName(PropertyName.of(keyColumnName))
-					.setSqlColumnName(keyColumnName)
 					.setType(PropertyDescriptorType.Value)
 					.setValueType(PropertyDescriptorValueType.ID)
+					.setDataBindingInfo(SqlDataBindingInfo.builder()
+							.setSqlColumnName(keyColumnName)
+							.build())
 					.build();
 			addProperty(propertyDescriptor, sqlTable);
 			
@@ -165,9 +170,11 @@ final class SqlsBuilder
 		{
 			final PropertyDescriptor propertyDescriptor = PropertyDescriptor.builder()
 					.setPropertyName(PropertyName.of(sqlParentLinkColumnName))
-					.setSqlColumnName(sqlParentLinkColumnName)
 					.setType(PropertyDescriptorType.Value)
 					.setValueType(PropertyDescriptorValueType.ID)
+					.setDataBindingInfo(SqlDataBindingInfo.builder()
+							.setSqlColumnName(sqlParentLinkColumnName)
+							.build())
 					.build();
 			addProperty(propertyDescriptor, sqlTable);
 			
@@ -207,10 +214,12 @@ final class SqlsBuilder
 
 	private void addProperty_ChildTable(final PropertyDescriptor propertyDescriptor, final SqlTable parentSqlTable)
 	{
-		final String childTableName = propertyDescriptor.getSqlTableName();
+		final SqlDataBindingInfo sqlDataBindingInfo = SqlDataBindingInfo.extractFrom(propertyDescriptor);
+		
+		final String childTableName = sqlDataBindingInfo.getSqlTableName();
 		Check.assumeNotEmpty(childTableName, "childTableName is not empty");
 
-		final String childParentLinkColumnName = propertyDescriptor.getSqlParentLinkColumnName();
+		final String childParentLinkColumnName = sqlDataBindingInfo.getSqlParentLinkColumnName();
 		Check.assumeNotEmpty(childParentLinkColumnName, "childParentLinkColumnName is not empty");
 
 		final PropertyName propertyName = propertyDescriptor.getPropertyName();
@@ -224,7 +233,9 @@ final class SqlsBuilder
 
 	private void addProperty_SqlField(final PropertyDescriptor fieldDescriptor, final SqlTable sqlTable)
 	{
-		final String columnName = fieldDescriptor.getSqlColumnName();
+		final SqlDataBindingInfo sqlDataBindingInfo = SqlDataBindingInfo.extractFrom(fieldDescriptor);
+		
+		final String columnName = sqlDataBindingInfo.getSqlColumnName();
 		final boolean isSqlColumn = !Check.isEmpty(columnName, true);
 		if (!isSqlColumn)
 		{

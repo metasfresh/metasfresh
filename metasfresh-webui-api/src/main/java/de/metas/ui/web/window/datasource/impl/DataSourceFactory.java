@@ -6,6 +6,8 @@ import de.metas.ui.web.window.datasource.ModelDataSource;
 import de.metas.ui.web.window.datasource.sql.SqlLazyLookupDataSource;
 import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
+import de.metas.ui.web.window.descriptor.PropertyDescriptorDataBindingInfo;
+import de.metas.ui.web.window.descriptor.SqlDataBindingInfo;
 import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 
 /*
@@ -41,7 +43,21 @@ public class DataSourceFactory implements IDataSourceFactory
 	@Override
 	public LookupDataSource createLookupDataSource(final PropertyDescriptor propertyDescriptor)
 	{
-		final SqlLookupDescriptor sqlLookupDescriptor = propertyDescriptor.getSqlLookupDescriptor();
-		return new SqlLazyLookupDataSource(sqlLookupDescriptor);
+		final PropertyDescriptorDataBindingInfo dataBindingInfo = propertyDescriptor.getDataBindingInfo();
+		if(dataBindingInfo == null)
+		{
+			throw new IllegalArgumentException("No data binding info for "+propertyDescriptor);
+		}
+		
+		//
+		// SQL
+		final SqlDataBindingInfo sqlDataBindingInfo = SqlDataBindingInfo.extractFromOrNull(propertyDescriptor);
+		if (sqlDataBindingInfo != null)
+		{
+			final SqlLookupDescriptor sqlLookupDescriptor = sqlDataBindingInfo.getSqlLookupDescriptor();
+			return new SqlLazyLookupDataSource(sqlLookupDescriptor);
+		}
+
+		throw new IllegalArgumentException("Cannot create lookup data source for " + propertyDescriptor);
 	}
 }

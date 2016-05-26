@@ -3,6 +3,8 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.Services;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -10,10 +12,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datasource.IDataSourceFactory;
 import de.metas.ui.web.window.datasource.LookupDataSource;
-import de.metas.ui.web.window.datasource.sql.SqlLazyLookupDataSource;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.descriptor.SqlLookupDescriptor;
 import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
@@ -46,7 +47,7 @@ import de.metas.ui.web.window.shared.datatype.LookupValue;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class LookupPropertyValue implements PropertyValue
+public final class LookupPropertyValue implements PropertyValue
 {
 	/* package */ static final LookupPropertyValue cast(final PropertyValue propertyValue)
 	{
@@ -55,18 +56,13 @@ public class LookupPropertyValue implements PropertyValue
 
 	private final PropertyName propertyName;
 	private final LookupDataSource lookupDataSource;
-	private final LookupDataSourceQueryCommand value;
 
 	/* package */ LookupPropertyValue(final PropertyDescriptor descriptor)
 	{
 		super();
 		final PropertyName propertyName = descriptor.getPropertyName();
 		this.propertyName = WindowConstants.lookupValuesName(propertyName);
-
-		final SqlLookupDescriptor sqlLookupDescriptor = descriptor.getSqlLookupDescriptor();
-		lookupDataSource = new SqlLazyLookupDataSource(sqlLookupDescriptor);
-
-		value = null; // new LookupDataSourceServiceDTOImpl(propertyName);
+		this.lookupDataSource = Services.get(IDataSourceFactory.class).createLookupDataSource(descriptor);
 	}
 
 	@Override
@@ -98,7 +94,7 @@ public class LookupPropertyValue implements PropertyValue
 	@Override
 	public LookupDataSourceQueryCommand getValue()
 	{
-		return value;
+		return null;
 	}
 
 	/* package */LookupDataSource getLookupDataSource()

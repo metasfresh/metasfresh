@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.datasource.sql.SqlModelDataSource;
 import de.metas.ui.web.window.shared.datatype.ComposedValue;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
@@ -48,7 +47,7 @@ public final class PropertyDescriptor
 	{
 		return new Builder();
 	}
-
+	
 	//
 	// General properties
 	private final PropertyName propertyName;
@@ -72,13 +71,8 @@ public final class PropertyDescriptor
 	// Reporting info
 	private final int printProcessId;
 
-	//
-	// SQL related properties
-	private final String sqlTableName;
-	private final String sqlParentLinkColumnName;
-	private final String sqlColumnName;
-	private final String sqlColumnSql;
-	private final SqlLookupDescriptor sqlLookupDescriptor;
+	/** Data binding info */
+	private final PropertyDescriptorDataBindingInfo dataBindingInfo;
 	
 	private final boolean readOnlyForUser;
 	
@@ -111,13 +105,8 @@ public final class PropertyDescriptor
 		// Reporting
 		printProcessId = builder.getPrintProcessId();
 
-		//
-		// SQL related properties
-		sqlTableName = builder.getSqlTableName();
-		sqlParentLinkColumnName = builder.sqlParentLinkColumnName;
-		sqlColumnName = builder.sqlColumnName;
-		sqlColumnSql = builder.sqlColumnSql;
-		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
+		// Data binding info
+		dataBindingInfo = builder.getDataBindingInfo();
 		
 		readOnlyForUser = builder.isReadOnlyForUser();
 	}
@@ -129,8 +118,7 @@ public final class PropertyDescriptor
 				.omitNullValues()
 				.add("name", propertyName)
 				.add("type", type)
-				.add("sqlTableName", sqlTableName)
-				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
+				.add("dataBindingInfo", dataBindingInfo)
 				.add("readonly", readonlyLogic)
 				.add("mandatory", mandatoryLogic)
 				.add("display", displayLogic);
@@ -241,36 +229,10 @@ public final class PropertyDescriptor
 	{
 		return printProcessId;
 	}
-
-	public String getSqlTableName()
+	
+	public PropertyDescriptorDataBindingInfo getDataBindingInfo()
 	{
-		return sqlTableName;
-	}
-
-	public String getSqlParentLinkColumnName()
-	{
-		return sqlParentLinkColumnName;
-	}
-
-	public String getSqlColumnName()
-	{
-		return sqlColumnName;
-	}
-
-	public String getSqlColumnSql()
-	{
-		return sqlColumnSql;
-	}
-
-	public SqlLookupDescriptor getSqlLookupDescriptor()
-	{
-		return sqlLookupDescriptor;
-	}
-
-	public boolean isSqlEncrypted()
-	{
-		// TODO Auto-generated method stub
-		return false;
+		return dataBindingInfo;
 	}
 
 	public ViewPropertyDescriptor toViewPropertyDescriptor()
@@ -313,12 +275,7 @@ public final class PropertyDescriptor
 
 		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
-		private String sqlTableName;
-		private String sqlParentLinkColumnName;
-		private String sqlColumnName;
-		private String sqlColumnSql;
-		private SqlLookupDescriptor sqlLookupDescriptor;
-		private int sql_AD_Reference_Value_ID;
+		private PropertyDescriptorDataBindingInfo dataBindingInfo;
 		
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE; 
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
@@ -343,7 +300,7 @@ public final class PropertyDescriptor
 					.omitNullValues()
 					.add("propertyName", propertyName)
 					.add("type", type)
-					.add("sqlTableName", sqlTableName)
+					.add("dataBindingInfo", dataBindingInfo)
 					.toString();
 		}
 
@@ -443,71 +400,15 @@ public final class PropertyDescriptor
 			return this;
 		}
 
-		/**
-		 * Set the SQL table name. For the {@link SqlModelDataSource} to work, each descriptor itself of its parent has to have this information.
-		 *
-		 * @param sqlTableName
-		 * @return
-		 */
-		public Builder setSqlTableName(final String sqlTableName)
+		public Builder setDataBindingInfo(PropertyDescriptorDataBindingInfo dataBindingInfo)
 		{
-			this.sqlTableName = sqlTableName;
+			this.dataBindingInfo = dataBindingInfo;
 			return this;
 		}
 		
-		private String getSqlTableName()
+		private PropertyDescriptorDataBindingInfo getDataBindingInfo()
 		{
-			return this.sqlTableName;
-		}
-
-		public Builder setSqlParentLinkColumnName(String sqlParentLinkColumnName)
-		{
-			this.sqlParentLinkColumnName = sqlParentLinkColumnName;
-			return this;
-		}
-
-		public Builder setSqlColumnName(String sqlColumnName)
-		{
-			this.sqlColumnName = sqlColumnName;
-			return this;
-		}
-
-		public Builder setSqlColumnSql(String sqlColumnSql)
-		{
-			this.sqlColumnSql = sqlColumnSql;
-			return this;
-		}
-
-		public Builder setSqlLookupDescriptor(SqlLookupDescriptor sqlLookupDescriptor)
-		{
-			this.sqlLookupDescriptor = sqlLookupDescriptor;
-			return this;
-		}
-
-		private SqlLookupDescriptor getSqlLookupDescriptor()
-		{
-			if (sqlLookupDescriptor != null)
-			{
-				return sqlLookupDescriptor;
-			}
-
-			// FIXME: i think, in final version this part will be completely removed
-			if (sqlColumnName != null)
-			{
-				final PropertyDescriptorValueType valueType = getValueType();
-				if (valueType != null && valueType.isLookup())
-				{
-					return SqlLookupDescriptor.of(valueType, this.sqlColumnName, this.sql_AD_Reference_Value_ID);
-				}
-			}
-
-			return sqlLookupDescriptor;
-		}
-		
-		public Builder setSQL_AD_Reference_Value_ID(final int sql_AD_Reference_Value_ID)
-		{
-			this.sql_AD_Reference_Value_ID = sql_AD_Reference_Value_ID;
-			return this;
+			return dataBindingInfo;
 		}
 		
 		public ImmutableMap<PropertyName, PropertyDescriptor> getChildPropertyDescriptors()
