@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.dist</artifactId>
@@ -21,7 +21,7 @@
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
 		
 		<!-- our spring-boot-admin webui rarely changes, so always include our "standard" version in this distributable -->		
-		<de.metas.admin.webui.version>1.0_IT-SNAPSHOT</de.metas.admin.webui.version>
+		<de.metas.admin.webui.version>3-development-SNAPSHOT</de.metas.admin.webui.version>
 	</properties>
 
 	<dependencies>
