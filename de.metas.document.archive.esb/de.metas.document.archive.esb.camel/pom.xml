@@ -97,6 +97,8 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- get the dependency management of the de.metas.esb "commons" project -->
+			<!--
+			version ranges are not supported here, also importing it is not required because its our grand parent pom
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
@@ -104,6 +106,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			-->
 		</dependencies>
 	</dependencyManagement>
 
