@@ -20,12 +20,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
@@ -438,11 +434,11 @@ public class RequisitionPOCreate extends SvrProcess
 			// Find Strategic Vendor for Product
 			
 			// task 05914: start
-			final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
-			final List<Object> params = new ArrayList<Object>();
-			params.add(rLine.getM_Product_ID());
-			final IQueryFilter<I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<I_C_BPartner_Product>(sql, params);
-			final List<de.metas.interfaces.I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
+			//FRESH-334: Make sure the BP_Product if of the product's org or org * 
+			final int orgId = product.getAD_Org_ID();
+			final int productId = product.getM_Product_ID();
+			
+			final List<de.metas.interfaces.I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
 	
 			if (partnerProducts.size() > 0)
 			{
