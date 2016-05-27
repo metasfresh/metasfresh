@@ -1,12 +1,10 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>de.metas</groupId>
 	<artifactId>de.metas.parent.general</artifactId>
-	<version>1.0_IT-SNAPSHOT</version>
+	<version>3-development-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -23,12 +21,28 @@
 
 	<developers>
 		<developer>
-			<name>metas developer</name>
+			<name>metasfresh contributors</name>
 			<organizationUrl>http://www.metasfresh.com/</organizationUrl>
-			<email>info@metas.de</email>
+			<email>contributors@metasfresh.com</email>
 		</developer>
 	</developers>
-	
+
+	<properties>
+			<!-- 
+			Please use this property when declaring metasfresh dependencies.
+			Example:
+			<dependency>
+				<groupId>de.metas.commons.cxf</groupId>
+				<artifactId>metasfresh-commons-cxf</artifactId>
+				<version>${metasfresh-dependency.version}</version>
+			</dependency>
+			
+			Using of ${metasfresh-dependency.version} is deprecated.
+			See https://github.com/metasfresh/metasfresh-documentation/blob/master/infrastructure/CI_infrastructure.md for explanations.
+			-->
+		<metasfresh-dependency.version>[1-master-SNAPSHOT],[${project.version}]</metasfresh-dependency.version>
+	</properties>
+
 	<repositories>
 		<!-- The repositories that we relate on are defined in this parent POM, 
 			because whether an artifact is found should not depend on a specific user's 
@@ -42,7 +56,7 @@
 
 	<distributionManagement>
 		<!-- 
-		Where to deploy build artifacts; if you can't rach this repo, you can stil make your own builds
+		Where to deploy build artifacts; if you can't reach this repo, you can still make your own builds
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
 		<repository>
@@ -57,10 +71,28 @@
 		</snapshotRepository>
 
 	</distributionManagement>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
+				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.5.1</version>
+					<configuration>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.0</version>
+					<configuration>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+			
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
@@ -95,5 +127,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 </project>
