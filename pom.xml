@@ -6,14 +6,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<groupId>de.metas.procurement</groupId>
 	<artifactId>de.metas.procurement.webui</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version it -->
-	<version>1.0_IT-SNAPSHOT</version>
+	<version>3-development-SNAPSHOT</version>
 
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
@@ -28,7 +28,7 @@
 
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
 
-		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
+		<spring-boot.version>1.3.5.RELEASE</spring-boot.version>
 
 		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
 		<cxf.version>3.1.6</cxf.version>
@@ -70,6 +70,19 @@
 	</dependencyManagement>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.commons.cxf</groupId>
+			<artifactId>metasfresh-commons-cxf</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.sync-api</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.vaadin.spring.extensions</groupId>
 			<artifactId>vaadin-spring-ext-boot</artifactId>
@@ -229,12 +242,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		
 		<!-- Logging -->
