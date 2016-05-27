@@ -1,10 +1,13 @@
 #!/bin/sh
 
-if [ $ADEMPIERE_HOME ]; then
-	echo "Using environment variable ADEMPIERE_HOME = $ADEMPIERE_HOME"
+if [ $METASFRESH_HOME ]; then
+	echo "Using environment variable METASFRESH_HOME = $METASFRESH_HOME"
+elif [ $ADEMPIERE_HOME ]; then
+	METASFRESH_HOME=$ADEMPIERE_HOME
+	echo "Using environment variable ADEMPIERE_HOME = $ADEMPIERE_HOME also for METASFRESH_HOME"
 else
-	ADEMPIERE_HOME=$(dirname $0)                     # Get current dir
-	echo "Assuming ADEMPIERE_HOME = $ADEMPIERE_HOME"
+	METASFRESH_HOME=$(dirname $0)                     # Get current dir
+	echo "Assuming METASFRESH_HOME = $METASFRESH_HOME"
 fi
 
 if [ $LOG_DIR ]; then
@@ -17,7 +20,8 @@ fi
 # Exit on Error of command immediately
 set -e
 
-JAR_FILE="$ADEMPIERE_HOME/lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar"
+#get the path of our executable jar file. Note the wildcards, they are here mostly because we like this to also work with feature builds.
+JAR_FILE=$(ls $METASFRESH_HOME/lib/de.metas.endcustomer.*.swingui-*.jar)
 
 ##	Check Java Home
 if [ $JAVA_HOME ]; then
@@ -48,7 +52,7 @@ SECURE=
 MEMORY_OPTS="-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError"
 
 #Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
-JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang=\"de_CH\" -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
 
 echo "JAVA_OPTS = $JAVA_OPTS"
 echo "JAR_FILE = $JAR_FILE"

@@ -25,14 +25,14 @@ package org.adempiere.bpartner.service.impl;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateStatsFromBPartner;
 
-public class AsyncBPartnerTotalOpenBalanceUpdater implements IBPartnerTotalOpenBalanceUpdater
+public class AsyncBPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 {
 
 	@Override
-	public void updateTotalOpenBalances(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
+	public void updateBPartnerStatistics(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
 	{
 		C_BPartner_UpdateStatsFromBPartner.createWorkpackage(ctx, bpartnerIds, trxName);
 	}

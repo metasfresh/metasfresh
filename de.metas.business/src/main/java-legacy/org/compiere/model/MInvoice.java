@@ -38,10 +38,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.bpartner.service.IBPartnerStatsUpdaterFromInvoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -1803,13 +1802,9 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			return DocAction.STATUS_Invalid;
 		}
 
-		// Update BP and user Statistics
-
-		Services.get(IBPartnerStatsUpdaterFromInvoice.class)
-				.updateStatsFromInvoice(Env.getCtx(), Collections.singleton(getC_Invoice_ID()), ITrx.TRXNAME_None);
-
-		Services.get(IBPartnerSOCreditStatusUpdater.class)
-				.updateSOCreditStatus(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
+		// FRESH-152 Update BP Statistics
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

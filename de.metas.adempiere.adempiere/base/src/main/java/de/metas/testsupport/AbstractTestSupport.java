@@ -13,24 +13,23 @@ package de.metas.testsupport;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Charge;
@@ -66,6 +65,11 @@ public class AbstractTestSupport
 	 */
 	public I_M_Product product(final String productValue, final int productId)
 	{
+		return product(productValue, productId, 0);
+	}
+	
+	public I_M_Product product(final String productValue, final int productId, final int orgId)
+	{
 		final POJOLookupMap db = POJOLookupMap.get();
 		I_M_Product product = db.getFirstOnly(I_M_Product.class, new IQueryFilter<I_M_Product>()
 		{
@@ -79,6 +83,7 @@ public class AbstractTestSupport
 		if (product == null)
 		{
 			product = db.newInstance(Env.getCtx(), I_M_Product.class);
+			product.setAD_Org_ID(orgId);
 			product.setValue(productValue);
 			product.setName(productValue);
 			product.setM_Product_ID(productId);
@@ -86,6 +91,23 @@ public class AbstractTestSupport
 		}
 
 		return product;
+	}
+
+	/**
+	 * Create an organization with a given name
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public I_AD_Org org(final String name)
+	{
+		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+
+		org.setName(name);
+
+		InterfaceWrapperHelper.save(org);
+
+		return org;
 	}
 
 	protected I_M_ProductPrice productPrice(final int productPriceId)
@@ -330,35 +352,26 @@ public class AbstractTestSupport
 			bpartner = db.newInstance(Env.getCtx(), I_C_BPartner.class);
 			bpartner.setValue(bpValue);
 			bpartner.setName(bpValue);
+
+			bpartner.setAD_Org_ID(0);
 			InterfaceWrapperHelper.save(bpartner);
 		}
 
 		return bpartner;
 	}
 
-	public I_C_BPartner_Product bpartnerProduct(final I_C_BPartner bpartner, final I_M_Product product)
+	public I_C_BPartner_Product bpartnerProduct(final I_C_BPartner bpartner, final I_M_Product product, final I_AD_Org org)
 	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_BPartner_Product bpp = db.getFirstOnly(I_C_BPartner_Product.class, new IQueryFilter<I_C_BPartner_Product>()
-		{
-			@Override
-			public boolean accept(final I_C_BPartner_Product pojo)
-			{
-				final boolean samePartner = Check.equals(pojo.getC_BPartner_ID(), bpartner.getC_BPartner_ID());
-				final boolean sameProduct = Check.equals(pojo.getM_Product_ID(), product.getM_Product_ID());
-				return samePartner && sameProduct;
-			}
-		});
 
-		if (bpp == null)
-		{
-			final IContextAware context = InterfaceWrapperHelper.getContextAware(bpartner);
-			bpp = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class, context);
-			bpp.setC_BPartner(bpartner);
-			bpp.setM_Product(product);
-			InterfaceWrapperHelper.save(bpp);
-		}
-		return bpp;
+		final I_C_BPartner_Product bpProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		
+		bpProduct.setC_BPartner(bpartner);
+		bpProduct.setM_Product(product);
+		bpProduct.setAD_Org(org);
+		
+		InterfaceWrapperHelper.save(bpProduct);
+		
+		return bpProduct;
 	}
 
 	public I_C_Order order(final String orderDocNo)
@@ -546,6 +559,6 @@ public class AbstractTestSupport
 			InterfaceWrapperHelper.save(inOutLine);
 		}
 
-		return InterfaceWrapperHelper.create(inOutLine,clazz);
+		return InterfaceWrapperHelper.create(inOutLine, clazz);
 	}
 }

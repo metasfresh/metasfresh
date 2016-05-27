@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.report.jasper.server</artifactId>
 		<groupId>de.metas.report.jasper.server</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>de.metas.report.jasper.server.base</artifactId>
@@ -80,7 +80,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>de.metas.report.jasper.commons</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.barcode4j</groupId>

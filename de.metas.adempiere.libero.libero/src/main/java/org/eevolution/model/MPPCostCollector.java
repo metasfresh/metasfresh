@@ -42,14 +42,11 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.model.IContextAware;
@@ -958,12 +955,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 			// Find Vendor and Product PO data
 			int C_BPartner_ID = activity.getC_BPartner_ID();
 
-			// cg: task 05952 : start
-			final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
-			final List<Object> params = new ArrayList<Object>();
-			params.add(product.getM_Product_ID());
-			final IQueryFilter<org.compiere.model.I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<>(sql, params);
-			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
+			
+			//FRESH-334: Make sure the BP_Product if of the product's org or org * 
+			final int orgId = product.getAD_Org_ID();
+			final int productId = product.getM_Product_ID();
+			
+			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
 
 			I_C_BPartner_Product partnerProduct = null;
 			for (final I_C_BPartner_Product bpp : partnerProducts)

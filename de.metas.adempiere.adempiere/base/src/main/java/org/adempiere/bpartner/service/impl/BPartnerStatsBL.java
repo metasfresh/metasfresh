@@ -37,14 +37,13 @@ import org.compiere.util.Env;
 
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
-
-	// SOCreditStatus
+	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	@Override
 	public void setSOCreditStatus(final I_C_BPartner_Stats stat, final String soCreditStatus)
 	{
 		stat.setSOCreditStatus(soCreditStatus);
-		
+
 		InterfaceWrapperHelper.save(stat);
 	}
 
@@ -92,7 +91,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		stat.setSOCreditStatus(creditStatusToSet);
 
 		InterfaceWrapperHelper.save(stat);
-	} // updateSOCreditStatus
+	}
 
 	@Override
 	public String calculateSOCreditStatus(final I_C_BPartner_Stats stat, final BigDecimal additionalAmt)
@@ -155,16 +154,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 	}
 
-	// TOTAL OPEN BALANCE
-
-	@Override
-	public void setTotalOpenBalance(final I_C_BPartner_Stats stat, final BigDecimal totalOpenBalance)
-	{
-		stat.setTotalOpenBalance(totalOpenBalance);
-		
-		InterfaceWrapperHelper.save(stat);
-	}
-
 	@Override
 	public BigDecimal getTotalOpenBalance(final I_C_BPartner_Stats stats)
 	{
@@ -174,19 +163,23 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	}
 
 	@Override
+	public void updateSOCreditUsed(final I_C_BPartner_Stats stat)
+	{
+		final BigDecimal soCreditUsed = bpartnerStatsDAO.retrieveSOCreditUsed(stat);
+
+		stat.setSO_CreditUsed(soCreditUsed);
+
+		InterfaceWrapperHelper.save(stat);
+	}
+
+	@Override
 	public void updateTotalOpenBalance(final I_C_BPartner_Stats stat)
 	{
-		final BigDecimal soCreditUsed = calculateSOCreditUsed(stat);
-		final BigDecimal totalOpenBalance = calculateTotalOpenBalance(stat);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		if (soCreditUsed != null)
-		{
-			stat.setSO_CreditUsed(soCreditUsed);
-		}
-		if (totalOpenBalance != null)
-		{
-			stat.setTotalOpenBalance(totalOpenBalance);
-		}
+		final BigDecimal totalOpenBalance = bpartnerStatsDAO.retrieveTotalOpenBalance(stat);
+
+		stat.setTotalOpenBalance(totalOpenBalance);
 
 		final String soCreditStatus = calculateSOCreditStatus(stat, Env.ZERO);
 
@@ -205,41 +198,12 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return TotalOpenBalance;
 	}
 
-	// SO Credit Used
-
-	@Override
-	public void setSOCreditUsed(final I_C_BPartner_Stats stat, final BigDecimal creditUsed)
-	{
-		stat.setSO_CreditUsed(creditUsed);
-
-		InterfaceWrapperHelper.save(stat);
-	}
-
 	@Override
 	public BigDecimal getSOCreditUsed(final I_C_BPartner_Stats stats)
 	{
 		final IBPartnerStats bpStats = BPartnerStats.of(stats);
 
 		return bpStats.getSoCreditUsed();
-	}
-
-	public BigDecimal calculateSOCreditUsed(final I_C_BPartner_Stats stats)
-	{
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
-		BigDecimal SO_CreditUsed = bpartnerStatsDAO.retrieveSOCreditUsed(stats);
-
-		return SO_CreditUsed;
-	}
-
-	// ActualLifeTimeValue
-
-	@Override
-	public void setActualLifeTimeValue(final I_C_BPartner_Stats stat, final BigDecimal actualLifeTimeValue)
-	{
-		stat.setActualLifeTimeValue(actualLifeTimeValue);
-		
-		InterfaceWrapperHelper.save(stat);
 	}
 
 	@Override
@@ -263,7 +227,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		}
 
 		InterfaceWrapperHelper.save(stat);
-	} // setActualLifeTimeValue
+	}
 
 	@Override
 	public boolean isCreditStopSales(final I_C_BPartner_Stats stat, final BigDecimal grandTotal)

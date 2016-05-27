@@ -33,13 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.async.spi.impl.C_BPartner_UpdateStatsFromInvoice;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -68,6 +65,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -77,8 +75,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
@@ -87,6 +83,7 @@ import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 
@@ -1379,41 +1376,4 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.create(true); // completeIt = true
 		// @formatter:on
 	}
-
-	@Override
-	public final void updateBPartnerStats(final List<org.compiere.model.I_C_Invoice> invoices, final boolean async)
-	{
-		if (invoices.isEmpty())
-		{
-			return;
-		}
-
-		if (async)
-		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(invoices.get(0));
-			final String trxName = InterfaceWrapperHelper.getTrxName(invoices.get(0));
-
-			final IWorkPackageBuilder newWorkpackage = Services.get(IWorkPackageQueueFactory.class)
-					.getQueueForEnqueuing(ctx, C_BPartner_UpdateStatsFromInvoice.class)
-					.newBlock()
-					.newWorkpackage();
-
-			for (final org.compiere.model.I_C_Invoice invoice : invoices)
-			{
-				newWorkpackage.addElement(invoice);
-			}
-			newWorkpackage
-					.bindToTrxName(trxName)
-					.build();
-			return;
-		}
-
-		// not async
-		for (final org.compiere.model.I_C_Invoice invoice : invoices)
-		{
-			updateBPartnerStatistics(invoice);
-		}
-	}
-
-	protected abstract void updateBPartnerStatistics(org.compiere.model.I_C_Invoice invoice);
 }
