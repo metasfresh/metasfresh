@@ -27,10 +27,15 @@
 	</properties>
 
 	<modules>
+		<!-- note: we can't use e.g.
 		<module>${project.groupId}.base</module>
-		<module>${project.groupId}.serverRoot</module>
-		<module>${project.groupId}.swingui</module>
-		<module>${project.groupId}.dist</module>
+		in here, because the versions-maven-plugin doesn't resolve them when we run its set goal
+		There are probably ways to replace the property with its hardcoded string, but I'm not exploring them now
+		-->
+		<module>de.metas.endcustomer.mf15.base</module>
+		<module>de.metas.endcustomer.mf15.serverRoot</module>
+		<module>de.metas.endcustomer.mf15.swingui</module>
+		<module>de.metas.endcustomer.mf15.dist</module>
 	</modules>
 
 	<build>
