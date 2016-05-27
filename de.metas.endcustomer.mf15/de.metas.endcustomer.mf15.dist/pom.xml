@@ -24,8 +24,8 @@
 	</properties>
 
 	<dependencies>
-		
-<!-- 
+
+<!--
 We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version. 
 Ranges are not allowed.
 Since we now work with a range, we now declare the dependencies here where ranges can be resolved, and can then further down use the copy-dependencies goal instead of the copy goal.
@@ -61,7 +61,6 @@ Since we now work with a range, we now declare the dependencies here where range
 			<type>jar</type>
 		</dependency>
 
-		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.swingui</artifactId>
@@ -443,13 +442,12 @@ note: when adding new records, please roughly order them by alphabet.
 						Therefore, we don't need to provide a version range and can thus use the copy goal. 
 					-->
 					<execution>
-						<id>copy-main-deployable</id>
+						<id>copy-main-deployables</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
 							<artifactItems>
@@ -472,7 +470,7 @@ note: when adding new records, please roughly order them by alphabet.
 							</artifactItems>
 						</configuration>
 					</execution>
-									
+
 					<!-- 
 						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
 						These bundles are buid somewhere else and therefore we need to resolve them with a version range.
