@@ -41,11 +41,9 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**

@@ -29,9 +29,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class Merge
@@ -85,7 +83,7 @@ public class Merge
 
 	/**
 	 * Merge.
-	 * 
+	 *
 	 * @param ColumnName column
 	 * @param from_ID from
 	 * @param to_ID to
@@ -188,7 +186,7 @@ public class Merge
 
 	/**
 	 * Merge Table
-	 * 
+	 *
 	 * @param TableName table
 	 * @param ColumnName column
 	 * @param from_ID from
@@ -241,7 +239,7 @@ public class Merge
 
 	/**
 	 * Post Merge
-	 * 
+	 *
 	 * @param ColumnName column name
 	 * @param to_ID ID
 	 */
