@@ -34,6 +34,10 @@ import de.metas.interfaces.I_C_OrderLine;
 public interface IOrderLineBL extends ISingletonService
 {
 
+	// task 08002
+	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
+
+
 	/**
 	 * Creates a new order line using the given {@code order} as header.
 	 *

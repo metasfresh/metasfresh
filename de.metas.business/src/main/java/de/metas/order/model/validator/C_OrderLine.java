@@ -13,20 +13,17 @@ package de.metas.order.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,43 +34,25 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.ordercandidate.api.IOLCandDAO;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.logging.LogManager;
 
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	public static final C_OrderLine INSTANCE = new C_OrderLine();
 
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
-	/**
-	 * Method is fired before an order line is deleted. It deletes all {@link I_C_Order_Line_Alloc} records referencing the order line and sets <code>Processed='N'</code> for all {@link I_C_OLCand}s
-	 * that were originally aggregated into the order line.
-	 *
-	 * @param ol
-	 */
-	// 03472
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteOlas(final I_C_OrderLine ol)
+	private C_OrderLine()
 	{
-		final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
-		final List<I_C_Order_Line_Alloc> olasToDelete = olCandDAO.retrieveAllOlas(ol);
-
-		for (final I_C_Order_Line_Alloc ola : olasToDelete)
-		{
-			final I_C_OLCand olCand = ola.getC_OLCand();
-			olCand.setProcessed(false);
-			InterfaceWrapperHelper.save(olCand);
-
-			InterfaceWrapperHelper.delete(ola);
-		}
-	}
+	};
 
 	/**
 	 * If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
@@ -98,10 +77,8 @@ public class C_OrderLine
 	/**
 	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
 					I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
 					I_C_OrderLine.COLUMNNAME_C_UOM_ID,
 					I_C_OrderLine.COLUMNNAME_M_Product_ID })
@@ -116,10 +93,8 @@ public class C_OrderLine
 	 * Set qtyOrdered, to make sure is up2date. Note that this value is also set in
 	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
 					I_C_OrderLine.COLUMNNAME_QtyEntered,
 					I_C_OrderLine.COLUMNNAME_C_UOM_ID })
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
@@ -134,10 +109,8 @@ public class C_OrderLine
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 					I_C_OrderLine.COLUMNNAME_QtyDelivered,
 					I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
@@ -150,10 +123,8 @@ public class C_OrderLine
 	 *
 	 * @param ol
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyReserved })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyReserved })
 	public void checkQtyReserved(final I_C_OrderLine ol)
 	{
 		if (ol.getQtyReserved().signum() >= 0)
@@ -174,15 +145,13 @@ public class C_OrderLine
 	}
 
 	// task 06727
-	@ModelChange(
-			timings = {
-					ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE
-			}
-			, ifColumnsChanged = {
-					I_C_OrderLine.COLUMNNAME_PriceEntered,
-					I_C_OrderLine.COLUMNNAME_Discount
-			})
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_PriceEntered,
+			I_C_OrderLine.COLUMNNAME_Discount
+	})
 	public void setIsManual(final I_C_OrderLine olPO)
 	{
 		// urgent-no-taskname available yet: commenting out the code that sets IsManual bacause where that, attriibute changes don'z update the price anymore (checking for InterfaceWrapperHelper.isUI
@@ -196,12 +165,11 @@ public class C_OrderLine
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = {
-					I_C_OrderLine.COLUMNNAME_QtyOrdered,
-					I_C_OrderLine.COLUMNNAME_QtyInvoiced,
-					I_C_OrderLine.COLUMNNAME_QtyDelivered
-			})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_QtyOrdered,
+			I_C_OrderLine.COLUMNNAME_QtyInvoiced,
+			I_C_OrderLine.COLUMNNAME_QtyDelivered
+	})
 	public void updateQuantities(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());

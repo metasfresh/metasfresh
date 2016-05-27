@@ -27,9 +27,7 @@ package de.metas.order.model.validator;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.order.document.documentNo.OrderPOReferenceListener;
@@ -53,13 +51,6 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.callout.C_Order());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OrderLine());
-	}
-
-	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		engine.addModelValidator(new C_OrderLine(), client);
-		engine.addModelValidator(new C_Order(), client);
 	}
 
 }
