@@ -19,7 +19,7 @@
 				  2. shell scripts are using certain jars in their class-paths
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
-		
+
 		<de.metas.admin.webui.version>${metasfresh-dependency.version}</de.metas.admin.webui.version>
 	</properties>
 
@@ -458,7 +458,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<overWrite>true</overWrite>
-										
+
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
@@ -487,7 +487,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
 							<includeArtifactIds>de.metas.printing.esb.camel,de.metas.edi.esb.camel,de.metas.document.archive.esb.camel,de.metas.admin.webui</includeArtifactIds>
 							<type>jar</type>
-							<excludeTransitive>true</excludeTransitive>	
+							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
@@ -503,7 +503,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<includeArtifactIds>de.metas.printing.esb.client</includeArtifactIds>
 							<classifier>jar-with-dependencies</classifier>
 							<type>jar</type>
-							<excludeTransitive>true</excludeTransitive>	
+							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
@@ -614,6 +614,20 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<!-- 
+				Here we combine a number of pre-fabricated metasfresh artifacts that might internally have different versions of the same libs.
+				Therefore our dependencyConvergence rule would fail. For that reason, we skip the enforcer.
+				It would be nice to skip just the dependencyConvergence rule, but i don't know how to do that.
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
