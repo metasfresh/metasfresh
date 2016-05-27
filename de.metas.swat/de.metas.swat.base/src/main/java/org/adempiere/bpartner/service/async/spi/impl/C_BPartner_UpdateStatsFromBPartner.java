@@ -29,16 +29,16 @@ import java.util.Set;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 
 /**
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.
@@ -55,20 +55,86 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			return;
 		}
 
-		final IWorkPackageBuilder newWorkpackage = Services.get(IWorkPackageQueueFactory.class)
-				.getQueueForEnqueuing(ctx, C_BPartner_UpdateStatsFromBPartner.class)
-				.newBlock()
-				.newWorkpackage();
-
-		for (final int bpartnerId : bpartnerIds)
+		for (final Integer bpartnerId : bpartnerIds)
 		{
-			final ITableRecordReference bpartnerRef = new TableRecordReference(I_C_BPartner.Table_Name, bpartnerId);
-			newWorkpackage.addElement(bpartnerRef);
+			if (bpartnerId == null || bpartnerId <= 0)
+			{
+				continue;
+			}
+
+			SCHEDULER.schedule(BPartnerToUpdate.of(ctx, bpartnerId, trxName));
 		}
-		newWorkpackage
-				.bindToTrxName(trxName)
-				.build();
 	}
+
+	private static final class BPartnerToUpdate
+	{
+		public static BPartnerToUpdate of(Properties ctx, int bpartnerId, String trxName)
+		{
+			return new BPartnerToUpdate(ctx, bpartnerId, trxName);
+		}
+
+		private final Properties ctx;
+		private final String trxName;
+		private final int bpartnerId;
+
+		private BPartnerToUpdate(Properties ctx, int bpartnerId, String trxName)
+		{
+			super();
+			this.ctx = ctx;
+			this.bpartnerId = bpartnerId;
+			this.trxName = trxName;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("bpartnerId", bpartnerId)
+					.toString();
+		}
+
+		public Properties getCtx()
+		{
+			return ctx;
+		}
+
+		public String getTrxName()
+		{
+			return trxName;
+		}
+
+		public int getC_BPartner_ID()
+		{
+			return bpartnerId;
+		}
+	}
+
+	private static final WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate>(C_BPartner_UpdateStatsFromBPartner.class)
+	{
+		@Override
+		protected boolean isEligibleForScheduling(final BPartnerToUpdate model)
+		{
+			return model != null && model.getC_BPartner_ID() > 0;
+		};
+
+		@Override
+		protected Properties extractCtxFromItem(final BPartnerToUpdate item)
+		{
+			return item.getCtx();
+		}
+
+		@Override
+		protected String extractTrxNameFromItem(final BPartnerToUpdate item)
+		{
+			return item.getTrxName();
+		}
+
+		@Override
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final BPartnerToUpdate item)
+		{
+			return new TableRecordReference(I_C_BPartner.Table_Name, item.getC_BPartner_ID());
+		}
+	};
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -83,6 +149,10 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 
 			bpartnerStatsBL.updateTotalOpenBalance(stats);
+			bpartnerStatsBL.updateActualLifeTimeValue(stats);
+			bpartnerStatsBL.updateSOCreditUsed(stats);
+			bpartnerStatsBL.updateSOCreditStatus(stats);
+
 		}
 
 		return Result.SUCCESS;

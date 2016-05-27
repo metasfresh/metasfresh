@@ -12,16 +12,53 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.20.19
 
 ## Features
+ - FRESH-254 Customer-Vendor Returns manual flag
+    * set the "manual" flag's default to Y in vendor and customer return windows
+ - FRESH-334 Product BPartner Contraint Issue
+    * prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense
+ - FRESH-326 Set the Correct Org in Fact_Acct_Summary
+    * changed the migration script to be more repeatable 
+ 
+## Fixes
+ - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+ - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * some polishing around AD_ChangeLog creation
+
+# metasfresh 4.19.18
+
+## Features
+ - FRESH-335 create an initial contributor's guideline
+    * Initial Setup of Contributing Guidelines. Further improving.
+ - FRESH-278 Umsatzreport Geschäftspartner copy and modify details
+    * Created an new Report for Turnover. Data of Report now depending on Delivered Quantities and value.
 
 ## Fixes
+ - FRESH-338 Async not running
+    * Fixed an additional problem with creating AD_ChangeLogs
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
+    * fixed a problem with creating AD_ChangeLogs
+ - FRESH-311 Packvorschriften from different Org shown in Leergut
+    * Make sure that the Empties Return Window only shows Packing Material that is defined in Logged in Organisation.
+  - FRESH-333 Procurement candidate prices not updated correctly
+    * Solved an Issue in Proce Calculation of Procurement Candidates when New Pricelist was created for already existing Procurement candidates.
+ - FRESH-307 New Organisation: Financial Data of existing Org
+    * Make sure that Financial Reports only show Data from selected Organisation.
+ - FRESH-326 Set the Correct Org in Fact_Acct_Summary
+    * Bug with AD_Org_ID not properly set in FACT_ACCT. Solved the Issue and Created Migration Script for Old Data.
+ - FRESH-331 Double click needed for weighing machine and occasional NPE
+    * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
+    * Fixed an Issue with Calendar Periods. These were  not shown because of missing Translations.
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
+    * Fixing an issue with Caching of Logo. Cache was not resetted after changing the Logo in running Client Session.
  - FRESH-312 Project cannot be compiled when downloading from github directly
-    * removed references to our internal maven repo, fixed a wrong groupid and provided a public keystore for development purposes
+    * Removed references to our internal maven repo, fixed a wrong groupid and provided a public keystore for development purposes.
  - FRESH-302 make inout print preview faster
+    * Improved the Performance of Print Preview of In-Out Jasper Documents.
 
 # metasfresh 4.18.17
 

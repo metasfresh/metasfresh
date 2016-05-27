@@ -375,28 +375,6 @@ public interface IInvoiceBL extends ISingletonService
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
 
 	/**
-	 * Updates the following columns of the C_BPartners of the given invoices:
-	 * <ul>
-	 * <li>ActualLifeTimeValue
-	 * <li>SO_CreditUsed
-	 * <li>TotalOpenBalance
-	 * <li>SOCreditStatus
-	 * </ul>
-	 * Also updates the following columns for the invoices' AD_Users:
-	 * <ul>
-	 * <li>LastContact
-	 * <li>LastResult
-	 * </ul>
-	 * The BL doing this was moved from MInvoice.
-	 *
-	 * @param invoices
-	 * @param async if <code>true</code>, then an async workpackage is enqueued to do the jobs asynchronously.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
-	 */
-	void updateBPartnerStats(List<I_C_Invoice> invoices, boolean async);
-
-	/**
 	 * Decide if the given invoice is an Adjustment Charge
 	 *
 	 * @param invoice

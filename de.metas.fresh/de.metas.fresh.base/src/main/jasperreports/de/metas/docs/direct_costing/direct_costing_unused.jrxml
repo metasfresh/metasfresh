@@ -1,95 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="direct_costing_unused" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3e0a681d-8905-4d93-8369-ef2c24038d15">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="281"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showBudget" class="java.lang.String"/>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	* ,
-	ABS( ROUND( Balance_1000 / Gross_1000 * 100, 2 ) ) AS L_Percentage_1000,
-	ABS( ROUND( Balance_2000 / Gross_2000 * 100, 2 ) ) AS L_Percentage_2000,
-	ABS( ROUND( Balance_100 / Gross_100 * 100, 2 ) ) AS L_Percentage_100,
-	ABS( ROUND( Balance_150 / Gross_150 * 100, 2 ) ) AS L_Percentage_150,
-	ABS( ROUND( Balance / Gross_all * 100, 2 ) ) AS L_percentage_All,
-	ABS( ROUND( Balance_1000 / NULLIF( Budget_1000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_1000,
-	ABS( ROUND( Balance_2000 / NULLIF( Budget_2000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_2000,
-	ABS( ROUND( Balance_100 / NULLIF( Budget_100, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_100,
-	ABS( ROUND( Balance_150 / NULLIF( Budget_150, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_150,
-	ABS( ROUND( Balance / NULLIF( Budget, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_All,
-	SUM( Balance_Other ) OVER () != 0 AS isDisplayOther
-FROM
-	(
-	SELECT
-		*,
-		NULLIF( First_agg ( L_1000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_1000,
-		NULLIF( First_agg ( L_2000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_2000,
-		NULLIF( First_agg ( L_100 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_100,
-		NULLIF( First_agg ( L_150 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_150,
-		NULLIF( First_agg ( L_all ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_All
-	FROM
-		(
-		SELECT
-			--
-			-- Balances
-
-			-- Create an Incremental sum for the Margins. This sum will be Displayed in the report
-			-- It is a requirement of the report that the sums are incremental over the margins
-			-- Note: The window function Last_Value does not get the Last Value, but the maximum
-			-- Level
-			L_Value, L_Name,
-			Sum ( Balance_1000 ) OVER ( PARTITION BY L_Value ) AS L_1000,
-			Sum ( Balance_2000 ) OVER ( PARTITION BY L_Value ) AS L_2000,
-			Sum ( Balance_100 ) OVER ( PARTITION BY L_Value ) AS L_100,
-			Sum ( Balance_150 ) OVER ( PARTITION BY L_Value ) AS L_150,
-			Sum ( Balance_other ) OVER ( PARTITION BY L_Value ) AS L_other,
-			Sum ( Balance ) OVER ( PARTITION BY L_Value ) AS L_All,
-			Sum ( Budget ) OVER ( PARTITION BY L_Value ) AS L_Budget_All,
-
-
-
-			Balance_1000, Balance_2000, Balance_100, Balance_150, Balance_other, Balance,
-			L_Multiplicator,
-			--
-			-- Budgets
-
-			Budget_1000, Budget_2000, Budget_100, Budget_150, Budget
-		FROM
-			(
-			SELECT
-				L_Value, L_Name,
-				-- Preparing an incremantal Sum over all lines, to later extract an incremental sum for margin level
-				Balance_1000,
-				Balance_2000,
-				Balance_100,
-				Balance_150,
-				Balance_other,
-				Balance,
-				Budget_1000,
-				Budget_2000,
-				Budget_100,
-				Budget_150,
-				Budget,
-				L_Multiplicator
-			FROM
-				de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings($P{Date})
-			) x
-		) y
-	) z
-	LEFT OUTER JOIN (
-		SELECT
-			First_Agg ( StartDate::text ORDER BY PeriodNo )::Date AS StartDate,
-			$P{Date}::date::date AS EndDate
-		FROM
-			C_Period
-		WHERE
-			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $P{Date}::Date ))
-	) date ON true
-
-;]]>
+		<![CDATA[SELECT * FROM
+de_metas_endcustomer_fresh_reports.Direct_Costing_Unused_Balance (
+$P{Date},
+$P{showBudget},
+$P{ad_org_id}
+);
+]]>
 	</queryString>
 	<field name="l_value" class="java.lang.String"/>
 	<field name="l_name" class="java.lang.String"/>
@@ -112,6 +40,7 @@ FROM
 	<field name="budget_100" class="java.math.BigDecimal"/>
 	<field name="budget_150" class="java.math.BigDecimal"/>
 	<field name="budget" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="gross_1000" class="java.math.BigDecimal"/>
 	<field name="gross_2000" class="java.math.BigDecimal"/>
 	<field name="gross_100" class="java.math.BigDecimal"/>

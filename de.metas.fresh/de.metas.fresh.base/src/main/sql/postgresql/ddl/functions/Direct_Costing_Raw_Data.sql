@@ -1,11 +1,39 @@
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date) RETURNS TABLE
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date);
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date, AD_Org_ID numeric(10,0));
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date, AD_Org_ID numeric(10,0)) RETURNS TABLE
 	(
 	Margin text, 
-	l1_Value Character Varying, L1_Name Character Varying, L2_Value Character Varying, L2_Name Character Varying, L3_Value Character Varying, L3_Name Character Varying, 
-	Balance_1000 numeric, Balance_2000 numeric, Balance_100 numeric, Balance_150 numeric, Balance_Other numeric, Balance numeric, 
-	Budget_1000 numeric, Budget_2000 numeric, Budget_100 numeric, Budget_150 numeric, Budget numeric, 
-	L1_Multiplicator numeric, L2_Multiplicator numeric, L3_Multiplicator numeric, Seq text
+	l1_Value Character Varying, 
+	L1_Name Character Varying, 
+	
+	L2_Value Character Varying, 
+	L2_Name Character Varying, 
+	
+	L3_Value Character Varying, 
+	L3_Name Character Varying, 
+	
+	Balance_1000 numeric, 
+	Balance_2000 numeric, 
+	Balance_100 numeric, 
+	Balance_150 numeric, 
+	Balance_Other numeric, 
+	Balance numeric, 
+	
+	Budget_1000 numeric, 
+	Budget_2000 numeric, 
+	Budget_100 numeric, 
+	Budget_150 numeric, 
+	Budget numeric, 
+	
+	L1_Multiplicator numeric, 
+	L2_Multiplicator numeric, 
+	L3_Multiplicator numeric, 
+	Seq text,
+	
+	ad_org_id numeric
 	)
 AS 
 $BODY$
@@ -26,7 +54,8 @@ SELECT
 	acctBalance(l1_ElementValue_ID, 0, 1) AS l1_Multiplicator,
 	acctBalance(l2_ElementValue_ID, 0, 1) AS l2_Multiplicator,
 	acctBalance(l3_ElementValue_ID, 0, 1) AS l3_Multiplicator,
-	SeqNo AS Seq
+	SeqNo AS Seq,
+	fa.ad_org_id
 FROM
 	de_metas_endcustomer_fresh_reports.Direct_Costing_selection s
 	LEFT OUTER JOIN (
@@ -44,13 +73,15 @@ FROM
 			SUM( CASE WHEN a.Value = '100' THEN Budget ELSE 0 END ) AS Budget_100,
 			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150,
 			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
-				THEN Budget ELSE 0 END ) AS Budget_Other
+				THEN Budget ELSE 0 END ) AS Budget_Other,
+			fa.ad_org_id
 		FROM
 			(
 				SELECT fa.Account_ID
 					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID) as C_Activity_ID
 					, CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
-					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget
+					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget,
+					fa.ad_org_id
 				FROM Fact_Acct fa
 				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID)
 				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID)
@@ -65,8 +96,9 @@ FROM
 					)
 			) fa
 			LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID 
-		GROUP BY Account_ID
-	) fa ON fa.Account_ID = s.L3_ElementValue_ID
+		GROUP BY Account_ID, fa.ad_org_id
+	) fa ON fa.Account_ID = s.L3_ElementValue_ID 
+WHERE fa.ad_org_id = $2
 ORDER BY
 	SeqNo
 $BODY$

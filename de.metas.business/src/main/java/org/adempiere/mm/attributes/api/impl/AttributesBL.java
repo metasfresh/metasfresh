@@ -13,21 +13,21 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -187,15 +187,20 @@ public class AttributesBL implements IAttributesBL
 		}
 		return mc;
 	}
-	
+
 	@Override
 	public Date calculateBestBeforeDate(final Properties ctx, final int productId, final int vendorBPartnerId, final Date dateReceipt)
 	{
 		Check.assumeNotNull(dateReceipt, "dateReceipt not null");
 
+		final String trxName = ITrx.TRXNAME_None;
+
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
+
+		final int orgId = product.getAD_Org_ID();
 		//
 		// Get Best-Before days
-		final I_C_BPartner_Product bpartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(ctx, vendorBPartnerId, productId);
+		final I_C_BPartner_Product bpartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(ctx, vendorBPartnerId, productId, orgId);
 		if (bpartnerProduct == null)
 		{
 			// no BPartner-Product association defined, so we cannot fetch the bestBeforeDays

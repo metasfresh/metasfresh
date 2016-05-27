@@ -3,11 +3,14 @@ package de.metas.report.engine;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADPInstanceDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfoParameter;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -111,7 +114,7 @@ public final class ReportContext
 	{
 		return adProcess;
 	}
-
+	
 	/**
 	 * @param type
 	 * @return {@link I_AD_Process}; never returns null
@@ -140,6 +143,15 @@ public final class ReportContext
 	{
 		this.outputType = outputType;
 	}
+	
+	public String getTableNameOrNull()
+	{
+		if (AD_Table_ID <= 0)
+		{
+			return null;
+		}
+		return Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID);
+	}
 
 	public int getAD_Table_ID()
 	{
@@ -150,7 +162,18 @@ public final class ReportContext
 	{
 		return Record_ID;
 	}
+
+	public boolean isApplySecuritySettings()
+	{
+		final I_AD_Process adProcess = getAD_Process();
+		return adProcess == null ? false : adProcess.isApplySecuritySettings();
+	}
 	
+	public IUserRolePermissions getUserRolePermissions()
+	{
+		return Env.getUserRolePermissions(getCtx());
+	}
+
 	public List<ProcessInfoParameter> getProcessInfoParameters()
 	{
 		return processInfoParameters;

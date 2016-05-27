@@ -12,8 +12,11 @@
 	<parameter name="C_ActivityTo_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.movements_report ($P{C_Period_ID}, $P{C_ActivityFrom_ID}, $P{C_ActivityTo_ID});]]>
+		<![CDATA[SELECT * FROM report.movements_report ($P{C_Period_ID}, $P{C_ActivityFrom_ID}, $P{C_ActivityTo_ID}, $P{ad_org_id});]]>
 	</queryString>
 	<field name="p_value" class="java.lang.String"/>
 	<field name="p_name" class="java.lang.String"/>
@@ -29,6 +32,7 @@
 	<field name="activity_from" class="java.lang.String"/>
 	<field name="price" class="java.math.BigDecimal"/>
 	<field name="account" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="Product_qty" class="java.math.BigDecimal" resetType="Group" resetGroup="product_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{movementqty}]]></variableExpression>
 	</variable>

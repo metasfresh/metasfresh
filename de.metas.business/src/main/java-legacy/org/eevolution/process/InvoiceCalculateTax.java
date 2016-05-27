@@ -1,25 +1,24 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
  *****************************************************************************/
 package org.eevolution.process;
 
 import java.util.Collections;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.bpartner.service.IBPartnerSOCreditStatusUpdater;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -88,16 +87,9 @@ public class InvoiceCalculateTax extends SvrProcess
 		invoice.setPosted(false);
 		invoice.saveEx();
 
-		//
-		// Update balance
-		//
-		// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
-
-		Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-				.updateTotalOpenBalances(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
-
-		Services.get(IBPartnerSOCreditStatusUpdater.class)
-				.updateSOCreditStatus(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
+		// FRESH-152 Update bpartner stats
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
 
 	}
 }
