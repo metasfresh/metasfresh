@@ -6,7 +6,7 @@ RETURNS TABLE
 	Confirmed numeric,
 	Allocated numeric,
 	Issued numeric,
-	Shipped numeric,
+	Received numeric,
 	Invoiced numeric
 	
 )
@@ -46,7 +46,7 @@ CASE
 	THEN SUM( LEAST(COALESCE( iol.QtyEntered,0)/GREATEST(ol.QtyEntered,1),1 :: numeric)) / COUNT(ol.C_OrderLine_ID)
 	ELSE 0
 	END
-) :: numeric AS Shipped,
+) :: numeric AS Received,
 (
 CASE
 	WHEN COUNT(ol.C_OrderLine_ID) > 0
