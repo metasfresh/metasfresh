@@ -24,7 +24,12 @@
 	</properties>
 
 	<dependencies>
-		<!-- metasfresh server -->
+		
+<!-- 
+We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version. 
+Ranges are not allowed.
+Since we now work with a range, we now declare the dependencies here where ranges can be resolved, and can then further down use the copy-dependencies goal instead of the copy goal.
+-->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.serverRoot</artifactId>
@@ -56,12 +61,39 @@
 			<type>jar</type>
 		</dependency>
 
+		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.swingui</artifactId>
-			<classifier>client</classifier>
 			<version>${metasfresh-dependency.version}</version>
+			<classifier>client</classifier>
 			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.client</artifactId>
+			<classifier>jar-with-dependencies</classifier>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.edi.esb</groupId>
+			<artifactId>de.metas.edi.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.document.archive.esb</groupId>
+			<artifactId>de.metas.document.archive.esb.camel</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.admin.webui</groupId>
+			<artifactId>de.metas.admin.webui</artifactId>
+			<version>${de.metas.admin.webui.version}</version>
 		</dependency>
 
 <!-- 
@@ -145,7 +177,6 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-
 
 		<dependency>
 			<groupId>de.metas.dimension</groupId>
@@ -309,43 +340,6 @@ note: when adding new records, please roughly order them by alphabet.
 			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
-		</dependency>
-		
-		<!-- we used to just get the following deployables with the dependencies-plugin's copy goal, but there we need to give a version. Ranges are jot allowed.
-		since we want to work with the range, we not declare the dependencies here, and can then further down use the copy-dependencies goal instead of the copy goal.
-		-->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.swingui</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-			<classifier>client</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.camel</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.client</artifactId>
-			<classifier>jar-with-dependencies</classifier>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.edi.esb</groupId>
-			<artifactId>de.metas.edi.esb.camel</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.document.archive.esb</groupId>
-			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.admin.webui</groupId>
-			<artifactId>de.metas.admin.webui</artifactId>
-			<version>${de.metas.admin.webui.version}</version>
 		</dependency>
 
 	</dependencies>
