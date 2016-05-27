@@ -2,12 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
-		<artifactId>de.metas.commission</artifactId>
-		<groupId>de.metas.commission</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>3-development-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
-
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>de.metas.commission.ait</artifactId>

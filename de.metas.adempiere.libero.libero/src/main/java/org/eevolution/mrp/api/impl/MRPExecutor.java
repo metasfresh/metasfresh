@@ -26,7 +26,6 @@ package org.eevolution.mrp.api.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -34,8 +33,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
@@ -87,10 +84,10 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /* package */class MRPExecutor implements IMRPExecutor
@@ -815,12 +812,12 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 			if (isPurchasedActual)
 			{
 				int C_BPartner_ID = -1;
-				// cg: task 05952 : start
-				final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
-				final List<Object> params = new ArrayList<Object>();
-				params.add(product.getM_Product_ID());
-				final IQueryFilter<org.compiere.model.I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<>(sql, params);
-				final List<I_C_BPartner_Product> partnerProducts = bpartnerProductDAO.retrieveBPartnerForProduct(ctx, 0, orderFilter);
+								
+				//FRESH-334: Make sure the BP_Product if of the product's org or org * 
+				final int orgId = product.getAD_Org_ID();
+				final int productId = product.getM_Product_ID();
+								
+				final List<I_C_BPartner_Product> partnerProducts = bpartnerProductDAO.retrieveBPartnerForProduct(ctx, 0, productId, orgId);
 				// task cg : 05952 : end
 				for (final I_C_BPartner_Product bpp : partnerProducts)
 				{

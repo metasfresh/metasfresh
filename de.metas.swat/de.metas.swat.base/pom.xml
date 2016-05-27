@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.swat</groupId>
 		<artifactId>de.metas.swat</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>de.metas.swat.base</artifactId>
@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
  -->
  
@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
@@ -80,7 +80,7 @@
 		<dependency>
 			<groupId>de.metas.aggregation</groupId>
 			<artifactId>de.metas.aggregation</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>

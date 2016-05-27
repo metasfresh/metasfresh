@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -82,9 +82,12 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  * </pre>
  *
  * @author Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962 <li>FR [ 1866214 ]
- * @sse http://sourceforge.net/tracker/index.php?func=detail&aid=1866214&group_id=176962&atid=879335 <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
+ * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
+ *      <li>FR [ 1866214 ]
+ * @sse http://sourceforge.net/tracker/index.php?func=detail&aid=1866214&group_id=176962&atid=879335
+ *      <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *
  * @author Carlos Ruiz - globalqss [ 2141475 ] Payment <> allocations must not be completed - implement lots of validations on prepareIt
@@ -95,8 +98,8 @@ public final class MPayment extends X_C_Payment
 {
 
 	/**
-     *
-     */
+	 *
+	 */
 	private static final long serialVersionUID = 5273805787122033169L;
 
 	/**
@@ -265,7 +268,7 @@ public final class MPayment extends X_C_Payment
 		setRoutingNo(ba.getRoutingNo());
 		setAccountNo(ba.getAccountNo());
 		setIsReceipt(X_C_Order.PAYMENTRULE_DirectDebit.equals	// AR only
-				(preparedPayment.getPaymentRule()));
+		(preparedPayment.getPaymentRule()));
 		if (MPaySelectionCheck.PAYMENTRULE_DirectDebit.equals(preparedPayment.getPaymentRule()))
 			setTenderType(MPayment.TENDERTYPE_DirectDebit);
 		else if (MPaySelectionCheck.PAYMENTRULE_DirectDeposit.equals(preparedPayment.getPaymentRule()))
@@ -451,7 +454,7 @@ public final class MPayment extends X_C_Payment
 		setIsOnline(true);
 		setErrorMessage(null);
 		// prevent charging twice
-		if (isOnlineApproved())  // metas: tsa: use IsOnlineApproved instead of IsApproved
+		if (isOnlineApproved())   // metas: tsa: use IsOnlineApproved instead of IsApproved
 		{
 			log.info("Already processed - " + getR_Result() + " - " + getR_RespMsg());
 			setErrorMessage("Payment already Processed");
@@ -592,12 +595,12 @@ public final class MPayment extends X_C_Payment
 			setIsPrepayment(getC_Charge_ID() == 0
 					&& getC_BPartner_ID() != 0
 					&& (getC_Order_ID() != 0
-					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
-		// metas: commented - Write off amount must not be set to 0.
-		/*
-		 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);
-		 * setOverUnderAmt(Env.ZERO); } }
-		 */
+							|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
+						// metas: commented - Write off amount must not be set to 0.
+						/*
+						 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);
+						 * setOverUnderAmt(Env.ZERO); } }
+						 */
 
 		// Document Type/Receipt
 		if (getC_DocType_ID() <= 0)
@@ -809,8 +812,8 @@ public final class MPayment extends X_C_Payment
 					map.put(CREDITCARDTYPE_PurchaseCard, getCreditCardPair(CREDITCARDTYPE_PurchaseCard));
 				if (m_mPaymentProcessors[i].isAcceptVisa())
 					map.put(CREDITCARDTYPE_Visa, getCreditCardPair(CREDITCARDTYPE_Visa));
-			} // for all payment processors
-				//
+			}  // for all payment processors
+ //
 			ValueNamePair[] retValue = new ValueNamePair[map.size()];
 			map.values().toArray(retValue);
 			log.debug("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
@@ -1333,7 +1336,7 @@ public final class MPayment extends X_C_Payment
 				rs = null;
 				pstmt = null;
 			}
-		}	// now Order - in Adempiere is allowed to pay PO or receive SO
+		} 	// now Order - in Adempiere is allowed to pay PO or receive SO
 		else if (getC_Order_ID() > 0)
 		{
 			String sql = "SELECT odt.IsSOTrx "
@@ -1360,11 +1363,11 @@ public final class MPayment extends X_C_Payment
 				rs = null;
 				pstmt = null;
 			}
-		}	// now Charge
+		} 	// now Charge
 		else if (getC_Charge_ID() > 0)
 		{
 			// do nothing about charge
-		} // now payment allocate
+		}  // now payment allocate
 		else
 		{
 			if (pAllocs.length > 0)
@@ -1449,7 +1452,7 @@ public final class MPayment extends X_C_Payment
 		// Exception: in case we want to make an incoming payment (Zahlungseigang) with a credit memo incoming invoice (eingangsrechnung)
 		// it is fine to have the 2 doctypes of different SO Trx
 
-		if (getC_Invoice_ID() > 0) // task 08438: avoid NPE when getting the doctype
+		if (getC_Invoice_ID() > 0)  // task 08438: avoid NPE when getting the doctype
 		{
 			final I_C_Invoice invoice = getC_Invoice();
 			final I_C_DocType doctype = invoice.getC_DocType();
@@ -1704,7 +1707,7 @@ public final class MPayment extends X_C_Payment
 				// Set Invoice
 				MInvoice[] invoices = order.getInvoices();
 				int length = invoices.length;
-				if (length > 0)		// get last invoice
+				if (length > 0) 		// get last invoice
 					setC_Invoice_ID(invoices[length - 1].getC_Invoice_ID());
 				//
 				if (getC_Invoice_ID() == 0)
@@ -1714,7 +1717,7 @@ public final class MPayment extends X_C_Payment
 					// m_processMsg = "@NotFound@ @C_Invoice_ID@";
 					// return DocAction.STATUS_Invalid;
 				}
-			}	// WaitingPayment
+			} 	// WaitingPayment
 		}
 
 		MPaymentAllocate[] pAllocs = MPaymentAllocate.get(this);
@@ -1744,21 +1747,21 @@ public final class MPayment extends X_C_Payment
 		if (!isReceipt())
 		{
 			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-			
+
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			
+
 			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-		
+
 			final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
 			final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-					
+
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))
 			{
 				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
 						+ bpartnerStatsBL.getTotalOpenBalance(stats)
 						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
 			}
-			
+
 			// if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 			// {
 			// m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
@@ -1858,14 +1861,12 @@ public final class MPayment extends X_C_Payment
 			// task FRESH-152
 			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-			
+
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-						
 			// Update total balance to include this payment
-			final BigDecimal payAmt =
-					Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
+			final BigDecimal payAmt = Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 			if (payAmt == null)
 			{
 				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID() + " to base C_Currency = "
@@ -1874,7 +1875,7 @@ public final class MPayment extends X_C_Payment
 			}
 			// Total Balance
 			BigDecimal newBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-			
+
 			if (newBalance == null)
 			{
 				newBalance = Env.ZERO;
@@ -1888,13 +1889,10 @@ public final class MPayment extends X_C_Payment
 				newBalance = newBalance.add(payAmt);
 			}
 
-
 			//
-			// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
-			
-				Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-						.updateTotalOpenBalances(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
-			
+			// task FRESH-152. Update bpartner stats
+			Services.get(IBPartnerStatisticsUpdater.class)
+					.updateBPartnerStatistics(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
 		}
 
 		// Counter Doc
@@ -2222,7 +2220,7 @@ public final class MPayment extends X_C_Payment
 			}
 
 			alloc.setDateAcct(dateAcct);
-			
+
 			// allocation's trx date must e the max between the invoice date and payment date
 
 			Timestamp dateTrx = getDateTrx();
@@ -2612,12 +2610,12 @@ public final class MPayment extends X_C_Payment
 		StringBuffer info = new StringBuffer(reversal.getDocumentNo());
 		info.append(" - @C_AllocationHdr_ID@: ").append(alloc.getDocumentNo());
 
-		// Update BPartner
+		// FRESH-152 Update BPartner stats
 		if (getC_BPartner_ID() > 0)
 		{
-				Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-						.updateTotalOpenBalances(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
-			
+			Services.get(IBPartnerStatisticsUpdater.class)
+					.updateBPartnerStatistics(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
+
 		}
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);

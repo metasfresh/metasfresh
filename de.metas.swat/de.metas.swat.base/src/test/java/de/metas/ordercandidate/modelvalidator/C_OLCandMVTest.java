@@ -13,15 +13,14 @@ package de.metas.ordercandidate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -30,6 +29,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -61,6 +61,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	private I_C_BPartner_Product bpp2;
 	private I_C_BPartner_Product bpp3;
 
+	private I_AD_Org org1;
+
 	public C_OLCandMVTest()
 	{
 		super();
@@ -79,6 +81,11 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Override
 	protected final void initDB()
 	{
+		// Org
+		{
+			org1 = org("Org1");
+		}
+
 		// C_BPartners
 		{
 			bpartner1 = bpartner("G001");
@@ -88,22 +95,22 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 
 		// M_Products
 		{
-			product1 = product("product1", 100000);
-			product2 = product("product2", 100001);
-			product3 = product("product3", 100002);
+			product1 = product("product1", 100000, org1.getAD_Org_ID());
+			product2 = product("product2", 100001, org1.getAD_Org_ID());
+			product3 = product("product3", 100002, org1.getAD_Org_ID());
 		}
 
 		// C_BPartner_Products
 		{
-			bpp1 = bpartnerProduct(bpartner1, product1);
+			bpp1 = bpartnerProduct(bpartner1, product1, org1);
 			bpp1.setProductDescription("bpp1.ProductDescription");
 			InterfaceWrapperHelper.save(bpp1);
 
-			bpp2 = bpartnerProduct(bpartner2, product2);
+			bpp2 = bpartnerProduct(bpartner2, product2, org1);
 			bpp2.setProductName("bpp1.Product1Name");
 			InterfaceWrapperHelper.save(bpp2);
 
-			bpp3 = bpartnerProduct(bpartner3, product3); // duplicate, with nothing set
+			bpp3 = bpartnerProduct(bpartner3, product3, org1); // duplicate, with nothing set
 			InterfaceWrapperHelper.save(bpp3);
 		}
 	}

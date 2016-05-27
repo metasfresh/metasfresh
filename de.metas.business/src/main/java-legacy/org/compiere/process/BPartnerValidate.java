@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
@@ -21,10 +21,9 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.service.IBPartnerActualLifeTimeValueUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -118,24 +117,20 @@ public class BPartnerValidate extends SvrProcess
 	{
 		final IBPartnerStatsBL bpartnerStatBL = Services.get(IBPartnerStatsBL.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		
-		final I_C_BPartner partner  = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
 		final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-		
+
 		addLog(0, null, null, bp.getName() + ":");
 		// See also VMerge.postMerge
 		checkPayments(bp);
 		checkInvoices(bp);
 
 		//
-		// task FRESH-152. Use IBPartnerTotalOpenBalanceUpdater instead of calling the method which updates total open balances directly
-		Services.get(IBPartnerTotalOpenBalanceUpdater.class)
-				.updateTotalOpenBalances(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
+		// task FRESH-152.Update bpartner stats
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
 
-		Services.get(IBPartnerActualLifeTimeValueUpdater.class)
-				.updateActualLifeTimeValue(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
-		
-		
 		//
 		// if (bp.getSO_CreditUsed().signum() != 0)
 		addLog(0, null, bpartnerStatBL.getSOCreditUsed(stats), Msg.getElement(getCtx(), "SO_CreditUsed"));

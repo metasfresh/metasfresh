@@ -81,7 +81,12 @@ REM @goto MULTI_INSTALL
 
 :ADEMPIERE_HOME_OK
 SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
-SET CLASSPATH=%ADEMPIERE_HOME%\lib\de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar
+
+@REM finding our jar file
+@REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
+for /f "delims=" %%F in ('dir /b /s "%ADEMPIERE_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
+
+SET CLASSPATH=%JAR%
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created Adempiere.properties file

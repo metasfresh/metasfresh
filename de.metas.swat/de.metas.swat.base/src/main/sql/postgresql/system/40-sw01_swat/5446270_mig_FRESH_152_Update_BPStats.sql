@@ -1,0 +1,1 @@
+select update_C_BPartner_Stats();
