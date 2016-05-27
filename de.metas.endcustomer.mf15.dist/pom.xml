@@ -441,36 +441,44 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
-
 					<!-- 
-						Build deploy/download folder: metasfresh client zip. 
+						Build deploy/download folder: metasfresh server executable and client-zip
 						Note that we want to set the target file name, which is something, the copy goal offers, but not the copy-dependencies goal.
+						On the other hand, the copy goal does not work with version ranges
 						Fortunately, the client-zip has the same parent pom like this project and we can be sure that it will have the same version.
-						Therefore, we don't need to provide a wversion range and can thus use the copy goal.  
+						Therefore, we don't need to provide a version range and can thus use the copy goal. 
 					-->
 					<execution>
-						<id>copy-metasfresh-download-client-zip</id>
+						<id>copy-main-deployable</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
-							<stripVersion>true</stripVersion>
-							<overWrite>true</overWrite>
-
+							
+							<excludeTransitive>true</excludeTransitive>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
 							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.serverRoot</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+									<destFileName>metasfresh_server.jar</destFileName>
+								</artifactItem>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
+									<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
 									<destFileName>metasfresh-client.zip</destFileName>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
+									
 					<!-- 
 						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
 						These bundles are buid somewhere else and therefore we need to resolve them with a version range.
@@ -539,28 +547,6 @@ note: when adding new records, please roughly order them by alphabet.
 							<!-- we assume that the rollout scripts were assembled with outputDirectory=install, 
 								so the scripts shall end up in dist/install -->
 							<outputDirectory>${project.build.directory}/dist</outputDirectory>
-						</configuration>
-					</execution>
-
-					<!-- Add dist/deploy/metasfresh_server: metasfresh server executable -->
-					<execution>
-						<id>copy-main-deployable</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
-							<excludeTransitive>true</excludeTransitive>
-							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.serverRoot</artifactId>
-									<version>${metasfresh-dependency.version}</version>
-									<destFileName>metasfresh_server.jar</destFileName>
-								</artifactItem>
-							</artifactItems>
 						</configuration>
 					</execution>
 
