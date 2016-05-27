@@ -27,11 +27,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,11 +40,14 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.process.DocAction;
+import org.slf4j.Logger;
+
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.builder.BuilderSupport;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 /**
  * Default allocation builder implementation. Other modules/project can subclass this if they need to build extended allocations.
@@ -270,7 +271,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	@Override
 	public IAllocationBuilder disableUpdateBPartnerTotalOpenBanace()
 	{
-		IBPartnerTotalOpenBalanceUpdater.DYNATTR_DisableUpdateTotalOpenBalances.setValue(allocHdr, true);
+		IBPartnerStatisticsUpdater.DYNATTR_DisableUpdateTotalOpenBalances.setValue(allocHdr, true);
 		return this;
 	}
 
