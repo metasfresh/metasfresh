@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.20.19
 
 ## Features
+ - FRESH-334 Product BPartner Contraint Issue
+    * prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
     * changed the migration script to be more repeatable 
  
