@@ -1,0 +1,1 @@
+CREATE SCHEMA de_metas_fresh_kpi ;
