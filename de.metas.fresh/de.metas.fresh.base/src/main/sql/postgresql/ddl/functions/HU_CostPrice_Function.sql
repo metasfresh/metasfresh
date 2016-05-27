@@ -1,9 +1,9 @@
 
 
 
-DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp without time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying);
+DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying);
 
-CREATE OR REPLACE FUNCTION HU_CostPrice_Function (IN keydate timestamp without time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying)
+CREATE OR REPLACE FUNCTION HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying)
 
 RETURNS TABLE
 (
