@@ -14,7 +14,7 @@
 	<groupId>de.metas.endcustomer.mf15</groupId>
 	<artifactId>de.metas.endcustomer.mf15</artifactId>
 	<packaging>pom</packaging>
-	
+
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
 	<version>3-development-SNAPSHOT</version>
 
@@ -27,10 +27,10 @@
 	</properties>
 
 	<modules>
-		<module>de.metas.endcustomer.mf15.base</module>
-		<module>de.metas.endcustomer.mf15.serverRoot</module>
-		<module>de.metas.endcustomer.mf15.swingui</module>
-		<module>de.metas.endcustomer.mf15.dist</module>
+		<module>${project.groupId}.base</module>
+		<module>${project.groupId}.serverRoot</module>
+		<module>${project.groupId}.swingui</module>
+		<module>${project.groupId}.dist</module>
 	</modules>
 
 	<build>
@@ -48,8 +48,8 @@
 									all the classes that are also its dependencies 
 								-->
 								<dependency>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.base</artifactId>
 									<ignoreClasses>
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
@@ -61,15 +61,15 @@
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
-								
+
 								<dependency>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15*</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}*</artifactId>
 									<ignoreClasses>
 										<ignoreClass>org.springframework.boot.loader.*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
-								
+
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
 						</banDuplicateClasses>
