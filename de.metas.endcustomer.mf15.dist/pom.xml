@@ -482,7 +482,7 @@ note: when adding new records, please roughly order them by alphabet.
 						<id>copy-metasfresh-download-jars</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy-depdendencies</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
@@ -494,10 +494,10 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-metasfresh-download-jars-with-depdendencies</id>
+						<id>copy-metasfresh-download-jars-with-dependencies</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy-depdendencies</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
