@@ -21,6 +21,7 @@ The actual release notes
     * changed the migration script to be more repeatable 
  
 ## Fixes
+ - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
  - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
  - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
     * some polishing around AD_ChangeLog creation
