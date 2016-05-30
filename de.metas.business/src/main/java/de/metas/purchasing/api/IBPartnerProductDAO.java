@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
@@ -58,7 +59,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * @param organization
 	 * @return the BPartner-Product association or null
 	 */
-	I_C_BPartner_Product retrieveBPartnerProductAssociation(I_C_BPartner partner, I_M_Product product, final int OorgId);
+	I_C_BPartner_Product retrieveBPartnerProductAssociation(I_C_BPartner partner, I_M_Product product, final I_AD_Org organization);
 
 	/**
 	 * Retrieves single {@link I_C_BPartner_Product} association. If there isn't an association for the given org, check if there isn't one for the org *
@@ -80,5 +81,5 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * @param org
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
-	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, int orgId);
+	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, I_AD_Org org);
 }

@@ -29,6 +29,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
@@ -128,10 +129,10 @@ public class C_OLCand
 			return; // don't try to set them unless we have both the product and partner
 		}
 		
-		final int orgId = product.getAD_Org_ID();
+		final I_AD_Org organization = product.getAD_Org();
 
 		final I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(
-				bpartnerProductDAO.retrieveBPartnerProductAssociation(partner, product, orgId),
+				bpartnerProductDAO.retrieveBPartnerProductAssociation(partner, product, organization),
 				I_C_BPartner_Product.class);
 
 		final String productDescriptionToUse;

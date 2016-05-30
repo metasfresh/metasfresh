@@ -176,9 +176,7 @@ public class BPartnerProductDAOTest
 			final I_M_Product productInput,
 			final I_AD_Org orgInput)
 	{
-		
-		final int orgId = orgInput.getAD_Org_ID();
-		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partnerInput, productInput, orgId);
+		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partnerInput, productInput, orgInput);
 
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
@@ -215,12 +213,10 @@ public class BPartnerProductDAOTest
 			final I_M_Product productInput,
 			final I_AD_Org orgInput)
 	{
-		final int orgId = orgInput.getAD_Org_ID();
-		
 		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPProductForCustomer(
 				partnerInput, 
 				productInput, 
-				orgId);
+				orgInput);
 		
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()

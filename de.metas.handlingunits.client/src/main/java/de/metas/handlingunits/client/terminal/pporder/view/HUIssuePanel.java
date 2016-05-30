@@ -43,6 +43,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.form.FormFrame;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_OrderLine;
@@ -321,9 +322,9 @@ public class HUIssuePanel implements IHUSelectPanel
 			{
 				final I_M_Product product = ppOrder.getM_Product();
 				
-				final int orgId = product.getAD_Org_ID();
+				final I_AD_Org organization = product.getAD_Org();
 
-				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
+				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, organization);
 				if (bppRaw != null)
 				{
 					final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(bppRaw, de.metas.interfaces.I_C_BPartner_Product.class);

@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
@@ -88,7 +89,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final int orgId)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final I_AD_Org organization)
 	{
 		Check.assumeNotNull(partner, "partner not null");
 		Check.assumeNotNull(product, "product not null");
@@ -96,6 +97,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
 		final int bpartnerId = partner.getC_BPartner_ID();
 		final int productId = product.getM_Product_ID();
+		final int orgId = organization.getAD_Org_ID();
 
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId);
 	}
@@ -127,7 +129,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPProductForCustomer(final I_C_BPartner partner, final I_M_Product product, final int orgId)
+	public I_C_BPartner_Product retrieveBPProductForCustomer(final I_C_BPartner partner, final I_M_Product product, final I_AD_Org organization)
 	{
 		// query BL
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -135,7 +137,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		// make sure we only pick from the BP product entries for the product given as parameter
 		final ICompositeQueryFilter<I_C_BPartner_Product> productQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
+				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, organization.getAD_Org_ID(), 0);
 
 		final ICompositeQueryFilter<I_C_BPartner_Product> customerQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())

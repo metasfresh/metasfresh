@@ -150,7 +150,7 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setProductDescription(orderLine.getProductDescription());
 
 		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
-				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), orderLine.getM_Product().getAD_Org_ID()),
+				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), orderLine.getM_Product().getAD_Org()),
 				I_C_BPartner_Product.class);
 
 		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
