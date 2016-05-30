@@ -7,7 +7,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
@@ -84,9 +83,9 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 		final I_M_Product product = salesOrderLine.getM_Product();
 		
 		//FRESH-334 the bp product should be of the products' organization or of the org 0
-		final I_AD_Org organization = product.getAD_Org();
+		final int orgId = product.getAD_Org_ID();
 		
-		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, organization);
+		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);
 
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
 
