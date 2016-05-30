@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>../../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -28,14 +28,14 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
 			<!-- NOTE: we need this for MG to be able to track dependencies -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

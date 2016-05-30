@@ -7,28 +7,31 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.endcustomer.mf15</groupId>
 	<artifactId>de.metas.endcustomer.mf15</artifactId>
 	<packaging>pom</packaging>
-	
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version it -->
-	<version>1.0_IT-SNAPSHOT</version>
+
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
+	<version>3-development-SNAPSHOT</version>
 
 	<properties>
 		<!--
 			the artifact version of the esb bundles which we download from the maven repository in other to 
 			provide them as part of the complete metasfresh package. 
-			FRESH-271: we include the esb bundles with the same version, but if we build a task-specific metasfresh distributable,
-			we might want to not have to build task-specific esb-bundles and instead just go with the standard ones 
 		-->
-		<esb.bundles.version>${project.version}</esb.bundles.version>
+		<esb.bundles.version>${metasfresh-dependency.version}</esb.bundles.version>
 	</properties>
 
 	<modules>
+		<!-- note: we can't use e.g.
+		<module>${project.groupId}.base</module>
+		in here, because the versions-maven-plugin doesn't resolve them when we run its set goal
+		There are probably ways to replace the property with its hardcoded string, but I'm not exploring them now
+		-->
 		<module>de.metas.endcustomer.mf15.base</module>
 		<module>de.metas.endcustomer.mf15.serverRoot</module>
 		<module>de.metas.endcustomer.mf15.swingui</module>
@@ -50,8 +53,8 @@
 									all the classes that are also its dependencies 
 								-->
 								<dependency>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.base</artifactId>
 									<ignoreClasses>
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
@@ -63,15 +66,15 @@
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
-								
+
 								<dependency>
-									<groupId>de.metas.endcustomer.mf15</groupId>
-									<artifactId>de.metas.endcustomer.mf15*</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}*</artifactId>
 									<ignoreClasses>
 										<ignoreClass>org.springframework.boot.loader.*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
-								
+
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
 						</banDuplicateClasses>

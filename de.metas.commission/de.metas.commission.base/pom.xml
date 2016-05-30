@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>de.metas.commission</artifactId>
 		<groupId>de.metas.commission</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -19,24 +19,24 @@
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.liberoHR</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 	</dependencies>
