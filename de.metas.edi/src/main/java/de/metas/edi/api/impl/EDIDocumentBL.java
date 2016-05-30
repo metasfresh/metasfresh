@@ -38,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -322,9 +321,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 			final I_M_Product product = inOutLine.getM_Product();
 			
-			final I_AD_Org organization = product.getAD_Org();
+			final int orgId = product.getAD_Org_ID();
 
-			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, organization);
+			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
 			if (bPartnerProduct == null)
 			{
 				feedback.add(new EDIMissingDependencyException("Missing C_BPartner_Product for partner " + bPartner.getValue() + " and product " + product.getValue()));
