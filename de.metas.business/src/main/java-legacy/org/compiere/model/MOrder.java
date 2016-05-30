@@ -627,7 +627,7 @@ public class MOrder extends X_C_Order implements DocAction
 			final MOrderLine fromLine)
 	{
 		final MOrderLine line = new MOrderLine(this);
-		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
+		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID()); // note: this copies *all* columns, also those with IsCalculated='Y'
 		line.setC_Order_ID(getC_Order_ID());
 		line.setOrder(this);
 		line.set_ValueNoCheck("C_OrderLine_ID", I_ZERO);	// new
