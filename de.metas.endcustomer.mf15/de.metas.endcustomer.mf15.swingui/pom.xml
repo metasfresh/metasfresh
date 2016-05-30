@@ -13,7 +13,10 @@
 
 	<properties>
 		<dist.dir>target/swingui</dist.dir>
-		<mainJar>${project.name}-${metasfresh-dependency.version}.jar</mainJar>
+		
+		<!-- the main spring-boot jar which shall further down be copied into the lib folder -->
+		<mainJar>${project.name}-${project.version}.jar</mainJar>
+		
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		
