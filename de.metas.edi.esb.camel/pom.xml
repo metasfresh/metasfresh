@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.esb</groupId>
 		<artifactId>de.metas.esb</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>../de.metas.esb/pom.xml</relativePath>
 	</parent>
 
@@ -24,13 +24,16 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- get the dependency management of the de.metas.esb "commons" project -->
+			<!--
+			version ranges are not supported here, also importing it is not required because its our grand parent pom
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
+				<version>${metasfresh-dependency.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			-->
 		</dependencies>
 	</dependencyManagement>
 
@@ -202,7 +205,7 @@
 						
 						Thx to http://www.regexpal.com/
 						-->
-						<Bundle-Version>0.0.0.${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						<Bundle-Version>0.0.0.${metasfresh-dependency.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include de.metas.printing.esb.api in our bundle. Don't make it 
 							an extra bundle, unless there is *another* OSGI-bundle such as esb.printing 

@@ -24,11 +24,11 @@ import org.compiere.process.SvrProcess;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,6 +37,9 @@ import org.compiere.process.SvrProcess;
  * Annotate a class field in order to be automatically loaded right before {@link SvrProcess#prepare()} method is called.
  * The annotated field may be <code>private</code>, but not <code>final</code>.<br>
  * Note that we still need <code>AD_Process_Param</code> records in the database.
+ * <p>
+ * The annotation can be used to avoid having to implement {@link SvrProcess#prepare()}, but it's also OK to have both,
+ * e.g. if there are additional things to be done prior to the {@link SvrProcess#doIt()}.
  *
  * @see AD_Process_Para_UpdateFromAnnotations
  */

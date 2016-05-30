@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -97,7 +97,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -287,7 +287,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
+				<version>${metasfresh-dependency.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

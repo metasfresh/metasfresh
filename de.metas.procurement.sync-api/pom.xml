@@ -4,10 +4,12 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
+<!-- temporarly only !! -->
+	<version>1-master-SNAPSHOT</version>
 	<groupId>de.metas.procurement</groupId>
 	<artifactId>de.metas.procurement.sync-api</artifactId>
 
