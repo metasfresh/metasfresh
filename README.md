@@ -10,3 +10,7 @@ The metasfresh ERP Software includes Sales & Procurement, CRM, Manufacturing, Bi
 It is designed to be Out-of-the-box ready to use and with sophisticated vertical features like handling units and attribute management.
 
 metasfresh is a perfect fit for midsize companies in wholesale and manufacturing which are in search for high flexibility and high performance in data processing assisted with multi-threading and mass document creation.
+
+#Installing metasfresh#
+We create weekly Releases of metasfresh ERP whch can be downloaded from our official Website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/).
+
