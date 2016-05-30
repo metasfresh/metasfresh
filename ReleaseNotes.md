@@ -43,7 +43,7 @@ The actual release notes
     * fixed a problem with creating AD_ChangeLogs
  - FRESH-311 Packvorschriften from different Org shown in Leergut
     * Make sure that the Empties Return Window only shows Packing Material that is defined in Logged in Organisation.
-  - FRESH-333 Procurement candidate prices not updated correctly
+ - FRESH-333 Procurement candidate prices not updated correctly
     * Solved an Issue in Proce Calculation of Procurement Candidates when New Pricelist was created for already existing Procurement candidates.
  - FRESH-307 New Organisation: Financial Data of existing Org
     * Make sure that Financial Reports only show Data from selected Organisation.
