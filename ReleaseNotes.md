@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.x.x (upcoming)
 
 ## Features
+ - FRESH-342 Shipments not created
+    * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
 ## Fixes
 
