@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.20.19
+# metasfresh 4.20.19 (upcoming)
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag
