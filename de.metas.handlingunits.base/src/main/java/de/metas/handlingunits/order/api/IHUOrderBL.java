@@ -10,18 +10,17 @@ package de.metas.handlingunits.order.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.Properties;
@@ -40,10 +39,25 @@ import de.metas.interfaces.I_C_OrderLine;
 public interface IHUOrderBL extends ISingletonService
 {
 	/**
-	 * Updates the HU relevant fields in order line. The column name is optional, can be used to explicitly state a column has been changed (for using the method in invoice).
+	 * Updates the HU relevant fields in order line. This method updates the order line based on the following columns:
+	 * <ul>
+	 * <li>M_Product_ID</li>: if changed or if inconsistent with the given <code>ol</code>'s M_HU_PI_Item_Product's M_Product_ID
+	 * <li>C_BPartner_ID</li>
+	 * <li>DateOrdered</li>
+	 * <li>M_HU_PI_Item_Product_ID</li>
+	 * </ul>
+	 *
+	 * Notes:
+	 * <ul>
+	 * <li>It does nothing if <code>M_Product_ID</code> is not set or if <code>ManualQtyItemCapacity=Y</code></li>
+	 * <li>It might also update the prices</li>
+	 * <li>It also set/resets <code>M_HU_PI_Item_Product_ID</code> from <code>C_BPartner_ID</code>, <code>M_Product_ID</code> and <code>DateOrdered</code>,
+	 * if either BPartner or Product were changed, or - for new ols, as of FRESH-351 - if <code>M_Product_ID</code> is inconsistent with
+	 * the given <code>ol</code>'s <code>M_HU_PI_Item_Product<code>'s <code>M_Product_ID</code>.</li>
+	 * </ul>
 	 *
 	 * @param ol
-	 * @param columnName
+	 * @param columnName optional, may be <code>null</code>, can be used to explicitly state a column has been changed (for using the method in invoice).
 	 */
 	void updateOrderLine(I_C_OrderLine ol, String columnName);
 
