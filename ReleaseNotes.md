@@ -19,6 +19,7 @@ The actual release notes
     * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
 ## Fixes
+ - FRESH-351 Error when sales order is automatically created as counter doc from a purchase order with packagings
  - FRESH-348 purchase orders created with wrong IsTaxIncluded value
 		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
 
