@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS KPI_Printing_Performance_Shipment_Function (IN StartDate Date, IN EndDate Date);
+DROP FUNCTION IF EXISTS KPI_Printing_Performance_Receipt_Function (IN StartDate Date, IN EndDate Date);
 
-CREATE OR REPLACE FUNCTION KPI_Printing_Performance_Shipment_Function (IN StartDate Date, IN EndDate Date)
+CREATE OR REPLACE FUNCTION KPI_Printing_Performance_Receipt_Function (IN StartDate Date, IN EndDate Date)
 RETURNS TABLE (
 
 	TimeAverage double precision
@@ -15,9 +15,9 @@ SELECT
 		
 			 extract(epoch from (pji.Updated::timestamp
 			with time zone - pji.created::timestamp with time
-			zone))
+			zone)) 
 
-	)  as  TimeAverage
+	) as  TimeAverage
    FROM c_print_job_instructions pji
    JOIN c_print_job_line pjl ON pjl.c_print_job_id = pji.c_print_job_id
    JOIN c_printing_queue pq ON pq.c_printing_queue_id = pjl.c_printing_queue_id
@@ -30,7 +30,7 @@ SELECT
   true AND 
   -- condition to only check the printed entries. (D = Done)
   --pji.status = 'D'::bpchar AND
-  io.ISSOTrx = 'Y'
+  io.ISSOTrx = 'N'
 
   and io.movementdate >= $1 and io.movementdate <= $2
 
