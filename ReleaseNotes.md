@@ -12,13 +12,18 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.21.20 (upcoming)
 
 ## Features
  - FRESH-342 Shipments not created
     * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
 ## Fixes
+ - FRESH-348 purchase orders created with wrong IsTaxIncluded value
+		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
+
+
+moved some order-code from swat to business.
 
 # metasfresh 4.20.19 (release candidate)
 
