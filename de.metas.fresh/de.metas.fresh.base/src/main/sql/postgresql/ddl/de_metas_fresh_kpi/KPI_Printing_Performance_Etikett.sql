@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS KPI_Printing_Performance_Shipment_Function (IN StartDate date, IN EndDate date);
+DROP FUNCTION IF EXISTS KPI_Printing_Performance_Etikett_Function (IN StartDate Date, IN EndDate Date);
 
-CREATE OR REPLACE FUNCTION KPI_Printing_Performance_Shipment_Function (IN StartDate date, IN EndDate date)
+CREATE OR REPLACE FUNCTION KPI_Printing_Performance_Etikett_Function (IN StartDate Date, IN EndDate Date)
 RETURNS TABLE (
 
 	TimeAverage double precision
@@ -23,14 +23,14 @@ SELECT
    JOIN c_printing_queue pq ON pq.c_printing_queue_id = pjl.c_printing_queue_id
    JOIN ad_archive a ON a.ad_archive_id = pq.ad_archive_id
 
-   JOIN m_inout io ON io.m_inout_id = a.record_id AND a.ad_table_id = get_table_id('M_InOut')
-
-
   WHERE 
-  true AND 
+  true  
+  -- this is how the archives for etiketts are defined
+  AND a.ad_table_id = get_table_id('M_HU')
+  AND a.record_id = 0
   -- condition to only check the printed entries. (D = Done)
   --pji.status = 'D'::bpchar AND
-  io.ISSOTrx = 'Y'
+
 
   AND pji.created::date >= $1::date and pji.created::date <= $2::date
 
