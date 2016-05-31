@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.21.20 (upcoming)
 
 ## Features
+ - FRESH-349 KPI: Printing Performance
  - FRESH-344 Move KPI SQL to repository and new DB Schema
  - FRESH-347: Relation type between PMM_Purchase_Candidate and C_Order
  - FRESH-352 Colored Bar
