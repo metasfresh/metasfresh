@@ -277,6 +277,12 @@ public class ShipmentScheduleEnqueuer
 		this._trxNameInitial = _trxNameInitial;
 	}
 
+	/**
+	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
+	 *
+	 * @author metas-dev <dev@metasfresh.com>
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-342
+	 */
 	public static class Result
 	{
 		private int eneuedPackagesCount;
