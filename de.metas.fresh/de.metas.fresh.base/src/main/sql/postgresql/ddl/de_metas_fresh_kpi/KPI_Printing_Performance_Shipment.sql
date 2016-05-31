@@ -32,7 +32,7 @@ SELECT
   --pji.status = 'D'::bpchar AND
   io.ISSOTrx = 'Y'
 
-  and io.movementdate >= $1 and io.movementdate <= $2
+  and pji.created >= $1 and pji.created <= $2
 
 $BODY$
 
