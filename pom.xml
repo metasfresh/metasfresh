@@ -62,15 +62,10 @@
 		Where to deploy build artifacts; if you can't reach this repo, you can still make your own builds
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
-		<repository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
-		</repository>
 		<snapshotRepository>
 			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/snapshots-metasfresh/</url>
+			<name>Maven metasfresh Snapshots Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/metasfresh-snapshots/</url>
 		</snapshotRepository>
 
 	</distributionManagement>
