@@ -17,7 +17,7 @@ SELECT
 			with time zone - pji.created::timestamp with time
 			zone))
 
-	)
+	)  as  TimeAverage
    FROM c_print_job_instructions pji
    JOIN c_print_job_line pjl ON pjl.c_print_job_id = pji.c_print_job_id
    JOIN c_printing_queue pq ON pq.c_printing_queue_id = pjl.c_printing_queue_id
