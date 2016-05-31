@@ -81,7 +81,11 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 		final I_C_BPartner soPartner = salesOrderLine.getC_BPartner();
 		final I_M_Product product = salesOrderLine.getM_Product();
-		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product);
+		
+		//FRESH-334 the bp product should be of the products' organization or of the org 0
+		final int orgId = product.getAD_Org_ID();
+		
+		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);
 
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
 

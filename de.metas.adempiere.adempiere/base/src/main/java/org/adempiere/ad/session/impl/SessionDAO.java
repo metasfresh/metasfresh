@@ -135,8 +135,8 @@ public class SessionDAO implements ISessionDAO
 						, record.getAD_Column_ID() //
 						, record.getRecord_ID() //
 						//
-						, record.getAD_Session_ID()
-						, record.getAD_PInstance_ID() // FRESH-314
+						, record.getAD_Session_ID() <= 0 ? null : record.getAD_Session_ID() // FRESH-314
+						, record.getAD_PInstance_ID() <= 0 ? null : record.getAD_PInstance_ID() // FRESH-314
 						, record.getEventType() // EventChangeLog (type)
 						, oldValue == null ? CHANGELOG_NullValue : oldValue.toString() //
 						, newValue == null ? CHANGELOG_NullValue : newValue.toString() //

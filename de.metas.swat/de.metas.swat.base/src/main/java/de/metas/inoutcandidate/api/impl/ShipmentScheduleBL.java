@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -74,6 +72,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
@@ -96,6 +95,7 @@ import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageBL;
@@ -365,9 +365,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// I will let it here nevertheless, so we can keep track of it's way to work
 
 			final org.compiere.model.I_C_BPartner partner = sched.getC_BPartner();
+			
+			// FRESH-334 retrieve the bp product for org or for org 0
+			final int orgId = product.getAD_Org_ID();
 
 			final de.metas.interfaces.I_C_BPartner_Product bpp =
-					InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product),
+					InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
 							de.metas.interfaces.I_C_BPartner_Product.class);
 
 			if (bpp == null)

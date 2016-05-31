@@ -10,12 +10,12 @@ package org.adempiere.server.rpl.trx.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,6 +44,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
@@ -68,6 +69,10 @@ public class OLCandIssueSolverProcess extends SvrProcess
 	@Override
 	protected void prepare()
 	{
+		// Display process logs only if the process failed.
+		// NOTE: we do that because this process is called from window Gear and the user shall not see a popoup, only the status line.
+		setShowProcessLogs(ShowProcessLogs.OnError);
+
 		final ProcessInfoParameter[] para = getParameter();
 
 		for (int i = 0; i < para.length; i++)

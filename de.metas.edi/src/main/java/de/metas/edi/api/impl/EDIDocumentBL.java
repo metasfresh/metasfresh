@@ -320,7 +320,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			}
 
 			final I_M_Product product = inOutLine.getM_Product();
-			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product);
+			
+			final int orgId = product.getAD_Org_ID();
+
+			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
 			if (bPartnerProduct == null)
 			{
 				feedback.add(new EDIMissingDependencyException("Missing C_BPartner_Product for partner " + bPartner.getValue() + " and product " + product.getValue()));

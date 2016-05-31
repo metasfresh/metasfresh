@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>3-development-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
@@ -13,7 +13,10 @@
 
 	<properties>
 		<dist.dir>target/swingui</dist.dir>
+		
+		<!-- the main spring-boot jar which shall further down be copied into the lib folder -->
 		<mainJar>${project.name}-${project.version}.jar</mainJar>
+		
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		
@@ -87,13 +90,13 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
@@ -102,7 +105,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -30,7 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -40,11 +41,9 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -570,7 +569,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 			final int bpartnerId = line.processIt(false); // not reverse
 			bpartnerIds.add(bpartnerId);
 		}
-		updateBP(bpartnerIds);
+
+		// Update BP Statistics
+
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(Env.getCtx(), bpartnerIds, ITrx.TRXNAME_None);
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -914,15 +917,16 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	 */
 	private void updateBP(final Set<Integer> bpartnerIds)
 	{
-		final Boolean disabled = IBPartnerTotalOpenBalanceUpdater.DYNATTR_DisableUpdateTotalOpenBalances.getValue(this);
+		final Boolean disabled = IBPartnerStatisticsUpdater.DYNATTR_DisableUpdateTotalOpenBalances.getValue(this);
 		if (disabled != null && disabled)
 		{
 			return;
 		}
 
-		final IBPartnerTotalOpenBalanceUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerTotalOpenBalanceUpdater.class);
+		// FRESH-152 update bpartner stats
+		final IBPartnerStatisticsUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
-		bpartnerTotalOpenBalanceUpdater.updateTotalOpenBalances(getCtx(), bpartnerIds, get_TrxName());
+		bpartnerTotalOpenBalanceUpdater.updateBPartnerStatistics(getCtx(), bpartnerIds, get_TrxName());
 
 	}	// updateBP
 

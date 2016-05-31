@@ -16,20 +16,18 @@ package de.metas.purchasing.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -46,45 +44,41 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * Retrieves all C_BPartner_Products for selected vendor
 	 * 
 	 * @param ctx
-	 * @param Vendor_ID
+	 * @param Vendor_ID C_BPartner_ID
 	 * @param filter
 	 * @return C_BPartner_Products for Vendor_ID
 	 */
-	List<I_C_BPartner_Product> retrieveBPartnerForProduct(Properties ctx, int Vendor_ID, IQueryFilter<org.compiere.model.I_C_BPartner_Product> filter);
+	List<I_C_BPartner_Product> retrieveBPartnerForProduct(Properties ctx, int Vendor_ID, int productId, int orgId);
 
 	/**
-	 * @param ctx
-	 * @param product
-	 * @return the current vendor of the selected product
-	 */
-	I_C_BPartner_Product getCurrentVendor(Properties ctx, I_M_Product product);
-
-	/**
-	 * Retrieves single {@link I_C_BPartner_Product} association (composite PK)
+	 * Retrieves single {@link I_C_BPartner_Product} association for the given product and partner. THe association must have the given ad_Org_ID or ad_org_id = 0
 	 * 
 	 * @param partner
 	 * @param product
+	 * @param organization
 	 * @return the BPartner-Product association or null
 	 */
-	I_C_BPartner_Product retrieveBPartnerProductAssociation(I_C_BPartner partner, I_M_Product product);
+	I_C_BPartner_Product retrieveBPartnerProductAssociation(I_C_BPartner partner, I_M_Product product, final int orgId);
 
 	/**
-	 * Retrieves single {@link I_C_BPartner_Product} association (composite PK)
+	 * Retrieves single {@link I_C_BPartner_Product} association. If there isn't an association for the given org, check if there isn't one for the org *
 	 * 
 	 * @param ctx
 	 * @param bpartnerId
 	 * @param productId
-	 * @return the BPartner-Product association or null
+	 * @param orgId
+	 * @return the BPartner-Product association per org or null
 	 */
-	I_C_BPartner_Product retrieveBPartnerProductAssociation(Properties ctx, int bpartnerId, int productId);
+	I_C_BPartner_Product retrieveBPartnerProductAssociation(Properties ctx, int bpartnerId, int productId, int orgId);
 
 	/**
 	 * Retrieves the BP Product entry either if it is used for customer and has the BP = customerPartner (and has a bp vendor set)
-	 * of is the currentVendor
+	 * of is the currentVendor. The BP Product must be of the given org or of the org 0
 	 * 
 	 * @param customerPartner
 	 * @param product
-	 * @return first entry, order by BP vendor, nulls last
+	 * @param org
+	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
-	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product);
+	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, int orgId);
 }

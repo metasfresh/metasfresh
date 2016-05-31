@@ -97,7 +97,9 @@ public class PMMProductNameBuilder
 
 				final I_C_BPartner bpartner = pmmProduct.getC_BPartner();
 				final I_M_Product product = pmmProduct.getM_Product();
-				bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product), I_C_BPartner_Product.class);
+				final int orgId = product.getAD_Org_ID();
+
+				bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product, orgId), I_C_BPartner_Product.class);
 				if (bpartnerProduct != null && !Check.isEmpty(bpartnerProduct.getProductName(), true))
 				{
 					bpartnerProduct = null;

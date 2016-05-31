@@ -320,7 +320,10 @@ public class HUIssuePanel implements IHUSelectPanel
 			if (partner != null)
 			{
 				final I_M_Product product = ppOrder.getM_Product();
-				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product);
+				
+				final int orgId = product.getAD_Org_ID();
+
+				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
 				if (bppRaw != null)
 				{
 					final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(bppRaw, de.metas.interfaces.I_C_BPartner_Product.class);
