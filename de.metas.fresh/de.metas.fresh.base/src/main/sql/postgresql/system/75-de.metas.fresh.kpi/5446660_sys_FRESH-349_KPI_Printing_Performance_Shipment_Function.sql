@@ -1,6 +1,4 @@
-DROP FUNCTION IF EXISTS KPI_Printing_Performance_Shipment_Function (IN StartDate Date, IN EndDate Date);
 
-CREATE OR REPLACE FUNCTION KPI_Printing_Performance_Shipment_Function (IN StartDate Date, IN EndDate Date)
 RETURNS TABLE (
 
 	TimeAverage double precision
@@ -32,7 +30,7 @@ SELECT
   --pji.status = 'D'::bpchar AND
   io.ISSOTrx = 'Y'
 
-  and pji.created >= $1 and pji.created <= $2
+  AND pji.created::date >= $1::date and pji.created::date <= $2::date
 
 $BODY$
 

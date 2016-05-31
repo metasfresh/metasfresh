@@ -32,7 +32,7 @@ SELECT
   --pji.status = 'D'::bpchar AND
   io.ISSOTrx = 'N'
 
-  and pji.created >= $1 and pji.created <= $2
+  and pji.created::date >= $1::date and pji.created::date <= $2::date
 
 $BODY$
 
