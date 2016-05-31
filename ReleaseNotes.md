@@ -15,6 +15,8 @@ The actual release notes
 # metasfresh 4.21.20 (upcoming)
 
 ## Features
+ - FRESH-352 Colored Bar
+    * extending WindowHeaderNotice to also allow setting the notice's foreground and background color
  - FRESH-342 Shipments not created
     * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
