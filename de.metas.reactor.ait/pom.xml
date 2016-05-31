@@ -12,6 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.reactor.ait</groupId>
 	<artifactId>de.metas.reactor.ait</artifactId>
+	<version>3-development-SNAPSHOT</version>
 
 	<description>all ait projects</description>
 
