@@ -1,3 +1,4 @@
+﻿<#-- FRESH-360: changing file encoding to UTF-8, because we aso receive the metasfresh-XML-data in UTF-8 and i still don't really understand what this issue is about. -->
 <#-- H000 -->
 ${"H000"?right_pad(4)?substring(0, 4)}<#lt><#t>
 ${"7640134460009"?right_pad(35)?substring(0, 35)}<#lt><#t>
