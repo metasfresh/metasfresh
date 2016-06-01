@@ -10,18 +10,17 @@ package de.metas.handlingunits.order.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,6 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -42,9 +42,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 public class HUOrderBL implements IHUOrderBL
 {
+	private static final transient Logger logger = LogManager.getLogger(HUOrderBL.class);
+
 	@Override
 	public void updateOrderLine(final de.metas.interfaces.I_C_OrderLine olPO, final String columnName)
 	{
@@ -60,17 +63,38 @@ public class HUOrderBL implements IHUOrderBL
 
 		if (olPO.getM_Product_ID() <= 0)
 		{
-			// No product selected. Nothing to do.
-			return;
+			return; // No product selected. Nothing to do.
+		}
+		if (ol.isManualQtyItemCapacity())
+		{
+			return; // fiddling with the order line is not our business. Nothing to do
 		}
 
-		// the record is new
-		// search for the right combination
+
+		//
+		// get the pip to work with
+		//
 		if (InterfaceWrapperHelper.isNew(ol))
 		{
 			if (ol.getM_HU_PI_Item_Product_ID() > 0)
 			{
-				pip = ol.getM_HU_PI_Item_Product();
+				final I_M_HU_PI_Item_Product olPip = ol.getM_HU_PI_Item_Product();
+
+				// FRESH-351: maybe the order line was copied with *all* its columns and then the M_Product_ID was changed
+				// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
+				if (olPip.getM_Product_ID() != olPO.getM_Product_ID())
+				{
+					// reset the order line's pip
+					final boolean allowInfiniteCapacity = true;
+					pip = hupiItemProductDAO.retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
+
+					logger.debug("C_OrderLine={} has M_Product_ID={}, but the ol's current M_HU_PI_Item_Product={} has M_Product_ID={}; => changing the ol's M_HU_PI_Item_Product to {}!",
+							olPO, olPO.getM_Product_ID(), olPip, olPip.getM_Product_ID(), pip);
+				}
+				else
+				{
+					pip = olPip; // go with the order line's already set pip, because it is consistent with the order line's product.
+				}
 			}
 			else
 			{
@@ -79,14 +103,13 @@ public class HUOrderBL implements IHUOrderBL
 				pip = null;
 			}
 		}
-		// the record is not new
 		else
 		{
-			// if the partner had changed or product had changed, need to search for the proper combination
+			// if the partner or product has changed, we need to search for the proper combination
 			if (isProductChanged(olPO, columnName) || isBPartnerChanged(olPO, columnName))
 			{
-				pip = hupiItemProductDAO.retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType,
-						true); // allowInfiniteCapacity = true
+				final boolean allowInfiniteCapacity = true;
+				pip = hupiItemProductDAO.retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
 			}
 			// use the existing pip
 			else if (ol.getM_HU_PI_Item_Product_ID() > 0 && (isQtyChanged(olPO, columnName) || isM_HU_PI_Item_ProductChanged(olPO, columnName)))
@@ -101,7 +124,8 @@ public class HUOrderBL implements IHUOrderBL
 		}
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		if (!ol.isManualQtyItemCapacity() && pip == null)
+
+		if (pip == null)
 		{
 			ol.setPackDescription("");
 			ol.setQtyItemCapacity(null);
@@ -110,15 +134,17 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 			ol.setM_HU_PI_Item_Product(pipVirtual);
+
 			// 05825 : Update Prices and set prices
 			orderLineBL.updatePrices(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol), // usePriceUOM
+			orderLineBL.setPricesIfNotIgnored(ctx,
+					ol,
+					InterfaceWrapperHelper.isNew(ol),   // usePriceUOM
 					trxName);
 		}
 		// If is not null, set all related items
-		if (!ol.isManualQtyItemCapacity() && pip != null)
+		else
 		{
 			ol.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
 			//
@@ -144,7 +170,7 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol), // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),   // usePriceUOM
 					trxName);
 		}
 	}

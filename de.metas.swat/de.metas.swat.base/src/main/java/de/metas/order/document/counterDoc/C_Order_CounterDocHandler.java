@@ -9,6 +9,7 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MDocTypeCounter;
@@ -16,11 +17,11 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -35,11 +36,11 @@ import de.metas.document.spi.ICounterDocHandler;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,6 +69,8 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 	}
 
 	/**
+	 * Creates a counter document for an order. The counter document is also processed, if there is a {@link I_C_DocTypeCounter} with a <code>DocAction</code> configured.
+	 * <p>
 	 * This implementation partially uses legacy code. I didn't yet get to refactor/remove/replace it all.
 	 */
 	@Override
@@ -88,7 +91,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		//
 		counterOrder.setC_DocTypeTarget(counterDocType);
 		counterOrder.setIsSOTrx(counterDocType.isSOTrx());
-		
+
 		// the new order needs to figure out the pricing by itself
 		counterOrder.setM_PricingSystem(null);
 		counterOrder.setM_PriceList(null);
@@ -141,9 +144,10 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		return counterOrderPO;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "C_Order_CounterDocHandler[]";
 	}
-	
+
 }

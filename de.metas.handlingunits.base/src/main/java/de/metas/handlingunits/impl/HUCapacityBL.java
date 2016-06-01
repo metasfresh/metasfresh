@@ -10,18 +10,17 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -93,10 +92,10 @@ public class HUCapacityBL implements IHUCapacityBL
 				final int itemDefProduct_ProductId = itemDefProduct.getM_Product_ID();
 				if (itemDefProduct_ProductId > 0 && itemDefProduct_ProductId != product.getM_Product_ID())
 				{
-					throw new HUException("CU-TU assignment not compatible with required product"
-							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription() + " (ID=" + itemDefProduct.getM_HU_PI_Item_Product_ID() + ")"
-							+ "\n@M_HU_PI_Item_Product_ID@ @M_Product_ID@: " + piipProduct.getValue() + " (" + piipProduct.getName() + ")"
-							+ "\n@M_Product_ID@: " + product.getValue() + "(" + product.getName() + ")");
+					throw new HUException("CU-TU assignment "
+							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription() + " (" + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "=" + itemDefProduct.getM_HU_PI_Item_Product_ID() + ") "
+							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProduct.getValue() + " (" + piipProduct.getName() + ") "
+							+ "\nis not compatible with required product @M_Product_ID@: " + product.getValue() + "_" + product.getName() + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + product.getM_Product_ID() + ")");
 				}
 				productToUse = product;
 			}
