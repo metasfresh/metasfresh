@@ -1,4 +1,3 @@
-﻿<#-- FRESH-360: changing file encoding to UTF-8, because we aso receive the metasfresh-XML-data in UTF-8 and i still don't really understand what this issue is about. -->
 <#-- Assign system variables -->
 <#--setting number_format="0.####"-->
 <#-- Assign missing fields -->
