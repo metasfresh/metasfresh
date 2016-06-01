@@ -29,6 +29,10 @@ The actual release notes
  - FRESH-348 purchase orders created with wrong IsTaxIncluded value
 		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
 
+## Documentation
+ - GROWTH-65 Community and Legal Files
+    * Added LICENSE.md, CODE_OF_CONDUCT.md and modified The Contributing Guidelines.
+
 # metasfresh 4.20.19 (release candidate)
 
 ## Features
