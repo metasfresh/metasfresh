@@ -13,11 +13,11 @@ package org.adempiere.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -61,6 +61,12 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 
+/**
+ * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
@@ -96,22 +102,22 @@ public class InterfaceWrapperHelper
 	 */
 	public static <T> T newInstance(final Class<T> cl, final Object contextProvider)
 	{
-		return newInstance(cl, contextProvider, true); // useCLientOrgFromProvider = true
+		return newInstance(cl, contextProvider, true); // useClientOrgFromProvider = true
 	}
 
 	/**
-	 * Creates a new instance of given object using same context and trxName as <code>contextProvider</code>
+	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
 	 * @param cl
 	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)
-	 * @param useCLientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
+	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
 	 */
-	public static <T> T newInstance(final Class<T> cl, final Object contextProvider, final boolean useCLientOrgFromProvider)
+	public static <T> T newInstance(final Class<T> cl, final Object contextProvider, final boolean useClientOrgFromProvider)
 	{
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
-		final Properties ctx = getCtx(contextProvider, useCLientOrgFromProvider);
+		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
 
 		//
 		// Get transaction name from contextProvider.
@@ -132,7 +138,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Convenient method to create a new instance of given class, using current context and current transaction.
-	 * 
+	 *
 	 * @param cl
 	 */
 	public static <T> T newInstance(final Class<T> cl)
@@ -142,6 +148,30 @@ public class InterfaceWrapperHelper
 		return create(ctx, cl, trxName);
 	}
 
+	/**
+	 * This method is heavily used throughout metasfresh and allows us to do the following things:
+	 * <ul>
+	 * <li>Create interfaces from {@link GridTab}s (see {@link GridTabWrapper}), {@link PO}'s (see {@link POWrapper}) and POJOs (see {@link POWrapper}).<br>
+	 * This way, a developer can create business logic that deals with e.g. <code>I_C_Order</code>s and does not have to care whether the actual underlying project is a <code>GridTab</code> or a <code>PO</code>.<br>
+	 * She can therefore for example create one method that makes some validations and call that method from both a callout and a model interceptor/validator.<br>
+	 * In both cases this method can create the required interface from the underlying <code>GridTab</code> or <code>PO</code> instance</li>
+	 * <li>Logically separate columns and fields that belong to different modules.<br>
+	 * An example: we have one module/project for handling units and another one for EDI. Both of them "own" different columns of the <code>C_OrderLine</code> table,<br>
+	 * but they do not have a functional relationship (I doubt it, but let's say so for the sake of argument).<br>
+	 * The goal is to avoid mixing the model definition and business logic. To achieve this, we have two different project specific <code>I_C_OrderLine</code> interfaces.<br>
+	 * One interface is in the handling units project, where we declare the HU-related columns, getters and setters, and the other interface is in the EDI project, where we declare the EDI-related column names, getters and setters.<br>
+	 * Both interfaces extend the "original" <code>org.compiere.model.I_C_OrderLine</code> interface, so they have the generic properties like <code>QtyOrdered</code>, <code>M_Product_ID</code> etc. <b>plus</b> the project specific ones.<br>
+	 * The magic is once again done by this method, which returns an instance of the required <code>I_C_OrderLine</code> interface for the underlying <code>GridTab</code> or <code>PO</code>,
+	 * with only the properties that are declared by that interface.<br>
+	 * Also note that the interface passed to {@link InterfaceWrapperHelper#create(Object, Class)} does not necessarily have to implement a "generic" interface from <code>org.compiere.model</code>.<br>
+	 * Instead, we can also use some interface like <code>IProductAware</code> that just declares product related properties.
+	 * </li>
+	 * </ul>
+	 *
+	 * @param model the underlying {@link PO}, {@link GridTab} or POJO for which we need an instance of <code>cl</code>
+	 * @param cl the interface we need an instance of
+	 * @return and instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
+	 */
 	public static <T> T create(final Object model, final Class<T> cl)
 	{
 		final boolean useOldValues = false;
@@ -149,7 +179,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Wraps given model to given model class.
+	 * See {@link #create(Object, Class)} for additional infos.
 	 *
 	 * @param model
 	 * @param cl model class
@@ -158,11 +188,11 @@ public class InterfaceWrapperHelper
 	 *            <li>true if old values shall be used
 	 *            <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
 	 *            </ul>
-	 * @return model wrapped or <code>null</code> if model was <code>null</code>
+	 * @return
 	 *
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 *             <ul>
-	 *             <li> {@link #create(Object, Class)}
+	 *             <li>{@link #create(Object, Class)}
 	 *             <li>or {@link #createOld(Object, Class)}
 	 *             </ul>
 	 */
@@ -224,7 +254,8 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Wrap given <code>model</code> and use old values for all model getters.
+	 * Wraps given the <code>model</code> and uses the <b>old</b> values for all model getters.
+	 * See {@link #create(Object, Class)} for more informations.
 	 *
 	 * @param model
 	 * @param cl
@@ -248,6 +279,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Loads the record with the given <code>id</code>.
+	 * Also see {@link #create(Object, Class)} for more informations.
 	 * <p>
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
@@ -293,7 +325,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Converts given list to target type.
+	 * Converts given list to target type by calling {@link #create(Object, Class)} for each item.
 	 *
 	 * @param list list to be converted
 	 * @param clazz target model class
@@ -1595,7 +1627,7 @@ public class InterfaceWrapperHelper
 			throw new AdempiereException("Model translation is not supported for " + model + " (class:" + model.getClass() + ")");
 		}
 	}
-	
+
 	public static final IModelTranslationMap getModelTranslationMap(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
@@ -1608,7 +1640,7 @@ public class InterfaceWrapperHelper
 			return NullModelTranslationMap.instance;
 		}
 	}
-	
+
 	/**
 	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
@@ -1910,13 +1942,13 @@ public class InterfaceWrapperHelper
 
 		return InterfaceWrapperHelper.create(model, clazz);
 	}
-	
+
 	/**
 	 * Disables the read only (i.e. not updateable) columns enforcement.
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
-	 * 
+	 *
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
-	 * 
+	 *
 	 * @param model
 	 */
 	public static final void disableReadOnlyColumnCheck(final Object model)
@@ -1924,7 +1956,7 @@ public class InterfaceWrapperHelper
 		Check.assumeNotNull(model, "model not null");
 		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
 	}
-	
+
 	public static final ModelDynAttributeAccessor<Object, Boolean> ATTR_ReadOnlyColumnCheckDisabled = new ModelDynAttributeAccessor<>(InterfaceWrapperHelper.class.getName(), "ReadOnlyColumnCheckDisabled", Boolean.class);
-	
+
 }
