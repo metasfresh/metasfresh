@@ -12,7 +12,28 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.20.19 (upcoming)
+# metasfresh 4.21.20 (upcoming)
+
+## Features
+ - FRESH-349 KPI: Printing Performance
+ - FRESH-344 Move KPI SQL to repository and new DB Schema
+ - FRESH-347: Relation type between PMM_Purchase_Candidate and C_Order
+ - FRESH-352 Colored Bar
+    * extending WindowHeaderNotice to also allow setting the notice's foreground and background color
+ - FRESH-342 Shipments not created
+    * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
+
+## Fixes
+ - FRESH-356 make logo work for any org
+ - FRESH-351 Error when sales order is automatically created as counter doc from a purchase order with packagings
+ - FRESH-348 purchase orders created with wrong IsTaxIncluded value
+		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
+
+## Documentation
+ - GROWTH-65 Community and Legal Files
+    * Added LICENSE.md, CODE_OF_CONDUCT.md and modified The Contributing Guidelines.
+
+# metasfresh 4.20.19 (release candidate)
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag

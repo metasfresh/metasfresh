@@ -2,14 +2,15 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/procurement_conditions/report" uuid="490a428d-c762-47b4-ac10-378dad05cce6">
 	<property name="ireport.zoom" value="1.3310000000000004"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="30"/>
+	<property name="ireport.y" value="0"/>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[select 0;]]>
+		<![CDATA[SELECT ad_org_id FROM C_Flatrate_Term WHERE C_Flatrate_Term_ID = $P{RECORD_ID};]]>
 	</queryString>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -28,6 +29,9 @@
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3" key="subreport-4" x="-20" y="31" width="595" height="85"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
@@ -57,6 +61,9 @@
 			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac" key="subreport-5" x="-20" y="9" width="595" height="85"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>

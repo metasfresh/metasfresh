@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
@@ -48,6 +49,7 @@ import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.housekeeping.sqi.impl.Reset_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
@@ -108,6 +110,9 @@ public final class InOutCandidateValidator implements ModelValidator
 		engine.addModelChange(I_M_DeliveryDay.Table_Name, this);
 
 		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
+
+		// FRESH-342: clean up stale M_ShipmentSchedule_Recompute records.
+		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new Reset_M_ShipmentSchedule_Recompute());
 
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
@@ -187,17 +192,17 @@ public final class InOutCandidateValidator implements ModelValidator
 		}
 		else if (po instanceof MInOut)
 		{
-			// NOTE: took it out because we don't need it on 
+			// NOTE: took it out because we don't need it on
 			// inOutChange((MInOut)po, type);
 		}
 		else if (po instanceof MOrder)
 		{
-			// NOTE: took it out because we don't need it on 
+			// NOTE: took it out because we don't need it on
 			// orderChanged((MOrder)po, type);
 		}
 		else if (po instanceof X_M_DeliveryDay)
 		{
-			// NOTE: took it out because we don't need it on 
+			// NOTE: took it out because we don't need it on
 			// deliveryDayChange((X_M_DeliveryDay)po, type);
 		}
 		return null;
@@ -233,7 +238,7 @@ public final class InOutCandidateValidator implements ModelValidator
 // @formatter:on
 
 
-// @formatter:off	
+// @formatter:off
 //	/**
 //	 * That's right: we are not invalidating on storage-changes anymore.
 //	 * @param storage
