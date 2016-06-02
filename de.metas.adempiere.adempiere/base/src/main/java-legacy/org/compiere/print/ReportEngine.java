@@ -33,8 +33,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
@@ -85,8 +83,10 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.logging.LogManager;
 
 /**
  *	Report Engine.
@@ -1286,10 +1286,17 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	public static ReportEngine get (Properties ctx, int type, int Record_ID, String trxName)
 	{
 		 final int adPrintFormatToUseId = -1; // auto-detect
-		return get(ctx, type, Record_ID, adPrintFormatToUseId, trxName);
+		 final int pInstanceId = -1;
+		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
+	}
+	
+	public static ReportEngine get (Properties ctx, int type, int Record_ID, int pInstanceId ,String trxName)
+	{
+		 final int adPrintFormatToUseId = -1; // auto-detect
+		return get(ctx, type, Record_ID,  pInstanceId, adPrintFormatToUseId, trxName);
 	}
 	// metas: added adPrintFormatToUseId parameter
-	public static ReportEngine get (Properties ctx, int type, int Record_ID, final int adPrintFormatToUseId, String trxName)
+	public static ReportEngine get (Properties ctx, int type, int Record_ID, int pInstanceId, final int adPrintFormatToUseId, String trxName)
 	{
 		if (Record_ID < 1)
 		{
@@ -1568,6 +1575,8 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		query.addRestriction(DOC_IDS[type], MQuery.EQUAL, Record_ID);
 	//	log.info( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
 		//
+		
+		
 		if (DocumentNo == null || DocumentNo.length() == 0)
 			DocumentNo = "DocPrint";
 		PrintInfo info = new PrintInfo(
@@ -1578,6 +1587,8 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		info.setCopies(copies);
 		info.setDocumentCopy(false);		//	true prints "Copy" on second
 		info.setPrinterName(format.getPrinterName());
+		
+		info.setAD_PInstance_ID(pInstanceId);
 
 		//	Engine
 		ReportEngine re = new ReportEngine(ctx, format, query, info, trxName);
