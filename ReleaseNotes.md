@@ -39,17 +39,19 @@ The actual release notes
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag
-    * set the "manual" flag's default to Y in vendor and customer return windows
+    * Set the "manual" flag's default to Y in vendor and customer return windows allowing a more efficient recording.
  - FRESH-334 Product BPartner Contraint Issue
-    * prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense
+    * Prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense.
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
     * changed the migration script to be more repeatable 
  
 ## Fixes
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+    * Fix to avoid multiple updates of same statistical value.
  - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
- - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
-    * some polishing around AD_ChangeLog creation
+    * Took out changelog for Orderline Candidates which were cleared for processing.
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID.
+    * Some polishing around AD_ChangeLog creation.
 
 # metasfresh 4.19.18
 
