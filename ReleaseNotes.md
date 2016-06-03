@@ -24,6 +24,7 @@ The actual release notes
     * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
 ## Fixes
+ - FRESH-360 EDI files occasianally still have wrong encoding
  - FRESH-356 make logo work for any org
  - FRESH-351 Error when sales order is automatically created as counter doc from a purchase order with packagings
  - FRESH-348 purchase orders created with wrong IsTaxIncluded value
