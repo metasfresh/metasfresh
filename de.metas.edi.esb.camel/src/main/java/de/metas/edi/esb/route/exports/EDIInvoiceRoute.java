@@ -10,12 +10,12 @@ package de.metas.edi.esb.route.exports;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,8 +66,6 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 	{
 		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoices");
 
-		final String charsetName = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_GENERATED_CHARSET_NAME);
-
 		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_FILENAME_PATTERN);
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
@@ -104,12 +102,6 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(invoiceFilenamePattern)
-
-				.log(LoggingLevel.INFO, "EDI: Converting message body to charset " + charsetName + " ...")
-				.convertBodyTo(byte[].class, charsetName) // needs to be byte[], not String, at least with with smx-4.5.1/camel-2.10.4/java-1.6.0_34
-
-				.log(LoggingLevel.INFO, "EDI: Moving the file to processed locally before attempting to send it to the FILE component...")
-				.to(AbstractEDIRoute.EP_EDI_LOCAL_Processed)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
 				.to(EDIInvoiceRoute.EP_EDI_FILE_INVOICE)
