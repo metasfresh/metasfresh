@@ -1,6 +1,6 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Sum ( IN c_invoice_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_Sum ( IN c_invoice_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Sum ( IN c_invoice_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_Sum ( IN c_invoice_id numeric)
 RETURNS TABLE 
 (
 	c_invoice_id numeric,
@@ -32,7 +32,7 @@ FROM
 		END AS TaxRate,
 		null AS total,
 		'N' AS HuLine,
-		IsPrintTaxSales,
+		bpg.IsPrintTaxSales,
 		1 as orderindex
 	FROM
 		C_InvoiceTax it
@@ -44,7 +44,7 @@ FROM
 		it.IsPackagingTax = 'N'
 	GROUP BY
 		it.C_Invoice_ID,
-		IsPrintTaxSales,
+		bpg.IsPrintTaxSales,
 		CASE
 			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
 			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
@@ -63,7 +63,7 @@ UNION
 		END AS TaxRate,
 		SUM(TaxBaseAmt + TaxAmt) AS total,
 		it.IsPackagingTax AS HuLine,
-		IsPrintTaxSales,
+		bpg.IsPrintTaxSales,
 		2 AS orderindex
 	FROM
 		C_InvoiceTax it
@@ -73,7 +73,7 @@ UNION
 		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 	GROUP BY
 		it.C_Invoice_ID, it.IsPackagingTax,
-		IsPrintTaxSales,
+		bpg.IsPrintTaxSales,
 		CASE
 			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
 			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)
@@ -87,7 +87,7 @@ UNION
 		null,
 		Grandtotal AS total,
 		null,
-		IsPrintTaxSales,
+		bpg.IsPrintTaxSales,
 		3 AS orderindex
 	FROM
 		C_Invoice i
