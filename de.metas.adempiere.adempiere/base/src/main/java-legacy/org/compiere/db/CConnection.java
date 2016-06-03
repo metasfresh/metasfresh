@@ -40,6 +40,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.jms.IJMSService;
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IStatusService;
+import de.metas.session.jaxrs.StatusServiceResult;
 
 /**
  * Adempiere Connection Descriptor
@@ -118,7 +119,7 @@ public final class CConnection implements Serializable, Cloneable
 				log.error("Failed loading the connection from attributes: {}", attributes, e);
 			}
 		}
-		
+
 		//
 		// Ask user to provide the configuration if not already configured
 		while(cc == null || !cc.isDatabaseOK())
@@ -141,7 +142,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Creates a connection configuration by asking the user.
-	 * 
+	 *
 	 * @param ccTemplate connection template (optional)
 	 * @return user created {@link CConnection}; never returns <code>null</code>
 	 * @throws DBNoConnectionException if user canceled the settings panel
@@ -156,7 +157,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		else
 		{
-			 ccTemplateToUse = ccTemplate;			
+			 ccTemplateToUse = ccTemplate;
 		}
 
 		// Ask the user (UI!) to provide the parameters
@@ -169,7 +170,7 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			throw new DBNoConnectionException("User canceled the connection dialog");
 		}
-		
+
 		return cc;
 	}
 
@@ -384,7 +385,9 @@ public final class CConnection implements Serializable, Cloneable
 		try
 		{
 			Services.get(IJMSService.class).updateConfiguration();
-			m_version = statusService.getDateVersion();
+			final StatusServiceResult status = statusService.getStatus();
+
+			m_version = status.getDateVersion();
 			m_okApps = true;
 		}
 		catch (Throwable t)
@@ -622,7 +625,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public String getType()
 	{
-		return attrs.getDbType();
+		return Database.DB_POSTGRESQL;
 	}
 
 	/**
@@ -810,12 +813,12 @@ public final class CConnection implements Serializable, Cloneable
 			DB.close(conn);
 		}
 	} 	// testDatabase
-	
+
 	/**
 	 * Tests database connection, if not already tested.
-	 * 
+	 *
 	 * This method never throws an exception.
-	 * 
+	 *
 	 * @return true if database connection is OK
 	 */
 	private final boolean testDatabaseIfNeeded()
@@ -1278,14 +1281,17 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			throw new IllegalArgumentException("AppsServer was NULL");
 		}
-		setType(svr.getDbType());
-		setDbHost(svr.getDbHost());
-		setDbPort(svr.getDbPort());
-		setDbName(svr.getDbName());
-		setDbUid(svr.getDbUid());
-		setDbPwd(svr.getDbPwd());
 
-		m_version = svr.getDateVersion();
+		final StatusServiceResult status = svr.getStatus();
+
+		setType(status.getDbType());
+		setDbHost(status.getDbHost());
+		setDbPort(status.getDbPort());
+		setDbName(status.getDbName());
+		setDbUid(status.getDbUid());
+		setDbPwd(status.getDbPwd());
+
+		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
 
