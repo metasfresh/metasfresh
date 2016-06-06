@@ -10,14 +10,14 @@ package de.metas.edi.esb.route;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,16 +53,6 @@ public abstract class AbstractEDIRouteTest extends AbstractEDITest
 	@EndpointInject(uri = EDIDesadvRoute.EP_EDI_FILE_DESADV)
 	protected BrowsableEndpoint outEDIDesadvFILE;
 
-	/**
-	 * As of now, use this endpoint to check the created EDI.<br>
-	 * Both {@link #outEDIDesadvFILE} and {@link #outEDIInvoiceFILE} produce EDI files when we inject a file components,
-	 * but when injecting a MockEndPoint, that endpoint's {@link MockEndpoint#getReceivedExchanges()} returns an empty list.
-	 * Note that this might just be ignorance on my part, but given how we configure the route,
-	 * I would expect them to contain as many exchanges as this endpoint has.
-	 */
-	@EndpointInject(uri = EDIDesadvRoute.EP_EDI_LOCAL_Processed)
-	protected BrowsableEndpoint processedFile;
-
 	@Produce(uri = EDIOrderRoute.EDI_INPUT_ORDERS)
 	private ProducerTemplate inputEDIOrder;
 
@@ -74,9 +64,9 @@ public abstract class AbstractEDIRouteTest extends AbstractEDITest
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ediDataEndPoint the EDI-receiving endpoint to verify. Verification is only done if this endpoint is <code>instanceof</code> {@link MockEndpoint}.
-	 * @param xmlInoutResourceName name of the XML ressource that is supposed to be transformed to EDI.
+	 * @param xmlInoutResourceName name of the XML resource that is supposed to be transformed to EDI.
 	 * @param ediExpectedOutputResourceName
 	 * @param feedbackResourceName
 	 * @throws Exception
@@ -115,7 +105,7 @@ public abstract class AbstractEDIRouteTest extends AbstractEDITest
 			// we have this if to make it easier for a dev to experiment with endpoint types other than MockEndPoint
 			final MockEndpoint mockedFILE = (MockEndpoint)ediDataEndPoint;
 
-			Assert.assertEquals(1, mockedFILE.getReceivedExchanges().size());
+			Assert.assertEquals("EP " + mockedFILE + " did not receive an exchange!", 1, mockedFILE.getReceivedExchanges().size());
 			final String actualResult = mockedFILE.getReceivedExchanges().get(0).getIn().getBody(String.class);
 			Assert.assertNotNull(actualResult);
 			Assert.assertEquals("Invalid EDI result", Util.fixLineEnding(expectedEDIOutput), Util.fixLineEnding(actualResult));
