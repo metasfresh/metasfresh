@@ -10,40 +10,41 @@ package org.compiere.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.Properties;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
+import org.adempiere.util.Colors;
 import org.compiere.util.Env;
 
 /**
  * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class WindowHeaderNotice extends JPanel
 {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -914277060790906131L;
 
@@ -83,7 +84,31 @@ public class WindowHeaderNotice extends JPanel
 	 */
 	public void load()
 	{
-		final String windowHeaderNotice = Env.getContext(Env.getCtx(), Env.CTXNAME_UI_WindowHeader_Notice);
+		final Properties ctx = Env.getCtx();
+
+		// FRESH-352: check if we shall override the default background color which we set in the constructor
+		final String windowHeaderNoticeBGColorStr = Env.getContext(ctx, Env.CTXNAME_UI_WindowHeader_Notice_BG_COLOR);
+		if (!Check.isEmpty(windowHeaderNoticeBGColorStr, true))
+		{
+			final Color backgroundColor = Colors.toColor(windowHeaderNoticeBGColorStr);
+			if (backgroundColor != null)
+			{
+				this.setBackground(backgroundColor);
+			}
+		}
+		final String windowHeaderNoticeFGColorStr = Env.getContext(ctx, Env.CTXNAME_UI_WindowHeader_Notice_FG_COLOR);
+		if (!Check.isEmpty(windowHeaderNoticeBGColorStr, true))
+		{
+			final Color foregroundColor = Colors.toColor(windowHeaderNoticeFGColorStr);
+			if (foregroundColor != null)
+			{
+				label.setForeground(foregroundColor);
+			}
+		}
+
+
+		final String windowHeaderNotice = Env.getContext(ctx, Env.CTXNAME_UI_WindowHeader_Notice_Text);
+
 		if (!Check.isEmpty(windowHeaderNotice, true) && !"-".equals(windowHeaderNotice))
 		{
 			setNotice(windowHeaderNotice);

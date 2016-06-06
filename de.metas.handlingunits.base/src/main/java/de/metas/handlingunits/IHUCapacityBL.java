@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,6 +29,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
@@ -51,10 +51,12 @@ public interface IHUCapacityBL extends ISingletonService
 	/**
 	 *
 	 * @param itemDefProduct
-	 * @param product the product to be returned in the resulting capacity definition; optional, unless the given <code>itemDefProduct</code> has <code>AllowAnyProduct='Y'</code>; if <code>null</code>
-	 *            , then the given <code>itemDefProduct</code>'s M_Product is used.
+	 * @param product the product to be returned in the resulting capacity definition; optional, unless the given <code>itemDefProduct</code> has <code>AllowAnyProduct='Y'</code>;
+	 *            if <code>null</code> , then the given <code>itemDefProduct</code>'s M_Product is used.
 	 * @param uom
 	 * @return
+	 * @throws HUException if <code>product!=null</code> and the product's ID is different from <code>itemDefProduct</code>'s <code>M_Product_ID</code>.
+	 *             Also, if <code>product==null</code> and <code>itemDefProduct</code> does not reference any product either.
 	 */
 	IHUCapacityDefinition getCapacity(I_M_HU_PI_Item_Product itemDefProduct, I_M_Product product, I_C_UOM uom);
 

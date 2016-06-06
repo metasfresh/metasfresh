@@ -13,12 +13,12 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -113,12 +113,15 @@ public class C_OrderLine
 		{
 			return;
 		}
-		
-		// We call with null because we get the changed values from the object.
-		Services.get(IHUOrderBL.class).updateOrderLine(olPO, null);
 
-		final IHUDocumentHandler handler = Services.get(IHUDocumentHandlerFactory.class)
-				.createHandler(org.compiere.model.I_C_OrderLine.Table_Name);
+		final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
+		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		// We call with null because we get the changed values from the object.
+		huOrderBL.updateOrderLine(olPO, null);
+
+		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(org.compiere.model.I_C_OrderLine.Table_Name);
 		if (null != handler)
 		{
 			final de.metas.handlingunits.model.I_C_OrderLine olEx = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -130,7 +133,7 @@ public class C_OrderLine
 			// Finally, update prices
 			final Properties ctx = InterfaceWrapperHelper.getCtx(olEx);
 			final String trxName = InterfaceWrapperHelper.getTrxName(olEx);
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, olEx,
+			orderLineBL.setPricesIfNotIgnored(ctx, olEx,
 					InterfaceWrapperHelper.isNew(olEx), // usePriceUOM
 					trxName);
 		}

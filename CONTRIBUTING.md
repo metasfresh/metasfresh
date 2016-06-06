@@ -11,7 +11,7 @@ By opening a pull request for this repository, you license your contribution und
 
 **GNU GENERAL PUBLIC LICENSE (GPL) Version 2 or any later version**
 
-You can find a copy of the license [here](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt).
+You can find a copy of the license [here](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md).
 
 Note that we intent to switch to GPL-3 in the future. 
 
