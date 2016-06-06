@@ -10,12 +10,12 @@ package de.metas.edi.esb.route.exports;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,10 +48,14 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 
 public class EDIDesadvRoute extends AbstractEDIRoute
 {
+	public static final String ROUTE_ID_SINGLE = "XML-InOut-To-EDI-DESADV-Single";
+	public static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-EDI-DESADV-Aggregate";
+
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.filename";
 
 	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
 	public static final String EP_EDI_DESADV_AGGREGATE_CONSUMER = "direct:edi.desadv.consumer.aggregate";
+
 	/**
 	 * Common file routing for both single and aggregated DESADV documents
 	 */
@@ -71,15 +75,14 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 	 */
 	public static final String EP_EDI_FILE_DESADV = "{{edi.file.desadv}}";
 
-	public static final String ROUTE_ID_SINGLE = "XML-InOut-To-EDI-DESADV-Single";
-	public static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-EDI-DESADV-Aggregate";
-
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
 		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.desadv");
 
-		final String charsetName = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_GENERATED_CHARSET_NAME);
+		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
+		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
+		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
 
@@ -156,12 +159,6 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Converting message body to charset " + charsetName + " ...")
-				.convertBodyTo(byte[].class, charsetName) // needs to be byte[], not String, at least with with smx-4.5.1/camel-2.10.4/java-1.6.0_34
-
-				.log(LoggingLevel.INFO, "EDI: Moving the file to processed locally before attempting to send it to the FILE component...")
-				.to(AbstractEDIRoute.EP_EDI_LOCAL_Processed)
-
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
 				.to(EDIDesadvRoute.EP_EDI_FILE_DESADV)
 
@@ -169,7 +166,7 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 				//
 				// @formatter:off
 				.choice()
-					.when(property(EDI_DESADV_IS_AGGREGATE).isEqualTo(false))
+					.when(exchangeProperty(EDI_DESADV_IS_AGGREGATE).isEqualTo(false))
 						.process(new EDIXmlSuccessFeedbackProcessor<EDIInOutFeedbackType>(EDIInOutFeedbackType.class, EDIDesadvRoute.EDIInOutFeedback_QNAME, EDIDesadvRoute.METHOD_setMInOutID))
 					.otherwise()
 						.process(new EDIXmlSuccessFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class, EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID))
