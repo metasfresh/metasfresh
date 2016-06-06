@@ -764,7 +764,7 @@ public class Adempiere
 		if (runMode == RunMode.BACKEND)
 		{
 			final boolean skipHouseKeeping = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
-			logger.info("Sysconfig {} = {}", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
+			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
 			if (!skipHouseKeeping)
 			{
 				// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.

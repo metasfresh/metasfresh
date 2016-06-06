@@ -720,7 +720,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * @param showProcessLogsPolicy
 	 * @see ProcessInfo#setShowProcessLogs(ShowProcessLogs)
 	 */
-	protected final void setShowProcessLogs(ShowProcessLogs showProcessLogsPolicy)
+	protected final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
 	{
 		m_pi.setShowProcessLogs(showProcessLogsPolicy);
 	}

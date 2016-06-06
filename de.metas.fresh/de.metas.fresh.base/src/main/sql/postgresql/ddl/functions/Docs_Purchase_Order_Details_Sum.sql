@@ -1,6 +1,6 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Order_Details_Sum ( IN c_order_id numeric);
+--DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Sum ( IN c_order_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Order_Details_Sum ( IN c_order_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Sum ( IN c_order_id numeric)
 RETURNS TABLE 
 (
 	nonhulines numeric,
@@ -29,6 +29,7 @@ SELECT
 		WHEN round(sum.TaxRate,0) = sum.TaxRate THEN floor(sum.TaxRate)
 		WHEN round(sum.TaxRate,1) = sum.TaxRate THEN round(sum.TaxRate,1)
 		WHEN round(sum.TaxRate,2) = sum.TaxRate THEN round(sum.TaxRate,2)
+	ELSE round(sum.TaxRate,2)
 	END AS TaxRate,
 	sum.TaxAmt
 FROM
