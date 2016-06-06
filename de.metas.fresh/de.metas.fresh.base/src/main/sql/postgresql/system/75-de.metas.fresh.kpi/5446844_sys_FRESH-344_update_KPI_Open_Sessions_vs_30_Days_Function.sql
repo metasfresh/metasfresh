@@ -1,3 +1,4 @@
+DROP FUNCTION IF EXISTS KPI_Open_Sessions_vs_30_Days_Function (IN CurrentDate date);
 DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Open_Sessions_vs_30_Days_Function (IN CurrentDate date);
 
 CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Open_Sessions_vs_30_Days_Function (IN CurrentDate date) 

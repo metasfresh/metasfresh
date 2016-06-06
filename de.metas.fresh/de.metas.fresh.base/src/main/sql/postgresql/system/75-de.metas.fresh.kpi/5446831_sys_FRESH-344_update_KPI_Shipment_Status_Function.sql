@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS KPI_Shipment_Status_Function (IN M_InOut_ID numeric);
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Shipment_Status_Function (IN M_InOut_ID numeric);
+
 CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Shipment_Status_Function (IN M_InOut_ID numeric) 
 RETURNS TABLE 
 (

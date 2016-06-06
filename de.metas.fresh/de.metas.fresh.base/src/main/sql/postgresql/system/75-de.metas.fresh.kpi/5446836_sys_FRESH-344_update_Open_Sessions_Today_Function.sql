@@ -1,4 +1,4 @@
-
+DROP FUNCTION IF EXISTS KPI_Open_Sessions_Today_Function(date);
 
 DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Open_Sessions_Today_Function(date);
 
