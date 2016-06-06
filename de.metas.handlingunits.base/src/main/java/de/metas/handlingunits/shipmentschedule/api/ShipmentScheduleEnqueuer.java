@@ -10,18 +10,17 @@ package de.metas.handlingunits.shipmentschedule.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -40,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -59,11 +59,11 @@ import de.metas.lock.api.LockOwner;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
- * 
+ *
  * TODO there is duplicated code from <code>de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer</code>. Please deduplicate it when there is time. my favorite solution would be to create a
  * "locking item-chump-processor" to do all the magic.
  *
- * 
+ *
  * @author ts
  *
  */
@@ -74,22 +74,14 @@ public class ShipmentScheduleEnqueuer
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	
+
 	private Properties _ctx;
 	private String _trxNameInitial;
-	private ILoggable _loggable;
 
 	public ShipmentScheduleEnqueuer setContext(final Properties ctx, final String trxName)
 	{
 		this._ctx = ctx;
 		this.setTrxNameInitial(trxName);
-		return this;
-	}
-
-	public ShipmentScheduleEnqueuer setLoggable(final ILoggable loggable)
-	{
-		Check.assumeNotNull(loggable, "loggable not null");
-		this._loggable = loggable;
 		return this;
 	}
 
@@ -104,13 +96,16 @@ public class ShipmentScheduleEnqueuer
 	 * @param adPinstanceId may be 0.
 	 * @param completeShipments
 	 */
-	public void createWorkpackages(
+	public Result createWorkpackages(
 			final int adPInstanceId,
 			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
 			final boolean useQtyPickedRecords,
 			final boolean completeShipments)
 	{
 		final String trxNameInitial = getTrxNameInitial();
+
+		final Mutable<Result> result = new Mutable<>();
+
 		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
 		{
 			@Override
@@ -119,19 +114,23 @@ public class ShipmentScheduleEnqueuer
 				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
 				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
-					createWorkpackages0(
+					final Result result0 = createWorkpackages0(
 							new PlainContextAware(_ctx, localTrxName),
 							queryFilters,
 							useQtyPickedRecords,
 							completeShipments,
 							adPInstanceId,
 							mainLock);
+
+					result.setValue(result0);
 				}
 			}
 		});
+
+		return result.getValue();
 	}
 
-	private void createWorkpackages0(final IContextAware localCtx,
+	private Result createWorkpackages0(final IContextAware localCtx,
 			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
 			final boolean useQtyPickedRecords,
 			final boolean completeShipments,
@@ -168,6 +167,8 @@ public class ShipmentScheduleEnqueuer
 
 		boolean doEnqueueCurrentPackage = true;
 
+		final Result result = new Result();
+
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
@@ -178,11 +179,11 @@ public class ShipmentScheduleEnqueuer
 			}
 
 			//
-			// Check if we shall close our current workpackage
+			// Check if we shall close our current workpackage (if any)
 			final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
 			if (!Check.equals(headerAggregationKey, lastHeaderAggregationKey))
 			{
-				handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage);
+				handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
 				workpackageBuilder = null;
 				doEnqueueCurrentPackage = true;
 			}
@@ -219,30 +220,36 @@ public class ShipmentScheduleEnqueuer
 
 		//
 		// Close last workpackage (if any, and if there was no error)
-		handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage);
+		handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
+
+		return result;
 	}
 
-	private void handleAllSchedsAdded(IWorkPackageBuilder workpackageBuilder, String lastHeaderAggregationKey, boolean doEnqueueCurrentPackage)
+	private void handleAllSchedsAdded(
+			IWorkPackageBuilder workpackageBuilder,
+			String lastHeaderAggregationKey,
+			boolean noSchedsAreToRecompute,
+			Result result)
 	{
-		if (workpackageBuilder != null)
+		if (workpackageBuilder == null)
 		{
-			if (doEnqueueCurrentPackage)
-			{
-				// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
-				workpackageBuilder.build();
-			}
-			else
-			{
-				if (_loggable != null)
-				{
-					_loggable.addLog(Services.get(IMsgBL.class).parseTranslation(
-							_ctx,
-							"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
-									+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));
-				}
-				workpackageBuilder.discard();
-			}
+			return; // nothing to do
+		}
 
+		if (noSchedsAreToRecompute)
+		{
+			// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
+			workpackageBuilder.build();
+			result.incEnqueued();
+		}
+		else
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog(Services.get(IMsgBL.class).parseTranslation(
+					_ctx,
+					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
+							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));
+			workpackageBuilder.discard();
+			result.incSkipped();
 		}
 	}
 
@@ -268,5 +275,41 @@ public class ShipmentScheduleEnqueuer
 	private void setTrxNameInitial(String _trxNameInitial)
 	{
 		this._trxNameInitial = _trxNameInitial;
+	}
+
+	/**
+	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
+	 *
+	 * @author metas-dev <dev@metasfresh.com>
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-342
+	 */
+	public static class Result
+	{
+		private int eneuedPackagesCount;
+		private int skippedPackagesCount;
+
+		private Result()
+		{
+		}
+
+		public int getEneuedPackagesCount()
+		{
+			return eneuedPackagesCount;
+		}
+
+		public int getSkippedPackagesCount()
+		{
+			return skippedPackagesCount;
+		}
+
+		private void incEnqueued()
+		{
+			eneuedPackagesCount++;
+		}
+
+		private void incSkipped()
+		{
+			skippedPackagesCount++;
+		}
 	}
 }

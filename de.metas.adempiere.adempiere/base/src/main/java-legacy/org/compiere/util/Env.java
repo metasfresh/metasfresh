@@ -309,9 +309,23 @@ public final class Env
 	public static final String CTXNAME_AcctSchemaElementPrefix = "$Element_";
 
 	/**
-	 * See task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
+	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
 	 */
-	public static final String CTXNAME_UI_WindowHeader_Notice = "#UI_WindowHeader_Notice";
+	public static final String CTXNAME_UI_WindowHeader_Notice_Text = "#UI_WindowHeader_Notice_Text";
+
+	/**
+	 * Background color of the optional window header notice. The value is loaded into the context on login.
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 */
+	public static final String CTXNAME_UI_WindowHeader_Notice_BG_COLOR = "#UI_WindowHeader_Notice_BG_Color";
+
+	/**
+	 * Foreground color of the optional window header notice. The value is loaded into the context on login.
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 */
+	public static final String CTXNAME_UI_WindowHeader_Notice_FG_COLOR = "#UI_WindowHeader_Notice_FG_Color";
 
 	/**
 	 * To be used when setting the windowNo in context
@@ -1226,7 +1240,7 @@ public final class Env
 			throw new IllegalArgumentException("Require Context");
 		String retValue = null;
 		//
-		if (!system)        	// User Preferences
+		if (!system)         	// User Preferences
 		{
 			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
@@ -1987,7 +2001,7 @@ public final class Env
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
 		}
-		if (window.getAD_Window_ID() != 0)        	// workbench
+		if (window.getAD_Window_ID() != 0)         	// workbench
 		{
 			if (s_hiddenWindows.add(window))
 			{

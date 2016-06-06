@@ -77,9 +77,20 @@ import de.metas.logging.MetasfreshLastError;
 public class Login
 {
 	/**
-	 * see http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
+	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
 	 */
-	private static final String SYSCONFIG_UI_WindowHeader_Notice = "UI_WindowHeader_Notice";
+	private static final String SYSCONFIG_UI_WindowHeader_Notice_Text = "UI_WindowHeader_Notice_Text";
+
+	/**
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 */
+	private static final String SYSCONFIG_UI_WindowHeader_Notice_BG_Color = "UI_WindowHeader_Notice_BG_Color";
+
+	/**
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 */
+	private static final String SYSCONFIG_UI_WindowHeader_Notice_FG_Color = "UI_WindowHeader_Notice_FG_Color";
+
 	/**
 	 * see http://dewiki908/mediawiki/index.php/06009_Login_Lager_weg_%28106922640136%29
 	 */
@@ -987,12 +998,19 @@ public class Login
 
 		//
 		// Set System Status Message
-		// see http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
+		// see http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system.
 		// NOTE: we are retrieving from database and we are storing in context
 		// because this String is used in low level UI components and in some cases there is no database connection at all
 		{
-			final String windowHeaderNotice = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice, AD_Client_ID);
-			Env.setContext(m_ctx, Env.CTXNAME_UI_WindowHeader_Notice, windowHeaderNotice);
+			final String windowHeaderNoticeText = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_Text, AD_Client_ID, AD_Org_ID);
+			Env.setContext(m_ctx, Env.CTXNAME_UI_WindowHeader_Notice_Text, windowHeaderNoticeText);
+
+			// FRESH-352: also allow setting the status message's foreground and background color.
+			final String windowHeaderBackgroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_BG_Color, AD_Client_ID, AD_Org_ID);
+			Env.setContext(m_ctx, Env.CTXNAME_UI_WindowHeader_Notice_BG_COLOR, windowHeaderBackgroundColor);
+
+			final String windowHeaderForegroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_FG_Color, AD_Client_ID, AD_Org_ID);
+			Env.setContext(m_ctx, Env.CTXNAME_UI_WindowHeader_Notice_FG_COLOR, windowHeaderForegroundColor);
 		}
 
 		//

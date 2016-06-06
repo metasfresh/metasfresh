@@ -10,29 +10,30 @@ package de.metas.handlingunits.shipmentschedule.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
+import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 
 /**
@@ -52,6 +53,9 @@ public class M_ShipmentSchedule_EnqueueSelection extends SvrProcess
 	@Override
 	protected void prepare()
 	{
+		// don't FUD the user with AD_PInstance_Log records unless there is an actual error
+		setShowProcessLogs(ShowProcessLogs.OnError);
+
 		for (final ProcessInfoParameter para : getParameter())
 		{
 			if (para.getParameter() == null)
@@ -76,11 +80,11 @@ public class M_ShipmentSchedule_EnqueueSelection extends SvrProcess
 	{
 		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = createShipmentSchedulesQueryFilters();
 
-		new ShipmentScheduleEnqueuer()
+		final Result result = new ShipmentScheduleEnqueuer()
 				.setContext(getCtx(), getTrxName())
 				.createWorkpackages(getAD_PInstance_ID(), queryFilters, p_IsUseQtyPicked, p_IsCompleteShipments);
 
-		return "@Created@ @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@";
+		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " +result.getSkippedPackagesCount();
 	}
 
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()

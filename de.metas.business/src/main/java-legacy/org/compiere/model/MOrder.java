@@ -627,7 +627,7 @@ public class MOrder extends X_C_Order implements DocAction
 			final MOrderLine fromLine)
 	{
 		final MOrderLine line = new MOrderLine(this);
-		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
+		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID()); // note: this copies *all* columns, also those with IsCalculated='Y'
 		line.setC_Order_ID(getC_Order_ID());
 		line.setOrder(this);
 		line.set_ValueNoCheck("C_OrderLine_ID", I_ZERO);	// new
@@ -760,27 +760,6 @@ public class MOrder extends X_C_Order implements DocAction
 			return null;
 		return re.getPDF(file);
 	}	// createPDF
-
-	/**
-	 * Set Price List (and Currency, TaxIncluded) when valid
-	 *
-	 * @param M_PriceList_ID price list
-	 */
-	@Override
-	public void setM_PriceList_ID(int M_PriceList_ID)
-	{
-		MPriceList pl = MPriceList.get(getCtx(), M_PriceList_ID, null);
-		if (pl.get_ID() == M_PriceList_ID)
-		{
-			super.setM_PriceList_ID(M_PriceList_ID);
-			setC_Currency_ID(pl.getC_Currency_ID());
-			setIsTaxIncluded(pl.isTaxIncluded());
-		}
-		// metas: make sure that ther pricing system is in sync wth the new pl
-		InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class)
-				.setM_PricingSystem_ID(InterfaceWrapperHelper.create(pl, de.metas.adempiere.model.I_M_PriceList.class).getM_PricingSystem_ID());
-		// metas: end
-	}	// setM_PriceList_ID
 
 	/**************************************************************************
 	 * Get <b>active</b> Lines of Order
