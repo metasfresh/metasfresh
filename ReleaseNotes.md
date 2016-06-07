@@ -44,7 +44,7 @@ The actual release notes
  - GROWTH-65 Community and Legal Files
     * Added LICENSE.md, CODE_OF_CONDUCT.md and modified The Contributing Guidelines.
 
-# metasfresh 4.20.19 (release candidate)
+# metasfresh 4.20.19
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag
