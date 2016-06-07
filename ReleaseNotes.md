@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.21.20 (upcoming)
+# metasfresh 4.x.x (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.21.20
 
 ## Features
  - FRESH-349 KPI: Printing Performance
