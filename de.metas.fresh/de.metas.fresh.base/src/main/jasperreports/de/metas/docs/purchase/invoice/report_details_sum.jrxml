@@ -16,7 +16,7 @@
 	</parameter>
 	<parameter name="kind" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Sum ( $P{c_invoice_id});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details_Sum ( $P{c_invoice_id});]]>
 	</queryString>
 	<field name="c_invoice_id" class="java.math.BigDecimal"/>
 	<field name="iso_code" class="java.lang.String"/>
