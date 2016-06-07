@@ -44,9 +44,11 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 // Note: this model validator used to have the class name 'OLCand'
+
 @Validator(I_C_OLCand.class)
 public class C_OLCand
 {
+	
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
 	public void onIsErrorUnset(final I_C_OLCand olCand)
 	{
@@ -158,4 +160,5 @@ public class C_OLCand
 		}
 		olCand.setProductDescription(productDescriptionToUse);
 	}
+	
 }
