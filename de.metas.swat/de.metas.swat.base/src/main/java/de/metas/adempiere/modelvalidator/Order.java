@@ -1,32 +1,7 @@
 package de.metas.adempiere.modelvalidator;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -96,7 +71,7 @@ public class Order implements ModelValidator
 		// 01371
 		if (timing == TIMING_AFTER_PREPARE)
 		{
-			final I_C_Order order = POWrapper.create(po, I_C_Order.class);
+			final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 			final org.compiere.model.I_C_BPartner bpartner = order.getC_BPartner();
 			if (bpartner.isProspect())
 			{
@@ -129,7 +104,7 @@ public class Order implements ModelValidator
 		{
 			if (type == TYPE_BEFORE_NEW && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
 			{
-				final I_C_OrderLine orderLine = POWrapper.create(po, I_C_OrderLine.class);
+				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 				// bpartner address
 				if (orderLine.getC_BPartner_Location_ID() > 0)
 				{
@@ -230,12 +205,7 @@ public class Order implements ModelValidator
 			}
 			//
 			// checking if all is okay with this order
-			String result = orderBL.checkFreightCost(po.getCtx(), order, true, po.get_TrxName());
-			if (result != null)
-			{
-				throw new AdempiereException(result);
-			}
-
+			orderBL.checkFreightCost(order);
 			orderBL.checkForPriceList(order);
 		}
 		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
@@ -254,7 +224,7 @@ public class Order implements ModelValidator
 
 			if (freightCostRuleChanged && notFixPrice)
 			{
-				orderBL.updateFreightAmt(po.getCtx(), POWrapper.create(po, I_C_Order.class), po.get_TrxName());
+				orderBL.updateFreightAmt(po.getCtx(), InterfaceWrapperHelper.create(po, I_C_Order.class), po.get_TrxName());
 			}
 
 			//
