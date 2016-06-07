@@ -237,27 +237,6 @@ public class Order implements ModelValidator
 			}
 
 			orderBL.checkForPriceList(order);
-
-			// 01717
-			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_IsDropShip))
-			{
-				if (order.isDropShip())
-				{
-					if (order.getDropShip_BPartner_ID() < 0)
-					{
-						order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
-						order.setDropShip_Location_ID(order.getC_BPartner_Location_ID());
-						order.setDropShip_User_ID(order.getAD_User_ID());
-					}
-				}
-				else
-				{
-					order.setDropShip_BPartner_ID(-1);
-					order.setDropShip_Location_ID(-1);
-					order.setDropShip_User_ID(-1);
-				}
-			}
-
 		}
 		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
 		{
