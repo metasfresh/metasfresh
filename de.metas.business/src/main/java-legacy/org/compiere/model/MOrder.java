@@ -1060,20 +1060,25 @@ public class MOrder extends X_C_Order implements DocAction
 		if (getBill_Location_ID() == 0)
 			setBill_Location_ID(getC_BPartner_Location_ID());
 
+		//
 		// Default Price List
 		// metas: bpartner's pricing system (instead of price list)
-		Services.get(IOrderBL.class).setM_PricingSystem_ID(InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class));
-
-		// metas end
+		Services.get(IOrderBL.class).setM_PricingSystem_ID(this, false); // overridePricingSystem=false
+		
+		//
 		// Default Currency
-		if (getC_Currency_ID() == 0)
+		if (getC_Currency_ID() <= 0)
 		{
-			String sql = "SELECT C_Currency_ID FROM M_PriceList WHERE M_PriceList_ID=?";
-			int ii = DB.getSQLValue(null, sql, getM_PriceList_ID());
-			if (ii != 0)
-				setC_Currency_ID(ii);
+			final I_M_PriceList priceList = getM_PriceList();
+			final int currencyId = priceList == null ? -1 : priceList.getC_Currency_ID(); 
+			if (currencyId > 0)
+			{
+				setC_Currency_ID(currencyId);
+			}
 			else
+			{
 				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
+			}
 		}
 
 		// Default Sales Rep
@@ -1081,7 +1086,7 @@ public class MOrder extends X_C_Order implements DocAction
 		// This is not a mandatory field, so leave it like it is.
 
 		// Default Document Type
-		if (getC_DocTypeTarget_ID() == 0)
+		if (getC_DocTypeTarget_ID() <= 0)
 			setC_DocTypeTarget_ID(DocSubType_Standard);
 
 		// Default Payment Term

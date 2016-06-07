@@ -1,7 +1,6 @@
 package de.metas.adempiere.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 
@@ -18,7 +17,10 @@ public class OrderPricingSystem extends CalloutEngine
 		}
 
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		return Services.get(IOrderBL.class).setPricingSystemId(order, false, ITrx.TRXNAME_None);
+		final boolean overridePricingSystem = true;
+		Services.get(IOrderBL.class).setM_PricingSystem_ID(order, overridePricingSystem);
+		
+		return NO_ERROR;
 	}
 
 	public String cBPartnerLocationId(final ICalloutField calloutField)
@@ -29,26 +31,21 @@ public class OrderPricingSystem extends CalloutEngine
 		}
 		
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		Services.get(IOrderBL.class).checkForPriceList(order, ITrx.TRXNAME_None);
+		Services.get(IOrderBL.class).setPriceList(order);
 		
 		return NO_ERROR;
 	}
 
-	public String mPricingSystemId(final ICalloutField calloutField) {
-
+	public String mPricingSystemId(final ICalloutField calloutField)
+	{
 		if (isCalloutActive())
 		{
 			return NO_ERROR;
 		}
-		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-
-		// TODO: figure it out if this is still needed:
-//		if (value == null && oldValue != null)
-//		{
-//			// metas: ok for some customers, imho, for others rather not
-//			mTab.setValue(mField, oldValue);
-//		}
 		
-		return Services.get(IOrderBL.class).setPriceList(order, false, order.getM_PricingSystem_ID(), ITrx.TRXNAME_None);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		Services.get(IOrderBL.class).setPriceList(order);
+		
+		return NO_ERROR;
 	}
 }

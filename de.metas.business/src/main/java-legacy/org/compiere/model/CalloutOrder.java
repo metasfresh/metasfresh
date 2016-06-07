@@ -671,16 +671,16 @@ public class CalloutOrder extends CalloutEngine
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, bill_BPartner_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				// PriceList (indirect: IsTaxIncluded & Currency)
-				final Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
+				final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
 				if (!rs.wasNull())
 				{
-					order.setM_PriceList_ID(ii);
+					order.setM_PriceList_ID(priceListId);
 				}
 				else
 				{ // get default PriceList

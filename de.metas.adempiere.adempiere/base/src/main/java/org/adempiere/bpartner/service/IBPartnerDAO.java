@@ -150,7 +150,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
 	 *            </ul>
 	 * @param trxName
-	 * @return
+	 * @return M_PricingSystem_ID or 0
 	 */
 	int retrievePricingSystemId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
 

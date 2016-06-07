@@ -204,11 +204,8 @@ public class Order implements ModelValidator
 		// metas: start: task 05899
 		if (type == TYPE_BEFORE_SAVE_TRX || type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 		{
-			String result = orderBL.setPricingSystemId(order, true, po.get_TrxName());
-			if (result != null)
-			{
-				return result;
-			}
+			final boolean overridePricingSystem = false;
+			orderBL.setM_PricingSystem_ID(order, overridePricingSystem);
 		}
 		// metas: end: task 05899
 
@@ -239,7 +236,7 @@ public class Order implements ModelValidator
 				throw new AdempiereException(result);
 			}
 
-			orderBL.checkForPriceList(order, po.get_TrxName());
+			orderBL.checkForPriceList(order);
 
 			// 01717
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_IsDropShip))
