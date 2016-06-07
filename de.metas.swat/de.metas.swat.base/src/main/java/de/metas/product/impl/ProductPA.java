@@ -543,7 +543,7 @@ public class ProductPA implements IProductPA
 
 		final Object[] params = { //
 		pricingSystemId, //
-				isSOPriceList ? "Y" : "N", //
+				isSOPriceList, //
 				bPartnerLocation.getC_Location_ID() //
 		};
 
