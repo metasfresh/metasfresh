@@ -2,6 +2,7 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.util.ISingletonService;
@@ -20,15 +21,14 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Checks if {@link I_C_Order#FREIGHTCOSTRULE_Versandkostenpauschale} is selected as the order's freight cost rule. If yes, it checks if there are {@link I_M_FreightCostDetail} records for the
 	 * given BPartner, Location and Shipper.
-	 * <p>
-	 * <b>Important: Implementors may not assume that the given order is instanceof PO.<b>
 	 *
 	 * @param order
-	 * @return
 	 *
 	 * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
+	 * 
+	 * @throws AdempiereException in case of failure
 	 */
-	String checkFreightCost(Properties ctx, I_C_Order order, boolean nullIfOk, String trxName);
+	void checkFreightCost(I_C_Order order);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.

@@ -34,6 +34,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
@@ -43,7 +44,6 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
@@ -79,32 +79,34 @@ public class OrderBL implements IOrderBL
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
 
 	@Override
-	public String checkFreightCost(final Properties ctx, final I_C_Order order, final boolean nullIfOk, final String trxName)
+	public void checkFreightCost(final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
-			OrderBL.logger.debug("{} is no SO", order);
-			return nullIfOk ? null : "";
+			logger.debug("{} is no SO", order);
+			return;
 		}
 
 		final int bPartnerId = order.getC_BPartner_ID();
 		final int bPartnerLocationId = order.getC_BPartner_Location_ID();
 		final int shipperId = order.getM_Shipper_ID();
 
-		if (bPartnerId == 0 || bPartnerLocationId == 0 || shipperId == 0)
+		if (bPartnerId <= 0 || bPartnerLocationId <= 0 || shipperId <= 0)
 		{
-			OrderBL.logger.debug("Can't check cause freight cost info is not yet complete for " + order);
-			return nullIfOk ? null : "";
+			logger.debug("Can't check cause freight cost info is not yet complete for {}", order);
+			return;
 		}
 
 		final IFreightCostBL freightCostBL = Services.get(IFreightCostBL.class);
 		final de.metas.adempiere.model.I_C_Order o = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
 		if (freightCostBL.checkIfFree(o))
 		{
-			OrderBL.logger.debug("No freight cost for " + order);
-			return nullIfOk ? null : "";
+			logger.debug("No freight cost for {}", order);
+			return;
 		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 		final MFreightCost freightCost =
 				MFreightCost.retrieveFor(ctx,
 						bPartnerId,
@@ -113,12 +115,10 @@ public class OrderBL implements IOrderBL
 						order.getAD_Org_ID(),
 						order.getDateOrdered(),
 						trxName);
-
 		if (freightCost == null)
 		{
-			return Services.get(IMsgBL.class).getMsg(ctx, OrderBL.MSG_NO_FREIGHT_COST_DETAIL);
+			throw new AdempiereException("@" + MSG_NO_FREIGHT_COST_DETAIL + "@");
 		}
-		return nullIfOk ? null : "";
 	}
 
 	@Override
