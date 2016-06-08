@@ -16,8 +16,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -74,8 +72,8 @@ import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
  * #L%
  */
 
-@Component
-@Scope("prototype")
+//@Component
+//@Scope("prototype")
 public class WindowModelImpl implements WindowModel
 {
 	private static final Logger logger = LogManager.getLogger(WindowModelImpl.class);
