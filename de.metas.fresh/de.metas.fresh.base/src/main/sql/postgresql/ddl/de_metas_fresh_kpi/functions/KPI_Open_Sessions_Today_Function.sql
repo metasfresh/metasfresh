@@ -1,8 +1,8 @@
 
 
-DROP FUNCTION IF EXISTS KPI_Open_Sessions_Today_Function(date);
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Open_Sessions_Today_Function(date);
 
-CREATE OR REPLACE FUNCTION KPI_Open_Sessions_Today_Function (IN CurrentDate date) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Open_Sessions_Today_Function (IN CurrentDate date) 
 RETURNS TABLE 
 (
 	UserName character varying,

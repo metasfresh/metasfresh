@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS KPI_Sales_Order_Status_Function (IN C_Order_ID numeric) ;
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Sales_Order_Status_Function (IN C_Order_ID numeric) ;
 
-CREATE OR REPLACE FUNCTION KPI_Sales_Order_Status_Function (IN C_Order_ID numeric) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Sales_Order_Status_Function (IN C_Order_ID numeric) 
 RETURNS TABLE 
 (
 	Confirmed numeric,
