@@ -103,10 +103,10 @@ FROM
 				  * having more than 2 lines, the field is too short to display all lines in the windows font to avoid this I add an extra
 				  * line as soon as the attributes string has more than 15 characters (which is still very likely to fit in two lines)
 				  */
-				CASE WHEN Length(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes, M_AttributeSetInstance_ID, M_InOutLine_ID
+				CASE WHEN Length(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes, M_AttributeSetInstance_ID
 			FROM	(
 					SELECT 	String_agg ( att.ai_value, ', ' ORDER BY att.M_AttributeSetInstance_ID, length(att.ai_value), att.ai_value) AS Attributes,
-						att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
+						att.M_AttributeSetInstance_ID
 					FROM 	Report.fresh_Attributes att
 					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID
 					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
@@ -116,9 +116,9 @@ FROM
 						 * more flexible for all kinds of documents
 						 * att.at_IsAttrDocumentRelevant = 'Y' */
 						  AND ol.C_Order_ID = $1
-					GROUP BY	att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
+					GROUP BY	att.M_AttributeSetInstance_ID
 				) x
-		) a ON iol.M_AttributeSetInstance_ID = a.M_AttributeSetInstance_ID AND iol.M_InOutLine_ID = a.M_InOutLine_ID
+		) a ON iol.M_AttributeSetInstance_ID = a.M_AttributeSetInstance_ID
 
 		-- Quality (is taken from Invoice candidates because there the quality is already aggregated)
 		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID
