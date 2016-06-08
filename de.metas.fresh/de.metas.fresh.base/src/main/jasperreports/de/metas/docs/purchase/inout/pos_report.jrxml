@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="144"/>
+	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -20,19 +20,6 @@
 	<queryString>
 		<![CDATA[SELECT
 	ol.ad_org_id,
-	CASE
-		WHEN
-		EXISTS(
-			SELECT 0
-			FROM C_OrderLine ol
-			INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
-			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-			WHERE pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-				AND ol.C_Order_ID = ol.C_Order_ID
-		)
-		THEN 'Y'
-		ELSE 'N'
-	END as displayhu,
 	ol.C_Order_ID
 FROM
 	C_OrderLine ol
@@ -41,7 +28,6 @@ WHERE
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="displayhu" class="java.lang.String"/>
 	<field name="c_order_id" class="java.lang.Integer"/>
 	<background>
 		<band height="842" splitType="Stretch"/>

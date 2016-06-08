@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS KPI_Production_Run_Setup_Time (IN PP_Order_ID numeric);
-CREATE OR REPLACE FUNCTION KPI_Production_Run_Setup_Time (IN PP_Order_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Production_Run_Setup_Time (IN PP_Order_ID numeric);
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Production_Run_Setup_Time (IN PP_Order_ID numeric)
 RETURNS TABLE
 (
 Machine character varying,

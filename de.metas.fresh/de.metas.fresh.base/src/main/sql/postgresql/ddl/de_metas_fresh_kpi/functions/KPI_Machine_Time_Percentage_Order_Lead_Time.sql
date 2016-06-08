@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS KPI_Machine_Time_Percentage_Order_Lead_Time (IN PP_Order_ID numeric);
-CREATE OR REPLACE FUNCTION KPI_Machine_Time_Percentage_Order_Lead_Time (IN PP_Order_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Machine_Time_Percentage_Order_Lead_Time (IN PP_Order_ID numeric);
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Machine_Time_Percentage_Order_Lead_Time (IN PP_Order_ID numeric)
 RETURNS TABLE 
 (
 Machine character varying,
