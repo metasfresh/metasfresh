@@ -10,25 +10,27 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 /**
- * If {@link Services#isAutodetectServices()} is <code>true</code> and no service implementation has been registered for a given {@link IService} class, then an implementor of this class constructs
- * the classname of the service implementation class.
- * 
+ * If {@link Services#isAutodetectServices()} is <code>true</code> (which is usually the case!)<br>
+ * and no service implementation has been explicitly registered for a given {@link IService} class,<br>
+ * then an implementor of this class constructs the class name of the service implementation class.
+ * <p>
+ * Note that implementation don't need to make sure that a class with the constructed name actually exists.
+ *
  * @see Services#setServiceNameAutoDetectPolicy(IServiceNameAutoDetectPolicy)
- * 
+ *
  */
 public interface IServiceNameAutoDetectPolicy
 {
