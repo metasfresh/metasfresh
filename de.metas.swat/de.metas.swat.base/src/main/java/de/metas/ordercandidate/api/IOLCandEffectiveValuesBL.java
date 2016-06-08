@@ -257,6 +257,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <ul>
 	 * <li><code>HandOver_Partner_Override_ID</code></li>
 	 * <li><code>HandOver_Partner_ID</code></li>
+ 	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
 	 *
 	 * @param olCand
@@ -278,6 +279,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <ul>
 	 * <li><code>HandOver_Location_Override_ID</code></li>
 	 * <li><code>HandOver_Location_ID</code></li>
+	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * </ul>
 	 *
 	 * @param olCand
