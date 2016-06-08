@@ -596,7 +596,6 @@ public class WindowModelImpl implements WindowModel
 		setFromPropertyValuesDTO(values);
 	}
 
-	@Override
 	public void nextRecord(final OnChangesFound onChangesFound)
 	{
 		if (!hasNextRecord())
@@ -626,7 +625,6 @@ public class WindowModelImpl implements WindowModel
 		setRecordIndex(nextIndex);
 	}
 
-	@Override
 	public void previousRecord(final OnChangesFound onChangesFound)
 	{
 		if (!hasPreviousRecord())

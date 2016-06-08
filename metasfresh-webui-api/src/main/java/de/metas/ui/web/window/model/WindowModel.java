@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model;
 import java.util.Set;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
@@ -46,11 +45,7 @@ public interface WindowModel
 
 	boolean hasPreviousRecord();
 
-	void previousRecord(OnChangesFound onChangesFound);
-
 	boolean hasNextRecord();
-
-	void nextRecord(OnChangesFound onChangesFound);
 
 	/**
 	 * Gets a map of all "selected" property name and their values.

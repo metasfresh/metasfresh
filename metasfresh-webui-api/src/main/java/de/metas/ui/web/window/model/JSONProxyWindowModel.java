@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
@@ -134,21 +133,9 @@ public class JSONProxyWindowModel implements WindowModel
 	}
 
 	@Override
-	public void previousRecord(final OnChangesFound onChangesFound)
-	{
-		delegate.previousRecord(testJSON(onChangesFound, OnChangesFound.class));
-	}
-
-	@Override
 	public boolean hasNextRecord()
 	{
 		return delegate.hasNextRecord();
-	}
-
-	@Override
-	public void nextRecord(final OnChangesFound onChangesFound)
-	{
-		delegate.nextRecord(testJSON(onChangesFound, OnChangesFound.class));
 	}
 
 	@Override
