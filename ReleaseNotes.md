@@ -21,7 +21,7 @@ The actual release notes
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
- - 
+
 # metasfresh 4.21.20
 
 ## Features
