@@ -21,10 +21,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,29 +33,27 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.comparator.AccessorComparator;
-import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridTab;
+import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.wf.MWFActivity;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.logging.LogManager;
 
 /**
  * Displays valid Document Action Options based on context
@@ -98,7 +92,7 @@ public class VDocAction extends CDialog
 			jbInit();
 
 			// dynamic init preparation
-			m_AD_Table_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, "BaseTable_ID");
+			m_AD_Table_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, GridWindowVO.CTXNAME_BaseTable_ID);
 			if (s_value == null)
 				readReference();
 			//

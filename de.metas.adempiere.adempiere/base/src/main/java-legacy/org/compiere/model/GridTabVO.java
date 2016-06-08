@@ -61,12 +61,12 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *  @param onlyCurrentRows if true query is limited to not processed records
 	 *  @return TabVO
 	 */
-	static GridTabVO create (GridWindowVO wVO, int TabNo, ResultSet rs, boolean isRO, boolean onlyCurrentRows)
+	static GridTabVO create (final GridWindowVO wVO, final int TabNo, final ResultSet rs, final boolean isRO, final boolean onlyCurrentRows)
 	{
-		logger.info("#" + TabNo);
+		logger.debug("TabNo={}", TabNo);
 
-		GridTabVO vo = new GridTabVO (wVO.ctx, wVO.WindowNo, TabNo);
-		vo.AD_Window_ID = wVO.AD_Window_ID;
+		GridTabVO vo = new GridTabVO (wVO.getCtx(), wVO.getWindowNo(), TabNo);
+		vo.AD_Window_ID = wVO.getAD_Window_ID();
 		//
 		if (!loadTabDetails(vo, rs))
 		{
@@ -86,16 +86,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo._fields = ImmutableList.of();
 		}
-		/*
-		else
-		{
-			createFields (vo);
-			if (vo.Fields == null || vo.Fields.size() == 0)
-			{
-				logger.error("No Fields");
-				return null;
-			}
-		}*/
 		wVO.addLoadErrorMessage(vo.getLoadErrorMessage(), false); // metas: 01934
 		return vo;
 	}	//	create
@@ -169,9 +159,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 
 			//	DisplayLogic
-			vo.DisplayLogic = rs.getString("DisplayLogic");
+			final String DisplayLogic = rs.getString("DisplayLogic");
 			vo.DisplayLogicExpr = Services.get(IExpressionFactory.class)
-					.compileOrDefault(vo.DisplayLogic, DEFAULT_DisplayLogic, ILogicExpression.class); // metas: 03093
+					.compileOrDefault(DisplayLogic, DEFAULT_DisplayLogic, ILogicExpression.class); // metas: 03093
 
 			//	Access Level
 			vo.AccessLevel = TableAccessLevel.forAccessLevel(rs.getString("AccessLevel"));
@@ -196,9 +186,9 @@ public class GridTabVO implements Evaluatee, Serializable
 
 			if ("Y".equals(rs.getString("IsReadOnly")))
 				vo.IsReadOnly = true;
-			vo.ReadOnlyLogic = rs.getString("ReadOnlyLogic");
+			final String ReadOnlyLogic = rs.getString("ReadOnlyLogic");
 			vo.ReadOnlyLogicExpr = Services.get(IExpressionFactory.class)
-					.compileOrDefault(vo.ReadOnlyLogic, DEFAULT_ReadOnlyLogicExpr, ILogicExpression.class); // metas: 03093
+					.compileOrDefault(ReadOnlyLogic, DEFAULT_ReadOnlyLogicExpr, ILogicExpression.class); // metas: 03093
 			if (rs.getString("IsInsertRecord").equals("N"))
 				vo.IsInsertRecord = false;
 
@@ -403,7 +393,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Single Row		*/
 	public	boolean	    IsSingleRow = false;
 	/** Read Only		*/
-	public  boolean     IsReadOnly = false;
+	private boolean     IsReadOnly = false;
 	/** Insert Record	*/
 	public 	boolean		IsInsertRecord = true;
 	/** Tree			*/
@@ -435,11 +425,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Order by		*/
 	public  String      OrderByClause;
 	/** Tab Read Only	*/
-	private String      ReadOnlyLogic;
 	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ILogicExpression.FALSE;
 	private ILogicExpression ReadOnlyLogicExpr = DEFAULT_ReadOnlyLogicExpr;
 	/** Tab Display		*/
-	private String      DisplayLogic;
 	private static final ILogicExpression DEFAULT_DisplayLogic = ILogicExpression.TRUE;
 	private ILogicExpression DisplayLogicExpr = DEFAULT_DisplayLogic;
 	/** Level			*/
@@ -549,9 +537,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.CommitWarning = CommitWarning;
 		clone.WhereClause = WhereClause;
 		clone.OrderByClause = OrderByClause;
-		clone.ReadOnlyLogic = ReadOnlyLogic;
 		clone.ReadOnlyLogicExpr = ReadOnlyLogicExpr;
-		clone.DisplayLogic = DisplayLogic;
 		clone.DisplayLogicExpr = DisplayLogicExpr;
 		clone.TabLevel = TabLevel;
 		clone.AD_Image_ID = AD_Image_ID;
@@ -700,6 +686,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return WindowNo;
 	}
+	
+	public int getAD_Table_ID()
+	{
+		return AD_Table_ID;
+	}
 
 	public int getAD_Column_ID()
 	{
@@ -738,5 +729,15 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int getPrint_Process_ID()
 	{
 		return AD_Process_ID;
+	}
+	
+	public boolean isReadOnly()
+	{
+		return IsReadOnly;
+	}
+	
+	void setReadOnly(boolean isReadOnly)
+	{
+		IsReadOnly = isReadOnly;
 	}
 }   //  MTabVO
