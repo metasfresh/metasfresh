@@ -1,5 +1,5 @@
 
-
+DROP FUNCTION IF EXISTS  KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;
 -- task http://dewiki908/mediawiki/index.php/09881_Purchase_Order_Status_Overview_KPI_%28102412092136%29
 
 DROP FUNCTION IF EXISTS  de_metas_fresh_kpi.KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;

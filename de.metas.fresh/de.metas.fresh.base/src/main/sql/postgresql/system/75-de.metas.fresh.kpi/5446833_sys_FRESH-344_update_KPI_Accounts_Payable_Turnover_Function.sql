@@ -1,5 +1,5 @@
+DROP FUNCTION IF EXISTS KPI_Accounts_Payable_Turnover_Function ( date, date);
 DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Accounts_Payable_Turnover_Function ( date, date);
-
 CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Accounts_Payable_Turnover_Function (IN DateFrom date, IN DateTo date)
 RETURNS TABLE 
 (

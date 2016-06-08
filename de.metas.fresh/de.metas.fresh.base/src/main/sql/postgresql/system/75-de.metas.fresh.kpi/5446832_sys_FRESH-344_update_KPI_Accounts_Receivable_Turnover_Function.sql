@@ -1,6 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Accounts_Payable_Turnover_Function ( date, date);
 
-CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Accounts_Payable_Turnover_Function (IN DateFrom date, IN DateTo date)
+DROP FUNCTION IF EXISTS KPI_Accounts_Receivable_Turnover_Function ( date, date);
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Accounts_Receivable_Turnover_Function ( date, date);
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Accounts_Receivable_Turnover_Function (IN DateFrom date, IN DateTo date)
 RETURNS TABLE 
 (
 	TurnoverAccountsReceivable numeric,
@@ -34,13 +35,12 @@ FROM
 	JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
 
 WHERE 
-	dt.DocBaseType = 'ARI' -- incoming Invoices
+	dt.DocBaseType = 'API' -- outgoing Invoices
 	AND i.DocStatus IN ('CO', 'CL')
 	AND i.DateInvoiced >= $1 AND i.DateInvoiced <= $2
 	
 	
 ) x
-
 
 	
 $$

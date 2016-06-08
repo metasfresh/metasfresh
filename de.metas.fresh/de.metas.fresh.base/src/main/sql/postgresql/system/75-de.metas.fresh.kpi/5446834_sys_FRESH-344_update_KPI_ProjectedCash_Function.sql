@@ -1,4 +1,4 @@
-
+DROP FUNCTION IF EXISTS KPI_ProjectedCash_Function (numeric, date, date);
 
 DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_ProjectedCash_Function (numeric, date, date);
 
