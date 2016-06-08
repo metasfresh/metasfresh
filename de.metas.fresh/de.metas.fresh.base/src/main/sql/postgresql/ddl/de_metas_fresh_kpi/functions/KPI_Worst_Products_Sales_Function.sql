@@ -1,6 +1,6 @@
 
-DROP FUNCTION IF EXISTS KPI_Worst_Products_Sales_Function (IN dateFrom date, IN dateTo date) ;
-CREATE OR REPLACE FUNCTION KPI_Worst_Products_Sales_Function (IN dateFrom date, IN dateTo date) 
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Worst_Products_Sales_Function (IN dateFrom date, IN dateTo date) ;
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Worst_Products_Sales_Function (IN dateFrom date, IN dateTo date) 
 RETURNS TABLE 
 (
 	productName character varying,
