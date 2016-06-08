@@ -12,12 +12,14 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.22.x (upcoming)
+# metasfresh 4.22.21 (upcoming)
 
 ## Features
  - FRESH-350 check if purchase inout label and print preview can run faster
 
 ## Fixes
+ - FRESH-344 Move KPI SQL to repository and new DB Schema
+    * Fix: KPI SQLs were in the default/public schema
 
 # metasfresh 4.21.20
 
