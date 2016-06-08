@@ -12,9 +12,10 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.22.x (upcoming)
 
 ## Features
+ - FRESH-350 check if purchase inout label and print preview can run faster
 
 ## Fixes
 
