@@ -30,16 +30,19 @@ public final class WindowConstants
 	public static final PropertyName PROPERTYNAME_RecordAditionalSummary = PropertyName.of("#Window#RecordAditionalSummary");
 
 	public static final PropertyName PROPERTYNAME_GridRowId = PropertyName.of("#RowId");
-	
+
 	public static final PropertyName PROPERTYNAME_IsActive = PropertyName.of("IsActive");
 	public static final PropertyName PROPERTYNAME_Processed = PropertyName.of("Processed");
 	public static final PropertyName PROPERTYNAME_Processing = PropertyName.of("Processing");
-	
+
 	public static final String ACTION_PreviousRecord = "Previous";
 	public static final String ACTION_NextRecord = "Next";
-	
+
 	public static final int AD_WINDOW_ID_Location = 121; // FIXME: hardcoded
-	
+
+	/** TableName=C_ValidCombination, KeyColumnName=C_ValidCombination_ID, DisplayColumnName=- */
+	public static final int AD_REFERENCE_ID_Account = 175; // FIXME: hardcoded
+
 	public static enum OnChangesFound
 	{
 		Discard, Ask,

@@ -376,6 +376,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 		{
 			final PropertyName propertyName = PropertyName.of(parentBuilder.getPropertyName(), gridFieldVO.getColumnName());
 			final PropertyDescriptorValueType valueType = extractValueType(gridFieldVO);
+			final int adReferenceValueId = extractAD_Reference_Value_ID(gridFieldVO);
 			
 			final Builder fieldBuilder = PropertyDescriptor.builder()
 					.setType(PropertyDescriptorType.Value)
@@ -395,7 +396,7 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 					.setDataBindingInfo(SqlDataBindingInfo.builder()
 							.setSqlColumnName(gridFieldVO.getColumnName())
 							.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
-							.setSqlLookupDescriptor(valueType.isLookup() ? SqlLookupDescriptor.of(valueType, gridFieldVO.getColumnName(), gridFieldVO.getAD_Reference_Value_ID()) : null)
+							.setSqlLookupDescriptor(valueType.isLookup() ? SqlLookupDescriptor.of(valueType, gridFieldVO.getColumnName(), adReferenceValueId) : null)
 							.build())
 							//
 							;
@@ -497,6 +498,10 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			{
 				return PropertyDescriptorValueType.ResourceAssignment;
 			}
+			else if (displayType == DisplayType.Account)
+			{
+				return PropertyDescriptorValueType.Account;
+			}
 			else if (DisplayType.isAnyLookup(displayType))
 			{
 				return PropertyDescriptorValueType.SearchLookup;
@@ -561,12 +566,28 @@ public class VOPropertyDescriptorProvider implements IPropertyDescriptorProvider
 			{
 				return PropertyDescriptorValueType.Binary;
 			}
+			else if (displayType == DisplayType.Image)
+			{
+				return PropertyDescriptorValueType.Image;
+			}
 			//
 			else
 			{
 				throw new IllegalArgumentException("Unknown displayType=" + displayType + " of " + field);
 			}
 		}
-
+		
+		private static int extractAD_Reference_Value_ID(final GridFieldVO field)
+		{
+			final int displayType = field.getDisplayType();
+			final int adReferenceValueId = field.getAD_Reference_Value_ID();
+			
+			if (displayType == DisplayType.Account && adReferenceValueId <= 0)
+			{
+				return WindowConstants.AD_REFERENCE_ID_Account;
+			}
+			
+			return adReferenceValueId;
+		}
 	}
 }

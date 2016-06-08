@@ -47,11 +47,13 @@ public enum PropertyDescriptorValueType
 	, Location(DisplayType.Location, LookupValue.class) //
 	, PAttribute(DisplayType.PAttribute, LookupValue.class) //
 	, ResourceAssignment(DisplayType.Assignment, LookupValue.class) //
+	, Account(DisplayType.Search, LookupValue.class) //
 	, ID(DisplayType.ID, Integer.class) //
 	//
 	, YesNo(DisplayType.YesNo, java.lang.Boolean.class) //
 	, Button(DisplayType.Button, java.lang.String.class) //
-	, Binary(DisplayType.Binary, byte[].class)
+	, Binary(DisplayType.Binary, byte[].class) //
+	, Image(DisplayType.Image, java.lang.Integer.class) //
 	, ComposedValue(-1, de.metas.ui.web.window.shared.datatype.ComposedValue.class) //
 	;
 
