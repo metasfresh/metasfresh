@@ -13,17 +13,13 @@ SELECT
 	avg 
 	(
 		
-			 extract(epoch from (pji.Updated::timestamp
-			with time zone - pji.created::timestamp with time
+			 extract(epoch from (iopt.PrintJobInstructionUpdated::timestamp
+			with time zone - iopt.starttime::timestamp with time
 			zone))
 
 	)  as  TimeAverage
-   FROM c_print_job_instructions pji
-   JOIN c_print_job_line pjl ON pjl.c_print_job_id = pji.c_print_job_id
-   JOIN c_printing_queue pq ON pq.c_printing_queue_id = pjl.c_printing_queue_id
-   JOIN ad_archive a ON a.ad_archive_id = pq.ad_archive_id
-
-   JOIN m_inout io ON io.m_inout_id = a.record_id AND a.ad_table_id = get_table_id('M_InOut')
+	FROM RV_InOut_PrintingTime iopt
+	JOIN m_inout io ON io.m_inout_id = iopt.M_InOut_ID
 
 
   WHERE 
@@ -32,7 +28,7 @@ SELECT
   --pji.status = 'D'::bpchar AND
   io.ISSOTrx = 'N'
 
-  and pji.created ::date >= $1 ::date and pji.created ::date <= $2::date
+  and iopt.starttime::date >= $1 ::date and iopt.starttime ::date <= $2::date
 
 $BODY$
 
