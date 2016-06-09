@@ -1,11 +1,11 @@
 package de.metas.ui.web.service.impl;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vaadin.server.Resource;
 
 import de.metas.ui.web.service.IImageProvider;
-import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource.ResourceType;
 import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.ImageResource;
+import de.metas.ui.web.window.shared.ImageResource.ResourceType;
 
 /*
  * #%L
@@ -31,74 +31,38 @@ import de.metas.ui.web.vaadin.theme.Theme;
 
 public class VaadinImageProvider implements IImageProvider
 {
-	public static final class VaadinImageResource implements IImageResource
+	@Override
+	public ImageResource getIconSmall(final String name)
 	{
-		public static final Resource getResource(final IImageResource imageResource)
-		{
-			if (imageResource == null)
-			{
-				return null;
-			}
-
-			final VaadinImageResource vaadinImageResource = (VaadinImageResource)imageResource;
-			return vaadinImageResource.getResource();
-		}
-		
-		public static enum ResourceType
-		{
-			IconSmall,
-			Image,
-		}
-
-		@JsonProperty("n")
-		private final String resourceName;
-		@JsonProperty("t")
-		private final ResourceType resourceType;
-		
-		public VaadinImageResource(@JsonProperty("n") final String resourceName, @JsonProperty("t") final ResourceType resourceType)
-		{
-			super();
-			this.resourceName = resourceName;
-			this.resourceType = resourceType;
-		}
-		
-		public String getResourceName()
-		{
-			return resourceName;
-		}
-		
-		public ResourceType getResourceType()
-		{
-			return resourceType;
-		}
-
-		protected Resource getResource()
-		{
-			if (resourceType == ResourceType.IconSmall)
-			{
-				return Theme.getIconSmall(getResourceName());
-			}
-			else if (resourceType == ResourceType.Image)
-			{
-				return Theme.getImageResourceForNameWithoutExt(getResourceName());
-			}
-			else
-			{
-				throw new IllegalStateException("Unknown resource type: "+resourceType);
-			}
-		}
+		return new ImageResource(name, ResourceType.IconSmall);
 	}
 
 	@Override
-	public IImageResource getIconSmall(final String name)
+	public ImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension)
 	{
-		return new VaadinImageResource(name, ResourceType.IconSmall);
+		return new ImageResource(fileNameWithoutExtension, ResourceType.Image);
 	}
 
-	@Override
-	public IImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension)
+	public static Resource getVaadinResource(final ImageResource imageResource)
 	{
-		return new VaadinImageResource(fileNameWithoutExtension, ResourceType.Image);
+		if (imageResource == null)
+		{
+			return null;
+		}
+
+		final ResourceType resourceType = imageResource.getResourceType();
+		if (resourceType == ResourceType.IconSmall)
+		{
+			return Theme.getIconSmall(imageResource.getResourceName());
+		}
+		else if (resourceType == ResourceType.Image)
+		{
+			return Theme.getImageResourceForNameWithoutExt(imageResource.getResourceName());
+		}
+		else
+		{
+			throw new IllegalStateException("Unknown resource type: " + resourceType);
+		}
 	}
 
 }

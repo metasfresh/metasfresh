@@ -1,9 +1,11 @@
-package de.metas.ui.web.service;
+package de.metas.ui.web.window.shared.datatype;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.MTreeNode;
+import java.io.IOException;
 
-import de.metas.ui.web.window.shared.ImageResource;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
 /*
  * #%L
@@ -27,12 +29,13 @@ import de.metas.ui.web.window.shared.ImageResource;
  * #L%
  */
 
-public interface IImageProvider extends ISingletonService
+public class NullValueJSONDeserializer extends JsonDeserializer<NullValue>
 {
-	String ICONNAME_Window = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
-	String ICONNAME_Report = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
 
-	ImageResource getIconSmall(String name);
+	@Override
+	public NullValue deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+	{
+		return NullValue.getInstance();
+	}
 
-	ImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension);
 }

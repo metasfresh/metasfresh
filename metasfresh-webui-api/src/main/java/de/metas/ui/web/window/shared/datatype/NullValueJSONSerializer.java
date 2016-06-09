@@ -1,9 +1,11 @@
-package de.metas.ui.web.service;
+package de.metas.ui.web.window.shared.datatype;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.MTreeNode;
+import java.io.IOException;
 
-import de.metas.ui.web.window.shared.ImageResource;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /*
  * #%L
@@ -15,24 +17,26 @@ import de.metas.ui.web.window.shared.ImageResource;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IImageProvider extends ISingletonService
+public class NullValueJSONSerializer extends JsonSerializer<NullValue>
 {
-	String ICONNAME_Window = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
-	String ICONNAME_Report = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
 
-	ImageResource getIconSmall(String name);
+	@Override
+	public void serialize(final NullValue value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException, JsonProcessingException
+	{
+		gen.writeStartObject();
+		gen.writeEndObject();
+	}
 
-	ImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension);
 }

@@ -1,14 +1,12 @@
-package de.metas.ui.web.window.shared.command;
+package de.metas.ui.web.window.shared.datatype;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
-
-import de.metas.ui.web.window.shared.datatype.NullValue;
+import com.google.common.base.Preconditions;
 
 /*
  * #%L
@@ -33,43 +31,38 @@ import de.metas.ui.web.window.shared.datatype.NullValue;
  */
 
 @SuppressWarnings("serial")
-@JsonSerialize(using = ViewCommandResult_JSONSerializer.class)
-@JsonDeserialize(using = ViewCommandResult_JSONDeserializer.class)
-public final class ViewCommandResult implements Serializable
+@JsonSerialize(using = PropertyPathValue_JSONSerializer.class)
+@JsonDeserialize(using = PropertyPathValue_JSONDeserializer.class)
+public final class PropertyPathValue implements Serializable
 {
-	@JsonCreator
-	public static final ViewCommandResult of(final Object resultObj)
+	public static final PropertyPathValue of(final PropertyPath propertyPath, final Object value)
 	{
-		if (NullValue.isNull(resultObj))
-		{
-			return NULL;
-		}
-		return new ViewCommandResult(resultObj);
+		return new PropertyPathValue(propertyPath, value);
 	}
 
-	public static final transient ViewCommandResult NULL = new ViewCommandResult(null);
+	private final PropertyPath propertyPath;
+	private final Object value;
 
-	private final Object resultObj;
-
-	private ViewCommandResult(final Object resultObj)
+	private PropertyPathValue(final PropertyPath propertyPath, final Object value)
 	{
 		super();
-		this.resultObj = resultObj;
+		this.propertyPath = Preconditions.checkNotNull(propertyPath, "propertyPath");
+		this.value = NullValue.isNull(value) ? null : value;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.addValue(resultObj)
+				.add("propertyPath", propertyPath)
+				.add("value", value)
 				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(resultObj);
+		return Objects.hash(propertyPath, value);
 	}
 
 	@Override
@@ -84,20 +77,23 @@ public final class ViewCommandResult implements Serializable
 			return false;
 		}
 
-		if (!(obj instanceof ViewCommandResult))
+		if (!(obj instanceof PropertyPathValue))
 		{
 			return false;
 		}
 
-		final ViewCommandResult other = (ViewCommandResult)obj;
-		return Objects.equals(resultObj, other.resultObj);
+		final PropertyPathValue other = (PropertyPathValue)obj;
+		return Objects.equals(propertyPath, other.propertyPath)
+				&& Objects.equals(value, other.value);
 	}
 
-	public <T> T getValue()
+	public PropertyPath getPropertyPath()
 	{
-		@SuppressWarnings("unchecked")
-		final T resultCasted = (T)resultObj;
-		return resultCasted;
+		return propertyPath;
 	}
 
+	public Object getValue()
+	{
+		return value;
+	}
 }

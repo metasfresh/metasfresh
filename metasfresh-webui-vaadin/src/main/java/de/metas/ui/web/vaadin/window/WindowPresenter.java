@@ -27,9 +27,8 @@ import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
 import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.model.JSONProxyWindowModel;
+import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.model.WindowModel;
-import de.metas.ui.web.window.model.WindowModelImpl;
 import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
 import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
@@ -67,11 +66,9 @@ public class WindowPresenter implements WindowViewListener
 {
 	private static final Logger logger = LogManager.getLogger(WindowPresenter.class);
 
-	// @Autowired(required = true)
-	// // @Lazy
-	// private WindowModel _model;
-	private final WindowModel _model = new JSONProxyWindowModel(new WindowModelImpl());
+	private WindowModel _model = null;
 	private boolean _registeredToModelEventBus = false;
+	private boolean _modelInitialized = false;
 
 	@Autowired(required = true)
 	// @Lazy
@@ -79,7 +76,7 @@ public class WindowPresenter implements WindowViewListener
 	private final Set<ActionsView> _actionsViews = new LinkedHashSet<>();
 
 	/** {@link PropertyName}s which are interesting for view and which shall be propagated to the view */
-	private Set<PropertyName> viewPropertyNames = ImmutableSet.of();
+	private PropertyNameSet viewPropertyNames = PropertyNameSet.EMPTY;
 
 	private final Multimap<PropertyPath, PropertyValueChangedListener> propertyValueChangedListeners = LinkedHashMultimap.create();
 
@@ -87,6 +84,16 @@ public class WindowPresenter implements WindowViewListener
 	{
 		super();
 		Application.autowire(this);
+
+		// _model = new JSONProxyWindowModel(new WindowModelImpl());
+		try
+		{
+			_model = (WindowModel)Thread.currentThread().getContextClassLoader().loadClass("de.metas.ui.web.window.controller.RestProxyWindowModel").newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException | ClassNotFoundException e)
+		{
+			throw Throwables.propagate(e);
+		}
 
 		setView(_view, null);
 	}
@@ -104,6 +111,7 @@ public class WindowPresenter implements WindowViewListener
 		//
 		// Set root property descriptor to model and view
 		model.setRootPropertyDescriptorFromWindow(windowId);
+		_modelInitialized = true;
 		if (view != null)
 		{
 			view.setRootPropertyDescriptor(model.getViewRootPropertyDescriptor());
@@ -123,12 +131,17 @@ public class WindowPresenter implements WindowViewListener
 		unbindFromModel();
 		setView(null);
 		_actionsViews.clear();
-		viewPropertyNames = ImmutableSet.of();
+		viewPropertyNames = PropertyNameSet.EMPTY;
 	}
 
 	public WindowModel getModel()
 	{
 		return _model;
+	}
+
+	private WindowModel getModelIfInitialized()
+	{
+		return _modelInitialized ? _model : null;
 	}
 
 	private final void bindToModel()
@@ -229,7 +242,13 @@ public class WindowPresenter implements WindowViewListener
 			return;
 		}
 
-		final WindowModel model = getModel();
+		final WindowModel model = getModelIfInitialized();
+		if (model == null)
+		{
+			logger.debug("Skip updating {} because model is not initialized", view);
+			return;
+		}
+
 		logger.debug("Updating {} from {}", view, model);
 
 		// view.setTitle(model.getTitle()); // not needed, will come with all properties
@@ -275,7 +294,7 @@ public class WindowPresenter implements WindowViewListener
 			return;
 		}
 
-		final WindowModel model = getModel();
+		final WindowModel model = getModelIfInitialized();
 		if (model != null)
 		{
 			actionsView.setActions(model.getActions());
@@ -303,8 +322,8 @@ public class WindowPresenter implements WindowViewListener
 	public void viewSubscribeToValueChanges(final Set<PropertyName> propertyNames)
 	{
 		Preconditions.checkNotNull(propertyNames, "propertyNames");
-		final Set<PropertyName> viewPropertyNamesNew = ImmutableSet.copyOf(propertyNames);
-		if (Objects.equals(viewPropertyNames, propertyNames))
+		final PropertyNameSet viewPropertyNamesNew = PropertyNameSet.of(propertyNames);
+		if (Objects.equals(viewPropertyNames, viewPropertyNamesNew))
 		{
 			return;
 		}
@@ -479,8 +498,8 @@ public class WindowPresenter implements WindowViewListener
 		Preconditions.checkNotNull(listener, "listener not null");
 		propertyValueChangedListeners.put(propertyPath, listener);
 
-		final WindowModel model = getModel();
-		if (model.hasProperty(propertyPath))
+		final WindowModel model = getModelIfInitialized();
+		if (model != null && model.hasProperty(propertyPath))
 		{
 			final Object value = model.getProperty(propertyPath);
 			listener.valueChanged(propertyPath, value);

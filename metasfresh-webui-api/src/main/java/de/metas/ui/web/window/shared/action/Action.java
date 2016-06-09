@@ -13,7 +13,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.service.IImageProvider;
-import de.metas.ui.web.service.IImageProvider.IImageResource;
+import de.metas.ui.web.window.shared.ImageResource;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ public final class Action implements Serializable
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("icon")
-	private final IImageResource icon;
+	private final ImageResource icon;
 	@JsonProperty("toolbarAction")
 	private final boolean toolbarAction;
 	@JsonProperty("providingChildActions")
@@ -74,7 +74,7 @@ public final class Action implements Serializable
 			@JsonProperty("actionId") final String actionId //
 			, @JsonProperty("actionGroup") final ActionGroup actionGroup //
 			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("icon") final IImageResource icon //
+			, @JsonProperty("icon") final ImageResource icon //
 			, @JsonProperty("toolbarAction") final boolean toolbarAction //
 			, @JsonProperty("providingChildActions") final boolean providingChildActions //
 	)
@@ -140,7 +140,7 @@ public final class Action implements Serializable
 		return caption;
 	}
 
-	public IImageResource getIcon()
+	public ImageResource getIcon()
 	{
 		return icon;
 	}
@@ -203,7 +203,7 @@ public final class Action implements Serializable
 		private ActionGroup actionGroup = ActionGroup.NONE;
 		private String actionId;
 		private String caption;
-		private IImageResource icon;
+		private ImageResource icon;
 
 		private boolean toolbarAction = false;
 		private boolean providingChildActions;
@@ -232,7 +232,7 @@ public final class Action implements Serializable
 			caption = Util.cleanAmp(caption);
 			setCaption(caption);
 
-			final IImageResource icon = Services.get(IImageProvider.class).getIconSmall(actionId);
+			final ImageResource icon = Services.get(IImageProvider.class).getIconSmall(actionId);
 			setIcon(icon);
 
 			return this;
@@ -250,7 +250,7 @@ public final class Action implements Serializable
 			return this;
 		}
 
-		public Builder setIcon(final IImageResource icon)
+		public Builder setIcon(final ImageResource icon)
 		{
 			this.icon = icon;
 			return this;

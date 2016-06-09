@@ -263,7 +263,7 @@ public class SqlModelDataSource implements ModelDataSource
 		{
 			final PropertyName propertyName = sqlField.getPropertyName();
 			final Object value = retrieveField(rs, sqlField);
-			data.put(propertyName, NullValue.valueOrNull(value));
+			data.put(propertyName, NullValue.makeNotNull(value));
 
 			if (sqlField.isKeyColumn())
 			{

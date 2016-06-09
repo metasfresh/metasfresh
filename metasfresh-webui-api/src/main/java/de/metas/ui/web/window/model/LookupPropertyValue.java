@@ -18,6 +18,7 @@ import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.datatype.LookupValueList;
 
 /*
  * #%L
@@ -171,19 +172,15 @@ public final class LookupPropertyValue implements PropertyValue
 		else if (LookupDataSourceQueryCommand.COMMAND_Find.equals(commandId))
 		{
 			final String filter = command.getParameterAsString(LookupDataSourceQueryCommand.PARAMETER_Filter);
-			final List<LookupValue> entries;
 			if (!lookupDataSource.isValidFilter(filter))
 			{
-				entries = null;
+				return ModelCommandHelper.result(null);
 			}
-			else
-			{
-				final int firstRow = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_FirstRow, 0);
-				final int pageLength = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_PageLength, LookupDataSourceQueryCommand.DEFAULT_PageLength);
-				entries = lookupDataSource.findEntities(filter, firstRow, pageLength);
-			}
-
-			return ModelCommandHelper.result(entries);
+			
+			final int firstRow = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_FirstRow, 0);
+			final int pageLength = command.getParameterAsInt(LookupDataSourceQueryCommand.PARAMETER_PageLength, LookupDataSourceQueryCommand.DEFAULT_PageLength);
+			final List<LookupValue> entries = lookupDataSource.findEntities(filter, firstRow, pageLength);
+			return ModelCommandHelper.result(LookupValueList.of(entries));
 		}
 		else
 		{

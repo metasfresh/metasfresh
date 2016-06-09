@@ -1,19 +1,18 @@
 package de.metas.ui.web.window.shared.datatype;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 
 /*
  * #%L
@@ -44,6 +43,8 @@ import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
  *
  */
 @SuppressWarnings("serial")
+@JsonSerialize(using = PropertyValuesDTO_JSONSerializer.class)
+@JsonDeserialize(using = PropertyValuesDTO_JSONDeserializer.class)
 public final class PropertyValuesDTO implements Serializable
 {
 	public static final PropertyValuesDTO of(final Map<PropertyName, Object> values)
@@ -73,66 +74,74 @@ public final class PropertyValuesDTO implements Serializable
 	}
 
 	private static final transient PropertyValuesDTO EMPTY = new PropertyValuesDTO();
-
-	@JsonProperty("values") 
-	private final ImmutableMap<PropertyName, Object> values;
+	private final ImmutableMap<PropertyName, Object> valuesMap;
 
 	/** empty constructor */
 	private PropertyValuesDTO()
 	{
 		super();
-		values = ImmutableMap.of();
+		valuesMap = ImmutableMap.of();
 	}
 
+	/** Builder constructor */
 	private PropertyValuesDTO(@JsonProperty("values") final Map<PropertyName, Object> values)
 	{
 		super();
-		this.values = values == null ? ImmutableMap.of() : ImmutableMap.copyOf(values);
+		valuesMap = values == null ? ImmutableMap.of() : ImmutableMap.copyOf(values);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(values)
+				.addValue(valuesMap)
 				.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return valuesMap.hashCode();
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!(obj instanceof PropertyValuesDTO))
+		{
+			return false;
+		}
+
+		final PropertyValuesDTO other = (PropertyValuesDTO)obj;
+		return Objects.equals(valuesMap, other.valuesMap);
 	}
 
 	public boolean containsKey(final PropertyName propertyName)
 	{
-		return values.containsKey(propertyName);
+		return valuesMap.containsKey(propertyName);
 	}
 
 	public Object get(final PropertyName propertyName)
 	{
-		return values.get(propertyName);
+		return valuesMap.get(propertyName);
 	}
 
-	public Set<Entry<PropertyName, Object>> entrySet()
+	public Set<Map.Entry<PropertyName, Object>> entrySet()
 	{
-		return values.entrySet();
+		return valuesMap.entrySet();
 	}
 
 	public static final class Builder
 	{
-		private static final ImmutableList<Class<?>> allowedValueTypes = ImmutableList.of( //
-				NullValue.class //
-				, GridRowId.class //
-				, String.class //
-				, Integer.class, BigDecimal.class //
-				, java.util.Date.class, Timestamp.class // FIXME: i think we shall avoid Timestamp, but since Timestamp extends Date, i think it's fine for now
-				, Boolean.class //
-				, LookupDataSourceQueryCommand.class //
-				, PropertyValuesListDTO.class //
-				, LazyPropertyValuesListDTO.class // NOTE: this one is used only in model
-				, LookupValue.class //
-				, ComposedValue.class //
-		);
-
-		private static final ImmutableList<Class<?>> allowedBaseValueTypes = ImmutableList.of( //
-				LookupDataSourceQueryCommand.class // FIXME: see de.metas.ui.web.vaadin.window.model.LookupPropertyValue.LookupDataSourceServiceDTOImpl 
-		);
-
 		private final ImmutableMap.Builder<PropertyName, Object> valuesBuilder = ImmutableMap.builder();
 
 		private Builder()
@@ -152,42 +161,11 @@ public final class PropertyValuesDTO implements Serializable
 
 		public Builder put(final PropertyName propertyName, final Object value)
 		{
-			validateValueType(propertyName, value);
+			JsonHelper.validateValueType(propertyName, value);
 
-			final Object valueNotNull = NullValue.valueOrNull(value);
+			final Object valueNotNull = NullValue.makeNotNull(value);
 			valuesBuilder.put(propertyName, valueNotNull);
 			return this;
-		}
-
-		private final void validateValueType(final PropertyName propertyName, final Object value)
-		{
-			// NOTE: the aim is to have primitive or well known values types because, later, we want to serialize to JSON
-			
-			//
-			if (value == null)
-			{
-				return; // OK
-			}
-
-			//
-			final Class<? extends Object> valueClass = value.getClass();
-			if (allowedValueTypes.contains(valueClass))
-			{
-				return; // OK
-			}
-			
-			//
-			for (final Class<?> baseType : allowedBaseValueTypes)
-			{
-				if (baseType.isAssignableFrom(valueClass))
-				{
-					return; // OK
-				}
-			}
-
-			//
-			throw new IllegalArgumentException("Invalid " + propertyName + "=" + value + " (" + valueClass + ")"
-					+ "\n Allowed types are: " + allowedValueTypes);
 		}
 	}
 

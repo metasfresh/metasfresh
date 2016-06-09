@@ -1,13 +1,17 @@
-package de.metas.ui.web.service;
+package de.metas.ui.web;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.MTreeNode;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import de.metas.ui.web.window.shared.ImageResource;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * metasfresh-webui-vaadin
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -27,12 +31,17 @@ import de.metas.ui.web.window.shared.ImageResource;
  * #L%
  */
 
-public interface IImageProvider extends ISingletonService
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig
 {
-	String ICONNAME_Window = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
-	String ICONNAME_Report = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
-
-	ImageResource getIconSmall(String name);
-
-	ImageResource getImageResourceForNameWithoutExt(final String fileNameWithoutExtension);
+	@Bean
+	public Docket api()
+	{
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.apis(RequestHandlerSelectors.any())
+				.paths(PathSelectors.any())
+				.build();
+	}
 }

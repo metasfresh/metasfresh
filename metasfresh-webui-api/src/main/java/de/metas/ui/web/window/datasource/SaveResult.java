@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.datasource;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -25,7 +27,8 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
-public class SaveResult
+@SuppressWarnings("serial")
+public class SaveResult implements Serializable
 {
 	public static SaveResult of(final int recordIndex, final Object recordId)
 	{

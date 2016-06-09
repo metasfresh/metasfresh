@@ -148,7 +148,7 @@ public class Application
 			}
 		};
 	}
-
+	
 	/**
 	 * Returns <code>true</code> if the testing profile is active.<br>
 	 * Activate it by adding <code>spring.profiles.include=testing</code> to the application properties.

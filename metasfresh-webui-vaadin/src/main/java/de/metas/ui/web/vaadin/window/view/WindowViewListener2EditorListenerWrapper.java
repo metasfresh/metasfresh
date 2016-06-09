@@ -78,6 +78,15 @@ public class WindowViewListener2EditorListenerWrapper implements EditorListener
 		final WindowViewListener windowViewListener = getWindowViewListener();
 		if (windowViewListener == null)
 		{
+			final RuntimeException ex = new RuntimeException("No " + WindowViewListener.class + " set");
+			if (callback != null)
+			{
+				callback.onError(ex);
+			}
+			else
+			{
+				throw ex;
+			}
 			return;
 		}
 

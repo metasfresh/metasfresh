@@ -8,7 +8,7 @@ import java.util.Map;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.service.IImageProvider.IImageResource;
+import de.metas.ui.web.window.shared.ImageResource;
 import de.metas.ui.web.window.shared.action.Action;
 import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window.shared.action.ActionGroup;
@@ -336,7 +336,7 @@ public class ActionsManager
 		}
 
 		@Override
-		public ActionBuilder setIcon(final IImageResource icon)
+		public ActionBuilder setIcon(final ImageResource icon)
 		{
 			super.setIcon(icon);
 			return this;

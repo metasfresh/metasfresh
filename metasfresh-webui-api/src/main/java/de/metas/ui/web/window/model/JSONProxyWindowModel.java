@@ -1,17 +1,16 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
-import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.json.JsonHelper;
+import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.datatype.PropertyPathSet;
+import de.metas.ui.web.window.shared.datatype.PropertyPathValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
@@ -47,21 +46,12 @@ public class JSONProxyWindowModel implements WindowModel
 {
 	private final WindowModel delegate;
 
-	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
+	private final ObjectMapper jsonObjectMapper = JsonHelper.createObjectMapper();
 
 	public JSONProxyWindowModel(final WindowModel delegate)
 	{
 		super();
 		this.delegate = delegate;
-
-		jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-		jsonObjectMapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty
-		jsonObjectMapper.enableDefaultTyping();
-
-		jsonObjectMapper.registerModule(new GuavaModule());
-
-		// final SimpleModule module = new SimpleModule("test", new Version(1, 0, 0, null, null, null));
-		// jsonObjectMapper.registerModule(module);
 	}
 
 	private Object testJSON(final Object valueObj)
@@ -139,10 +129,17 @@ public class JSONProxyWindowModel implements WindowModel
 	}
 
 	@Override
-	public PropertyValuesDTO getPropertyValuesDTO(final Set<PropertyName> selectedPropertyNames)
+	public PropertyValuesDTO getPropertyValuesDTO(final PropertyNameSet selectedPropertyNames)
 	{
-		final PropertyValuesDTO values = delegate.getPropertyValuesDTO(selectedPropertyNames);
+		final PropertyValuesDTO values = delegate.getPropertyValuesDTO(testJSON(selectedPropertyNames, PropertyNameSet.class));
 		return testJSON(values, PropertyValuesDTO.class);
+	}
+	
+	@Override
+	public PropertyPathValuesDTO getPropertyPathValuesDTO(PropertyPathSet selectedPropertyPaths)
+	{
+		final PropertyPathValuesDTO values = delegate.getPropertyPathValuesDTO(testJSON(selectedPropertyPaths, PropertyPathSet.class));
+		return testJSON(values, PropertyPathValuesDTO.class);
 	}
 
 	@Override

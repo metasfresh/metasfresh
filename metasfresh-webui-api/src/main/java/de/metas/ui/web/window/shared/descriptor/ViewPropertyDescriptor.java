@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,7 +54,7 @@ public final class ViewPropertyDescriptor implements Serializable
 	@JsonProperty("layoutInfo")
 	private final PropertyLayoutInfo layoutInfo;
 	@JsonProperty("childDescriptors")
-	private final ImmutableMap<PropertyName, ViewPropertyDescriptor> childDescriptors;
+	private final Map<PropertyName, ViewPropertyDescriptor> childDescriptors;
 
 	private ViewPropertyDescriptor(final Builder builder)
 	{
@@ -73,7 +74,7 @@ public final class ViewPropertyDescriptor implements Serializable
 			, @JsonProperty("type") final PropertyDescriptorType type //
 			, @JsonProperty("valueType") final PropertyDescriptorValueType valueType //
 			, @JsonProperty("layoutInfo") final PropertyLayoutInfo layoutInfo //
-			, @JsonProperty("childDescriptors") final ImmutableMap<PropertyName, ViewPropertyDescriptor> childDescriptors //
+			, @JsonProperty("childDescriptors") final Map<PropertyName, ViewPropertyDescriptor> childDescriptors //
 	)
 	{
 		this(builder()
@@ -93,6 +94,38 @@ public final class ViewPropertyDescriptor implements Serializable
 				.add("name", propertyName)
 				.add("type", type)
 				.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(propertyName, caption, type, valueType, layoutInfo, childDescriptors);
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!(obj instanceof ViewPropertyDescriptor))
+		{
+			return false;
+		}
+
+		final ViewPropertyDescriptor other = (ViewPropertyDescriptor)obj;
+		return Objects.equals(this.propertyName, other.propertyName)
+				&& Objects.equals(this.caption, other.caption)
+				&& Objects.equals(this.type, other.type)
+				&& Objects.equals(this.valueType, other.valueType)
+				&& Objects.equals(this.layoutInfo, other.layoutInfo)
+				&& Objects.equals(this.childDescriptors, other.childDescriptors);
 	}
 
 	public PropertyName getPropertyName()
@@ -211,7 +244,7 @@ public final class ViewPropertyDescriptor implements Serializable
 			return this;
 		}
 
-		private Builder setChildDescriptors(final ImmutableMap<PropertyName, ViewPropertyDescriptor> childDescriptors)
+		private Builder setChildDescriptors(final Map<PropertyName, ViewPropertyDescriptor> childDescriptors)
 		{
 			_childDescriptors = childDescriptors;
 			return this;

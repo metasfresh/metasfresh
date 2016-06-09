@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -27,6 +26,7 @@ import de.metas.ui.web.service.IImageProvider;
 import de.metas.ui.web.service.IWebProcessCtl;
 import de.metas.ui.web.window.HARDCODED_Order;
 import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.WindowConstants.OnChangesFound;
 import de.metas.ui.web.window.datasource.IDataSourceFactory;
@@ -47,6 +47,8 @@ import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.datatype.PropertyPathSet;
+import de.metas.ui.web.window.shared.datatype.PropertyPathValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
@@ -553,14 +555,36 @@ public class WindowModelImpl implements WindowModel
 	}
 
 	@Override
-	public PropertyValuesDTO getPropertyValuesDTO(final Set<PropertyName> selectedPropertyNames)
+	public PropertyValuesDTO getPropertyValuesDTO(final PropertyNameSet selectedPropertyNames)
 	{
 		if (selectedPropertyNames.isEmpty())
 		{
 			return PropertyValuesDTO.of();
 		}
 		final PropertyValueCollection properties = getPropertiesLoaded();
-		return properties.getValuesAsMap(selectedPropertyNames);
+		return properties.getValuesAsMap(selectedPropertyNames.asSet());
+	}
+
+	@Override
+	public PropertyPathValuesDTO getPropertyPathValuesDTO(final PropertyPathSet selectedPropertyPaths)
+	{
+		if (selectedPropertyPaths.isEmpty())
+		{
+			return PropertyPathValuesDTO.of();
+		}
+		
+		final PropertyPathValuesDTO.Builder valuesBuilder = PropertyPathValuesDTO.builder();
+		for (final PropertyPath propertyPath : selectedPropertyPaths)
+		{
+			if (!hasProperty(propertyPath))
+			{
+				continue;
+			}
+			final Object value = getPropertyOrNull(propertyPath);
+			valuesBuilder.put(propertyPath, value);
+		}
+		
+		return valuesBuilder.build();
 	}
 
 	private void setFromPropertyValuesDTO(final PropertyValuesDTO values)

@@ -121,7 +121,8 @@ public class LogicExpressionPropertyValue implements PropertyValue
 			}
 			catch (final Exception e)
 			{
-				logger.warn("Failed evaluating expression '{}' for {}. Using default value: {}", logicExpression, getName(), defaultValue, e);
+				// FIXME: temporary dont log the message because it is cluttering the log
+				//logger.warn("Failed evaluating expression '{}' for {}. Using default value: {}", logicExpression, getName(), defaultValue, e);
 				value = defaultValue;
 			}
 		}

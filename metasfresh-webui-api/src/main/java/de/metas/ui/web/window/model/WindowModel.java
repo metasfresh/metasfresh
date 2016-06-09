@@ -1,13 +1,13 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Set;
-
-import de.metas.ui.web.window.PropertyName;
+import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.datatype.PropertyPathSet;
+import de.metas.ui.web.window.shared.datatype.PropertyPathValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
 
@@ -53,7 +53,9 @@ public interface WindowModel
 	 * @param selectedPropertyNames
 	 * @return
 	 */
-	PropertyValuesDTO getPropertyValuesDTO(Set<PropertyName> selectedPropertyNames);
+	PropertyValuesDTO getPropertyValuesDTO(PropertyNameSet selectedPropertyNames);
+
+	PropertyPathValuesDTO getPropertyPathValuesDTO(PropertyPathSet selectedPropertyPaths);
 
 	boolean hasProperty(PropertyPath propertyPath);
 

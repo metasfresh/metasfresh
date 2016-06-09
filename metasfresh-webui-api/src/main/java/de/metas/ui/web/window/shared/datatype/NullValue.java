@@ -2,7 +2,8 @@ package de.metas.ui.web.window.shared.datatype;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /*
  * #%L
@@ -26,11 +27,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * #L%
  */
 
+@JsonSerialize(using = NullValueJSONSerializer.class)
+@JsonDeserialize(using = NullValueJSONDeserializer.class)
 public final class NullValue implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final Object valueOrNull(final Object value)
+	public static final Object makeNotNull(final Object value)
 	{
 		return value == null ? instance : value;
 	}
@@ -41,17 +44,16 @@ public final class NullValue implements Serializable
 		{
 			return true;
 		}
-		
+
 		if (value instanceof NullValue)
 		{
 			// FIXME: this shall not happen... but currently happens because of how we serialize/deserialize from JSON
 			return true;
 		}
-		
+
 		return false;
 	}
 
-	@JsonCreator
 	public static final NullValue getInstance()
 	{
 		return instance;
@@ -67,6 +69,6 @@ public final class NullValue implements Serializable
 	@Override
 	public String toString()
 	{
-		return "";
+		return "NullValue";
 	}
 }

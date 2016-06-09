@@ -15,13 +15,13 @@ import com.vaadin.server.Resource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 
-import de.metas.ui.web.service.IImageProvider.IImageResource;
-import de.metas.ui.web.service.impl.VaadinImageProvider.VaadinImageResource;
+import de.metas.ui.web.service.impl.VaadinImageProvider;
 import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.shared.ImageResource;
 import de.metas.ui.web.window.shared.action.Action;
 import de.metas.ui.web.window.shared.action.ActionGroup;
 import de.metas.ui.web.window.shared.action.ActionsList;
@@ -305,8 +305,8 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		@Override
 		public Resource getIcon()
 		{
-			final IImageResource imageResource = action.getIcon();
-			return VaadinImageResource.getResource(imageResource);
+			final ImageResource imageResource = action.getIcon();
+			return VaadinImageProvider.getVaadinResource(imageResource);
 		}
 
 		public Action getAction()

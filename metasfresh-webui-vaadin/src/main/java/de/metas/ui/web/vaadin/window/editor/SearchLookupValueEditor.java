@@ -22,6 +22,7 @@ import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window.shared.datatype.LookupValueList;
 import de.metas.ui.web.window.shared.datatype.NullValue;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
@@ -245,16 +246,16 @@ public class SearchLookupValueEditor extends FieldEditor<LookupValue>
 				return returnInvalidResult;
 			}
 
-			final List<LookupValue> values = executeCommand(ViewCommand.builder()
+			final LookupValueList valuesList = executeCommand(ViewCommand.builder()
 					.setPropertyPath(valuesPropertyPath)
 					.setCommandId(LookupDataSourceQueryCommand.COMMAND_Find)
 					.setParameter(LookupDataSourceQueryCommand.PARAMETER_Filter, filter)
 					.setParameter(LookupDataSourceQueryCommand.PARAMETER_FirstRow, firstRow)
 					.setParameter(LookupDataSourceQueryCommand.PARAMETER_PageLength, pageLength)
 					.build());
-			if (values != null)
+			if (valuesList != null)
 			{
-				return ImmutableList.copyOf(values);
+				return valuesList.toList();
 			}
 
 			//
