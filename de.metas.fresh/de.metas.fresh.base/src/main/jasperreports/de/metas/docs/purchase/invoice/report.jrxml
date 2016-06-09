@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.2100000000000006"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="480"/>
+	<property name="ireport.y" value="192"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,19 +18,7 @@
 		<![CDATA[SELECT
 	i.AD_Org_ID,
 	i.DocStatus,
-	dt.PrintName,
-	CASE
-		WHEN
-		EXISTS(
-			SELECT 0
-			FROM C_InvoiceLine il
-			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
-			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-			WHERE pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID') AND il.C_Invoice_ID = i.C_Invoice_ID
-		)
-		THEN 'Y'
-		ELSE 'N'
-	END as displayhu
+	dt.PrintName
 FROM
 	C_Invoice i
 	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
@@ -42,7 +30,6 @@ WHERE
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<field name="displayhu" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
