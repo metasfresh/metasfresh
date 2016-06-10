@@ -72,9 +72,11 @@ public class RootUI extends UI
 		setErrorHandler(event -> {
 			final Throwable throwable = event.getThrowable();
 			logger.warn("Got error", throwable);
-			
-			final String errorMessage = Throwables.getRootCause(throwable).getLocalizedMessage();
-			Notification.show("Error", errorMessage, Type.ERROR_MESSAGE);
+
+			getUI().access(() -> {
+				final String errorMessage = Throwables.getRootCause(throwable).getLocalizedMessage();
+				Notification.show("Error", errorMessage, Type.ERROR_MESSAGE);
+			});
 		});
 	}
 
