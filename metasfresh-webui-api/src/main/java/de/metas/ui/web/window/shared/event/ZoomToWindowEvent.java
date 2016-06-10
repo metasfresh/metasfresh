@@ -1,7 +1,12 @@
 package de.metas.ui.web.window.shared.event;
 
+import java.util.Objects;
+
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
 
@@ -28,30 +33,66 @@ import com.google.common.base.Preconditions;
  */
 
 @SuppressWarnings("serial")
-public class ZoomToWindowEvent extends ModelEvent
+public final class ZoomToWindowEvent extends ModelEvent
 {
-	public static ZoomToWindowEvent of(final Object model, final ZoomInfo zoomInfo)
+	public static ZoomToWindowEvent of(final ZoomInfo zoomInfo)
 	{
-		return new ZoomToWindowEvent(model, zoomInfo);
+		Preconditions.checkNotNull(zoomInfo, "zoomInfo");
+		return new ZoomToWindowEvent(zoomInfo.getAD_Window_ID());
 	}
 
-	private final ZoomInfo zoomInfo;
+	@JsonCreator
+	public static ZoomToWindowEvent of(@JsonProperty("AD_Window_ID") final int AD_Window_ID)
+	{
+		return new ZoomToWindowEvent(AD_Window_ID);
+	}
 
-	private ZoomToWindowEvent(final Object model, final ZoomInfo zoomInfo)
+	@JsonProperty("AD_Window_ID")
+	private final int AD_Window_ID;
+
+	private ZoomToWindowEvent(final int AD_Window_ID)
 	{
 		super();
-		this.zoomInfo = Preconditions.checkNotNull(zoomInfo, "zoomInfo");
+		this.AD_Window_ID = AD_Window_ID;
 	}
 
 	@Override
 	protected void toString(final ToStringHelper toStringHelper)
 	{
-		toStringHelper.add("zoomInfo", zoomInfo);
+		toStringHelper.add("AD_Window_ID", AD_Window_ID);
 	}
 
-	public int getWindowId()
+	@Override
+	public int hashCode()
 	{
-		return zoomInfo.getAD_Window_ID();
+		return Objects.hash(AD_Window_ID);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!(obj instanceof ZoomToWindowEvent))
+		{
+			return false;
+		}
+
+		final ZoomToWindowEvent other = (ZoomToWindowEvent)obj;
+		return Objects.equals(AD_Window_ID, other.AD_Window_ID);
+	}
+
+	@JsonIgnore
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
 	}
 
 }

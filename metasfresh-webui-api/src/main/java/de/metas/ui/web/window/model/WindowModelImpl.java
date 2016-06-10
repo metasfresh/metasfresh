@@ -782,7 +782,7 @@ public class WindowModelImpl implements WindowModel
 					.setActionId("Zoom_" + zoomInfo.getId())
 					.setCaption(zoomInfo.getLabel())
 					.setIcon(Services.get(IImageProvider.class).getImageResourceForNameWithoutExt(IImageProvider.ICONNAME_Window))
-					.setListener(target -> postEvent(ZoomToWindowEvent.of(WindowModelImpl.this, zoomInfo)))
+					.setListener(target -> postEvent(ZoomToWindowEvent.of(zoomInfo)))
 					.buildAndAdd();
 		}
 

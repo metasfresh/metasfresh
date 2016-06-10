@@ -24,6 +24,7 @@ import de.metas.ui.web.window.shared.event.AllPropertiesChangedModelEvent;
 import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.shared.event.ModelEvent;
 import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
+import de.metas.ui.web.window.shared.event.ZoomToWindowEvent;
 import junit.framework.Assert;
 
 /*
@@ -117,11 +118,9 @@ public class JSONTest
 	{
 		final PropertyPathValuesDTO.Builder valuesBuilder = PropertyPathValuesDTO.builder();
 
-		int rowId = 1;
 		for (final Object value : valuesToTest)
 		{
 			valuesBuilder.put(PropertyPath.of(PropertyName.of("gridProperty"), GridRowId.newRowId(), PropertyName.of("propertyName")), value);
-			rowId++;
 		}
 		final PropertyPathValuesDTO values = valuesBuilder.build();
 
@@ -234,6 +233,12 @@ public class JSONTest
 			final GridRowAddedModelEvent event = GridRowAddedModelEvent.of(gridPropertyName, rowId, rowValues);
 			testJSON(event, ModelEvent.class);
 		}
+	}
+
+	@Test
+	public void test_ZoomToWindowEvent() throws Exception
+	{
+		testJSON(ZoomToWindowEvent.of(123), ModelEvent.class);
 	}
 
 	private <T> void testJSON(final T value, final Class<T> type) throws Exception

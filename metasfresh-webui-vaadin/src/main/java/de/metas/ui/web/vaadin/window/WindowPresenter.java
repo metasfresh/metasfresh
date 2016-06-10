@@ -554,9 +554,10 @@ public class WindowPresenter implements WindowViewListener
 	@Subscribe
 	public void modelZoomToWindowEvent(final ZoomToWindowEvent event)
 	{
-		final int windowId = event.getWindowId();
+		final int windowId = event.getAD_Window_ID();
 		final String viewNameAndParameters = WindowViewProvider.createViewNameAndParameters(windowId);
-		UI.getCurrent().getNavigator().navigateTo(viewNameAndParameters);
+		final UI ui = UI.getCurrent();
+		ui.access(() -> ui.getNavigator().navigateTo(viewNameAndParameters));
 	}
 
 	@Override
