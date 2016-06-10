@@ -74,6 +74,8 @@ public class RestProxyWindowModel implements WindowModel
 {
 	private static final Logger logger = LogManager.getLogger(RestProxyWindowModel.class);
 
+	private String restEndpointUrl = "http://localhost:8080" + WindowsRestController.ENDPOINT;
+
 	private final EventBus eventBus = new EventBus(getClass().getName());
 
 	private RestTemplate restTemplate;
@@ -94,11 +96,11 @@ public class RestProxyWindowModel implements WindowModel
 			final List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 			messageConverters.add(new MappingJackson2HttpMessageConverter(JsonHelper.createObjectMapper()));
 			restTemplate = new RestTemplate(messageConverters);
-			
+
 			final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-	        requestFactory.setReadTimeout(2000);
-	        requestFactory.setConnectTimeout(2000);
-	        restTemplate.setRequestFactory(requestFactory);
+			requestFactory.setReadTimeout(2000);
+			requestFactory.setConnectTimeout(2000);
+			restTemplate.setRequestFactory(requestFactory);
 		}
 
 		// WebSocket connection
@@ -130,9 +132,9 @@ public class RestProxyWindowModel implements WindowModel
 		}
 	}
 
-	private static final String buildURL(final String path)
+	private final String buildURL(final String path)
 	{
-		return "http://localhost:8080/rest/api/windows" + path;
+		return restEndpointUrl + path;
 	}
 
 	private final String buildWindowNoURL(final String operation)
@@ -173,14 +175,12 @@ public class RestProxyWindowModel implements WindowModel
 	@Override
 	public void subscribe(final Object subscriberObj)
 	{
-		// TODO: implement with WebSocket
 		eventBus.register(subscriberObj);
 	}
 
 	@Override
 	public void unsubscribe(final Object subscriberObj)
 	{
-		// TODO: implement with WebSocket
 		eventBus.unregister(subscriberObj);
 	}
 
@@ -251,6 +251,7 @@ public class RestProxyWindowModel implements WindowModel
 	public void newRecordAsCopyById(final Object recordId)
 	{
 		// TODO Auto-generated method stub
+		// NOTE: not needed
 		throw new UnsupportedOperationException();
 	}
 

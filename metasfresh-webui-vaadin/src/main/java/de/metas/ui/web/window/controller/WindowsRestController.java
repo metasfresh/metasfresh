@@ -51,9 +51,11 @@ import io.swagger.annotations.ApiOperation;
  */
 
 @RestController
-@RequestMapping(value = "/rest/api/windows")
+@RequestMapping(value = WindowsRestController.ENDPOINT)
 public class WindowsRestController
 {
+	public static final String ENDPOINT = "/rest/api/windows";
+
 	private final AtomicInteger _nextWindowNo = new AtomicInteger(1);
 	private final Map<Integer, WindowModelInstance> _windowModels = Maps.newConcurrentMap();
 
