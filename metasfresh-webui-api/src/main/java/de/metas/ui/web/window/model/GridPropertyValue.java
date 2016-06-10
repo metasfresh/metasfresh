@@ -4,13 +4,11 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
-import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.shared.command.GridCommands;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.GridRowId;
@@ -18,6 +16,7 @@ import de.metas.ui.web.window.shared.datatype.LazyPropertyValuesListDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
 
 /*
  * #%L
@@ -73,18 +72,6 @@ public class GridPropertyValue extends ObjectPropertyValue
 		return rows.size();
 	}
 
-	private GridRow getRow(final Object rowIdObj)
-	{
-		final GridRowId rowId = GridRowId.of(rowIdObj);
-		final GridRow row = rows.get(rowId);
-		return MoreObjects.firstNonNull(row, GridRow.NULL);
-	}
-
-	public PropertyValuesDTO getRowValues(final Object rowIdObj)
-	{
-		return getRow(rowIdObj).getValuesAsMap();
-	}
-
 	@Override
 	public Map<PropertyName, PropertyValue> getChildPropertyValues()
 	{
@@ -124,10 +111,8 @@ public class GridPropertyValue extends ObjectPropertyValue
 		return rowValuesList.build();
 	}
 
-	public Object setValueAt(final Object rowIdObj, final PropertyName propertyName, final Object value)
+	public Object setValueAt(final GridRowId rowId, final PropertyName propertyName, final Object value)
 	{
-		final GridRowId rowId = GridRowId.of(rowIdObj);
-
 		final GridRow row = rows.get(rowId);
 		if (row == null)
 		{
@@ -136,10 +121,8 @@ public class GridPropertyValue extends ObjectPropertyValue
 		return row.setValue(propertyName, value);
 	}
 
-	public Object getValueAt(final Object rowIdObj, final PropertyName propertyName)
+	public Object getValueAt(final GridRowId rowId, final PropertyName propertyName)
 	{
-		final GridRowId rowId = GridRowId.of(rowIdObj);
-
 		final GridRow row = rows.get(rowId);
 		if (row == null)
 		{
@@ -149,10 +132,8 @@ public class GridPropertyValue extends ObjectPropertyValue
 		return row.getValue(propertyName);
 	}
 
-	public boolean hasProperty(final Object rowIdObj, final PropertyName propertyName)
+	public boolean hasProperty(final GridRowId rowId, final PropertyName propertyName)
 	{
-		final GridRowId rowId = GridRowId.of(rowIdObj);
-
 		final GridRow row = rows.get(rowId);
 		if (row == null)
 		{
@@ -164,12 +145,12 @@ public class GridPropertyValue extends ObjectPropertyValue
 
 	private PropertyValue getPropertyValue(final PropertyPath propertyPath)
 	{
-		final Object rowIdObj = propertyPath.getRowId();
-		final GridRowId rowId = GridRowId.of(rowIdObj);
+		final GridRowId rowId = propertyPath.getRowId();
 		final GridRow row = rows.get(rowId);
 		if (row == null)
 		{
-			throw new IllegalArgumentException("Row not found for " + propertyPath + " in " + this);
+			throw new IllegalArgumentException("Row not found for " + propertyPath + " in " + this + "."
+					+ "\n Existing rows are: " + rows.keySet());
 		}
 
 		final PropertyName propertyName = propertyPath.getPropertyName();
@@ -186,19 +167,19 @@ public class GridPropertyValue extends ObjectPropertyValue
 			final PropertyValue propertyValue = getPropertyValue(propertyPath);
 			return propertyValue.executeCommand(command);
 		}
-		
+
 		final String commandId = command.getCommandId();
 		if (GridCommands.COMMAND_GridNewRow.equals(commandId))
 		{
 			final GridRow row = newRow(PropertyValuesDTO.of());
 			final GridRowId rowId = row.getRowId();
 			final PropertyValuesDTO rowValues = row.getValuesAsMap();
-			
+
 			command.postEvent(GridRowAddedModelEvent.of(getName(), rowId, rowValues));
-			
+
 			return ModelCommandHelper.noResult();
 		}
-		
+
 		return ModelCommandHelper.notSupported(command, this);
 	}
 }

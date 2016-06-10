@@ -1,9 +1,4 @@
-package de.metas.ui.web.window.model.event;
-
-import java.io.Serializable;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
+package de.metas.ui.web.window.shared.event;
 
 /*
  * #%L
@@ -27,29 +22,16 @@ import com.google.common.base.MoreObjects.ToStringHelper;
  * #L%
  */
 
-/**
- * Base class for all model events.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 @SuppressWarnings("serial")
-public abstract class ModelEvent implements Serializable
+public class ConfirmDiscardChangesModelEvent extends ModelEvent
 {
-	protected ModelEvent()
+	public static final ConfirmDiscardChangesModelEvent of(final Object model)
+	{
+		return new ConfirmDiscardChangesModelEvent(model);
+	}
+
+	public ConfirmDiscardChangesModelEvent(Object model)
 	{
 		super();
-	}
-
-	@Override
-	public final String toString()
-	{
-		final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
-		return toStringHelper.toString();
-	}
-
-	protected void toString(final ToStringHelper toStringHelper)
-	{
-		// nothing on this level
 	}
 }

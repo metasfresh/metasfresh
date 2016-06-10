@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.event;
+package de.metas.ui.web.window.shared.event;
 
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 

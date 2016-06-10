@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import de.metas.ui.web.window.model.event.ModelEvent;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.event.ModelEvent;
 
 /*
  * #%L

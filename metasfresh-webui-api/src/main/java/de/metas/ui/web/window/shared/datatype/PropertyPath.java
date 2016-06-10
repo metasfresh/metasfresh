@@ -38,11 +38,11 @@ public final class PropertyPath implements Serializable
 	public static final PropertyPath of(final PropertyName propertyName)
 	{
 		final PropertyName gridPropertyName = null;
-		final Object rowId = null;
+		final GridRowId rowId = null;
 		return new PropertyPath(gridPropertyName, rowId, propertyName);
 	}
 
-	public static final PropertyPath of(final PropertyName gridPropertyName, final Object rowId, final PropertyName propertyName)
+	public static final PropertyPath of(final PropertyName gridPropertyName, final GridRowId rowId, final PropertyName propertyName)
 	{
 		return new PropertyPath(gridPropertyName, rowId, propertyName);
 	}
@@ -50,13 +50,13 @@ public final class PropertyPath implements Serializable
 	@JsonProperty("gridPropertyName")
 	private final PropertyName gridPropertyName;
 	@JsonProperty("rowId")
-	private final Object rowId;
+	private final GridRowId rowId;
 	@JsonProperty("propertyName")
 	private final PropertyName propertyName;
 
 	private PropertyPath(
 			@JsonProperty("gridPropertyName") final PropertyName gridPropertyName //
-			, @JsonProperty("rowId") final Object rowId //
+			, @JsonProperty("rowId") final GridRowId rowId //
 			, @JsonProperty("propertyName") final PropertyName propertyName)
 	{
 		super();
@@ -121,7 +121,7 @@ public final class PropertyPath implements Serializable
 		return gridPropertyName;
 	}
 
-	public Object getRowId()
+	public GridRowId getRowId()
 	{
 		return rowId;
 	}

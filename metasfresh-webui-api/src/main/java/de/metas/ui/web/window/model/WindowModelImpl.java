@@ -36,21 +36,22 @@ import de.metas.ui.web.window.descriptor.IPropertyDescriptorProvider;
 import de.metas.ui.web.window.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window.model.action.ActionsManager;
-import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.window.model.event.ModelEvent;
-import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
-import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.window.shared.action.Action;
 import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window.shared.action.ActionGroup;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
+import de.metas.ui.web.window.shared.datatype.GridRowId;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyPathSet;
 import de.metas.ui.web.window.shared.datatype.PropertyPathValuesDTO;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
+import de.metas.ui.web.window.shared.event.AllPropertiesChangedModelEvent;
+import de.metas.ui.web.window.shared.event.ModelEvent;
+import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
+import de.metas.ui.web.window.shared.event.ZoomToWindowEvent;
 
 /*
  * #%L
@@ -297,7 +298,7 @@ public class WindowModelImpl implements WindowModel
 			logger.trace("Loaded record {}:\n{}", getRecordIndex(), PropertyValues.toStringRecursivelly(properties.getPropertyValues()));
 		}
 
-		postEvent(AllPropertiesChangedModelEvent.of(this));
+		postEvent(AllPropertiesChangedModelEvent.of(getRecordIndex()));
 	}
 
 	private int getRecordsCount()
@@ -452,7 +453,7 @@ public class WindowModelImpl implements WindowModel
 		prop.setValue(value);
 
 		// Fire event
-		postEvent(PropertyChangedModelEvent.of(this, propertyPath, value, valueOld));
+		postEvent(PropertyChangedModelEvent.of(propertyPath, value, valueOld));
 
 		//
 		// Update dependencies
@@ -476,7 +477,7 @@ public class WindowModelImpl implements WindowModel
 			return;
 		}
 
-		final Object rowId = propertyPath.getRowId();
+		final GridRowId rowId = propertyPath.getRowId();
 		final PropertyName propertyName = propertyPath.getPropertyName();
 		final Object valueOld = gridProp.setValueAt(rowId, propertyName, value);
 
@@ -488,7 +489,7 @@ public class WindowModelImpl implements WindowModel
 		}
 
 		// Fire event
-		postEvent(PropertyChangedModelEvent.of(this, propertyPath, value, valueOld));
+		postEvent(PropertyChangedModelEvent.of(propertyPath, value, valueOld));
 
 		// TODO: process dependencies
 	}
@@ -550,7 +551,7 @@ public class WindowModelImpl implements WindowModel
 		if (eventsCollector != null)
 		{
 			final PropertyPath propertyPath = PropertyPath.of(propertyName);
-			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(this, propertyPath, calculatedValueNew, calculatedValueOld));
+			eventsCollector.put(propertyName, PropertyChangedModelEvent.of(propertyPath, calculatedValueNew, calculatedValueOld));
 		}
 	}
 

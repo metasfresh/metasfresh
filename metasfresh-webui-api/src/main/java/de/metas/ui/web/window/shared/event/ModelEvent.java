@@ -1,4 +1,10 @@
-package de.metas.ui.web.window.model.event;
+package de.metas.ui.web.window.shared.event;
+
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /*
  * #%L
@@ -22,16 +28,31 @@ package de.metas.ui.web.window.model.event;
  * #L%
  */
 
+/**
+ * Base class for all model events.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @SuppressWarnings("serial")
-public class AllPropertiesChangedModelEvent extends ModelEvent
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
+public abstract class ModelEvent implements Serializable
 {
-	public static final AllPropertiesChangedModelEvent of(final Object model)
-	{
-		return new AllPropertiesChangedModelEvent(model);
-	}
-
-	private AllPropertiesChangedModelEvent(final Object model)
+	protected ModelEvent()
 	{
 		super();
+	}
+
+	@Override
+	public final String toString()
+	{
+		final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
+		toString(toStringHelper);
+		return toStringHelper.toString();
+	}
+
+	protected void toString(final ToStringHelper toStringHelper)
+	{
+		// nothing on this level
 	}
 }

@@ -14,11 +14,16 @@ import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.shared.ImageResource;
 import de.metas.ui.web.window.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window.shared.JSONObjectValueHolder;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
 import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
+import de.metas.ui.web.window.shared.event.AllPropertiesChangedModelEvent;
+import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
+import de.metas.ui.web.window.shared.event.ModelEvent;
+import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
 import junit.framework.Assert;
 
 /*
@@ -83,13 +88,13 @@ public class JSONTest
 	public void test_PropertyPath() throws Exception
 	{
 		testJSON(PropertyPath.of(PropertyName.of("TestPropertyName")), PropertyPath.class);
-		testJSON(PropertyPath.of(PropertyName.of("gridProperty"), 123, PropertyName.of("propertyName")), PropertyPath.class);
+		testJSON(PropertyPath.of(PropertyName.of("gridProperty"), GridRowId.newRowId(), PropertyName.of("propertyName")), PropertyPath.class);
 	}
 
 	@Test
 	public void test_PropertyPathValue() throws Exception
 	{
-		final PropertyPath propertyPath = PropertyPath.of(PropertyName.of("gridProperty"), 123, PropertyName.of("propertyName"));
+		final PropertyPath propertyPath = PropertyPath.of(PropertyName.of("gridProperty"), GridRowId.newRowId(), PropertyName.of("propertyName"));
 
 		//
 		// test null:
@@ -115,7 +120,7 @@ public class JSONTest
 		int rowId = 1;
 		for (final Object value : valuesToTest)
 		{
-			valuesBuilder.put(PropertyPath.of(PropertyName.of("gridProperty"), rowId, PropertyName.of("propertyName")), value);
+			valuesBuilder.put(PropertyPath.of(PropertyName.of("gridProperty"), GridRowId.newRowId(), PropertyName.of("propertyName")), value);
 			rowId++;
 		}
 		final PropertyPathValuesDTO values = valuesBuilder.build();
@@ -124,7 +129,13 @@ public class JSONTest
 	}
 
 	@Test
-	public void test_PropertyNameValuesDTO() throws Exception
+	public void test_PropertyValuesDTO() throws Exception
+	{
+		final PropertyValuesDTO values = createPropertyValuesDTO_WithAllTestValues();
+		testJSON(values, PropertyValuesDTO.class);
+	}
+
+	private PropertyValuesDTO createPropertyValuesDTO_WithAllTestValues()
 	{
 		final PropertyValuesDTO.Builder valuesBuilder = PropertyValuesDTO.builder();
 
@@ -134,9 +145,7 @@ public class JSONTest
 			valuesBuilder.put(PropertyName.of("property-" + index), value);
 			index++;
 		}
-		final PropertyValuesDTO values = valuesBuilder.build();
-
-		testJSON(values, PropertyValuesDTO.class);
+		return valuesBuilder.build();
 	}
 
 	@Test
@@ -177,6 +186,53 @@ public class JSONTest
 		for (final Object value : valuesToTest)
 		{
 			testJSON(ViewCommandResult.of(value), ViewCommandResult.class);
+		}
+	}
+
+	@Test
+	public void test_JSONObjectValueHolder() throws Exception
+	{
+		testJSON(JSONObjectValueHolder.of(null), JSONObjectValueHolder.class);
+
+		for (final Object value : valuesToTest)
+		{
+			testJSON(JSONObjectValueHolder.of(value), JSONObjectValueHolder.class);
+		}
+	}
+
+	@Test
+	public void test_PropertyChangedModelEvent() throws Exception
+	{
+		final PropertyPath propertyPath = PropertyPath.of(PropertyName.of("gridProperty"), GridRowId.newRowId(), PropertyName.of("propertyName"));
+
+		for (final Object value : valuesToTest)
+		{
+			final PropertyChangedModelEvent event = PropertyChangedModelEvent.of(propertyPath, value, value);
+			testJSON(event, ModelEvent.class);
+		}
+	}
+
+	@Test
+	public void test_AllPropertiesChangedModelEvent() throws Exception
+	{
+		testJSON(AllPropertiesChangedModelEvent.of(123), ModelEvent.class);
+	}
+
+	@Test
+	public void test_GridRowAddedModelEvent() throws Exception
+	{
+		final PropertyName gridPropertyName = PropertyName.of("testGridProperty");
+		final int rowId = 123;
+
+		{
+			final PropertyValuesDTO rowValues = PropertyValuesDTO.of();
+			final GridRowAddedModelEvent event = GridRowAddedModelEvent.of(gridPropertyName, rowId, rowValues);
+			testJSON(event, ModelEvent.class);
+		}
+		{
+			final PropertyValuesDTO rowValues = createPropertyValuesDTO_WithAllTestValues();
+			final GridRowAddedModelEvent event = GridRowAddedModelEvent.of(gridPropertyName, rowId, rowValues);
+			testJSON(event, ModelEvent.class);
 		}
 	}
 

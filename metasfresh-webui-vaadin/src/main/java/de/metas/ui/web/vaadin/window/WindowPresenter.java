@@ -29,16 +29,16 @@ import de.metas.ui.web.vaadin.window.view.WindowViewListener;
 import de.metas.ui.web.window.PropertyName;
 import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.model.WindowModel;
-import de.metas.ui.web.window.model.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.window.model.event.ConfirmDiscardChangesModelEvent;
-import de.metas.ui.web.window.model.event.GridRowAddedModelEvent;
-import de.metas.ui.web.window.model.event.PropertyChangedModelEvent;
-import de.metas.ui.web.window.model.event.ZoomToWindowEvent;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.command.ViewCommand;
 import de.metas.ui.web.window.shared.command.ViewCommandResult;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
 import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window.shared.event.AllPropertiesChangedModelEvent;
+import de.metas.ui.web.window.shared.event.ConfirmDiscardChangesModelEvent;
+import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
+import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
+import de.metas.ui.web.window.shared.event.ZoomToWindowEvent;
 
 /*
  * #%L

@@ -1,5 +1,10 @@
-package de.metas.ui.web.window.model.event;
+package de.metas.ui.web.window.shared.event;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.ui.web.window.PropertyName;
@@ -30,13 +35,21 @@ import de.metas.ui.web.window.shared.datatype.PropertyValuesDTO;
 @SuppressWarnings("serial")
 public class GridRowAddedModelEvent extends ModelEvent
 {
-	public static final GridRowAddedModelEvent of(final PropertyName gridPropertyName, final Object rowId, final PropertyValuesDTO rowValues)
+	@JsonCreator
+	public static final GridRowAddedModelEvent of(
+			@JsonProperty("p") final PropertyName gridPropertyName //
+			, @JsonProperty("rowId") final Object rowId //
+			, @JsonProperty("v") final PropertyValuesDTO rowValues //
+	)
 	{
 		return new GridRowAddedModelEvent(gridPropertyName, rowId, rowValues);
 	}
 
+	@JsonProperty("p")
 	private final PropertyName gridPropertyName;
+	@JsonProperty("rowId")
 	private final Object rowId;
+	@JsonProperty("v")
 	final PropertyValuesDTO rowValues;
 
 	private GridRowAddedModelEvent(final PropertyName gridPropertyName, final Object rowId, final PropertyValuesDTO rowValues)
@@ -48,7 +61,7 @@ public class GridRowAddedModelEvent extends ModelEvent
 	}
 
 	@Override
-	protected void toString(ToStringHelper toStringHelper)
+	protected void toString(final ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("grid", gridPropertyName)
@@ -56,16 +69,48 @@ public class GridRowAddedModelEvent extends ModelEvent
 				.add("rowValues", rowValues);
 	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(gridPropertyName, rowId, rowValues);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!(obj instanceof GridRowAddedModelEvent))
+		{
+			return false;
+		}
+
+		final GridRowAddedModelEvent other = (GridRowAddedModelEvent)obj;
+		return Objects.equals(gridPropertyName, other.gridPropertyName)
+				&& Objects.equals(rowId, other.rowId)
+				&& Objects.equals(rowValues, other.rowValues);
+	}
+
+	@JsonIgnore
 	public PropertyName getGridPropertyName()
 	{
 		return gridPropertyName;
 	}
 
+	@JsonIgnore
 	public Object getRowId()
 	{
 		return rowId;
 	}
 
+	@JsonIgnore
 	public PropertyValuesDTO getRowValues()
 	{
 		return rowValues;

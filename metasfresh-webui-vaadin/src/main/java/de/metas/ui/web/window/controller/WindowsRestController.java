@@ -55,7 +55,7 @@ import io.swagger.annotations.ApiOperation;
 public class WindowsRestController
 {
 	private final AtomicInteger _nextWindowNo = new AtomicInteger(1);
-	private final Map<Integer, WindowModel> _windowModels = Maps.newConcurrentMap();
+	private final Map<Integer, WindowModelInstance> _windowModels = Maps.newConcurrentMap();
 
 	private final void autologin()
 	{
@@ -75,10 +75,8 @@ public class WindowsRestController
 
 		final int windowNo = _nextWindowNo.getAndIncrement();
 
-		final WindowModelImpl windowModel = new WindowModelImpl();
-		windowModel.setRootPropertyDescriptorFromWindow(adWindowId);
-
-		_windowModels.put(windowNo, windowModel);
+		final WindowModelInstance windowModelInstance = new WindowModelInstance(windowNo, adWindowId);
+		_windowModels.put(windowNo, windowModelInstance);
 
 		return windowNo;
 	}
@@ -88,26 +86,25 @@ public class WindowsRestController
 	{
 		autologin();
 
-		final WindowModel windowModel = _windowModels.remove(windowNo);
-		if (windowModel == null)
+		final WindowModelInstance windowModelInstance = _windowModels.remove(windowNo);
+		if (windowModelInstance == null)
 		{
 			throw new IllegalArgumentException("No window model found for " + windowNo);
 		}
 
-		// TODO: dispose it
-		// windowModel.dispose();
+		windowModelInstance.dispose();
 	}
 
 	private final WindowModel getWindowModel(final int windowNo)
 	{
 		autologin();
 
-		final WindowModel windowModel = _windowModels.get(windowNo);
-		if (windowModel == null)
+		final WindowModelInstance windowModelInstance = _windowModels.get(windowNo);
+		if (windowModelInstance == null)
 		{
 			throw new IllegalArgumentException("No window model found for " + windowNo);
 		}
-		return windowModel;
+		return windowModelInstance.getWindowModel();
 	}
 
 	@RequestMapping(value = "/getViewRootPropertyDescriptor/{windowNo}", method = RequestMethod.GET)
@@ -187,4 +184,34 @@ public class WindowsRestController
 		return getWindowModel(windowNo).hasNextRecord();
 	}
 
+	private static class WindowModelInstance
+	{
+		// private final int windowNo;
+		private final WindowModelImpl windowModel;
+		private final WindowModelListener2WebSocket modelEventForwarder;
+
+		public WindowModelInstance(final int windowNo, final int adWindowId)
+		{
+			super();
+
+			// this.windowNo = windowNo;
+			this.windowModel = new WindowModelImpl();
+			windowModel.setRootPropertyDescriptorFromWindow(adWindowId);
+
+			modelEventForwarder = new WindowModelListener2WebSocket(windowNo);
+			windowModel.subscribe(modelEventForwarder);
+		}
+
+		public WindowModelImpl getWindowModel()
+		{
+			return windowModel;
+		}
+
+		public void dispose()
+		{
+			windowModel.unsubscribe(modelEventForwarder);
+
+			// TODO: really dispose the model
+		}
+	}
 }
