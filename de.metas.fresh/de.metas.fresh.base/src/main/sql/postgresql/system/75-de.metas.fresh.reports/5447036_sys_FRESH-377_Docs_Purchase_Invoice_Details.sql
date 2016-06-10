@@ -177,7 +177,7 @@ FROM
 
 	LEFT OUTER JOIN
 	(
-		SELECT String_agg (att.ai_value, ', ' ORDER BY length(att.ai_value),att.ai_value ) AS Attributes, att.M_AttributeSetInstance_ID, il.c_invoiceline_id
+		SELECT DISTINCT ON (C_InvoiceLine_ID) String_agg (att.ai_value, ', ' ORDER BY length(att.ai_value),att.ai_value ) AS Attributes, att.M_AttributeSetInstance_ID, il.c_invoiceline_id
 		FROM c_invoiceline il 
 		JOIN m_matchinv mi ON mi.c_invoiceline_id = il.c_invoiceline_id
 		JOIN Report.fresh_Attributes att ON mi.m_attributesetinstance_id = att.m_attributesetinstance_id
