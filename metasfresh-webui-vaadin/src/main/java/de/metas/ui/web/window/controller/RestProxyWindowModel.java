@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -75,7 +76,7 @@ public class RestProxyWindowModel implements WindowModel
 
 	private final EventBus eventBus = new EventBus(getClass().getName());
 
-	private RestTemplate restTemplate = new RestTemplate();
+	private RestTemplate restTemplate;
 	@Autowired
 	private TaskScheduler taskScheduler;
 
@@ -93,6 +94,11 @@ public class RestProxyWindowModel implements WindowModel
 			final List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 			messageConverters.add(new MappingJackson2HttpMessageConverter(JsonHelper.createObjectMapper()));
 			restTemplate = new RestTemplate(messageConverters);
+			
+			final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+	        requestFactory.setReadTimeout(2000);
+	        requestFactory.setConnectTimeout(2000);
+	        restTemplate.setRequestFactory(requestFactory);
 		}
 
 		// WebSocket connection
