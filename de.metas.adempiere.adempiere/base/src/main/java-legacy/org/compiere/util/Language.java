@@ -24,15 +24,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Language Management.
@@ -108,23 +110,23 @@ public class Language implements Serializable
 		//	ordered by locale
 		//	Not predefined Locales - need to define decimal Point and date pattern (not sure about time)
 		new Language ("\uFE94\uFEF4\uFE91\uFEAE\uFECC\uFEDF\uFE8D (AR)",
-			AD_Language_ar_TN,  new Locale("ar","TN"), new Boolean(true), "dd.MM.yyyy",
+			AD_Language_ar_TN,  new Locale("ar","TN"), Boolean.TRUE, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("\u0411\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438 (BG)",
-			AD_Language_bg_BG,  new Locale("bg","BG"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_bg_BG,  new Locale("bg","BG"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Catal\u00e0",
 			AD_Language_ca_ES, new Locale("ca", "ES"), null, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Deutsch",
-			AD_Language_de_DE,  Locale.GERMANY, new Boolean(false), "dd.MM.yyyy",
+			AD_Language_de_DE,  Locale.GERMANY, Boolean.FALSE, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		// 03362 adding german language for Switzerland
 		new Language ("Deutsch (Schweiz)",
-			AD_Language_de_CH,  new Locale("de", "CH"), new Boolean(false), "dd.MM.yyyy",
+			AD_Language_de_CH,  new Locale("de", "CH"), Boolean.FALSE, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Dansk",
-			AD_Language_da_DK,  new Locale("da","DK"),  new Boolean(false), "dd-MM-yyyy",
+			AD_Language_da_DK,  new Locale("da","DK"),  Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("English (AU)",
 			AD_Language_en_AU,  new Locale("en","AU"), null, "dd/MM/yyyy",
@@ -133,43 +135,43 @@ public class Language implements Serializable
 			AD_Language_en_GB,  Locale.UK,      null, null,
 			MediaSize.ISO.A4),
 		new Language ("Espa\u00f1ol",
-			AD_Language_es_ES,  new Locale("es","ES"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_es_ES,  new Locale("es","ES"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Espa\u00f1ol (MX)",
-			AD_Language_es_MX,  new Locale("es","MX"), new Boolean(true), "dd/MM/yyyy",
+			AD_Language_es_MX,  new Locale("es","MX"), Boolean.TRUE, "dd/MM/yyyy",
 			MediaSize.NA.LETTER),
 		new Language ("Espa\u00f1ol (CO)",
-			AD_Language_es_CO,  new Locale("es","ES"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_es_CO,  new Locale("es","ES"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.NA.LETTER),
 		new Language ("Espa\u00f1ol (VE)",
-			AD_Language_es_ES,  new Locale("es","ES"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_es_ES,  new Locale("es","ES"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),				
 		new Language ("Espa\u00f1ol (EC)",
-			AD_Language_es_ES,  new Locale("es","ES"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_es_ES,  new Locale("es","ES"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Espa\u00f1ol (DO)",
-			AD_Language_es_DO,  new Locale("es","DO"), new Boolean(true), "dd/MM/yyyy",
+			AD_Language_es_DO,  new Locale("es","DO"), Boolean.TRUE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (GR)",
-			AD_Language_el_GR,  new Locale("el","GR"),  new Boolean(false), "dd/MM/yyyy",
+			AD_Language_el_GR,  new Locale("el","GR"),  Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Farsi",
-			AD_Language_fa_IR,  new Locale("fa","IR"),  new Boolean(false), "dd-MM-yyyy",
+			AD_Language_fa_IR,  new Locale("fa","IR"),  Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Finnish",
-			AD_Language_fi_FI,  new Locale("fi","FI"),  new Boolean(true), "dd.MM.yyyy",
+			AD_Language_fi_FI,  new Locale("fi","FI"),  Boolean.TRUE, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Fran\u00e7ais",
 			AD_Language_fr_FR,  Locale.FRANCE,  null, null,		//  dd.MM.yy
 			MediaSize.ISO.A4),
 		new Language ("Fran\u00e7ais (CA)",
-			AD_Language_fr_CA,  new Locale("fr","CA"),  new Boolean(true), "MM/dd/yyyy",	// MM/dd/yy
+			AD_Language_fr_CA,  new Locale("fr","CA"),  Boolean.TRUE, "MM/dd/yyyy",	// MM/dd/yy
 			MediaSize.NA.LETTER),
 		new Language ("Hrvatski",
 			AD_Language_hr_HR, new Locale("hr", "HR"), null, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Indonesia Bahasa",
-			AD_Language_in_ID, new Locale("in","ID"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_in_ID, new Locale("in","ID"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Italiano",
 			AD_Language_it_IT,  Locale.ITALY,   null, null,		//  dd.MM.yy
@@ -178,28 +180,28 @@ public class Language implements Serializable
 			AD_Language_ja_JP, Locale.JAPAN, null, null,
 			MediaSize.ISO.A4),
 		new Language ("Malaysian",
-			AD_Language_ms_MY, new Locale("ms","MY"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_ms_MY, new Locale("ms","MY"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Magyar (HU)",
-			AD_Language_hu_HU,  new Locale("hu","HU"), new Boolean(false), "yyyy.MM.dd",
+			AD_Language_hu_HU,  new Locale("hu","HU"), Boolean.FALSE, "yyyy.MM.dd",
 			MediaSize.ISO.A4),			
 		new Language ("Nederlands",
-			AD_Language_nl_NL, new Locale("nl","NL"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_nl_NL, new Locale("nl","NL"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Norsk",
-			AD_Language_no_NO,  new Locale("no","NO"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_no_NO,  new Locale("no","NO"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Polski",
-			AD_Language_pl_PL, new Locale("pl","PL"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_pl_PL, new Locale("pl","PL"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Portuguese (BR)",
-			AD_Language_pt_BR, new Locale("pt","BR"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_pt_BR, new Locale("pt","BR"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Rom\u00e2n\u0103",
-			AD_Language_ro_RO, new Locale("ro","RO"), new Boolean(false), "dd.MM.yyyy",
+			AD_Language_ro_RO, new Locale("ro","RO"), Boolean.FALSE, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("\u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian)",
-			AD_Language_ru_RU, new Locale("ru","RU"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_ru_RU, new Locale("ru","RU"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Slovenski",
 			AD_Language_sl_SI, new Locale("sl", "SI"), null, "dd.MM.yyyy",
@@ -208,13 +210,13 @@ public class Language implements Serializable
 			AD_Language_sr_RS, new Locale("sr", "RS"), null, "dd.MM.yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Svenska",
-			AD_Language_sv_SE,  new Locale("sv","SE"),  new Boolean(false), "yyyy-MM-dd",
+			AD_Language_sv_SE,  new Locale("sv","SE"),  Boolean.FALSE, "yyyy-MM-dd",
 			MediaSize.ISO.A4),
 		new Language ("\u0e44\u0e17\u0e22 (TH)",
-			AD_Language_th_TH,  new Locale("th","TH"), new Boolean(false), "dd/MM/yyyy",
+			AD_Language_th_TH,  new Locale("th","TH"), Boolean.FALSE, "dd/MM/yyyy",
 			MediaSize.ISO.A4),
 		new Language ("Vi\u1EC7t Nam",
-			AD_Language_vi_VN, new Locale("vi","VN"), new Boolean(false), "dd-MM-yyyy",
+			AD_Language_vi_VN, new Locale("vi","VN"), Boolean.FALSE, "dd-MM-yyyy",
 			MediaSize.ISO.A4),
 		//	Need to have (Windows) Asian Language Pack installed to view properly 
 		new Language ("\u7b80\u4f53\u4e2d\u6587 (CN)",
@@ -230,7 +232,7 @@ public class Language implements Serializable
 	private static ExtendedMemorizingSupplier<Language> _baseLanguageSupplier = null;
 
 	/**	Logger			*/
-	private static final transient Logger log = LogManager.getLogger(Language.class.getName());
+	private static final transient Logger log = LogManager.getLogger(Language.class);
 	
 	/**
 	 *  Get Number of Languages
@@ -545,7 +547,7 @@ public class Language implements Serializable
 	/**	Language (key)			*/
 	private String  m_AD_Language;
 	/** Locale					*/
-	private Locale  m_locale;
+	private final Locale m_locale;
 	//
 	private Boolean             m_decimalPoint;
 	private Boolean				m_leftToRight;
@@ -576,12 +578,12 @@ public class Language implements Serializable
 	 *  Set Application Dictionary Language (system supported).
 	 *  @param AD_Language e.g. en-US
 	 */
-	public void setAD_Language (String AD_Language)
+	void setAD_Language (final String AD_Language)
 	{
 		if (AD_Language != null)
 		{
 			m_AD_Language = AD_Language;
-			log.info(toString());
+			log.info("{}", this);
 		}
 	}   //  getAD_Language
 
@@ -592,18 +594,6 @@ public class Language implements Serializable
 	public Locale getLocale()
 	{
 		return m_locale;
-	}   //  getLocale
-
-	/**
-	 *  Overwrite Locale
-	 *  @param locale locale
-	 */
-	public void setLocale (Locale locale)
-	{
-		if (locale == null)
-			return;
-		m_locale = locale;
-		m_decimalPoint = null;  //  reset
 	}   //  getLocale
 
 	/**
@@ -623,8 +613,10 @@ public class Language implements Serializable
 	public boolean isLeftToRight()
 	{
 		if (m_leftToRight == null)
+		{
 			//  returns true if language not iw, ar, fa, ur
-			m_leftToRight = new Boolean(ComponentOrientation.getOrientation(m_locale).isLeftToRight());
+			m_leftToRight = ComponentOrientation.getOrientation(m_locale).isLeftToRight();
+		}
 		return m_leftToRight.booleanValue();
 	}   //  isLeftToRight
 
