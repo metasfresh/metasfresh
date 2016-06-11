@@ -2613,6 +2613,16 @@ public final class Env
 	{
 		return Adempiere.instance;
 	}
+	
+	/**
+	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
+	 * 
+	 * @param bean
+	 */
+	public static void autowireBean(final Object bean)
+	{
+		Adempiere.getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+	}
 
 	/**
 	 * Gets Login/System date
