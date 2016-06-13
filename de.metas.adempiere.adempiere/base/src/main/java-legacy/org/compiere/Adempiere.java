@@ -587,9 +587,13 @@ public class Adempiere
 		{
 			Env.setContextProvider(new SwingContextProvider());
 		}
-		else
+		else if (RunMode.BACKEND == runMode)
 		{
 			Env.setContextProvider(new ThreadLocalContextProvider());
+		}
+		else
+		{
+			// don't set the context provider but assume it was already configured.
 		}
 		Env.initContextProvider();
 
