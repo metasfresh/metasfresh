@@ -1,5 +1,5 @@
 /**
- * Annotations for model interceptor (a.k.a. model validator) classes.
+ * Annotations for model interceptor (aka model validator) classes.
  * <p>
  * Note that a model interceptor class using any of these annotations still has to be "explicitly" registered.<br>
  * Registering a model interceptor can be done in two ways:
@@ -17,7 +17,8 @@
  * </li>
  * </ul>
  *
- * Also see the {@link org.adempiere.ad.callout.annotations.Callout} annotation and related annotations, they are analog to the model interceptor annotations, but for callouts.
+ * Also see the {@link org.adempiere.ad.callout.annotations} package, those annotations are analog to the model interceptor annotations, but for callouts.<br>
+ * Depending on the use case, one and the same method can be annotated by with both a callout and a model interceptor annotation.
  *
  */
 package org.adempiere.ad.modelvalidator.annotations;
