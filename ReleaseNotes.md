@@ -18,6 +18,8 @@ The actual release notes
  - FRESH-349 KPI: Printing Performance
     * adding a window to show per-shipment performance
  - FRESH-350 check if purchase inout label and print preview can run faster
+ - FRESH-377 make invoice print preview faster
+ - FRESH-383 make orders print preview run faster
 
 ## Fixes
  - FRESH-344 Move KPI SQL to repository and new DB Schema
