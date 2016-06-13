@@ -21,9 +21,10 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.print.attribute.standard.MediaSize;
 
@@ -32,7 +33,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -42,7 +46,7 @@ import de.metas.logging.LogManager;
  *  @author     Jorg Janke
  *  @version    $Id: Language.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
  */
-public class Language implements Serializable
+public final class Language implements Serializable
 {
 	/**
 	 * 
@@ -103,7 +107,7 @@ public class Language implements Serializable
 	 *  If you want to add a language, extend the array
 	 *  - or use the addLanguage() method.
 	 **/
-	static private Language[]   s_languages = {
+	private static final CopyOnWriteArrayList<Language> s_languages = new CopyOnWriteArrayList<>(new Language[]{
 		new Language ("English",
 			AD_Language_en_US,  Locale.US,      null, null,
 			MediaSize.NA.LETTER),							    //  Base Language
@@ -225,49 +229,13 @@ public class Language implements Serializable
 		new Language ("\u7e41\u9ad4\u4e2d\u6587 (TW)",
 			AD_Language_zh_TW,  Locale.TAIWAN,  null, null,		//  dd.MM.yy
 			MediaSize.ISO.A4)
-
-	};
+	});
 	
 	/** Base Language supplier */
 	private static ExtendedMemorizingSupplier<Language> _baseLanguageSupplier = null;
 
 	/**	Logger			*/
 	private static final transient Logger log = LogManager.getLogger(Language.class);
-	
-	/**
-	 *  Get Number of Languages
-	 *  @return Language count
-	 */
-	public static int getLanguageCount()
-	{
-		return s_languages.length;
-	}   //  getLanguageCount
-
-	/**
-	 *  Get Language
-	 *  @param index index
-	 *  @return Language
-	 */
-	public static Language getLanguage (int index)
-	{
-		if (index < 0 || index >= s_languages.length)
-			return getLoginLanguage();
-		return s_languages[index];
-	}   //  getLanguage
-
-	/**
-	 *  Add Language to supported Languages
-	 *  @param language new language
-	 */
-	public static void addLanguage (Language language)
-	{
-		if (language == null)
-			return;
-		ArrayList<Language> list = new ArrayList<Language>(Arrays.asList(s_languages));
-		list.add(language);
-		s_languages = new Language[list.size()];
-		list.toArray(s_languages);
-	}   //  addLanguage
 
 	/**************************************************************************
 	 *  Get Language.
@@ -275,37 +243,35 @@ public class Language implements Serializable
 	 *  @param langInfo either language (en) or locale (en-US) or display name
 	 *  @return Name (e.g. Deutsch)
 	 */
-	public static Language getLanguage (String langInfo)
+	public static Language getLanguage (final String langInfo)
 	{
-		String lang = langInfo;
-		if (lang == null || lang.length() == 0)
-			lang = System.getProperty("user.language", "");
+		String langInfoActual = langInfo;
+		if (langInfoActual == null || langInfoActual.isEmpty())
+			langInfoActual = System.getProperty("user.language", "");
 
 		//	Search existing Languages
-		for (int i = 0; i < s_languages.length; i++)
+		for (final Language language : s_languages)
 		{
-			if 	(lang.equals(s_languages[i].getName())
-				||  lang.equals(s_languages[i].getLanguageCode())
-				|| lang.equals(s_languages[i].getAD_Language()))
-				return s_languages[i];
+			if (language.matchesLangInfo(langInfoActual))
+			{
+				return language;
+			}
 		}
 
+		//
 		//	Create Language on the fly
-		if (lang.length() == 5)		//	standard format <language>_<Country>
+		if (langInfoActual.length() == 5)		//	standard format <language>_<Country>
 		{
-			String language = lang.substring(0,2);
-			String country = lang.substring(3);
+			String language = langInfoActual.substring(0,2);
+			String country = langInfoActual.substring(3);
 			Locale locale = new Locale(language, country);
-			log.info("Adding Language=" + language + ", Country=" + country + ", Locale=" + locale);
-			Language ll = new Language (lang, lang, locale);
-			//	Add to Languages
-			ArrayList<Language> list = new ArrayList<Language>(Arrays.asList(s_languages));
-			list.add(ll);
-			s_languages = new Language [list.size()];
-			list.toArray(s_languages);
-			//	Return Language
-			return ll;
+			log.info("Adding Language={}, Country={}, Locale={}", language, country, locale);
+			final Language languageNew = new Language (langInfoActual, langInfoActual, locale);
+			s_languages.add(languageNew);
+			
+			return languageNew;
 		}
+		
 		//	Get the default one
 		return getLoginLanguage();
 	}   //  getLanguage
@@ -315,7 +281,7 @@ public class Language implements Serializable
 	 *  @param langInfo either language (en) or locale (en-US) or display name
 	 *  @return true if base language
 	 */
-	public static boolean isBaseLanguage (String langInfo)
+	public static boolean isBaseLanguage (final String langInfo)
 	{
 		if(langInfo == null)
 		{
@@ -323,15 +289,9 @@ public class Language implements Serializable
 			return false;
 		}
 		
-		// metas: method changed:
-		Language baseLanguage = getBaseLanguage();
-		if (langInfo == null || langInfo.length() == 0
-			|| langInfo.equals(baseLanguage.getName())
-			|| langInfo.equals(baseLanguage.getLanguageCode())
-			|| langInfo.equals(baseLanguage.getAD_Language()))
-			return true;
-		return false;
-	}   //  isBaseLanguage
+		final Language baseLanguage = getBaseLanguage();
+		return baseLanguage.matchesLangInfo(langInfo);
+	}
 
 	/**
 	 * Get Base Language
@@ -388,38 +348,18 @@ public class Language implements Serializable
 	}   //  getBase
 
 	/**
-	 *  Get Supported Locale
-	 *  @param langInfo either language (en) or locale (en-US) or display name
-	 *  @return Supported Locale
-	 */
-	public static Locale getLocale (String langInfo)
-	{
-		return getLanguage(langInfo).getLocale();
-	}   //  getLocale
-
-	/**
-	 *  Get Supported Language
-	 *  @param langInfo either language (en) or locale (en-US) or display name
-	 *  @return AD_Language (e.g. en-US)
-	 */
-	public static String getAD_Language (String langInfo)
-	{
-		return getLanguage(langInfo).getAD_Language();
-	}   //  getAD_Language
-
-	/**
 	 *  Get Supported Language
 	 *  @param locale Locale
 	 *  @return AD_Language (e.g. en-US)
 	 */
-	public static String getAD_Language (Locale locale)
+	public static String getAD_Language (final Locale locale)
 	{
 		if (locale != null)
 		{
-			for (int i = 0; i < s_languages.length; i++)
+			for (final Language language : s_languages)
 			{
-				if (locale.getLanguage().equals(s_languages[i].getLocale().getLanguage()))
-					return s_languages[i].getAD_Language();
+				if (locale.getLanguage().equals(language.getLocale().getLanguage()))
+					return language.getAD_Language();
 			}
 		}
 		return getLoginLanguage().getAD_Language();
@@ -430,45 +370,23 @@ public class Language implements Serializable
 	 *  @param langInfo either language (en) or locale (en-US) or display name
 	 *  @return Language Name (e.g. English)
 	 */
-	public static String getName (String langInfo)
+	public static String getName (final String langInfo)
 	{
 		return getLanguage(langInfo).getName();
 	}   //  getAD_Language
 
 	/**
-	 *  Returns true if Decimal Point (not comma)
-	 *  @param langInfo either language (en) or locale (en-US) or display name
-	 *  @return use of decimal point
-	 */
-	public static boolean isDecimalPoint(String langInfo)
-	{
-		return getLanguage(langInfo).isDecimalPoint();
-	}   //  getAD_Language
-
-	/**
-	 *  Get Display names of supported languages
-	 *  @return Array of Language names
-	 */
-	public static String[] getNames()
-	{
-		String[] retValue = new String[s_languages.length];
-		for (int i = 0; i < s_languages.length; i++)
-			retValue[i] = s_languages[i].getName();
-		return retValue;
-	}   //  getNames
-	
-	/**
 	 * @return supported languages (AD_Language to Name, value name pairs)
 	 */
-	public static ValueNamePair[] getValueNamePairs()
+	public static List<ValueNamePair> getValueNamePairs()
 	{
-		ValueNamePair[] retValue = new ValueNamePair[s_languages.length];
-		for (int i = 0; i < s_languages.length; i++)
+		final ImmutableList.Builder<ValueNamePair> languageVNPs = ImmutableList.builder(); 
+		for (final Language language : s_languages)
 		{
 			// NOTE: having the AD_Language as Value is important. Before considering to change that, check who is using this method!
-			retValue[i] = new ValueNamePair(s_languages[i].getAD_Language(), s_languages[i].getName());
+			languageVNPs.add(ValueNamePair.of(language.getAD_Language(), language.getName()));
 		}
-		return retValue;
+		return languageVNPs.build();
 		
 	}
 	
@@ -484,26 +402,6 @@ public class Language implements Serializable
 		return Env.getLanguage(Env.getCtx());
 		//return s_loginLanguage;
 	}   //  getLanguage
-
-	/**
-	 *  Set Default Login Language
-	 *  @param language language
-	 */
-	@Deprecated
-	public static void setLoginLanguage (Language language)
-	{
-		// metas: tsa: 02214: prevent using this method:
-		log.warn("This method is deprecated. Please don't use it. Setting #AD_Language in context is enough", new Exception());
-		// metas: tsa: original:
-		/*
-		if (language != null)
-		{
-			s_loginLanguage = language;
-			log.info(s_loginLanguage.toString());
-		}
-		*/
-	}   //  setLanguage
-
 	
 	/**************************************************************************
 	 *  Define Language
@@ -515,18 +413,18 @@ public class Language implements Serializable
 	 *  @param javaDatePattern Java date pattern as not all locales are defined - if null, derived from Locale
 	 *  @param mediaSize default media size
 	 */
-	public Language (String name, String AD_Language, Locale locale,
-		Boolean decimalPoint, String javaDatePattern, MediaSize mediaSize)
+	private Language (final String name, final String AD_Language, final Locale locale,
+			final Boolean decimalPoint, final String javaDatePattern, final MediaSize mediaSize)
 	{
-		if (name == null || AD_Language == null || locale == null)
-			throw new IllegalArgumentException ("Language - parameter is null");
-		m_name = name;
-		m_AD_Language = AD_Language;
-		m_locale = locale;
+		super();
+		
+		m_name = Preconditions.checkNotNull(name, "name");
+		m_AD_Language = Preconditions.checkNotNull(AD_Language, "AD_Language");
+		m_locale = Preconditions.checkNotNull(locale, "locale");
 		//
-		m_decimalPoint = decimalPoint;
-		setDateFormat (javaDatePattern);
-		setMediaSize (mediaSize);
+		_decimalPoint = decimalPoint;
+		_dateFormatPattern = javaDatePattern;
+		_mediaSize = mediaSize == null ? MediaSize.ISO.A4 : mediaSize;
 	}   //  Language
 
 	/**
@@ -536,7 +434,7 @@ public class Language implements Serializable
 	 *  (might be different than Locale - i.e. if the system does not support the language)
 	 *  @param locale - the Locale, e.g. Locale.US
 	 */
-	public Language (String name, String AD_Language, Locale locale)
+	private Language (final String name, final String AD_Language, final Locale locale)
 	{
 		this (name, AD_Language, locale, null, null, null);
 	}	//	Language
@@ -549,10 +447,13 @@ public class Language implements Serializable
 	/** Locale					*/
 	private final Locale m_locale;
 	//
-	private Boolean             m_decimalPoint;
-	private Boolean				m_leftToRight;
-	private SimpleDateFormat    m_dateFormat;
-	private MediaSize 			m_mediaSize = MediaSize.ISO.A4;
+	private Boolean _decimalPoint;
+	private Boolean _leftToRight;
+	
+	private String _dateFormatPattern;
+	private ThreadLocal<SimpleDateFormat> _dateFormatThreadLocal = null;
+	
+	private final MediaSize _mediaSize;
 
 	/**
 	 *  Get Language Name.
@@ -612,12 +513,12 @@ public class Language implements Serializable
 	 */
 	public boolean isLeftToRight()
 	{
-		if (m_leftToRight == null)
+		if (_leftToRight == null)
 		{
 			//  returns true if language not iw, ar, fa, ur
-			m_leftToRight = ComponentOrientation.getOrientation(m_locale).isLeftToRight();
+			_leftToRight = ComponentOrientation.getOrientation(m_locale).isLeftToRight();
 		}
-		return m_leftToRight.booleanValue();
+		return _leftToRight.booleanValue();
 	}   //  isLeftToRight
 
 	/**
@@ -626,12 +527,12 @@ public class Language implements Serializable
 	 */
 	public boolean isDecimalPoint()
 	{
-		if (m_decimalPoint == null)
+		if (_decimalPoint == null)
 		{
-			DecimalFormatSymbols dfs = new DecimalFormatSymbols(m_locale);
-			m_decimalPoint = dfs.getDecimalSeparator() == '.';
+			final DecimalFormatSymbols dfs = new DecimalFormatSymbols(m_locale);
+			_decimalPoint = dfs.getDecimalSeparator() == '.';
 		}
-		return m_decimalPoint.booleanValue();
+		return _decimalPoint.booleanValue();
 	}   //  isDecimalPoint
 
 	/**
@@ -641,46 +542,15 @@ public class Language implements Serializable
 	public boolean isBaseLanguage()
 	{
 		return this.equals(getBaseLanguage());
-	}	//	isBaseLanguage
-
-	/**
-	 *  Set Date Pattern.
-	 *  The date format is not checked for correctness
-	 *  @param javaDatePattern for details see java.text.SimpleDateFormat,
-	 *  format must be able to be converted to database date format by
-	 *  using the upper case function.
-	 *  It also must have leading zero for day and month.
-	 */
-	public void setDateFormat (String javaDatePattern)
+	}
+	
+	private String getDateFormatPattern()
 	{
-		if (javaDatePattern == null)
+		if (_dateFormatPattern == null)
 		{
-			return;
-		}
-		m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, m_locale);
-		try
-		{
-			m_dateFormat.applyPattern(javaDatePattern);
-		}
-		catch (Exception e)
-		{
-			log.error(javaDatePattern + " - " + e);
-			m_dateFormat = null;
-		}
-	}   //  setDateFormat
-
-	/**
-	 *  Get (Short) Date Format.
-	 *  The date format must parseable by org.compiere.grid.ed.MDocDate
-	 *  i.e. leading zero for date and month
-	 *  @return date format MM/dd/yyyy - dd.MM.yyyy
-	 */
-	public SimpleDateFormat getDateFormat()
-	{
-		if (m_dateFormat == null)
-		{
-			m_dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, m_locale);
-			String sFormat = m_dateFormat.toPattern();
+			final SimpleDateFormat dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, m_locale);
+			String sFormat = dateFormat.toPattern();
+			
 			//	some short formats have only one M and d (e.g. ths US)
 			if (sFormat.indexOf("MM") == -1 && sFormat.indexOf("dd") == -1)
 			{
@@ -694,17 +564,19 @@ public class Language implements Serializable
 					else
 						nFormat += sFormat.charAt(i);
 				}
-			//	log.trace(sFormat + " => " + nFormat);
-				m_dateFormat.applyPattern(nFormat);
+				dateFormat.applyPattern(nFormat);
 			}
+			
 			//	Unknown short format => use JDBC
-			if (m_dateFormat.toPattern().length() != 8)
-				m_dateFormat.applyPattern("yyyy-MM-dd");
+			if (dateFormat.toPattern().length() != 8)
+			{
+				dateFormat.applyPattern("yyyy-MM-dd");
+			}
 
 			//	4 digit year
-			if (m_dateFormat.toPattern().indexOf("yyyy") == -1)
+			if (dateFormat.toPattern().indexOf("yyyy") == -1)
 			{
-				sFormat = m_dateFormat.toPattern();
+				sFormat = dateFormat.toPattern();
 				String nFormat = "";
 				for (int i = 0; i < sFormat.length(); i++)
 				{
@@ -713,12 +585,41 @@ public class Language implements Serializable
 					else
 						nFormat += sFormat.charAt(i);
 				}
-				m_dateFormat.applyPattern(nFormat);
+				dateFormat.applyPattern(nFormat);
 			}
-			m_dateFormat.setLenient(true);
+			
+			this._dateFormatPattern = dateFormat.toPattern();
 		}
-		return m_dateFormat;
-	}   //  getDateFormat
+		
+		return _dateFormatPattern;
+	}
+
+	/**
+	 *  Get (Short) Date Format.
+	 *  The date format must parseable by org.compiere.grid.ed.MDocDate
+	 *  i.e. leading zero for date and month
+	 *  @return date format MM/dd/yyyy - dd.MM.yyyy
+	 */
+	public SimpleDateFormat getDateFormat()
+	{
+		if (_dateFormatThreadLocal == null)
+		{
+			_dateFormatThreadLocal = new ThreadLocal<>();
+		}
+		
+		SimpleDateFormat dateFormat = _dateFormatThreadLocal.get();
+		if(dateFormat == null)
+		{
+			final String dateFormatPattern = getDateFormatPattern();
+			dateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, m_locale);
+			dateFormat.applyPattern(dateFormatPattern);
+			dateFormat.setLenient(true);
+			
+			_dateFormatThreadLocal.set(dateFormat);
+		}
+		
+		return dateFormat;
+	}
 
 	/**
 	 * 	Get Date Time Format.
@@ -749,33 +650,13 @@ public class Language implements Serializable
 	}	//	getTimeFormat
 
 	/**
-	 *  Get Database Date Pattern.
-	 *  Derive from date pattern (make upper case)
-	 *  @return date pattern
-	 */
-	public String getDBdatePattern()
-	{
-		return getDateFormat().toPattern().toUpperCase(m_locale);
-	}   //  getDBdatePattern
-
-	/**
 	 * 	Get default MediaSize
 	 * 	@return media size
 	 */
 	public MediaSize getMediaSize()
 	{
-		return m_mediaSize;
+		return _mediaSize;
 	}	//	getMediaSize
-
-	/**
-	 * 	Set default MediaSize
-	 * 	@param size media size
-	 */
-	public void setMediaSize (MediaSize size)
-	{
-		if (size != null)
-			m_mediaSize = size;
-	}	//	setMediaSize
 
 	/**
 	 *  String Representation
@@ -784,39 +665,32 @@ public class Language implements Serializable
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("Language=[");
-		sb.append(m_name).append(",Locale=").append(m_locale.toString())
-			.append(",AD_Language=").append(m_AD_Language)
-			.append(",DatePattern=").append(getDBdatePattern())
-			.append(",DecimalPoint=").append(isDecimalPoint())
-			.append("]");
-		return sb.toString();
-	}   //  toString
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("name", m_name)
+				.add("locale", m_locale)
+				.add("decimalPoint", isDecimalPoint())
+				.toString();
+	}
 
-	/**
-	 * 	Hash Code
-	 * 	@return hashcode
-	 */
 	@Override
 	public int hashCode()
 	{
 		return m_AD_Language.hashCode();
 	}	//	hashcode
 
-	/**
-	 * 	Equals.
-	 *  Two languages are equal, if they have the same AD_Language
-	 * 	@param obj compare
-	 * 	@return true if AD_Language is the same
-	 */
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
+		if(this == obj)
+		{
+			return true;
+		}
+		
 		if (obj instanceof Language)
 		{
-			Language cmp = (Language)obj;
-			if (cmp.getAD_Language().equals(m_AD_Language))
-				return true;
+			final Language other = (Language)obj;
+			return Objects.equals(this.m_AD_Language, other.m_AD_Language);
 		}
 		return false;
 	}	//	equals
@@ -841,5 +715,17 @@ public class Language implements Serializable
 	public int getTimeStyle()
 	{
 		return getDefaultTimeStyle();
+	}
+	
+	private boolean matchesLangInfo(final String langInfo)
+	{
+		if(langInfo == null || langInfo.isEmpty())
+		{
+			return false;
+		}
+		
+		return langInfo.equals(getName())
+				|| langInfo.equals(getAD_Language())
+				|| langInfo.equals(getLanguageCode());
 	}
 }   // Language
