@@ -25,7 +25,6 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -53,10 +52,6 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 						adClientId,
 						adOrgId);
 		
-		if(adrAttributeId <= 0)
-		{
-			throw new AdempiereException(SYSCONFIG_ADRAttribute + "not set");
-		}
 		return adrAttributeId;
 	}
 

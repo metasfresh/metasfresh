@@ -91,7 +91,7 @@ FROM
 		JOIN M_AttributeSetInstance asi on ol.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
 	
 		WHERE 
-			a.M_Attribute_ID = (SELECT Value FROM  AD_SysConfig  where Name = 'de.metas.sp80.ADRAttribute'):: numeric
+			a.M_Attribute_ID = (SELECT Value FROM  AD_SysConfig  where Name = 'de.metas.ADRAttribute'):: numeric
 			AND o.IsSoTrx = 'N' 
 			AND bp.isADRVendor = 'Y' 
 	) x
