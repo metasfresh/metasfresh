@@ -809,12 +809,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_IsShipTo, true)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, true);
 
 		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, Direction.Descending, Nulls.Last)
-				// FRESH-339: In case there is no shipToDefault set, select the last created location
+				// FRESH-339: In case there are more handover locations set, select the last created location
 				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 
 		return queryBuilder.create()

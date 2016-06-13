@@ -281,8 +281,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Retrieve the default Handover bpartner location for the given bpartner ID.
 	 * The location must be active.
 	 * The location must have IsUseForHandOver flag on true
-	 * The location must have IsShipTo flag on true
-	 * A location has priority if the flag IsShiPToDefault is on true but if no location is default, a non-default location will be selected.
 	 * In case there are several locations fitting the requirements, the selected one will be the one with the greatest ID (last created)
 	 * 
 	 * @param partner
