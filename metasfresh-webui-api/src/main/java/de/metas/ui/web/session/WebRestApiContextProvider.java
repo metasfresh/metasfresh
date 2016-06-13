@@ -1,5 +1,6 @@
-package de.metas.ui.web.vaadin.session;
+package de.metas.ui.web.session;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.adempiere.context.ContextProvider;
@@ -7,10 +8,12 @@ import org.adempiere.util.AbstractPropertiesProxy;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /*
  * #%L
- * test_vaadin
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,9 +32,10 @@ import org.adempiere.util.lang.NullAutoCloseable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-public class UserSessionContextProvider implements ContextProvider
+
+@SuppressWarnings("serial")
+public class WebRestApiContextProvider implements ContextProvider, Serializable
 {
-	private final Properties rootCtx = new Properties();
 	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<Properties>();
 	private final AbstractPropertiesProxy ctxProxy = new AbstractPropertiesProxy()
 	{
@@ -43,6 +47,10 @@ public class UserSessionContextProvider implements ContextProvider
 
 		private static final long serialVersionUID = 0;
 	};
+
+	private final Properties serverCtx = new Properties();
+
+	private static final String ATTRIBUTE_UserSessionCtx = WebRestApiContextProvider.class.getName() + ".UserSessionCtx";
 
 	@Override
 	public void init()
@@ -63,7 +71,21 @@ public class UserSessionContextProvider implements ContextProvider
 		{
 			return temporaryCtx;
 		}
-		return rootCtx;
+
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		if (requestAttributes != null)
+		{
+			Properties userSessionCtx = (Properties)requestAttributes.getAttribute(ATTRIBUTE_UserSessionCtx, RequestAttributes.SCOPE_SESSION);
+			if (userSessionCtx == null)
+			{
+				userSessionCtx = new Properties();
+				requestAttributes.setAttribute(ATTRIBUTE_UserSessionCtx, userSessionCtx, RequestAttributes.SCOPE_SESSION);
+			}
+
+			return userSessionCtx;
+		}
+
+		return serverCtx;
 	}
 
 	@Override
@@ -112,6 +134,6 @@ public class UserSessionContextProvider implements ContextProvider
 	public void reset()
 	{
 		temporaryCtxHolder.remove();
-		rootCtx.clear();
+		serverCtx.clear();
 	}
 }

@@ -14,7 +14,7 @@
 	<version>3-development-SNAPSHOT</version>
 
 	<properties>
-		<start-class>de.metas.ui.web.Application</start-class>
+		<start-class>de.metas.ui.web.vaadin.Application</start-class>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -26,8 +26,6 @@
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
 
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
-
-		<springfox-swagger.version>2.4.0</springfox-swagger.version>
 	</properties>
 
 	<dependencyManagement>
@@ -81,18 +79,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-
-
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>${springfox-swagger.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>${springfox-swagger.version}</version>
 		</dependency>
 
 
@@ -170,12 +156,22 @@
 			<version>${vaadin-lazyquerycontainer.version}</version>
 		</dependency>
 
-		<!-- Adempiere dependencies -->
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>metasfresh-webui-api</artifactId>
 			<version>${metasfresh-dependency.version}</version>
+
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-security</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
+		<!-- Adempiere dependencies -->
+		<!-- FIXME: we need to get rid of those after we refactor LoginModel and 
+			jasper related things -->
 		<dependency>
 			<groupId>de.metas.endcustomer.mf15</groupId>
 			<artifactId>de.metas.endcustomer.mf15.base</artifactId>

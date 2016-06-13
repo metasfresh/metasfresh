@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.controller;
 
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -7,8 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.google.common.eventbus.Subscribe;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.Application;
-import de.metas.ui.web.WebSocketConfig;
+import de.metas.ui.web.config.WebSocketConfig;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ public class WindowModelListener2WebSocket
 	public WindowModelListener2WebSocket(final int windowNo)
 	{
 		super();
-		Application.autowire(this);
+		Env.autowireBean(this);
 
 		// this.windowNo = windowNo;
 		this.windowTopicName = WebSocketConfig.buildWindowTopicName(windowNo);

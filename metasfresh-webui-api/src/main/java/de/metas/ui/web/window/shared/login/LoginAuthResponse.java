@@ -1,10 +1,15 @@
-package de.metas.ui.web.window.shared;
+package de.metas.ui.web.window.shared.login;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
+import org.compiere.util.KeyNamePair;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -29,38 +34,41 @@ import com.google.common.base.MoreObjects;
  */
 
 @SuppressWarnings("serial")
-public final class ImageResource implements Serializable
+public final class LoginAuthResponse implements Serializable
 {
-	public static enum ResourceType
+	@JsonCreator
+	public static final LoginAuthResponse of(@JsonProperty("roles") final List<KeyNamePair> roles)
 	{
-		IconSmall, Image,
+		if (roles == null || roles.isEmpty())
+		{
+			return NULL;
+		}
+		return new LoginAuthResponse(roles);
 	}
 
-	@JsonProperty("n")
-	private final String resourceName;
-	@JsonProperty("t")
-	private final ImageResource.ResourceType resourceType;
+	public static final LoginAuthResponse NULL = new LoginAuthResponse(ImmutableList.of());
 
-	public ImageResource(@JsonProperty("n") final String resourceName, @JsonProperty("t") final ImageResource.ResourceType resourceType)
+	@JsonProperty("roles")
+	private final List<KeyNamePair> roles;
+
+	private LoginAuthResponse(final List<KeyNamePair> roles)
 	{
 		super();
-		this.resourceName = resourceName;
-		this.resourceType = resourceType;
+		this.roles = ImmutableList.copyOf(roles);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("resourceName", resourceName)
-				.add("resourceType", resourceType)
+				.add("roles", roles)
 				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(resourceName, resourceType);
+		return Objects.hash(roles);
 	}
 
 	@Override
@@ -74,25 +82,18 @@ public final class ImageResource implements Serializable
 		{
 			return false;
 		}
-
-		if (!(obj instanceof ImageResource))
+		if (!(obj instanceof LoginAuthResponse))
 		{
 			return false;
 		}
 
-		final ImageResource other = (ImageResource)obj;
-		return Objects.equals(resourceName, other.resourceName)
-				&& Objects.equals(resourceType, other.resourceType);
+		final LoginAuthResponse other = (LoginAuthResponse)obj;
+		return Objects.equals(roles, other.roles);
 	}
 
-	public String getResourceName()
+	public List<KeyNamePair> getRoles()
 	{
-		return resourceName;
-	}
-
-	public ImageResource.ResourceType getResourceType()
-	{
-		return resourceType;
+		return roles;
 	}
 
 }

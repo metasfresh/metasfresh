@@ -1,4 +1,4 @@
-package de.metas.ui.web.vaadin.components.menu;
+package de.metas.ui.web.menu;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -14,15 +14,18 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.vaadin.server.Resource;
-
-import de.metas.ui.web.vaadin.components.menu.MainMenuItem.MenuItemType;
-import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.ImageResource;
+import de.metas.ui.web.window.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window.shared.menu.MainMenuItem;
+import de.metas.ui.web.window.shared.menu.MainMenuItem.MenuItemType;
 
 /*
  * #%L
- * metasfresh-webui
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -30,26 +33,30 @@ import de.metas.ui.web.vaadin.theme.Theme;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class UserMenuProvider
+@RestController
+@RequestMapping(value = MenuController.ENDPOINT)
+public class MenuController
 {
+	public static final String ENDPOINT = "/rest/api/menu";
 
-	public List<MenuItem> getMenuItems()
+	@RequestMapping(value = "/root", method = RequestMethod.GET)
+	public MainMenuItem getRoot()
 	{
 		final MTreeNode rootNodeModel = retrieveRootNodeModel();
 
-		final List<MenuItem> menuGroups = new ArrayList<>();
+		final List<MainMenuItem> menuGroups = new ArrayList<>();
 		final MainMenuItem.Builder miscMenuGroupBuilder = MainMenuItem.builder()
 				.setCaption("Misc");
 
@@ -60,26 +67,31 @@ public class UserMenuProvider
 
 			if (groupModel.isSummary())
 			{
-				final MenuItem menuGroup = createMenuGroup(groupModel);
+				final MainMenuItem menuGroup = createMenuGroup(groupModel);
 				menuGroups.add(menuGroup);
 			}
 			else
 			{
-				final MenuItem item = createMenuItem(groupModel);
+				final MainMenuItem item = createMenuItem(groupModel);
 				miscMenuGroupBuilder.addChild(item);
 			}
 		}
 
 		if (miscMenuGroupBuilder.hasChildren())
 		{
-			final MenuItem miscMenuGroup = miscMenuGroupBuilder.build();
+			final MainMenuItem miscMenuGroup = miscMenuGroupBuilder.build();
 			menuGroups.add(miscMenuGroup);
 		}
 
-		return menuGroups;
+		//
+		// Root
+		return MainMenuItem.builder()
+				.setCaption("Root")
+				.addChildren(menuGroups)
+				.build();
 	}
 
-	private MenuItem createMenuGroup(final MTreeNode groupModel)
+	private MainMenuItem createMenuGroup(final MTreeNode groupModel)
 	{
 		final MainMenuItem.Builder builder = MainMenuItem.builder();
 		builder.setCaption(groupModel.getName());
@@ -89,13 +101,13 @@ public class UserMenuProvider
 		return builder.build();
 	}
 
-	private MenuItem createMenuItem(final MTreeNode node)
+	private MainMenuItem createMenuItem(final MTreeNode node)
 	{
 		final MainMenuItem.Builder builder = MainMenuItem.builder()
 				.setCaption(node.getName());
-		
+
 		final String iconName = node.getIconName();
-		final Resource iconResource = Theme.getImageResourceForNameWithoutExt(iconName);
+		final ImageResource iconResource = new ImageResource(iconName, ResourceType.IconSmall);
 		builder.setIcon(iconResource);
 
 		final String action = node.getImageIndiactor();
@@ -115,7 +127,7 @@ public class UserMenuProvider
 		return builder.build();
 	}
 
-	private final void iterateLeafs(final MTreeNode node, Consumer<MTreeNode> consumer)
+	private final void iterateLeafs(final MTreeNode node, final Consumer<MTreeNode> consumer)
 	{
 		if (!node.isSummary())
 		{

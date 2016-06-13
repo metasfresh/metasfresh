@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.vaadin.model;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -7,9 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -31,10 +28,10 @@ import com.google.common.eventbus.EventBus;
 import com.google.gwt.thirdparty.guava.common.base.Throwables;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.Application;
-import de.metas.ui.web.WebSocketConfig;
-import de.metas.ui.web.json.JsonHelper;
+import de.metas.ui.web.config.WebSocketConfig;
+import de.metas.ui.web.vaadin.VaadinClientApplication;
 import de.metas.ui.web.window.PropertyNameSet;
+import de.metas.ui.web.window.controller.WindowsRestController;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.model.WindowModel;
 import de.metas.ui.web.window.shared.action.ActionsList;
@@ -78,6 +75,7 @@ public class RestProxyWindowModel implements WindowModel
 
 	private final EventBus eventBus = new EventBus(getClass().getName());
 
+	@Autowired
 	private RestTemplate restTemplate;
 	@Autowired
 	private TaskScheduler taskScheduler;
@@ -89,19 +87,7 @@ public class RestProxyWindowModel implements WindowModel
 	public RestProxyWindowModel()
 	{
 		super();
-		Application.autowire(this);
-
-		// REST connection
-		{
-			final List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
-			messageConverters.add(new MappingJackson2HttpMessageConverter(JsonHelper.createObjectMapper()));
-			restTemplate = new RestTemplate(messageConverters);
-
-			final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-			requestFactory.setReadTimeout(2000);
-			requestFactory.setConnectTimeout(2000);
-			restTemplate.setRequestFactory(requestFactory);
-		}
+		VaadinClientApplication.autowire(this);
 
 		// WebSocket connection
 		{

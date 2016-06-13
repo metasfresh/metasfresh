@@ -1,7 +1,7 @@
 package de.metas.ui.web.vaadin.login;
 
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+import org.compiere.util.ValueNamePair;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ public interface LoginViewListener
 
 	void viewLoginComplete(KeyNamePair role, KeyNamePair client, KeyNamePair org, KeyNamePair warehouse);
 
-	void viewLanguageChanged(Language language);
+	void viewLanguageChanged(ValueNamePair language);
 
 	void viewRoleChanged(KeyNamePair role);
 

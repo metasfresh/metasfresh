@@ -1,15 +1,20 @@
 package de.metas.ui.web.vaadin.login;
 
-import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+import org.compiere.util.KeyNamePairList;
+import org.compiere.util.ValueNamePair;
 
-import com.google.common.collect.ImmutableList;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
-import de.metas.ui.web.vaadin.event.UIEventBus;
-import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
+import de.metas.ui.web.login.LoginModel;
+import de.metas.ui.web.vaadin.session.UserSession;
+import de.metas.ui.web.window.shared.login.LoginAuthRequest;
+import de.metas.ui.web.window.shared.login.LoginAuthResponse;
+import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
 
 /*
  * #%L
@@ -36,7 +41,12 @@ import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
 public class LoginPresenter implements LoginViewListener
 {
 	private final LoginView loginView = new LoginViewImpl();
-	private final LoginModel loginModel = new LoginModel();
+	private final LoginModel loginModel = new RestProxyLoginModel();
+
+	private static final String RESOURCE = "org.compiere.apps.ALoginRes";
+	private ResourceBundle resourceBundle = ResourceBundle.getBundle(RESOURCE);
+
+	private final boolean warehouseVisible;
 
 	public LoginPresenter()
 	{
@@ -44,9 +54,11 @@ public class LoginPresenter implements LoginViewListener
 
 		loginView.setListener(this);
 
-		loginView.setResourceBundle(loginModel.getResourceBundle());
-		loginView.setLanguages(loginModel.getAvailableLanguages(), loginModel.getLanguage());
-		loginView.setWarehouseVisible(loginModel.isShowWarehouseOnLogin());
+		loginView.setResourceBundle(resourceBundle);
+		loginView.setLanguages(loginModel.getAvailableLanguages().getValues(), loginModel.getLanguage());
+		
+		this.warehouseVisible = loginModel.isShowWarehouseOnLogin();
+		loginView.setWarehouseVisible(warehouseVisible);
 	}
 
 	public Component getComponent()
@@ -57,53 +69,74 @@ public class LoginPresenter implements LoginViewListener
 	@Override
 	public void viewAuthenticate(final String username, final String password)
 	{
-		loginModel.authenticate(username, password);
-		
-		loginView.setRoles(loginModel.getRoles());
+		final LoginAuthResponse response = loginModel.authenticate(LoginAuthRequest.of(username, password));
+
+		loginView.setRoles(response.getRoles());
 		loginView.showRolePanel();
 	}
 
 	@Override
 	public void viewLoginComplete(final KeyNamePair role, final KeyNamePair client, final KeyNamePair org, final KeyNamePair warehouse)
 	{
-		loginModel.loginComplete(role, client, org, warehouse);
-		UIEventBus.post(new UserLoggedInEvent());
+		final LoginCompleteRequest request = LoginCompleteRequest.of(role, client, org, warehouse);
+		loginModel.loginComplete(request);
+		
+		UserSession.getCurrent().setLoggedIn(true);
+		
+		//UIEventBus.post(new UserLoggedInEvent());
+		UI.getCurrent().getNavigator().navigateTo("/");
 	}
 
 	@Override
-	public void viewLanguageChanged(final Language language)
+	public void viewLanguageChanged(final ValueNamePair language)
 	{
-		loginModel.setLanguage(language);
-		loginView.setResourceBundle(loginModel.getResourceBundle());
+		final ValueNamePair languageActual = loginModel.setLanguage(language);
+
+		final String adLanguage = languageActual.getValue();
+		final Locale locale = getLocaleForAD_Language(adLanguage);
+
+		resourceBundle = ResourceBundle.getBundle(RESOURCE, locale);
+		loginView.setResourceBundle(resourceBundle);
+	}
+
+	private static final Locale getLocaleForAD_Language(final String adLanguage)
+	{
+		final String languageTag = adLanguage.replace("_", "-");
+		final Locale locale = Locale.forLanguageTag(languageTag);
+		if (locale == null)
+		{
+			throw new IllegalArgumentException("No locale found for " + adLanguage);
+		}
+		return locale;
 	}
 
 	@Override
 	public void viewRoleChanged(final KeyNamePair role)
 	{
-		final List<KeyNamePair> clients = loginModel.getAD_Clients(role);
-		loginView.setClients(clients);
+		final KeyNamePairList clients = loginModel.getAD_Clients(role == null ? -1 : role.getKey());
+		loginView.setClients(clients.getValues());
 	}
 
 	@Override
 	public void viewClientChanged(final KeyNamePair client)
 	{
-		final List<KeyNamePair> orgs = loginModel.getAD_Orgs(client);
-		loginView.setOrgs(orgs);
+		final KeyNamePairList orgs = loginModel.getAD_Orgs(client == null ? -1 : client.getKey());
+		loginView.setOrgs(orgs.getValues());
 	}
 
 	@Override
 	public void viewOrgChanged(final KeyNamePair org)
 	{
-		final List<KeyNamePair> warehouses;
-		if (loginModel.isShowWarehouseOnLogin())
+		final KeyNamePairList warehouses;
+		if (warehouseVisible)
 		{
-			warehouses = loginModel.getM_Warehouses(org);
+			warehouses = loginModel.getM_Warehouses(org == null ? -1 : org.getKey());
 		}
 		else
 		{
-			warehouses = ImmutableList.of();
+			warehouses = KeyNamePairList.of();
 		}
 
-		loginView.setWarehouses(warehouses);
+		loginView.setWarehouses(warehouses.getValues());
 	}
 }

@@ -1,17 +1,17 @@
-package de.metas.ui.web;
+package de.metas.ui.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.session.hazelcast.config.annotation.web.http.EnableHazelcastHttpSession;
+import org.springframework.session.hazelcast.config.annotation.web.http.HazelcastHttpSessionConfiguration;
 
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
 /*
  * #%L
- * metasfresh-webui-vaadin
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -19,29 +19,31 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@EnableHazelcastHttpSession
 @Configuration
-@EnableSwagger2
-public class SwaggerConfig
+public class HazelcastHttpSessionConfig extends HazelcastHttpSessionConfiguration
 {
-	@Bean
-	public Docket api()
+	public HazelcastHttpSessionConfig()
 	{
-		return new Docket(DocumentationType.SWAGGER_2)
-				.select()
-				.apis(RequestHandlerSelectors.any())
-				.paths(PathSelectors.any())
-				.build();
+		super();
+	}
+
+	@Bean
+	public HazelcastInstance embeddedHazelcast()
+	{
+		final Config hazelcastConfig = new Config();
+		return Hazelcast.newHazelcastInstance(hazelcastConfig);
 	}
 }

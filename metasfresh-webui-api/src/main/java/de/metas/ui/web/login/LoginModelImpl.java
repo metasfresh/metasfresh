@@ -1,11 +1,11 @@
-package de.metas.ui.web.vaadin.login;
+package de.metas.ui.web.login;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.adempiere.ad.api.ILanguageBL;
@@ -13,25 +13,28 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.apps.ALoginRes;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.KeyNamePairList;
 import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.collect.ImmutableList;
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.server.WebBrowser;
-import com.vaadin.server.WrappedHttpSession;
 
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.ui.web.base.session.UserPreference;
-import de.metas.ui.web.vaadin.session.UserSession;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.shared.login.LoginAuthRequest;
+import de.metas.ui.web.window.shared.login.LoginAuthResponse;
+import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
 
 /*
  * #%L
@@ -55,47 +58,69 @@ import de.metas.ui.web.vaadin.session.UserSession;
  * #L%
  */
 
-public class LoginModel
+public class LoginModelImpl implements LoginModel
 {
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ILanguageBL languageBL = Services.get(ILanguageBL.class);
 	private final transient IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+
+	private final transient Login _loginService;
 	
-	private final Properties ctx = Env.getCtx();
-	private final transient Login loginService = new Login(ctx);
-
-	private List<KeyNamePair> availableRoles = ImmutableList.of();
-	private final List<Language> availableLanguages;
-
-	private Language language;
-	private static final String RESOURCE = ALoginRes.class.getName();
-	private ResourceBundle resourceBundle = ResourceBundle.getBundle(RESOURCE);
-
-	public LoginModel()
+	@Autowired
+	private UserSession userSession;
+	private final ValueNamePairList _availableLanguages;
+	private ValueNamePair _language;
+	
+	public LoginModelImpl()
 	{
 		super();
+		Env.autowireBean(this);
+
+		final Properties ctx = userSession.getCtx();
+		_loginService = new Login(ctx);
 
 		//
 		// Load languages
 		final List<I_AD_Language> adLanguages = languageBL.getAvailableLanguages(ctx);
-		final List<Language> availableLanguages = new ArrayList<>(adLanguages.size());
+		final List<ValueNamePair> availableLanguages = new ArrayList<>(adLanguages.size());
+		final Language baseLanguage = Language.getBaseLanguage();
+		ValueNamePair defaultLanguageVNP = null;
 		for (final I_AD_Language adLanguage : adLanguages)
 		{
-			final Language language = Language.getLanguage(adLanguage.getAD_Language());
+			final String adLanguageCode = adLanguage.getAD_Language();
+			final Language language = Language.getLanguage(adLanguageCode);
 			if (language == null)
 			{
 				continue;
 			}
-			availableLanguages.add(language);
+
+			final ValueNamePair languageVNP = ValueNamePair.of(adLanguageCode, adLanguage.getName());
+			availableLanguages.add(languageVNP);
+
+			if (adLanguage.equals(baseLanguage))
+			{
+				defaultLanguageVNP = languageVNP;
+			}
 		}
-		this.availableLanguages = ImmutableList.copyOf(availableLanguages);
-		setLanguage(Language.getBaseLanguage());
+
+		if (defaultLanguageVNP == null && !availableLanguages.isEmpty())
+		{
+			defaultLanguageVNP = availableLanguages.get(0);
+		}
+
+		this._availableLanguages = ValueNamePairList.of(availableLanguages);
+		setLanguage(defaultLanguageVNP);
 	}
-	
+
 	private final UserSession getUserSession()
 	{
-		return UserSession.getCurrent();
+		return userSession;
+	}
+	
+	private final Login getLoginService()
+	{
+		return _loginService;
 	}
 
 	private final UserPreference getUserPreference()
@@ -103,35 +128,47 @@ public class LoginModel
 		return getUserSession().getUserPreference();
 	}
 
-	public void authenticate(final String username, final String password)
+	@Override
+	public LoginAuthResponse authenticate(final LoginAuthRequest request)
 	{
 		// Reset:
 		final UserSession userSession = getUserSession();
 		userSession.setLoggedIn(false);
-		availableRoles = ImmutableList.of();
 
+		final Login loginService = getLoginService();
 		final MSession session = createMSession(loginService); // metas
-		final KeyNamePair[] rolesKNPairs = loginService.getRoles(username, password);
+		final KeyNamePair[] rolesKNPairs = loginService.getRoles(request.getUsername(), request.getPassword());
 		if (rolesKNPairs == null || rolesKNPairs.length == 0)
 		{
 			closeSessionWithError(session); // metas
-			return; // note: we will not reach this point because the method throws exception
+			return LoginAuthResponse.NULL; // note: we will not reach this point because the method throws exception
 		}
 
 		// Update state
-		availableRoles = ImmutableList.copyOf(rolesKNPairs);
+		final List<KeyNamePair> availableRoles = ImmutableList.copyOf(rolesKNPairs);
 
 		//
 		// Load preferences and export them to context
+		final Properties ctx = loginService.getCtx();
 		final UserPreference userPreference = getUserPreference();
 		userPreference.loadPreference(ctx);
 		userPreference.updateContext(ctx);
+
+		return LoginAuthResponse.of(availableRoles);
 	}
 
-	public void loginComplete(final KeyNamePair role, final KeyNamePair client, final KeyNamePair org, final KeyNamePair warehouse)
+	@Override
+	public void loginComplete(final LoginCompleteRequest request)
 	{
+		final KeyNamePair role = request.getRole();
+		final KeyNamePair client = request.getClient();
+		final KeyNamePair org = request.getOrg();
+		final KeyNamePair warehouse = request.getWarehouse();
+
 		//
 		// Update context
+		final Login loginService = getLoginService();
+		final Properties ctx = loginService.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, role.getKey());
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_Name, role.getName());
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getKey());
@@ -141,7 +178,6 @@ public class LoginModel
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_Name, orgName);
 		final int warehouseId = warehouse == null ? 0 : warehouse.getKey();
 		Env.setContext(ctx, Env.CTXNAME_M_Warehouse_ID, warehouseId);
-
 
 		//
 		// Validate login: fires login complete model interceptors
@@ -169,7 +205,7 @@ public class LoginModel
 		// Save user preferences
 		final UserSession userSession = getUserSession();
 		final UserPreference userPreference = userSession.getUserPreference();
-		//userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
+		// userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
 		userPreference.setProperty(UserPreference.P_ROLE, role.getKey());
 		userPreference.setProperty(UserPreference.P_CLIENT, client.getKey());
 		userPreference.setProperty(UserPreference.P_ORG, orgId);
@@ -181,113 +217,109 @@ public class LoginModel
 		userSession.setLoggedIn(true);
 	}
 
-	public List<KeyNamePair> getRoles()
+	@Override
+	public KeyNamePairList getAD_Clients(final int adRoleId)
 	{
-		return availableRoles;
-	}
-
-	private static final <T> ImmutableList<T> asListOrEmpty(final T[] arr)
-	{
-		if (arr == null || arr.length == 0)
+		if (adRoleId < 0)
 		{
-			return ImmutableList.of();
+			return KeyNamePairList.of();
 		}
-		return ImmutableList.copyOf(arr);
+
+		final KeyNamePair role = KeyNamePair.of(adRoleId, "AD_Role_ID=" + adRoleId);
+		final KeyNamePair[] adClients = getLoginService().getClients(role);
+		return KeyNamePairList.of(adClients);
 	}
 
-	public List<KeyNamePair> getAD_Clients(final KeyNamePair role)
+	@Override
+	public KeyNamePairList getAD_Orgs(final int adClientId)
 	{
-		if (role == null)
+		if (adClientId < 0)
 		{
-			return ImmutableList.of();
+			return KeyNamePairList.of();
 		}
-		final KeyNamePair[] adClients = loginService.getClients(role);
-		return asListOrEmpty(adClients);
+		final KeyNamePair client = KeyNamePair.of(adClientId, "AD_Client_ID=" + adClientId);
+		final KeyNamePair[] adOrgs = getLoginService().getOrgs(client);
+		return KeyNamePairList.of(adOrgs);
 	}
 
-	public List<KeyNamePair> getAD_Orgs(final KeyNamePair client)
+	@Override
+	public KeyNamePairList getM_Warehouses(final int adOrgId)
 	{
-		if (client == null)
+		if (adOrgId < 0)
 		{
-			return ImmutableList.of();
+			return KeyNamePairList.of();
 		}
-		final KeyNamePair[] adOrgs = loginService.getOrgs(client);
-		return asListOrEmpty(adOrgs);
+		final KeyNamePair org = KeyNamePair.of(adOrgId, "AD_Org_ID=" + adOrgId);
+		final KeyNamePair[] warehouses = getLoginService().getWarehouses(org);
+		return KeyNamePairList.of(warehouses);
 	}
 
-	public List<KeyNamePair> getM_Warehouses(final KeyNamePair org)
+	@Override
+	public ValueNamePair setLanguage(final ValueNamePair languageVNP)
 	{
-		if (org == null)
+		Language language = null;
+		if (languageVNP != null)
 		{
-			return ImmutableList.of();
+			final String adLanguage = languageVNP.getValue();
+			language = Language.getLanguage(adLanguage);
 		}
-		final KeyNamePair[] warehouses = loginService.getWarehouses(org);
-		return asListOrEmpty(warehouses);
-	}
-
-	public void setLanguage(Language language)
-	{
 		if (language == null)
 		{
 			language = Language.getBaseLanguage();
 		}
 
+		final Login loginService = getLoginService();
+		final Properties ctx = loginService.getCtx();
 		Env.verifyLanguage(ctx, language);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
 
-		final Locale locale = language.getLocale();
-		Locale.setDefault(locale);
-		resourceBundle = ResourceBundle.getBundle(RESOURCE, locale);
+		 final Locale locale = language.getLocale();
+		 getUserSession().setLocale(locale);
 
-		this.language = language;
+		final ValueNamePair languageVNP_Actual = ValueNamePair.of(language.getAD_Language(), language.getName());
+		this._language = languageVNP_Actual;
+		return languageVNP_Actual;
 	}
 
-	public List<Language> getAvailableLanguages()
+	@Override
+	public ValueNamePairList getAvailableLanguages()
 	{
-		return availableLanguages;
+		return _availableLanguages;
 	}
 
-	public Language getLanguage()
+	@Override
+	public ValueNamePair getLanguage()
 	{
-		return language;
-	}
-
-	public ResourceBundle getResourceBundle()
-	{
-		return resourceBundle;
-	}
-
-	private final HttpSession getHttpSession()
-	{
-		final WrappedHttpSession wrappedSession = (WrappedHttpSession)VaadinSession.getCurrent().getSession();
-		return wrappedSession.getHttpSession();
+		return _language;
 	}
 
 	private MSession createMSession(final Login login)
 	{
-		final HttpSession httpSess = getHttpSession();
+		final HttpServletRequest httpRequest = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
+		final HttpSession httpSess = httpRequest.getSession();
 		final String webSessionId = httpSess.getId();
-
-		final WebBrowser webBrowser = Page.getCurrent().getWebBrowser();
-		String remoteAddr = webBrowser.getAddress();
-		String remoteHost = remoteAddr;
+		//
+		// final WebBrowser webBrowser = Page.getCurrent().getWebBrowser();
+		String remoteAddr = httpRequest.getRemoteAddr();
+		String remoteHost = httpRequest.getRemoteHost();
 
 		//
 		// Check if we are behind proxy and if yes, get the actual client IP address
 		// NOTE: when configuring apache, don't forget to activate reverse-proxy mode
 		// see http://www.xinotes.org/notes/note/770/
-		// final String forwardedFor = Executions.getCurrent().getHeader("X-Forwarded-For"); // FIXME
-		final String forwardedFor = null;
+		final String forwardedFor = httpRequest.getHeader("X-Forwarded-For");
 		if (!Check.isEmpty(forwardedFor))
 		{
 			remoteAddr = forwardedFor;
 			remoteHost = forwardedFor;
 		}
 
+		final Login loginService = getLoginService();
+		final Properties ctx = loginService.getCtx();
 		final MSession sessionPO = MSession.get(ctx, remoteAddr, remoteHost, webSessionId);
 
 		// Set HostKey
-		// FIXME: commented out because this one is not working when running over websockets (i.e. HttpServletResponse does not exists) 
+		// FIXME: commented out because this one is not working when running over websockets (i.e. HttpServletResponse does not exists)
 		// see https://dev.vaadin.com/ticket/11808
 		// @formatter:off
 //		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
@@ -307,6 +339,9 @@ public class LoginModel
 
 	private void closeSessionWithError(final MSession session)
 	{
+		final Login loginService = getLoginService();
+		final Properties ctx = loginService.getCtx();
+
 		String errmsg = null;
 		final ValueNamePair vnp = MetasfreshLastError.retrieveError();
 		if (vnp != null)
@@ -324,8 +359,9 @@ public class LoginModel
 
 	}
 
+	@Override
 	public boolean isShowWarehouseOnLogin()
 	{
-		return loginService.isShowWarehouseOnLogin();
+		return getLoginService().isShowWarehouseOnLogin();
 	}
 }

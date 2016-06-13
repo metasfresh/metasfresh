@@ -1,7 +1,6 @@
 package de.metas.ui.web.vaadin.components.menu;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ public class MenuPanel extends CustomComponent
 		@Override
 		public void onMenuItemClicked(final MenuItem menuItem)
 		{
-			final Collection<MenuItem> menuItemChildren = menuItem.getChildren();
+			final List<? extends MenuItem> menuItemChildren = menuItem.getChildren();
 			if(menuItemChildren != null && !menuItemChildren.isEmpty())
 			{
 				navigateTo(menuItem);
@@ -188,7 +188,7 @@ public class MenuPanel extends CustomComponent
 		previousPageButton.setVisible(pages.size() > 1);
 	}
 	
-	public void setRootMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+	public void setRootMenuItems(final Supplier<List<? extends MenuItem>> menuItemsSupplier)
 	{
 		removeAllPagesExceptRoot();
 		

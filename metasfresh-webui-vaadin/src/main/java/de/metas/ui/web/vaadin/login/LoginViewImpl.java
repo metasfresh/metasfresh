@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 
 import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+import org.compiere.util.ValueNamePair;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItemContainer;
@@ -140,7 +140,7 @@ public class LoginViewImpl extends VerticalLayout implements LoginView
 	}
 
 	@Override
-	public void setLanguages(final List<Language> languages, final Language defaultLanguage)
+	public void setLanguages(final List<ValueNamePair> languages, final ValueNamePair defaultLanguage)
 	{
 		loginPanel.setLanguages(languages, defaultLanguage);
 	}
@@ -199,7 +199,7 @@ public class LoginViewImpl extends VerticalLayout implements LoginView
 		private final PasswordField fPassword;
 		private final Button btnLogin;
 
-		private final BeanItemContainer<Language> languagesContainer = new BeanItemContainer<>(Language.class);
+		private final BeanItemContainer<ValueNamePair> languagesContainer = new BeanItemContainer<>(ValueNamePair.class);
 		private final ComboBox fLanguage;
 
 		public UserLoginPanel()
@@ -240,7 +240,7 @@ public class LoginViewImpl extends VerticalLayout implements LoginView
 			btnLogin.focus();
 		}
 
-		public void setLanguages(final List<Language> languages, final Language defaultLanguage)
+		public void setLanguages(final List<ValueNamePair> languages, final ValueNamePair defaultLanguage)
 		{
 			languagesContainer.removeAllItems();
 			languagesContainer.addAll(languages);

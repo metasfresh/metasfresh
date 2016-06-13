@@ -3,6 +3,10 @@
 **/.classpath
 **/.project
 **/metasfresh.properties
+
+metasfresh-webui-api/activemq-data/
+metasfresh-webui-api/log/
+
 metasfresh-webui-vaadin/log/
 metasfresh-webui-vaadin/activemq-data/
 metasfresh-webui-vaadin/src/main/webapp/VAADIN/themes/metasfresh/styles.css

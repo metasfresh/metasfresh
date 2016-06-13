@@ -3,6 +3,7 @@ package de.metas.ui.web.window.shared.datatype;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +26,6 @@ import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window.shared.event.ModelEvent;
 import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window.shared.event.ZoomToWindowEvent;
-import junit.framework.Assert;
 
 /*
  * #%L
@@ -240,7 +240,7 @@ public class JSONTest
 	{
 		testJSON(ZoomToWindowEvent.of(123), ModelEvent.class);
 	}
-
+	
 	private <T> void testJSON(final T value, final Class<T> type) throws Exception
 	{
 		final String jsonStr = jsonObjectMapper.writeValueAsString(value);

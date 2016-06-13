@@ -11,6 +11,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
 import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -44,7 +45,7 @@ public class MenuPanelPage extends HorizontalLayout
 	private final MenuItemClickListener clickListener;
 
 	private boolean menuItemsStaled = false;
-	private Supplier<List<MenuItem>> menuItemsSupplier = null;
+	private Supplier<List<? extends MenuItem>> menuItemsSupplier = null;
 
 	private MenuItemFilter filter = MenuItemFilter.ACCEPT_ALL;
 
@@ -64,7 +65,7 @@ public class MenuPanelPage extends HorizontalLayout
 		this.searchTextField = searchTextField;
 	}
 
-	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+	public void setMenuItems(final Supplier<List<? extends MenuItem>> menuItemsSupplier)
 	{
 		this.menuItemsStaled = true;
 		this.menuItemsSupplier = menuItemsSupplier;
@@ -77,7 +78,7 @@ public class MenuPanelPage extends HorizontalLayout
 			return;
 		}
 
-		final List<MenuItem> menuItems = menuItemsSupplier == null ? ImmutableList.of() : menuItemsSupplier.get();
+		final List<? extends MenuItem> menuItems = menuItemsSupplier == null ? ImmutableList.of() : menuItemsSupplier.get();
 
 		//
 		if (searchTextField != null)

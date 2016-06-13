@@ -2,18 +2,20 @@ package de.metas.ui.web.vaadin;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
+
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
 
-import de.metas.ui.web.vaadin.components.menu.MainMenuItem;
-import de.metas.ui.web.vaadin.components.menu.MainMenuItem.MenuItemType;
-import de.metas.ui.web.vaadin.components.menu.MenuItem;
-import de.metas.ui.web.vaadin.components.menu.UserMenuProvider;
+import de.metas.ui.web.menu.MenuController;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.WindowViewProvider;
+import de.metas.ui.web.window.shared.menu.MainMenuItem;
+import de.metas.ui.web.window.shared.menu.MainMenuItem.MenuItemType;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -40,18 +42,24 @@ import de.metas.ui.web.vaadin.window.WindowViewProvider;
 @SuppressWarnings("serial")
 public class MainNavigationView extends CssLayout implements MFView
 {
-	private List<MenuItem> _rootMenuItems;
+	private List<? extends MenuItem> _rootMenuItems;
+
+	private final String restEndpointUrl = "http://localhost:8080" + MenuController.ENDPOINT;
+	@Autowired
+	private RestTemplate restTemplate;
 
 	public MainNavigationView()
 	{
 		super();
+		VaadinClientApplication.autowire(this);
+
 		setSizeFull();
 	}
 
 	@Override
 	public void enter(final ViewChangeEvent event)
 	{
-		MFViewDisplay viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
+		final MFViewDisplay viewDisplay = MFViewDisplay.getMFViewDisplayOrNull(event);
 		viewDisplay.setTitle("Main");
 		viewDisplay.setMenuItemClickListener(menuItem -> runMenuItem(menuItem));
 		viewDisplay.setMenuItems(() -> getMenuItems());
@@ -64,11 +72,12 @@ public class MainNavigationView extends CssLayout implements MFView
 		// nothing
 	}
 
-	private List<MenuItem> getMenuItems()
+	private List<? extends MenuItem> getMenuItems()
 	{
 		if (_rootMenuItems == null)
 		{
-			_rootMenuItems = ImmutableList.copyOf(new UserMenuProvider().getMenuItems());
+			final MainMenuItem rootMenuItem = restTemplate.getForObject(restEndpointUrl + "/root", MainMenuItem.class);
+			_rootMenuItems = rootMenuItem.getChildren();
 		}
 
 		return _rootMenuItems;

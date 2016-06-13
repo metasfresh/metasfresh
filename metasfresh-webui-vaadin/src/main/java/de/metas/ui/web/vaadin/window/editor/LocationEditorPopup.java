@@ -7,8 +7,8 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-import de.metas.ui.web.Application;
 import de.metas.ui.web.service.ILocationService;
+import de.metas.ui.web.vaadin.VaadinClientApplication;
 import de.metas.ui.web.vaadin.window.WindowPresenter;
 import de.metas.ui.web.vaadin.window.view.EditorView;
 import de.metas.ui.web.window.WindowConstants;
@@ -53,7 +53,7 @@ public class LocationEditorPopup extends Window
 	public LocationEditorPopup(final LookupValue lookupValue)
 	{
 		super();
-		Application.autowire(this);
+		VaadinClientApplication.autowire(this);
 
 		addStyleName(STYLE);
 

@@ -21,7 +21,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.Application;
+import de.metas.ui.web.vaadin.VaadinClientApplication;
+import de.metas.ui.web.vaadin.model.RestProxyWindowModel;
 import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;
@@ -83,17 +84,10 @@ public class WindowPresenter implements WindowViewListener
 	public WindowPresenter()
 	{
 		super();
-		Application.autowire(this);
+		VaadinClientApplication.autowire(this);
 
 		// _model = new JSONProxyWindowModel(new WindowModelImpl());
-		try
-		{
-			_model = (WindowModel)Thread.currentThread().getContextClassLoader().loadClass("de.metas.ui.web.window.controller.RestProxyWindowModel").newInstance();
-		}
-		catch (InstantiationException | IllegalAccessException | ClassNotFoundException e)
-		{
-			throw Throwables.propagate(e);
-		}
+		_model = new RestProxyWindowModel();
 
 		setView(_view, null);
 	}

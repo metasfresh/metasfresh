@@ -4,8 +4,6 @@ import org.adempiere.util.lang.Mutable;
 
 import com.vaadin.server.VaadinSession;
 
-import de.metas.ui.web.base.session.UserPreference;
-
 /*
  * #%L
  * test_vaadin
@@ -70,8 +68,6 @@ public class UserSession
 		return userSession;
 	}
 	
-	private final UserSessionContextProvider contextProvider = new UserSessionContextProvider();
-	private final UserPreference userPreference = new UserPreference();
 	private boolean loggedIn = false;
 	
 	private UserSession()
@@ -87,15 +83,5 @@ public class UserSession
 	public void setLoggedIn(final boolean loggedIn)
 	{
 		this.loggedIn = loggedIn;
-	}
-	
-	public UserSessionContextProvider getContextProvider()
-	{
-		return contextProvider;
-	}
-	
-	public UserPreference getUserPreference()
-	{
-		return userPreference;
 	}
 }

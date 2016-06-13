@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+import org.compiere.util.ValueNamePair;
 
 import com.vaadin.ui.Component;
 
@@ -40,7 +40,7 @@ public interface LoginView
 
 	void setResourceBundle(ResourceBundle res);
 
-	void setLanguages(List<Language> languages, Language defaultLanguage);
+	void setLanguages(List<ValueNamePair> languages, ValueNamePair defaultLanguage);
 
 	void setWarehouseVisible(boolean visible);
 
@@ -51,5 +51,4 @@ public interface LoginView
 	void setOrgs(List<KeyNamePair> orgs);
 
 	void setWarehouses(List<KeyNamePair> warehouses);
-
 }

@@ -3,6 +3,7 @@ package de.metas.ui.web.vaadin.components.menu;
 import com.vaadin.ui.Button;
 
 import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -46,7 +47,7 @@ class MenuItemComponent extends Button
 	private void updateFromItem()
 	{
 		setCaption(menuItem.getCaption());
-		setIcon(menuItem.getIcon());
+		setIcon(Theme.getVaadinResource(menuItem.getIcon()));
 	}
 
 	public MenuItem getMenuItem()

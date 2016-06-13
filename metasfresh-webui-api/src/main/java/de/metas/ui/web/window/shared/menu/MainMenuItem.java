@@ -1,11 +1,17 @@
-package de.metas.ui.web.vaadin.components.menu;
+package de.metas.ui.web.window.shared.menu;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.vaadin.server.Resource;
+
+import de.metas.ui.web.window.shared.ImageResource;
 
 /*
  * #%L
@@ -29,7 +35,8 @@ import com.vaadin.server.Resource;
  * #L%
  */
 
-public final class MainMenuItem implements MenuItem
+@SuppressWarnings("serial")
+public final class MainMenuItem implements MenuItem, Serializable
 {
 	public static final MainMenuItem.Builder builder()
 	{
@@ -41,16 +48,21 @@ public final class MainMenuItem implements MenuItem
 		return (MainMenuItem)menuItem;
 	}
 
-	public enum MenuItemType
+	public static enum MenuItemType
 	{
 		Window, Process, Report,
 	}
 
+	@JsonProperty("caption")
 	private final String caption;
-	private final Resource icon;
-	private final List<MenuItem> children;
+	@JsonProperty("icon")
+	private final ImageResource icon;
+	@JsonProperty("children")
+	private final List<MainMenuItem> children;
 
+	@JsonProperty("type")
 	private final MenuItemType type;
+	@JsonProperty("elementId")
 	private final int elementId;
 
 	private MainMenuItem(final MainMenuItem.Builder builder)
@@ -64,6 +76,23 @@ public final class MainMenuItem implements MenuItem
 		elementId = builder.elementId;
 	}
 
+	@JsonCreator
+	private MainMenuItem(
+			@JsonProperty("caption") final String caption //
+			, @JsonProperty("icon") final ImageResource icon //
+			, @JsonProperty("children") final List<MainMenuItem> children //
+			, @JsonProperty("type") final MenuItemType type //
+			, @JsonProperty("elementId") final int elementId //
+	)
+	{
+		super();
+		this.caption = caption;
+		this.icon = icon;
+		this.children = children == null ? ImmutableList.of() : ImmutableList.copyOf(children);
+		this.type = type;
+		this.elementId = elementId;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -74,19 +103,49 @@ public final class MainMenuItem implements MenuItem
 	}
 
 	@Override
+	public int hashCode()
+	{
+		return Objects.hash(caption, icon, children, type, elementId);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (!(obj instanceof MainMenuItem))
+		{
+			return false;
+		}
+
+		final MainMenuItem other = (MainMenuItem)obj;
+		return Objects.equals(caption, other.caption)
+				&& Objects.equals(icon, other.icon)
+				&& Objects.equals(children, other.children)
+				&& Objects.equals(type, other.type)
+				&& Objects.equals(elementId, other.elementId);
+	}
+
+	@Override
 	public String getCaption()
 	{
 		return caption;
 	}
 
 	@Override
-	public List<MenuItem> getChildren()
+	public List<MainMenuItem> getChildren()
 	{
 		return children;
 	}
 
 	@Override
-	public Resource getIcon()
+	public ImageResource getIcon()
 	{
 		return icon;
 	}
@@ -104,8 +163,8 @@ public final class MainMenuItem implements MenuItem
 	public static final class Builder
 	{
 		private String caption;
-		private Resource icon;
-		private final List<MenuItem> children = new ArrayList<>();
+		private ImageResource icon;
+		private final List<MainMenuItem> children = new ArrayList<>();
 
 		private MenuItemType type;
 		private int elementId;
@@ -126,7 +185,7 @@ public final class MainMenuItem implements MenuItem
 			return this;
 		}
 
-		public MainMenuItem.Builder setIcon(final Resource icon)
+		public MainMenuItem.Builder setIcon(final ImageResource icon)
 		{
 			this.icon = icon;
 			return this;
@@ -139,9 +198,20 @@ public final class MainMenuItem implements MenuItem
 			return this;
 		}
 
-		public MainMenuItem.Builder addChild(final MenuItem child)
+		public MainMenuItem.Builder addChild(final MainMenuItem child)
 		{
 			children.add(child);
+			return this;
+		}
+
+		public MainMenuItem.Builder addChildren(final Collection<MainMenuItem> children)
+		{
+			if (children == null || children.isEmpty())
+			{
+				return this;
+			}
+
+			this.children.addAll(children);
 			return this;
 		}
 

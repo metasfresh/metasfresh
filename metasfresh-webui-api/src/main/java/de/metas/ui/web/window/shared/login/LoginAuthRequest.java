@@ -1,8 +1,9 @@
-package de.metas.ui.web.window.shared;
+package de.metas.ui.web.window.shared.login;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -29,42 +30,43 @@ import com.google.common.base.MoreObjects;
  */
 
 @SuppressWarnings("serial")
-public final class ImageResource implements Serializable
+public final class LoginAuthRequest implements Serializable
 {
-	public static enum ResourceType
+	@JsonCreator
+	public static final LoginAuthRequest of(@JsonProperty("username") final String username, @JsonProperty("password") final String password)
 	{
-		IconSmall, Image,
+		return new LoginAuthRequest(username, password);
 	}
 
-	@JsonProperty("n")
-	private final String resourceName;
-	@JsonProperty("t")
-	private final ImageResource.ResourceType resourceType;
+	@JsonProperty("username")
+	private final String username;
+	@JsonProperty("password")
+	private final String password;
 
-	public ImageResource(@JsonProperty("n") final String resourceName, @JsonProperty("t") final ImageResource.ResourceType resourceType)
+	private LoginAuthRequest(final String username, final String password)
 	{
 		super();
-		this.resourceName = resourceName;
-		this.resourceType = resourceType;
+		this.username = username;
+		this.password = password;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("resourceName", resourceName)
-				.add("resourceType", resourceType)
+				.add("username", username)
+				.add("password", "********")
 				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(resourceName, resourceType);
+		return Objects.hash(username, password);
 	}
 
 	@Override
-	public boolean equals(final Object obj)
+	public boolean equals(Object obj)
 	{
 		if (this == obj)
 		{
@@ -74,25 +76,23 @@ public final class ImageResource implements Serializable
 		{
 			return false;
 		}
-
-		if (!(obj instanceof ImageResource))
+		if (!(obj instanceof LoginAuthRequest))
 		{
 			return false;
 		}
 
-		final ImageResource other = (ImageResource)obj;
-		return Objects.equals(resourceName, other.resourceName)
-				&& Objects.equals(resourceType, other.resourceType);
+		final LoginAuthRequest other = (LoginAuthRequest)obj;
+		return Objects.equals(username, other.username)
+				&& Objects.equals(password, other.password);
 	}
 
-	public String getResourceName()
+	public String getUsername()
 	{
-		return resourceName;
+		return username;
 	}
 
-	public ImageResource.ResourceType getResourceType()
+	public String getPassword()
 	{
-		return resourceType;
+		return password;
 	}
-
 }

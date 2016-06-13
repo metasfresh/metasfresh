@@ -19,6 +19,8 @@ import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.shared.ImageResource;
+import de.metas.ui.web.window.shared.ImageResource.ResourceType;
 
 public class Theme
 {
@@ -61,6 +63,28 @@ public class Theme
 	{
 		final String fileNameWithoutExtension = name + "24";
 		return getImageResourceForNameWithoutExt(fileNameWithoutExtension);
+	}
+	
+	public static Resource getVaadinResource(final ImageResource imageResource)
+	{
+		if (imageResource == null)
+		{
+			return null;
+		}
+
+		final ResourceType resourceType = imageResource.getResourceType();
+		if (resourceType == ResourceType.IconSmall)
+		{
+			return Theme.getIconSmall(imageResource.getResourceName());
+		}
+		else if (resourceType == ResourceType.Image)
+		{
+			return Theme.getImageResourceForNameWithoutExt(imageResource.getResourceName());
+		}
+		else
+		{
+			throw new IllegalStateException("Unknown resource type: " + resourceType);
+		}
 	}
 
 	/** Cache: "fileName (without extension)" to {@link Resource} */

@@ -11,6 +11,7 @@ import com.vaadin.ui.Notification;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.service.IWebProcessCtl;
+import de.metas.ui.web.vaadin.theme.Theme;
 import de.metas.ui.web.window.shared.action.Action.ActionEvent;
 
 /*
@@ -52,7 +53,7 @@ public class VaadinWebProcessCtl implements IWebProcessCtl
 				locked = true;
 
 				final Notification notification = new Notification("Executing " + event.getAction().getCaption(), Notification.Type.TRAY_NOTIFICATION);
-				notification.setIcon(VaadinImageProvider.getVaadinResource(event.getAction().getIcon()));
+				notification.setIcon(Theme.getVaadinResource(event.getAction().getIcon()));
 				notification.show(Page.getCurrent());
 			}
 

@@ -16,9 +16,9 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.menu.MenuItemClickListener;
 import de.metas.ui.web.vaadin.components.menu.MenuPanel;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -141,7 +141,7 @@ public class MFViewDisplay extends CustomComponent implements ViewDisplay
 		menuPanel.setClickListener(clickListener);
 	}
 	
-	public void setMenuItems(final Supplier<List<MenuItem>> menuItemsSupplier)
+	public void setMenuItems(final Supplier<List<? extends MenuItem>> menuItemsSupplier)
 	{
 		menuPanel.setRootMenuItems(menuItemsSupplier);
 	}

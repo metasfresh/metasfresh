@@ -1,4 +1,4 @@
-package de.metas.ui.web;
+package de.metas.ui.web.config;
 
 import java.util.List;
 import java.util.Map;

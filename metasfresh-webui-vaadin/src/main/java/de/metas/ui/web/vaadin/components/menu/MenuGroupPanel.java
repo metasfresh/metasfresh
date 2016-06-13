@@ -7,6 +7,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
 import de.metas.ui.web.vaadin.theme.Theme;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L

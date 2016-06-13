@@ -1,16 +1,19 @@
 package de.metas.ui.web.vaadin.login;
 
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+import org.compiere.util.ValueNamePair;
 
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 
-import de.metas.ui.web.Application;
+import de.metas.ui.web.vaadin.VaadinClientApplication;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.event.UIEventBus;
 import de.metas.ui.web.vaadin.login.event.UserLoggedInEvent;
+import de.metas.ui.web.vaadin.session.UserSession;
+import de.metas.ui.web.window.shared.login.LoginAuthRequest;
+import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
 
 /*
  * #%L
@@ -46,20 +49,22 @@ public class LoginNavigationView extends CustomComponent implements MFView
 	@Override
 	public void enter(final ViewChangeEvent event)
 	{
-		if (Application.isTesting())
+		if (VaadinClientApplication.isTesting())
 		{
 			setCompositionRoot(new Label("Automatically logging in...."));
-
-			final LoginModel loginModel = new LoginModel();
-			loginModel.authenticate("SuperUser", "System");
-			loginModel.setLanguage(Language.getLanguage("de_DE"));
+			
+			final RestProxyLoginModel loginModel = new RestProxyLoginModel();
+			loginModel.authenticate(LoginAuthRequest.of("SuperUser", "System"));
+			loginModel.setLanguage(ValueNamePair.of("de_DE", "German"));
 			loginModel.loginComplete(
-					new KeyNamePair(1000000, "Admin") // role
-					, new KeyNamePair(1000000, "?") // client
-					, new KeyNamePair(1000000, "?") // org
-					, (KeyNamePair)null // warehouse
-			);
+					LoginCompleteRequest.of(
+							new KeyNamePair(1000000, "Admin") // role
+							, new KeyNamePair(1000000, "?") // client
+							, new KeyNamePair(1000000, "?") // org
+							, (KeyNamePair)null // warehouse
+			));
 
+			UserSession.getCurrent().setLoggedIn(true);
 			UIEventBus.post(new UserLoggedInEvent());
 
 			return;

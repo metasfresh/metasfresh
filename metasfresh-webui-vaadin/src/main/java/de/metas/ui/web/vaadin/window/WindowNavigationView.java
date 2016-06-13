@@ -11,12 +11,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.Resource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 
-import de.metas.ui.web.service.impl.VaadinImageProvider;
-import de.metas.ui.web.vaadin.components.menu.MenuItem;
 import de.metas.ui.web.vaadin.components.navigator.MFView;
 import de.metas.ui.web.vaadin.components.navigator.MFViewDisplay;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
@@ -26,6 +23,7 @@ import de.metas.ui.web.window.shared.action.Action;
 import de.metas.ui.web.window.shared.action.ActionGroup;
 import de.metas.ui.web.window.shared.action.ActionsList;
 import de.metas.ui.web.window.shared.datatype.PropertyPath;
+import de.metas.ui.web.window.shared.menu.MenuItem;
 
 /*
  * #%L
@@ -256,7 +254,7 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		@Override
-		public Resource getIcon()
+		public ImageResource getIcon()
 		{
 			return null;
 		}
@@ -303,10 +301,9 @@ public class WindowNavigationView extends CustomComponent implements MFView, Act
 		}
 
 		@Override
-		public Resource getIcon()
+		public ImageResource getIcon()
 		{
-			final ImageResource imageResource = action.getIcon();
-			return VaadinImageProvider.getVaadinResource(imageResource);
+			return action.getIcon();
 		}
 
 		public Action getAction()
