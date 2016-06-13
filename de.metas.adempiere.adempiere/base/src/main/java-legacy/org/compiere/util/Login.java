@@ -209,20 +209,18 @@ public class Login
 		super();
 		if (ctx == null)
 			throw new IllegalArgumentException("Context missing");
-		m_ctx = ctx;
+		this._ctx = ctx;
 	}	// Login
 
 	public Properties getCtx()
 	{
-		return m_ctx;
+		return _ctx;
 	}
 
 	/** Logger */
-	private static final Logger log = LogManager.getLogger(Login.class);
+	private static final transient Logger log = LogManager.getLogger(Login.class);
 	/** Context */
-	private Properties m_ctx = null;
-	/** Connection Profile */
-	private String m_connectionProfile = null;
+	private Properties _ctx = null;
 
 	/**
 	 * (Test) Client Login.
@@ -238,8 +236,10 @@ public class Login
 	 * @param force ignore pwd
 	 * @return Array of Role KeyNamePair or null if error The error (NoDatabase, UserPwdError, DBLogin) is saved in the log
 	 */
-	private KeyNamePair[] getRoles(CConnection cc, String app_user, String app_pwd, boolean force)
+	private KeyNamePair[] getRoles(final CConnection cc, final String app_user, final String app_pwd, final boolean force)
 	{
+		final Properties m_ctx = getCtx();
+		
 		// Establish connection
 		DB.setDBTarget(cc);
 		Env.setContext(m_ctx, "#Host", cc.getAppsHost());
@@ -345,10 +345,11 @@ public class Login
 		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
 		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 		MSession sessionPO;
-		if (m_remoteAddr != null)
-			sessionPO = MSession.get(m_ctx, m_remoteAddr, m_remoteHost, m_webSession);
+		final String remoteAddr = getRemoteAddr();
+		if (remoteAddr != null)
+			sessionPO = MSession.get(getCtx(), remoteAddr, getRemoteHost(), getWebSession());
 		else
-			sessionPO = MSession.get(m_ctx, true);
+			sessionPO = MSession.get(getCtx(), true);
 		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
 		if (!app_user.equals(session.getLoginUsername()))
 		{
@@ -393,6 +394,7 @@ public class Login
 			{
 				if (force)
 				{
+					final Properties m_ctx = getCtx();
 					Env.setContext(m_ctx, Env.CTXNAME_AD_User_Name, "System");
 					Env.setContext(m_ctx, Env.CTXNAME_AD_User_ID, 0);
 					Env.setContext(m_ctx, "#AD_User_Description", "System Forced Login");
@@ -411,7 +413,7 @@ public class Login
 				}
 			}
 			final int adUserId = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
-			final I_AD_User user = userDAO.retrieveUser(m_ctx, adUserId);
+			final I_AD_User user = userDAO.retrieveUser(getCtx(), adUserId);
 			int loginFailureCount = rs.getInt(I_AD_User.COLUMNNAME_LoginFailureCount);
 
 			// metas: us902: Update logged in user if not equal.
@@ -476,6 +478,7 @@ public class Login
 				InterfaceWrapperHelper.save(user);
 			}
 
+			final Properties m_ctx = getCtx();
 			Env.setContext(m_ctx, Env.CTXNAME_AD_User_Name, app_user);
 			Env.setContext(m_ctx, Env.CTXNAME_AD_User_ID, rs.getInt(1));
 			Env.setContext(m_ctx, Env.CTXNAME_SalesRep_ID, rs.getInt(1));
@@ -533,7 +536,7 @@ public class Login
 			return false;
 		}
 
-		final MSystem system = MSystem.get(m_ctx);
+		final MSystem system = MSystem.get(getCtx());
 		if (system == null)
 		{
 			throw new IllegalStateException("No System Info");
@@ -565,6 +568,7 @@ public class Login
 		final int AD_Client_ID = -1; // N/A
 		final int AD_Role_ID = role.getKey();
 
+		final Properties m_ctx = getCtx();
 		if (Env.getContext(m_ctx, Env.CTXNAME_AD_User_ID).length() == 0)	// could be number 0
 			throw new UnsupportedOperationException("Missing Context: " + Env.CTXNAME_AD_User_ID);
 		final int AD_User_ID = Env.getContextAsInt(m_ctx, Env.CTXNAME_AD_User_ID);
@@ -709,6 +713,7 @@ public class Login
 
 	public String validateLogin(KeyNamePair org, final boolean fireLoginComplete)
 	{
+		final Properties m_ctx = getCtx();
 		int AD_Client_ID = Env.getAD_Client_ID(m_ctx);
 		int AD_Org_ID = org.getKey();
 		int AD_Role_ID = Env.getAD_Role_ID(m_ctx);
@@ -776,6 +781,7 @@ public class Login
 		if (log.isDebugEnabled())
 			log.debug("Org: " + org.toStringX());
 
+		final Properties m_ctx = getCtx();
 		if (m_ctx == null || org == null)
 			throw new IllegalArgumentException("Required parameter missing");
 		if (Env.getContext(m_ctx, Env.CTXNAME_AD_Client_ID).length() == 0)
@@ -1034,6 +1040,8 @@ public class Login
 			return;
 		}
 
+		final Properties m_ctx = getCtx();
+
 		String value = null;
 		//
 		String sql = "SELECT " + ColumnName + " FROM " + TableName	// most specific first
@@ -1077,38 +1085,38 @@ public class Login
 		}
 	}	// loadDefault
 
-	private String m_remoteAddr = null;
-	private String m_remoteHost = null;
-	private String m_webSession = null;
+	private String _remoteAddr = null;
+	private String _remoteHost = null;
+	private String _webSession = null;
 
 	public void setRemoteAddr(String remoteAddr)
 	{
-		m_remoteAddr = remoteAddr;
+		_remoteAddr = remoteAddr;
 	}
 
 	public String getRemoteAddr()
 	{
-		return m_remoteAddr;
+		return _remoteAddr;
 	}	// RemoteAddr
 
 	public void setRemoteHost(String remoteHost)
 	{
-		m_remoteHost = remoteHost;
+		_remoteHost = remoteHost;
 	}
 
 	public String getRemoteHost()
 	{
-		return m_remoteHost;
+		return _remoteHost;
 	}	// RemoteHost
 
 	public void setWebSession(String webSession)
 	{
-		m_webSession = webSession;
+		_webSession = webSession;
 	}
 
 	public String getWebSession()
 	{
-		return m_webSession;
+		return _webSession;
 	}	// WebSession
 
 	public boolean isShowWarehouseOnLogin()
