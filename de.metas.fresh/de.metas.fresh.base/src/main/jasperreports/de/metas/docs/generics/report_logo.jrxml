@@ -13,9 +13,9 @@
 	</parameter>
 	<parameter name="printname" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[select * from de_metas_endcustomer_fresh_reports.Docs_Generics_Logo_Report($P{org_id});]]>
+		<![CDATA[select 0;]]>
 	</queryString>
-	<field name="imageurl" class="java.lang.String"/>
+	<field name="?column?" class="java.lang.Integer"/>
 	<title>
 		<band height="85" splitType="Stretch">
 			<image scaleImage="RetainShape" hAlign="Right">
@@ -26,7 +26,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<imageExpression><![CDATA[$F{imageurl}.equals("0") ? "de/metas/generics/logo.png" : $F{imageurl} ]]></imageExpression>
+				<imageExpression><![CDATA["de/metas/generics/logo.png"]]></imageExpression>
 			</image>
 		</band>
 	</title>

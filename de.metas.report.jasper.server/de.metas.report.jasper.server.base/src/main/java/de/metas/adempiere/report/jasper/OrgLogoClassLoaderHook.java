@@ -33,6 +33,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
@@ -73,6 +74,7 @@ class OrgLogoClassLoaderHook
 	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = new CCache<Integer, Optional<File>>(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID", 10, 0)
 			.addResetForTableName(I_AD_ClientInfo.Table_Name) // FRESH-327
 			.addResetForTableName(I_AD_OrgInfo.Table_Name) // FRESH-327
+			.addResetForTableName(I_C_BPartner.Table_Name) // for C_BPartner.Logo_ID FRESH-356
 			;
 	private final Callable<Optional<File>> orgLogoLocalFileLoader;
 

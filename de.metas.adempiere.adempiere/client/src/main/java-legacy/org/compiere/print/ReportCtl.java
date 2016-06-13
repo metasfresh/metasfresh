@@ -34,11 +34,9 @@ import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -125,19 +123,19 @@ public final class ReportCtl
 		 */
 		// metas: invoke startDocumentPrint also with table_id
 		if (pi.getAD_Process_ID() == 110)			//	C_Order
-			return startDocumentPrint(ReportEngine.ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		if (pi.getAD_Process_ID() ==  MProcess.getProcess_ID("Rpt PP_Order", null))			//	C_Order
-			return startDocumentPrint(ReportEngine.MANUFACTURING_ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.MANUFACTURING_ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		if (pi.getAD_Process_ID() ==  MProcess.getProcess_ID("Rpt DD_Order", null))			//	C_Order
-			return startDocumentPrint(ReportEngine.DISTRIBUTION_ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.DISTRIBUTION_ORDER, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 116)		//	C_Invoice
-			return startDocumentPrint(ReportEngine.INVOICE, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.INVOICE, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 117)		//	M_InOut
-			return startDocumentPrint(ReportEngine.SHIPMENT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.SHIPMENT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 217)		//	C_Project
-			return startDocumentPrint(ReportEngine.PROJECT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.PROJECT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 276)		//	C_RfQResponse
-			return startDocumentPrint(ReportEngine.RFQ, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			return startDocumentPrint(ReportEngine.RFQ, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 313)		//	C_Payment
 			return startCheckPrint(pi.getRecord_ID(), !pi.isPrintPreview());
 		/**
@@ -269,7 +267,7 @@ public final class ReportCtl
 	 */
 	public static boolean startDocumentPrint(int type, MPrintFormat customPrintFormat, int Record_ID, ASyncProcess parent, int WindowNo, String printerName) 
 	{
-		return (startDocumentPrint(type, customPrintFormat, Record_ID, 0, parent, WindowNo, true, printerName));
+		return (startDocumentPrint(type, customPrintFormat, Record_ID, 0, -1, parent, WindowNo, true, printerName));
 	}
 
 	/**
@@ -288,13 +286,13 @@ public final class ReportCtl
 		final int tableId = 0;
 		final MPrintFormat customPrintFormat = null;
 		final String printerName = null;
-		return startDocumentPrint(type, customPrintFormat, Record_ID, tableId, parent, WindowNo, IsDirectPrint, printerName);
+		return startDocumentPrint(type, customPrintFormat, Record_ID, tableId, -1, parent, WindowNo, IsDirectPrint, printerName);
 	}
 	private static boolean startDocumentPrint(int type, int Record_ID, int Table_ID, ASyncProcess parent, int WindowNo,
 			boolean IsDirectPrint)
 	{
 		final String printerName = null;
-		return startDocumentPrint(type, null, Record_ID, Table_ID, parent, WindowNo, IsDirectPrint, printerName);
+		return startDocumentPrint(type, null, Record_ID, Table_ID, -1, parent, WindowNo, IsDirectPrint, printerName);
 	}
 
 	/**
@@ -306,10 +304,10 @@ public final class ReportCtl
 	 * 	@param printerName 	Specified printer name
 	 * 	@return true if success
 	 */
-	private static boolean startDocumentPrint(int type, MPrintFormat customPrintFormat, int Record_ID, int tableId, ASyncProcess parent, int WindowNo,
+	private static boolean startDocumentPrint(int type, MPrintFormat customPrintFormat, int Record_ID, int tableId, int pInstanceId, ASyncProcess parent, int WindowNo,
 			boolean IsDirectPrint, String printerName)
 	{
-		final ReportEngine re = ReportEngine.get (Env.getCtx(), type, Record_ID);
+		final ReportEngine re = ReportEngine.get (Env.getCtx(), type, Record_ID, pInstanceId, ITrx.TRXNAME_None);
 		if (re == null)
 		{
 			Services.get(IClientUI.class).error(0, "NoDocPrintFormat");

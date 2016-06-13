@@ -2,9 +2,9 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.1000000000000023"/>
+	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="136"/>
+	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,42 +18,7 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	ol.AD_Org_ID,
-	ol.C_OrderLine_ID::int,
-	CASE
-		WHEN
-		EXISTS(
-			SELECT 0
-			FROM C_OrderLine ol1
-			INNER JOIN M_Product p ON ol1.M_Product_ID = p.M_Product_ID
-			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-			WHERE pc.M_Product_Category_ID = ((SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID'))
-				AND ol.C_Order_ID = ol1.C_Order_ID
-		)
-		THEN 'Y'
-		ELSE 'N'
-	END as displayhu,
-	ol.C_Order_ID::int,
-	(
-		SELECT	MAX(io.movementdate)::date AS Movementdate
-		FROM	M_ReceiptSchedule rs
-			INNER JOIN M_ReceiptSchedule_Alloc rsa ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-			INNER JOIN M_InOutLine siol ON rsa.M_InOutLine_ID = siol.M_InOutLine_ID
-			INNER JOIN M_InOut io ON siol.M_InOut_ID = io.M_InOut_ID
-		WHERE 	rs.AD_Table_ID = (SELECT Get_Table_ID( 'C_OrderLine' )) AND ol.C_OrderLine_ID = rs.RECORD_ID
-	) AS MovementDate
-FROM
-	-- All In Out Lines directly linked to the order
-	M_InOutLine iol
-	INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-	INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-		AND rs.AD_Table_ID = (SELECT Get_Table_ID( 'C_OrderLine' ))
-	INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
-WHERE
-	iol.M_InOut_ID = $P{RECORD_ID}
-LIMIT 1
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root($P{RECORD_ID});]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="c_orderline_id" class="java.lang.Integer"/>

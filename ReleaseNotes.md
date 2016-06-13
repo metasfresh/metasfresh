@@ -12,7 +12,21 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.21.20 (upcoming)
+# metasfresh 4.22.21 (upcoming)
+
+## Features
+ - FRESH-349 KPI: Printing Performance
+    * adding a window to show per-shipment performance
+ - FRESH-350 check if purchase inout label and print preview can run faster
+ - FRESH-377 make invoice print preview faster
+ - FRESH-383 make orders print preview run faster
+
+## Fixes
+ - FRESH-344 Move KPI SQL to repository and new DB Schema
+    * Fix: KPI SQLs were in the default/public schema
+ - FRESH-356 make logo work for any org
+
+# metasfresh 4.21.20
 
 ## Features
  - FRESH-349 KPI: Printing Performance
@@ -24,6 +38,7 @@ The actual release notes
     * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
 
 ## Fixes
+ - FRESH-374 duplicates asi in purchase inout print preview
  - FRESH-363 Client metasfresh not getting results from server due to cxf bug
     * workaround: never log incoming payload with JMS transport until https://issues.apache.org/jira/browse/CXF-6930 is solved
  - FRESH-358 Producer Invoice: Jasper Document shows Recapitulation for technical Tax
@@ -37,7 +52,7 @@ The actual release notes
  - GROWTH-65 Community and Legal Files
     * Added LICENSE.md, CODE_OF_CONDUCT.md and modified The Contributing Guidelines.
 
-# metasfresh 4.20.19 (release candidate)
+# metasfresh 4.20.19
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag
