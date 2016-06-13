@@ -1113,6 +1113,7 @@ public class Login
 
 	public boolean isShowWarehouseOnLogin()
 	{
-		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, true, 0, 0);
+		final boolean defaultValue = true;
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, defaultValue, Env.CTXVALUE_AD_Client_ID_System, Env.CTXVALUE_AD_Org_ID_System);
 	}
 }	// Login
