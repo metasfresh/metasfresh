@@ -240,7 +240,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 * NOTE: please make sure you are saving your database changes.
 	 *
 	 * @param source
-	 * @param pmLine packing material line; could be null in case we want to unlink any packing material lines from given <code>source</code>.
+	 * @param pmLine packing material line; could be <code>null</code> in case we want to unlink any packing material lines from given <code>source</code>.
 	 */
 	protected abstract void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source, final IPackingMaterialDocumentLine pmLine);
 }

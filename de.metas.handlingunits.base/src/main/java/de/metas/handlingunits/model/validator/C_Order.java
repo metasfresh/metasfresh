@@ -50,7 +50,7 @@ public class C_Order
 		// Reset existing packing material order lines. They might eventually be removed, if they don't get new quantities assigned from the builder
 		packingMaterialOrderLineBuilder.deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder();
 
-		// Create/ReCreate packing material order lines
+		// Create/Update/Delete packing material order lines
 		packingMaterialOrderLineBuilder.addAllOrderLinesFromOrder();
 		packingMaterialOrderLineBuilder.create();
 	}
