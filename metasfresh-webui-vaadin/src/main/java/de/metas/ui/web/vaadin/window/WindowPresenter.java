@@ -22,7 +22,6 @@ import com.vaadin.ui.UI;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.vaadin.VaadinClientApplication;
-import de.metas.ui.web.vaadin.model.RestProxyWindowModel;
 import de.metas.ui.web.vaadin.window.editor.EditorListener.ViewCommandCallback;
 import de.metas.ui.web.vaadin.window.view.ActionsView;
 import de.metas.ui.web.vaadin.window.view.WindowView;

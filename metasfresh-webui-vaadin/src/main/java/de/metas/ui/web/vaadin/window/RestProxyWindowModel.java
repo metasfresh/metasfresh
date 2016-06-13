@@ -1,4 +1,4 @@
-package de.metas.ui.web.vaadin.model;
+package de.metas.ui.web.vaadin.window;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
