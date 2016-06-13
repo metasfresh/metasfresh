@@ -27,7 +27,7 @@
 		<adempiere.java.version>1.7</adempiere.java.version>
 		<servicemix.java.version>1.7</servicemix.java.version>
 
-		<jasperreports.version>4.6.0</jasperreports.version>
+		<jasperreports.version>6.2.2</jasperreports.version>
 		
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
@@ -88,6 +88,7 @@
 
 			<!-- these two are dependencies of jasperreports 4.6.0, 
 				 and they don't converge to consistent versions within the jasperreport-4.6.0 dependency tree  -->
+				 <!--  
 			<dependency>
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis</artifactId>
@@ -98,6 +99,7 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.8.3</version>
 			</dependency>
+-->
 
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -108,6 +110,7 @@
 			
 			<!-- jasperreport-4.6.0 has version 1.9.4 of jackson-mapper-asl and jackson-core-asl in its tree, but we prefer the later version
 			-->
+			<!-- 
 			<dependency>
 				<groupId>org.codehaus.jackson</groupId>
 				<artifactId>jackson-mapper-asl</artifactId>
@@ -118,7 +121,7 @@
 				<artifactId>jackson-core-asl</artifactId>
 				<version>1.9.10</version>
 			</dependency>
-
+-->
 			<!-- IMPORTANT: when using these dependencies, declared jmockit and hamcrest before junit !-->
 			<!--  Use 1.9 (not 1.10) to avoid the following error when running jmokit with EclEmma:
 				java.lang.LinkageError: loader (instance of  sun/misc/Launcher$AppClassLoader): attempted  duplicate class definition for name: "...Test$1"
