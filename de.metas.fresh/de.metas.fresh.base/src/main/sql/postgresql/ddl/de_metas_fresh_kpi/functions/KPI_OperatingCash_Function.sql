@@ -1,8 +1,8 @@
 
 
-DROP FUNCTION IF EXISTS KPI_OperatingCash_Function (numeric, date, date);
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_OperatingCash_Function (numeric, date, date);
 
-CREATE OR REPLACE FUNCTION KPI_OperatingCash_Function (IN AD_Client_ID numeric,  IN DateFrom date, IN DateTo date)
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_OperatingCash_Function (IN AD_Client_ID numeric,  IN DateFrom date, IN DateTo date)
 RETURNS TABLE 
 (
 	OperatingCashDifference numeric 

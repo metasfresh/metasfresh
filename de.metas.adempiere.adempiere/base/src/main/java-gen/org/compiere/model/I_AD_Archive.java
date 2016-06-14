@@ -119,6 +119,35 @@ public interface I_AD_Archive
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_PInstance_ID (int AD_PInstance_ID);
+
+	/**
+	 * Get Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_PInstance_ID();
+
+	public org.compiere.model.I_AD_PInstance getAD_PInstance();
+
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance);
+
+    /** Column definition for AD_PInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Archive, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new org.adempiere.model.ModelColumn<I_AD_Archive, org.compiere.model.I_AD_PInstance>(I_AD_Archive.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+    /** Column name AD_PInstance_ID */
+    public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+
+	/**
 	 * Set Prozess.
 	 * Process or Report
 	 *
