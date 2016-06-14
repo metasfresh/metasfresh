@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.22.21 (upcoming)
 
 ## Features
+ - FRESH-275 Search Field in Role _Access Windows with autocomplete
  - FRESH-349 KPI: Printing Performance
     * adding a window to show per-shipment performance
  - FRESH-350 check if purchase inout label and print preview can run faster
