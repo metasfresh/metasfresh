@@ -37,9 +37,8 @@ public class WindowModelListener2WebSocket
 	private static final Logger logger = LogManager.getLogger(WindowModelListener2WebSocket.class);
 
 	@Autowired
-	private SimpMessagingTemplate template;
+	private SimpMessagingTemplate websocket;
 
-	// private final int windowNo;
 	private final String windowTopicName;
 
 	public WindowModelListener2WebSocket(final int windowNo)
@@ -47,7 +46,6 @@ public class WindowModelListener2WebSocket
 		super();
 		Env.autowireBean(this);
 
-		// this.windowNo = windowNo;
 		this.windowTopicName = WebSocketConfig.buildWindowTopicName(windowNo);
 	}
 
@@ -58,7 +56,7 @@ public class WindowModelListener2WebSocket
 
 		try
 		{
-			template.convertAndSend(windowTopicName, event);
+			websocket.convertAndSend(windowTopicName, event);
 		}
 		catch (Exception e)
 		{

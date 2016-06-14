@@ -46,7 +46,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
 	public static final String ENDPOINT = "/stomp";
-	public static final String TOPIC_Window = "/window";
+	private static final String TOPIC_Window = "/window";
 
 	public static final String buildWindowTopicName(final int windowNo)
 	{
