@@ -195,11 +195,10 @@
 		</dependency>
 
 		<!-- Reporting -->
-
+		<!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.7</version>
 
 			<exclusions>
 				<!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar) 

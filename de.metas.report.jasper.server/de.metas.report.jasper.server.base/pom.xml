@@ -93,12 +93,10 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
-			<version>1.7</version>
 		</dependency>
 
 		<dependency>
