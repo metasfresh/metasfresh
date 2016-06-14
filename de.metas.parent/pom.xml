@@ -28,6 +28,9 @@
 		<servicemix.java.version>1.7</servicemix.java.version>
 
 		<jasperreports.version>6.2.2</jasperreports.version>
+				
+		<!-- FRESH-397: jasper 6.2.2 uses version 2.1.7.js5 -->
+		<itext.version>2.1.7.js5</itext.version>
 		
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
@@ -86,6 +89,12 @@
 				<version>${jasperreports.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.lowagie</groupId>
+				<artifactId>itext</artifactId>
+				<version>${itext.version}</version>
+			</dependency>
+
 			<!-- these two are dependencies of jasperreports 4.6.0, 
 				 and they don't converge to consistent versions within the jasperreport-4.6.0 dependency tree  -->
 				 <!--  
@@ -114,7 +123,7 @@
 				<artifactId>jackson-core</artifactId>
 				<version>2.6.5</version>
 			</dependency>
-  			<dependency>
+			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>2.6.5</version>
