@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -188,7 +188,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866" key="textField-20" x="390" y="0" width="35" height="12" forecolor="#000000"/>
+					<reportElement uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866" key="textField-20" x="389" y="0" width="37" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -202,7 +202,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="4829f110-fa95-429a-b450-10c28f535158" key="textField-20" x="425" y="0" width="33" height="12" forecolor="#000000"/>
+					<reportElement uuid="4829f110-fa95-429a-b450-10c28f535158" key="textField-20" x="426" y="0" width="33" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
