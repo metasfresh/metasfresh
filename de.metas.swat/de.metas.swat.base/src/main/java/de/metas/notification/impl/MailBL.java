@@ -9,7 +9,7 @@ import java.util.Properties;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ProcessUtil;
@@ -215,7 +215,7 @@ public class MailBL implements IMailBL
 			final String message,
 			final boolean html)
 	{
-		final Properties ctx = POWrapper.getCtx(client);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		final IMailbox mailbox = findMailBox(
 				client, ProcessUtil.getCurrentOrgId(), ProcessUtil.getCurrentProcessId(), null // C_DocType - Task FRESH-203 : This shall work as before
 				, mailCustomType, from);

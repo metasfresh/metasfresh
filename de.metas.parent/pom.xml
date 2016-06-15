@@ -428,6 +428,12 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>de.metas.rfq</groupId>
+				<artifactId>de.metas.rfq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

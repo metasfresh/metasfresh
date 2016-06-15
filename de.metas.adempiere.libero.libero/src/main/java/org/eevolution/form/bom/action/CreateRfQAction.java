@@ -44,18 +44,23 @@ import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MResource;
-import org.compiere.model.MRfQ;
-import org.compiere.model.MRfQLine;
-import org.compiere.model.MRfQLineQty;
 import org.compiere.util.Env;
 import org.eevolution.form.action.ProcessPopupAction;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.reasoner.StorageReasoner;
 import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
+
+import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQLine;
+import de.metas.rfq.model.I_C_RfQLineQty;
+import de.metas.rfq.model.X_C_RfQ;
 
 /**
  * @author Victor Perez, e-Evolution, S.C. *  @author Victor Perez, e-Evolution, S.C.
@@ -137,7 +142,7 @@ public class CreateRfQAction extends ProcessPopupAction {
     	
     	//Calendar cal = Calendar.getInstance();
     	
-    	MRfQ rfq = new MRfQ(Env.getCtx(), 0, null);
+    	final I_C_RfQ rfq = InterfaceWrapperHelper.create(Env.getCtx(), I_C_RfQ.class, ITrx.TRXNAME_None);
     	
     	rfq.setName(
     			Services.get(IMsgBL.class).translate(Env.getCtx(), "C_RFQ_ID")
@@ -147,7 +152,7 @@ public class CreateRfQAction extends ProcessPopupAction {
     	);
     	
     	rfq.setC_Currency_ID(Env.getContextAsInt(Env.getCtx(), "$C_Currency_ID"));
-    	rfq.setQuoteType(MRfQ.QUOTETYPE_QuoteSelectedLines);
+    	rfq.setQuoteType(X_C_RfQ.QUOTETYPE_QuoteSelectedLines);
     	rfq.setDateWorkStart(mo.getDateStartSchedule());
     	rfq.setDateWorkComplete(mo.getDateFinishSchedule());
     	
@@ -159,7 +164,7 @@ public class CreateRfQAction extends ProcessPopupAction {
         
     	if(successful()) {
         	
-        	createRfQLines(rfq.get_ID(), node);
+        	createRfQLines(rfq.getC_RfQ_ID(), node);
         }	    
     }
 
@@ -198,8 +203,8 @@ public class CreateRfQAction extends ProcessPopupAction {
     		return;
     	}
 
-    	MRfQ rfq = new MRfQ(Env.getCtx(), rfqId, null);
-    	MRfQLine targetLine = new MRfQLine(Env.getCtx(),0,null);
+    	final I_C_RfQ rfq = InterfaceWrapperHelper.create(Env.getCtx(), rfqId, I_C_RfQ.class, ITrx.TRXNAME_None);
+    	final I_C_RfQLine targetLine = InterfaceWrapperHelper.create(Env.getCtx(), I_C_RfQLine.class, ITrx.TRXNAME_None);
     	
         targetLine.setC_RfQ_ID(rfqId);
         targetLine.setLine(lineCount(rfqId)+1);
@@ -215,13 +220,13 @@ public class CreateRfQAction extends ProcessPopupAction {
         	return;
         }
 
-        MRfQLineQty lineQty = new MRfQLineQty(Env.getCtx(),0,null);
+        final I_C_RfQLineQty lineQty = InterfaceWrapperHelper.create(Env.getCtx(), I_C_RfQLineQty.class, ITrx.TRXNAME_None);
         
         //lineQty.setQty(reasoner.calculateRequiredProducts(sourceLine));
         lineQty.setQty(qtyReq);
         
         lineQty.setC_UOM_ID(sourceLine.getC_UOM_ID());
-        lineQty.setC_RfQLine_ID(targetLine.get_ID());
+        lineQty.setC_RfQLine(targetLine);
         lineQty.setIsRfQQty(true);
         lineQty.setIsPurchaseQty(true);
         
@@ -229,8 +234,7 @@ public class CreateRfQAction extends ProcessPopupAction {
     }	    
     
     private int lineCount(int rfqId) {
-
-    	MRfQ rfq = new MRfQ(Env.getCtx(), rfqId, null);
-    	return rfq.getLines().length;
+    	final I_C_RfQ rfq = InterfaceWrapperHelper.create(Env.getCtx(), rfqId, I_C_RfQ.class, ITrx.TRXNAME_None);
+    	return Services.get(IRfqDAO.class).retrieveLines(rfq).size();
     }
 }
