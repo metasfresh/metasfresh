@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.ordercandidate.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_OLCand
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -921,6 +905,33 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_Discount = "Discount";
 
 	/**
+	 * Set Lieferempfänger eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setDropShip_BPartner_Effective_ID (int DropShip_BPartner_Effective_ID);
+
+	/**
+	 * Get Lieferempfänger eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getDropShip_BPartner_Effective_ID();
+
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Effective();
+
+	public void setDropShip_BPartner_Effective(org.compiere.model.I_C_BPartner DropShip_BPartner_Effective);
+
+    /** Column definition for DropShip_BPartner_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "DropShip_BPartner_Effective_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name DropShip_BPartner_Effective_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_Effective_ID = "DropShip_BPartner_Effective_ID";
+
+	/**
 	 * Set Lieferempfänger.
 	 * Business Partner to ship to
 	 *
@@ -948,6 +959,60 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name DropShip_BPartner_ID */
     public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Lieferempfänger abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_BPartner_Override_ID (int DropShip_BPartner_Override_ID);
+
+	/**
+	 * Get Lieferempfänger abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_BPartner_Override_ID();
+
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Override();
+
+	public void setDropShip_BPartner_Override(org.compiere.model.I_C_BPartner DropShip_BPartner_Override);
+
+    /** Column definition for DropShip_BPartner_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "DropShip_BPartner_Override_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name DropShip_BPartner_Override_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_Override_ID = "DropShip_BPartner_Override_ID";
+
+	/**
+	 * Set Lieferadresse eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setDropShip_Location_Effective_ID (int DropShip_Location_Effective_ID);
+
+	/**
+	 * Get Lieferadresse eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getDropShip_Location_Effective_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Effective();
+
+	public void setDropShip_Location_Effective(org.compiere.model.I_C_BPartner_Location DropShip_Location_Effective);
+
+    /** Column definition for DropShip_Location_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "DropShip_Location_Effective_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name DropShip_Location_Effective_ID */
+    public static final String COLUMNNAME_DropShip_Location_Effective_ID = "DropShip_Location_Effective_ID";
 
 	/**
 	 * Set Lieferadresse.
@@ -979,6 +1044,33 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
+	 * Set Lieferadresse abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_Location_Override_ID (int DropShip_Location_Override_ID);
+
+	/**
+	 * Get Lieferadresse abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Override();
+
+	public void setDropShip_Location_Override(org.compiere.model.I_C_BPartner_Location DropShip_Location_Override);
+
+    /** Column definition for DropShip_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "DropShip_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name DropShip_Location_Override_ID */
+    public static final String COLUMNNAME_DropShip_Location_Override_ID = "DropShip_Location_Override_ID";
+
+	/**
 	 * Set Fehlermeldung.
 	 *
 	 * <br>Type: Text
@@ -1000,6 +1092,33 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_ErrorMsg = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "ErrorMsg", null);
     /** Column name ErrorMsg */
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
+
+	/**
+	 * Set Übergabeadresse eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setHandOver_Location_Effective_ID (int HandOver_Location_Effective_ID);
+
+	/**
+	 * Get Übergabeadresse eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getHandOver_Location_Effective_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Effective();
+
+	public void setHandOver_Location_Effective(org.compiere.model.I_C_BPartner_Location HandOver_Location_Effective);
+
+    /** Column definition for HandOver_Location_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_HandOver_Location_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "HandOver_Location_Effective_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name HandOver_Location_Effective_ID */
+    public static final String COLUMNNAME_HandOver_Location_Effective_ID = "HandOver_Location_Effective_ID";
 
 	/**
 	 * Set Übergabeadresse.
@@ -1029,9 +1148,63 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
+	 * Set Übergabeadresse abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHandOver_Location_Override_ID (int HandOver_Location_Override_ID);
+
+	/**
+	 * Get Übergabeadresse abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getHandOver_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Override();
+
+	public void setHandOver_Location_Override(org.compiere.model.I_C_BPartner_Location HandOver_Location_Override);
+
+    /** Column definition for HandOver_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_HandOver_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "HandOver_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name HandOver_Location_Override_ID */
+    public static final String COLUMNNAME_HandOver_Location_Override_ID = "HandOver_Location_Override_ID";
+
+	/**
+	 * Set Übergabe an eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setHandOver_Partner_Effective_ID (int HandOver_Partner_Effective_ID);
+
+	/**
+	 * Get Übergabe an eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getHandOver_Partner_Effective_ID();
+
+	public org.compiere.model.I_C_BPartner getHandOver_Partner_Effective();
+
+	public void setHandOver_Partner_Effective(org.compiere.model.I_C_BPartner HandOver_Partner_Effective);
+
+    /** Column definition for HandOver_Partner_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_HandOver_Partner_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "HandOver_Partner_Effective_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name HandOver_Partner_Effective_ID */
+    public static final String COLUMNNAME_HandOver_Partner_Effective_ID = "HandOver_Partner_Effective_ID";
+
+	/**
 	 * Set Übergabe an.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1040,7 +1213,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Übergabe an.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1054,6 +1227,33 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_HandOver_Partner_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "HandOver_Partner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name HandOver_Partner_ID */
     public static final String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
+	 * Set Übergabe an abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHandOver_Partner_Override_ID (int HandOver_Partner_Override_ID);
+
+	/**
+	 * Get Übergabe an abw..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getHandOver_Partner_Override_ID();
+
+	public org.compiere.model.I_C_BPartner getHandOver_Partner_Override();
+
+	public void setHandOver_Partner_Override(org.compiere.model.I_C_BPartner HandOver_Partner_Override);
+
+    /** Column definition for HandOver_Partner_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner> COLUMN_HandOver_Partner_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner>(I_C_OLCand.class, "HandOver_Partner_Override_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name HandOver_Partner_Override_ID */
+    public static final String COLUMNNAME_HandOver_Partner_Override_ID = "HandOver_Partner_Override_ID";
 
 	/**
 	 * Set Aktiv.
@@ -1211,7 +1411,7 @@ public interface I_C_OLCand
 	 * Set Ausprägung Merkmals-Satz.
 	 * Instanz des Merkmals-Satzes zum Produkt
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1221,7 +1421,7 @@ public interface I_C_OLCand
 	 * Get Ausprägung Merkmals-Satz.
 	 * Instanz des Merkmals-Satzes zum Produkt
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

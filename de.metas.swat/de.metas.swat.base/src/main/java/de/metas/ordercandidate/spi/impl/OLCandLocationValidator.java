@@ -92,7 +92,7 @@ public class OLCandLocationValidator implements IOLCandValdiator
 		}
 
 		// HandOver_Location
-		final I_C_BPartner_Location handOverLocation = olCand.getHandOver_Location();
+		final I_C_BPartner_Location handOverLocation = olcandEffectiveBL.getHandOver_Location_Effective(olCand);
 		if (handOverLocation != null && !handOverLocation.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_HandOver_Location_Inactive);
