@@ -17,6 +17,7 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
 
 # metasfresh 4.22.21 (weekly release cnadidate)
 
