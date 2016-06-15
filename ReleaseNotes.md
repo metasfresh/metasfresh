@@ -15,6 +15,7 @@ The actual release notes
 # metasfresh 4.22.21 (upcoming)
 
 ## Features
+ - FRESH-275 Search Field in Role _Access Windows with autocomplete
  - FRESH-349 KPI: Printing Performance
     * adding a window to show per-shipment performance
  - FRESH-350 check if purchase inout label and print preview can run faster
@@ -22,6 +23,7 @@ The actual release notes
  - FRESH-383 make orders print preview run faster
 
 ## Fixes
+ - FRESH-400 Cut off in invoice jaspers
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
