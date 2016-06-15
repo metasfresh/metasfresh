@@ -11,6 +11,7 @@ import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncRfQQtyRequest;
 
 /*
  * #%L
@@ -68,4 +69,9 @@ public interface IAgentSync
 	@Path("confirmations")
 	@Oneway
 	void confirm(final List<SyncConfirmation> syncConfirmations);
+	
+	@POST
+	@Path("rfqQuantities")
+	@Oneway
+	public void syncRfQQuantities(SyncRfQQtyRequest request);
 }

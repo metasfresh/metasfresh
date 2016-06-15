@@ -31,6 +31,8 @@ import de.metas.procurement.base.IPMMBPartnerDAO;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMMessageDAO;
 import de.metas.procurement.base.IPMMProductDAO;
+import de.metas.procurement.base.IPMM_RfQ_BL;
+import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -38,7 +40,15 @@ import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.procurement.sync.protocol.SyncRfQ;
+import de.metas.procurement.sync.protocol.SyncRfQQty;
 import de.metas.procurement.sync.protocol.SyncUser;
+import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQLine;
+import de.metas.rfq.model.I_C_RfQLineQty;
+import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.model.I_C_RfQResponseLine;
+import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
  * #%L
@@ -88,6 +98,8 @@ public class SyncObjectsFactory
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
 	private final transient IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 	private final transient IPMMBPartnerDAO pmmbPartnerDAO = Services.get(IPMMBPartnerDAO.class);
+	private final transient IPMM_RfQ_DAO pmmRfQDAO = Services.get(IPMM_RfQ_DAO.class);
+	private final transient IPMM_RfQ_BL pmmRfQBL = Services.get(IPMM_RfQ_BL.class);
 
 	//
 	// parameters
@@ -177,6 +189,14 @@ public class SyncObjectsFactory
 				continue;
 			}
 			syncBPartner.getContracts().add(syncContract);
+		}
+		
+		//
+		// Populate RfQs
+		for (final I_C_RfQResponse rfqResponse : getC_RfQResponses_ForBPartnerId(bpartnerId))
+		{
+			final List<SyncRfQ> syncRfQ = createSyncRfQs(rfqResponse);
+			syncBPartner.getRfqs().addAll(syncRfQ);
 		}
 
 		return syncBPartner;
@@ -392,5 +412,65 @@ public class SyncObjectsFactory
 	public String createSyncInfoMessage()
 	{
 		return Services.get(IPMMMessageDAO.class).retrieveMessagesAsString(getCtx());
+	}
+	
+	private List<I_C_RfQResponse> getC_RfQResponses_ForBPartnerId(final int bpartnerId)
+	{
+		// TODO: FRESH-402: retrieve all C_RfQResponses for given C_BPartner_ID
+		return new ArrayList<>(); 
+	}
+	
+	private List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)
+	{
+		final List<SyncRfQ> syncRfQs = new ArrayList<>();
+		
+		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfQDAO.retrieveResponseLines(rfqResponse))
+		{
+			for (final I_C_RfQResponseLineQty rfqResponseLineQty : pmmRfQDAO.retrieveResponseLineQtys(rfqResponseLine))
+			{
+				// FIXME: review if creating one SyncRfQ per C_RfQResponseLineQty is OK!!!!
+				final SyncRfQ syncRfQ = createSyncRfQHeader(rfqResponseLine);
+				
+				final I_C_RfQLineQty rfqLineQty = rfqResponseLineQty.getC_RfQLineQty();
+				syncRfQ.setQtyRequested(rfqLineQty.getQty());
+				
+				syncRfQ.setPricePromised(rfqResponseLineQty.getPrice());
+				
+				final SyncRfQQty syncRfQQty = new SyncRfQQty();
+				syncRfQQty.setUuid(SyncUUIDs.toUUIDString(rfqResponseLineQty));
+				syncRfQQty.setProduct_uuid(syncRfQ.getProduct_uuid());
+				//syncRfQQty.setDatePromised(rfqResponseLineQty.getDatePromised()); // TODO: FRESH-402: introduce C_RfQResponseLineQty.DatePromised
+				//syncRfQQty.setQtyPromised(rfqResponseLineQty.getQtyPromised()); // TODO: FRESH-402: introduce C_RfQResponseLineQty.QtyPromised
+				syncRfQ.getQuantities().add(syncRfQQty);
+				
+				syncRfQs.add(syncRfQ);
+			}
+		}
+		
+		
+		return syncRfQs;
+	}
+	
+	private final SyncRfQ createSyncRfQHeader(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		final I_C_RfQResponse rfqResponse = rfqResponseLine.getC_RfQResponse();
+		final I_C_RfQ rfq = rfqResponse.getC_RfQ();
+		
+		final SyncRfQ syncRfQ = new SyncRfQ();
+		syncRfQ.setUuid(SyncUUIDs.toUUIDString(rfqResponseLine));
+		
+		syncRfQ.setDateStart(rfq.getDateWorkStart());
+		syncRfQ.setDateEnd(rfq.getDateWorkComplete());
+		syncRfQ.setName(rfqResponse.getName());
+		
+		syncRfQ.setDateClose(rfq.getDateResponse());
+		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponse));
+		syncRfQ.setWinner(rfqResponse.isSelectedWinner());
+		
+		final I_C_RfQLine rfqLine = rfqResponseLine.getC_RfQLine(); // => Product
+		final I_PMM_Product pmmProduct = null; // TODO: FRESH-402: fetch the PMM_Product from C_RfQResponseLine/C_RfQLine
+		syncRfQ.setProduct_uuid(SyncUUIDs.toUUIDString(pmmProduct));
+
+		return syncRfQ;
 	}
 }

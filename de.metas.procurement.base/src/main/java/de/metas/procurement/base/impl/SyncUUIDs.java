@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.util.UUIDs;
+import de.metas.rfq.model.I_C_RfQResponseLine;
+import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
  * #%L
@@ -34,6 +36,10 @@ import de.metas.procurement.sync.util.UUIDs;
 @VisibleForTesting
 public final class SyncUUIDs
 {
+	private SyncUUIDs()
+	{
+	}
+	
 	public static final String toUUIDString(final I_C_BPartner bpartner)
 	{
 		return UUIDs.fromIdAsString(bpartner.getC_BPartner_ID());
@@ -69,9 +75,23 @@ public final class SyncUUIDs
 		return UUIDs.toId(uuid);
 	}
 
-
-	
-	private SyncUUIDs()
+	public static final String toUUIDString(final I_C_RfQResponseLine rfqResponseLine)
 	{
+		return UUIDs.fromIdAsString(rfqResponseLine.getC_RfQResponseLine_ID());
+	}
+	
+	public static final int getC_RfQResponseLine_ID(final String uuid)
+	{
+		return UUIDs.toId(uuid);
+	}
+
+	public static final String toUUIDString(I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		return UUIDs.fromIdAsString(rfqResponseLineQty.getC_RfQResponseLineQty_ID());
+	}
+	
+	public static final int getC_RfQResponseLineQty_ID(final String uuid)
+	{
+		return UUIDs.toId(uuid);
 	}
 }

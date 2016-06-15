@@ -39,6 +39,8 @@ import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import de.metas.procurement.sync.protocol.SyncRfQQty;
+import de.metas.procurement.sync.protocol.SyncRfQQtyRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
@@ -402,5 +404,43 @@ public class ServerSyncBL implements IServerSyncBL
 				}
 			});
 		}
+	}
+
+	@Override
+	public void reportRfQQuantities(final SyncRfQQtyRequest request)
+	{
+		for (final SyncRfQQty syncRfQQty : request.getQuantities())
+		{
+			try
+			{
+				createRfQResponseLineQtyEvent(syncRfQQty);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed importing " + syncRfQQty + ". Skipped.", e);
+			}
+			
+		}
+		
+	}
+
+	private void createRfQResponseLineQtyEvent(final SyncRfQQty syncRfQQty)
+	{
+		final String product_uuid = syncRfQQty.getProduct_uuid();
+		loadPMMProductAndProcess(
+				product_uuid,
+				new IEventProcessor()
+				{
+					@Override
+					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+					{
+						createRfQResponseLineQtyEvent(context, pmmProduct, syncRfQQty);
+					}
+				});
+	}
+
+	private void createRfQResponseLineQtyEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQty syncRfQQty)
+	{
+		// TODO: FRESH-402: introduce and populate PMM_RfQReponseLineQty_Event
 	}
 }
