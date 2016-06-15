@@ -211,7 +211,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				, orgId
 				, warehouse
 				, billLocationId
-				, olc.getC_BPartner_Location_ID()
+				, olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(olc)
 				, isSOTrx
 				, trxName
 				);
