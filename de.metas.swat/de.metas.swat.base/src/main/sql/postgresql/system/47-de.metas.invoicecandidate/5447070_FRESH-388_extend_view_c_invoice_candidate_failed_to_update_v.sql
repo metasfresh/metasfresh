@@ -1,4 +1,6 @@
 
+DROP VIEW IF EXISTS de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_v;
+
 DROP VIEW IF EXISTS de_metas_invoicecandidate.C_Invoice_Candidate_Missing_C_Invoice_Candidate_Agg_ID_v ;
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.C_Invoice_Candidate_Missing_C_Invoice_Candidate_Agg_ID_v AS 
 SELECT ic.c_invoice_candidate_id, ic.created, ic.updated
@@ -29,8 +31,6 @@ ORDER BY ic.updated DESC;
 COMMENT ON VIEW de_metas_invoicecandidate.C_Invoice_Candidate_Missing_HeaderAggregation_Effective_ID_v
   IS 'ICs that don''t yet have an aggregation group, but were created/updated more than 10 minutes ago.
 Issue FRESH-93';
-
-DROP VIEW IF EXISTS de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_v;
 
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_v AS 
 SELECT 
