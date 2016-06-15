@@ -24,7 +24,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<adempiere.java.version>1.7</adempiere.java.version>
+		<adempiere.java.version>1.8</adempiere.java.version>
 		<servicemix.java.version>1.7</servicemix.java.version>
 
 		<jasperreports.version>4.6.0</jasperreports.version>
