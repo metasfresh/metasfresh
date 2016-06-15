@@ -23,6 +23,7 @@ The actual release notes
  - FRESH-383 make orders print preview run faster
 
 ## Fixes
+ - FRESH-400 Cut off in invoice jaspers
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
