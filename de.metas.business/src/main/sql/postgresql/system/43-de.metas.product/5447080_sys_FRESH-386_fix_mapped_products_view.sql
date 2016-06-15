@@ -97,7 +97,7 @@ DELETE FROM AD_Tab WHERE AD_Tab_ID=540721
 
 -- update columns and elements that somehow ended up with AD_Client_ID=1000000
 UPDATE AD_Column SET AD_Client_ID=0, Updated=now(), UpdatedBy=99 WHERE AD_Table_ID=540704 AND  AD_Client_ID!=0;
-UPDATE AD_Element SET AD_Client_ID=0, Updated=now(), UpdatedBy=99 WHERE AD_Element_ID IN (SELECT AD_Element_ID from AD_Column WHERE AD_Table_ID=540704) AND AD_Client_ID!=0
+UPDATE AD_Element SET AD_Client_ID=0, Updated=now(), UpdatedBy=99 WHERE AD_Element_ID IN (SELECT AD_Element_ID from AD_Column WHERE AD_Table_ID=540704) AND AD_Client_ID!=0;
 
 --
 -- DDL, fix the view itself
