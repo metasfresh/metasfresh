@@ -12,7 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.22.21 (upcoming)
+# metasfresh 4.x.x (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.22.21 (weekly release cnadidate)
 
 ## Features
  - FRESH-275 Search Field in Role _Access Windows with autocomplete
