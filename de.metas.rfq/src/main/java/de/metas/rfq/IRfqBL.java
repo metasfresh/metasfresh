@@ -65,4 +65,8 @@ public interface IRfqBL extends ISingletonService
 
 	boolean sendRfQ(I_C_RfQResponse response);
 
+	void close(I_C_RfQ rfq);
+
+	boolean isClosed(I_C_RfQResponse rfqResponse);
+
 }

@@ -398,4 +398,33 @@ public class RfqBL implements IRfqBL
 		return re.getPDF();
 	}
 
+	@Override
+	public void close(final I_C_RfQ rfq)
+	{
+		//
+		// Close RfQ
+		rfq.setProcessed(true);
+		InterfaceWrapperHelper.save(rfq);
+
+		//
+		// Close RfQ Responses
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveResponses(rfq, false, false))
+		{
+			close(rfqResponse);
+		}
+	}
+	
+	private void close(final I_C_RfQResponse rfqResponse)
+	{
+		rfqResponse.setProcessed(true);
+		InterfaceWrapperHelper.save(rfqResponse);
+	}
+	
+	@Override
+	public boolean isClosed(final I_C_RfQResponse rfqResponse)
+	{
+		return rfqResponse.isProcessed();
+	}
+
 }

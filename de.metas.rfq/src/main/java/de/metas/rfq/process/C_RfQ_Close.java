@@ -1,10 +1,9 @@
 package de.metas.rfq.process;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
 
-import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -39,24 +38,13 @@ import de.metas.rfq.model.I_C_RfQResponse;
 public class C_RfQ_Close extends SvrProcess
 {
 	// services
-	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 
 	@Override
 	protected String doIt()
 	{
 		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		rfq.setProcessed(true);
-		InterfaceWrapperHelper.save(rfq);
-
-		//
-		int counter = 0;
-		for (final I_C_RfQResponse response : rfqDAO.retrieveResponses(rfq, false, false))
-		{
-			response.setProcessed(true);
-			InterfaceWrapperHelper.save(response);
-			counter++;
-		}
-
-		return "@C_RfQResponse_ID@ #" + counter;
+		rfqBL.close(rfq);
+		return MSG_OK;
 	}
 }
