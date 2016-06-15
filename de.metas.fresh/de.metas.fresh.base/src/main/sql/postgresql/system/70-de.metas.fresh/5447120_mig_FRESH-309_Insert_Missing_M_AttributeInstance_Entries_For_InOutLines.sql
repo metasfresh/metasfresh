@@ -51,9 +51,9 @@ SELECT
 		
 		'Y' AS IsActive,
 		now() AS Created,
-		100 AS CreatedBy,
+		99 AS CreatedBy,
 		now() AS Updated,
-		100 AS UpdatedBy,
+		99 AS UpdatedBy,
 		
 		x.m_attributevalue_id ,
 		x.value ,
@@ -91,7 +91,7 @@ FROM
 		JOIN M_AttributeSetInstance asi on ol.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
 	
 		WHERE 
-			a.M_Attribute_ID = (SELECT Value FROM  AD_SysConfig  where Name = 'de.metas.ADRAttribute'):: numeric
+			a.M_Attribute_ID = (SELECT Value FROM  AD_SysConfig  where Name = 'de.metas.fresh.ADRAttribute'):: numeric
 			AND o.IsSoTrx = 'N' 
 			AND bp.isADRVendor = 'Y' 
 	) x
