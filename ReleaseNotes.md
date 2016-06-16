@@ -12,13 +12,14 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.22.22 (upcoming)
+# metasfresh 4.23.22 (upcoming)
 
 ## Features
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
 
 ## Fixes
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
- - Fresh 279 DD Order CU calculation wrong when TU = 1
+ - FRESH-279 DD Order CU calculation wrong when TU = 1
 
 # metasfresh 4.22.21 (weekly release candidate)
 
