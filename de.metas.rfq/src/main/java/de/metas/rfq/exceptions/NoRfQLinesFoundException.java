@@ -1,15 +1,10 @@
-package de.metas.rfq.process;
+package de.metas.rfq.exceptions;
 
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
-
-import de.metas.rfq.IRfQConfiguration;
-import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,17 +24,12 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public class C_RfQ_RankResponses extends SvrProcess
+public class NoRfQLinesFoundException extends RfQException
 {
-	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
+	private static final long serialVersionUID = 6281273000475702895L;
 
-	@Override
-	protected String doIt()
+	public NoRfQLinesFoundException(final I_C_RfQ rfq)
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponseRankingStrategy rankingStrategy = rfqConfiguration.newRfQResponseRankingStrategyFor(rfq);
-		rankingStrategy.rank(rfq);
-		return MSG_OK;
+		super("No RfQ Lines found for " + rfq.getDocumentNo());
 	}
 }

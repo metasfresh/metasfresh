@@ -1,15 +1,10 @@
-package de.metas.rfq.process;
+package de.metas.rfq.event;
 
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
-
-import de.metas.rfq.IRfQConfiguration;
-import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,17 +24,19 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public class C_RfQ_RankResponses extends SvrProcess
+public abstract class RfQEventListenerAdapter implements IRfQEventListener
 {
-	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 
 	@Override
-	protected String doIt()
+	public void onAfterComplete(final I_C_RfQ rfq)
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponseRankingStrategy rankingStrategy = rfqConfiguration.newRfQResponseRankingStrategyFor(rfq);
-		rankingStrategy.rank(rfq);
-		return MSG_OK;
+		// nothing
 	}
+
+	@Override
+	public void onAfterClose(final I_C_RfQ rfq)
+	{
+		// nothing
+	}
+
 }

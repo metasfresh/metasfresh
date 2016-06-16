@@ -19,11 +19,11 @@ import de.metas.rfq.model.I_C_RfQResponse;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,14 +42,15 @@ public class C_RfQResponse_Invite extends SvrProcess
 	@Override
 	protected String doIt()
 	{
-		final I_C_RfQResponse response = getRecord(I_C_RfQResponse.class);
-		rfqBL.checkQuoteTotalAmtOnly(response.getC_RfQ());
+		final I_C_RfQResponse rfqResponse = getRecord(I_C_RfQResponse.class);
+		rfqBL.assertDraft(rfqResponse);
 
 		// Send it
-		if (rfqBL.sendRfQ(response))
+		if (rfqBL.sendRfQResponseToVendor(rfqResponse))
 		{
 			return MSG_OK;
 		}
+
 		return MSG_Error;
 	}
 }

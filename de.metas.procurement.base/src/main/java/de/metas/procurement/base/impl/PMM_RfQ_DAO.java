@@ -44,7 +44,8 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_RfQResponse.COLUMN_Processed, false) // not closed
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_IsComplete, true)
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_IsClosed, false)
 				.orderBy()
 				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
 				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)

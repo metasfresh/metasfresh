@@ -1,15 +1,13 @@
-package de.metas.rfq.process;
-
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
+package de.metas.rfq.impl;
 
 import de.metas.rfq.IRfQConfiguration;
+import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -17,29 +15,32 @@ import de.metas.rfq.model.I_C_RfQ;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class C_RfQ_RankResponses extends SvrProcess
+public class RfQConfiguration implements IRfQConfiguration
 {
-	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
+	@Override
+	public IRfQResponseProducer newRfQResponsesProducerFor(final I_C_RfQ rfq)
+	{
+		// TODO: implement custom providers
+		return new DefaultRfQResponseProducer();
+	}
 
 	@Override
-	protected String doIt()
+	public IRfQResponseRankingStrategy newRfQResponseRankingStrategyFor(final I_C_RfQ rfq)
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponseRankingStrategy rankingStrategy = rfqConfiguration.newRfQResponseRankingStrategyFor(rfq);
-		rankingStrategy.rank(rfq);
-		return MSG_OK;
+		// TODO: implement custom providers
+		return new DefaultRfQResponseRankingStrategy();
 	}
+
 }

@@ -26,7 +26,7 @@ public interface I_C_RfQResponseLine_v
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -43,7 +43,7 @@ public interface I_C_RfQResponseLine_v
 	 * Set Sprache.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -53,7 +53,7 @@ public interface I_C_RfQResponseLine_v
 	 * Get Sprache.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -68,7 +68,7 @@ public interface I_C_RfQResponseLine_v
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -78,7 +78,7 @@ public interface I_C_RfQResponseLine_v
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -119,176 +119,6 @@ public interface I_C_RfQResponseLine_v
     public static final String COLUMNNAME_BenchmarkPrice = "BenchmarkPrice";
 
 	/**
-	 * Set RfQ Line.
-	 * Request for Quotation Line
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQLine_ID (int C_RfQLine_ID);
-
-	/**
-	 * Get RfQ Line.
-	 * Request for Quotation Line
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQLine_ID();
-
-	public de.metas.rfq.model.I_C_RfQLine getC_RfQLine();
-
-	public void setC_RfQLine(de.metas.rfq.model.I_C_RfQLine C_RfQLine);
-
-    /** Column definition for C_RfQLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLine> COLUMN_C_RfQLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLine>(I_C_RfQResponseLine_v.class, "C_RfQLine_ID", de.metas.rfq.model.I_C_RfQLine.class);
-    /** Column name C_RfQLine_ID */
-    public static final String COLUMNNAME_C_RfQLine_ID = "C_RfQLine_ID";
-
-	/**
-	 * Set RfQ Line Quantity.
-	 * Request for Quotation Line Quantity
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQLineQty_ID (int C_RfQLineQty_ID);
-
-	/**
-	 * Get RfQ Line Quantity.
-	 * Request for Quotation Line Quantity
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQLineQty_ID();
-
-	public de.metas.rfq.model.I_C_RfQLineQty getC_RfQLineQty();
-
-	public void setC_RfQLineQty(de.metas.rfq.model.I_C_RfQLineQty C_RfQLineQty);
-
-    /** Column definition for C_RfQLineQty_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLineQty> COLUMN_C_RfQLineQty_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLineQty>(I_C_RfQResponseLine_v.class, "C_RfQLineQty_ID", de.metas.rfq.model.I_C_RfQLineQty.class);
-    /** Column name C_RfQLineQty_ID */
-    public static final String COLUMNNAME_C_RfQLineQty_ID = "C_RfQLineQty_ID";
-
-	/**
-	 * Set Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
-
-	/**
-	 * Get Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQResponse_ID();
-
-	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse();
-
-	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse);
-
-    /** Column definition for C_RfQResponse_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponse>(I_C_RfQResponseLine_v.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
-    /** Column name C_RfQResponse_ID */
-    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
-
-	/**
-	 * Set RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
-
-	/**
-	 * Get RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQResponseLine_ID();
-
-    /** Column definition for C_RfQResponseLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLine> COLUMN_C_RfQResponseLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLine>(I_C_RfQResponseLine_v.class, "C_RfQResponseLine_ID", de.metas.rfq.model.I_C_RfQResponseLine.class);
-    /** Column name C_RfQResponseLine_ID */
-    public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
-
-	/**
-	 * Set RfQ Response Line Qty.
-	 * Request for Quotation Response Line Quantity
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQResponseLineQty_ID (int C_RfQResponseLineQty_ID);
-
-	/**
-	 * Get RfQ Response Line Qty.
-	 * Request for Quotation Response Line Quantity
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQResponseLineQty_ID();
-
-	public de.metas.rfq.model.I_C_RfQResponseLineQty getC_RfQResponseLineQty();
-
-	public void setC_RfQResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLineQty C_RfQResponseLineQty);
-
-    /** Column definition for C_RfQResponseLineQty_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLineQty> COLUMN_C_RfQResponseLineQty_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLineQty>(I_C_RfQResponseLine_v.class, "C_RfQResponseLineQty_ID", de.metas.rfq.model.I_C_RfQResponseLineQty.class);
-    /** Column name C_RfQResponseLineQty_ID */
-    public static final String COLUMNNAME_C_RfQResponseLineQty_ID = "C_RfQResponseLineQty_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_C_UOM>(I_C_RfQResponseLine_v.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -317,6 +147,176 @@ public interface I_C_RfQResponseLine_v
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_AD_User>(I_C_RfQResponseLine_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set RfQ Line.
+	 * Request for Quotation Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQLine_ID (int C_RfQLine_ID);
+
+	/**
+	 * Get RfQ Line.
+	 * Request for Quotation Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQLine_ID();
+
+	public de.metas.rfq.model.I_C_RfQLine getC_RfQLine();
+
+	public void setC_RfQLine(de.metas.rfq.model.I_C_RfQLine C_RfQLine);
+
+    /** Column definition for C_RfQLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLine> COLUMN_C_RfQLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLine>(I_C_RfQResponseLine_v.class, "C_RfQLine_ID", de.metas.rfq.model.I_C_RfQLine.class);
+    /** Column name C_RfQLine_ID */
+    public static final String COLUMNNAME_C_RfQLine_ID = "C_RfQLine_ID";
+
+	/**
+	 * Set RfQ Line Quantity.
+	 * Request for Quotation Line Quantity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQLineQty_ID (int C_RfQLineQty_ID);
+
+	/**
+	 * Get RfQ Line Quantity.
+	 * Request for Quotation Line Quantity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQLineQty_ID();
+
+	public de.metas.rfq.model.I_C_RfQLineQty getC_RfQLineQty();
+
+	public void setC_RfQLineQty(de.metas.rfq.model.I_C_RfQLineQty C_RfQLineQty);
+
+    /** Column definition for C_RfQLineQty_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLineQty> COLUMN_C_RfQLineQty_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQLineQty>(I_C_RfQResponseLine_v.class, "C_RfQLineQty_ID", de.metas.rfq.model.I_C_RfQLineQty.class);
+    /** Column name C_RfQLineQty_ID */
+    public static final String COLUMNNAME_C_RfQLineQty_ID = "C_RfQLineQty_ID";
+
+	/**
+	 * Set Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
+
+	/**
+	 * Get Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQResponse_ID();
+
+	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse();
+
+	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse);
+
+    /** Column definition for C_RfQResponse_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponse>(I_C_RfQResponseLine_v.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
+    /** Column name C_RfQResponse_ID */
+    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
+
+	/**
+	 * Set RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
+
+	/**
+	 * Get RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQResponseLine_ID();
+
+    /** Column definition for C_RfQResponseLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLine> COLUMN_C_RfQResponseLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLine>(I_C_RfQResponseLine_v.class, "C_RfQResponseLine_ID", de.metas.rfq.model.I_C_RfQResponseLine.class);
+    /** Column name C_RfQResponseLine_ID */
+    public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+
+	/**
+	 * Set RfQ Response Line Qty.
+	 * Request for Quotation Response Line Quantity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQResponseLineQty_ID (int C_RfQResponseLineQty_ID);
+
+	/**
+	 * Get RfQ Response Line Qty.
+	 * Request for Quotation Response Line Quantity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQResponseLineQty_ID();
+
+	public de.metas.rfq.model.I_C_RfQResponseLineQty getC_RfQResponseLineQty();
+
+	public void setC_RfQResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLineQty C_RfQResponseLineQty);
+
+    /** Column definition for C_RfQResponseLineQty_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLineQty> COLUMN_C_RfQResponseLineQty_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, de.metas.rfq.model.I_C_RfQResponseLineQty>(I_C_RfQResponseLine_v.class, "C_RfQResponseLineQty_ID", de.metas.rfq.model.I_C_RfQResponseLineQty.class);
+    /** Column name C_RfQResponseLineQty_ID */
+    public static final String COLUMNNAME_C_RfQResponseLineQty_ID = "C_RfQResponseLineQty_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine_v, org.compiere.model.I_C_UOM>(I_C_RfQResponseLine_v.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Arbeitsbeginn.

@@ -1,15 +1,10 @@
-package de.metas.rfq.process;
+package de.metas.rfq.exceptions;
 
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
-
-import de.metas.rfq.IRfQConfiguration;
-import de.metas.rfq.IRfQResponseRankingStrategy;
-import de.metas.rfq.model.I_C_RfQ;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -17,29 +12,36 @@ import de.metas.rfq.model.I_C_RfQ;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class C_RfQ_RankResponses extends SvrProcess
+/**
+ * Base exception class for RfQ module
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public class RfQException extends AdempiereException
 {
-	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
+	private static final long serialVersionUID = -8279948147175847410L;
 
-	@Override
-	protected String doIt()
+	public RfQException(String message, Throwable cause)
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponseRankingStrategy rankingStrategy = rfqConfiguration.newRfQResponseRankingStrategyFor(rfq);
-		rankingStrategy.rank(rfq);
-		return MSG_OK;
+		super(message, cause);
 	}
+
+	public RfQException(String message)
+	{
+		super(message);
+	}
+
 }

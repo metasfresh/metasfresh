@@ -26,7 +26,7 @@ public interface I_C_RfQResponse_v
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -43,7 +43,7 @@ public interface I_C_RfQResponse_v
 	 * Set Sprache.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -53,7 +53,7 @@ public interface I_C_RfQResponse_v
 	 * Get Sprache.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -68,7 +68,7 @@ public interface I_C_RfQResponse_v
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -78,7 +78,7 @@ public interface I_C_RfQResponse_v
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -203,7 +203,7 @@ public interface I_C_RfQResponse_v
 	 * Set Standort.
 	 * Identifies the (ship to) address for this Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -213,7 +213,7 @@ public interface I_C_RfQResponse_v
 	 * Get Standort.
 	 * Identifies the (ship to) address for this Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -232,7 +232,7 @@ public interface I_C_RfQResponse_v
 	 * Set Währung.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -242,7 +242,7 @@ public interface I_C_RfQResponse_v
 	 * Get Währung.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -261,7 +261,7 @@ public interface I_C_RfQResponse_v
 	 * Set Anschrift.
 	 * Location or Address
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -271,7 +271,7 @@ public interface I_C_RfQResponse_v
 	 * Get Anschrift.
 	 * Location or Address
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -285,60 +285,6 @@ public interface I_C_RfQResponse_v
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, org.compiere.model.I_C_Location>(I_C_RfQResponse_v.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
     /** Column name C_Location_ID */
     public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
-
-	/**
-	 * Set Ausschreibung.
-	 * Request for Quotation
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQ_ID (int C_RfQ_ID);
-
-	/**
-	 * Get Ausschreibung.
-	 * Request for Quotation
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQ_ID();
-
-	public de.metas.rfq.model.I_C_RfQ getC_RfQ();
-
-	public void setC_RfQ(de.metas.rfq.model.I_C_RfQ C_RfQ);
-
-    /** Column definition for C_RfQ_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQ> COLUMN_C_RfQ_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQ>(I_C_RfQResponse_v.class, "C_RfQ_ID", de.metas.rfq.model.I_C_RfQ.class);
-    /** Column name C_RfQ_ID */
-    public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
-
-	/**
-	 * Set Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
-
-	/**
-	 * Get Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQResponse_ID();
-
-    /** Column definition for C_RfQResponse_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQResponse>(I_C_RfQResponse_v.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
-    /** Column name C_RfQResponse_ID */
-    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
 
 	/**
 	 * Set Kontakt-Name.
@@ -394,6 +340,60 @@ public interface I_C_RfQResponse_v
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, org.compiere.model.I_AD_User>(I_C_RfQResponse_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Ausschreibung.
+	 * Request for Quotation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_ID (int C_RfQ_ID);
+
+	/**
+	 * Get Ausschreibung.
+	 * Request for Quotation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_ID();
+
+	public de.metas.rfq.model.I_C_RfQ getC_RfQ();
+
+	public void setC_RfQ(de.metas.rfq.model.I_C_RfQ C_RfQ);
+
+    /** Column definition for C_RfQ_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQ> COLUMN_C_RfQ_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQ>(I_C_RfQResponse_v.class, "C_RfQ_ID", de.metas.rfq.model.I_C_RfQ.class);
+    /** Column name C_RfQ_ID */
+    public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
+
+	/**
+	 * Set Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
+
+	/**
+	 * Get Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQResponse_ID();
+
+    /** Column definition for C_RfQResponse_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse_v, de.metas.rfq.model.I_C_RfQResponse>(I_C_RfQResponse_v.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
+    /** Column name C_RfQResponse_ID */
+    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
 
 	/**
 	 * Set Antwort-datum.

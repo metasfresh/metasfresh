@@ -16,7 +16,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1463987480L;
+	private static final long serialVersionUID = 1361163754L;
 
     /** Standard Constructor */
     public X_RV_C_RfQResponse (Properties ctx, int RV_C_RfQResponse_ID, String trxName)
@@ -29,8 +29,8 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 			setC_BPartner_Location_ID (0);
 			setC_Currency_ID (0);
 			setC_RfQ_ID (0);
-			setC_RfQ_Topic_ID (0);
 			setC_RfQResponse_ID (0);
+			setC_RfQ_Topic_ID (0);
 			setC_UOM_ID (0);
 			setIsSelfService (false);
 			setLine (0);
@@ -285,43 +285,6 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	}
 
 	@Override
-	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_RfQ_Topic_ID, de.metas.rfq.model.I_C_RfQ_Topic.class);
-	}
-
-	@Override
-	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic)
-	{
-		set_ValueFromPO(COLUMNNAME_C_RfQ_Topic_ID, de.metas.rfq.model.I_C_RfQ_Topic.class, C_RfQ_Topic);
-	}
-
-	/** Set Ausschreibungs-Thema.
-		@param C_RfQ_Topic_ID 
-		Topic for Request for Quotations
-	  */
-	@Override
-	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID)
-	{
-		if (C_RfQ_Topic_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_RfQ_Topic_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_RfQ_Topic_ID, Integer.valueOf(C_RfQ_Topic_ID));
-	}
-
-	/** Get Ausschreibungs-Thema.
-		@return Topic for Request for Quotations
-	  */
-	@Override
-	public int getC_RfQ_Topic_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQ_Topic_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_RfQResponse_ID, de.metas.rfq.model.I_C_RfQResponse.class);
@@ -353,6 +316,43 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	public int getC_RfQResponse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_RfQ_Topic_ID, de.metas.rfq.model.I_C_RfQ_Topic.class);
+	}
+
+	@Override
+	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic)
+	{
+		set_ValueFromPO(COLUMNNAME_C_RfQ_Topic_ID, de.metas.rfq.model.I_C_RfQ_Topic.class, C_RfQ_Topic);
+	}
+
+	/** Set Ausschreibungs-Thema.
+		@param C_RfQ_Topic_ID 
+		Topic for Request for Quotations
+	  */
+	@Override
+	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID)
+	{
+		if (C_RfQ_Topic_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_RfQ_Topic_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_RfQ_Topic_ID, Integer.valueOf(C_RfQ_Topic_ID));
+	}
+
+	/** Get Ausschreibungs-Thema.
+		@return Topic for Request for Quotations
+	  */
+	@Override
+	public int getC_RfQ_Topic_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQ_Topic_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -13,6 +13,7 @@ import org.compiere.process.SvrProcess;
 import de.metas.process.Param;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.exceptions.NoCompletedRfQResponsesFoundException;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
@@ -65,10 +66,10 @@ public class C_RfQ_CreatePO extends SvrProcess
 		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
 
 		// Complete
-		final List<I_C_RfQResponse> responses = rfqDAO.retrieveResponses(rfq, true, true);
+		final List<I_C_RfQResponse> responses = rfqDAO.retrieveCompletedResponses(rfq);
 		if (responses.isEmpty())
 		{
-			throw new IllegalArgumentException("No completed RfQ Responses found");
+			throw new NoCompletedRfQResponsesFoundException(rfq);
 		}
 
 		//

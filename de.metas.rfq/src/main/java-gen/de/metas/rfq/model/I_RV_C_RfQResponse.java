@@ -26,7 +26,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -43,7 +43,7 @@ public interface I_RV_C_RfQResponse
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,7 +53,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -180,7 +180,7 @@ public interface I_RV_C_RfQResponse
 	 * Set Standort.
 	 * Identifies the (ship to) address for this Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -190,7 +190,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Standort.
 	 * Identifies the (ship to) address for this Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -209,7 +209,7 @@ public interface I_RV_C_RfQResponse
 	 * Set Währung.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -219,7 +219,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Währung.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -238,7 +238,7 @@ public interface I_RV_C_RfQResponse
 	 * Set Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -248,7 +248,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -264,39 +264,10 @@ public interface I_RV_C_RfQResponse
     public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
 
 	/**
-	 * Set Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
-
-	/**
-	 * Get Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQ_Topic_ID();
-
-	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic();
-
-	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic);
-
-    /** Column definition for C_RfQ_Topic_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic>(I_RV_C_RfQResponse.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
-    /** Column name C_RfQ_Topic_ID */
-    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
-
-	/**
 	 * Set Ausschreibungs-Antwort.
 	 * Request for Quotation Response from a potential Vendor
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -306,7 +277,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Ausschreibungs-Antwort.
 	 * Request for Quotation Response from a potential Vendor
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -322,10 +293,39 @@ public interface I_RV_C_RfQResponse
     public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
 
 	/**
+	 * Set Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
+
+	/**
+	 * Get Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_Topic_ID();
+
+	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic();
+
+	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic);
+
+    /** Column definition for C_RfQ_Topic_ID */
+    public static final org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic>(I_RV_C_RfQResponse.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
+    /** Column name C_RfQ_Topic_ID */
+    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
+
+	/**
 	 * Set Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -335,7 +335,7 @@ public interface I_RV_C_RfQResponse
 	 * Get Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

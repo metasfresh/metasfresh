@@ -9,6 +9,7 @@ import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
@@ -27,11 +28,11 @@ import de.metas.rfq.model.I_C_RfQLineQty;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,6 +47,7 @@ public class C_RfQ_CopyLines extends SvrProcess
 {
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 
 	@Param(parameterName = "C_RfQ_ID")
 	private final int p_From_RfQ_ID = 0;
@@ -57,6 +59,8 @@ public class C_RfQ_CopyLines extends SvrProcess
 
 		//
 		final I_C_RfQ to = getRecord(I_C_RfQ.class);
+		rfqBL.assertDraft(to);
+
 		final I_C_RfQ from = InterfaceWrapperHelper.create(ctx, p_From_RfQ_ID, I_C_RfQ.class, ITrx.TRXNAME_ThreadInherited);
 		Check.assumeNotNull(from, "from not null");
 
@@ -64,29 +68,12 @@ public class C_RfQ_CopyLines extends SvrProcess
 		int countLines = 0;
 		for (final I_C_RfQLine lineFrom : rfqDAO.retrieveLines(from))
 		{
-			final I_C_RfQLine newLine = InterfaceWrapperHelper.create(ctx, I_C_RfQLine.class, ITrx.TRXNAME_ThreadInherited);
-			newLine.setAD_Org_ID(to.getAD_Org_ID());
-			newLine.setC_RfQ(to);
-			newLine.setLine(lineFrom.getLine());
-			newLine.setDescription(lineFrom.getDescription());
-			newLine.setHelp(lineFrom.getHelp());
-			newLine.setM_Product_ID(lineFrom.getM_Product_ID());
-			newLine.setM_AttributeSetInstance_ID(lineFrom.getM_AttributeSetInstance_ID());
-			newLine.setDeliveryDays(lineFrom.getDeliveryDays());
-			InterfaceWrapperHelper.save(newLine);
+			final I_C_RfQLine newLine = copyLineFrom(to, lineFrom);
 
 			// Copy Qtys
 			for (final I_C_RfQLineQty lineQtyFrom : rfqDAO.retrieveLineQtys(lineFrom))
 			{
-				final I_C_RfQLineQty newQty = InterfaceWrapperHelper.create(ctx, I_C_RfQLineQty.class, ITrx.TRXNAME_ThreadInherited);
-				newQty.setAD_Org_ID(newLine.getAD_Org_ID());
-				newQty.setC_RfQLine(newLine);
-				newQty.setC_UOM_ID(lineQtyFrom.getC_UOM_ID());
-				newQty.setQty(lineQtyFrom.getQty());
-				newQty.setIsOfferQty(lineQtyFrom.isOfferQty());
-				newQty.setIsPurchaseQty(lineQtyFrom.isPurchaseQty());
-				newQty.setMargin(lineQtyFrom.getMargin());
-				InterfaceWrapperHelper.save(newQty);
+				copyLineQtyFrom(newLine, lineQtyFrom);
 			}
 			countLines++;
 		}
@@ -94,4 +81,40 @@ public class C_RfQ_CopyLines extends SvrProcess
 		//
 		return "@C_RfQLine_ID@ #" + countLines;
 	}
+
+	private I_C_RfQLine copyLineFrom(final I_C_RfQ to, final I_C_RfQLine lineFrom)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(to);
+
+		final I_C_RfQLine lineTo = InterfaceWrapperHelper.create(ctx, I_C_RfQLine.class, ITrx.TRXNAME_ThreadInherited);
+		lineTo.setAD_Org_ID(to.getAD_Org_ID());
+		lineTo.setC_RfQ(to);
+		lineTo.setLine(lineFrom.getLine());
+		lineTo.setDescription(lineFrom.getDescription());
+		lineTo.setHelp(lineFrom.getHelp());
+		lineTo.setM_Product_ID(lineFrom.getM_Product_ID());
+		lineTo.setM_AttributeSetInstance_ID(lineFrom.getM_AttributeSetInstance_ID());
+		lineTo.setDeliveryDays(lineFrom.getDeliveryDays());
+
+		InterfaceWrapperHelper.save(lineTo);
+		return lineTo;
+	}
+
+	private I_C_RfQLineQty copyLineQtyFrom(final I_C_RfQLine lineTo, final I_C_RfQLineQty lineQtyFrom)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(lineTo);
+
+		final I_C_RfQLineQty lineQtyTo = InterfaceWrapperHelper.create(ctx, I_C_RfQLineQty.class, ITrx.TRXNAME_ThreadInherited);
+		lineQtyTo.setAD_Org_ID(lineTo.getAD_Org_ID());
+		lineQtyTo.setC_RfQLine(lineTo);
+		lineQtyTo.setC_UOM_ID(lineQtyFrom.getC_UOM_ID());
+		lineQtyTo.setQty(lineQtyFrom.getQty());
+		lineQtyTo.setIsOfferQty(lineQtyFrom.isOfferQty());
+		lineQtyTo.setIsPurchaseQty(lineQtyFrom.isPurchaseQty());
+		lineQtyTo.setMargin(lineQtyFrom.getMargin());
+
+		InterfaceWrapperHelper.save(lineQtyTo);
+		return lineQtyTo;
+	}
+
 }

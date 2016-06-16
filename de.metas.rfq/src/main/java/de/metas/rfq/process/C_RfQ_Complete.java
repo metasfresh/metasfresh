@@ -8,11 +8,10 @@ import org.compiere.process.SvrProcess;
 
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -32,13 +31,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-/**
- * Close {@link I_C_RfQ} and it's {@link I_C_RfQResponse}s.
- *
- * @author metas-dev <dev@metas-fresh.com>
- *
- */
-public class C_RfQ_Close extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_Complete extends SvrProcess implements ISvrProcessPrecondition
 {
 	// services
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
@@ -47,14 +40,14 @@ public class C_RfQ_Close extends SvrProcess implements ISvrProcessPrecondition
 	public boolean isPreconditionApplicable(final GridTab gridTab)
 	{
 		final I_C_RfQ rfq = InterfaceWrapperHelper.create(gridTab, I_C_RfQ.class);
-		return rfqBL.isCompleted(rfq);
+		return rfqBL.isDraft(rfq);
 	}
 
 	@Override
 	protected String doIt()
 	{
 		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		rfqBL.close(rfq);
+		rfqBL.complete(rfq);
 		return MSG_OK;
 	}
 }

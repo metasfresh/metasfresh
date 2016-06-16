@@ -26,7 +26,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -43,7 +43,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,7 +53,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -188,7 +188,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Set Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -198,7 +198,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Get Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -217,7 +217,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Set Ausschreibungs-Thema.
 	 * Topic for Request for Quotations
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -227,7 +227,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Get Ausschreibungs-Thema.
 	 * Topic for Request for Quotations
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -519,7 +519,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Set Vertriebsbeauftragter.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -529,7 +529,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	 * Get Vertriebsbeauftragter.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

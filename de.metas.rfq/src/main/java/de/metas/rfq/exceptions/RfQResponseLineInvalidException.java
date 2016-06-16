@@ -1,19 +1,11 @@
-package de.metas.rfq;
+package de.metas.rfq.exceptions;
 
-import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-
-import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQLine;
-import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
-import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -21,32 +13,34 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IRfqDAO extends ISingletonService
+public class RfQResponseLineInvalidException extends RfQException
 {
-	List<I_C_RfQLine> retrieveLines(I_C_RfQ rfq);
+	private static final long serialVersionUID = -5082192922773707880L;
 
-	List<I_C_RfQLineQty> retrieveLineQtys(I_C_RfQLine line);
+	public RfQResponseLineInvalidException(final I_C_RfQResponseLine rfqResponseLine, final String message)
+	{
+		super(buildMsg(rfqResponseLine, message));
+	}
 
-	List<I_C_RfQResponse> retrieveAllResponses(I_C_RfQ rfq);
-
-	List<I_C_RfQResponse> retrieveCompletedResponses(I_C_RfQ rfq);
-
-	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
-
-	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQLineQty rfqLineQty);
-
-	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQResponseLine responseLine);
-
+	private static String buildMsg(final I_C_RfQResponseLine rfqResponseLine, final String message)
+	{
+		return new StringBuilder()
+				.append("@" + I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID + "@")
+				.append(" '").append(rfqResponseLine.getC_RfQResponse().getName() + "'")
+				.append(", @Line@ ").append(rfqResponseLine.getC_RfQLine().getLine())
+				.append(": ").append(message)
+				.toString();
+	}
 }

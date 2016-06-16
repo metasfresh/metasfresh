@@ -69,10 +69,40 @@ public interface I_C_RfQ_TopicSubscriberOnly
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object>(I_C_RfQ_TopicSubscriberOnly.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, org.compiere.model.I_AD_User>(I_C_RfQ_TopicSubscriberOnly.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set RfQ Subscriber.
 	 * Request for Quotation Topic Subscriber
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -82,7 +112,7 @@ public interface I_C_RfQ_TopicSubscriberOnly
 	 * Get RfQ Subscriber.
 	 * Request for Quotation Topic Subscriber
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -121,36 +151,6 @@ public interface I_C_RfQ_TopicSubscriberOnly
     public static final org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object> COLUMN_C_RfQ_TopicSubscriberOnly_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object>(I_C_RfQ_TopicSubscriberOnly.class, "C_RfQ_TopicSubscriberOnly_ID", null);
     /** Column name C_RfQ_TopicSubscriberOnly_ID */
     public static final String COLUMNNAME_C_RfQ_TopicSubscriberOnly_ID = "C_RfQ_TopicSubscriberOnly_ID";
-
-	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, Object>(I_C_RfQ_TopicSubscriberOnly.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQ_TopicSubscriberOnly, org.compiere.model.I_AD_User>(I_C_RfQ_TopicSubscriberOnly.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Beschreibung.
@@ -204,7 +204,7 @@ public interface I_C_RfQ_TopicSubscriberOnly
 	 * Set Produkt-Kategorie.
 	 * Category of a Product
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -214,7 +214,7 @@ public interface I_C_RfQ_TopicSubscriberOnly
 	 * Get Produkt-Kategorie.
 	 * Category of a Product
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

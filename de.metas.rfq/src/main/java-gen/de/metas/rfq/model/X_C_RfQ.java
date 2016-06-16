@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 368131728L;
+	private static final long serialVersionUID = 1056791632L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -30,8 +30,12 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 			setC_RfQ_Topic_ID (0);
 			setDateResponse (new Timestamp( System.currentTimeMillis() ));
 			setDocumentNo (null);
+			setIsClosed (false);
+// N
 			setIsInvitedVendorsOnly (false);
+// N
 			setIsQuoteAllQty (false);
+// N
 			setIsQuoteTotalAmt (false);
 			setIsRfQResponseAccepted (true);
 // Y
@@ -208,6 +212,22 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		return ii.intValue();
 	}
 
+	/** Set Positionen kopieren.
+		@param CopyLines Positionen kopieren	  */
+	@Override
+	public void setCopyLines (java.lang.String CopyLines)
+	{
+		set_Value (COLUMNNAME_CopyLines, CopyLines);
+	}
+
+	/** Get Positionen kopieren.
+		@return Positionen kopieren	  */
+	@Override
+	public java.lang.String getCopyLines () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CopyLines);
+	}
+
 	@Override
 	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
 	{
@@ -243,6 +263,41 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bestellung anlegen.
+		@param CreatePO 
+		Create Purchase Order
+	  */
+	@Override
+	public void setCreatePO (java.lang.String CreatePO)
+	{
+		set_Value (COLUMNNAME_CreatePO, CreatePO);
+	}
+
+	/** Get Bestellung anlegen.
+		@return Create Purchase Order
+	  */
+	@Override
+	public java.lang.String getCreatePO () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CreatePO);
+	}
+
+	/** Set Auftrag anlegen.
+		@param CreateSO Auftrag anlegen	  */
+	@Override
+	public void setCreateSO (java.lang.String CreateSO)
+	{
+		set_Value (COLUMNNAME_CreateSO, CreateSO);
+	}
+
+	/** Get Auftrag anlegen.
+		@return Auftrag anlegen	  */
+	@Override
+	public java.lang.String getCreateSO () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
 	/** Set Ausschreibung.
@@ -305,57 +360,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Positionen kopieren.
-		@param CopyLines Positionen kopieren	  */
-	@Override
-	public void setCopyLines (java.lang.String CopyLines)
-	{
-		set_Value (COLUMNNAME_CopyLines, CopyLines);
-	}
-
-	/** Get Positionen kopieren.
-		@return Positionen kopieren	  */
-	@Override
-	public java.lang.String getCopyLines () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyLines);
-	}
-
-	/** Set Bestellung anlegen.
-		@param CreatePO 
-		Create Purchase Order
-	  */
-	@Override
-	public void setCreatePO (java.lang.String CreatePO)
-	{
-		set_Value (COLUMNNAME_CreatePO, CreatePO);
-	}
-
-	/** Get Bestellung anlegen.
-		@return Create Purchase Order
-	  */
-	@Override
-	public java.lang.String getCreatePO () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreatePO);
-	}
-
-	/** Set Auftrag anlegen.
-		@param CreateSO Auftrag anlegen	  */
-	@Override
-	public void setCreateSO (java.lang.String CreateSO)
-	{
-		set_Value (COLUMNNAME_CreateSO, CreateSO);
-	}
-
-	/** Get Auftrag anlegen.
-		@return Auftrag anlegen	  */
-	@Override
-	public java.lang.String getCreateSO () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
 	/** Set Antwort-datum.
@@ -489,6 +493,32 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public java.lang.String getHelp () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
+	}
+
+	/** Set Geschlossen.
+		@param IsClosed 
+		The status is closed
+	  */
+	@Override
+	public void setIsClosed (boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
+	}
+
+	/** Get Geschlossen.
+		@return The status is closed
+	  */
+	@Override
+	public boolean isClosed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsClosed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Invited Vendors Only.

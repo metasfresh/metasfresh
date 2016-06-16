@@ -185,6 +185,29 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Positionen kopieren.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCopyLines (java.lang.String CopyLines);
+
+	/**
+	 * Get Positionen kopieren.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCopyLines();
+
+    /** Column definition for CopyLines */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CopyLines = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CopyLines", null);
+    /** Column name CopyLines */
+    public static final String COLUMNNAME_CopyLines = "CopyLines";
+
+	/**
 	 * Set Auftrag.
 	 * Order
 	 *
@@ -212,83 +235,6 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_C_Order>(I_C_RfQ.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
     /** Column name C_Order_ID */
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
-
-	/**
-	 * Set Ausschreibung.
-	 * Request for Quotation
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQ_ID (int C_RfQ_ID);
-
-	/**
-	 * Get Ausschreibung.
-	 * Request for Quotation
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQ_ID();
-
-    /** Column definition for C_RfQ_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_C_RfQ_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "C_RfQ_ID", null);
-    /** Column name C_RfQ_ID */
-    public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
-
-	/**
-	 * Set Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
-
-	/**
-	 * Get Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQ_Topic_ID();
-
-	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic();
-
-	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic);
-
-    /** Column definition for C_RfQ_Topic_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic>(I_C_RfQ.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
-    /** Column name C_RfQ_Topic_ID */
-    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
-
-	/**
-	 * Set Positionen kopieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCopyLines (java.lang.String CopyLines);
-
-	/**
-	 * Get Positionen kopieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCopyLines();
-
-    /** Column definition for CopyLines */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CopyLines = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CopyLines", null);
-    /** Column name CopyLines */
-    public static final String COLUMNNAME_CopyLines = "CopyLines";
 
 	/**
 	 * Get Erstellt.
@@ -367,6 +313,60 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CreateSO = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CreateSO", null);
     /** Column name CreateSO */
     public static final String COLUMNNAME_CreateSO = "CreateSO";
+
+	/**
+	 * Set Ausschreibung.
+	 * Request for Quotation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_ID (int C_RfQ_ID);
+
+	/**
+	 * Get Ausschreibung.
+	 * Request for Quotation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_ID();
+
+    /** Column definition for C_RfQ_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_C_RfQ_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "C_RfQ_ID", null);
+    /** Column name C_RfQ_ID */
+    public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
+
+	/**
+	 * Set Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
+
+	/**
+	 * Get Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_Topic_ID();
+
+	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic();
+
+	public void setC_RfQ_Topic(de.metas.rfq.model.I_C_RfQ_Topic C_RfQ_Topic);
+
+    /** Column definition for C_RfQ_Topic_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic>(I_C_RfQ.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
+    /** Column name C_RfQ_Topic_ID */
+    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
 
 	/**
 	 * Set Antwort-datum.
@@ -565,6 +565,31 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isClosed();
+
+    /** Column definition for IsClosed */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "IsClosed", null);
+    /** Column name IsClosed */
+    public static final String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Invited Vendors Only.

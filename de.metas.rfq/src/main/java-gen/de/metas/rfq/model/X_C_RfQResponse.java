@@ -16,7 +16,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1465081968L;
+	private static final long serialVersionUID = -1572936380L;
 
     /** Standard Constructor */
     public X_C_RfQResponse (Properties ctx, int C_RfQResponse_ID, String trxName)
@@ -30,6 +30,8 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 // @C_Currency_ID@
 			setC_RfQ_ID (0);
 			setC_RfQResponse_ID (0);
+			setIsClosed (false);
+// N
 			setIsComplete (false);
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
@@ -202,6 +204,22 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		return ii.intValue();
 	}
 
+	/** Set Vollständigkeit prüfen.
+		@param CheckComplete Vollständigkeit prüfen	  */
+	@Override
+	public void setCheckComplete (java.lang.String CheckComplete)
+	{
+		set_Value (COLUMNNAME_CheckComplete, CheckComplete);
+	}
+
+	/** Get Vollständigkeit prüfen.
+		@return Vollständigkeit prüfen	  */
+	@Override
+	public java.lang.String getCheckComplete () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CheckComplete);
+	}
+
 	@Override
 	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
 	{
@@ -299,22 +317,6 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Vollständigkeit prüfen.
-		@param CheckComplete Vollständigkeit prüfen	  */
-	@Override
-	public void setCheckComplete (java.lang.String CheckComplete)
-	{
-		set_Value (COLUMNNAME_CheckComplete, CheckComplete);
-	}
-
-	/** Get Vollständigkeit prüfen.
-		@return Vollständigkeit prüfen	  */
-	@Override
-	public java.lang.String getCheckComplete () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CheckComplete);
 	}
 
 	/** Set Invited.
@@ -448,6 +450,32 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	public java.lang.String getHelp () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
+	}
+
+	/** Set Geschlossen.
+		@param IsClosed 
+		The status is closed
+	  */
+	@Override
+	public void setIsClosed (boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
+	}
+
+	/** Get Geschlossen.
+		@return The status is closed
+	  */
+	@Override
+	public boolean isClosed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsClosed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Fertigstellen.

@@ -1,15 +1,11 @@
-package de.metas.rfq.process;
+package de.metas.rfq.exceptions;
 
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
-
-import de.metas.rfq.IRfQConfiguration;
-import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQLine;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -17,29 +13,35 @@ import de.metas.rfq.model.I_C_RfQ;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class C_RfQ_RankResponses extends SvrProcess
+public class RfQLineInvalidException extends RfQException
 {
-	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
+	private static final long serialVersionUID = -8896351276080334946L;
 
-	@Override
-	protected String doIt()
+	public RfQLineInvalidException(final I_C_RfQLine rfqLine, final String message)
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponseRankingStrategy rankingStrategy = rfqConfiguration.newRfQResponseRankingStrategyFor(rfq);
-		rankingStrategy.rank(rfq);
-		return MSG_OK;
+		super(buildMsg(rfqLine, message));
 	}
+
+	private static String buildMsg(final I_C_RfQLine rfqLine, final String message)
+	{
+		return new StringBuilder()
+				.append("@" + I_C_RfQ.COLUMNNAME_C_RfQ_ID + "@")
+				.append(" '").append(rfqLine.getC_RfQ().getDocumentNo() + "'")
+				.append(", @Line@ ").append(rfqLine.getLine())
+				.append(": ").append(message)
+				.toString();
+	}
+
 }

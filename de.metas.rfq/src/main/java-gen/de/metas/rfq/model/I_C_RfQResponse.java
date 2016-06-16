@@ -185,10 +185,33 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Vollständigkeit prüfen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCheckComplete (java.lang.String CheckComplete);
+
+	/**
+	 * Get Vollständigkeit prüfen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCheckComplete();
+
+    /** Column definition for CheckComplete */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_CheckComplete = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "CheckComplete", null);
+    /** Column name CheckComplete */
+    public static final String COLUMNNAME_CheckComplete = "CheckComplete";
+
+	/**
 	 * Set Auftrag.
 	 * Order
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -198,7 +221,7 @@ public interface I_C_RfQResponse
 	 * Get Auftrag.
 	 * Order
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -214,10 +237,40 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponse, org.compiere.model.I_AD_User>(I_C_RfQResponse.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -227,7 +280,7 @@ public interface I_C_RfQResponse
 	 * Get Ausschreibung.
 	 * Request for Quotation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -266,59 +319,6 @@ public interface I_C_RfQResponse
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "C_RfQResponse_ID", null);
     /** Column name C_RfQResponse_ID */
     public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
-
-	/**
-	 * Set Vollständigkeit prüfen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCheckComplete (java.lang.String CheckComplete);
-
-	/**
-	 * Get Vollständigkeit prüfen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCheckComplete();
-
-    /** Column definition for CheckComplete */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_CheckComplete = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "CheckComplete", null);
-    /** Column name CheckComplete */
-    public static final String COLUMNNAME_CheckComplete = "CheckComplete";
-
-	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponse, org.compiere.model.I_AD_User>(I_C_RfQResponse.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Invited.
@@ -517,6 +517,31 @@ public interface I_C_RfQResponse
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isClosed();
+
+    /** Column definition for IsClosed */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "IsClosed", null);
+    /** Column name IsClosed */
+    public static final String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Fertigstellen.
