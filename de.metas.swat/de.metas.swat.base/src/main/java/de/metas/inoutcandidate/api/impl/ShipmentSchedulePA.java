@@ -65,6 +65,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -73,6 +74,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.MMShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.storage.IStorageAttributeSegment;
@@ -1551,5 +1553,36 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addOnlyContextClient();
 
 		return queryBuilder;
+	}
+	
+
+	public List<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	{
+		final Set<I_M_ShipmentSchedule> schedules = new HashSet<I_M_ShipmentSchedule>();
+		
+		final IShipmentSchedulePA schedDAO = Services.get(IShipmentSchedulePA.class);
+		
+		final int tableID = candidate.getAD_Table_ID();
+		
+		if(tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+		{
+			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
+			if(orderLine != null)
+			{
+				I_M_ShipmentSchedule schedForOrderLine = schedDAO.retrieveForOrderLine(orderLine);
+				
+				if(schedForOrderLine != null)
+				{
+					schedules.add(schedForOrderLine);
+				}
+			}
+		}
+		
+		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
+		{
+			
+		}
+		
+		return null;
 	}
 }

@@ -82,6 +82,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -1965,6 +1966,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
+	}
+	
+	
+	public void closeInvoiceCandidates (final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+	{
+		while(candidatesToClose.hasNext())
+		{
+			final I_C_Invoice_Candidate candidate = candidatesToClose.next();
+			
+			//candidate.
+		}
 	}
 
 }
