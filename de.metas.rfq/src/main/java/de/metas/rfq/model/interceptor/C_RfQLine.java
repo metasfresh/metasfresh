@@ -7,7 +7,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.util.IRfQWorkDatesAware;
-import de.metas.rfq.util.RfQUtils;
+import de.metas.rfq.util.RfQWorkDatesUtil;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ public class C_RfQLine
 	public void beforeSave(final I_C_RfQLine rfqLine)
 	{
 		final IRfQWorkDatesAware workDatesAware = InterfaceWrapperHelper.create(rfqLine, IRfQWorkDatesAware.class);
-		RfQUtils.updateWorkDates(workDatesAware);
+		RfQWorkDatesUtil.updateWorkDates(workDatesAware);
 	}
 
 }

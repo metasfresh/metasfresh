@@ -10,7 +10,7 @@ import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.util.IRfQWorkDatesAware;
-import de.metas.rfq.util.RfQUtils;
+import de.metas.rfq.util.RfQWorkDatesUtil;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class C_RfQResponseLine
 	public void beforeSave(final I_C_RfQResponseLine responseLine)
 	{
 		final IRfQWorkDatesAware workDatesAware = InterfaceWrapperHelper.create(responseLine, IRfQWorkDatesAware.class);
-		RfQUtils.updateWorkDates(workDatesAware);
+		RfQWorkDatesUtil.updateWorkDates(workDatesAware);
 
 		if (!responseLine.isActive())
 		{
