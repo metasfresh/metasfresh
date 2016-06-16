@@ -13,11 +13,11 @@ package de.metas.ordercandidate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,6 +42,8 @@ import org.compiere.model.ModelValidator;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.api.IBPRelationDAO;
+import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -56,7 +58,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 @Callout(I_C_OLCand.class)
 public class C_OLCand
 {
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
 	public void onIsErrorUnset(final I_C_OLCand olCand)
 	{
@@ -115,10 +117,9 @@ public class C_OLCand
 		olCandValdiatorBL.validate(olCand);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_OLCand.COLUMNNAME_C_BPartner_ID, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID,
-					I_C_OLCand.COLUMNNAME_M_Product_ID, I_C_OLCand.COLUMNNAME_M_Product_Override_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_OLCand.COLUMNNAME_C_BPartner_ID, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID,
+			I_C_OLCand.COLUMNNAME_M_Product_ID, I_C_OLCand.COLUMNNAME_M_Product_Override_ID })
 	public void setProductDescription(final I_C_OLCand olCand)
 	{
 		if (!Check.isEmpty(olCand.getProductDescription(), true))
@@ -137,7 +138,7 @@ public class C_OLCand
 		{
 			return; // don't try to set them unless we have both the product and partner
 		}
-		
+
 		final int orgId = product.getAD_Org_ID();
 
 		final I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(
@@ -168,7 +169,7 @@ public class C_OLCand
 		}
 		olCand.setProductDescription(productDescriptionToUse);
 	}
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID })
 	public void onCBPartnerOverride(final I_C_OLCand olCand)
@@ -204,7 +205,7 @@ public class C_OLCand
 		{
 			// in case the drop-ship bpartner Override was deleted, also delete the drop-ship Location Override
 			olCand.setDropShip_Location_Override(null);
-			
+
 			return;
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
@@ -216,7 +217,7 @@ public class C_OLCand
 		{
 			// no location was found
 			olCand.setDropShip_Location_Override(null);
-			
+
 			return;
 		}
 
@@ -224,31 +225,66 @@ public class C_OLCand
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID)
+	public void onHandOverPartnerOverrideIntercept(final I_C_OLCand olCand)
+	{
+		final boolean handoverLocatinOverrideChanged = InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);
+
+		if (handoverLocatinOverrideChanged)
+		{
+			// do nothing;
+			// It is not wanted for the handoverLocationOverride to be changed if it was manually set to another value
+		}
+
+		else
+		{
+			updateHandoverLocationOverride(olCand);
+		}
+	}
+
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID })
 	public void onHandOverPartnerOverride(final I_C_OLCand olCand)
+	{
+		updateHandoverLocationOverride(olCand);
+	}
+
+	private void updateHandoverLocationOverride(I_C_OLCand olCand)
 	{
 		final I_C_BPartner handOverPartnerOverride = olCand.getHandOver_Partner_Override();
 		if (handOverPartnerOverride == null)
 		{
 			// in case the handover bpartner Override was deleted, also delete the handover Location Override
 			olCand.setHandOver_Location_Override(null);
-			
+
 			return;
 		}
 
-		final I_C_BPartner_Location handOverLocation = Services.get(IBPartnerDAO.class).retrieveHandOverLocation(handOverPartnerOverride);
+		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+
+		final I_C_BPartner partner = olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
+
+		final I_C_BP_Relation handoverRelation = Services.get(IBPRelationDAO.class).retrieveHandoverBPRelation(partner, handOverPartnerOverride);
+
+		if (handoverRelation == null)
+		{
+			// this shall never happen, since both Handover_BPartner and Handover_BPartner_Override must come from such a bpp relation.
+			// but I will leave this condition here as extra safety
+			olCand.setHandOver_Location_Override(null);
+		}
+
+		org.compiere.model.I_C_BPartner_Location handOverLocation = handoverRelation.getC_BPartnerRelation_Location();
 
 		if (handOverLocation == null)
 		{
-			// no location was found
+			// this should also not happen because C_BPartnerRelation_Location is mandatory
 			olCand.setHandOver_Location_Override(null);
-			
+
 			return;
 		}
 
 		olCand.setHandOver_Location_Override(handOverLocation);
+
 	}
-	
+
 	@Init
 	public void registerCallout()
 	{

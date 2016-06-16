@@ -800,22 +800,4 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder.create()
 				.first();
 	}
-
-	@Override
-	public I_C_BPartner_Location retrieveHandOverLocation(final I_C_BPartner partner)
-	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class, partner);
-
-		queryBuilder
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, true);
-
-		queryBuilder.orderBy()
-				// FRESH-339: In case there are more handover locations set, select the last created location
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
-
-		return queryBuilder.create()
-				.first();
-	}
 }
