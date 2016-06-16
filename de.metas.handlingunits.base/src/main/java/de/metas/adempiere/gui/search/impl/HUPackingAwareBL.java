@@ -13,15 +13,14 @@ package de.metas.adempiere.gui.search.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -119,6 +118,34 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		// record.setQtyPacks(qtyPacks); // we assume was already set
 	}
 
+	@Override
+	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyPacks, final BigDecimal qtyCU)
+	{
+		final BigDecimal maxQty = calculateQty(record, qtyPacks);
+
+		if (maxQty == null)
+		{
+			return;
+		}
+
+		if (maxQty.compareTo(qtyCU) <= 0)
+
+		{
+			record.setQty(maxQty);
+
+			return;
+		}
+
+		final BigDecimal minQty = calculateQty(record, qtyPacks - 1);
+
+		if (qtyCU.compareTo(minQty) <= 0)
+		{
+			record.setQty(maxQty);
+
+			return;
+		}
+	}
+
 	private BigDecimal calculateQty(final IHUPackingAware record, final int qtyPacks)
 	{
 		if (qtyPacks < 0)
@@ -178,16 +205,16 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 
 		final I_M_Product product = record.getM_Product();
 
-		if(product == null)
+		if (product == null)
 		{
-			//nothing to do; shall not happen
+			// nothing to do; shall not happen
 			return null;
 		}
 		final I_C_UOM uom = record.getC_UOM();
 
 		// task 08583: this may happen in case of manually entered M_HU_PI_Item_Products in manually created document lines.
-		// It has to be possible for the user to  set the M_HU_PI_Item_product before setting the uom.
-		if(uom == null)
+		// It has to be possible for the user to set the M_HU_PI_Item_product before setting the uom.
+		if (uom == null)
 		{
 			return null;
 		}
