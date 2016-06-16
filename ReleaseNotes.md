@@ -19,7 +19,7 @@ The actual release notes
 ## Fixes
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
 
-# metasfresh 4.22.21 (weekly release cnadidate)
+# metasfresh 4.22.21 (weekly release candidate)
 
 ## Features
  - FRESH-275 Search Field in Role _Access Windows with autocomplete
