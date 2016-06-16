@@ -12,12 +12,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.22.22 (upcoming)
 
 ## Features
 
 ## Fixes
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
+ - Fresh 279 DD Order CU calculation wrong when TU = 1
 
 # metasfresh 4.22.21 (weekly release candidate)
 
