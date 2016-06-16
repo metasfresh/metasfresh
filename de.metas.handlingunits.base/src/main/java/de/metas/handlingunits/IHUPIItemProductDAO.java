@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Date;
@@ -96,6 +95,22 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 */
 	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(I_M_Product product, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity);
 
+	/**
+	 * Similar to {@link #retrieveMaterialItemProduct(I_M_Product, I_C_BPartner, Date, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
+	 * Currently, this is useful if a counter order line and a counter packaging line was created, and now the counter order line's PIIP needs to be updated to the one that matches both the order line and packaging line.
+	 *
+	 * @param product
+	 * @param bpartner
+	 * @param date
+	 * @param huUnitType
+	 * @param allowInfiniteCapacity
+	 * @param packagingProduct optional, may be <code>null</code>. If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(I_M_Product, I_C_BPartner, Date, String, boolean)}.
+	 * @return
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 */
+	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(I_M_Product product, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity, I_M_Product packagingProduct);
+
 	List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(Properties ctx, IHUPIItemProductQuery queryVO, String trxName);
 
 	/**
@@ -127,9 +142,9 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	/**
 	 * Retrieve available {@link I_M_HU_PI_Item_Product}s for TUs which are matching our product and bpartner.
-	 * 
+	 *
 	 * NOTE: the default bpartner's TU, if any, will be returned first.
-	 * 
+	 *
 	 * @param ctx
 	 * @param cuProduct
 	 * @param bpartner

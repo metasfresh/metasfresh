@@ -25,6 +25,7 @@ package de.metas.order.model.validator;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -55,18 +56,29 @@ public class C_OrderLine
 	};
 
 	/**
-	 * If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
+	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
+	 * FRESH-386: likewise, also make sure that counter document lines are unlinked as well.
 	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkSalesOrderLines(final I_C_OrderLine orderLine)
+	public void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
 	{
-		final List<I_C_OrderLine> referencingOrderLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OrderLine.class, orderLine)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_C_OrderLine> anyReferenceFilter = queryBL.createCompositeQueryFilter(I_C_OrderLine.class)
+				.setJoinOr()
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.create().list(I_C_OrderLine.class);
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()); // ref_orderline_id is used with counter docs
+
+		final List<I_C_OrderLine> referencingOrderLines = queryBL
+				.createQueryBuilder(I_C_OrderLine.class, orderLine)
+				.filter(anyReferenceFilter)
+				.create()
+				.list(I_C_OrderLine.class);
+
 		for (final I_C_OrderLine referencingOrderLine : referencingOrderLines)
 		{
 			referencingOrderLine.setLink_OrderLine(null);
