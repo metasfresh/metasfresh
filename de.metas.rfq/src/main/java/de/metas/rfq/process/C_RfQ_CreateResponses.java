@@ -43,7 +43,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class C_RfQResponse_CreateFromTopic extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);

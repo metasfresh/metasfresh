@@ -244,54 +244,6 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Bestellung anlegen.
-	 * Create Purchase Order
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCreatePO (java.lang.String CreatePO);
-
-	/**
-	 * Get Bestellung anlegen.
-	 * Create Purchase Order
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCreatePO();
-
-    /** Column definition for CreatePO */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CreatePO = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CreatePO", null);
-    /** Column name CreatePO */
-    public static final String COLUMNNAME_CreatePO = "CreatePO";
-
-	/**
-	 * Set Auftrag anlegen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCreateSO (java.lang.String CreateSO);
-
-	/**
-	 * Get Auftrag anlegen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCreateSO();
-
-    /** Column definition for CreateSO */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CreateSO = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CreateSO", null);
-    /** Column name CreateSO */
-    public static final String COLUMNNAME_CreateSO = "CreateSO";
-
-	/**
 	 * Set Ausschreibung.
 	 * Request for Quotation
 	 *
@@ -792,29 +744,6 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Publish RfQ.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPublishRfQ (java.lang.String PublishRfQ);
-
-	/**
-	 * Get Publish RfQ.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPublishRfQ();
-
-    /** Column definition for PublishRfQ */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_PublishRfQ = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "PublishRfQ", null);
-    /** Column name PublishRfQ */
-    public static final String COLUMNNAME_PublishRfQ = "PublishRfQ";
-
-	/**
 	 * Set RfQ Type.
 	 * Request for Quotation Type
 	 *
@@ -838,29 +767,6 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_QuoteType = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "QuoteType", null);
     /** Column name QuoteType */
     public static final String COLUMNNAME_QuoteType = "QuoteType";
-
-	/**
-	 * Set Rank RfQ.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRankRfQ (java.lang.String RankRfQ);
-
-	/**
-	 * Get Rank RfQ.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getRankRfQ();
-
-    /** Column definition for RankRfQ */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_RankRfQ = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "RankRfQ", null);
-    /** Column name RankRfQ */
-    public static final String COLUMNNAME_RankRfQ = "RankRfQ";
 
 	/**
 	 * Set Vertriebsbeauftragter.

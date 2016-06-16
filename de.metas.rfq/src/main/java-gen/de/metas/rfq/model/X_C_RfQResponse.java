@@ -16,7 +16,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1572936380L;
+	private static final long serialVersionUID = 1917890116L;
 
     /** Standard Constructor */
     public X_C_RfQResponse (Properties ctx, int C_RfQResponse_ID, String trxName)
@@ -202,22 +202,6 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Vollständigkeit prüfen.
-		@param CheckComplete Vollständigkeit prüfen	  */
-	@Override
-	public void setCheckComplete (java.lang.String CheckComplete)
-	{
-		set_Value (COLUMNNAME_CheckComplete, CheckComplete);
-	}
-
-	/** Get Vollständigkeit prüfen.
-		@return Vollständigkeit prüfen	  */
-	@Override
-	public java.lang.String getCheckComplete () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CheckComplete);
 	}
 
 	@Override

@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1870730453L;
+	private static final long serialVersionUID = 1275201933L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -247,41 +247,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bestellung anlegen.
-		@param CreatePO 
-		Create Purchase Order
-	  */
-	@Override
-	public void setCreatePO (java.lang.String CreatePO)
-	{
-		set_Value (COLUMNNAME_CreatePO, CreatePO);
-	}
-
-	/** Get Bestellung anlegen.
-		@return Create Purchase Order
-	  */
-	@Override
-	public java.lang.String getCreatePO () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreatePO);
-	}
-
-	/** Set Auftrag anlegen.
-		@param CreateSO Auftrag anlegen	  */
-	@Override
-	public void setCreateSO (java.lang.String CreateSO)
-	{
-		set_Value (COLUMNNAME_CreateSO, CreateSO);
-	}
-
-	/** Get Auftrag anlegen.
-		@return Auftrag anlegen	  */
-	@Override
-	public java.lang.String getCreateSO () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
 	/** Set Ausschreibung.
@@ -725,22 +690,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		return false;
 	}
 
-	/** Set Publish RfQ.
-		@param PublishRfQ Publish RfQ	  */
-	@Override
-	public void setPublishRfQ (java.lang.String PublishRfQ)
-	{
-		set_Value (COLUMNNAME_PublishRfQ, PublishRfQ);
-	}
-
-	/** Get Publish RfQ.
-		@return Publish RfQ	  */
-	@Override
-	public java.lang.String getPublishRfQ () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PublishRfQ);
-	}
-
 	/** 
 	 * QuoteType AD_Reference_ID=314
 	 * Reference name: C_RfQ QuoteType
@@ -770,22 +719,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public java.lang.String getQuoteType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_QuoteType);
-	}
-
-	/** Set Rank RfQ.
-		@param RankRfQ Rank RfQ	  */
-	@Override
-	public void setRankRfQ (java.lang.String RankRfQ)
-	{
-		set_Value (COLUMNNAME_RankRfQ, RankRfQ);
-	}
-
-	/** Get Rank RfQ.
-		@return Rank RfQ	  */
-	@Override
-	public java.lang.String getRankRfQ () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_RankRfQ);
 	}
 
 	@Override

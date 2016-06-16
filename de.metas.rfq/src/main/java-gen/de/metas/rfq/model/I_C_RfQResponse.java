@@ -185,29 +185,6 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Vollständigkeit prüfen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCheckComplete (java.lang.String CheckComplete);
-
-	/**
-	 * Get Vollständigkeit prüfen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCheckComplete();
-
-    /** Column definition for CheckComplete */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_CheckComplete = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "CheckComplete", null);
-    /** Column name CheckComplete */
-    public static final String COLUMNNAME_CheckComplete = "CheckComplete";
-
-	/**
 	 * Set Auftrag.
 	 * Order
 	 *
