@@ -276,16 +276,4 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
-	/**
-	 * 
-	 * Retrieve the default Handover bpartner location for the given bpartner ID.
-	 * The location must be active.
-	 * The location must have IsUseForHandOver flag on true
-	 * In case there are several locations fitting the requirements, the selected one will be the one with the greatest ID (last created)
-	 * 
-	 * @param partner
-	 * @return
-	 */
-	I_C_BPartner_Location retrieveHandOverLocation(I_C_BPartner partner);
-
 }
