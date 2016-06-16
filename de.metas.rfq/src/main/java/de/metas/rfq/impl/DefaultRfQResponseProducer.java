@@ -12,9 +12,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -254,7 +256,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 
 	private I_C_RfQResponse createRfqResponseRecursivelly(final I_C_RfQ rfq, final I_C_RfQ_TopicSubscriber subscriber)
 	{
-		I_C_RfQResponse response = null;
+		final ExtendedMemorizingSupplier<I_C_RfQResponse> responseSupplier = createRfqResponseSupplier(rfq, subscriber);
 
 		//
 		// Create Lines
@@ -265,33 +267,42 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 				continue;
 			}
 
-			I_C_RfQResponseLine responseLine = null;
+			final Supplier<I_C_RfQResponseLine> responseLineSupplier = createRfqResponseLineSupplier(responseSupplier, rfqLine);
 
 			//
 			// Create line Qty records
-			for (final I_C_RfQLineQty lineQty : rfqDAO.retrieveLineQtys(rfqLine))
+			if (rfqLine.isUseLineQty())
 			{
-				if (!isGenerateForLineQty(lineQty))
+				for (final I_C_RfQLineQty lineQty : rfqDAO.retrieveLineQtys(rfqLine))
 				{
-					continue;
-				}
-
-				// Create RfQ Response and ResponseLine if needed
-				if (responseLine == null)
-				{
-					if (response == null)
+					if (!isGenerateForLineQty(lineQty))
 					{
-						response = createRfqResponse(rfq, subscriber);
+						continue;
 					}
-					responseLine = createRfqResponseLine(response, rfqLine);
+	
+					// Create RfQ Response Line Qty
+					createRfQResponseLineQty(responseLineSupplier, lineQty);
 				}
-
-				// Create RfQ Response Line Qty
-				createRfQResponseLineQty(responseLine, lineQty);
+			}
+			else
+			{
+				responseLineSupplier.get(); // actually creates the line as it is
 			}
 		}
 
-		return response;
+		return responseSupplier.peek();
+	}
+
+	private ExtendedMemorizingSupplier<I_C_RfQResponse> createRfqResponseSupplier(final I_C_RfQ rfq, final I_C_RfQ_TopicSubscriber subscriber)
+	{
+		return ExtendedMemorizingSupplier.of(new Supplier<I_C_RfQResponse>()
+		{
+			@Override
+			public I_C_RfQResponse get()
+			{
+				return createRfqResponse(rfq, subscriber);
+			}
+		});
 	}
 
 	private I_C_RfQResponse createRfqResponse(final I_C_RfQ rfq, final I_C_RfQ_TopicSubscriber subscriber)
@@ -322,8 +333,22 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		return response;
 	}
 
-	private I_C_RfQResponseLine createRfqResponseLine(final I_C_RfQResponse response, final I_C_RfQLine rfqLine)
+	private ExtendedMemorizingSupplier<I_C_RfQResponseLine> createRfqResponseLineSupplier(final Supplier<I_C_RfQResponse> response, final I_C_RfQLine rfqLine)
 	{
+		return ExtendedMemorizingSupplier.of(new Supplier<I_C_RfQResponseLine>()
+		{
+			@Override
+			public I_C_RfQResponseLine get()
+			{
+				return createRfqResponseLine(response, rfqLine);
+			}
+		});
+	}
+
+	private I_C_RfQResponseLine createRfqResponseLine(final Supplier<I_C_RfQResponse> responseSupplier, final I_C_RfQLine rfqLine)
+	{
+		final I_C_RfQResponse response = responseSupplier.get();
+		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(response);
 		final I_C_RfQResponseLine responseLine = InterfaceWrapperHelper.create(ctx, I_C_RfQResponseLine.class, ITrx.TRXNAME_ThreadInherited);
 		responseLine.setAD_Org_ID(response.getAD_Org_ID());
@@ -333,13 +358,21 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		//
 		responseLine.setIsSelectedWinner(false);
 		responseLine.setIsSelfService(false);
+		
+		responseLine.setUseLineQty(rfqLine.isUseLineQty());
+		if (!responseLine.isUseLineQty())
+		{
+			responseLine.setDatePromised(rfqLine.getC_RfQ().getDateWorkStart());
+		}
 
 		InterfaceWrapperHelper.save(responseLine);
 		return responseLine;
 	}
 
-	private I_C_RfQResponseLineQty createRfQResponseLineQty(final I_C_RfQResponseLine responseLine, final I_C_RfQLineQty lineQty)
+	private I_C_RfQResponseLineQty createRfQResponseLineQty(final Supplier<I_C_RfQResponseLine> responseLineSupplier, final I_C_RfQLineQty lineQty)
 	{
+		final I_C_RfQResponseLine responseLine = responseLineSupplier.get();
+		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(responseLine);
 		final I_C_RfQResponseLineQty responseQty = InterfaceWrapperHelper.create(ctx, I_C_RfQResponseLineQty.class, ITrx.TRXNAME_ThreadInherited);
 		responseQty.setAD_Org_ID(responseLine.getAD_Org_ID());

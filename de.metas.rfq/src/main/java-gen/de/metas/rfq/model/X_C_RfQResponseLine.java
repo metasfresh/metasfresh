@@ -1,8 +1,10 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.rfq.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponseLine
  *  @author Adempiere (generated) 
@@ -14,7 +16,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 298455896L;
+	private static final long serialVersionUID = -1970782493L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine (Properties ctx, int C_RfQResponseLine_ID, String trxName)
@@ -27,6 +29,12 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 			setC_RfQResponseLine_ID (0);
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
+			setPrice (Env.ZERO);
+// 0
+			setQtyPromised (Env.ZERO);
+// 0
+			setUseLineQty (false);
+// N
         } */
     }
 
@@ -142,6 +150,25 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zugesagter Termin.
+		@param DatePromised 
+		Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public void setDatePromised (java.sql.Timestamp DatePromised)
+	{
+		set_Value (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	/** Get Zugesagter Termin.
+		@return Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public java.sql.Timestamp getDatePromised () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
 
 	/** Set Arbeit fertiggestellt.
@@ -282,6 +309,70 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	public boolean isSelfService () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Preis.
+		@param Price 
+		Preis
+	  */
+	@Override
+	public void setPrice (java.math.BigDecimal Price)
+	{
+		set_Value (COLUMNNAME_Price, Price);
+	}
+
+	/** Get Preis.
+		@return Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar.
+		@param QtyPromised Zusagbar	  */
+	@Override
+	public void setQtyPromised (java.math.BigDecimal QtyPromised)
+	{
+		set_Value (COLUMNNAME_QtyPromised, QtyPromised);
+	}
+
+	/** Get Zusagbar.
+		@return Zusagbar	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Use line quantity.
+		@param UseLineQty Use line quantity	  */
+	@Override
+	public void setUseLineQty (boolean UseLineQty)
+	{
+		set_Value (COLUMNNAME_UseLineQty, Boolean.valueOf(UseLineQty));
+	}
+
+	/** Get Use line quantity.
+		@return Use line quantity	  */
+	@Override
+	public boolean isUseLineQty () 
+	{
+		Object oo = get_Value(COLUMNNAME_UseLineQty);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

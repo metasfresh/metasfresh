@@ -37,7 +37,11 @@ public interface IRfqDAO extends ISingletonService
 {
 	List<I_C_RfQLine> retrieveLines(I_C_RfQ rfq);
 
+	int retrieveLinesCount(I_C_RfQ rfq);
+
 	List<I_C_RfQLineQty> retrieveLineQtys(I_C_RfQLine line);
+
+	int retrieveLineQtysCount(I_C_RfQLine line);
 
 	List<I_C_RfQResponse> retrieveAllResponses(I_C_RfQ rfq);
 

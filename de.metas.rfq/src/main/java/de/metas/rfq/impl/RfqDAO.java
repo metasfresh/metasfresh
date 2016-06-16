@@ -41,13 +41,7 @@ public class RfqDAO implements IRfqDAO
 	@Override
 	public List<I_C_RfQLine> retrieveLines(final I_C_RfQ rfq)
 	{
-		final List<I_C_RfQLine> lines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_RfQLine.class, rfq)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQLine.COLUMNNAME_C_RfQ_ID, rfq.getC_RfQ_ID())
-				.orderBy()
-				.addColumn(I_C_RfQLine.COLUMNNAME_Line)
-				.endOrderBy()
+		final List<I_C_RfQLine> lines = retrieveLinesQuery(rfq)
 				.create()
 				.list(I_C_RfQLine.class);
 
@@ -61,15 +55,39 @@ public class RfqDAO implements IRfqDAO
 	}
 
 	@Override
-	public List<I_C_RfQLineQty> retrieveLineQtys(final I_C_RfQLine line)
+	public int retrieveLinesCount(final I_C_RfQ rfq)
 	{
-		final List<I_C_RfQLineQty> lineQtys = Services.get(IQueryBL.class)
+		return retrieveLinesQuery(rfq)
+				.create()
+				.count();
+	}
+
+	private IQueryBuilder<I_C_RfQLine> retrieveLinesQuery(final I_C_RfQ rfq)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_RfQLine.class, rfq)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_RfQLine.COLUMNNAME_C_RfQ_ID, rfq.getC_RfQ_ID())
+				.orderBy()
+				.addColumn(I_C_RfQLine.COLUMNNAME_Line)
+				.endOrderBy();
+	}
+
+	private IQueryBuilder<I_C_RfQLineQty> retrieveLineQtysQuery(final I_C_RfQLine line)
+	{
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQLineQty.class, line)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RfQLineQty.COLUMNNAME_C_RfQLine_ID, line.getC_RfQLine_ID())
 				.orderBy()
 				.addColumn(I_C_RfQLineQty.COLUMNNAME_Qty)
-				.endOrderBy()
+				.endOrderBy();
+	}
+
+	@Override
+	public List<I_C_RfQLineQty> retrieveLineQtys(final I_C_RfQLine line)
+	{
+		final List<I_C_RfQLineQty> lineQtys = retrieveLineQtysQuery(line)
 				.create()
 				.list(I_C_RfQLineQty.class);
 
@@ -80,6 +98,14 @@ public class RfqDAO implements IRfqDAO
 		}
 
 		return lineQtys;
+	}
+
+	@Override
+	public int retrieveLineQtysCount(final I_C_RfQLine line)
+	{
+		return retrieveLineQtysQuery(line)
+				.create()
+				.count();
 	}
 
 	@Override

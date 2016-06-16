@@ -182,6 +182,31 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
 
 	/**
+	 * Set Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDatePromised();
+
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
+
+	/**
 	 * Set Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
@@ -380,6 +405,54 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
+	 * Set Preis.
+	 * Preis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice (java.math.BigDecimal Price);
+
+	/**
+	 * Get Preis.
+	 * Preis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrice();
+
+    /** Column definition for Price */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_Price = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "Price", null);
+    /** Column name Price */
+    public static final String COLUMNNAME_Price = "Price";
+
+	/**
+	 * Set Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised (java.math.BigDecimal QtyPromised);
+
+	/**
+	 * Get Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised();
+
+    /** Column definition for QtyPromised */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_QtyPromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "QtyPromised", null);
+    /** Column name QtyPromised */
+    public static final String COLUMNNAME_QtyPromised = "QtyPromised";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -408,4 +481,27 @@ public interface I_C_RfQResponseLine
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User>(I_C_RfQResponseLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Use line quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setUseLineQty (boolean UseLineQty);
+
+	/**
+	 * Get Use line quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isUseLineQty();
+
+    /** Column definition for UseLineQty */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_UseLineQty = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "UseLineQty", null);
+    /** Column name UseLineQty */
+    public static final String COLUMNNAME_UseLineQty = "UseLineQty";
 }

@@ -30,6 +30,6 @@ public class NoRfQLinesFoundException extends RfQException
 
 	public NoRfQLinesFoundException(final I_C_RfQ rfq)
 	{
-		super("No RfQ Lines found for " + rfq.getDocumentNo());
+		super("@C_RfQ_ID@ " + rfq.getDocumentNo() + ": @NoLines@");
 	}
 }

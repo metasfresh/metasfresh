@@ -153,6 +153,35 @@ public interface I_C_RfQLine
     public static final String COLUMNNAME_C_RfQLine_ID = "C_RfQLine_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_RfQLine, org.compiere.model.I_C_UOM>(I_C_RfQLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
@@ -384,6 +413,31 @@ public interface I_C_RfQLine
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQty (java.math.BigDecimal Qty);
+
+	/**
+	 * Get Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty();
+
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQLine, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_C_RfQLine, Object>(I_C_RfQLine.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -412,4 +466,27 @@ public interface I_C_RfQLine
     public static final org.adempiere.model.ModelColumn<I_C_RfQLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_RfQLine, org.compiere.model.I_AD_User>(I_C_RfQLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Use line quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setUseLineQty (boolean UseLineQty);
+
+	/**
+	 * Get Use line quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isUseLineQty();
+
+    /** Column definition for UseLineQty */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQLine, Object> COLUMN_UseLineQty = new org.adempiere.model.ModelColumn<I_C_RfQLine, Object>(I_C_RfQLine.class, "UseLineQty", null);
+    /** Column name UseLineQty */
+    public static final String COLUMNNAME_UseLineQty = "UseLineQty";
 }

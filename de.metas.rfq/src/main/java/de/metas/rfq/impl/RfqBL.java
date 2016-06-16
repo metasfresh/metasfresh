@@ -4,7 +4,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,6 +26,7 @@ import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.event.IRfQEventDispacher;
+import de.metas.rfq.exceptions.NoRfQLinesFoundException;
 import de.metas.rfq.exceptions.RfQDocumentNotCompleteException;
 import de.metas.rfq.exceptions.RfQDocumentNotDraftException;
 import de.metas.rfq.exceptions.RfQLineInvalidException;
@@ -35,7 +35,6 @@ import de.metas.rfq.exceptions.RfQResponseLineInvalidException;
 import de.metas.rfq.exceptions.RfQResponseLineQtyInvalidException;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
-import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
@@ -300,20 +299,30 @@ public class RfqBL implements IRfqBL
 
 		getRfQEventDispacher().fireBeforeComplete(rfq);
 
+		// services
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+
 		//
 		// If we require quoting only the total amount then:
 		// * make sure there are no C_RfQLineQty records
 		if (isQuoteTotalAmtOnly(rfq))
 		{
 			// Need to check Line Qty
-			final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 			for (final I_C_RfQLine rfqLine : rfqDAO.retrieveLines(rfq))
 			{
-				final List<I_C_RfQLineQty> rfqLineQtys = rfqDAO.retrieveLineQtys(rfqLine);
-				if (rfqLineQtys.size() > 1)
+				final int rfqLineQtyCount = rfqDAO.retrieveLineQtysCount(rfqLine);
+				if (rfqLineQtyCount > 1)
 				{
-					throw new RfQLineInvalidException(rfqLine, "#@C_RfQLineQty@=" + rfqLineQtys.size() + " - @IsQuoteTotalAmt@");
+					throw new RfQLineInvalidException(rfqLine, "@C_RfQLineQty_ID@ #" + rfqLineQtyCount + " - @IsQuoteTotalAmt@");
 				}
+			}
+		}
+		else
+		{
+			final int rfqLinesCount = rfqDAO.retrieveLinesCount(rfq);
+			if (rfqLinesCount <= 0)
+			{
+				throw new NoRfQLinesFoundException(rfq);
 			}
 		}
 

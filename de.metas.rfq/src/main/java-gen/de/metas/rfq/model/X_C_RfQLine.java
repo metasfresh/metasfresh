@@ -1,8 +1,10 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.rfq.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
 /** Generated Model for C_RfQLine
  *  @author Adempiere (generated) 
@@ -14,7 +16,7 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 815565273L;
+	private static final long serialVersionUID = 1072716588L;
 
     /** Standard Constructor */
     public X_C_RfQLine (Properties ctx, int C_RfQLine_ID, String trxName)
@@ -27,6 +29,10 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 			setLine (0);
 // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_RfQLine WHERE C_RfQ_ID=@C_RfQ_ID@
 			setM_AttributeSetInstance_ID (0);
+			setQty (Env.ZERO);
+// 0
+			setUseLineQty (false);
+// N
         } */
     }
 
@@ -102,6 +108,43 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	public int getC_RfQLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -296,5 +339,50 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Menge.
+		@param Qty 
+		Menge
+	  */
+	@Override
+	public void setQty (java.math.BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	/** Get Menge.
+		@return Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Use line quantity.
+		@param UseLineQty Use line quantity	  */
+	@Override
+	public void setUseLineQty (boolean UseLineQty)
+	{
+		set_Value (COLUMNNAME_UseLineQty, Boolean.valueOf(UseLineQty));
+	}
+
+	/** Get Use line quantity.
+		@return Use line quantity	  */
+	@Override
+	public boolean isUseLineQty () 
+	{
+		Object oo = get_Value(COLUMNNAME_UseLineQty);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }
