@@ -12,12 +12,17 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.23.22 (upcoming)
 
 ## Features
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
 
 ## Fixes
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
+ - FRESH-279 DD Order CU calculation wrong when TU = 1
+ - FRESH-309 Missing ADR ASIs in purchase order lines since february
+    * restored attribute set instaces that might have been missing on some systems
+ - FRESH-386 another error when sales order is automatically created as counter doc from a purchase order with packagings
 
 # metasfresh 4.22.21 (weekly release candidate)
 

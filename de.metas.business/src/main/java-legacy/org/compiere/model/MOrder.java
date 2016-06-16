@@ -692,7 +692,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (counter)
 		{
 			fromLine.setRef_OrderLine_ID(line.getC_OrderLine_ID());
-			fromLine.saveEx(get_TrxName());
+			InterfaceWrapperHelper.save(fromLine);
 		}
 
 		return 1;
