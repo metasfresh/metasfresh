@@ -1,6 +1,7 @@
 package de.metas.procurement.base;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
@@ -32,9 +33,9 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 public interface IPMM_RfQ_DAO extends ISingletonService
 {
+	List<I_C_RfQResponse> retrieveActiveResponses(Properties ctx, int bpartnerId);
 
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
 	List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(I_C_RfQResponseLine rfqResponseLine);
-
 }

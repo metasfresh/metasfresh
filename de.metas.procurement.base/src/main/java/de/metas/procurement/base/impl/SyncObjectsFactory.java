@@ -416,8 +416,8 @@ public class SyncObjectsFactory
 	
 	private List<I_C_RfQResponse> getC_RfQResponses_ForBPartnerId(final int bpartnerId)
 	{
-		// TODO: FRESH-402: retrieve all C_RfQResponses for given C_BPartner_ID
-		return new ArrayList<>(); 
+		// TODO: FRESH-402: consider to optimize it like getC_Flatrate_Terms_ForBPartnerId(...)
+		return pmmRfQDAO.retrieveActiveResponses(getCtx(), bpartnerId);
 	}
 	
 	private List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)

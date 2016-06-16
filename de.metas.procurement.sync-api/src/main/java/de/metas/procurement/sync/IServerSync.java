@@ -11,7 +11,7 @@ import org.apache.cxf.jaxrs.ext.Oneway;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQQtyRequest;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 /*
@@ -88,7 +88,7 @@ public interface IServerSync
 	public void reportWeekSupply(SyncWeeklySupplyRequest request);
 	
 	@POST
-	@Path("rfqQuantities")
+	@Path("rfqChanges")
 	@Oneway
-	public void reportRfQQuantities(SyncRfQQtyRequest request);
+	public void reportRfQChanges(SyncRfQChangeRequest request);
 }

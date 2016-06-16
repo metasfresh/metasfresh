@@ -1,7 +1,10 @@
 package de.metas.procurement.base.impl;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -34,6 +37,23 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 {
+	@Override
+	public List<I_C_RfQResponse> retrieveActiveResponses(final Properties ctx, final int bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_Processed, false) // not closed
+				.orderBy()
+				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
+				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)
+				.endOrderBy()
+				//
+				.create()
+				.list(I_C_RfQResponse.class);
+	}
+	
 	@Override
 	public List<I_C_RfQResponseLine> retrieveResponseLines(final I_C_RfQResponse rfqResponse)
 	{

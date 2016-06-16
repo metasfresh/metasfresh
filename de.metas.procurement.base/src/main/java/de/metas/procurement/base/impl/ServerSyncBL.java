@@ -39,8 +39,9 @@ import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncRfQQty;
-import de.metas.procurement.sync.protocol.SyncRfQQtyRequest;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.procurement.sync.protocol.SyncRfQPriceChangeEvent;
+import de.metas.procurement.sync.protocol.SyncRfQQtyChangeEvent;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
@@ -407,26 +408,37 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportRfQQuantities(final SyncRfQQtyRequest request)
+	public void reportRfQChanges(final SyncRfQChangeRequest request)
 	{
-		for (final SyncRfQQty syncRfQQty : request.getQuantities())
+		for (final SyncRfQPriceChangeEvent priceChangeEvent : request.getPriceChangeEvents())
 		{
 			try
 			{
-				createRfQResponseLineQtyEvent(syncRfQQty);
+				createRfQPriceChangeEvent(priceChangeEvent);
 			}
 			catch (final Exception e)
 			{
-				logger.error("Failed importing " + syncRfQQty + ". Skipped.", e);
+				logger.error("Failed importing " + priceChangeEvent + ". Skipped.", e);
 			}
-			
 		}
-		
+
+		for (final SyncRfQQtyChangeEvent qtyChangeEvent : request.getQtyChangeEvents())
+		{
+			try
+			{
+				createRfQQtyChangeEvent(qtyChangeEvent);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed importing " + qtyChangeEvent + ". Skipped.", e);
+			}
+		}
+
 	}
 
-	private void createRfQResponseLineQtyEvent(final SyncRfQQty syncRfQQty)
+	private void createRfQPriceChangeEvent(final SyncRfQPriceChangeEvent priceChangeEvent)
 	{
-		final String product_uuid = syncRfQQty.getProduct_uuid();
+		final String product_uuid = priceChangeEvent.getProduct_uuid();
 		loadPMMProductAndProcess(
 				product_uuid,
 				new IEventProcessor()
@@ -434,13 +446,34 @@ public class ServerSyncBL implements IServerSyncBL
 					@Override
 					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
 					{
-						createRfQResponseLineQtyEvent(context, pmmProduct, syncRfQQty);
+						createRfQPriceChangeEvent(context, pmmProduct, priceChangeEvent);
 					}
 				});
 	}
 
-	private void createRfQResponseLineQtyEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQty syncRfQQty)
+	private void createRfQPriceChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQPriceChangeEvent priceChangeEvent)
 	{
-		// TODO: FRESH-402: introduce and populate PMM_RfQReponseLineQty_Event
+		// TODO: FRESH-402: introduce and populate PMM_RfQ_ChangeEvent
 	}
+	
+	private void createRfQQtyChangeEvent(final SyncRfQQtyChangeEvent qtyChangeEvent)
+	{
+		final String product_uuid = qtyChangeEvent.getProduct_uuid();
+		loadPMMProductAndProcess(
+				product_uuid,
+				new IEventProcessor()
+				{
+					@Override
+					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+					{
+						createRfQQtyChangeEvent(context, pmmProduct, qtyChangeEvent);
+					}
+				});
+	}
+
+	private void createRfQQtyChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQtyChangeEvent qtyChangeEvent)
+	{
+		// TODO: FRESH-402: introduce and populate PMM_RfQ_ChangeEvent
+	}
+
 }

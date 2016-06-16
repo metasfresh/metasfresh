@@ -2,6 +2,7 @@ package de.metas.rfq.impl;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -59,7 +60,7 @@ public class RfqBL implements IRfqBL
 {
 	private static final Logger log = LogManager.getLogger(RfqBL.class);
 
-	public boolean isQuoteAllLines(final I_C_RfQ rfq)
+	private boolean isQuoteAllLines(final I_C_RfQ rfq)
 	{
 		return X_C_RfQ.QUOTETYPE_QuoteAllLines.equals(rfq.getQuoteType());
 	}	// isQuoteAllLines
@@ -134,11 +135,14 @@ public class RfqBL implements IRfqBL
 	public BigDecimal calculateNetAmt(final I_C_RfQResponseLineQty responseQty)
 	{
 		final BigDecimal price = responseQty.getPrice();
-		if (price == null || price.signum() == 0)
+		if (price == null || price.signum() <= 0)
 		{
+			// invalid price
 			return null;
 		}
+		
 		//
+		// Apply discount
 		final BigDecimal discount = responseQty.getDiscount();
 		if (discount == null || discount.signum() == 0)
 		{
@@ -147,8 +151,8 @@ public class RfqBL implements IRfqBL
 		// Calculate
 		// double result = price.doubleValue() * (100.0 - discount.doubleValue()) / 100.0;
 		final BigDecimal factor = Env.ONEHUNDRED.subtract(discount);
-		return price.multiply(factor).divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
-	}	// getNetAmt
+		return price.multiply(factor).divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
+	}
 
 	@Override
 	public void complete(final I_C_RfQResponse response)
@@ -175,25 +179,26 @@ public class RfqBL implements IRfqBL
 
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 
-		// Do we have an amount/qty for all lines
+		//
+		// If all lines and qtys shall be quoted, make sure this is respected
 		if (isQuoteAllLines(rfq))
 		{
-			for (final I_C_RfQResponseLine line : rfqDAO.retrieveResponseLines(response))
+			for (final I_C_RfQResponseLine responseLine : rfqDAO.retrieveResponseLines(response))
 			{
-				if (!line.isActive())
+				if (!responseLine.isActive())
 				{
-					throw new AdempiereException("Line " + line.getC_RfQLine().getLine() + ": Not Active");
+					throw new AdempiereException("Line " + responseLine.getC_RfQLine().getLine() + ": Not Active");
 				}
 
 				boolean validAmt = false;
-				for (final I_C_RfQResponseLineQty qty : rfqDAO.retrieveResponseQtys(line))
+				for (final I_C_RfQResponseLineQty responseLineQty : rfqDAO.retrieveResponseQtys(responseLine))
 				{
-					if (!qty.isActive())
+					if (!responseLineQty.isActive())
 					{
 						continue;
 					}
 
-					final BigDecimal amt = calculateNetAmt(qty);
+					final BigDecimal amt = calculateNetAmt(responseLineQty);
 					if (amt != null && amt.signum() > 0)
 					{
 						validAmt = true;
@@ -202,7 +207,7 @@ public class RfqBL implements IRfqBL
 				}
 				if (!validAmt)
 				{
-					throw new AdempiereException("Line " + line.getC_RfQLine().getLine() + ": No Amount");
+					throw new AdempiereException("Line " + responseLine.getC_RfQLine().getLine() + ": No amount or amount is not valid");
 				}
 			}
 		}

@@ -9,7 +9,6 @@ import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncRfQQtyRequest;
 
 /*
  * #%L
@@ -71,11 +70,4 @@ public class NullAgentSync implements IAgentSync
 	{
 		System.out.println("confirm: " + ObjectUtils.toString(syncConfirmations));
 	}
-
-	@Override
-	public void syncRfQQuantities(final SyncRfQQtyRequest request)
-	{
-		System.out.println("syncRfQQuantities: " + ObjectUtils.toString(request));
-	}
-
 }
