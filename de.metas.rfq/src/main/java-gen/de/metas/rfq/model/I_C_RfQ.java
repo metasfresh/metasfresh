@@ -185,29 +185,6 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Positionen kopieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCopyLines (java.lang.String CopyLines);
-
-	/**
-	 * Get Positionen kopieren.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCopyLines();
-
-    /** Column definition for CopyLines */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_CopyLines = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "CopyLines", null);
-    /** Column name CopyLines */
-    public static final String COLUMNNAME_CopyLines = "CopyLines";
-
-	/**
 	 * Set Auftrag.
 	 * Order
 	 *

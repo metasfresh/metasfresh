@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1056791632L;
+	private static final long serialVersionUID = 1870730453L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -210,22 +210,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Positionen kopieren.
-		@param CopyLines Positionen kopieren	  */
-	@Override
-	public void setCopyLines (java.lang.String CopyLines)
-	{
-		set_Value (COLUMNNAME_CopyLines, CopyLines);
-	}
-
-	/** Get Positionen kopieren.
-		@return Positionen kopieren	  */
-	@Override
-	public java.lang.String getCopyLines () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyLines);
 	}
 
 	@Override
