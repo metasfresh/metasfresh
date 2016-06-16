@@ -57,8 +57,6 @@ public class HUOrderBL implements IHUOrderBL
 
 		final de.metas.handlingunits.model.I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_C_OrderLine.class);
 
-		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
-
 		final I_M_HU_PI_Item_Product pip;
 
 		if (olPO.getM_Product_ID() <= 0)
@@ -70,38 +68,14 @@ public class HUOrderBL implements IHUOrderBL
 			return; // fiddling with the order line is not our business. Nothing to do
 		}
 
+		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
 		//
-		// get the pip to work with
+		// get the pip we will work with
 		//
 		if (InterfaceWrapperHelper.isNew(ol))
 		{
-			if (ol.getM_HU_PI_Item_Product_ID() > 0)
-			{
-				final I_M_HU_PI_Item_Product olPip = ol.getM_HU_PI_Item_Product();
-
-				// FRESH-351: maybe the order line was copied with *all* its columns and then the M_Product_ID was changed
-				// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
-				if (olPip.getM_Product_ID() != olPO.getM_Product_ID())
-				{
-					// reset the order line's pip
-					final boolean allowInfiniteCapacity = true;
-					pip = hupiItemProductDAO.retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
-
-					logger.debug("C_OrderLine={} has M_Product_ID={}, but the ol's current M_HU_PI_Item_Product={} has M_Product_ID={}; => changing the ol's M_HU_PI_Item_Product to {}!",
-							olPO, olPO.getM_Product_ID(), olPip, olPip.getM_Product_ID(), pip);
-				}
-				else
-				{
-					pip = olPip; // go with the order line's already set pip, because it is consistent with the order line's product.
-				}
-			}
-			else
-			{
-				// pip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType);
-				// 06730 : Removed functionality for now.
-				pip = null;
-			}
+			pip = getOrderLinePIIPForNewOrderLine(ol, huUnitType);
 		}
 		else
 		{
@@ -140,7 +114,7 @@ public class HUOrderBL implements IHUOrderBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx,
 					ol,
-					InterfaceWrapperHelper.isNew(ol),   // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),           // usePriceUOM
 					trxName);
 		}
 		// If is not null, set all related items
@@ -170,9 +144,79 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol),   // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),           // usePriceUOM
 					trxName);
 		}
+	}
+
+	private I_M_HU_PI_Item_Product getOrderLinePIIPForNewOrderLine(
+			final de.metas.handlingunits.model.I_C_OrderLine ol,
+			final String huUnitType)
+	{
+		if (ol.getM_HU_PI_Item_Product_ID() <= 0)
+		{
+			// pip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType);
+			// 06730 : Removed functionality for now.
+			return null;
+		}
+
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		final I_M_HU_PI_Item_Product olPip = ol.getM_HU_PI_Item_Product();
+
+		final boolean allowInfiniteCapacity = true;
+
+		final I_M_HU_PI_Item_Product newPIIP;
+
+		// FRESH-351: maybe the order line was copied with *all* its columns and then the M_Product_ID was changed
+		// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
+
+		// check if the ol has a packaging order line whose product is inconsistent with the ol's PIIP
+		final boolean inconsistentPackagingProduct = true
+				// here we just avoid NPEs
+				&& ol.getC_PackingMaterial_OrderLine_ID() > 0
+				&& olPip.getM_HU_PI_Item_ID() > 0
+				&& olPip.getM_HU_PI_Item().getM_HU_PackingMaterial_ID() > 0
+				// .. and here comes the actual check
+				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() != olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product_ID();
+
+		final boolean inconsistentProduct = olPip.getM_Product_ID() != ol.getM_Product_ID();
+
+		if (inconsistentPackagingProduct)
+		{
+			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
+					ol.getM_Product(),
+					ol.getC_BPartner(),
+					ol.getDateOrdered(),
+					huUnitType,
+					allowInfiniteCapacity,
+					olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product());
+
+			logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
+					+ " but the ol's current M_HU_PI_Item_Product={} references to the packaging-M_Product_ID={};"
+					+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
+					ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
+					olPip, olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product_ID(),
+					newPIIP);
+		}
+		else if (inconsistentProduct)
+		{
+			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
+					ol.getM_Product(),
+					ol.getC_BPartner(),
+					ol.getDateOrdered(),
+					huUnitType,
+					allowInfiniteCapacity);
+
+			logger.debug("C_OrderLine={} has M_Product_ID={}, but the ol's current M_HU_PI_Item_Product={} has M_Product_ID={}; => going to change the ol's M_HU_PI_Item_Product to {}!",
+					ol, ol.getM_Product_ID(), olPip, olPip.getM_Product_ID(), newPIIP);
+		}
+		else
+		{
+			newPIIP = olPip; // go with the order line's already set pip, because it is consistent with the order line's product.
+		}
+
+		return newPIIP;
 	}
 
 	private boolean isM_HU_PI_Item_ProductChanged(final I_C_OrderLine orderLine, final String columnName)
