@@ -13,15 +13,14 @@ package org.adempiere.bpartner.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -143,7 +142,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 *
 	 * @param ctx
 	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
-	 * @param soTrx <ul>
+	 * @param soTrx
+	 *            <ul>
 	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
 	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
 	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
@@ -275,4 +275,17 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
+
+	/**
+	 * 
+	 * Retrieve the default Handover bpartner location for the given bpartner ID.
+	 * The location must be active.
+	 * The location must have IsUseForHandOver flag on true
+	 * In case there are several locations fitting the requirements, the selected one will be the one with the greatest ID (last created)
+	 * 
+	 * @param partner
+	 * @return
+	 */
+	I_C_BPartner_Location retrieveHandOverLocation(I_C_BPartner partner);
+
 }
