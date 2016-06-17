@@ -18,6 +18,7 @@ The actual release notes
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
 
 ## Fixes
+ - FRESH-409 Creating Partner Relation throws Exception
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
  - FRESH-279 DD Order CU calculation wrong when TU = 1
  - FRESH-309 Missing ADR ASIs in purchase order lines since february
