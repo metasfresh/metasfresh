@@ -16,9 +16,9 @@ The actual release notes
 
 ## Features
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
- - FRESH-408 Picking Issue
 
 ## Fixes
+ - FRESH-408 Picking Issue
  - FRESH-409 Creating Partner Relation throws Exception
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
  - FRESH-279 DD Order CU calculation wrong when TU = 1
