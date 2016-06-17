@@ -57,7 +57,7 @@ public interface IHUOrderBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param ol
-	 * @param columnName optional, may be <code>null</code>, can be used to explicitly state a column has been changed (for using the method in invoice).
+	 * @param columnName optional, may be <code>null</code>. Can be used to explicitly state a column has been changed (for using the method in invoice).
 	 */
 	void updateOrderLine(I_C_OrderLine ol, String columnName);
 
