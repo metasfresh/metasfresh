@@ -182,31 +182,6 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
 
 	/**
-	 * Set Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDatePromised (java.sql.Timestamp DatePromised);
-
-	/**
-	 * Get Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDatePromised();
-
-    /** Column definition for DatePromised */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "DatePromised", null);
-    /** Column name DatePromised */
-    public static final String COLUMNNAME_DatePromised = "DatePromised";
-
-	/**
 	 * Set Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *

@@ -3,6 +3,7 @@ package de.metas.rfq.event.impl;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.event.IRfQEventListener;
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -59,4 +60,17 @@ public class RfQEventDispacher implements IRfQEventDispacher
 	{
 		listeners.onAfterClose(rfq);
 	}
+	
+	@Override
+	public void fireBeforeComplete(final I_C_RfQResponse rfqResponse)
+	{
+		listeners.onBeforeComplete(rfqResponse);
+	}
+
+	@Override
+	public void fireAfterComplete(final I_C_RfQResponse rfqResponse)
+	{
+		listeners.onAfterComplete(rfqResponse);
+	}
+
 }

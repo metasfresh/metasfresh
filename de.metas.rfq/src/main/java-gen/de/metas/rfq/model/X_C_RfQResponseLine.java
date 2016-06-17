@@ -16,7 +16,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1970782493L;
+	private static final long serialVersionUID = -409836474L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine (Properties ctx, int C_RfQResponseLine_ID, String trxName)
@@ -150,25 +150,6 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Zugesagter Termin.
-		@param DatePromised 
-		Zugesagter Termin für diesen Auftrag
-	  */
-	@Override
-	public void setDatePromised (java.sql.Timestamp DatePromised)
-	{
-		set_Value (COLUMNNAME_DatePromised, DatePromised);
-	}
-
-	/** Get Zugesagter Termin.
-		@return Zugesagter Termin für diesen Auftrag
-	  */
-	@Override
-	public java.sql.Timestamp getDatePromised () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
 
 	/** Set Arbeit fertiggestellt.

@@ -3,11 +3,11 @@ package de.metas.rfq.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -22,7 +22,6 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
-import de.metas.rfq.util.RfqResponseLineQtyByNetAmtComparator;
 
 /*
  * #%L
@@ -66,6 +65,8 @@ public class DefaultRfQResponseRankingStrategy implements IRfQResponseRankingStr
 	private static final Logger logger = LogManager.getLogger(DefaultRfQResponseRankingStrategy.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
+	
+	private final transient RfqResponseLineQtyByNetAmtComparator rfqResponseLineComparator = new RfqResponseLineQtyByNetAmtComparator();
 
 	@Override
 	public void rank(final I_C_RfQ rfq)
@@ -153,9 +154,9 @@ public class DefaultRfQResponseRankingStrategy implements IRfQResponseRankingStr
 				}
 				else
 				{
-					Collections.sort(rfqResponseQtys, RfqResponseLineQtyByNetAmtComparator.instance);
+					Collections.sort(rfqResponseQtys, rfqResponseLineComparator);
 					int lastRank = 1;		// multiple rank #1
-					BigDecimal lastAmt = Env.ZERO;
+					BigDecimal lastAmt = BigDecimal.ZERO;
 					int rank = 0;
 					for (final I_C_RfQResponseLineQty qty : rfqResponseQtys)
 					{
@@ -164,7 +165,7 @@ public class DefaultRfQResponseRankingStrategy implements IRfQResponseRankingStr
 							continue;
 						}
 
-						final BigDecimal netAmt = rfqBL.calculateNetAmt(qty);
+						final BigDecimal netAmt = rfqBL.calculatePriceWithoutDiscount(qty);
 						if (netAmt == null)
 						{
 							qty.setRanking(RANK_Invalid);
@@ -292,4 +293,50 @@ public class DefaultRfQResponseRankingStrategy implements IRfQResponseRankingStr
 			logger.debug("rankResponse - {}", rfqResponse);
 		}
 	}
+	
+	private final class RfqResponseLineQtyByNetAmtComparator implements Comparator<I_C_RfQResponseLineQty>
+	{
+		public RfqResponseLineQtyByNetAmtComparator()
+		{
+			super();
+		}
+
+		@Override
+		public int compare(final I_C_RfQResponseLineQty q1, final I_C_RfQResponseLineQty q2)
+		{
+			if (q1 == null)
+			{
+				throw new IllegalArgumentException("o1 = null");
+			}
+			if (q2 == null)
+			{
+				throw new IllegalArgumentException("o2 = null");
+			}
+
+			//
+			if (!rfqBL.isValidAmt(q1))
+			{
+				return -99;
+			}
+			if (!rfqBL.isValidAmt(q2))
+			{
+				return +99;
+			}
+
+			final BigDecimal net1 = rfqBL.calculatePriceWithoutDiscount(q1);
+			if (net1 == null)
+			{
+				return -9;
+			}
+
+			final BigDecimal net2 = rfqBL.calculatePriceWithoutDiscount(q2);
+			if (net2 == null)
+			{
+				return +9;
+			}
+
+			return net1.compareTo(net2);
+		}
+	}
+
 }

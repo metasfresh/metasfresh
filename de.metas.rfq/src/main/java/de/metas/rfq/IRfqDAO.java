@@ -1,5 +1,6 @@
 package de.metas.rfq;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -53,4 +54,5 @@ public interface IRfqDAO extends ISingletonService
 
 	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQResponseLine responseLine);
 
+	BigDecimal calculateQtyPromised(I_C_RfQResponseLine rfqResponseLine);
 }

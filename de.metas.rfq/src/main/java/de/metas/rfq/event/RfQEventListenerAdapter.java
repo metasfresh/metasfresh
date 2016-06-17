@@ -1,6 +1,7 @@
 package de.metas.rfq.event;
 
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -24,8 +25,12 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public abstract class RfQEventListenerAdapter implements IRfQEventListener
+public class RfQEventListenerAdapter implements IRfQEventListener
 {
+	protected RfQEventListenerAdapter()
+	{
+		super();
+	}
 
 	@Override
 	public void onAfterComplete(final I_C_RfQ rfq)
@@ -39,4 +44,27 @@ public abstract class RfQEventListenerAdapter implements IRfQEventListener
 		// nothing
 	}
 
+	@Override
+	public void onBeforeComplete(final I_C_RfQ rfq)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeClose(final I_C_RfQ rfq)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeComplete(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onAfterComplete(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
 }

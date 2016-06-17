@@ -86,69 +86,81 @@ public class RfqBL implements IRfqBL
 	@Override
 	public boolean isValidAmt(final I_C_RfQResponseLineQty responseQty)
 	{
-		final BigDecimal price = responseQty.getPrice();
-		if (price == null || price.signum() == 0)
+		final BigDecimal priceWithoutDiscount = calculatePriceWithoutDiscount(responseQty);
+		if (priceWithoutDiscount == null || priceWithoutDiscount.signum() <= 0)
 		{
-			logger.warn("No Price - " + price);
 			return false;
 		}
 
-		final BigDecimal discount = responseQty.getDiscount();
-		if (discount != null)
-		{
-			if (discount.abs().compareTo(Env.ONEHUNDRED) > 0)
-			{
-				logger.warn("Discount > 100 - " + discount);
-				return false;
-			}
-		}
-
-		final BigDecimal netAmt = calculateNetAmt(responseQty);
-		if (netAmt == null)
-		{
-			logger.warn("Net is null");
-			return false;
-		}
-		if (netAmt.signum() <= 0)
-		{
-			logger.warn("Net <= 0 - " + netAmt);
-			return false;
-		}
 		return true;
-	}	// isValidAmt
+	}
 
 	@Override
-	public BigDecimal calculateNetAmt(final I_C_RfQResponseLineQty responseQty)
+	public BigDecimal calculatePriceWithoutDiscount(final I_C_RfQResponseLineQty rfqResponseLineQty)
 	{
-		final BigDecimal price = responseQty.getPrice();
+		final BigDecimal price = rfqResponseLineQty.getPrice();
+		final BigDecimal discount = rfqResponseLineQty.getDiscount();
+
+		return calculatePriceWithoutDiscount(price, discount);
+	}
+
+	private static final BigDecimal calculatePriceWithoutDiscount(final BigDecimal price, final BigDecimal discount)
+	{
+		// Validate price
 		if (price == null || price.signum() <= 0)
 		{
-			// invalid price
 			return null;
 		}
 
-		//
-		// Apply discount
-		final BigDecimal discount = responseQty.getDiscount();
-		if (discount == null || discount.signum() == 0)
+		// Validate discount
+		if (discount != null && discount.abs().compareTo(Env.ONEHUNDRED) > 0)
 		{
-			return price;
+			return null;
 		}
-		// Calculate
-		// double result = price.doubleValue() * (100.0 - discount.doubleValue()) / 100.0;
-		final BigDecimal factor = Env.ONEHUNDRED.subtract(discount);
-		return price.multiply(factor).divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
+
+		BigDecimal priceWithoutDiscount = price;
+
+		//
+		// Subtract discount:
+		// i.e. price = price * (100 - discount) / 100;
+		if (discount != null && discount.signum() != 0)
+		{
+			final BigDecimal factor = Env.ONEHUNDRED.subtract(discount);
+			priceWithoutDiscount = price.multiply(factor).divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
+		}
+
+		return priceWithoutDiscount;
 	}
 
 	@Override
 	public void complete(final I_C_RfQResponse rfqResponse)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				InterfaceWrapperHelper.setTrxName(rfqResponse, ITrx.TRXNAME_ThreadInherited);
+				completeInTrx(rfqResponse);
+			}
+		});
+	}
+
+	private void completeInTrx(final I_C_RfQResponse rfqResponse)
 	{
 		assertDraft(rfqResponse);
 
 		final I_C_RfQ rfq = rfqResponse.getC_RfQ();
 		assertComplete(rfq);
 
-		// Do we have Total Amount ?
+		//
+		// Fire event: before complete
+		final IRfQEventDispacher rfqEventDispacher = Services.get(IRfQEventDispacher.class);
+		rfqEventDispacher.fireBeforeComplete(rfqResponse);
+
+		//
+		// Validate Quote Total Amt
 		if (rfq.isQuoteTotalAmt() || isQuoteTotalAmtOnly(rfq))
 		{
 			final BigDecimal totalAmt = rfqResponse.getPrice();
@@ -179,7 +191,7 @@ public class RfqBL implements IRfqBL
 						continue;
 					}
 
-					final BigDecimal amt = calculateNetAmt(rfqResponseLineQty);
+					final BigDecimal amt = calculatePriceWithoutDiscount(rfqResponseLineQty);
 					if (amt != null && amt.signum() > 0)
 					{
 						validAmt = true;
@@ -193,29 +205,39 @@ public class RfqBL implements IRfqBL
 			}
 		}
 
+		//
 		// Do we have an amount for all line qtys
 		if (rfq.isQuoteAllQty())
 		{
-			for (final I_C_RfQResponseLine line : rfqDAO.retrieveResponseLines(rfqResponse))
+			for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse))
 			{
-				for (final I_C_RfQResponseLineQty qty : rfqDAO.retrieveResponseQtys(line))
+				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqDAO.retrieveResponseQtys(rfqResponseLine))
 				{
-					if (!qty.isActive())
+					if (!rfqResponseLineQty.isActive())
 					{
-						throw new RfQResponseLineQtyInvalidException(qty, "@IsActive@=@N@");
+						throw new RfQResponseLineQtyInvalidException(rfqResponseLineQty, "@IsActive@=@N@");
 					}
 
-					final BigDecimal amt = calculateNetAmt(qty);
+					final BigDecimal amt = calculatePriceWithoutDiscount(rfqResponseLineQty);
 					if (amt == null || amt.signum() <= 0)
 					{
-						throw new RfQResponseLineQtyInvalidException(qty, "@Amount@ <= 0");
+						throw new RfQResponseLineQtyInvalidException(rfqResponseLineQty, "@Amount@ <= 0");
 					}
 				}
 			}
 		}
 
+		//
+		// Mark as complete
 		rfqResponse.setProcessed(true);
 		rfqResponse.setIsComplete(true);
+		InterfaceWrapperHelper.save(rfqResponse);
+
+		//
+		// Fire event: after complete
+		rfqEventDispacher.fireAfterComplete(rfqResponse);
+
+		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfqResponse);
 	}
 
@@ -285,7 +307,7 @@ public class RfqBL implements IRfqBL
 		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
 				completeInTrx(rfq);
@@ -297,7 +319,10 @@ public class RfqBL implements IRfqBL
 	{
 		assertDraft(rfq);
 
-		getRfQEventDispacher().fireBeforeComplete(rfq);
+		//
+		// Fire event: before complete
+		final IRfQEventDispacher rfqEventDispacher = getRfQEventDispacher();
+		rfqEventDispacher.fireBeforeComplete(rfq);
 
 		// services
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
@@ -338,8 +363,11 @@ public class RfqBL implements IRfqBL
 				.setSendToVendor(true)
 				.create();
 
-		getRfQEventDispacher().fireAfterComplete(rfq);
+		//
+		// Fire event: after complete
+		rfqEventDispacher.fireAfterComplete(rfq);
 
+		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfq);
 	}
 
@@ -351,7 +379,7 @@ public class RfqBL implements IRfqBL
 			throw new RfQDocumentNotDraftException(getSummary(rfq));
 		}
 	}
-	
+
 	@Override
 	public boolean isDraft(final I_C_RfQ rfq)
 	{
@@ -386,7 +414,7 @@ public class RfqBL implements IRfqBL
 		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
 				closeInTrx(rfq);
@@ -464,6 +492,13 @@ public class RfqBL implements IRfqBL
 	private String getSummary(final I_C_RfQResponse rfqResponse)
 	{
 		return "@C_RfQResponse_ID@ #" + rfqResponse.getName();
+	}
+
+	@Override
+	public void updateQtyPromisedAndSave(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		final BigDecimal qtyPromised = Services.get(IRfqDAO.class).calculateQtyPromised(rfqResponseLine);
+		rfqResponseLine.setQtyPromised(qtyPromised);
 	}
 
 }

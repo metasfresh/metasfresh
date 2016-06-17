@@ -130,7 +130,7 @@ public class C_RfQ_CreatePO extends SvrProcess
 
 						ol.setQty(rfqLineQty.getQty());
 
-						final BigDecimal price = rfqBL.calculateNetAmt(qty);
+						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(qty);
 						ol.setPrice();
 						ol.setPrice(price);
 
@@ -194,7 +194,7 @@ public class C_RfQ_CreatePO extends SvrProcess
 
 						ol.setQty(rfqLineQty.getQty());
 
-						final BigDecimal price = rfqBL.calculateNetAmt(qty);
+						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(qty);
 						ol.setPrice();
 						ol.setPrice(price);
 

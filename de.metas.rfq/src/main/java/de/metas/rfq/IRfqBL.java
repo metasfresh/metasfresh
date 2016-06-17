@@ -6,6 +6,7 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
@@ -39,11 +40,11 @@ public interface IRfqBL extends ISingletonService
 	boolean isValidAmt(I_C_RfQResponseLineQty responseQty);
 
 	/**
-	 * Get Net Amt (price minus discount in %)
+	 * Get price minus discount%.
 	 * 
-	 * @return net amount or null
+	 * @return price without discount% or null if price or discount is not valid.
 	 */
-	BigDecimal calculateNetAmt(I_C_RfQResponseLineQty responseQty);
+	BigDecimal calculatePriceWithoutDiscount(I_C_RfQResponseLineQty responseQty);
 
 	//@formatter:off
 	boolean isDraft(I_C_RfQ rfq);
@@ -63,5 +64,7 @@ public interface IRfqBL extends ISingletonService
 	boolean isClosed(I_C_RfQResponse rfqResponse);
 	boolean sendRfQResponseToVendor(I_C_RfQResponse response);
 	//@formatter:on
+
+	void updateQtyPromisedAndSave(I_C_RfQResponseLine rfqResponseLine);
 
 }

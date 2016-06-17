@@ -3,6 +3,7 @@ package de.metas.rfq.event;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -37,5 +38,9 @@ public interface IRfQEventDispacher extends ISingletonService
 	void fireBeforeClose(I_C_RfQ rfq);
 
 	void fireAfterClose(I_C_RfQ rfq);
+
+	void fireBeforeComplete(I_C_RfQResponse rfqResponse);
+
+	void fireAfterComplete(I_C_RfQResponse rfqResponse);
 
 }

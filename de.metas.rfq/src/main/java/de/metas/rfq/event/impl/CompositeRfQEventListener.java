@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.rfq.event.IRfQEventListener;
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -19,12 +20,12 @@ import de.metas.rfq.model.I_C_RfQ;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,15 +49,16 @@ import de.metas.rfq.model.I_C_RfQ;
 	}
 
 	@Override
-	public void onBeforeComplete(I_C_RfQ rfq)
+	public void onBeforeComplete(final I_C_RfQ rfq)
 	{
 		for (final IRfQEventListener listener : listeners)
 		{
 			listener.onBeforeComplete(rfq);
 		}
 	}
+
 	@Override
-	public void onAfterComplete(I_C_RfQ rfq)
+	public void onAfterComplete(final I_C_RfQ rfq)
 	{
 		for (final IRfQEventListener listener : listeners)
 		{
@@ -65,15 +67,16 @@ import de.metas.rfq.model.I_C_RfQ;
 	}
 
 	@Override
-	public void onBeforeClose(I_C_RfQ rfq)
+	public void onBeforeClose(final I_C_RfQ rfq)
 	{
 		for (final IRfQEventListener listener : listeners)
 		{
 			listener.onBeforeClose(rfq);
 		}
 	}
+
 	@Override
-	public void onAfterClose(I_C_RfQ rfq)
+	public void onAfterClose(final I_C_RfQ rfq)
 	{
 		for (final IRfQEventListener listener : listeners)
 		{
@@ -81,5 +84,22 @@ import de.metas.rfq.model.I_C_RfQ;
 		}
 	}
 
+	@Override
+	public void onBeforeComplete(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onBeforeComplete(rfqResponse);
+		}
+	}
+
+	@Override
+	public void onAfterComplete(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onAfterComplete(rfqResponse);
+		}
+	}
 
 }

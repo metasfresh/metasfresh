@@ -360,10 +360,6 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		responseLine.setIsSelfService(false);
 		
 		responseLine.setUseLineQty(rfqLine.isUseLineQty());
-		if (!responseLine.isUseLineQty())
-		{
-			responseLine.setDatePromised(rfqLine.getC_RfQ().getDateWorkStart());
-		}
 
 		InterfaceWrapperHelper.save(responseLine);
 		return responseLine;

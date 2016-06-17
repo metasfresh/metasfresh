@@ -1,6 +1,7 @@
 package de.metas.rfq.event;
 
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -33,4 +34,8 @@ public interface IRfQEventListener
 	void onBeforeClose(final I_C_RfQ rfq);
 
 	void onAfterClose(final I_C_RfQ rfq);
+
+	void onBeforeComplete(final I_C_RfQResponse rfqResponse);
+
+	void onAfterComplete(final I_C_RfQResponse rfqResponse);
 }

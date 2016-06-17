@@ -17,11 +17,11 @@ import org.compiere.model.I_AD_Client;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,8 +39,9 @@ public class RfQModuleActivator extends AbstractModuleInterceptor
 	{
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ(), client);
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQLine(), client);
-		
+
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponse(), client);
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLine(), client);
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLineQty(), client);
 	}
 }

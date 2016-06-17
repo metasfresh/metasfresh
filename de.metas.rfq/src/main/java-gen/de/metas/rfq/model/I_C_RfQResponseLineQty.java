@@ -99,11 +99,40 @@ public interface I_C_RfQResponseLineQty
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set RfQ Line.
+	 * Request for Quotation Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQLine_ID (int C_RfQLine_ID);
+
+	/**
+	 * Get RfQ Line.
+	 * Request for Quotation Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQLine_ID();
+
+	public de.metas.rfq.model.I_C_RfQLine getC_RfQLine();
+
+	public void setC_RfQLine(de.metas.rfq.model.I_C_RfQLine C_RfQLine);
+
+    /** Column definition for C_RfQLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, de.metas.rfq.model.I_C_RfQLine> COLUMN_C_RfQLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, de.metas.rfq.model.I_C_RfQLine>(I_C_RfQResponseLineQty.class, "C_RfQLine_ID", de.metas.rfq.model.I_C_RfQLine.class);
+    /** Column name C_RfQLine_ID */
+    public static final String COLUMNNAME_C_RfQLine_ID = "C_RfQLine_ID";
+
+	/**
 	 * Set RfQ Line Quantity.
 	 * Request for Quotation Line Quantity
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_RfQLineQty_ID (int C_RfQLineQty_ID);
@@ -113,7 +142,7 @@ public interface I_C_RfQResponseLineQty
 	 * Request for Quotation Line Quantity
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_RfQLineQty_ID();
@@ -180,6 +209,31 @@ public interface I_C_RfQResponseLineQty
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object> COLUMN_C_RfQResponseLineQty_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object>(I_C_RfQResponseLineQty.class, "C_RfQResponseLineQty_ID", null);
     /** Column name C_RfQResponseLineQty_ID */
     public static final String COLUMNNAME_C_RfQResponseLineQty_ID = "C_RfQResponseLineQty_ID";
+
+	/**
+	 * Set Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDatePromised();
+
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object>(I_C_RfQResponseLineQty.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
 	 * Set Rabatt %.
@@ -255,6 +309,29 @@ public interface I_C_RfQResponseLineQty
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object> COLUMN_Price = new org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object>(I_C_RfQResponseLineQty.class, "Price", null);
     /** Column name Price */
     public static final String COLUMNNAME_Price = "Price";
+
+	/**
+	 * Set Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPromised (java.math.BigDecimal QtyPromised);
+
+	/**
+	 * Get Zusagbar.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPromised();
+
+    /** Column definition for QtyPromised */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object> COLUMN_QtyPromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLineQty, Object>(I_C_RfQResponseLineQty.class, "QtyPromised", null);
+    /** Column name QtyPromised */
+    public static final String COLUMNNAME_QtyPromised = "QtyPromised";
 
 	/**
 	 * Set Ranking.

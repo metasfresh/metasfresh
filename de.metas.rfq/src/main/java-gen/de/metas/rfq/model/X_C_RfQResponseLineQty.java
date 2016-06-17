@@ -16,7 +16,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1127128546L;
+	private static final long serialVersionUID = 1749761296L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLineQty (Properties ctx, int C_RfQResponseLineQty_ID, String trxName)
@@ -24,10 +24,12 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
       super (ctx, C_RfQResponseLineQty_ID, trxName);
       /** if (C_RfQResponseLineQty_ID == 0)
         {
-			setC_RfQLineQty_ID (0);
+			setC_RfQLine_ID (0);
 			setC_RfQResponseLine_ID (0);
 			setC_RfQResponseLineQty_ID (0);
 			setPrice (Env.ZERO);
+			setQtyPromised (Env.ZERO);
+// 0
         } */
     }
 
@@ -45,6 +47,43 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public de.metas.rfq.model.I_C_RfQLine getC_RfQLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_RfQLine_ID, de.metas.rfq.model.I_C_RfQLine.class);
+	}
+
+	@Override
+	public void setC_RfQLine(de.metas.rfq.model.I_C_RfQLine C_RfQLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_RfQLine_ID, de.metas.rfq.model.I_C_RfQLine.class, C_RfQLine);
+	}
+
+	/** Set RfQ Line.
+		@param C_RfQLine_ID 
+		Request for Quotation Line
+	  */
+	@Override
+	public void setC_RfQLine_ID (int C_RfQLine_ID)
+	{
+		if (C_RfQLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_RfQLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_RfQLine_ID, Integer.valueOf(C_RfQLine_ID));
+	}
+
+	/** Get RfQ Line.
+		@return Request for Quotation Line
+	  */
+	@Override
+	public int getC_RfQLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.rfq.model.I_C_RfQLineQty getC_RfQLineQty() throws RuntimeException
@@ -145,6 +184,25 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
+	/** Set Zugesagter Termin.
+		@param DatePromised 
+		Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public void setDatePromised (java.sql.Timestamp DatePromised)
+	{
+		set_Value (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	/** Get Zugesagter Termin.
+		@return Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public java.sql.Timestamp getDatePromised () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+	}
+
 	/** Set Rabatt %.
 		@param Discount 
 		Discount in percent
@@ -184,6 +242,25 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	public java.math.BigDecimal getPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar.
+		@param QtyPromised Zusagbar	  */
+	@Override
+	public void setQtyPromised (java.math.BigDecimal QtyPromised)
+	{
+		set_Value (COLUMNNAME_QtyPromised, QtyPromised);
+	}
+
+	/** Get Zusagbar.
+		@return Zusagbar	  */
+	@Override
+	public java.math.BigDecimal getQtyPromised () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

@@ -1,10 +1,12 @@
 package de.metas.rfq.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
@@ -200,13 +202,7 @@ public class RfqDAO implements IRfqDAO
 	@Override
 	public List<I_C_RfQResponseLineQty> retrieveResponseQtys(final I_C_RfQResponseLine responseLine)
 	{
-		final List<I_C_RfQResponseLineQty> responseLineQtys = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_RfQResponseLineQty.class, responseLine)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLine_ID, responseLine.getC_RfQResponseLine_ID())
-				.orderBy()
-				.addColumn(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLineQty_ID)
-				.endOrderBy()
+		final List<I_C_RfQResponseLineQty> responseLineQtys = retrieveResponseQtysQuery(responseLine)
 				.create()
 				.list(I_C_RfQResponseLineQty.class);
 
@@ -217,6 +213,26 @@ public class RfqDAO implements IRfqDAO
 		}
 
 		return responseLineQtys;
+	}
+
+	private IQueryBuilder<I_C_RfQResponseLineQty> retrieveResponseQtysQuery(final I_C_RfQResponseLine responseLine)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_RfQResponseLineQty.class, responseLine)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLine_ID, responseLine.getC_RfQResponseLine_ID())
+				.orderBy()
+				.addColumn(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLineQty_ID)
+				.endOrderBy();
+	}
+
+	@Override
+	public BigDecimal calculateQtyPromised(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		final BigDecimal qtyPromised = retrieveResponseQtysQuery(rfqResponseLine)
+				.create()
+				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, IQuery.AGGREGATE_SUM, BigDecimal.class);
+		return qtyPromised == null ? BigDecimal.ZERO : qtyPromised;
 	}
 
 }
