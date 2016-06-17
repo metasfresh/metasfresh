@@ -27,6 +27,7 @@ package de.metas.adempiere.process;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
@@ -188,7 +189,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 
 		if (relation == null && create)
 		{
-			relation = POWrapper.create(getCtx(), 0, I_C_BP_Relation.class, get_TrxName());
+			relation = InterfaceWrapperHelper.create(getCtx(), I_C_BP_Relation.class, get_TrxName());
 			relation.setC_BPartner_ID(bpartnerId);
 			relation.setC_BPartner_Location_ID(bpLocationId);
 			relation.setC_BPartnerRelation_ID(bpRelationId);
