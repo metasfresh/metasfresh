@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -105,10 +105,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			//
 			// Priority
 			+ "\n   COALESCE(s." + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override + ", s." + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule + ")," //
-			//
-			// QtyToDeliver_Override:
-			// NOTE: (Mark) If we want to force deliverying something, that shall get higher priority,
-			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
+	//
+	// QtyToDeliver_Override:
+	// NOTE: (Mark) If we want to force deliverying something, that shall get higher priority,
+	// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(s." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
 			// Preparation Date
@@ -117,27 +117,27 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Delivery Date
 			// NOTE: stuff that shall be deivered first shall have a higher prio
 			+ "\n   COALESCE(s." + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override + ", s." + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate + ")," // stuff that shall be deivered first shall have
-																																						// a higher prio
-			//
-			// Date Ordered
+ // a higher prio
+	//
+	// Date Ordered
 			+ "\n   s." + I_M_ShipmentSchedule.COLUMNNAME_DateOrdered + ", "
 			//
 			// Order Line
 			+ "\n   s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 
-	private static final String WHERE_INCOMPLETE = //
-			"\n   AND ("
-					// if the param '?' is set to 0, only those entries are loaded that
-					// don't have an inOutLine yet.
-					+ "\n      ?=1" //
-					+ "\n      OR ("//
-					+ "\n         NOT EXISTS (" //
-					+ "\n            SELECT * FROM M_InOutLine iol INNER JOIN M_InOut io ON (iol.M_InOut_ID=io.M_InOut_ID) "//
-					+ "\n            WHERE iol.C_OrderLine_ID=ol.C_OrderLine_ID AND io.DocStatus IN ('IP','WC')"//
-					+ "\n         )"//
-					+ "\n      )"//
-					+ "\n   )"//
-	;
+	private static final String WHERE_INCOMPLETE =  //
+	"\n   AND ("
+			// if the param '?' is set to 0, only those entries are loaded that
+			// don't have an inOutLine yet.
+			+ "\n      ?=1" //
+			+ "\n      OR ("//
+			+ "\n         NOT EXISTS (" //
+			+ "\n            SELECT * FROM M_InOutLine iol INNER JOIN M_InOut io ON (iol.M_InOut_ID=io.M_InOut_ID) "//
+			+ "\n            WHERE iol.C_OrderLine_ID=ol.C_OrderLine_ID AND io.DocStatus IN ('IP','WC')"//
+			+ "\n         )"//
+			+ "\n      )"//
+			+ "\n   )"//
+			;
 
 	/**
 	 * Selects order lines that have a shipment schedule and have a given M_Product_ID
@@ -150,36 +150,36 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 
-	private static final String SQL_ALL = //
+	private static final String SQL_ALL =  //
 	" SELECT * FROM " + I_M_ShipmentSchedule.Table_Name
 			+ " WHERE AD_Client_ID=?" //
 			+ ORDER_CLAUSE;
 
-	private static final String SQL_FOR_ORDER = //
+	private static final String SQL_FOR_ORDER =  //
 	" SELECT s.* FROM "
 			+ I_M_ShipmentSchedule.Table_Name //
 			+ " s LEFT JOIN C_OrderLine ol ON s.C_OrderLine_ID=ol.C_OrderLine_ID "
 			+ " WHERE ol.C_Order_ID=? AND s.AD_Client_ID=?";
 
-	private static final String SQL_SELECT_SCHEDS_FOR_PRODUCT = //
+	private static final String SQL_SELECT_SCHEDS_FOR_PRODUCT =  //
 	" SELECT s.* " //
 			+ " FROM M_ShipmentSchedule s" //
 			+ "   LEFT JOIN C_OrderLine ol ON s.C_OrderLine_ID=ol.C_OrderLine_ID " //
 			+ " WHERE ol.M_Product_ID=? AND s.AD_Client_ID=? "
 			+ WHERE_INCOMPLETE;
 
-	private static final String SQL_SCHED = //
+	private static final String SQL_SCHED =  //
 	SELECT_SCHED_OL //
 			+ "\n WHERE s.AD_Client_ID=? " //
 			+ WHERE_INCOMPLETE //
 			+ ORDER_CLAUSE;
 
-	private static final String SQL_OL_SCHED = //
+	private static final String SQL_OL_SCHED =  //
 	SELECT_OL_SCHED //
 			+ "\n WHERE s.AD_Client_ID=?" //
 			+ WHERE_INCOMPLETE;
 
-	private static final String SQL_SCHED_INVALID_3P = //
+	private static final String SQL_SCHED_INVALID_3P =  //
 	SELECT_SCHED_OL
 			+ "\n WHERE s.AD_Client_ID=? "
 			+ "\n    AND EXISTS ( "
@@ -189,7 +189,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ WHERE_INCOMPLETE
 			+ ORDER_CLAUSE;
 
-	private static final String SQL_OL_SCHED_INVALID_3P = //
+	private static final String SQL_OL_SCHED_INVALID_3P =  //
 	SELECT_OL_SCHED //
 			+ "\n WHERE s.AD_Client_ID=?"//
 			+ "\n    AND EXISTS ( "
@@ -202,7 +202,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Similar to {@link #SQL_SCHED_INVALID_3P}, but does not retrieve scheds whose recompute records were were previously tagged with a certain AD_PInstance_ID, but instead retrieves scheds that
 	 * <b>have any</b> recompute record <b>and</b> have a shipment-run lock with a certain <code>AD_PInstance_ID</code>.
 	 */
-	private static final String SQL_SCHED_INVALID_LOCKED_ONLY_3P = //
+	private static final String SQL_SCHED_INVALID_LOCKED_ONLY_3P =  //
 	SELECT_SCHED_OL
 			+ "\n WHERE s.AD_Client_ID=? "
 			+ "\n    AND EXISTS ( "
@@ -217,7 +217,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * See {@link #SQL_SCHED_INVALID_LOCKED_ONLY_3P}
 	 */
-	private static final String SQL_OL_SCHED_INVALID_LOCKED_ONLY_3P = //
+	private static final String SQL_OL_SCHED_INVALID_LOCKED_ONLY_3P =  //
 	SELECT_OL_SCHED //
 			+ "\n WHERE s.AD_Client_ID=? "
 			+ "\n    AND EXISTS ( "
@@ -228,18 +228,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "      )"
 			+ WHERE_INCOMPLETE;
 
-	private static final String SQL_SCHED_BPARTNER = //
+	private static final String SQL_SCHED_BPARTNER =  //
 	SELECT_SCHED_OL //
 			+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? " //
 			+ WHERE_INCOMPLETE //
 			+ ORDER_CLAUSE;
 
-	private static final String SQL_OL_SCHED_BPARTNER = //
+	private static final String SQL_OL_SCHED_BPARTNER =  //
 	SELECT_OL_SCHED //
 			+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=?" //
 			+ WHERE_INCOMPLETE;
 
-	private static final String SQL_BPARTNER = //
+	private static final String SQL_BPARTNER =  //
 	SELECT_SCHED_OL //
 			+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? "
 			+ WHERE_INCOMPLETE;
@@ -250,15 +250,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 *
 	 * Note: It's not a problem if multiple clients execute this INSERT concurrently.
 	 */
-	private static final String SQL_RECOMPUTE_1P =
-			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
-					+ " SELECT s." + COLUMNNAME_M_ShipmentSchedule_ID
-					+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-					+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
-					+ " WHERE true "
-					+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
-					+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
-					+ "   AND ol.M_Product_ID=? ";
+	private static final String SQL_RECOMPUTE_1P = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
+			+ " SELECT s." + COLUMNNAME_M_ShipmentSchedule_ID
+			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
+			+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
+			+ " WHERE true "
+			+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
+			+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
+			+ "   AND ol.M_Product_ID=? ";
 
 	/**
 	 * Marks shipment schedule records starting at a given date for update by {@link IShipmentScheduleUpdater#updateShipmentSchedule(int, int, int, String)}. This is done by creating
@@ -266,7 +265,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 *
 	 * Note: It's not a problem if multiple clients execute this INSERT concurrently.
 	 */
-	private static final String SQL_RECOMPUTE_DELIVERYDATE_1P = //
+	private static final String SQL_RECOMPUTE_DELIVERYDATE_1P =  //
 	"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
 			+ " SELECT s." + COLUMNNAME_M_ShipmentSchedule_ID
 			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
@@ -275,14 +274,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
 			+ "   AND (s.DELIVERYDATE>=? OR s.DELIVERYDATE IS NULL)";
 
-	private static final String SQL_RECOMPUTE_ALL = //
+	private static final String SQL_RECOMPUTE_ALL =  //
 	"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
 			+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID
 			+ " FROM " + I_M_ShipmentSchedule.Table_Name
 			+ " WHERE " + I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID + "=?"
 			+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
 
-	private static final String SQL_SET_DISPLAYED = //
+	private static final String SQL_SET_DISPLAYED =  //
 	"UPDATE M_ShipmentSchedule s " //
 			+ " SET " + I_M_ShipmentSchedule.COLUMNNAME_IsDisplayed + "=?" //
 			+ " FROM C_OrderLine ol " //
@@ -399,10 +398,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(
 			final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		final String wc =
-				I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID + "=? AND " +
-						I_M_ShipmentSchedule.COLUMNNAME_Record_ID + "=?" +
-						I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
+		final String wc = I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID + "=? AND " +
+				I_M_ShipmentSchedule.COLUMNNAME_Record_ID + "=?" +
+				I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
 
 		return new Query(ctx, I_M_ShipmentSchedule.Table_Name, wc, trxName)
 				.setParameters(adTableId, recordId)
@@ -431,11 +429,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				includeUncompleted ? 1 : 0 };
 
 		final IDatabaseBL db = Services.get(IDatabaseBL.class);
-		final List<X_M_ShipmentSchedule> schedules =
-				db.retrieveList(SQL_SCHED_BPARTNER, params, X_M_ShipmentSchedule.class, trxName);
+		final List<X_M_ShipmentSchedule> schedules = db.retrieveList(SQL_SCHED_BPARTNER, params, X_M_ShipmentSchedule.class, trxName);
 
-		final Map<Integer, MOrderLine> orderLines =
-				db.retrieveMap(SQL_OL_SCHED_BPARTNER, params, MOrderLine.class, trxName);
+		final Map<Integer, MOrderLine> orderLines = db.retrieveMap(SQL_OL_SCHED_BPARTNER, params, MOrderLine.class, trxName);
 
 		return mkResult(schedules, orderLines);
 	}
@@ -459,19 +455,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// task 08727: Tag the recompute records out-of-trx.
 			// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 			// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-			final String sqlUpdate =
-					" UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-							"SET AD_Pinstance_ID=" + adPinstanceId +
-							"FROM (" +
-							"	SELECT s.M_ShipmentSchedule_ID " +
-							"	FROM M_ShipmentSchedule s " +
-							// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
-							// "		LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
-							// "	WHERE l.Record_ID Is NULL " +
-							") data " +
-							" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
-							+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
-			;
+			final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
+					"SET AD_Pinstance_ID=" + adPinstanceId +
+					"FROM (" +
+					"	SELECT s.M_ShipmentSchedule_ID " +
+					"	FROM M_ShipmentSchedule s " +
+					// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
+					// " LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
+					// " WHERE l.Record_ID Is NULL " +
+					") data " +
+					" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
+					+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
+					;
 			final Object[] sqlUpdateParams = null;
 			final int countTagged = DB.executeUpdateEx(sqlUpdate, sqlUpdateParams, ITrx.TRXNAME_None);
 			logger.debug("Marked {} entries for AD_Pinstance_ID={}", countTagged, adPinstanceId);
@@ -518,8 +513,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final boolean includeUncompleted,
 			final String trxName)
 	{
-		final Object[] param =
-				new Object[] { Env.getAD_Client_ID(Env.getCtx()), includeUncompleted ? 1 : 0 };
+		final Object[] param = new Object[] { Env.getAD_Client_ID(Env.getCtx()), includeUncompleted ? 1 : 0 };
 
 		final IDatabaseBL db = Services.get(IDatabaseBL.class);
 
@@ -559,7 +553,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			pstmt.setInt(1, clientId);
 			final int result = pstmt.executeUpdate();
 			logger.debug("Invalidated {} entries for AD_Client_ID={}", result, clientId);
-			// 
+			//
 			if (result > 0)
 			{
 				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, ITrx.TRXNAME_ThreadInherited);
@@ -601,8 +595,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			pstmt.setInt(1, productId);
 			final int result = pstmt.executeUpdate();
 			logger.debug("Invalidated {} entries for productId={} ", result, productId);
-			
-			// 
+
+			//
 			if (result > 0)
 			{
 				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -666,7 +660,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for headerAggregationKeys={}", count, headerAggregationKeys);
-		// 
+		//
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -690,8 +684,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 			final int result = pstmt.executeUpdate();
 			logger.debug("Invalidated {} entries for DeliveryDate={}", result, date1);
-			
-			// 
+
+			//
 			if (result > 0)
 			{
 				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -741,7 +735,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
-		// 
+		//
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -758,7 +752,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { adPInstanceId }, trxName);
 		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, adPInstanceId);
-		// 
+		//
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -834,7 +828,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
-		// 
+		//
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
@@ -931,8 +925,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			whereClause.append("EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
 					+ " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
 					+ " AND (" + attributeSegmentsWhereClause + ")"
-					+ ")"
-					);
+					+ ")");
 		}
 
 		if (whereClause.length() <= 0)
@@ -1065,12 +1058,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public void deleteSchedulesWithOutOl(final String trxName)
 	{
-		final String sql =
-				"DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-						+ "WHERE NOT EXISTS ("
-						+ "   select 1 from " + I_C_OrderLine.Table_Name + " ol "
-						+ "   where ol." + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
-						+ ")";
+		final String sql = "DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
+				+ "WHERE NOT EXISTS ("
+				+ "   select 1 from " + I_C_OrderLine.Table_Name + " ol "
+				+ "   where ol." + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
+				+ ")";
 
 		final int delCnt = DB.executeUpdateEx(sql, trxName);
 
@@ -1471,7 +1463,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, trxName)
 				.setOnlySelection(selectionId)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
-		;
+				;
 
 		if (updateOnlyIfNull)
 		{
@@ -1511,11 +1503,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final boolean invalidate = false;
 
 		updateColumnForSelection(
-				I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override, // inoutCandidateColumnName
-				deliveryDate, // value
-				false, // updateOnlyIfNull
-				ADPinstance_ID, // selectionId
-				invalidate, // invalidate schedules = false
+				I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,  // inoutCandidateColumnName
+				deliveryDate,  // value
+				false,  // updateOnlyIfNull
+				ADPinstance_ID,  // selectionId
+				invalidate,  // invalidate schedules = false
 				trxName // trxName
 		);
 	}
@@ -1533,11 +1525,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			invalidate = true;
 		}
 		updateColumnForSelection(
-				I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override, // inoutCandidateColumnName
-				preparationDate, // value
-				false, // updateOnlyIfNull
-				ADPinstance_ID, // selectionId
-				invalidate, // invalidate schedules
+				I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,  // inoutCandidateColumnName
+				preparationDate,  // value
+				false,  // updateOnlyIfNull
+				ADPinstance_ID,  // selectionId
+				invalidate,  // invalidate schedules
 				trxName // trxName
 		);
 	}
@@ -1554,35 +1546,34 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		return queryBuilder;
 	}
-	
 
 	public List<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
 		final Set<I_M_ShipmentSchedule> schedules = new HashSet<I_M_ShipmentSchedule>();
-		
+
 		final IShipmentSchedulePA schedDAO = Services.get(IShipmentSchedulePA.class);
-		
+
 		final int tableID = candidate.getAD_Table_ID();
-		
-		if(tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+
+		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
 			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
-			if(orderLine != null)
+			if (orderLine != null)
 			{
 				I_M_ShipmentSchedule schedForOrderLine = schedDAO.retrieveForOrderLine(orderLine);
-				
-				if(schedForOrderLine != null)
+
+				if (schedForOrderLine != null)
 				{
 					schedules.add(schedForOrderLine);
 				}
 			}
 		}
-		
+
 		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
 		{
-			
+
 		}
-		
+
 		return null;
 	}
 }
