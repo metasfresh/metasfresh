@@ -19,6 +19,7 @@ The actual release notes
 
 ## Fixes
  - FRESH-409 Creating Partner Relation throws Exception
+ - FRESH-407 M_ShipperTransportation Terminated after complete
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
  - FRESH-279 DD Order CU calculation wrong when TU = 1
  - FRESH-309 Missing ADR ASIs in purchase order lines since february
