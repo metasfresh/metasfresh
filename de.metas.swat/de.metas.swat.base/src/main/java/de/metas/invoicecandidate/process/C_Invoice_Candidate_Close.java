@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.process;
 
 import java.util.Iterator;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -10,6 +11,10 @@ import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.SvrProcess;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
@@ -41,10 +46,26 @@ public class C_Invoice_Candidate_Close extends SvrProcess
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_C_Invoice_Candidate> selectedCandidates = retrieveSelectedCandidates();
-		
+
 		if (!selectedCandidates.hasNext())
 		{
 			throw new AdempiereException("@NoSelection@");
+		}
+
+		while (selectedCandidates.hasNext())
+		{
+			final I_C_Invoice_Candidate candidate = selectedCandidates.next();
+
+			// close all the linked shipment schedules (the ones the candidate was based on)
+			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
+
+			for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
+			{
+				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(schedule);
+			}
+
+			// close the candidate
+			Services.get(IInvoiceCandBL.class).closeInvoiceCandidate(candidate);
 		}
 
 		return MSG_OK;
