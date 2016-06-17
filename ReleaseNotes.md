@@ -30,17 +30,26 @@ The actual release notes
 
 ## Features
  - FRESH-275 Search Field in Role _Access Windows with autocomplete
+    * In Window Role, allow the user to search and autocomplete Windows, Processes, Forms and more, instead of using a dropdown list. This Functioanality allows a faster creation of Permission rules.
  - FRESH-349 KPI: Printing Performance
-    * adding a window to show per-shipment performance
+    * Adding a window to show per-shipment performance. This will help to understand if printing performance changes over time.
  - FRESH-350 check if purchase inout label and print preview can run faster
+    * Improving Performance of material Receipt Labels in Print Preview and Printing.
  - FRESH-377 make invoice print preview faster
+    * Improving Performance of Purchase- and Sales-Invoice Document in Print Preview and Printing.
  - FRESH-383 make orders print preview run faster
+    * Improving Performance of Purchase- and Sales-Order-Document in Print Preview and Printing.
 
 ## Fixes
  - FRESH-400 Cut off in invoice jaspers
+    * Header Label for UOM was cut off in Invoice Document. Fixed.
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
+ 
+## Documentation
+ - Creation of HowTo's
+    * You can now find a quickly growing Set of HowTo's in our metasfresh documentation Project. Check the details here : <a href="http://metasfresh.github.io/metasfresh-documentation/">http://metasfresh.github.io/metasfresh-documentation/</a>
 
 # metasfresh 4.21.20
 
