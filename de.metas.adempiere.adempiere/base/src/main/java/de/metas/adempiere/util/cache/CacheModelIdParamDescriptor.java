@@ -1,10 +1,19 @@
 package de.metas.adempiere.util.cache;
 
+import java.lang.annotation.Annotation;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.util.CacheModelId;
+import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,39 +31,26 @@ package de.metas.adempiere.util.cache;
  * #L%
  */
 
-import java.lang.annotation.Annotation;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-
-import de.metas.adempiere.util.CacheTrx;
-import de.metas.logging.LogManager;
-
 /**
- * Handles {@link CacheTrx} annotation.
+ * Handles {@link CacheModelId} annotation.
  *
- * @author tsa
+ * @author metas-dev <dev@metas-fresh.com>
  *
  */
-class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
+public class CacheModelIdParamDescriptor implements ICachedMethodPartDescriptor
 {
-	private static final transient Logger logger = LogManager.getLogger(CacheTrxParamDescriptor.class);
+	private static final Logger logger = LogManager.getLogger(CacheModelIdParamDescriptor.class);
 
 	private final int parameterIndex;
-	private final boolean isModel;
 
-	CacheTrxParamDescriptor(final Class<?> parameterType, final int parameterIndex, final Annotation annotation)
+	public CacheModelIdParamDescriptor(final Class<?> parameterType, final int parameterIndex, final Annotation annotation)
 	{
 		super();
 
 		this.parameterIndex = parameterIndex;
-		if (String.class.isAssignableFrom(parameterType))
+		if (InterfaceWrapperHelper.isModelInterface(parameterType))
 		{
-			isModel = false;
-		}
-		else if (InterfaceWrapperHelper.isModelInterface(parameterType))
-		{
-			isModel = true;
+			// nothing to do
 		}
 		else
 		{
@@ -66,37 +62,24 @@ class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
 	@Override
 	public void extractKeyParts(final CacheKeyBuilder keyBuilder, final Object targetObject, final Object[] params)
 	{
-		final Object trxNameObj = params[parameterIndex];
+		final Object modelObj = params[parameterIndex];
 
-		String trxName = null;
-		boolean error = false;
+		int id = -1;
 		Exception errorException = null;
-		if (trxNameObj == null)
-		{
-			trxName = null;
-		}
-		else if (isModel)
+		if (modelObj != null)
 		{
 			try
 			{
-				trxName = InterfaceWrapperHelper.getTrxName(trxNameObj);
+				id = InterfaceWrapperHelper.getId(modelObj);
 			}
 			catch (final Exception ex)
 			{
-				error = true;
+				id = -1;
 				errorException = ex;
 			}
 		}
-		else if (trxNameObj instanceof String)
-		{
-			trxName = (String)trxNameObj;
-		}
-		else
-		{
-			error = true;
-		}
 
-		if (error)
+		if (id < 0 || errorException != null)
 		{
 			keyBuilder.setSkipCaching();
 
@@ -104,18 +87,13 @@ class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
 					.addSuppressIfNotNull(errorException)
 					.setTargetObject(targetObject)
 					.setMethodArguments(params)
-					.setInvalidParameter(parameterIndex, trxNameObj)
+					.setInvalidParameter(parameterIndex, modelObj)
 					.setAnnotation(CacheTrx.class);
 			logger.warn("Invalid parameter. Skip caching", ex);
 			return;
 		}
 
-		// NOTE: we assume the caller will separate caches per transaction, so there is no point to have it as part of the cache key
-		// More,
-		// * consider the case of ThreadInherited transactions which we would have to resolve them here
-		// * it shall be the responsibility of the builder to include it in key, in case it's really needed
-		// keyBuilder.add(trxName);
-
-		keyBuilder.setTrxName(trxName);
+		keyBuilder.add(id);
 	}
+
 }
