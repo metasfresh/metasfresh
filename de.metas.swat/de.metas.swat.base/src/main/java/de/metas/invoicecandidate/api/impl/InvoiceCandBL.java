@@ -186,7 +186,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)    // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)       // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -280,7 +280,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)    // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)       // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -441,7 +441,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					DocAction.STATUS_Completed,
 					DocAction.STATUS_Closed,
 					DocAction.STATUS_Reversed,
-					DocAction.STATUS_InProgress))     // 06162 InProgress invoices shall also be processed
+					DocAction.STATUS_InProgress))        // 06162 InProgress invoices shall also be processed
 			{
 				qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
@@ -1216,7 +1216,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))    // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))       // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1390,7 +1390,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)    // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)       // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1873,7 +1873,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))    // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))       // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
