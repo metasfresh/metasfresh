@@ -23,6 +23,8 @@ The actual release notes
  - FRESH-309 Missing ADR ASIs in purchase order lines since february
     * restored attribute set instaces that might have been missing on some systems
  - FRESH-386 another error when sales order is automatically created as counter doc from a purchase order with packagings
+ - FRESH-388 Invoice Candidates not updated for some material receipts
+    * incorporating last week's troubleshooting view
 
 # metasfresh 4.22.21 (weekly release candidate)
 
