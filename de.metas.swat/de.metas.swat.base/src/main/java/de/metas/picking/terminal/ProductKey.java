@@ -40,7 +40,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
@@ -64,7 +64,7 @@ public class ProductKey extends TerminalKey
 	private final I_C_BPartner_Location bpLocation;
 
 	private int boxNo;
-	private AbstractPackingItem pck;
+	private IPackingItem pck;
 	private DefaultMutableTreeNode usedBin;
 
 	public DefaultMutableTreeNode getUsedBin()
@@ -77,12 +77,12 @@ public class ProductKey extends TerminalKey
 		this.usedBin = usedBin;
 	}
 
-	public AbstractPackingItem getPackingItem()
+	public IPackingItem getPackingItem()
 	{
 		return pck;
 	}
 
-	public void setPackingItem(final AbstractPackingItem pck)
+	public void setPackingItem(final IPackingItem pck)
 	{
 		this.pck = pck;
 	}
@@ -175,7 +175,7 @@ public class ProductKey extends TerminalKey
 
 	protected ProductKey(
 			final ITerminalContext terminalContext, 
-			final AbstractPackingItem pck,
+			final IPackingItem pck,
 			final int boxNo,
 			final I_C_BPartner bpartner,
 			final I_C_BPartner_Location bpLocation)

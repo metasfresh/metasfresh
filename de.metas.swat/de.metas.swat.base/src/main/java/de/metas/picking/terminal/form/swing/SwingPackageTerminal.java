@@ -37,10 +37,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.AvailableBins;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.PackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.picking.terminal.Utils;
@@ -81,7 +81,7 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 			}
 
 			// get packing items
-			List<AbstractPackingItem> itemList = new ArrayList<AbstractPackingItem>();
+			List<IPackingItem> itemList = new ArrayList<>();
 			Enumeration<DefaultMutableTreeNode> enumProd = currentChild.children();
 			while (enumProd.hasMoreElements())
 			{
@@ -89,9 +89,9 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 
 				// create products per box
 				Object obj = child.getUserObject();
-				if (obj instanceof PackingItem)
+				if (obj instanceof LegacyPackingItem)
 				{
-					final PackingItem item = (PackingItem)obj;
+					final LegacyPackingItem item = (LegacyPackingItem)obj;
 					itemList.add(item);
 				}
 			}
@@ -100,20 +100,20 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		}
 		// put unpacked products
 		final Enumeration<DefaultMutableTreeNode> unpacked = packingDetailsModel.getPackingTreeModel().getUnPackedItems().children();
-		List<AbstractPackingItem> itemList = new ArrayList<AbstractPackingItem>();
+		List<IPackingItem> itemList = new ArrayList<>();
 		while (unpacked.hasMoreElements())
 		{
 			DefaultMutableTreeNode currentChild = unpacked.nextElement();
 			Object obj = currentChild.getUserObject();
-			if (obj instanceof PackingItem)
+			if (obj instanceof LegacyPackingItem)
 			{
-				final AbstractPackingItem item = (AbstractPackingItem)obj;
+				final LegacyPackingItem item = (LegacyPackingItem)obj;
 				itemList.add(item);
 			}
 		}
 		if (itemList != null && itemList.size() != 0)
 		{
-			packItems.put(0, itemList);
+			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemList);
 		}
 
 		// get available boxes
@@ -140,8 +140,9 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		return (PackingDetailsMd)super.getPackingDetailsModel();
 	}
 	
+	@Override
 	@SuppressWarnings("unchecked")
-	public BigDecimal getQtyUnpacked(AbstractPackingItem pck)
+	public BigDecimal getQtyUnpacked(IPackingItem pck)
 	{
 		final PackingDetailsMd packingDetailsModel = getPackingDetailsModel();
 		Enumeration<DefaultMutableTreeNode> unpacked = packingDetailsModel.getPackingTreeModel().getUnPackedItems().children();
@@ -150,9 +151,9 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		{
 			DefaultMutableTreeNode currentChild = unpacked.nextElement();
 			Object obj = currentChild.getUserObject();
-			if (obj instanceof PackingItem)
+			if (obj instanceof LegacyPackingItem)
 			{
-				final PackingItem item = (PackingItem)obj;
+				final LegacyPackingItem item = (LegacyPackingItem)obj;
 				if (pck.getProductId() == item.getProductId())
 				{
 					qty =  qty.add(item.getQtySum());
