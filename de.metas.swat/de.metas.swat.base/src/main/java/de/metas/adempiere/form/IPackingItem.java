@@ -47,14 +47,32 @@ public interface IPackingItem
 
 	boolean canAddSchedule(final I_M_ShipmentSchedule schedToAdd);
 
+	/**
+	 * Clears current schedules and set them from given <code>packingItem</code>.
+	 * 
+	 * @param packingItem
+	 */
 	void setSchedules(final IPackingItem packingItem);
 
 	void addSchedules(final IPackingItem packingItem);
 
 	void addSchedules(final Map<I_M_ShipmentSchedule, BigDecimal> toAdd);
 
+	/**
+	 * 
+	 * @param subtrahent
+	 * @param acceptShipmentSchedulePredicate evaluates which shipment schedules shall be considered
+	 * @return subtracted schedule/qty pairs
+	 * @throws PackingItemSubtractException if required qty could not be fully subtracted (and there were no shipment schedules excluded by the accept predicate)
+	 */
 	Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
+	/**
+	 * 
+	 * @param subtrahent
+	 * @return subtracted schedule/qty pairs
+	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
+	 */
 	Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent);
 
 	Map<I_M_ShipmentSchedule, BigDecimal> getQtys();

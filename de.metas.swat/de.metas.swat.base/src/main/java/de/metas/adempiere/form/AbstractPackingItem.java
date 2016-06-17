@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form;
 
@@ -13,18 +13,17 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -53,11 +52,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Item to be packed.
- * 
+ *
  * Inside contains a mapping of {@link I_M_ShipmentSchedule} to qtys that need to be packed.
- * 
+ *
  * @author cg
- * 
+ *
  */
 public abstract class AbstractPackingItem implements IPackingItem
 {
@@ -80,7 +79,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		super();
 
 		Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
-		this.sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
+		sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
 
 		final I_M_ShipmentSchedule sched = scheds2Qtys.keySet().iterator().next();
 		if (groupingKey == GROUPINGKEY_ToBeGenerated)
@@ -92,12 +91,12 @@ public abstract class AbstractPackingItem implements IPackingItem
 			this.groupingKey = groupingKey;
 		}
 
-		this.uom = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
+		uom = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
 		Check.assumeNotNull(uom, "uom not null");
 
 		assertValid();
 	}
-	
+
 	/** Copy constructor */
 	protected AbstractPackingItem(final IPackingItem copyFrom)
 	{
@@ -105,12 +104,12 @@ public abstract class AbstractPackingItem implements IPackingItem
 		if (copyFrom instanceof AbstractPackingItem)
 		{
 			final AbstractPackingItem copyFromItem = (AbstractPackingItem)copyFrom;
-			this.sched2qty = new IdentityHashMap<>(copyFromItem.sched2qty);
-			this.groupingKey = copyFromItem.groupingKey;
-			this.product  = copyFromItem.product;
-			this.uom = copyFromItem.uom;
-			this.weightSingle = copyFromItem.weightSingle;
-			this.isClosed = copyFromItem.isClosed;
+			sched2qty = new IdentityHashMap<>(copyFromItem.sched2qty);
+			groupingKey = copyFromItem.groupingKey;
+			product = copyFromItem.product;
+			uom = copyFromItem.uom;
+			weightSingle = copyFromItem.weightSingle;
+			isClosed = copyFromItem.isClosed;
 		}
 		else
 		{
@@ -124,15 +123,15 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			throw new IllegalArgumentException("Packing item " + item + " does not extend " + AbstractPackingItem.class);
 		}
-		
+
 		final AbstractPackingItem itemCasted = (AbstractPackingItem)item;
-		this.sched2qty.clear();
-		this.sched2qty.putAll(itemCasted.sched2qty);
-		//this.groupingKey = itemCasted.groupingKey;
-		this.product  = itemCasted.product;
-		//this.uom = itemCasted.uom;
-		this.weightSingle = itemCasted.weightSingle;
-		this.isClosed = itemCasted.isClosed;
+		sched2qty.clear();
+		sched2qty.putAll(itemCasted.sched2qty);
+		// this.groupingKey = itemCasted.groupingKey;
+		product = itemCasted.product;
+		// this.uom = itemCasted.uom;
+		weightSingle = itemCasted.weightSingle;
+		isClosed = itemCasted.isClosed;
 	}
 
 	/**
@@ -148,14 +147,14 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 * @param isClosed the isClosed to set
 	 */
 	@Override
-	public final void setClosed(boolean isClosed)
+	public final void setClosed(final boolean isClosed)
 	{
 		this.isClosed = isClosed;
 	}
 
 	/**
 	 * Assets that this packing item is correct.
-	 * 
+	 *
 	 * More precisely, checks if schedules have same UOM, same grouping key.
 	 */
 	private final void assertValid()
@@ -194,9 +193,9 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 	/**
 	 * Gets GroupingKey for given shipment schedule
-	 * 
+	 *
 	 * NOTE: this method is called from constructor too.
-	 * 
+	 *
 	 * @param sched
 	 * @return
 	 */
@@ -318,12 +317,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		return Collections.unmodifiableMap(sched2qty);
 	}
 
-	/**
-	 * 
-	 * @param subtrahent
-	 * @return subtracted schedule/qty pairs
-	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
-	 */
 	@Override
 	public final Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent)
 	{
@@ -331,13 +324,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		return subtract(subtrahent, acceptShipmentSchedulePredicate);
 	}
 
-	/**
-	 * 
-	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate evaluates which shipment schedules shall be considered
-	 * @return subtracted schedule/qty pairs
-	 * @throws PackingItemSubtractException if required qty could not be fully subtracted (and there were no shipment schedules excluded by the accept predicate)
-	 */
 	@Override
 	public final Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
@@ -499,11 +485,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		addSchedules(toAdd);
 	}
 
-	/**
-	 * Clears current schedules and set them from given <code>packingItem</code>.
-	 * 
-	 * @param packingItem
-	 */
 	@Override
 	public final void setSchedules(final IPackingItem packingItem)
 	{
@@ -520,13 +501,13 @@ public abstract class AbstractPackingItem implements IPackingItem
 			return true;
 		}
 
-		return this.groupingKey == computeGroupingKey(schedToAdd);
+		return groupingKey == computeGroupingKey(schedToAdd);
 	}
 
 	@Override
 	public final void setWeightSingle(final BigDecimal piWeightSingle)
 	{
-		this.weightSingle = piWeightSingle;
+		weightSingle = piWeightSingle;
 	}
 
 	@Override
@@ -540,29 +521,13 @@ public abstract class AbstractPackingItem implements IPackingItem
 	{
 		return uom;
 	}
-	
+
 	@Override
 	public abstract IPackingItem copy();
-	
+
 	@Override
 	public boolean isSameAs(final IPackingItem item)
 	{
 		return Util.same(this, item);
-	}
-	
-	protected static class PackingItemState
-	{
-		private final IdentityHashMap<I_M_ShipmentSchedule, BigDecimal> sched2qty;
-		private I_M_Product product; // lazy
-		private BigDecimal weightSingle;
-		private boolean isClosed = false;
-		
-		public PackingItemState(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
-		{
-			super();
-			
-			Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
-			this.sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
-		}
 	}
 }
