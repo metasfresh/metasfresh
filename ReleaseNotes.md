@@ -16,6 +16,7 @@ The actual release notes
 
 ## Features
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+ - FRESH-408 Picking Issue
 
 ## Fixes
  - FRESH-409 Creating Partner Relation throws Exception
