@@ -1014,7 +1014,7 @@
 		</profile>
 
 		<profile>
-			<!-- If there is a jasper soruces directory, this profile will activate 
+			<!-- If there is a jasper sources directory, this profile will activate 
 				 It will compile those jrxml files and then assemble the jasper files into a jar.
 				 It will *NOT* add src/main/jasperreports as additional source folder, (that's done by the "jasper-source-folder" profile)
 			-->
@@ -1063,34 +1063,28 @@
 						</configuration>
 
 						<dependencies>
+							<!--  for whatever reason, if we don't set this version explicitly, the plugin will try to work with 2.1.7.js5-SNAPSHOT -->
+							<dependency>
+								<groupId>com.lowagie</groupId>
+								<artifactId>itext</artifactId>
+								<version>${itext.version}</version>
+							</dependency>
+
+							<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't work even if we don't need it, 
+								see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
 							<dependency>
 								<groupId>org.codehaus.mojo</groupId>
 								<artifactId>jasperreports-maven-plugin</artifactId>
 								<version>1.0-beta-2</version>
-								<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't work even if we don't need it, 
-								see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
 							</dependency>
 							<dependency>
 								<groupId>net.sf.jasperreports</groupId>
 								<artifactId>jasperreports</artifactId>
 								<version>${jasperreports.version}</version>
 							</dependency>
-							
-							<!-- http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348#34198348 -->
-							<dependency>
-								<groupId>commons-collections</groupId>
-								<artifactId>commons-collections</artifactId>
-								<version>3.2.1</version>
-							</dependency>
-
-							<!-- required to support groovy expressions in jrxml files -->
-							<dependency>
-								<groupId>org.codehaus.groovy</groupId>
-								<artifactId>groovy-all</artifactId>
-								<version>1.6.5</version>
-							</dependency>
 
 							<!-- required to compile reports with barcodes -->
+							<!-- FRESH-397: see if we can remove it, too
 							<dependency>
 								<groupId>net.sf.barcode4j</groupId>
 								<artifactId>barcode4j-fop-ext-complete</artifactId>
@@ -1098,31 +1092,7 @@
 								<type>jar</type>
 								<scope>compile</scope>
 							</dependency>
-
-							<!-- Should fix this error: Execution default of goal org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports 
-								failed: A required class was missing while executing org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports: 
-								org/apache/log4j/Layout -->
-							<dependency>
-								<groupId>log4j</groupId>
-								<artifactId>log4j</artifactId>
-								<version>1.2.14</version>
-							</dependency>
-							
-							<!-- 
-								Adding spring-core and spring-beans to fix "java.lang.NoClassDefFoundError: org/springframework/core/io/Resource"
-								when running the jrc
-								-->
-							<dependency>
-								<groupId>org.springframework</groupId>
-								<artifactId>spring-core</artifactId>
-								<version>3.0.6.RELEASE</version>
-							</dependency>
-							<dependency>
-								<groupId>org.springframework</groupId>
-								<artifactId>spring-beans</artifactId>
-								<version>3.0.6.RELEASE</version>
-							</dependency>
-
+							-->
 						</dependencies>
 						<executions>
 							<execution>
