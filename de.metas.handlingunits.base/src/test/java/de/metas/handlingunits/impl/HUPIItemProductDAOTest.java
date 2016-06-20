@@ -171,10 +171,12 @@ public class HUPIItemProductDAOTest
 		final I_M_HU_PI_Item_Product piip1 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
 		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
 		addPackingmaterialToItem(packagingProduct1, piip1.getM_HU_PI_Item());
+		POJOWrapper.setInstanceName(piip1, "piip1");
 
 		final I_M_HU_PI_Item_Product piip2 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
 		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
 		addPackingmaterialToItem(packagingProduct2, piip2.getM_HU_PI_Item());
+		POJOWrapper.setInstanceName(piip2, "piip2");
 
 		final boolean allowInfiniteCapacity = true;
 
@@ -255,7 +257,7 @@ public class HUPIItemProductDAOTest
 		packingMaterialPiItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		packingMaterialPiItem.setM_HU_PackingMaterial(packingMaterial);
 		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
-		InterfaceWrapperHelper.save(materialPiItem);
+		InterfaceWrapperHelper.save(packingMaterialPiItem);
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final I_M_Product product, final I_C_BPartner bpartner, final Timestamp validFrom, final String huUnitType)

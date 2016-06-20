@@ -115,7 +115,7 @@ public class HUOrderBL implements IHUOrderBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx,
 					ol,
-					InterfaceWrapperHelper.isNew(ol),            // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
 					trxName);
 		}
 		// If is not null, set all related items
@@ -145,7 +145,7 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol),            // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
 					trxName);
 		}
 	}
@@ -179,7 +179,10 @@ public class HUOrderBL implements IHUOrderBL
 				&& ol.getC_PackingMaterial_OrderLine_ID() > 0
 				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() > 0;
 
-		final boolean inconsistentProduct = !hupiItemProductBL.isVirtualHUPIItemProduct(olPip) && olPip.getM_Product_ID() != ol.getM_Product_ID();
+		final boolean inconsistentProduct =
+				// a virtual piip or one that allows any product can't be inconsistent with the ol's current procudt
+				olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
+				&& olPip.getM_Product_ID() != ol.getM_Product_ID();
 
 		if (packagingProductMightBeInconsistent)
 		{
