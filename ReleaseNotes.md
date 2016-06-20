@@ -29,7 +29,7 @@ The actual release notes
  - FRESH-388 Invoice Candidates not updated for some material receipts
     * incorporating last week's troubleshooting view
 
-# metasfresh 4.22.21 (weekly release candidate)
+# metasfresh 4.22.21
 
 ## Features
  - FRESH-275 Search Field in Role _Access Windows with autocomplete
