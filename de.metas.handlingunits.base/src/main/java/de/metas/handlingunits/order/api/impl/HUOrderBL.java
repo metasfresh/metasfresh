@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_C_Order;
@@ -161,6 +162,7 @@ public class HUOrderBL implements IHUOrderBL
 		}
 
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 
 		final I_M_HU_PI_Item_Product olPip = ol.getM_HU_PI_Item_Product();
 
@@ -177,7 +179,7 @@ public class HUOrderBL implements IHUOrderBL
 				&& ol.getC_PackingMaterial_OrderLine_ID() > 0
 				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() > 0;
 
-		final boolean inconsistentProduct = olPip.getM_Product_ID() != ol.getM_Product_ID();
+		final boolean inconsistentProduct = !hupiItemProductBL.isVirtualHUPIItemProduct(olPip) && olPip.getM_Product_ID() != ol.getM_Product_ID();
 
 		if (packagingProductMightBeInconsistent)
 		{
@@ -187,15 +189,15 @@ public class HUOrderBL implements IHUOrderBL
 					ol.getDateOrdered(),
 					huUnitType,
 					allowInfiniteCapacity,
-					olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product());
+					ol.getC_PackingMaterial_OrderLine().getM_Product());
 
 			if (newPIIP == null || newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
 			{
 				logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
-						+ " but the ol's current M_HU_PI_Item_Product={} references to the packaging-M_Product_ID={};"
+						+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
 						+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
 						ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
-						olPip, olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product_ID(),
+						olPip,
 						newPIIP);
 			}
 		}

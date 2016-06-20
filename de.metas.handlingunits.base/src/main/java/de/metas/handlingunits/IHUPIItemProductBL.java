@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -42,13 +41,21 @@ public interface IHUPIItemProductBL extends ISingletonService
 	/**
 	 * @param version
 	 * @param product
-	 * @return true if product is available in the version (or IsAllowAnyProduct), false otherwise
+	 * @return <code>true</code> if product is available in the version (or IsAllowAnyProduct), false otherwise
 	 */
 	boolean isCompatibleProduct(I_M_HU_PI_Version version, I_M_Product product);
 
 	void deleteForItem(I_M_HU_PI_Item packingInstructionsItem);
 
 	boolean isCompatibleProduct(I_M_HU hu, I_M_Product product);
+
+	/**
+	 * Returns <code>true</code> if the given <code>piip</code> is the "virtual" one, i.e. the one referencing the virtual packing instruction.
+	 *
+	 * @param piip
+	 * @return
+	 */
+	boolean isVirtualHUPIItemProduct(I_M_HU_PI_Item_Product piip);
 
 	/**
 	 * @return builder used to create the display name
@@ -64,4 +71,5 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 * @see #buildDisplayName()
 	 */
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);
+
 }

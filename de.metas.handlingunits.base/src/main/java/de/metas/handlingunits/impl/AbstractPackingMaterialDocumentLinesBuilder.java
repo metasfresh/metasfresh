@@ -189,7 +189,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 		final IPackingMaterialDocumentLine pmLineToLink;
 
 		// If there is no qty on current packing material order line, just delete it
-		if (pmLine.getQty().signum() == 0)
+		if (pmLine.getQty().signum() <= 0)
 		{
 			removeDocumentLine(pmLine);
 			pmLineToLink = null; // we need to unlink our sources
