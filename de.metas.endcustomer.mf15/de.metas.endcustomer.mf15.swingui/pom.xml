@@ -20,7 +20,7 @@
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		
-		<launch4j.versionInfo>4.22.21.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>4.23.22.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp>lib/jp.osdn.ocra.jar; lib/jp.osdn.ocrb.jar</launch4j.preCp>
 
 		<!-- NOTE: -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)" -->
