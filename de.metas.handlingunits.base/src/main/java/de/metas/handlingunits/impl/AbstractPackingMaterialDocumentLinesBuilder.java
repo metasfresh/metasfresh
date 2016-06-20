@@ -164,7 +164,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 		// Process all packing material lines
 		for (final IPackingMaterialDocumentLine pmLine : packingMaterialKey2packingMaterialLine.values())
 		{
-			createDocumentLineAndUpdateSources(pmLine);
+			createUpdateDeleteDocumentLineAndUpdateSources(pmLine);
 		}
 
 		//
@@ -178,13 +178,13 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	}
 
 	/**
-	 * Create/Update <b>or delete</b> the given packing material line.
+	 * Create/update <b>or delete</b> the given packing material line.
 	 * <p>
 	 * Also, the linked source lines will be updated.
 	 *
 	 * @param pmLine
 	 */
-	private void createDocumentLineAndUpdateSources(final IPackingMaterialDocumentLine pmLine)
+	private void createUpdateDeleteDocumentLineAndUpdateSources(final IPackingMaterialDocumentLine pmLine)
 	{
 		final IPackingMaterialDocumentLine pmLineToLink;
 

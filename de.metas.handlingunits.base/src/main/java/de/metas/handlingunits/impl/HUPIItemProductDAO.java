@@ -357,7 +357,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		}
 
 		//
-		// HU_UnitType filter: accept required UnitType or NULL
+		// HU_UnitType filter: accept a result which has a M_HU_PI_Version with the required UnitType or a NULL unit type
 		final String huUnitType = queryVO.getHU_UnitType();
 		if (!Check.isEmpty(huUnitType, true))
 		{
@@ -375,7 +375,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 							I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID,
 							I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID,
 							piVersionQuery))
-					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
+					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
 					.create();
 
 			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, piItemQuery);
@@ -406,15 +406,22 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			Check.assume(!queryVO.isAllowDifferentCapacities(), "'AllowDifferentCapacities' shall be false when 'IsOneConfigurationPerPI' is false: {}", queryVO);
 		}
 
-		// FRESH-386: accept PIIPs whose PI item has the given packaging product
+		// FRESH-386: accept PIIPs which have the given packaging product
+		// That means that the PIIP's M_HU_PI_Item has a sibling with type PackingMaterial that in turn references a M_HU_PackingMaterial with our packaging M_Product
 		if (queryVO.getM_Product_Packaging_ID() > 0)
 		{
+
 			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, ctx, trxName)
 					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMN_M_Product_ID, queryVO.getM_Product_Packaging_ID())
 					.addOnlyActiveRecordsFilter()
 					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PI_Item.class)
 					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
 					.addOnlyActiveRecordsFilter()
+					// now we have the packaging-M_HU_PI_Item; go up to select packaging item's the M_HU_PI_Version
+					.andCollect(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID)
+					.addOnlyActiveRecordsFilter()
+					// now select all M_HU_PI_Items of the M_HU_PI_Version. This includes the packaging item and it's siblings
+					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, I_M_HU_PI_Item.class)
 					.create();
 
 			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, packingMaterialQuery);
@@ -585,7 +592,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProduct, bpartner, currentDate, huUnitType,
 					false); // allowInfiniteCapacity = false
-			if (originalHUPIItemProduct != null)  // kindda redundant check
+			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{
 				removeDuplicatePIResultsWithoutPartner(originalHUPIItemProduct, availableHUPIItemProducts);
 				availableHUPIItemProducts.add(0, originalHUPIItemProduct); // add original PI at index 0
