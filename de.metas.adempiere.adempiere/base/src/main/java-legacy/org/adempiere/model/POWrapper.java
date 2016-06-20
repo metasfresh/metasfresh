@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2010 Teo Sarca, teo.sarca@gmail.com                          *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2010 Teo Sarca, teo.sarca@gmail.com *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -151,23 +151,23 @@ public class POWrapper implements InvocationHandler
 	}
 
 	/**
-	 * Create a new instance of given interface
+	 * Similar to {@link #create(Properties, String, int, Class, String)}, but attempts to get the table name from the given <code>modelClass</code>.
 	 *
 	 * @param <T> model interface
 	 * @param ctx context
 	 * @param id record id
-	 * @param cl model interface class
+	 * @param modelClass model interface class
 	 * @param trxName db transaction name
-	 * @return new instance or null if not found
+	 * @return
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> modelClass, final String trxName)
 	{
-		final String tableName = getTableName(cl); // won't return null
-		return create(ctx, tableName, id, cl, trxName);
+		final String tableName = getTableName(modelClass); // won't return null
+		return create(ctx, tableName, id, modelClass, trxName);
 	}
 
 	/**
-	 * Create a new instance of given interface
+	 * Loads the PO with the given <code>id</code> and returns an isntance.
 	 *
 	 * @param <T> model interface
 	 * @param ctx context
@@ -175,7 +175,7 @@ public class POWrapper implements InvocationHandler
 	 * @param id record id
 	 * @param modelClass model interface class
 	 * @param trxName db transaction name
-	 * @return new instance or null if not found
+	 * @return new instance or <code>null</code> if not found.
 	 */
 	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> modelClass, final String trxName)
 	{
@@ -237,7 +237,7 @@ public class POWrapper implements InvocationHandler
 	{
 		final PO po = getPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
-		
+
 		return po.get_ModelTranslationMap();
 	}
 
@@ -608,6 +608,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Returns 0 if there is (or could be) a valid record with ID=0), like for example <code>AD_User_ID</code>.
+	 *
 	 * @param columnName
 	 * @return
 	 */
