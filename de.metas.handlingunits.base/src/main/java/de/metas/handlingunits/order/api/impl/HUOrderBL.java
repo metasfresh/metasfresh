@@ -181,7 +181,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		final boolean inconsistentProduct =
 				// a virtual piip or one that allows any product can't be inconsistent with the ol's current procudt
-				olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
+				!olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
 				&& olPip.getM_Product_ID() != ol.getM_Product_ID();
 
 		if (packagingProductMightBeInconsistent)
@@ -192,7 +192,11 @@ public class HUOrderBL implements IHUOrderBL
 					ol.getDateOrdered(),
 					huUnitType,
 					allowInfiniteCapacity,
-					ol.getC_PackingMaterial_OrderLine().getM_Product());
+// FRESH-386: the counter-record 'ol' still references the original line's packaging line
+// TODO: add listener etc infractucture to make this work nicely
+//					ol.getC_PackingMaterial_OrderLine().getM_Product()
+					null
+					);
 
 			if (newPIIP == null || newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
 			{
