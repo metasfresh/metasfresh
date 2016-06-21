@@ -16,17 +16,18 @@ package de.metas.invoicecandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -276,8 +277,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
 	 * <ul>
-	 * <li> {@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
-	 * <li> {@link I_C_Invoice_Candidate#COLUMNNAME_ErrorMsg}
+	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
+	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_ErrorMsg}
 	 * </ul>
 	 *
 	 * NOTE: this method is NOT saving the invoice candidate
@@ -367,10 +368,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void invalidateForPartnerIfInvoiceRuleDemandsIt(I_C_Invoice_Candidate ic);
 
-	/** @return today date (without time!) to be used by invoicing BLs */
+	/**
+	 * @return today date (without time!) to be used by invoicing BLs
+	 */
 	Timestamp getToday();
 
-	/** @return current QtyToInvoice_Override or QtyToInvoice */
+	/**
+	 * @return current QtyToInvoice_Override or QtyToInvoice
+	 */
 	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
@@ -390,4 +395,20 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @return
 	 */
 	int getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Close the given invoice candidate.
+	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate
+	 * 
+	 * @param candidate
+	 */
+	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	/**
+	 * Iterate the candidates to close and close them one by one. 
+	 * Also close the shipment schedules on which the invoice candidates are based
+	 * 
+	 * @param candidatesToClose
+	 */
+	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
 }
