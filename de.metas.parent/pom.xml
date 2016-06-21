@@ -623,14 +623,6 @@
 					<version>2.4.2</version>
 				</plugin>
 
-				<!-- use jacoco (formerly EclEmma) to measure unit test coverage -->
-				<!-- currently not used (sonarCube uses jacoco, but doesn't need this info)
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.7.0.201403182114</version> 
-				</plugin>
-				-->			
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
@@ -859,6 +851,7 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<configuration>
 					<rules>
+
 						<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
 									Rationale: we had the case that a build stopped working at a *very* critical moment, 
 									because maven picked a more recent version of the jaxb plugin. 
@@ -877,8 +870,9 @@
 							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
 						</requirePluginVersions>
 
-								<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
 						<dependencyConvergence />
+
 						<banDuplicateClasses>
 							<ignoreClasses>
 																		

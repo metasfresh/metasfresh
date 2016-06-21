@@ -29,7 +29,7 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.FreshPackingDetailsMd;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
@@ -60,7 +60,7 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 		final PackingItemsMap packItems = new PackingItemsMap();
 
 		// get packing items
-		final Collection<AbstractPackingItem> unallocatedLines = freshModel.getUnallocatedLines();
+		final Collection<IPackingItem> unallocatedLines = freshModel.getUnallocatedLines();
 		packItems.addUnpackedItems(unallocatedLines);
 		
 		setPackingItems(packItems);
@@ -78,7 +78,7 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 	}
 
 	@Override
-	public BigDecimal getQtyUnpacked(AbstractPackingItem pck)
+	public BigDecimal getQtyUnpacked(IPackingItem pck)
 	{
 		// TODO Auto-generated method stub
 		return null;

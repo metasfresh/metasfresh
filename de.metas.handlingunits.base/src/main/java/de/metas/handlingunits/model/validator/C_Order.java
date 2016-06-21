@@ -13,12 +13,12 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,11 +47,10 @@ public class C_Order
 	{
 		final OrderPackingMaterialDocumentLinesBuilder packingMaterialOrderLineBuilder = new OrderPackingMaterialDocumentLinesBuilder(order);
 
-		// Remove/Reset existing packing material order lines
-		// It's safe to do this because we are assuming that those packing material lines are created only automatically and only from here
-		packingMaterialOrderLineBuilder.removeAllPackingMaterialOrderLinesFromOrder();
+		// Reset existing packing material order lines. They might eventually be removed, if they don't get new quantities assigned from the builder
+		packingMaterialOrderLineBuilder.deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder();
 
-		// Create/ReCreate packing material order lines
+		// Create/Update/Delete packing material order lines
 		packingMaterialOrderLineBuilder.addAllOrderLinesFromOrder();
 		packingMaterialOrderLineBuilder.create();
 	}
@@ -60,6 +59,6 @@ public class C_Order
 	public void removePackingMaterialLine(final I_C_Order order)
 	{
 		final OrderPackingMaterialDocumentLinesBuilder packingMaterialOrderLineBuilder = new OrderPackingMaterialDocumentLinesBuilder(order);
-		packingMaterialOrderLineBuilder.removeAllPackingMaterialOrderLinesFromOrder();
+		packingMaterialOrderLineBuilder.deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder();
 	}
 }

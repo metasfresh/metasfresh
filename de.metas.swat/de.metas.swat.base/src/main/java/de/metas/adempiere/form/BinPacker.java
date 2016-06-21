@@ -104,7 +104,7 @@ public class BinPacker implements IBinPacker
 		for (final DefaultMutableTreeNode currentNode : unallocNodes)
 		{
 
-			final PackingItem pi = getPI(currentNode);
+			final LegacyPackingItem pi = getPI(currentNode);
 			final BigDecimal volSingle = pi.retrieveVolumeSingle(trxName);
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(trxName);
 			unallocVolumeSum = unallocVolumeSum.add(pi.getQtySum().multiply(
@@ -173,7 +173,7 @@ public class BinPacker implements IBinPacker
 			final BigDecimal usedVolume = PackingTreeModel.getUsedVolume(usedBinNode, trxName);
 			final BigDecimal freeVolume = maxVolume.subtract(usedVolume);
 
-			final PackingItem unpackedPi = getPI(packedNode);
+			final LegacyPackingItem unpackedPi = getPI(packedNode);
 			final BigDecimal singleVol = unpackedPi.retrieveVolumeSingle(trxName);
 
 			final BigDecimal binFreeQty;
@@ -208,7 +208,7 @@ public class BinPacker implements IBinPacker
 				// split the current item and move a part into a new item to be
 				// located in our bin
 				final Map<I_M_ShipmentSchedule, BigDecimal> qtysToTransfer = unpackedPi.subtract(binFreeQty);
-				final PackingItem newPi = new PackingItem(qtysToTransfer, trxName);
+				final LegacyPackingItem newPi = new LegacyPackingItem(qtysToTransfer, trxName);
 
 				final DefaultMutableTreeNode newItemNode = new DefaultMutableTreeNode(newPi);
 				model.insertNodeInto(newItemNode, usedBinNode, usedBinNode.getChildCount());
@@ -293,9 +293,9 @@ public class BinPacker implements IBinPacker
 		return unallocNodes;
 	}
 
-	private PackingItem getPI(DefaultMutableTreeNode o2)
+	private LegacyPackingItem getPI(DefaultMutableTreeNode o2)
 	{
-		return (PackingItem)o2.getUserObject();
+		return (LegacyPackingItem)o2.getUserObject();
 	}
 
 	private UsedBin getPack(DefaultMutableTreeNode o2)

@@ -40,27 +40,36 @@ import de.metas.interfaces.I_C_OrderLine;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public class PackingItem extends AbstractPackingItem implements Comparable<PackingItem>
+@Deprecated
+public class LegacyPackingItem extends AbstractPackingItem implements Comparable<LegacyPackingItem>
 {
-	
-	/**
-	 * Copy constructor
-	 * 
-	 * @param orig
-	 */
-	public PackingItem(final AbstractPackingItem orig)
+	private final String trxName;
+
+	/** Copy constructor */
+	public LegacyPackingItem(final IPackingItem orig)
 	{
-		this(orig.getQtys(), orig.getGroupingKey(), orig.getTrxName());
+		super(orig);
+		if (orig instanceof LegacyPackingItem)
+		{
+			final LegacyPackingItem item = (LegacyPackingItem)orig;
+			this.trxName = item.trxName;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Item " + orig + " is not instanceof " + LegacyPackingItem.class);
+		}
 	}
 
-	public PackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final String trxName)
+	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final String trxName)
 	{
-		super(scheds2Qtys, trxName);
+		super(scheds2Qtys);
+		this.trxName = trxName;
 	}
 
-	public PackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey, final String trxName)
+	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey, final String trxName)
 	{
-		super(scheds2Qtys, groupingKey, trxName);
+		super(scheds2Qtys, groupingKey);
+		this.trxName  = trxName;
 	}
 
 
@@ -71,7 +80,7 @@ public class PackingItem extends AbstractPackingItem implements Comparable<Packi
 		sb.append(getQtySum());
 		sb.append(" x ");
 
-		final I_M_Product product = retrieveProduct(getTrxName());
+		final I_M_Product product = getM_Product();
 		if (product != null)
 		{
 			sb.append(product.getValue());
@@ -96,7 +105,7 @@ public class PackingItem extends AbstractPackingItem implements Comparable<Packi
 	}
 
 	@Override
-	public int compareTo(final PackingItem o)
+	public int compareTo(final LegacyPackingItem o)
 	{
 		final String trxName = getTrxName();
 		final BigDecimal volOther = o.getQtySum().multiply(o.retrieveVolumeSingle(trxName));
@@ -105,5 +114,14 @@ public class PackingItem extends AbstractPackingItem implements Comparable<Packi
 		return volThis.compareTo(volOther);
 	}
 
-	
+	@Override
+	public IPackingItem copy()
+	{
+		return new LegacyPackingItem(this);
+	}
+
+	public String getTrxName()
+	{
+		return trxName;
+	}
 }

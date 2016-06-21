@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -164,7 +164,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 		// Process all packing material lines
 		for (final IPackingMaterialDocumentLine pmLine : packingMaterialKey2packingMaterialLine.values())
 		{
-			createDocumentLineAndUpdateSources(pmLine);
+			createUpdateDeleteDocumentLineAndUpdateSources(pmLine);
 		}
 
 		//
@@ -178,18 +178,18 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	}
 
 	/**
-	 * Create/Update or delete given packing material line.
-	 *
+	 * Create/update <b>or delete</b> the given packing material line.
+	 * <p>
 	 * Also, the linked source lines will be updated.
 	 *
 	 * @param pmLine
 	 */
-	private void createDocumentLineAndUpdateSources(final IPackingMaterialDocumentLine pmLine)
+	private void createUpdateDeleteDocumentLineAndUpdateSources(final IPackingMaterialDocumentLine pmLine)
 	{
 		final IPackingMaterialDocumentLine pmLineToLink;
 
 		// If there is no qty on current packing material order line, just delete it
-		if (pmLine.getQty().signum() == 0)
+		if (pmLine.getQty().signum() <= 0)
 		{
 			removeDocumentLine(pmLine);
 			pmLineToLink = null; // we need to unlink our sources
@@ -240,7 +240,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 * NOTE: please make sure you are saving your database changes.
 	 *
 	 * @param source
-	 * @param pmLine packing material line; could be null in case we want to unlink any packing material lines from given <code>source</code>.
+	 * @param pmLine packing material line; could be <code>null</code> in case we want to unlink any packing material lines from given <code>source</code>.
 	 */
 	protected abstract void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source, final IPackingMaterialDocumentLine pmLine);
 }

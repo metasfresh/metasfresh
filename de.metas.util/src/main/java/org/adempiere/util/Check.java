@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
+
 import org.slf4j.Logger;
 
 /**
@@ -198,9 +199,9 @@ public final class Check
 	}
 
 	/**
-	 * Assumes that <code>obj</code> is instanceof <code>interfaceClass</code>.
+	 * Assumes that <code>obj</code> is <code>instanceof interfaceClass</code>.
 	 *
-	 * If <code>obj</code> is null, and exception will be thrown.
+	 * If <code>obj</code> is <code>null</code>, then an exception will be thrown.
 	 *
 	 * @param obj
 	 * @param interfaceClass

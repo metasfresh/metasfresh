@@ -40,7 +40,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingService;
 import de.metas.handlingunits.AbstractHUTest;
@@ -82,7 +83,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	// Context
 //	private HU2PackingItemsAllocator hu2PackingItemsAllocator;
 	private I_M_ShipmentSchedule shipmentSchedule;
-	private FreshPackingItem itemToPack;
+	private IFreshPackingItem itemToPack;
 	private IPackingContext packingContext;
 
 	@Override
@@ -131,7 +132,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<I_M_ShipmentSchedule, BigDecimal>();
 			this.shipmentSchedule = createAndAppendShipmentSchedule(scheds2Qtys, qtyToDeliver);
 
-			this.itemToPack = new FreshPackingItem(scheds2Qtys, ITrx.TRXNAME_None);
+			this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
 
 			// Validate
 			Assert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum(), Matchers.comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
