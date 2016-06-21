@@ -18,6 +18,7 @@ The actual release notes
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
 
 ## Fixes
+ - FRESH-408 Picking Issue
  - FRESH-412 quick input in orders not working
  - FRESH-409 Creating Partner Relation throws Exception
  - FRESH-407 M_ShipperTransportation Terminated after complete
