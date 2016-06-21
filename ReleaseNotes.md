@@ -12,6 +12,13 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.23.23 (upcoming)
+
+## Features
+
+## Fixes
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+
 # metasfresh 4.23.22a (release candidate)
 
 ## Features
