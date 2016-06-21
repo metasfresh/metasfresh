@@ -10,18 +10,17 @@ package de.metas.handlingunits.order.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -104,7 +103,12 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		return orderLinesAll;
 	}
 
-	public final void removeAllPackingMaterialOrderLinesFromOrder()
+	/**
+	 * Reset existing packing material order lines, ie.e deactivate and unlink them, and set their quantities to zero.<br>
+	 * They might eventually be removed in {@link #create()}, if they don't get new quantities assigned from the builder.
+	 *
+	 */
+	public final void deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder()
 	{
 		final List<I_C_OrderLine> oLines = retrieveAllOrderLinesFromOrder();
 		for (final I_C_OrderLine orderLine : oLines)
@@ -183,7 +187,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected final void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source, 
+	protected final void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source,
 			final IPackingMaterialDocumentLine pmLine)
 	{
 		final OrderLinePackingMaterialDocumentLineSource orderLineSource = toImpl(source);

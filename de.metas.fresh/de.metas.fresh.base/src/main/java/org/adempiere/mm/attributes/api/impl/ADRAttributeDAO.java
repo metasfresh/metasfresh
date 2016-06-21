@@ -51,6 +51,7 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 						-1, // defaultValue
 						adClientId,
 						adOrgId);
+		
 		return adrAttributeId;
 	}
 
