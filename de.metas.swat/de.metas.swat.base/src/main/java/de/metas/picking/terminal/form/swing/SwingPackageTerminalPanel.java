@@ -35,12 +35,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.AvailableBins;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingDetailsMd;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.PackingTreeModel;
@@ -58,6 +57,7 @@ import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.adempiere.form.terminal.swing.TerminalTree;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.NewKartonKey;
 import de.metas.picking.terminal.NewKartonLayout;
@@ -285,13 +285,13 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		}
 	}
 
-	public void updatePackingItemPanel(final AbstractPackingItem pi, final DefaultMutableTreeNode usedBin, boolean refresh)
+	public void updatePackingItemPanel(final IPackingItem pi, final DefaultMutableTreeNode usedBin, boolean refresh)
 	{
 		if (pi.getShipmentSchedules().isEmpty())
 		{
 			return;
 		}
-		final I_M_Product product = pi.retrieveProduct(null);
+		final I_M_Product product = pi.getM_Product();
 
 		final BigDecimal productWeight = product.getWeight();
 		// if the product has no weight info, make the field editable
@@ -320,11 +320,11 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 
 		if (ol.isIndividualDescription())
 		{
-			((PackingDetailsMd)model).setPiOlProdDesc(ol.getProductDescription());
+			model.setPiOlProdDesc(ol.getProductDescription());
 		}
 		else
 		{
-			((PackingDetailsMd)model).setPiOlProdDesc("");
+			model.setPiOlProdDesc("");
 		}
 
 		final AbstractPackageDataPanel pickingData = getPickingData();

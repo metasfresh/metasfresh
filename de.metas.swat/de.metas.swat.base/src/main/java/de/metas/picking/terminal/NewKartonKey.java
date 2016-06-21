@@ -33,7 +33,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
@@ -126,7 +126,7 @@ public class NewKartonKey extends TerminalKey
 		return null;
 	}
 
-	public List<PackingItem> getPackItems()
+	public List<LegacyPackingItem> getPackItems()
 	{
 		// nothing to do
 		return null;

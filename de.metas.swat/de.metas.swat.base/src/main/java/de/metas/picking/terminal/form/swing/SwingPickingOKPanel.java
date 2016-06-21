@@ -45,8 +45,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
@@ -71,11 +69,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.exception.NoContainerException;
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.AvailableBins;
 import de.metas.adempiere.form.BinPacker;
 import de.metas.adempiere.form.IBinPacker;
 import de.metas.adempiere.form.IPackingDetailsModel;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
 import de.metas.adempiere.form.MvcMdGenForm;
 import de.metas.adempiere.form.Packing;
@@ -102,6 +100,7 @@ import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.product.IStoragePA;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Picking First Window Panel
@@ -400,7 +399,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	protected IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		final PackingMd model = getModel();
@@ -431,7 +430,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		}
 
 		BigDecimal unpackedQty = Env.ZERO;
-		for (final AbstractPackingItem item : unallocatedLines)
+		for (final IPackingItem item : unallocatedLines)
 		{
 			unpackedQty = unpackedQty.add(item.getQtySum());
 		}
@@ -615,7 +614,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		ITerminalTextPane text = pickPanel.resultTextPane;
 		text.setText(iText.toString());
 		pickPanel.next();
-		((FormFrame)pickPanel.getComponent()).toFront();
+		pickPanel.getComponent().toFront();
 	}
 
 	private Waiting waitIndicator;
@@ -923,7 +922,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			for (Map.Entry<String, BigDecimal> entry : products.entrySet())
 			{
 				final String name = entry.getKey();
-				BigDecimal totalQty = (BigDecimal)entry.getValue();
+				BigDecimal totalQty = entry.getValue();
 				//
 				if (totalQty.scale() != 0)
 				{

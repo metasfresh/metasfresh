@@ -28,7 +28,7 @@ import java.math.BigDecimal;
 import org.adempiere.exceptions.AdempiereException;
 
 /**
- * Exception thrown when {@link AbstractPackingItem#subtract(BigDecimal)} method is asked to subtract a qty bigger than available.
+ * Exception thrown when {@link IPackingItem#subtract(BigDecimal)} method is asked to subtract a qty bigger than available.
  * 
  * @author tsa
  * 
@@ -42,7 +42,7 @@ public class PackingItemSubtractException extends AdempiereException
 
 	public static final String MSG = "de.metas.adempiere.form.PackingItemSubtractException";
 
-	public PackingItemSubtractException(final AbstractPackingItem packingItem, final BigDecimal qtyToSubtract, final BigDecimal qtyToSubtractRemaining)
+	public PackingItemSubtractException(final IPackingItem packingItem, final BigDecimal qtyToSubtract, final BigDecimal qtyToSubtractRemaining)
 	{
 		super("@" + MSG + "@"
 				+ "\n PackingItem: " + packingItem
