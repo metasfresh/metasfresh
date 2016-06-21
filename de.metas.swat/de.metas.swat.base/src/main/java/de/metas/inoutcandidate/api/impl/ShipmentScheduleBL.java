@@ -1239,4 +1239,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		listeners.addShipmentScheduleQtyUpdateListener(listener);
 	}
+	
+	@Override
+	public void closeShipmentSchedule(I_M_ShipmentSchedule schedule)
+	{
+		final BigDecimal qtyDelivered = schedule.getQtyDelivered();
+		
+		schedule.setQtyOrdered_Override(qtyDelivered);
+		
+		InterfaceWrapperHelper.save(schedule);
+	}
 }

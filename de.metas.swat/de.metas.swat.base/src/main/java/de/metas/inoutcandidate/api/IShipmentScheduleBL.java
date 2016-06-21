@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -47,12 +46,18 @@ public interface IShipmentScheduleBL extends ISingletonService
 	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
-	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns: <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyDeliverable} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt} <li>
+	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyDeliverable}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
+	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 *
 	 * To actually set those values, this method calls the registered {@link ICandidateProcessor}.
@@ -153,11 +158,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * 
 	 * @param shipmentSchedule
 	 * @return the previous <code>QtyOrdered</code> value of the schedule
-	 * <li> NOTE: This returned value is never used. Maybe we shall change this method to return void.
+	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
 	 * @task 08255
 	 */
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
-	
+
 	/**
 	 * Registers <code>ShipmentScheduleQtyUpdateListener</code> for given table name.
 	 *
@@ -167,4 +172,13 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param listener
 	 */
 	void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener);
+
+	/**
+	 * Close the given Shipment Schedule.
+	 * 
+	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
+	 * 
+	 * @param schedule
+	 */
+	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 }

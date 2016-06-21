@@ -16,11 +16,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -82,6 +82,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -99,6 +100,9 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
@@ -158,7 +162,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * there was no delivery yet
 	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_KundenintervallNachLieferung}: basically the result of {@link #mkDateToInvoiceForInvoiceSchedule(I_C_InvoiceSchedule, Timestamp)} or or
 	 * {@link #DATE_TO_INVOICE_MAX_DATE} if there was no delivery yet
-	 * <li> {@link X_C_Invoice_Candidate#INVOICERULE_Sofort} : <code>DateOrdered</code>
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Sofort} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
 	 *
@@ -182,7 +186,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)       // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -276,7 +280,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0) // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)       // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -324,10 +328,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final I_C_Currency targetCurrency = currencyConversionBL.getBaseCurrency(ctx, ic.getAD_Client_ID(), ic.getAD_Org_ID());
 				final String currSymbol = targetCurrency.getCurSymbol();
 
-				final String msg =
-						msgBL.getMsg(ctx,
-								InvoiceCandBL.MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
-								new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
+				final String msg = msgBL.getMsg(ctx,
+						InvoiceCandBL.MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
+						new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
 				ic.setInvoiceScheduleAmtStatus(msg);
 				return;
 			}
@@ -438,7 +441,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					DocAction.STATUS_Completed,
 					DocAction.STATUS_Closed,
 					DocAction.STATUS_Reversed,
-					DocAction.STATUS_InProgress))  // 06162 InProgress invoices shall also be processed
+					DocAction.STATUS_InProgress))        // 06162 InProgress invoices shall also be processed
 			{
 				qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
@@ -474,8 +477,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						msgBL.getMsg(ctx,
 								InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
 								new Object[] {
-								adReferenceDAO.retriveListName(ctx, X_C_Order.DOCSTATUS_AD_Reference_ID,
-										ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
+										adReferenceDAO.retriveListName(ctx, X_C_Order.DOCSTATUS_AD_Reference_ID,
+												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 								}));
 
 				ic.setDiscount(BigDecimal.ZERO);
@@ -501,8 +504,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (C_InvoiceSchedule_ID <= 0)
 		{
 			logger.info("BPartner has no Schedule");
-			final String msg =
-					Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { ic.getBill_BPartner().getName() });
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { ic.getBill_BPartner().getName() });
 			amendSchedulerResult(ic, msg);
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return -1;
@@ -1214,7 +1216,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override)) // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))       // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1388,7 +1390,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0) // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)       // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1756,8 +1758,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public BigDecimal getQualityDiscountPercentEffective(final I_C_Invoice_Candidate candidate)
 	{
-		final BigDecimal qualitDiscountPercentOverride =
-				InterfaceWrapperHelper.getValueOrNull(candidate, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override);
+		final BigDecimal qualitDiscountPercentOverride = InterfaceWrapperHelper.getValueOrNull(candidate, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override);
 
 		if (qualitDiscountPercentOverride != null)
 		{
@@ -1872,7 +1873,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule)) // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))       // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
@@ -1967,4 +1968,33 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 
+	@Override
+	public void closeInvoiceCandidates(final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+	{
+		while (candidatesToClose.hasNext())
+		{
+
+			final I_C_Invoice_Candidate candidate = candidatesToClose.next();
+
+			// close all the linked shipment schedules (the ones the candidate was based on)
+			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
+
+			for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
+			{
+				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(schedule);
+			}
+			// close the candidate
+			closeInvoiceCandidate(candidate);
+		}
+	}
+
+	@Override
+	public void closeInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	{
+		candidate.setProcessed_Override("Y");
+
+		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
+
+		InterfaceWrapperHelper.save(candidate);
+	}
 }
