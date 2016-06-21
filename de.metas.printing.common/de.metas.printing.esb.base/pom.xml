@@ -55,11 +55,6 @@
 				</executions>
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
-
-					<sources>
-						<source>./src/main/xsd/schema.xsd</source>
-					</sources>
-
 				</configuration>
 			</plugin>
 		</plugins>
