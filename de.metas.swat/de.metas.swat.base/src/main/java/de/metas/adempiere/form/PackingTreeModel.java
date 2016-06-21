@@ -49,15 +49,15 @@ import org.compiere.model.PackagingTreeItemComparable;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.model.X_M_PackagingTreeItemSched;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
 
 
@@ -81,7 +81,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 	private final DefaultMutableTreeNode nodeAvaiableBinsParent;
 
-	private Collection<PackingItem> unpackedItems;
+	private Collection<LegacyPackingItem> unpackedItems;
 
 	private Collection<AvailableBins> availableBins;
 
@@ -142,17 +142,17 @@ public class PackingTreeModel extends DefaultTreeModel
 
 	
 	
-	public PackingTreeModel(final Collection<AbstractPackingItem> unallocatedItems, final Collection<AvailableBins> availableBins, final int C_BPartner_ID, final int C_BPartner_Location_ID, final int M_Warehouse_Dest_ID, final boolean isGroupingByWarehouseDest)
+	public PackingTreeModel(final Collection<IPackingItem> unallocatedItems, final Collection<AvailableBins> availableBins, final int C_BPartner_ID, final int C_BPartner_Location_ID, final int M_Warehouse_Dest_ID, final boolean isGroupingByWarehouseDest)
 	{
 		super(new DefaultMutableTreeNode());
 		
 		this.isGroupingByWarehouseDest = isGroupingByWarehouseDest;
 
 		// create deep copies of the input data to allow a reset
-		final ArrayList<PackingItem> itemCopies = new ArrayList<PackingItem>(unallocatedItems.size());
-		for (final AbstractPackingItem item : unallocatedItems)
+		final ArrayList<LegacyPackingItem> itemCopies = new ArrayList<LegacyPackingItem>(unallocatedItems.size());
+		for (final IPackingItem item : unallocatedItems)
 		{
-			itemCopies.add(new PackingItem(item));
+			itemCopies.add(new LegacyPackingItem(item));
 		}
 
 		final ArrayList<AvailableBins> binsCopies = new ArrayList<AvailableBins>(availableBins.size());
@@ -230,11 +230,11 @@ public class PackingTreeModel extends DefaultTreeModel
 		return avalaiableContainers;
 	}
 	
-	public Collection<PackingItem> getSavedUnpackedItems(I_M_PackagingTree  savedTree)
+	public Collection<LegacyPackingItem> getSavedUnpackedItems(I_M_PackagingTree  savedTree)
 	{
 		List<PackagingTreeItemComparable> unPackedItems =  PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_UnPackedItem);
 		
-		final ArrayList<PackingItem> itemCopies = new ArrayList<PackingItem>(unPackedItems.size());
+		final ArrayList<LegacyPackingItem> itemCopies = new ArrayList<LegacyPackingItem>(unPackedItems.size());
 		for (X_M_PackagingTreeItem upck : unPackedItems)
 		{
 			List<X_M_PackagingTreeItemSched> schedItems = PackingTreeBL.getSchedforItem(upck.getM_PackagingTreeItem_ID());
@@ -251,9 +251,9 @@ public class PackingTreeModel extends DefaultTreeModel
 			}
 			if (schedWithQty.isEmpty())
 			{
-				return new ArrayList<PackingItem>();
+				return new ArrayList<LegacyPackingItem>();
 			}
-			PackingItem item = new PackingItem(schedWithQty, upck.getGroupID(), ITrx.TRXNAME_None);
+			LegacyPackingItem item = new LegacyPackingItem(schedWithQty, upck.getGroupID(), ITrx.TRXNAME_None);
 			itemCopies.add(item);
 		}
 		
@@ -262,9 +262,9 @@ public class PackingTreeModel extends DefaultTreeModel
 	
 	private void initSavedTree(final Properties ctx, final boolean isGroupByWarehouseDest)
 	{
-		for (final PackingItem currentItem : this.unpackedItems)
+		for (final LegacyPackingItem currentItem : this.unpackedItems)
 		{
-			final DefaultMutableTreeNode itemNode = new DefaultMutableTreeNode(new PackingItem(currentItem));
+			final DefaultMutableTreeNode itemNode = new DefaultMutableTreeNode(new LegacyPackingItem(currentItem));
 
 			insertNodeInto(itemNode, nodeUnpackedItemsParent, nodeUnpackedItemsParent.getChildCount());
 		}
@@ -362,7 +362,7 @@ public class PackingTreeModel extends DefaultTreeModel
 						continue;
 					}
 
-					PackingItem item = new PackingItem(schedWithQty, null);
+					LegacyPackingItem item = new LegacyPackingItem(schedWithQty, null);
 					item.setWeightSingle(pack.getWeight().divide(pack.getQty(), BigDecimal.ROUND_HALF_UP));
 					final DefaultMutableTreeNode itemNode = new DefaultMutableTreeNode(item);
 					insertNodeInto(itemNode, binNode, j);
@@ -382,9 +382,9 @@ public class PackingTreeModel extends DefaultTreeModel
 	
 	private void initTree( final boolean isGroupByWarehouseDest)
 	{
-		for (final PackingItem currentItem : this.unpackedItems)
+		for (final LegacyPackingItem currentItem : this.unpackedItems)
 		{
-			final DefaultMutableTreeNode itemNode = new DefaultMutableTreeNode(new PackingItem(currentItem));
+			final DefaultMutableTreeNode itemNode = new DefaultMutableTreeNode(new LegacyPackingItem(currentItem));
 
 			insertNodeInto(itemNode, nodeUnpackedItemsParent, nodeUnpackedItemsParent.getChildCount());
 		}
@@ -478,7 +478,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		{
 
 			final DefaultMutableTreeNode node = enu.nextElement();
-			final PackingItem pl = (PackingItem)node.getUserObject();
+			final LegacyPackingItem pl = (LegacyPackingItem)node.getUserObject();
 
 			result = result.add(pl.retrieveVolumeSingle(trxName).multiply(pl.getQtySum()));
 		}
@@ -494,14 +494,14 @@ public class PackingTreeModel extends DefaultTreeModel
 		while (enu.hasMoreElements())
 		{
 			final DefaultMutableTreeNode node = enu.nextElement();
-			final PackingItem pl = (PackingItem)node.getUserObject();
+			final LegacyPackingItem pl = (LegacyPackingItem)node.getUserObject();
 
 			result = result.add(pl.retrieveWeightSingle(trxName).multiply(pl.getQtySum()));
 		}
 		return result;
 	}
 
-	public void addUnallocatedLine(final PackingItem pl)
+	public void addUnallocatedLine(final LegacyPackingItem pl)
 	{
 		final DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(pl);
 		insertNodeInto(newNode, getUnPackedItems(), getUnPackedItems().getChildCount());
@@ -602,10 +602,10 @@ public class PackingTreeModel extends DefaultTreeModel
 				id2Bin.put(prod.getM_Product_ID(), prod);
 
 			}
-			else if (userObj instanceof PackingItem)
+			else if (userObj instanceof LegacyPackingItem)
 			{
-				final PackingItem item = (PackingItem)userObj;
-				final I_M_Product prod = item.retrieveProduct(trxName);
+				final LegacyPackingItem item = (LegacyPackingItem)userObj;
+				final I_M_Product prod = item.getM_Product();
 
 				BigDecimal qty = id2ItemQty.get(prod.getM_Product_ID());
 				if (qty == null)
@@ -655,7 +655,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		while (enPackedItemsToRemove.hasMoreElements())
 		{
 			final DefaultMutableTreeNode itemToRemoveNode = enPackedItemsToRemove.nextElement();
-			final PackingItem itemToRemove = (PackingItem)itemToRemoveNode.getUserObject();
+			final LegacyPackingItem itemToRemove = (LegacyPackingItem)itemToRemoveNode.getUserObject();
 
 			final Collection<I_M_ShipmentSchedule> schedsToRemove = itemToRemove.getShipmentSchedules();
 
@@ -702,7 +702,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		while (enUnpackedItems.hasMoreElements())
 		{
 			final DefaultMutableTreeNode existingUnpackedItemNode = enUnpackedItems.nextElement();
-			final PackingItem existingUnpackedItem = (PackingItem)existingUnpackedItemNode.getUserObject();
+			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
 
 			final Map<I_M_ShipmentSchedule, BigDecimal> newlyUnpackedScheds =
 					key2Scheds.remove(Util.mkKey(existingUnpackedItem.getProductId()));
@@ -723,7 +723,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		{
 			final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = key2Scheds.get(productId);
 
-			final PackingItem newUnpackedItem = new PackingItem(sched2qty, usedBin.getTrxName());
+			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(sched2qty, usedBin.getTrxName());
 
 			final DefaultMutableTreeNode newUnpackedItemNode = new DefaultMutableTreeNode(newUnpackedItem);
 			insertNodeInto(newUnpackedItemNode, getUnPackedItems(), getUnPackedItems().getChildCount());
@@ -801,14 +801,14 @@ public class PackingTreeModel extends DefaultTreeModel
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> qtysToTransfer = subtractPackingItem(packingItemNode, qty);
 
-		final PackingItem packingItem = (PackingItem)packingItemNode.getUserObject();
+		final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 
 		final DefaultMutableTreeNode existingUnpackedItemNode = findUnpackedPackingItemNode(packingItem);
 
 		if (existingUnpackedItemNode == null)
 		{
 			// need to create a new node under 'nodeUnpackedItemsParent'
-			final PackingItem newUnpackedItem = new PackingItem(qtysToTransfer, packingItem.getTrxName());
+			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(qtysToTransfer, packingItem.getTrxName());
 
 			final DefaultMutableTreeNode newUnpackedItemNode = new DefaultMutableTreeNode(newUnpackedItem);
 			this.insertNodeInto(newUnpackedItemNode, nodeUnpackedItemsParent, nodeUnpackedItemsParent.getChildCount());
@@ -816,7 +816,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		else
 		{
 			// use an existing node under 'nodeUnpackedItemsParent'
-			final PackingItem existingUnpackedItem = (PackingItem)existingUnpackedItemNode.getUserObject();
+			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
 			existingUnpackedItem.addSchedules(qtysToTransfer);
 
 			this.nodeChanged(existingUnpackedItemNode);
@@ -831,7 +831,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	private Map<I_M_ShipmentSchedule, BigDecimal> subtractPackingItem(
 			final DefaultMutableTreeNode packingItemNode, final BigDecimal qty)
 	{
-		final PackingItem packingItem = (PackingItem)packingItemNode.getUserObject();
+		final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 
 		final Map<I_M_ShipmentSchedule, BigDecimal> result = packingItem.subtract(qty);
 
@@ -847,7 +847,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	}
 
 	/**
-	 * Adds a {@link PackingItem} to another node
+	 * Adds a {@link LegacyPackingItem} to another node
 	 * 
 	 * @param newUsedBinNode
 	 * @param qtysToTransfer
@@ -856,21 +856,21 @@ public class PackingTreeModel extends DefaultTreeModel
 	private void addPackingItem(
 			final DefaultMutableTreeNode newUsedBinNode,
 			final Map<I_M_ShipmentSchedule, BigDecimal> qtysToTransfer,
-			final PackingItem packingItem)
+			final LegacyPackingItem packingItem)
 	{
 		final DefaultMutableTreeNode existingPiNode =
 				findPackingItemNode(newUsedBinNode, packingItem);
 
 		if (existingPiNode == null)
 		{
-			final PackingItem newPi = new PackingItem(qtysToTransfer, packingItem.getTrxName());
+			final LegacyPackingItem newPi = new LegacyPackingItem(qtysToTransfer, packingItem.getTrxName());
 
 			final DefaultMutableTreeNode newPiNode = new DefaultMutableTreeNode(newPi);
 			this.insertNodeInto(newPiNode, newUsedBinNode, newUsedBinNode.getChildCount());
 		}
 		else
 		{
-			final PackingItem existingPi = (PackingItem)existingPiNode.getUserObject();
+			final LegacyPackingItem existingPi = (LegacyPackingItem)existingPiNode.getUserObject();
 			existingPi.addSchedules(qtysToTransfer);
 			this.nodeChanged(existingPiNode);
 		}
@@ -883,7 +883,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> qtyToUse = subtractPackingItem(itemNode, qty);
 
-		final PackingItem packingItem = (PackingItem)itemNode.getUserObject();
+		final LegacyPackingItem packingItem = (LegacyPackingItem)itemNode.getUserObject();
 
 		addPackingItem(newUsedBin, qtyToUse, packingItem);
 	}
@@ -904,7 +904,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 		while (en.hasMoreElements())
 		{
-			DefaultMutableTreeNode nd = (DefaultMutableTreeNode)en
+			DefaultMutableTreeNode nd = en
 					.nextElement();
 			for (int i = 0; i < nd.getLevel(); i++)
 			{
@@ -926,7 +926,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		return sb.toString();
 	}
 
-	public DefaultMutableTreeNode findUnpackedPackingItemNode(final PackingItem packingItemToMatch)
+	public DefaultMutableTreeNode findUnpackedPackingItemNode(final LegacyPackingItem packingItemToMatch)
 	{
 		return findPackingItemNode(this.nodeUnpackedItemsParent, packingItemToMatch);
 	}
@@ -939,12 +939,12 @@ public class PackingTreeModel extends DefaultTreeModel
 	 * @param usedBinNode
 	 * @param packingItemToMatch
 	 * @return
-	 * @see PackingItem#canAddSchedule(I_M_ShipmentSchedule)
+	 * @see LegacyPackingItem#canAddSchedule(I_M_ShipmentSchedule)
 	 */
 	@SuppressWarnings("unchecked")
 	public DefaultMutableTreeNode findPackingItemNode(
 			final DefaultMutableTreeNode usedBinNode,
-			final AbstractPackingItem packingItemToMatch)
+			final IPackingItem packingItemToMatch)
 	{
 		final Enumeration<DefaultMutableTreeNode> piNodeEnum = usedBinNode.children();
 
@@ -952,7 +952,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		{
 			final DefaultMutableTreeNode packingItemNode = piNodeEnum.nextElement();
 
-			final PackingItem packingItem = (PackingItem)packingItemNode.getUserObject();
+			final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 			if (packingItem.getGroupingKey() == packingItemToMatch.getGroupingKey())
 			{
 				return packingItemNode;
@@ -974,7 +974,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	 * @return qty
 	 */
 	@SuppressWarnings("unchecked")
-	public BigDecimal getQtyPackingItem(final AbstractPackingItem packingItemToMatch, final DefaultMutableTreeNode specificBin)
+	public BigDecimal getQtyPackingItem(final IPackingItem packingItemToMatch, final DefaultMutableTreeNode specificBin)
 	{
 		BigDecimal qty = BigDecimal.ZERO;
 		final Enumeration<DefaultMutableTreeNode> enumUsedBins = getUsedBins().children();
@@ -987,7 +987,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			{
 				final DefaultMutableTreeNode packingItemNode = piNodeEnum.nextElement();
 
-				final PackingItem packingItem = (PackingItem)packingItemNode.getUserObject();
+				final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 				// is that packing item is closed, don't count
 				if (packingItem.isClosed())
 				{

@@ -46,9 +46,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -102,11 +103,11 @@ public class FreshProductKey extends ProductKey
 	 */
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		final FreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
-		final FreshPackingItem allocatedPackingItem = getPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
+		final IFreshPackingItem allocatedPackingItem = getPackingItem();
 		if (allocatedPackingItem != null || unallocatedPackingItem != null)
 		{
-			final FreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
+			final IFreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
 
 			final I_M_HU_PI_Item_Product pip = pck.getM_HU_PI_Item_Product();
 			return pip;
@@ -118,9 +119,9 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * this is the packing item which contains unallocated scheds and unallocated qty
 	 */
-	private FreshPackingItem _unallocatedPackingItem;
+	private IFreshPackingItem _unallocatedPackingItem;
 
-	public FreshProductKey(final ITerminalContext terminalContext, final FreshPackingItem pck, final int boxNo)
+	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck, final int boxNo)
 	{
 		super(terminalContext,
 				pck,
@@ -133,7 +134,7 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return packing item for unallocated quantity; never returns <code>null</code>
 	 */
-	public FreshPackingItem getUnAllocatedPackingItem()
+	public IFreshPackingItem getUnAllocatedPackingItem()
 	{
 		if (_unallocatedPackingItem == null)
 		{
@@ -145,20 +146,20 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return packing item for unallocated quantity or <code>null</code>
 	 */
-	private final FreshPackingItem getUnAllocatedPackingItemOrNull()
+	private final IFreshPackingItem getUnAllocatedPackingItemOrNull()
 	{
 		return _unallocatedPackingItem;
 	}
 
-	public void setUnAllocatedPackingItem(FreshPackingItem pck)
+	public void setUnAllocatedPackingItem(IFreshPackingItem pck)
 	{
 		this._unallocatedPackingItem = pck;
 	}
 
 	@Override
-	public FreshPackingItem getPackingItem()
+	public IFreshPackingItem getPackingItem()
 	{
-		return (FreshPackingItem)super.getPackingItem();
+		return FreshPackingItemHelper.cast(super.getPackingItem());
 	}
 
 	@Override
@@ -196,7 +197,7 @@ public class FreshProductKey extends ProductKey
 
 	public BigDecimal getQtyUnallocated()
 	{
-		final AbstractPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
+		final IPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
 		if (unallocPackingItem == null)
 		{
 			return BigDecimal.ZERO;
@@ -206,7 +207,7 @@ public class FreshProductKey extends ProductKey
 
 	public I_C_UOM getQtyUnallocatedUOM()
 	{
-		final AbstractPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
+		final IPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
 		Check.assumeNotNull(unallocPackingItem, "unallocPackingItem not null");
 		return unallocPackingItem.getC_UOM();
 	}
@@ -259,7 +260,7 @@ public class FreshProductKey extends ProductKey
 		//
 		// Create storage queries from shipment schedules
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
-		final FreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
 		for (final I_M_ShipmentSchedule shipmentSchedule : unallocatedPackingItem.getShipmentSchedules())
 		{
 			final IStorageQuery storageQuery = createStorageQuery(shipmentSchedule);
