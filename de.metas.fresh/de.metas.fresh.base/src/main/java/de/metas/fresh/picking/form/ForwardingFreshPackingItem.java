@@ -40,7 +40,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 /**
  * Abstract {@link IFreshPackingItem} implementation which forwards all calls to {@link #getDelegate()}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class ForwardingFreshPackingItem implements IFreshPackingItem

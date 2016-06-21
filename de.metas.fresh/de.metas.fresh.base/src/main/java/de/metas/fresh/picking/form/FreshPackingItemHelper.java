@@ -32,7 +32,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Helper class used to manage {@link IFreshPackingItem} instances.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -43,6 +43,12 @@ public final class FreshPackingItemHelper
 		super();
 	}
 
+	/**
+	 * Casts the given {@link IPackingItem} to {@link IFreshPackingItem} if possible, and throws an explanatory exception otherwise.
+	 *
+	 * @param item
+	 * @return
+	 */
 	public static IFreshPackingItem cast(final IPackingItem item)
 	{
 		if (item == null)
@@ -53,20 +59,24 @@ public final class FreshPackingItemHelper
 		return (IFreshPackingItem)item;
 	}
 
+	/**
+	 * Invokes {@link #cast(IPackingItem)} with the given <code>item</code>, then returns the result of {@link IFreshPackingItem#copy()}.
+	 *
+	 * @param item
+	 * @return
+	 */
 	public static IFreshPackingItem copy(final IPackingItem item)
 	{
-		if (item instanceof IFreshPackingItem)
-		{
-			final IFreshPackingItem itemCasted = (IFreshPackingItem)item;
-			return itemCasted.copy();
-		}
-		else
-		{
-			// shall not happen
-			throw new IllegalArgumentException("Item " + item + " does not implement " + IFreshPackingItem.class);
-		}
+		final IFreshPackingItem itemCasted = cast(item);
+		return itemCasted.copy();
 	}
 
+	/**
+	 * Creates a new {@link TransactionalFreshPackingItem} from the given map.
+	 *
+	 * @param scheds2Qtys
+	 * @return
+	 */
 	public static IFreshPackingItem create(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
 	{
 		return new TransactionalFreshPackingItem(scheds2Qtys);

@@ -51,7 +51,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 /**
  * Item to be packed.
  *
- * @author cg
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class FreshPackingItem extends AbstractPackingItem implements IFreshPackingItem
@@ -64,7 +64,11 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		super(scheds2Qtys);
 	}
 
-	/** Copy constructor */
+	/**
+	 * Copy constructor.
+	 *
+	 * @param item must be <code>instanceof</code> {@link FreshPackingItem}.
+	 */
 	FreshPackingItem(final IPackingItem item)
 	{
 		super(item);
@@ -74,6 +78,11 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		bpLocation = itemCasted.bpLocation;
 	}
 
+	/**
+	 * Similar to {@link #FreshPackingItem(IPackingItem)}, but updates this existing instance instead of creawting a new one.
+	 *
+	 * @param item must be <code>instanceof</code> {@link FreshPackingItem}.
+	 */
 	public void updateFrom(final IFreshPackingItem item)
 	{
 		super.updateFrom(item);
@@ -227,7 +236,9 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public IFreshPackingItem subtractToPackingItem(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+	public IFreshPackingItem subtractToPackingItem(
+			final BigDecimal subtrahent,
+			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
 		return new FreshPackingItem(sched2qty);
@@ -242,10 +253,20 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public String toString()
 	{
-		return "FreshPackingItem [partner=" + partner + ", bpLocation=" + bpLocation + ", isClosed()=" + isClosed() + ", getQtySum()=" + getQtySum() + ", getM_Product()=" + getM_Product()
+		return "FreshPackingItem [partner=" + partner
+				+ ", bpLocation=" + bpLocation
+				+ ", isClosed()=" + isClosed()
+				+ ", getQtySum()=" + getQtySum()
+				+ ", getM_Product()=" + getM_Product()
 				+ ", getC_UOM()=" + getC_UOM() + "]";
 	}
 
+	/**
+	 *
+	 * @param item
+	 * @return
+	 * @throws IllegalArgumentException if the given <code>item</code> is not a {@link FreshPackingItem}
+	 */
 	private static final FreshPackingItem cast(final IPackingItem item)
 	{
 		if (!(item instanceof FreshPackingItem))

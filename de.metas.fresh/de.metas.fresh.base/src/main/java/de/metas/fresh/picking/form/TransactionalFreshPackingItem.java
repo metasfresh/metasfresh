@@ -34,7 +34,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  */
 
 /**
- * Wraps an {@link FreshPackingItem} and adds transaction support.
+ * Wraps an {@link FreshPackingItem} and adds transaction support.<br>
+ * Basically that means that this instance wraps another {@link IFreshPackingItem}.<br>
+ * A copy of that wrapped item can be obtained via {@link #createNewState()}.<br>
+ * Changes can be made to this this copy incrementally, and can then be "flushed" onto the original wrapped instance by calling {@link #commit(IFreshPackingItem)}.
  *
  * @author metas-dev <dev@metas-fresh.com>
  * @see TransactionalFreshPackingItemSupport
@@ -77,7 +80,9 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 		return id;
 	}
 
-	/** Called by {@link TransactionalFreshPackingItemSupport} when the object is required in a new transaction */
+	/**
+	 * Called by {@link TransactionalFreshPackingItemSupport} when the object is required in a new transaction
+	 */
 	IFreshPackingItem createNewState()
 	{
 		return root.copy();
@@ -124,6 +129,9 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 		root.updateFrom(state);
 	}
 
+	/**
+	 * Creates a new instance which wraps a copy of this instances {@link #getDelegate()} value.
+	 */
 	@Override
 	public IFreshPackingItem copy()
 	{
