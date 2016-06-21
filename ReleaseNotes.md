@@ -12,13 +12,19 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.23.22 (upcoming)
+# metasfresh 4.23.22a (release candidate)
+
+## Features
+
+## Fixes
+ - FRESH-408 Picking Issue
+
+# metasfresh 4.23.22
 
 ## Features
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
 
 ## Fixes
- - FRESH-408 Picking Issue
  - FRESH-412 quick input in orders not working
  - FRESH-409 Creating Partner Relation throws Exception
  - FRESH-407 M_ShipperTransportation Terminated after complete
