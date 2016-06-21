@@ -40,17 +40,17 @@ public interface IQueryBuilder<T>
 {
 	/**
 	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.
-	 * 
+	 *
 	 * This is a huge optimization for databases like PostgreSQL which have way better performances on UNIONs instead of WHERE expressions joined by OR.
-	 * 
+	 *
 	 * Example: A query like
-	 * 
+	 *
 	 * <pre>
 	 * SELECT ... FROM ... WHERE (Expression1 OR Expression2 OR Expression3)
 	 * </pre>
-	 * 
+	 *
 	 * will be exploded to:
-	 * 
+	 *
 	 * <pre>
 	 *  SELECT ... FROM ... WHERE Expression1
 	 *  UNION DISTINCT
@@ -85,9 +85,9 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Sets a query option which will be used while building the query or while executing the query.
-	 * 
+	 *
 	 * NOTE: all options will be also passed to {@link IQuery} instance when it will be created.
-	 * 
+	 *
 	 * @param name
 	 * @param value
 	 * @see IQuery#setOptions(java.util.Map).
@@ -96,7 +96,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Convenient way of calling {@link #setOption(String, Object)} with <code>value</code> = {@link Boolean#TRUE}.
-	 * 
+	 *
 	 * @param name
 	 */
 	IQueryBuilder<T> setOption(String name);
@@ -213,18 +213,17 @@ public interface IQueryBuilder<T>
 	/**
 	 * Create a new {@link IQueryBuilder} which collects models from given model column.
 	 *
-	 * e.g. Collect all business partners from matched invoices:
+	 * Example: collect all invoice business partners (<code>Bill_Partner_ID</code>) from matched <code>C_Order</code>:
 	 *
 	 * <pre>
 	 * final IQueryBuilder&lt;I_C_Order&gt; ordersQueryBuilder = ....;
-	 * 
+	 *
 	 * final List&lt;I_C_BPartner&gt; bpartners = ordersQueryBuilder
 	 *   .addCollect(I_C_Order.COLUMN_Bill_Partner_ID) // an IQueryBuilder&lt;I_C_BPartner&gt; is returned here
 	 *   .create() // create IQuery&lt;I_C_BPartner&gt;
 	 *   .list()   // list bpartners
 	 * </pre>
 	 *
-	 * <b>the method assumes that th</b>
 	 *
 	 * @param column model column
 	 * @return list of collected models
@@ -242,8 +241,17 @@ public interface IQueryBuilder<T>
 			IQueryBuilder<CollectedType> andCollect(ModelColumn<ParentModelType, CollectedBaseType> column, Class<CollectedType> collectedType);
 
 	/**
-	 * Returns record that reference the result of the query which was specified so far.<br>
-	 * Example: first, configure a query builder to select a certain kind of <code>M_InOuts</code>. then use this method to retrieve not the specified inOuts, but it's M_InOutLines.
+	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
+	 * Example: first, configure a query builder to select a certain kind of <code>M_InOuts</code>. then use this method to retrieve not the specified inOuts, but its M_InOutLines:
+	 *
+	 * <pre>
+	 * final IQueryBuilder&lt;I_M_InOut&gt; inoutsQueryBuilder = ....;
+	 *
+	 * final List&lt;I_M_InOutLine&gt; inoutLines = inoutsQueryBuilder
+	 *   .andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class) // an IQueryBuilder&lt;I_M_InOutLine&gt; is returned here
+	 *   .create() // create IQuery&lt;I_M_InOutLine&gt;
+	 *   .list()   // list inout lines
+	 * </pre>
 	 *
 	 * @param childTableColumn
 	 * @param childType

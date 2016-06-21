@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_C_Order;
@@ -114,7 +115,7 @@ public class HUOrderBL implements IHUOrderBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx,
 					ol,
-					InterfaceWrapperHelper.isNew(ol),           // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
 					trxName);
 		}
 		// If is not null, set all related items
@@ -144,7 +145,7 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol),           // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
 					trxName);
 		}
 	}
@@ -161,6 +162,7 @@ public class HUOrderBL implements IHUOrderBL
 		}
 
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 
 		final I_M_HU_PI_Item_Product olPip = ol.getM_HU_PI_Item_Product();
 
@@ -172,17 +174,17 @@ public class HUOrderBL implements IHUOrderBL
 		// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
 
 		// check if the ol has a packaging order line whose product is inconsistent with the ol's PIIP
-		final boolean inconsistentPackagingProduct = true
-				// here we just avoid NPEs
+		final boolean packagingProductMightBeInconsistent = true
+				// here we just avoid NPEs and check if the ol actually has a packaging line with a product
 				&& ol.getC_PackingMaterial_OrderLine_ID() > 0
-				&& olPip.getM_HU_PI_Item_ID() > 0
-				&& olPip.getM_HU_PI_Item().getM_HU_PackingMaterial_ID() > 0
-				// .. and here comes the actual check
-				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() != olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product_ID();
+				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() > 0;
 
-		final boolean inconsistentProduct = olPip.getM_Product_ID() != ol.getM_Product_ID();
+		final boolean inconsistentProduct =
+				// a virtual piip or one that allows any product can't be inconsistent with the ol's current procudt
+				!olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
+				&& olPip.getM_Product_ID() != ol.getM_Product_ID();
 
-		if (inconsistentPackagingProduct)
+		if (packagingProductMightBeInconsistent)
 		{
 			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
 					ol.getM_Product(),
@@ -190,14 +192,21 @@ public class HUOrderBL implements IHUOrderBL
 					ol.getDateOrdered(),
 					huUnitType,
 					allowInfiniteCapacity,
-					olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product());
+// FRESH-386: the counter-record 'ol' still references the original line's packaging line
+// TODO: add listener etc infractucture to make this work nicely
+//					ol.getC_PackingMaterial_OrderLine().getM_Product()
+					null
+					);
 
-			logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
-					+ " but the ol's current M_HU_PI_Item_Product={} references to the packaging-M_Product_ID={};"
-					+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
-					ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
-					olPip, olPip.getM_HU_PI_Item().getM_HU_PackingMaterial().getM_Product_ID(),
-					newPIIP);
+			if (newPIIP == null || newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
+			{
+				logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
+						+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
+						+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
+						ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
+						olPip,
+						newPIIP);
+			}
 		}
 		else if (inconsistentProduct)
 		{

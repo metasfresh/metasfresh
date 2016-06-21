@@ -285,6 +285,7 @@ public abstract class Packing extends MvcGenForm
 
 		packingView.addWarehouseListener(new VetoableChangeListener()
 		{
+			@Override
 			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
 			{
 				final Integer warehouseId = (Integer)evt.getNewValue();
@@ -295,6 +296,7 @@ public abstract class Packing extends MvcGenForm
 		});
 		packingView.addDisplayNonDeliverableItemsListener(new VetoableChangeListener()
 		{
+			@Override
 			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
 			{
 				final Boolean display = (Boolean)evt.getNewValue();
@@ -394,7 +396,7 @@ public abstract class Packing extends MvcGenForm
 			lockShipmentSchedules(ctx, olsAndScheds);
 
 			// prepare our "problem" description
-			final Collection<AbstractPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
+			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
 
 			final List<I_M_ShipmentSchedule> nonItemScheds = new ArrayList<I_M_ShipmentSchedule>();
 
@@ -430,11 +432,11 @@ public abstract class Packing extends MvcGenForm
 		invokeProcess(detailsModel);
 	}
 
-	protected Collection<AbstractPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
 	{
-		final Collection<AbstractPackingItem> unallocatedLines = new ArrayList<AbstractPackingItem>();
+		final Collection<IPackingItem> unallocatedLines = new ArrayList<IPackingItem>();
 
-		final Map<ArrayKey, AbstractPackingItem> key2Sched = new HashMap<ArrayKey, AbstractPackingItem>();
+		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<ArrayKey, IPackingItem>();
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
@@ -446,10 +448,10 @@ public abstract class Packing extends MvcGenForm
 
 				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched);
 
-				AbstractPackingItem item = key2Sched.get(key);
+				IPackingItem item = key2Sched.get(key);
 				if (item == null)
 				{
-					item = new PackingItem(schedWithQty, null);
+					item = new LegacyPackingItem(schedWithQty, null);
 					assert item.getGroupingKey() == key.hashCode();
 
 					key2Sched.put(key, item);
@@ -468,7 +470,7 @@ public abstract class Packing extends MvcGenForm
 	protected IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		final PackingMd model = getModel();
@@ -499,7 +501,7 @@ public abstract class Packing extends MvcGenForm
 		}
 
 		BigDecimal qty = Env.ZERO;
-		for (final AbstractPackingItem item : unallocatedLines)
+		for (final IPackingItem item : unallocatedLines)
 		{
 			qty = qty.add(item.getQtySum());
 		}
