@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,11 +40,13 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Post Allocation Documents.
@@ -194,6 +194,31 @@ public class Doc_AllocationHdr extends Doc
 
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		
+		int countPayments = 0;
+		int countInvoices = 0;
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+			if (line.hasInvoiceDocument())
+			{
+				countInvoices++;
+			}
+			if (line.hasPaymentDocument())
+			{
+				countPayments++;
+			}
+		}
+		
+		//
+		//
+		if (countPayments > 0 && countInvoices == 0)
+		{
+			createFacts_PaymentAllocation(fact);
+			m_facts.add(fact);
+			return m_facts;
+		}
+
 
 		for (int i = 0; i < p_lines.length; i++)
 		{
@@ -291,6 +316,15 @@ public class Doc_AllocationHdr extends Doc
 		m_facts.add(fact);
 		return m_facts;
 	}   // createFact
+
+	private void createFacts_PaymentAllocation(final Fact fact)
+	{
+		// TODO Auto-generated method stub
+		
+		// create a  method similar with org.compiere.acct.Doc_AllocationHdr.createPaymentFacts(Fact, DocLine_Allocation)
+		// it will have nothing to do with invoices
+		// This method will create posting lines that reverse the original lines so there will be the correct balance in the end.
+	}
 
 	/**
 	 * Creates facts related to {@link DocLine_Allocation#getPaymentWriteOffAmt()}.
