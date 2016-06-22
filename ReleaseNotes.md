@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.23.23 (upcoming)
+# metasfresh 4.24.23 (upcoming)
 
 ## Features
  - FRESH-378 process to close invoice candidates
