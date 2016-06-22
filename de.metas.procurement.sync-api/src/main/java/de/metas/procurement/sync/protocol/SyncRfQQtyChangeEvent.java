@@ -1,6 +1,7 @@
 package de.metas.procurement.sync.protocol;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /*
  * #%L
@@ -26,8 +27,9 @@ import java.math.BigDecimal;
 
 public class SyncRfQQtyChangeEvent
 {
+	private String rfq_uuid;
+	private Date day;
 	private String product_uuid;
-	private String rfq_qty_uuid;
 	private BigDecimal qty;
 
 	@Override
@@ -35,9 +37,30 @@ public class SyncRfQQtyChangeEvent
 	{
 		return "SyncRfQQtyChangeEvent ["
 				+ "product_uuid=" + product_uuid
-				+ ", rfq_qty_uuid=" + rfq_qty_uuid
 				+ ", qty=" + qty
+				+ ", day="+day
+				+ ", rfq_uuid=" + rfq_uuid
 				+ "]";
+	}
+
+	public String getRfq_uuid()
+	{
+		return rfq_uuid;
+	}
+
+	public void setRfq_uuid(final String rfq_uuid)
+	{
+		this.rfq_uuid = rfq_uuid;
+	}
+	
+	public Date getDay()
+	{
+		return day;
+	}
+	
+	public void setDay(Date day)
+	{
+		this.day = day;
 	}
 
 	public String getProduct_uuid()
@@ -50,16 +73,6 @@ public class SyncRfQQtyChangeEvent
 		this.product_uuid = product_uuid;
 	}
 
-	public String getRfq_qty_uuid()
-	{
-		return rfq_qty_uuid;
-	}
-
-	public void setRfq_qty_uuid(final String rfq_qty_uuid)
-	{
-		this.rfq_qty_uuid = rfq_qty_uuid;
-	}
-
 	public BigDecimal getQty()
 	{
 		return qty;
@@ -69,5 +82,4 @@ public class SyncRfQQtyChangeEvent
 	{
 		this.qty = qty;
 	}
-
 }

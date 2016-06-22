@@ -41,14 +41,11 @@ import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.procurement.sync.protocol.SyncRfQQty;
 import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
-import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
-import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
  * #%L
@@ -426,27 +423,9 @@ public class SyncObjectsFactory
 		
 		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfQDAO.retrieveResponseLines(rfqResponse))
 		{
-			for (final I_C_RfQResponseLineQty rfqResponseLineQty : pmmRfQDAO.retrieveResponseLineQtys(rfqResponseLine))
-			{
-				// FIXME: review if creating one SyncRfQ per C_RfQResponseLineQty is OK!!!!
-				final SyncRfQ syncRfQ = createSyncRfQHeader(rfqResponseLine);
-				
-				final I_C_RfQLineQty rfqLineQty = rfqResponseLineQty.getC_RfQLineQty();
-				syncRfQ.setQtyRequested(rfqLineQty.getQty());
-				
-				syncRfQ.setPricePromised(rfqResponseLineQty.getPrice());
-				
-				final SyncRfQQty syncRfQQty = new SyncRfQQty();
-				syncRfQQty.setUuid(SyncUUIDs.toUUIDString(rfqResponseLineQty));
-				syncRfQQty.setProduct_uuid(syncRfQ.getProduct_uuid());
-				//syncRfQQty.setDatePromised(rfqResponseLineQty.getDatePromised()); // TODO: FRESH-402: introduce C_RfQResponseLineQty.DatePromised
-				//syncRfQQty.setQtyPromised(rfqResponseLineQty.getQtyPromised()); // TODO: FRESH-402: introduce C_RfQResponseLineQty.QtyPromised
-				syncRfQ.getQuantities().add(syncRfQQty);
-				
-				syncRfQs.add(syncRfQ);
-			}
+			final SyncRfQ syncRfQ = createSyncRfQHeader(rfqResponseLine);
+			syncRfQs.add(syncRfQ);
 		}
-		
 		
 		return syncRfQs;
 	}
@@ -470,6 +449,8 @@ public class SyncObjectsFactory
 		final I_C_RfQLine rfqLine = rfqResponseLine.getC_RfQLine(); // => Product
 		final I_PMM_Product pmmProduct = null; // TODO: FRESH-402: fetch the PMM_Product from C_RfQResponseLine/C_RfQLine
 		syncRfQ.setProduct_uuid(SyncUUIDs.toUUIDString(pmmProduct));
+
+		syncRfQ.setQtyRequested(rfqLine.getQty());
 
 		return syncRfQ;
 	}

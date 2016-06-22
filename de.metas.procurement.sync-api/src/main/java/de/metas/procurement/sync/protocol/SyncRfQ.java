@@ -1,9 +1,7 @@
 package de.metas.procurement.sync.protocol;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /*
  * #%L
@@ -18,11 +16,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,9 +37,6 @@ public class SyncRfQ extends AbstractSyncModel
 
 	private String product_uuid;
 	private BigDecimal qtyRequested;
-	private List<SyncRfQQty> quantities = new ArrayList<>();
-
-	private BigDecimal pricePromised;
 
 	@Override
 	public String toString()
@@ -55,12 +50,8 @@ public class SyncRfQ extends AbstractSyncModel
 				+ ", closed=" + closed
 				+ ", winner=" + winner
 				//
-				+ ", pricePromised=" + pricePromised
-				//
-				//
 				+ ", product_uuid=" + product_uuid
 				+ ", qtyRequested=" + qtyRequested
-				+ ", quantities=" + quantities
 				+ "]";
 	}
 
@@ -142,25 +133,5 @@ public class SyncRfQ extends AbstractSyncModel
 	public void setQtyRequested(final BigDecimal qtyRequested)
 	{
 		this.qtyRequested = qtyRequested;
-	}
-
-	public List<SyncRfQQty> getQuantities()
-	{
-		return quantities;
-	}
-
-	public void setQuantities(final List<SyncRfQQty> quantities)
-	{
-		this.quantities = quantities;
-	}
-
-	public BigDecimal getPricePromised()
-	{
-		return pricePromised;
-	}
-
-	public void setPricePromised(final BigDecimal pricePromised)
-	{
-		this.pricePromised = pricePromised;
 	}
 }

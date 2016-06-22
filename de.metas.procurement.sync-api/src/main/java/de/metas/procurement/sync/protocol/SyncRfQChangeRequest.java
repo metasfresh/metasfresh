@@ -61,4 +61,10 @@ public class SyncRfQChangeRequest
 	{
 		this.qtyChangeEvents = qtyChangeEvents;
 	}
+
+	public boolean isEmpty()
+	{
+		return priceChangeEvents.isEmpty()
+				&& qtyChangeEvents.isEmpty();
+	}
 }
