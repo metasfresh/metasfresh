@@ -45,7 +45,7 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
@@ -598,7 +598,7 @@ public class PickingSlotKey extends TerminalKey
 		return true;
 	}
 
-	public boolean isCompatible(FreshPackingItem packingItem)
+	public boolean isCompatible(IFreshPackingItem packingItem)
 	{
 		if (packingItem == null)
 		{

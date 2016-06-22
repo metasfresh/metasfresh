@@ -64,10 +64,10 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.PackingDetailsMd;
 import de.metas.adempiere.form.PackingDetailsV;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -131,7 +131,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 							weight = weight.setScale(2, RoundingMode.HALF_UP);
 							if (!weight.equals(BigDecimal.ZERO))
 							{
-								final AbstractPackingItem pi = productKey.getPackingItem();
+								final IPackingItem pi = productKey.getPackingItem();
 								if (model.getPiQty() != null && model.getPiQty().signum() != 0)
 								{
 									pi.setWeightSingle(weight.divide(model.getPiQty(), RoundingMode.HALF_UP));
@@ -219,7 +219,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		fProduct.requestFocus();
 	}
 
-	public void setDataValues(final AbstractPackingItem pi, final DefaultMutableTreeNode usedBin, final String product, final String qty, final String volume, final String weight,
+	public void setDataValues(final IPackingItem pi, final DefaultMutableTreeNode usedBin, final String product, final String qty, final String volume, final String weight,
 			final boolean editableWeight, final String desc)
 	{
 		packageTerminalPanel.getProductKeysPanel().setPck(pi);
@@ -271,9 +271,9 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 				list.add(currentChild);
 				// get boxes
 				final Object userObj = currentChild.getUserObject();
-				if (userObj instanceof PackingItem)
+				if (userObj instanceof LegacyPackingItem)
 				{
-					final PackingItem item = (PackingItem)userObj;
+					final LegacyPackingItem item = (LegacyPackingItem)userObj;
 					model.getPackingTreeModel().removePackedItem(ctx, currentChild, bk.getNode(), item.getQtySum(), true);
 				}
 			}

@@ -33,9 +33,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.model.POWrapper;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -154,9 +154,9 @@ public class QtyListener implements PropertyChangeListener
 					{
 						DefaultMutableTreeNode currentChild = en.nextElement();
 						Object userObj = currentChild.getUserObject();
-						if (userObj instanceof PackingItem)
+						if (userObj instanceof LegacyPackingItem)
 						{
-							PackingItem pack = (PackingItem)userObj;
+							LegacyPackingItem pack = (LegacyPackingItem)userObj;
 							if (this.swingPackageBoxesItems.getPck() == pack && this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 							{
 								this.swingPackageBoxesItems.setPck(pack);
@@ -189,9 +189,9 @@ public class QtyListener implements PropertyChangeListener
 					{
 						DefaultMutableTreeNode currentChild = en.nextElement();
 						Object userObj = currentChild.getUserObject();
-						if (userObj instanceof PackingItem)
+						if (userObj instanceof LegacyPackingItem)
 						{
-							PackingItem pack = (PackingItem)userObj;
+							LegacyPackingItem pack = (LegacyPackingItem)userObj;
 							if (this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 							{
 								this.swingPackageBoxesItems.setPck(pack);
@@ -220,9 +220,9 @@ public class QtyListener implements PropertyChangeListener
 				{
 					DefaultMutableTreeNode currentChild = en.nextElement();
 					Object userObj = currentChild.getUserObject();
-					if (userObj instanceof PackingItem)
+					if (userObj instanceof LegacyPackingItem)
 					{
-						PackingItem pack = (PackingItem)userObj;
+						LegacyPackingItem pack = (LegacyPackingItem)userObj;
 						if (this.swingPackageBoxesItems.getPck() == pack && this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 						{
 							this.swingPackageBoxesItems.setPck(pack);
@@ -273,8 +273,8 @@ public class QtyListener implements PropertyChangeListener
 					if (pkey != null && pkey.getBoxNo() == productKey.getBoxNo() && pkey.getValue().equals(productKey.getValue()))
 					{
 						keypanel.onKeySelected(productKey);
-						final AbstractPackingItem pi = productKey.getPackingItem();
-						final I_M_Product product = pi.retrieveProduct(null);
+						final IPackingItem pi = productKey.getPackingItem();
+						final I_M_Product product = pi.getM_Product();
 
 						final BigDecimal productWeight = product.getWeight();
 						// if the product has no weight info, make the field editable

@@ -12,7 +12,26 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.23.22 (upcoming)
+# metasfresh 4.24.23 (upcoming)
+
+## Features
+ - FRESH-378 process to close invoice candidates
+
+## Fixes
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+
+## Documentation
+ - FRESH-323 metasfresh Developer Documentation
+    * Added some clarifications and described how to import the initial DB-dump
+
+# metasfresh 4.23.22a (release candidate)
+
+## Features
+
+## Fixes
+ - FRESH-408 Picking Issue
+
+# metasfresh 4.23.22
 
 ## Features
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric

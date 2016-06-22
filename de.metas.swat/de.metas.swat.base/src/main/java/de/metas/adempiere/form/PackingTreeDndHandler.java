@@ -155,7 +155,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 			if (newParent == treeModel.getUnPackedItems())
 			{
 
-				final PackingItem pi = (PackingItem)movingNode.getUserObject();
+				final LegacyPackingItem pi = (LegacyPackingItem)movingNode.getUserObject();
 
 				final QtyEnteredHandler handler = new QtyEnteredHandler()
 				{
@@ -172,7 +172,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 			else if (newParent.getUserObject() instanceof UsedBin)
 			{
 
-				final PackingItem pi = (PackingItem)movingNode.getUserObject();
+				final LegacyPackingItem pi = (LegacyPackingItem)movingNode.getUserObject();
 
 				final QtyEnteredHandler handler = new QtyEnteredHandler()
 				{
