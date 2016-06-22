@@ -241,7 +241,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
-		return new FreshPackingItem(sched2qty);
+		return FreshPackingItemHelper.create(sched2qty);
 	}
 
 	@Override
