@@ -1,5 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,19 +16,19 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -43,6 +46,8 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
@@ -167,4 +172,95 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.list();
 	}
 
+	@Override
+	public Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	{
+		final Set<I_M_ReceiptSchedule> schedules = new HashSet<I_M_ReceiptSchedule>();
+
+		final int tableID = candidate.getAD_Table_ID();
+
+		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+		{
+			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
+			if (orderLine != null)
+			{
+				I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
+
+				if (schedForOrderLine != null)
+				{
+					schedules.add(schedForOrderLine);
+				}
+			}
+		}
+
+		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
+			final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
+
+			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
+
+			if (inoutLine == null)
+			{
+				// shall not happen.
+			}
+			else
+			{
+				schedules.addAll(retrieveRsForInOutLine(inoutLine));
+			}
+		}
+		else
+		{
+			// No other tables are supported yet
+			// Please add implementation if required
+		}
+		return schedules;
+	}
+
+	@Override
+	public Set<I_M_ReceiptSchedule> retrieveRsForInOutLine(final I_M_InOutLine iol)
+	{
+		final Set<I_M_ReceiptSchedule> schedules = new HashSet<I_M_ReceiptSchedule>();
+
+		if (iol == null)
+		{
+			return Collections.emptySet();
+		}
+
+		final I_M_InOut io = iol.getM_InOut();
+
+		if (io == null)
+		{
+			// this shall never happen
+			return Collections.emptySet();
+		}
+
+		if (io.isSOTrx())
+		{
+			// sales side inouts fo not have receipt schedules
+			return Collections.emptySet();
+		}
+
+		final List<I_M_ReceiptSchedule_Alloc> allocs = retrieveRsaForInOutLine(iol);
+
+		for (final I_M_ReceiptSchedule_Alloc alloc : allocs)
+		{
+			schedules.add(alloc.getM_ReceiptSchedule());
+		}
+
+		// fallback on the orderLine
+		final org.compiere.model.I_C_OrderLine orderLine = iol.getC_OrderLine();
+
+		if (orderLine != null)
+		{
+			I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
+
+			if (schedForOrderLine != null)
+			{
+				schedules.add(schedForOrderLine);
+			}
+		}
+
+		return schedules;
+	}
 }
