@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.util.Collections;
-import java.util.HashSet;
 
 /*
  * #%L
@@ -41,6 +40,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -149,16 +150,20 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLine(final org.compiere.model.I_M_InOutLine line)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, line)
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, line.getM_InOutLine_ID()));
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID);
-
-		return queryBuilder
+		return retrieveRsaForInOutLineQuery(line)
 				.create()
 				.list(I_M_ReceiptSchedule_Alloc.class);
+	}
+
+	private IQueryBuilder<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLineQuery(final org.compiere.model.I_M_InOutLine line)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, line)
+				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, line.getM_InOutLine_ID())
+				//
+				.orderBy()
+				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID)
+				.endOrderBy();
 	}
 
 	@Override
@@ -175,38 +180,34 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-		final Set<I_M_ReceiptSchedule> schedules = new HashSet<I_M_ReceiptSchedule>();
+		Set<I_M_ReceiptSchedule> schedules = ImmutableSet.of();
 
 		final int tableID = candidate.getAD_Table_ID();
 
+		// invoice candidate references an orderline
 		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
 			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
 			if (orderLine != null)
 			{
-				I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
-
+				final I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
 				if (schedForOrderLine != null)
 				{
-					schedules.add(schedForOrderLine);
+					schedules = ImmutableSet.of(schedForOrderLine);
 				}
 			}
 		}
 
+		// invoice candidate references an inoutline
 		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
 			final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
 
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
-
-			if (inoutLine == null)
+			if (inoutLine != null)
 			{
-				// shall not happen.
-			}
-			else
-			{
-				schedules.addAll(retrieveRsForInOutLine(inoutLine));
+				schedules = ImmutableSet.copyOf(retrieveRsForInOutLine(inoutLine));
 			}
 		}
 		else
@@ -218,49 +219,29 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public Set<I_M_ReceiptSchedule> retrieveRsForInOutLine(final I_M_InOutLine iol)
+	public List<I_M_ReceiptSchedule> retrieveRsForInOutLine(final I_M_InOutLine iol)
 	{
-		final Set<I_M_ReceiptSchedule> schedules = new HashSet<I_M_ReceiptSchedule>();
-
 		if (iol == null)
 		{
-			return Collections.emptySet();
+			return Collections.emptyList();
 		}
 
 		final I_M_InOut io = iol.getM_InOut();
-
 		if (io == null)
 		{
 			// this shall never happen
-			return Collections.emptySet();
+			return Collections.emptyList();
 		}
 
 		if (io.isSOTrx())
 		{
-			// sales side inouts fo not have receipt schedules
-			return Collections.emptySet();
+			// sales side inouts do not have receipt schedules
+			return Collections.emptyList();
 		}
 
-		final List<I_M_ReceiptSchedule_Alloc> allocs = retrieveRsaForInOutLine(iol);
-
-		for (final I_M_ReceiptSchedule_Alloc alloc : allocs)
-		{
-			schedules.add(alloc.getM_ReceiptSchedule());
-		}
-
-		// fallback on the orderLine
-		final org.compiere.model.I_C_OrderLine orderLine = iol.getC_OrderLine();
-
-		if (orderLine != null)
-		{
-			I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
-
-			if (schedForOrderLine != null)
-			{
-				schedules.add(schedForOrderLine);
-			}
-		}
-
-		return schedules;
+		return retrieveRsaForInOutLineQuery(iol)
+				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_ReceiptSchedule_ID)
+				.create()
+				.list();
 	}
 }

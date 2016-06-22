@@ -76,7 +76,7 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 * @param iol
 	 * @return
 	 */
-	Set<I_M_ReceiptSchedule> retrieveRsForInOutLine(I_M_InOutLine iol);
+	List<I_M_ReceiptSchedule> retrieveRsForInOutLine(I_M_InOutLine iol);
 
 	/**
 	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
