@@ -13,18 +13,18 @@ package de.metas.inoutcandidate.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
@@ -34,6 +34,7 @@ import org.compiere.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public interface IReceiptScheduleDAO extends ISingletonService
 {
@@ -68,4 +69,20 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_InOut> retrieveCompletedReceipts(I_M_ReceiptSchedule receiptSchedule);
+
+	/**
+	 * Retrieve all the receipt schedules for the given inout line
+	 * 
+	 * @param iol
+	 * @return
+	 */
+	List<I_M_ReceiptSchedule> retrieveRsForInOutLine(I_M_InOutLine iol);
+
+	/**
+	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
+	 * 
+	 * @param candidate
+	 * @return
+	 */
+	Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
 }

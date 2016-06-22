@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.process;
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -37,18 +36,19 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class C_Invoice_Candidate_Close extends SvrProcess
 {
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_C_Invoice_Candidate> selectedCandidates = retrieveSelectedCandidates();
-
 		if (!selectedCandidates.hasNext())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		Services.get(IInvoiceCandBL.class).closeInvoiceCandidates(selectedCandidates);
+		invoiceCandBL.closeInvoiceCandidates(selectedCandidates);
 
 		return MSG_OK;
 	}
@@ -56,18 +56,15 @@ public class C_Invoice_Candidate_Close extends SvrProcess
 	private Iterator<I_C_Invoice_Candidate> retrieveSelectedCandidates()
 	{
 		final ProcessInfo processInfo = getProcessInfo();
+		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = processInfo.getQueryFilter();
 
-		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = getProcessInfo().getQueryFilter();
-
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class, processInfo);
-
-		// Apply the user selection filter
-		queryBuilder.filter(userSelectionFilter);
-
-		queryBuilder.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient();
-
-		return queryBuilder.create()
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class, processInfo)
+				.filter(userSelectionFilter) // Apply the user selection filter
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				//
+				.create()
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
