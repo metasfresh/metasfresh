@@ -27,7 +27,13 @@
 		<adempiere.java.version>1.7</adempiere.java.version>
 		<servicemix.java.version>1.7</servicemix.java.version>
 
-		<jasperreports.version>4.6.0</jasperreports.version>
+		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
+		<jasperreports.version>6.2.1</jasperreports.version>
+				
+		<!-- FRESH-397: jasper 6.2.2 uses itext, poi and zxing with theses versions -->
+		<itext.version>2.1.7.js5</itext.version>
+		<poi.version>3.12</poi.version>
+		<zxing.version>2.3.0</zxing.version>
 		
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
@@ -86,8 +92,30 @@
 				<version>${jasperreports.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.lowagie</groupId>
+				<artifactId>itext</artifactId>
+				<version>${itext.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.zxing</groupId>
+				<artifactId>core</artifactId>
+				<version>${zxing.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.zxing</groupId>
+				<artifactId>javase</artifactId>
+				<version>${zxing.version}</version>
+			</dependency>
+		
 			<!-- these two are dependencies of jasperreports 4.6.0, 
 				 and they don't converge to consistent versions within the jasperreport-4.6.0 dependency tree  -->
+				 <!--  
 			<dependency>
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis</artifactId>
@@ -98,16 +126,30 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.8.3</version>
 			</dependency>
+-->
 
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>1.6</version>
 			</dependency>
-			
+
+
+			<!-- jasperreports 6.2.2 has version 2.1.4 of jackson in its tree, but we prefer this later version -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.6.5</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.6.5</version>
+			</dependency>
 			
 			<!-- jasperreport-4.6.0 has version 1.9.4 of jackson-mapper-asl and jackson-core-asl in its tree, but we prefer the later version
 			-->
+			<!-- 
 			<dependency>
 				<groupId>org.codehaus.jackson</groupId>
 				<artifactId>jackson-mapper-asl</artifactId>
@@ -118,7 +160,7 @@
 				<artifactId>jackson-core-asl</artifactId>
 				<version>1.9.10</version>
 			</dependency>
-
+-->
 			<!-- IMPORTANT: when using these dependencies, declared jmockit and hamcrest before junit !-->
 			<!--  Use 1.9 (not 1.10) to avoid the following error when running jmokit with EclEmma:
 				java.lang.LinkageError: loader (instance of  sun/misc/Launcher$AppClassLoader): attempted  duplicate class definition for name: "...Test$1"
@@ -834,7 +876,7 @@
 						<banDuplicateClasses>
 							<ignoreClasses>
 																		
-										<!-- itext-2.1.7 has two different versions as dependences -->
+								<!-- itext-2.1.7 has two different versions as dependences -->
 								<ignoreClass>org.bouncycastle.*</ignoreClass>
 
 										<!-- org.jboss.client:jbossall-client and partially geronimo specs-->
