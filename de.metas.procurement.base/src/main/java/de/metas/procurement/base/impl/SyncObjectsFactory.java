@@ -441,7 +441,7 @@ public class SyncObjectsFactory
 		syncRfQ.setDateStart(rfq.getDateWorkStart());
 		syncRfQ.setDateEnd(rfq.getDateWorkComplete());
 		
-		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_RfQLine().getC_RfQ().getC_BPartner()));
+		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponse.getC_BPartner()));
 		
 		syncRfQ.setDateClose(rfq.getDateResponse());
 		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponse));
