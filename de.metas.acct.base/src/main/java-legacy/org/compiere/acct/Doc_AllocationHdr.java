@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -194,7 +194,7 @@ public class Doc_AllocationHdr extends Doc
 
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		
+
 		int countPayments = 0;
 		int countInvoices = 0;
 		for (int i = 0; i < p_lines.length; i++)
@@ -209,7 +209,7 @@ public class Doc_AllocationHdr extends Doc
 				countPayments++;
 			}
 		}
-		
+
 		//
 		//
 		if (countPayments > 0 && countInvoices == 0)
@@ -218,7 +218,6 @@ public class Doc_AllocationHdr extends Doc
 			m_facts.add(fact);
 			return m_facts;
 		}
-
 
 		for (int i = 0; i < p_lines.length; i++)
 		{
@@ -308,7 +307,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}	// for all lines
+		}   	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -317,13 +316,52 @@ public class Doc_AllocationHdr extends Doc
 		return m_facts;
 	}   // createFact
 
+	/**
+	 * Create facts for payments in the case when no invoice was involved.
+	 * The pay Amt will go to Credit for outgoing payments and to Debit for Incoming payments
+	 * 
+	 * @param fact
+	 */
 	private void createFacts_PaymentAllocation(final Fact fact)
 	{
-		// TODO Auto-generated method stub
-		
-		// create a  method similar with org.compiere.acct.Doc_AllocationHdr.createPaymentFacts(Fact, DocLine_Allocation)
-		// it will have nothing to do with invoices
-		// This method will create posting lines that reverse the original lines so there will be the correct balance in the end.
+		final MAcctSchema as = fact.getAcctSchema();
+
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+
+			final I_C_Payment payment = line.getC_Payment();
+
+			if (payment == null)
+			{
+				continue;
+			}
+
+			final MAccount paymentAcct = line.getPaymentAcct(as);
+			final FactLine fl_Payment;
+
+			final BigDecimal payAmt = payment.getPayAmt();
+
+			// Outgoing payment
+			if (payment.isReceipt())
+			{
+				// Originally on Debit. The ammount must be moved to Credit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, payAmt);
+			}
+
+			// Incoming payment
+			else
+			{
+				// Originally on Credit. The ammount must be moved to Debit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
+			}
+
+			// Make sure the fact line was created
+			Check.assumeNotNull(fl_Payment, "fl_Payment not null");
+
+			fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
+			fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
+		}
 	}
 
 	/**
@@ -841,7 +879,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}	// Commitment
+		}   	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1251,7 +1289,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}	// Discount
+			}   	// Discount
 
 			//
 			// WriteOff Amount
@@ -1287,8 +1325,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}	// WriteOff
-		}	// for all lines
+			}   	// WriteOff
+		}   	// for all lines
 	}	// createEntries
 
 	/**
