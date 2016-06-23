@@ -1,12 +1,15 @@
 package de.metas.rfq.impl;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
 
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
@@ -180,7 +183,7 @@ public class RfqDAO implements IRfqDAO
 	@Override
 	public List<I_C_RfQResponseLineQty> retrieveResponseQtys(final I_C_RfQLineQty rfqLineQty)
 	{
-		final List<I_C_RfQResponseLineQty> responseLineQtys = Services.get(IQueryBL.class)
+		final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLineQty.class, rfqLineQty)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQLineQty_ID, rfqLineQty.getC_RfQLineQty_ID())
@@ -191,28 +194,48 @@ public class RfqDAO implements IRfqDAO
 				.list(I_C_RfQResponseLineQty.class);
 
 		// optimization
-		for (final I_C_RfQResponseLineQty responseLineQty : responseLineQtys)
+		for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqResponseLineQtys)
 		{
-			responseLineQty.setC_RfQLineQty(rfqLineQty);
+			rfqResponseLineQty.setC_RfQLineQty(rfqLineQty);
 		}
 
-		return responseLineQtys;
+		return rfqResponseLineQtys;
 	}
 
 	@Override
-	public List<I_C_RfQResponseLineQty> retrieveResponseQtys(final I_C_RfQResponseLine responseLine)
+	public List<I_C_RfQResponseLineQty> retrieveResponseQtys(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		final List<I_C_RfQResponseLineQty> responseLineQtys = retrieveResponseQtysQuery(responseLine)
+		final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = retrieveResponseQtysQuery(rfqResponseLine)
 				.create()
 				.list(I_C_RfQResponseLineQty.class);
 
 		// optimization
-		for (final I_C_RfQResponseLineQty responseLineQty : responseLineQtys)
+		for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqResponseLineQtys)
 		{
-			responseLineQty.setC_RfQResponseLine(responseLine);
+			rfqResponseLineQty.setC_RfQResponseLine(rfqResponseLine);
 		}
 
-		return responseLineQtys;
+		return rfqResponseLineQtys;
+	}
+
+	@Override
+	public I_C_RfQResponseLineQty retrieveResponseQty(final I_C_RfQResponseLine rfqResponseLine, final Date date)
+	{
+		Check.assumeNotNull(date, "date not null");
+		final Date day = TimeUtil.trunc(date, TimeUtil.TRUNC_DAY);
+
+		final I_C_RfQResponseLineQty rfqResponseLineQty = retrieveResponseQtysQuery(rfqResponseLine)
+				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMN_DatePromised, day)
+				.create()
+				.firstOnly(I_C_RfQResponseLineQty.class);
+		
+		// optimization
+		if (rfqResponseLineQty != null)
+		{
+			rfqResponseLineQty.setC_RfQResponseLine(rfqResponseLine);
+		}
+		
+		return rfqResponseLineQty;
 	}
 
 	private IQueryBuilder<I_C_RfQResponseLineQty> retrieveResponseQtysQuery(final I_C_RfQResponseLine responseLine)
@@ -234,5 +257,4 @@ public class RfqDAO implements IRfqDAO
 				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, IQuery.AGGREGATE_SUM, BigDecimal.class);
 		return qtyPromised == null ? BigDecimal.ZERO : qtyPromised;
 	}
-
 }
