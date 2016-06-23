@@ -16,9 +16,10 @@ The actual release notes
 
 ## Features
  - FRESH-378 process to close invoice candidates
-
+ 
 ## Fixes
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+ - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
 
 ## Documentation
  - FRESH-323 metasfresh Developer Documentation
