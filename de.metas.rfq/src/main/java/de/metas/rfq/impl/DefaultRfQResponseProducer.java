@@ -25,6 +25,7 @@ import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.IRfqTopicBL;
 import de.metas.rfq.IRfqTopicDAO;
+import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQLineQty;
@@ -65,6 +66,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IRfqTopicDAO rfqTopicDAO = Services.get(IRfqTopicDAO.class);
 	private final transient IRfqTopicBL rfqTopicBL = Services.get(IRfqTopicBL.class);
+	private final transient IRfQEventDispacher rfqEventDispacher = Services.get(IRfQEventDispacher.class);
 	
 	// Status
 	private AtomicBoolean _processed = new AtomicBoolean(false);
@@ -193,6 +195,8 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 			{
 				continue;
 			}
+			
+			rfqEventDispacher.fireDraftCreated(rfqResponse);
 
 			addGeneratedResponse(rfqResponse);
 		}

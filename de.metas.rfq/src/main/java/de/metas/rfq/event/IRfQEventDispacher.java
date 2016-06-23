@@ -39,6 +39,8 @@ public interface IRfQEventDispacher extends ISingletonService
 
 	void fireAfterClose(I_C_RfQ rfq);
 
+	void fireDraftCreated(I_C_RfQResponse rfqResponse);
+
 	void fireBeforeComplete(I_C_RfQResponse rfqResponse);
 
 	void fireAfterComplete(I_C_RfQResponse rfqResponse);

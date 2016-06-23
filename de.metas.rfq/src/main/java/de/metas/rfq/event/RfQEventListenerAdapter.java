@@ -57,6 +57,12 @@ public class RfQEventListenerAdapter implements IRfQEventListener
 	}
 
 	@Override
+	public void onDraftCreated(I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
 	public void onBeforeComplete(final I_C_RfQResponse rfqResponse)
 	{
 		// nothing

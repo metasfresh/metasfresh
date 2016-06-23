@@ -60,7 +60,13 @@ public class RfQEventDispacher implements IRfQEventDispacher
 	{
 		listeners.onAfterClose(rfq);
 	}
-	
+
+	@Override
+	public void fireDraftCreated(final I_C_RfQResponse rfqResponse)
+	{
+		listeners.onDraftCreated(rfqResponse);
+	}
+
 	@Override
 	public void fireBeforeComplete(final I_C_RfQResponse rfqResponse)
 	{

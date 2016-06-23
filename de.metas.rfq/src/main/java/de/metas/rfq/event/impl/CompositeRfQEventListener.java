@@ -85,6 +85,15 @@ import de.metas.rfq.model.I_C_RfQResponse;
 	}
 
 	@Override
+	public void onDraftCreated(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onDraftCreated(rfqResponse);
+		}
+	}
+
+	@Override
 	public void onBeforeComplete(final I_C_RfQResponse rfqResponse)
 	{
 		for (final IRfQEventListener listener : listeners)
@@ -101,5 +110,4 @@ import de.metas.rfq.model.I_C_RfQResponse;
 			listener.onAfterComplete(rfqResponse);
 		}
 	}
-
 }

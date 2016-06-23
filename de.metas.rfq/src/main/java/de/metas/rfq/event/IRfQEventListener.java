@@ -34,6 +34,8 @@ public interface IRfQEventListener
 	void onBeforeClose(final I_C_RfQ rfq);
 
 	void onAfterClose(final I_C_RfQ rfq);
+	
+	void onDraftCreated(final I_C_RfQResponse rfqResponse);
 
 	void onBeforeComplete(final I_C_RfQResponse rfqResponse);
 
