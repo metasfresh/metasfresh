@@ -46,7 +46,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 /**
- * @author tsa
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IInvoiceCandBL extends ISingletonService
@@ -399,15 +400,15 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate
-	 * 
+	 *
 	 * @param candidate
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
 	/**
-	 * Iterate the candidates to close and close them one by one. 
+	 * Iterate the candidates to close and close them one by one.
 	 * Also close the shipment schedules on which the invoice candidates are based
-	 * 
+	 *
 	 * @param candidatesToClose
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
