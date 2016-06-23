@@ -481,9 +481,10 @@ import de.metas.logging.LogManager;
 		}
 
 		//
-		// Check changed columns (only if timing is not new).
-		// If timing is new we always consider column was changed
-		if (!isTimingNew(timing))
+		// Check changed columns (only if timing is before/after change).
+		// #105 FRESH-442: only check for changed columns on "change". For "new" and "delete", execute the pointcut.
+		// Else, does not make sense.
+		if (isTimingChange(timing))
 		{
 			final Set<String> columnsToCheckForChanges = pointcut.getColumnsToCheckForChanges();
 			if (!columnsToCheckForChanges.isEmpty())
@@ -569,13 +570,13 @@ import de.metas.logging.LogManager;
 	/**
 	 *
 	 * @param timing
-	 * @return true if timing is new (before, after)
+	 * @return true if timing is change (before, after)
 	 */
-	private static final boolean isTimingNew(final int timing)
+	private static final boolean isTimingChange(final int timing)
 	{
-		return ModelValidator.TYPE_BEFORE_NEW == timing
-				|| ModelValidator.TYPE_AFTER_NEW == timing
-				|| ModelValidator.TYPE_AFTER_NEW_REPLICATION == timing;
+		return ModelValidator.TYPE_BEFORE_CHANGE == timing
+				|| ModelValidator.TYPE_AFTER_CHANGE == timing
+				|| ModelValidator.TYPE_AFTER_CHANGE_REPLICATION == timing;
 	}
 
 	@Override

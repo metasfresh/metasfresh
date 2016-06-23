@@ -27,8 +27,6 @@ package de.metas.clientupdate;
 
 
 import java.text.MessageFormat;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 
@@ -43,6 +41,9 @@ import org.compiere.model.MSystem;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * This model validator starts a thread which check if the Client Application is up2date.
@@ -133,7 +134,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	}
 
 	/**
-	 * @see DB#isBuildOK(java.util.Properties)
+	 *
 	 */
 	private final void checkImplementationVersion()
 	{
