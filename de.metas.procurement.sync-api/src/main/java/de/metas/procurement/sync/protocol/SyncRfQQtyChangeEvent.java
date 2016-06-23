@@ -25,7 +25,7 @@ import java.util.Date;
  * #L%
  */
 
-public class SyncRfQQtyChangeEvent
+public class SyncRfQQtyChangeEvent extends AbstractSyncModel
 {
 	private String rfq_uuid;
 	private Date day;

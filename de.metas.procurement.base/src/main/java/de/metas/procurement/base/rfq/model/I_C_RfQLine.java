@@ -1,8 +1,6 @@
-package de.metas.procurement.base;
+package de.metas.procurement.base.rfq.model;
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
  * #%L
@@ -26,11 +24,12 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-public interface IPMM_RfQ_BL extends ISingletonService
+public interface I_C_RfQLine extends de.metas.rfq.model.I_C_RfQLine
 {
-	boolean isProcurement(I_C_RfQResponse rfqResponse);
-
-	boolean isClosed(I_C_RfQResponse rfqResponse);
-
-
+	//@formatter:off
+	public static final String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
+	int getPMM_Product_ID();
+	I_PMM_Product getPMM_Product();
+	void setPMM_Product(I_PMM_Product PMM_Product);
+	//@formatter:on
 }

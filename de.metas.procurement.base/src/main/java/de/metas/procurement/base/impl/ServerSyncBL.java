@@ -34,7 +34,9 @@ import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
@@ -58,11 +60,11 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -451,11 +453,39 @@ public class ServerSyncBL implements IServerSyncBL
 				});
 	}
 
-	private void createRfQPriceChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQPriceChangeEvent priceChangeEvent)
+	private void createRfQPriceChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQPriceChangeEvent syncPriceChangeEvent)
 	{
-		// TODO: FRESH-402: introduce and populate PMM_RfQ_ChangeEvent
+		logger.debug("Creating event from {} ({})", syncPriceChangeEvent, pmmProduct);
+
+		final I_PMM_RfQResponse_ChangeEvent event = InterfaceWrapperHelper.newInstance(I_PMM_RfQResponse_ChangeEvent.class, context);
+		event.setEvent_UUID(syncPriceChangeEvent.getUuid());
+
+		//
+		// RfQ Response Line
+		final String rfqResponseLine_UUID = syncPriceChangeEvent.getRfq_uuid();
+		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
+		SyncUUIDs.getC_RfQResponseLine_ID(rfqResponseLine_UUID);
+
+		//
+		// Price
+		event.setType(X_PMM_RfQResponse_ChangeEvent.TYPE_Price);
+		event.setPrice(syncPriceChangeEvent.getPrice());
+
+		// Product
+		event.setPMM_Product(pmmProduct);
+
+		// Save
+		event.setProcessed(false);
+		event.setIsActive(true);
+		InterfaceWrapperHelper.save(event);
+
+		logger.debug("Imported {} to {}:\n{}", syncPriceChangeEvent, event);
+
+		// Notify agent that we got the message
+		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
+		SyncConfirmationsSender.forCurrentTransaction().confirm(syncPriceChangeEvent, serverEventId);
 	}
-	
+
 	private void createRfQQtyChangeEvent(final SyncRfQQtyChangeEvent qtyChangeEvent)
 	{
 		final String product_uuid = qtyChangeEvent.getProduct_uuid();
@@ -471,9 +501,37 @@ public class ServerSyncBL implements IServerSyncBL
 				});
 	}
 
-	private void createRfQQtyChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQtyChangeEvent qtyChangeEvent)
+	private void createRfQQtyChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQtyChangeEvent syncQtyChangeEvent)
 	{
-		// TODO: FRESH-402: introduce and populate PMM_RfQ_ChangeEvent
+		logger.debug("Creating event from {} ({})", syncQtyChangeEvent, pmmProduct);
+
+		final I_PMM_RfQResponse_ChangeEvent event = InterfaceWrapperHelper.newInstance(I_PMM_RfQResponse_ChangeEvent.class, context);
+		event.setEvent_UUID(syncQtyChangeEvent.getUuid());
+
+		//
+		// RfQ Response Line
+		final String rfqResponseLine_UUID = syncQtyChangeEvent.getRfq_uuid();
+		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
+		SyncUUIDs.getC_RfQResponseLine_ID(rfqResponseLine_UUID);
+
+		//
+		// Qty
+		event.setType(X_PMM_RfQResponse_ChangeEvent.TYPE_Quantity);
+		event.setQty(syncQtyChangeEvent.getQty());
+
+		// Product
+		event.setPMM_Product(pmmProduct);
+
+		// Save
+		event.setProcessed(false);
+		event.setIsActive(true);
+		InterfaceWrapperHelper.save(event);
+
+		logger.debug("Imported {} to {}:\n{}", syncQtyChangeEvent, event);
+
+		// Notify agent that we got the message
+		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
+		SyncConfirmationsSender.forCurrentTransaction().confirm(syncQtyChangeEvent, serverEventId);
 	}
 
 }

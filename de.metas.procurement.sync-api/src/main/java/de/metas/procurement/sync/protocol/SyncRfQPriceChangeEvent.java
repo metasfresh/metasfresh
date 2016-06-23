@@ -24,7 +24,7 @@ import java.math.BigDecimal;
  * #L%
  */
 
-public class SyncRfQPriceChangeEvent
+public class SyncRfQPriceChangeEvent extends AbstractSyncModel
 {
 	private String product_uuid;
 	private String rfq_uuid;

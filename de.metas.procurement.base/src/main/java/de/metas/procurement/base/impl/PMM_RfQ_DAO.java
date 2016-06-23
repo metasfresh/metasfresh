@@ -1,5 +1,6 @@
 package de.metas.procurement.base.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -66,4 +67,11 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 	{
 		return Services.get(IRfqDAO.class).retrieveResponseQtys(rfqResponseLine);
 	}
+	
+	@Override
+	public I_C_RfQResponseLineQty retrieveResponseLineQty(I_C_RfQResponseLine rfqResponseLine, final Date date)
+	{
+		return Services.get(IRfqDAO.class).retrieveResponseQty(rfqResponseLine, date);
+	}
+
 }

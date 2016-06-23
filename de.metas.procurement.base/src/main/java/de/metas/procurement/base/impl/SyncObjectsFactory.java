@@ -36,6 +36,7 @@ import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.base.rfq.model.I_C_RfQLine;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
@@ -43,7 +44,6 @@ import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 
@@ -417,7 +417,7 @@ public class SyncObjectsFactory
 		return pmmRfQDAO.retrieveActiveResponses(getCtx(), bpartnerId);
 	}
 	
-	private List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)
+	public List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)
 	{
 		final List<SyncRfQ> syncRfQs = new ArrayList<>();
 		
@@ -440,14 +440,15 @@ public class SyncObjectsFactory
 		
 		syncRfQ.setDateStart(rfq.getDateWorkStart());
 		syncRfQ.setDateEnd(rfq.getDateWorkComplete());
-		syncRfQ.setName(rfqResponse.getName());
+		
+		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_RfQLine().getC_RfQ().getC_BPartner()));
 		
 		syncRfQ.setDateClose(rfq.getDateResponse());
 		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponse));
 		syncRfQ.setWinner(rfqResponse.isSelectedWinner());
 		
-		final I_C_RfQLine rfqLine = rfqResponseLine.getC_RfQLine(); // => Product
-		final I_PMM_Product pmmProduct = null; // TODO: FRESH-402: fetch the PMM_Product from C_RfQResponseLine/C_RfQLine
+		final I_C_RfQLine rfqLine = InterfaceWrapperHelper.create(rfqResponseLine.getC_RfQLine(), I_C_RfQLine.class);
+		final I_PMM_Product pmmProduct = rfqLine.getPMM_Product();
 		syncRfQ.setProduct_uuid(SyncUUIDs.toUUIDString(pmmProduct));
 
 		syncRfQ.setQtyRequested(rfqLine.getQty());

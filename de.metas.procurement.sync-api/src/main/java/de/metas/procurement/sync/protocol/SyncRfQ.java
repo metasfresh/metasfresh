@@ -29,7 +29,8 @@ public class SyncRfQ extends AbstractSyncModel
 {
 	private Date dateStart;
 	private Date dateEnd;
-	private String name;
+
+	private String bpartner_uuid;
 
 	private Date dateClose;
 	private boolean closed;
@@ -44,7 +45,8 @@ public class SyncRfQ extends AbstractSyncModel
 		return "SyncRfQ ["
 				+ "dateStart=" + dateStart
 				+ ", dateEnd=" + dateEnd
-				+ ", name=" + name
+				//
+				+ ", bpartner_uuid=" + bpartner_uuid
 				//
 				+ ", dateClose=" + dateClose
 				+ ", closed=" + closed
@@ -75,14 +77,15 @@ public class SyncRfQ extends AbstractSyncModel
 		this.dateEnd = dateEnd;
 	}
 
-	public String getName()
+	
+	public String getBpartner_uuid()
 	{
-		return name;
+		return bpartner_uuid;
 	}
-
-	public void setName(final String name)
+	
+	public void setBpartner_uuid(String bpartner_uuid)
 	{
-		this.name = name;
+		this.bpartner_uuid = bpartner_uuid;
 	}
 
 	public Date getDateClose()

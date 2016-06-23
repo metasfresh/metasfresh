@@ -1,5 +1,6 @@
 package de.metas.procurement.base;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -38,4 +39,6 @@ public interface IPMM_RfQ_DAO extends ISingletonService
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
 	List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(I_C_RfQResponseLine rfqResponseLine);
+
+	I_C_RfQResponseLineQty retrieveResponseLineQty(I_C_RfQResponseLine rfqResponseLine, Date date);
 }

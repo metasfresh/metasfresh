@@ -1,10 +1,12 @@
-package de.metas.procurement.base.impl;
+package de.metas.procurement.base.rfq.model.interceptor;
 
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.Services;
 
-import de.metas.procurement.base.IPMM_RfQ_BL;
-import de.metas.rfq.IRfqBL;
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.event.IRfQEventDispacher;
+import de.metas.rfq.model.I_C_RfQ;
 
 /*
  * #%L
@@ -19,26 +21,22 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class PMM_RfQ_BL implements IPMM_RfQ_BL
+@Interceptor(I_C_RfQ.class)
+public class C_RfQ
 {
-	@Override
-	public boolean isProcurement(I_C_RfQResponse rfqResponse)
+	@Init
+	public void init(final IModelValidationEngine engine)
 	{
-		// TODO FRESH-402: implement 
-		return true;
-	}
-	@Override
-	public boolean isClosed(final I_C_RfQResponse rfqResponse)
-	{
-		return Services.get(IRfqBL.class).isClosed(rfqResponse);
+		Services.get(IRfQEventDispacher.class)
+				.registerListener(new PMM_RfQ_Listener());
 	}
 }
