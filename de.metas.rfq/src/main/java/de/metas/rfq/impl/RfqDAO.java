@@ -7,6 +7,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
@@ -255,6 +256,10 @@ public class RfqDAO implements IRfqDAO
 		final BigDecimal qtyPromised = retrieveResponseQtysQuery(rfqResponseLine)
 				.create()
 				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, IQuery.AGGREGATE_SUM, BigDecimal.class);
-		return qtyPromised == null ? BigDecimal.ZERO : qtyPromised;
+		if(qtyPromised == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return NumberUtils.stripTrailingDecimalZeros(qtyPromised);
 	}
 }
