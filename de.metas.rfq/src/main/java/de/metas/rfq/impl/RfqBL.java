@@ -499,6 +499,8 @@ public class RfqBL implements IRfqBL
 	{
 		final BigDecimal qtyPromised = Services.get(IRfqDAO.class).calculateQtyPromised(rfqResponseLine);
 		rfqResponseLine.setQtyPromised(qtyPromised);
+		
+		InterfaceWrapperHelper.save(rfqResponseLine);
 	}
 
 }
