@@ -91,6 +91,7 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// RfQ
 		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQ(), client);
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQLine(), client);
 		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.PMM_RfQResponse_ChangeEvent(), client);
 	}
 
