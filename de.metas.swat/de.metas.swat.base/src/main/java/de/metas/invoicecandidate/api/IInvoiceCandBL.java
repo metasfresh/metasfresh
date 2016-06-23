@@ -399,7 +399,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Close the given invoice candidate.
-	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate
+	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
+	 * Also close the shipment schedules on which the invoice candidates are based
 	 *
 	 * @param candidate
 	 */
@@ -407,9 +408,24 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Iterate the candidates to close and close them one by one.
-	 * Also close the shipment schedules on which the invoice candidates are based
 	 *
 	 * @param candidatesToClose
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
+
+	/**
+	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
+	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_IsToClear"
+	 * 
+	 * @return the value of the SYS_Config if found, false by default
+	 */
+	boolean isCloseIfIsToClear();
+
+	/**
+	 * Find out if invoice candidates that were partially invoiced are supposed to be closed
+	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_PartiallyInvoiced"
+	 * 
+	 * @return the value of the SYS_Config if found, false by default
+	 */
+	boolean isCloseIfPartiallyInvoiced();
 }

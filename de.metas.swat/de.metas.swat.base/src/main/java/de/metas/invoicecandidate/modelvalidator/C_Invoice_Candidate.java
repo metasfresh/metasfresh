@@ -407,4 +407,25 @@ public class C_Invoice_Candidate
 			candidate.setIsError(true);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsToClear })
+	public void ProcessIfIsToClear(final I_C_Invoice_Candidate candidate)
+	{
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final boolean isToCLear = candidate.isToClear();
+
+		// do nothing if the flag is on false
+		if (!isToCLear)
+		{
+			return;
+		}
+
+		// ndo nothing if the closing is not required
+		if (!invoiceCandBL.isCloseIfIsToClear())
+		{
+			return;
+		}
+
+		candidate.setProcessed_Override("Y");
+	}
 }
