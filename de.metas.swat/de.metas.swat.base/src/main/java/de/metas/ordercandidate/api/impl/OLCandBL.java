@@ -515,7 +515,7 @@ public class OLCandBL implements IOLCandBL
 		// 05617
 		order.setDropShip_BPartner_ID(effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand));
 		order.setDropShip_Location_ID(olCand.getDropShip_Location_ID());
-		final boolean isDropShip = effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand) > 0 && effectiveValuesBL.getDropShip_Location_Effective_ID(olCand) > 0;
+		final boolean isDropShip = effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand) > 0 || effectiveValuesBL.getDropShip_Location_Effective_ID(olCand) > 0;
 		order.setIsDropShip(isDropShip);
 
 		order.setHandOver_Location_ID(effectiveValuesBL.getHandOver_Location_Effective_ID(olCand));
@@ -572,10 +572,10 @@ public class OLCandBL implements IOLCandBL
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			
+
 			final int bpartnerID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 			final boolean soTrx = true;
-			
+
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
 			return pricingSystemId;
 		}
@@ -1233,7 +1233,7 @@ public class OLCandBL implements IOLCandBL
 	public IPricingResult computePriceActual(final I_C_OLCand olCand, final BigDecimal qtyOverride, final int pricingSystemIdOverride, final Timestamp date)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		
+
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setReferencedObject(olCand);
