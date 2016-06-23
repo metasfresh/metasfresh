@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 725538695L;
+	private static final long serialVersionUID = 1246862977L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -367,9 +367,9 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	public void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID)
 	{
 		if (M_HU_PI_Item_Product_Override_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, null);
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, Integer.valueOf(M_HU_PI_Item_Product_Override_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, Integer.valueOf(M_HU_PI_Item_Product_Override_ID));
 	}
 
 	/** Get Packvorschrift-Produkt Zuordnung abw..

@@ -185,7 +185,7 @@ public interface I_PMM_Product
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
@@ -194,7 +194,7 @@ public interface I_PMM_Product
 	 * Get Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_Product_ID();
