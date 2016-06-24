@@ -2,6 +2,7 @@ package de.metas.rfq.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
@@ -34,11 +35,27 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 @Interceptor(I_C_RfQResponseLineQty.class)
 public class C_RfQResponseLineQty
 {
+	public static final ModelDynAttributeAccessor<I_C_RfQResponseLineQty, Boolean> DYNATTR_DisableResponseLineUpdate //
+	= new ModelDynAttributeAccessor<>(I_C_RfQResponseLineQty.class.getName() + "#DisableResponseLineUpdate", Boolean.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE } //
 	, ifColumnsChanged = I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised)
 	public void updateC_RfQResponseLine_QtyPromised(final I_C_RfQResponseLineQty rfqResponseLineQty)
 	{
-		final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
-		Services.get(IRfqBL.class).updateQtyPromisedAndSave(rfqResponseLine);
+		if (isResponseLineUpdate(rfqResponseLineQty))
+		{
+			final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
+			Services.get(IRfqBL.class).updateQtyPromisedAndSave(rfqResponseLine);
+		}
+	}
+	
+	public static void disableResponseLineUpdate(final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		DYNATTR_DisableResponseLineUpdate.setValue(rfqResponseLineQty, Boolean.TRUE);
+	}
+	
+	private static boolean isResponseLineUpdate(final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		return !DYNATTR_DisableResponseLineUpdate.isSet(rfqResponseLineQty);
 	}
 }

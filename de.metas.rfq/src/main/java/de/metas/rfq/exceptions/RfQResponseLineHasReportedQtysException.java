@@ -1,6 +1,6 @@
 package de.metas.rfq.exceptions;
 
-import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponseLine;
 
 /*
  * #%L
@@ -24,12 +24,12 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public class NoCompletedRfQResponsesFoundException extends RfQException
+public class RfQResponseLineHasReportedQtysException extends RfQException
 {
-	private static final long serialVersionUID = 4046793962403056093L;
+	private static final long serialVersionUID = 3033906984241852780L;
 
-	public NoCompletedRfQResponsesFoundException(final I_C_RfQ rfq)
+	public RfQResponseLineHasReportedQtysException(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		super("No completed RfQ Responses found for " + buildInfoString(rfq));
+		super(buildInfoString(rfqResponseLine) + ": has reported quantities");
 	}
 }

@@ -74,15 +74,15 @@ public class C_RfQ_CreatePO extends SvrProcess
 
 		//
 		// Winner for entire RfQ
-		for (final I_C_RfQResponse response : responses)
+		for (final I_C_RfQResponse rfqResponse : responses)
 		{
-			if (!response.isSelectedWinner())
+			if (!rfqResponse.isSelectedWinner())
 			{
 				continue;
 			}
 
 			//
-			final I_C_BPartner bp = response.getC_BPartner();
+			final I_C_BPartner bp = rfqResponse.getC_BPartner();
 			log.info("Winner={}", bp);
 
 			final MOrder order = new MOrder(getCtx(), 0, get_TrxName());
@@ -96,12 +96,12 @@ public class C_RfQ_CreatePO extends SvrProcess
 				order.setC_DocTypeTarget_ID();
 			}
 			order.setBPartner(bp);
-			order.setC_BPartner_Location_ID(response.getC_BPartner_Location_ID());
+			order.setC_BPartner_Location_ID(rfqResponse.getC_BPartner_Location_ID());
 			order.setSalesRep_ID(rfq.getSalesRep_ID());
 
-			if (response.getDateWorkComplete() != null)
+			if (rfqResponse.getDateWorkComplete() != null)
 			{
-				order.setDatePromised(response.getDateWorkComplete());
+				order.setDatePromised(rfqResponse.getDateWorkComplete());
 			}
 			else if (rfq.getDateWorkComplete() != null)
 			{
@@ -110,27 +110,27 @@ public class C_RfQ_CreatePO extends SvrProcess
 
 			order.saveEx();
 			//
-			for (final I_C_RfQResponseLine line : rfqDAO.retrieveResponseLines(response))
+			for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse))
 			{
-				if (!line.isActive())
+				if (!rfqResponseLine.isActive())
 				{
 					continue;
 				}
 
 				// Response Line Qty
-				for (final I_C_RfQResponseLineQty qty : rfqDAO.retrieveResponseQtys(line))
+				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqDAO.retrieveResponseQtys(rfqResponseLine))
 				{
 					// Create PO Lline for all Purchase Line Qtys
-					final I_C_RfQLineQty rfqLineQty = qty.getC_RfQLineQty();
+					final I_C_RfQLineQty rfqLineQty = rfqResponseLineQty.getC_RfQLineQty();
 					if (rfqLineQty.isActive() && rfqLineQty.isPurchaseQty())
 					{
 						final MOrderLine ol = new MOrderLine(order);
-						ol.setM_Product_ID(line.getC_RfQLine().getM_Product_ID(), rfqLineQty.getC_UOM_ID());
-						ol.setDescription(line.getDescription());
+						ol.setM_Product_ID(rfqResponseLine.getM_Product_ID(), rfqLineQty.getC_UOM_ID());
+						ol.setDescription(rfqResponseLine.getDescription());
 
 						ol.setQty(rfqLineQty.getQty());
 
-						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(qty);
+						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(rfqResponseLineQty);
 						ol.setPrice();
 						ol.setPrice(price);
 
@@ -139,8 +139,8 @@ public class C_RfQ_CreatePO extends SvrProcess
 				}
 			}
 
-			response.setC_Order(order);
-			InterfaceWrapperHelper.save(response);
+			rfqResponse.setC_Order(order);
+			InterfaceWrapperHelper.save(rfqResponse);
 
 			return order.getDocumentNo();
 		}

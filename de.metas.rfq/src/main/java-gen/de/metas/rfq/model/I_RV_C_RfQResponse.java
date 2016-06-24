@@ -264,35 +264,6 @@ public interface I_RV_C_RfQResponse
     public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
 
 	/**
-	 * Set Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
-
-	/**
-	 * Get Ausschreibungs-Antwort.
-	 * Request for Quotation Response from a potential Vendor
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQResponse_ID();
-
-	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse();
-
-	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse);
-
-    /** Column definition for C_RfQResponse_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQResponse>(I_RV_C_RfQResponse.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
-    /** Column name C_RfQResponse_ID */
-    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
-
-	/**
 	 * Set Ausschreibungs-Thema.
 	 * Topic for Request for Quotations
 	 *
@@ -320,6 +291,35 @@ public interface I_RV_C_RfQResponse
     public static final org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQ_Topic>(I_RV_C_RfQResponse.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
     /** Column name C_RfQ_Topic_ID */
     public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
+
+	/**
+	 * Set Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQResponse_ID (int C_RfQResponse_ID);
+
+	/**
+	 * Get Ausschreibungs-Antwort.
+	 * Request for Quotation Response from a potential Vendor
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQResponse_ID();
+
+	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse();
+
+	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse);
+
+    /** Column definition for C_RfQResponse_ID */
+    public static final org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQResponse> COLUMN_C_RfQResponse_ID = new org.adempiere.model.ModelColumn<I_RV_C_RfQResponse, de.metas.rfq.model.I_C_RfQResponse>(I_RV_C_RfQResponse.class, "C_RfQResponse_ID", de.metas.rfq.model.I_C_RfQResponse.class);
+    /** Column name C_RfQResponse_ID */
+    public static final String COLUMNNAME_C_RfQResponse_ID = "C_RfQResponse_ID";
 
 	/**
 	 * Set Maßeinheit.

@@ -1,4 +1,4 @@
-package de.metas.procurement.base.rfq.model.interceptor;
+package de.metas.procurement.base.rfq;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
 import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.rfq.event.RfQEventListenerAdapter;
+import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -33,21 +33,23 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-public class PMM_RfQ_Listener extends RfQEventListenerAdapter
+/**
+ * Publishes {@link I_C_RfQResponse} to procurement webui server.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public class PMMWebuiRfQResponsePublisher implements IRfQResponsePublisher
 {
-	@Override
-	public void onDraftCreated(final I_C_RfQResponse rfqResponse)
+	public static final transient PMMWebuiRfQResponsePublisher instance = new PMMWebuiRfQResponsePublisher();
+
+	private PMMWebuiRfQResponsePublisher()
 	{
-		pushToWebui(rfqResponse);
+		super();
 	}
 
 	@Override
-	public void onAfterComplete(final I_C_RfQResponse rfqResponse)
-	{
-		pushToWebui(rfqResponse);
-	}
-
-	private void pushToWebui(final I_C_RfQResponse rfqResponse)
+	public void publish(final I_C_RfQResponse rfqResponse)
 	{
 		if (!Services.get(IPMM_RfQ_BL.class).isProcurement(rfqResponse))
 		{

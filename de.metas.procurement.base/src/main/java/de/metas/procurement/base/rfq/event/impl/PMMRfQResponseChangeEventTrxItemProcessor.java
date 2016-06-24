@@ -15,7 +15,7 @@ import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.exceptions.RfQDocumentClosedException;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
@@ -69,7 +69,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 			}
 			else
 			{
-				throw new RuntimeException("Unknown type: " + type);
+				throw new RuntimeException("@Invalid@ @Type@: " + type);
 			}
 		}
 		catch (final Exception e)
@@ -102,10 +102,9 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
 		Check.assumeNotNull(rfqResponseLine, "rfqResponseLine not null");
 
-		final I_C_RfQResponse rfqResponse = rfqResponseLine.getC_RfQResponse();
-		if (pmmRfqBL.isClosed(rfqResponse))
+		if (pmmRfqBL.isClosed(rfqResponseLine))
 		{
-			throw new RuntimeException("@C_RfQResponse_ID@ " + rfqResponse + " already closed");
+			throw new RfQDocumentClosedException(rfqResponseLine);
 		}
 	}
 

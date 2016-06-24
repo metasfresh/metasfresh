@@ -36,16 +36,14 @@ import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.base.rfq.model.I_C_RfQLine;
+import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.procurement.sync.protocol.SyncUser;
-import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
-import de.metas.rfq.model.I_C_RfQResponseLine;
 
 /*
  * #%L
@@ -60,11 +58,11 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -187,7 +185,7 @@ public class SyncObjectsFactory
 			}
 			syncBPartner.getContracts().add(syncContract);
 		}
-		
+
 		//
 		// Populate RfQs
 		for (final I_C_RfQResponse rfqResponse : getC_RfQResponses_ForBPartnerId(bpartnerId))
@@ -217,7 +215,7 @@ public class SyncObjectsFactory
 		syncBPartner.setSyncContracts(false);
 
 		// not a vendor: no need to look at the contacts. delete the bpartner.
-		if(!bpartner.isVendor())
+		if (!bpartner.isVendor())
 		{
 			syncBPartner.setDeleted(true);
 			return syncBPartner;
@@ -240,7 +238,7 @@ public class SyncObjectsFactory
 		}
 
 		// no users: also delete the BPartner
-		if(syncBPartner.getUsers().isEmpty())
+		if (syncBPartner.getUsers().isEmpty())
 		{
 			syncBPartner.setDeleted(true);
 		}
@@ -410,48 +408,49 @@ public class SyncObjectsFactory
 	{
 		return Services.get(IPMMMessageDAO.class).retrieveMessagesAsString(getCtx());
 	}
-	
+
 	private List<I_C_RfQResponse> getC_RfQResponses_ForBPartnerId(final int bpartnerId)
 	{
 		// TODO: FRESH-402: consider to optimize it like getC_Flatrate_Terms_ForBPartnerId(...)
 		return pmmRfQDAO.retrieveActiveResponses(getCtx(), bpartnerId);
 	}
-	
+
 	public List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)
 	{
 		final List<SyncRfQ> syncRfQs = new ArrayList<>();
-		
+
 		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfQDAO.retrieveResponseLines(rfqResponse))
 		{
-			final SyncRfQ syncRfQ = createSyncRfQHeader(rfqResponseLine);
+			final SyncRfQ syncRfQ = createSyncRfQ(rfqResponseLine);
+			if(syncRfQ == null)
+			{
+				continue;
+			}
+			
 			syncRfQs.add(syncRfQ);
 		}
-		
+
 		return syncRfQs;
 	}
-	
-	private final SyncRfQ createSyncRfQHeader(final I_C_RfQResponseLine rfqResponseLine)
+
+	private final SyncRfQ createSyncRfQ(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		final I_C_RfQResponse rfqResponse = rfqResponseLine.getC_RfQResponse();
-		final I_C_RfQ rfq = rfqResponse.getC_RfQ();
-		
 		final SyncRfQ syncRfQ = new SyncRfQ();
 		syncRfQ.setUuid(SyncUUIDs.toUUIDString(rfqResponseLine));
-		
-		syncRfQ.setDateStart(rfq.getDateWorkStart());
-		syncRfQ.setDateEnd(rfq.getDateWorkComplete());
-		
-		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponse.getC_BPartner()));
-		
-		syncRfQ.setDateClose(rfq.getDateResponse());
-		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponse));
-		syncRfQ.setWinner(rfqResponse.isSelectedWinner());
-		
-		final I_C_RfQLine rfqLine = InterfaceWrapperHelper.create(rfqResponseLine.getC_RfQLine(), I_C_RfQLine.class);
-		final I_PMM_Product pmmProduct = rfqLine.getPMM_Product();
+
+		syncRfQ.setDateStart(rfqResponseLine.getDateWorkStart());
+		syncRfQ.setDateEnd(rfqResponseLine.getDateWorkComplete());
+
+		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_BPartner()));
+
+		syncRfQ.setDateClose(rfqResponseLine.getDateResponse());
+		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponseLine));
+		syncRfQ.setWinner(rfqResponseLine.isSelectedWinner());
+
+		final I_PMM_Product pmmProduct = rfqResponseLine.getPMM_Product();
 		syncRfQ.setProduct_uuid(SyncUUIDs.toUUIDString(pmmProduct));
 
-		syncRfQ.setQtyRequested(rfqLine.getQty());
+		syncRfQ.setQtyRequested(rfqResponseLine.getQtyRequiered());
 
 		return syncRfQ;
 	}

@@ -1,6 +1,5 @@
 package de.metas.rfq.exceptions;
 
-import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 
 /*
@@ -37,9 +36,7 @@ public class RfQLineInvalidException extends RfQException
 	private static String buildMsg(final I_C_RfQLine rfqLine, final String message)
 	{
 		return new StringBuilder()
-				.append("@" + I_C_RfQ.COLUMNNAME_C_RfQ_ID + "@")
-				.append(" '").append(rfqLine.getC_RfQ().getDocumentNo() + "'")
-				.append(", @Line@ ").append(rfqLine.getLine())
+				.append(buildInfoString(rfqLine))
 				.append(": ").append(message)
 				.toString();
 	}

@@ -70,10 +70,10 @@ public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrec
 		final IRfQResponseProducer producer = rfqConfiguration.newRfQResponsesProducerFor(rfq);
 		final List<I_C_RfQResponse> rfqResponses = producer
 				.setC_RfQ(rfq)
-				.setSendToVendor(p_IsSendRfQ)
+				.setPublish(p_IsSendRfQ)
 				.create();
 
 		return "@Created@ " + rfqResponses.size()
-				+ ", @IsSendRfQ@=" + producer.getCountSentToVendor();
+				+ ", @IsSendRfQ@=" + producer.getCountPublished();
 	}
 }

@@ -98,6 +98,31 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
+
+	/**
+	 * Get Ausschreibungs-Thema.
+	 * Topic for Request for Quotations
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_Topic_ID();
+
+    /** Column definition for C_RfQ_Topic_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object>(I_C_RfQ_Topic.class, "C_RfQ_Topic_ID", null);
+    /** Column name C_RfQ_Topic_ID */
+    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -126,31 +151,6 @@ public interface I_C_RfQ_Topic
     public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_User>(I_C_RfQ_Topic.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RfQ_Topic_ID (int C_RfQ_Topic_ID);
-
-	/**
-	 * Get Ausschreibungs-Thema.
-	 * Topic for Request for Quotations
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RfQ_Topic_ID();
-
-    /** Column definition for C_RfQ_Topic_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object>(I_C_RfQ_Topic.class, "C_RfQ_Topic_ID", null);
-    /** Column name C_RfQ_Topic_ID */
-    public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
 
 	/**
 	 * Set Beschreibung.

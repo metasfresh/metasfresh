@@ -1,6 +1,6 @@
-package de.metas.rfq.exceptions;
+package de.metas.rfq;
 
-import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
@@ -24,12 +24,15 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public class NoCompletedRfQResponsesFoundException extends RfQException
+/**
+ * Implementations of this interface are responsible for publishing draft {@link I_C_RfQResponse}s to various media (e.g. mail, some REST API etc).
+ * 
+ * To register your custom implementation, please use {@link IRfQConfiguration#addRfQResponsePublisher(IRfQResponsePublisher)}.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface IRfQResponsePublisher
 {
-	private static final long serialVersionUID = 4046793962403056093L;
-
-	public NoCompletedRfQResponsesFoundException(final I_C_RfQ rfq)
-	{
-		super("No completed RfQ Responses found for " + buildInfoString(rfq));
-	}
+	void publish(I_C_RfQResponse response);
 }

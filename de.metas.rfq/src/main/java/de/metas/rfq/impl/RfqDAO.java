@@ -162,7 +162,13 @@ public class RfqDAO implements IRfqDAO
 	@Override
 	public List<I_C_RfQResponseLine> retrieveResponseLines(final I_C_RfQResponse rfqResponse)
 	{
-		final List<I_C_RfQResponseLine> lines = Services.get(IQueryBL.class)
+		return retrieveResponseLines(rfqResponse, I_C_RfQResponseLine.class);
+	}
+	
+	@Override
+	public <T extends I_C_RfQResponseLine> List<T> retrieveResponseLines(final I_C_RfQResponse rfqResponse, Class<T> returnType)
+	{
+		final List<T> lines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLine.class, rfqResponse)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID, rfqResponse.getC_RfQResponse_ID())
@@ -170,7 +176,7 @@ public class RfqDAO implements IRfqDAO
 				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
 				.endOrderBy()
 				.create()
-				.list(I_C_RfQResponseLine.class);
+				.list(returnType);
 
 		// optimization
 		for (final I_C_RfQResponseLine line : lines)
@@ -217,6 +223,14 @@ public class RfqDAO implements IRfqDAO
 		}
 
 		return rfqResponseLineQtys;
+	}
+	
+	@Override
+	public boolean hasResponseQtys(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		return retrieveResponseQtysQuery(rfqResponseLine)
+				.create()
+				.match();
 	}
 
 	@Override

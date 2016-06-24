@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1275201933L;
+	private static final long serialVersionUID = -1246895596L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -45,6 +45,8 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 			setProcessed (false);
 			setQuoteType (null);
 // S
+			setRfQType (null);
+// D
 			setSalesRep_ID (0);
         } */
     }
@@ -719,6 +721,32 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public java.lang.String getQuoteType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_QuoteType);
+	}
+
+	/** 
+	 * RfQType AD_Reference_ID=540661
+	 * Reference name: RfQType
+	 */
+	public static final int RFQTYPE_AD_Reference_ID=540661;
+	/** Default = D */
+	public static final String RFQTYPE_Default = "D";
+	/** Procurement = P */
+	public static final String RFQTYPE_Procurement = "P";
+	/** Set Ausschreibung Art.
+		@param RfQType Ausschreibung Art	  */
+	@Override
+	public void setRfQType (java.lang.String RfQType)
+	{
+
+		set_Value (COLUMNNAME_RfQType, RfQType);
+	}
+
+	/** Get Ausschreibung Art.
+		@return Ausschreibung Art	  */
+	@Override
+	public java.lang.String getRfQType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RfQType);
 	}
 
 	@Override

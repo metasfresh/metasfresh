@@ -2,6 +2,12 @@ package de.metas.rfq.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQLine;
+import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.model.I_C_RfQResponseLine;
+import de.metas.rfq.model.I_C_RfQResponseLineQty;
+
 /*
  * #%L
  * de.metas.rfq
@@ -12,12 +18,12 @@ import org.adempiere.exceptions.AdempiereException;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Base exception class for RfQ module
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -34,14 +40,82 @@ public class RfQException extends AdempiereException
 {
 	private static final long serialVersionUID = -8279948147175847410L;
 
-	public RfQException(String message, Throwable cause)
+	public RfQException(final String message, final Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	public RfQException(String message)
+	public RfQException(final String message)
 	{
 		super(message);
 	}
 
+	protected static String buildInfoString(final I_C_RfQ rfq)
+	{
+		final String documentNo = rfq == null ? "?" : rfq.getDocumentNo();
+		return new StringBuilder()
+				.append("@" + I_C_RfQ.COLUMNNAME_C_RfQ_ID + "@")
+				.append(" '").append(documentNo).append("'")
+				.toString();
+
+	}
+
+	protected static String buildInfoString(final I_C_RfQLine rfqLine)
+	{
+		if (rfqLine == null)
+		{
+			return "?";
+		}
+
+		final I_C_RfQ rfq = rfqLine.getC_RfQ();
+		return new StringBuilder()
+				.append(buildInfoString(rfq))
+				.append(", @Line@ ").append(rfqLine.getLine())
+				.toString();
+
+	}
+
+	protected static String buildInfoString(final I_C_RfQResponse rfqResponse)
+	{
+		final String rfqResponseStr;
+		if (rfqResponse != null)
+		{
+			rfqResponseStr = rfqResponse.getName();
+		}
+		else
+		{
+			rfqResponseStr = "?";
+		}
+
+		return new StringBuilder()
+				.append("@" + I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID + "@")
+				.append(" '").append(rfqResponseStr).append("'")
+				.toString();
+	}
+
+	protected static String buildInfoString(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		if (rfqResponseLine == null)
+		{
+			return "?";
+		}
+
+		return new StringBuilder()
+				.append(buildInfoString(rfqResponseLine.getC_RfQResponse()))
+				.append(", @Line@ ").append(rfqResponseLine.getLine())
+				.toString();
+	}
+
+	protected static String buildInfoString(final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		if (rfqResponseLineQty == null)
+		{
+			return "?";
+		}
+
+		return new StringBuilder()
+				.append(buildInfoString(rfqResponseLineQty.getC_RfQResponseLine()))
+				.append(", @Qty@=").append(rfqResponseLineQty.getQtyPromised())
+				.toString();
+	}
 }

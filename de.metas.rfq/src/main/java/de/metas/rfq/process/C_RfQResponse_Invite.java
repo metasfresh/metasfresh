@@ -3,6 +3,7 @@ package de.metas.rfq.process;
 import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
 
+import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -38,6 +39,7 @@ public class C_RfQResponse_Invite extends SvrProcess
 {
 	// services
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
+	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 
 	@Override
 	protected String doIt()
@@ -46,11 +48,9 @@ public class C_RfQResponse_Invite extends SvrProcess
 		rfqBL.assertDraft(rfqResponse);
 
 		// Send it
-		if (rfqBL.sendRfQResponseToVendor(rfqResponse))
-		{
-			return MSG_OK;
-		}
-
-		return MSG_Error;
+		rfqConfiguration
+				.getRfQResponsePublisher()
+				.publish(rfqResponse);
+		return MSG_OK;
 	}
 }

@@ -69,34 +69,91 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Date this record was created
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Erstellt durch.
-	 * User who created this records
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	public int getC_BPartner_ID();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User>(I_C_RfQResponseLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_BPartner>(I_C_RfQResponseLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_Currency>(I_C_RfQResponseLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Ausschreibung.
+	 * Anfrage für ein Angebot
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RfQ_ID (int C_RfQ_ID);
+
+	/**
+	 * Get Ausschreibung.
+	 * Anfrage für ein Angebot
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RfQ_ID();
+
+	public de.metas.rfq.model.I_C_RfQ getC_RfQ();
+
+	public void setC_RfQ(de.metas.rfq.model.I_C_RfQ C_RfQ);
+
+    /** Column definition for C_RfQ_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, de.metas.rfq.model.I_C_RfQ> COLUMN_C_RfQ_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, de.metas.rfq.model.I_C_RfQ>(I_C_RfQResponseLine.class, "C_RfQ_ID", de.metas.rfq.model.I_C_RfQ.class);
+    /** Column name C_RfQ_ID */
+    public static final String COLUMNNAME_C_RfQ_ID = "C_RfQ_ID";
 
 	/**
 	 * Set RfQ Line.
@@ -180,6 +237,90 @@ public interface I_C_RfQResponseLine
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_C_RfQResponseLine_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "C_RfQResponseLine_ID", null);
     /** Column name C_RfQResponseLine_ID */
     public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_C_UOM>(I_C_RfQResponseLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_AD_User>(I_C_RfQResponseLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Antwort-datum.
+	 * Datum der Antwort
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateResponse (java.sql.Timestamp DateResponse);
+
+	/**
+	 * Get Antwort-datum.
+	 * Datum der Antwort
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateResponse();
+
+    /** Column definition for DateResponse */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_DateResponse = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "DateResponse", null);
+    /** Column name DateResponse */
+    public static final String COLUMNNAME_DateResponse = "DateResponse";
 
 	/**
 	 * Set Arbeit fertiggestellt.
@@ -330,6 +471,31 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Geschlossen.
+	 * The status is closed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isClosed();
+
+    /** Column definition for IsClosed */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "IsClosed", null);
+    /** Column name IsClosed */
+    public static final String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
 	 * Set Selected Winner.
 	 * The resonse is the selected winner
 	 *
@@ -380,6 +546,60 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
+	 * Set Zeile Nr..
+	 * Einzelne Zeile in dem Dokument
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLine (int Line);
+
+	/**
+	 * Get Zeile Nr..
+	 * Einzelne Zeile in dem Dokument
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLine();
+
+    /** Column definition for Line */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "Line", null);
+    /** Column name Line */
+    public static final String COLUMNNAME_Line = "Line";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, org.compiere.model.I_M_Product>(I_C_RfQResponseLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
 	 * Set Preis.
 	 * Preis
 	 *
@@ -405,6 +625,31 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_Price = "Price";
 
 	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
+
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
+
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Zusagbar.
 	 *
 	 * <br>Type: Quantity
@@ -426,6 +671,29 @@ public interface I_C_RfQResponseLine
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_QtyPromised = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "QtyPromised", null);
     /** Column name QtyPromised */
     public static final String COLUMNNAME_QtyPromised = "QtyPromised";
+
+	/**
+	 * Set Qty Requiered.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
+
+	/**
+	 * Get Qty Requiered.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyRequiered();
+
+    /** Column definition for QtyRequiered */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_QtyRequiered = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "QtyRequiered", null);
+    /** Column name QtyRequiered */
+    public static final String COLUMNNAME_QtyRequiered = "QtyRequiered";
 
 	/**
 	 * Get Aktualisiert.

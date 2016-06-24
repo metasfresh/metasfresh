@@ -1,32 +1,22 @@
 package de.metas.rfq.impl;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.Properties;
+import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.MClient;
-import org.compiere.print.ReportEngine;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-
-import de.metas.logging.LogManager;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.exceptions.NoRfQLinesFoundException;
+import de.metas.rfq.exceptions.RfQDocumentClosedException;
 import de.metas.rfq.exceptions.RfQDocumentNotCompleteException;
 import de.metas.rfq.exceptions.RfQDocumentNotDraftException;
 import de.metas.rfq.exceptions.RfQLineInvalidException;
@@ -64,7 +54,7 @@ import de.metas.rfq.model.X_C_RfQ;
 
 public class RfqBL implements IRfqBL
 {
-	private static final Logger logger = LogManager.getLogger(RfqBL.class);
+	// private static final Logger logger = LogManager.getLogger(RfqBL.class);
 
 	private boolean isQuoteAllLines(final I_C_RfQ rfq)
 	{
@@ -83,10 +73,23 @@ public class RfqBL implements IRfqBL
 		return X_C_RfQ.QUOTETYPE_QuoteTotalOnly.equals(rfq.getQuoteType());
 	}	// isQuoteTotalAmtOnly
 
-	@Override
-	public boolean isValidAmt(final I_C_RfQResponseLineQty responseQty)
+	public boolean isAnyValidAmt(final List<I_C_RfQResponseLineQty> rfqResponseLineQtys)
 	{
-		final BigDecimal priceWithoutDiscount = calculatePriceWithoutDiscount(responseQty);
+		for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqResponseLineQtys)
+		{
+			if (isValidAmt(rfqResponseLineQty))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isValidAmt(final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		final BigDecimal priceWithoutDiscount = calculatePriceWithoutDiscount(rfqResponseLineQty);
 		if (priceWithoutDiscount == null || priceWithoutDiscount.signum() <= 0)
 		{
 			return false;
@@ -170,58 +173,44 @@ public class RfqBL implements IRfqBL
 			}
 		}
 
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-
 		//
-		// If all lines and qtys shall be quoted, make sure this is respected
-		if (isQuoteAllLines(rfq))
+		// Validate response lines
+		final boolean isQuoteAllLines = isQuoteAllLines(rfq);
+		final boolean isQuoteAllQty = rfq.isQuoteAllQty();
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
+		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
 		{
-			for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse))
+			final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = rfqDAO.retrieveResponseQtys(rfqResponseLine);
+
+			//
+			// If all lines and qtys shall be quoted, make sure this is respected
+			if (isQuoteAllLines)
 			{
 				if (!rfqResponseLine.isActive())
 				{
 					throw new RfQResponseLineInvalidException(rfqResponseLine, "@IsActive@=@N@");
 				}
-
-				boolean validAmt = false;
-				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqDAO.retrieveResponseQtys(rfqResponseLine))
-				{
-					if (!rfqResponseLineQty.isActive())
-					{
-						continue;
-					}
-
-					final BigDecimal amt = calculatePriceWithoutDiscount(rfqResponseLineQty);
-					if (amt != null && amt.signum() > 0)
-					{
-						validAmt = true;
-						break;
-					}
-				}
-				if (!validAmt)
+				if (!isAnyValidAmt(rfqResponseLineQtys))
 				{
 					throw new RfQResponseLineInvalidException(rfqResponseLine, "No amount or amount is not valid");
 				}
 			}
-		}
 
-		//
-		// Do we have an amount for all line qtys
-		if (rfq.isQuoteAllQty())
-		{
-			for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse))
+			//
+			// Do we have an amount for all line qtys
+			if (isQuoteAllQty)
 			{
-				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqDAO.retrieveResponseQtys(rfqResponseLine))
+				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqResponseLineQtys)
 				{
 					if (!rfqResponseLineQty.isActive())
 					{
 						throw new RfQResponseLineQtyInvalidException(rfqResponseLineQty, "@IsActive@=@N@");
 					}
 
-					final BigDecimal amt = calculatePriceWithoutDiscount(rfqResponseLineQty);
-					if (amt == null || amt.signum() <= 0)
+					if (!isValidAmt(rfqResponseLineQty))
 					{
-						throw new RfQResponseLineQtyInvalidException(rfqResponseLineQty, "@Amount@ <= 0");
+						throw new RfQResponseLineQtyInvalidException(rfqResponseLineQty, "@Invalid@ @Amount@");
 					}
 				}
 			}
@@ -234,65 +223,19 @@ public class RfqBL implements IRfqBL
 		InterfaceWrapperHelper.save(rfqResponse);
 
 		//
+		// Mark lines as complete
+		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
+		{
+			rfqResponseLine.setProcessed(true);
+			InterfaceWrapperHelper.save(rfqResponseLine);
+		}
+
+		//
 		// Fire event: after complete
 		rfqEventDispacher.fireAfterComplete(rfqResponse);
 
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfqResponse);
-	}
-
-	@Override
-	public boolean sendRfQResponseToVendor(final I_C_RfQResponse response)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(response);
-		final I_AD_User userTo = response.getAD_User();
-		if (userTo == null)
-		{
-			logger.error("Skip sending RfQ response mail because there is no user for {}", response);
-			return false;
-		}
-		final String userEmail = userTo.getEMail();
-		if (Check.isEmpty(userEmail, true))
-		{
-			logger.error("Skip sending RfQ response mail because user {} has no email: {}", response);
-			return false;
-		}
-
-		//
-		final String subject = "RfQ: " + response.getName();
-
-		//
-		String message = Joiner.on("\n")
-				.skipNulls()
-				.join(response.getDescription(), response.getHelp());
-		if (message == null)
-		{
-			message = response.getName();
-		}
-
-		//
-		// Send it
-		final MClient client = MClient.get(ctx);
-		final EMail email = client.createEMail(userEmail, subject, message);
-		email.addAttachment(createPDF(response));
-		if (EMail.SENT_OK.equals(email.send()))
-		{
-			response.setDateInvited(new Timestamp(System.currentTimeMillis()));
-			InterfaceWrapperHelper.save(response);
-			return true;
-		}
-		return false;
-	}
-
-	private File createPDF(final I_C_RfQResponse response)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(response);
-		final ReportEngine re = ReportEngine.get(ctx, ReportEngine.RFQ, response.getC_RfQResponse_ID());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF();
 	}
 
 	private final IRfQEventDispacher getRfQEventDispacher()
@@ -360,7 +303,7 @@ public class RfqBL implements IRfqBL
 		// Generate RfQ Responses
 		Services.get(IRfQConfiguration.class).newRfQResponsesProducerFor(rfq)
 				.setC_RfQ(rfq)
-				.setSendToVendor(true)
+				.setPublish(false) // do not publish them by default
 				.create();
 
 		//
@@ -369,6 +312,56 @@ public class RfqBL implements IRfqBL
 
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfq);
+	}
+
+	@Override
+	public void reActivate(final I_C_RfQ rfq)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
+				reActivateInTrx(rfq);
+			}
+		});
+	}
+
+	private void reActivateInTrx(final I_C_RfQ rfq)
+	{
+		assertComplete(rfq);
+
+		// services
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+
+		//
+		// Void and delete all responses
+		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
+		{
+			voidAndDelete(rfqResponse);
+		}
+
+		//
+		// Mark as not processed
+		rfq.setProcessed(false);
+		rfq.setIsClosed(false);
+		InterfaceWrapperHelper.save(rfq);
+	}
+
+	private void voidAndDelete(final I_C_RfQResponse rfqResponse)
+	{
+		// Prevent deleting/voiding an already closed RfQ response
+		if (isClosed(rfqResponse))
+		{
+			throw new RfQDocumentClosedException(getSummary(rfqResponse));
+		}
+		
+		// TODO: FRESH-402 shall we throw exception if the rfqResponse was published?
+
+		rfqResponse.setProcessed(false);
+		InterfaceWrapperHelper.delete(rfqResponse);
 	}
 
 	@Override
@@ -457,6 +450,17 @@ public class RfqBL implements IRfqBL
 		rfqResponse.setProcessed(true);
 		rfqResponse.setIsClosed(true);
 		InterfaceWrapperHelper.save(rfqResponse);
+
+		//
+		// Close lines
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
+		for (final I_C_RfQResponseLine rfqReponseLine : rfqResponseLines)
+		{
+			rfqReponseLine.setProcessed(true);
+			rfqReponseLine.setIsClosed(true);
+			InterfaceWrapperHelper.save(rfqReponseLine);
+		}
 	}
 
 	@Override
@@ -484,6 +488,12 @@ public class RfqBL implements IRfqBL
 		return rfqResponse.isClosed();
 	}
 
+	@Override
+	public boolean isClosed(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		return rfqResponseLine.isClosed();
+	}
+
 	private String getSummary(final I_C_RfQ rfq)
 	{
 		return "@C_RfQ_ID@ #" + rfq.getDocumentNo();
@@ -499,7 +509,7 @@ public class RfqBL implements IRfqBL
 	{
 		final BigDecimal qtyPromised = Services.get(IRfqDAO.class).calculateQtyPromised(rfqResponseLine);
 		rfqResponseLine.setQtyPromised(qtyPromised);
-		
+
 		InterfaceWrapperHelper.save(rfqResponseLine);
 	}
 

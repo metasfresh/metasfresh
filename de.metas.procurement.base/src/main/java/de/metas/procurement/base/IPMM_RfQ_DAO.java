@@ -6,8 +6,8 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponse;
-import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
@@ -38,7 +38,7 @@ public interface IPMM_RfQ_DAO extends ISingletonService
 
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
-	List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(I_C_RfQResponseLine rfqResponseLine);
+	List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine);
 
-	I_C_RfQResponseLineQty retrieveResponseLineQty(I_C_RfQResponseLine rfqResponseLine, Date date);
+	I_C_RfQResponseLineQty retrieveResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine, Date date);
 }

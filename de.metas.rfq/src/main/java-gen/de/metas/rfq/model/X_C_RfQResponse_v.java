@@ -14,7 +14,7 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -963283409L;
+	private static final long serialVersionUID = 332033577L;
 
     /** Standard Constructor */
     public X_C_RfQResponse_v (Properties ctx, int C_RfQResponse_v_ID, String trxName)
@@ -295,25 +295,6 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		return ii.intValue();
 	}
 
-	/** Set Kontakt-Name.
-		@param ContactName 
-		Business Partner Contact Name
-	  */
-	@Override
-	public void setContactName (java.lang.String ContactName)
-	{
-		set_ValueNoCheck (COLUMNNAME_ContactName, ContactName);
-	}
-
-	/** Get Kontakt-Name.
-		@return Business Partner Contact Name
-	  */
-	@Override
-	public java.lang.String getContactName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ContactName);
-	}
-
 	@Override
 	public de.metas.rfq.model.I_C_RfQ getC_RfQ() throws RuntimeException
 	{
@@ -374,6 +355,25 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Kontakt-Name.
+		@param ContactName 
+		Business Partner Contact Name
+	  */
+	@Override
+	public void setContactName (java.lang.String ContactName)
+	{
+		set_ValueNoCheck (COLUMNNAME_ContactName, ContactName);
+	}
+
+	/** Get Kontakt-Name.
+		@return Business Partner Contact Name
+	  */
+	@Override
+	public java.lang.String getContactName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContactName);
 	}
 
 	/** Set Antwort-datum.

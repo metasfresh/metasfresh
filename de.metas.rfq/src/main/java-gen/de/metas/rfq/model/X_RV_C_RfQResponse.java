@@ -16,7 +16,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1361163754L;
+	private static final long serialVersionUID = 1463987480L;
 
     /** Standard Constructor */
     public X_RV_C_RfQResponse (Properties ctx, int RV_C_RfQResponse_ID, String trxName)
@@ -29,8 +29,8 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 			setC_BPartner_Location_ID (0);
 			setC_Currency_ID (0);
 			setC_RfQ_ID (0);
-			setC_RfQResponse_ID (0);
 			setC_RfQ_Topic_ID (0);
+			setC_RfQResponse_ID (0);
 			setC_UOM_ID (0);
 			setIsSelfService (false);
 			setLine (0);
@@ -285,43 +285,6 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	}
 
 	@Override
-	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_RfQResponse_ID, de.metas.rfq.model.I_C_RfQResponse.class);
-	}
-
-	@Override
-	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse)
-	{
-		set_ValueFromPO(COLUMNNAME_C_RfQResponse_ID, de.metas.rfq.model.I_C_RfQResponse.class, C_RfQResponse);
-	}
-
-	/** Set Ausschreibungs-Antwort.
-		@param C_RfQResponse_ID 
-		Request for Quotation Response from a potential Vendor
-	  */
-	@Override
-	public void setC_RfQResponse_ID (int C_RfQResponse_ID)
-	{
-		if (C_RfQResponse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_RfQResponse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_RfQResponse_ID, Integer.valueOf(C_RfQResponse_ID));
-	}
-
-	/** Get Ausschreibungs-Antwort.
-		@return Request for Quotation Response from a potential Vendor
-	  */
-	@Override
-	public int getC_RfQResponse_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public de.metas.rfq.model.I_C_RfQ_Topic getC_RfQ_Topic() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_RfQ_Topic_ID, de.metas.rfq.model.I_C_RfQ_Topic.class);
@@ -353,6 +316,43 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	public int getC_RfQ_Topic_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQ_Topic_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.rfq.model.I_C_RfQResponse getC_RfQResponse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_RfQResponse_ID, de.metas.rfq.model.I_C_RfQResponse.class);
+	}
+
+	@Override
+	public void setC_RfQResponse(de.metas.rfq.model.I_C_RfQResponse C_RfQResponse)
+	{
+		set_ValueFromPO(COLUMNNAME_C_RfQResponse_ID, de.metas.rfq.model.I_C_RfQResponse.class, C_RfQResponse);
+	}
+
+	/** Set Ausschreibungs-Antwort.
+		@param C_RfQResponse_ID 
+		Request for Quotation Response from a potential Vendor
+	  */
+	@Override
+	public void setC_RfQResponse_ID (int C_RfQResponse_ID)
+	{
+		if (C_RfQResponse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_RfQResponse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_RfQResponse_ID, Integer.valueOf(C_RfQResponse_ID));
+	}
+
+	/** Get Ausschreibungs-Antwort.
+		@return Request for Quotation Response from a potential Vendor
+	  */
+	@Override
+	public int getC_RfQResponse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponse_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

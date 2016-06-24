@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.exceptions.RfQResponseLineHasReportedQtysException;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.util.IRfQWorkDatesAware;
@@ -25,11 +26,11 @@ import de.metas.rfq.util.RfQWorkDatesUtil;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,7 +55,8 @@ public class C_RfQResponseLine
 	{
 		if (!responseLine.isActive())
 		{
-			for (final I_C_RfQResponseLineQty qty : Services.get(IRfqDAO.class).retrieveResponseQtys(responseLine))
+			final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+			for (final I_C_RfQResponseLineQty qty : rfqDAO.retrieveResponseQtys(responseLine))
 			{
 				if (qty.isActive())
 				{
@@ -64,4 +66,15 @@ public class C_RfQResponseLine
 			}
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void preventDeleteIfThereAreReportedQuantities(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		if (rfqDAO.hasResponseQtys(rfqResponseLine))
+		{
+			throw new RfQResponseLineHasReportedQtysException(rfqResponseLine);
+		}
+	}
+
 }

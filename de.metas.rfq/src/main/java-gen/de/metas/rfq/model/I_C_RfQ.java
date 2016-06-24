@@ -214,36 +214,6 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_AD_User>(I_C_RfQ.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Ausschreibung.
 	 * Request for Quotation
 	 *
@@ -296,6 +266,36 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic> COLUMN_C_RfQ_Topic_ID = new org.adempiere.model.ModelColumn<I_C_RfQ, de.metas.rfq.model.I_C_RfQ_Topic>(I_C_RfQ.class, "C_RfQ_Topic_ID", de.metas.rfq.model.I_C_RfQ_Topic.class);
     /** Column name C_RfQ_Topic_ID */
     public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RfQ, org.compiere.model.I_AD_User>(I_C_RfQ.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Antwort-datum.
@@ -767,6 +767,29 @@ public interface I_C_RfQ
     public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_QuoteType = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "QuoteType", null);
     /** Column name QuoteType */
     public static final String COLUMNNAME_QuoteType = "QuoteType";
+
+	/**
+	 * Set Ausschreibung Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQType (java.lang.String RfQType);
+
+	/**
+	 * Get Ausschreibung Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRfQType();
+
+    /** Column definition for RfQType */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_RfQType = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "RfQType", null);
+    /** Column name RfQType */
+    public static final String COLUMNNAME_RfQType = "RfQType";
 
 	/**
 	 * Set Vertriebsbeauftragter.

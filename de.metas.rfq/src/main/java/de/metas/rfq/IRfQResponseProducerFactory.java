@@ -1,4 +1,4 @@
-package de.metas.rfq.exceptions;
+package de.metas.rfq;
 
 import de.metas.rfq.model.I_C_RfQ;
 
@@ -24,12 +24,24 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
-public class NoCompletedRfQResponsesFoundException extends RfQException
+/**
+ * {@link IRfQResponseProducer} factory.
+ * Implementations of this interface will create particular {@link IRfQResponseProducer}s for a given {@link I_C_RfQ}.
+ * 
+ * To register your implementation, please use {@link IRfQConfiguration#addRfQResponsesProducerFactory(IRfQResponseProducerFactory)}.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface IRfQResponseProducerFactory
 {
-	private static final long serialVersionUID = 4046793962403056093L;
-
-	public NoCompletedRfQResponsesFoundException(final I_C_RfQ rfq)
-	{
-		super("No completed RfQ Responses found for " + buildInfoString(rfq));
-	}
+	/**
+	 * @param rfq
+	 * @return
+	 * 		<ul>
+	 *         <li>actual producer instance
+	 *         <li><code>null</code> if the producer does not support given RfQ
+	 *         </ul>
+	 */
+	IRfQResponseProducer newRfQResponsesProducerFor(final I_C_RfQ rfq);
 }

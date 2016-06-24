@@ -4,6 +4,7 @@ import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.rfq.IRfqBL;
+import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -30,14 +31,24 @@ import de.metas.rfq.model.I_C_RfQResponse;
 
 public class PMM_RfQ_BL implements IPMM_RfQ_BL
 {
+	private static final String RFQTYPE_Procurement = "P";
+	
+	@Override
+	public boolean isProcurement(I_C_RfQ rfq)
+	{
+		final String rfqType = rfq.getRfQType();
+		return RFQTYPE_Procurement.equals(rfqType);
+	}
+	
 	@Override
 	public boolean isProcurement(I_C_RfQResponse rfqResponse)
 	{
 		// TODO FRESH-402: implement 
 		return true;
 	}
+	
 	@Override
-	public boolean isClosed(final I_C_RfQResponse rfqResponse)
+	public boolean isClosed(final de.metas.rfq.model.I_C_RfQResponseLine rfqResponse)
 	{
 		return Services.get(IRfqBL.class).isClosed(rfqResponse);
 	}

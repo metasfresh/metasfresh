@@ -1,16 +1,10 @@
-package de.metas.procurement.base.rfq.model.interceptor;
+package de.metas.rfq.exceptions;
 
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
-
-import de.metas.rfq.event.IRfQEventDispacher;
-import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQResponseLine;
 
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -18,25 +12,31 @@ import de.metas.rfq.model.I_C_RfQ;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Interceptor(I_C_RfQ.class)
-public class C_RfQ
+public class RfQDocumentClosedException extends RfQException
 {
-	@Init
-	public void init(final IModelValidationEngine engine)
+	private static final long serialVersionUID = 5180293816353339678L;
+
+	private static final String MSG = "RfQDocumentClosedException";
+
+	public RfQDocumentClosedException(final String documentInfo)
 	{
-		Services.get(IRfQEventDispacher.class)
-				.registerListener(new PMM_RfQ_Listener());
+		super("@" + MSG + "@: " + documentInfo);
+	}
+
+	public RfQDocumentClosedException(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		this(buildInfoString(rfqResponseLine));
 	}
 }

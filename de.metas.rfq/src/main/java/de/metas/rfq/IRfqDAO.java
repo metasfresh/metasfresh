@@ -51,11 +51,16 @@ public interface IRfqDAO extends ISingletonService
 
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
+	<T extends I_C_RfQResponseLine> List<T> retrieveResponseLines(I_C_RfQResponse rfqResponse, Class<T> returnType);
+
 	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQLineQty rfqLineQty);
 
 	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQResponseLine rfqResponseLine);
 
+	boolean hasResponseQtys(I_C_RfQResponseLine rfqResponseLine);
+
 	BigDecimal calculateQtyPromised(I_C_RfQResponseLine rfqResponseLine);
 
 	I_C_RfQResponseLineQty retrieveResponseQty(I_C_RfQResponseLine rfqResponseLine, Date date);
+
 }

@@ -36,10 +36,8 @@ public class RfQResponseInvalidException extends RfQException
 	private static String buildMsg(final I_C_RfQResponse rfqResponse, final String message)
 	{
 		return new StringBuilder()
-				.append("@" + I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID + "@")
-				.append(" '").append(rfqResponse.getName() + "'")
+				.append(buildInfoString(rfqResponse))
 				.append(": ").append(message)
 				.toString();
 	}
-
 }

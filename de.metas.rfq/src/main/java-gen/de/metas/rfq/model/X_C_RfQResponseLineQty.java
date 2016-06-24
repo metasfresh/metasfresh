@@ -16,7 +16,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1749761296L;
+	private static final long serialVersionUID = 497842527L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLineQty (Properties ctx, int C_RfQResponseLineQty_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
       /** if (C_RfQResponseLineQty_ID == 0)
         {
 			setC_RfQLine_ID (0);
+// @C_RfQLine_ID@
 			setC_RfQResponseLine_ID (0);
 			setC_RfQResponseLineQty_ID (0);
 			setPrice (Env.ZERO);

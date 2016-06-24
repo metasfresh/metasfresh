@@ -16,7 +16,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -409836474L;
+	private static final long serialVersionUID = 297522526L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine (Properties ctx, int C_RfQResponseLine_ID, String trxName)
@@ -27,10 +27,14 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 			setC_RfQLine_ID (0);
 			setC_RfQResponse_ID (0);
 			setC_RfQResponseLine_ID (0);
+			setIsClosed (false);
+// N
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
 			setPrice (Env.ZERO);
 // 0
+			setProcessed (false);
+// N
 			setQtyPromised (Env.ZERO);
 // 0
 			setUseLineQty (false);
@@ -52,6 +56,117 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.rfq.model.I_C_RfQ getC_RfQ() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_RfQ_ID, de.metas.rfq.model.I_C_RfQ.class);
+	}
+
+	@Override
+	public void setC_RfQ(de.metas.rfq.model.I_C_RfQ C_RfQ)
+	{
+		set_ValueFromPO(COLUMNNAME_C_RfQ_ID, de.metas.rfq.model.I_C_RfQ.class, C_RfQ);
+	}
+
+	/** Set Ausschreibung.
+		@param C_RfQ_ID 
+		Anfrage für ein Angebot
+	  */
+	@Override
+	public void setC_RfQ_ID (int C_RfQ_ID)
+	{
+		if (C_RfQ_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_RfQ_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_RfQ_ID, Integer.valueOf(C_RfQ_ID));
+	}
+
+	/** Get Ausschreibung.
+		@return Anfrage für ein Angebot
+	  */
+	@Override
+	public int getC_RfQ_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQ_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.rfq.model.I_C_RfQLine getC_RfQLine() throws RuntimeException
@@ -152,6 +267,62 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Antwort-datum.
+		@param DateResponse 
+		Datum der Antwort
+	  */
+	@Override
+	public void setDateResponse (java.sql.Timestamp DateResponse)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateResponse, DateResponse);
+	}
+
+	/** Get Antwort-datum.
+		@return Datum der Antwort
+	  */
+	@Override
+	public java.sql.Timestamp getDateResponse () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateResponse);
+	}
+
 	/** Set Arbeit fertiggestellt.
 		@param DateWorkComplete 
 		Date when work is (planned to be) complete
@@ -247,6 +418,32 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
+	/** Set Geschlossen.
+		@param IsClosed 
+		The status is closed
+	  */
+	@Override
+	public void setIsClosed (boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
+	}
+
+	/** Get Geschlossen.
+		@return The status is closed
+	  */
+	@Override
+	public boolean isClosed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsClosed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selected Winner.
 		@param IsSelectedWinner 
 		The resonse is the selected winner
@@ -299,6 +496,65 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return false;
 	}
 
+	/** Set Zeile Nr..
+		@param Line 
+		Einzelne Zeile in dem Dokument
+	  */
+	@Override
+	public void setLine (int Line)
+	{
+		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
+	}
+
+	/** Get Zeile Nr..
+		@return Einzelne Zeile in dem Dokument
+	  */
+	@Override
+	public int getLine () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Preis.
 		@param Price 
 		Preis
@@ -321,6 +577,32 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return bd;
 	}
 
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Zusagbar.
 		@param QtyPromised Zusagbar	  */
 	@Override
@@ -335,6 +617,25 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	public java.math.BigDecimal getQtyPromised () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Qty Requiered.
+		@param QtyRequiered Qty Requiered	  */
+	@Override
+	public void setQtyRequiered (java.math.BigDecimal QtyRequiered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyRequiered, QtyRequiered);
+	}
+
+	/** Get Qty Requiered.
+		@return Qty Requiered	  */
+	@Override
+	public java.math.BigDecimal getQtyRequiered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiered);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

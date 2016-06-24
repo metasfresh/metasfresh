@@ -56,15 +56,16 @@ public interface IRfqBL extends ISingletonService
 	
 	boolean isClosed(I_C_RfQ rfq);
 	void close(I_C_RfQ rfq);
+	
+	void reActivate(I_C_RfQ rfq);
 	//@formatter:on
 
 	//@formatter:off
 	void assertDraft(I_C_RfQResponse rfqResponse);
 	void complete(I_C_RfQResponse response);
 	boolean isClosed(I_C_RfQResponse rfqResponse);
-	boolean sendRfQResponseToVendor(I_C_RfQResponse response);
+	boolean isClosed(I_C_RfQResponseLine rfqResponseLine);
 	//@formatter:on
 
 	void updateQtyPromisedAndSave(I_C_RfQResponseLine rfqResponseLine);
-
 }

@@ -9,9 +9,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_DAO;
+import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponse;
-import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
@@ -59,17 +59,17 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 	@Override
 	public List<I_C_RfQResponseLine> retrieveResponseLines(final I_C_RfQResponse rfqResponse)
 	{
-		return Services.get(IRfqDAO.class).retrieveResponseLines(rfqResponse);
+		return Services.get(IRfqDAO.class).retrieveResponseLines(rfqResponse, I_C_RfQResponseLine.class);
 	}
 
 	@Override
-	public List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(I_C_RfQResponseLine rfqResponseLine)
+	public List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine)
 	{
 		return Services.get(IRfqDAO.class).retrieveResponseQtys(rfqResponseLine);
 	}
 	
 	@Override
-	public I_C_RfQResponseLineQty retrieveResponseLineQty(I_C_RfQResponseLine rfqResponseLine, final Date date)
+	public I_C_RfQResponseLineQty retrieveResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine, final Date date)
 	{
 		return Services.get(IRfqDAO.class).retrieveResponseQty(rfqResponseLine, date);
 	}
