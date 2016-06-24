@@ -482,6 +482,7 @@ import de.metas.logging.LogManager;
 
 		//
 		// Check changed columns (only if timing is before/after change).
+		// #105 FRESH-442: only check for changed columns on "change". For "new" and "delete", execute the pointcut.
 		// Else, does not make sense.
 		if (isTimingChange(timing))
 		{
