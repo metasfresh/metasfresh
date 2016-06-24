@@ -127,7 +127,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		if (InterfaceWrapperHelper.isNew(doc))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
-					.throwOrLogWarningIfDeveloperMode(logger);
+					.throwIfDeveloperModeOrLogWarningElse(logger);
 			InterfaceWrapperHelper.save(doc);
 		}
 		
