@@ -51,9 +51,6 @@ import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
@@ -384,70 +381,4 @@ public class C_Invoice
 			InterfaceWrapperHelper.delete(line);
 		}
 	}
-
-	/**
-	 * Close linked invoice candidates if they were partially invoiced
-	 * 
-	 * @param invoice
-	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
-	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
-		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
-		{
-			for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
-			{
-				if (candidate.getQtyToInvoice().compareTo(candidate.getQtyOrdered()) < 0)
-				{
-					invoiceCandBL.closeInvoiceCandidate(candidate);
-				}
-			}
-		}
-	}
-
-	/**
-	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
-	 * @param invoice
-	 */
-	@DocValidate(timings = {
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, })
-	public void candidates_unProcess(final I_C_Invoice invoice)
-	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
-		{
-			for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
-			{
-				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate candModel = InterfaceWrapperHelper.create(candidate, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-
-				if (candModel == null)
-				{
-					// shall not happen
-					continue;
-				}
-
-				final String processedOverride = candModel.getProcessed_Override();
-
-				if (processedOverride == null)
-				{
-					// nothing to do
-					continue;
-				}
-
-				if (processedOverride.equals("Y"))
-				{
-					candModel.setProcessed_Override(null);
-					InterfaceWrapperHelper.save(candModel);
-				}
-			}
-		}
-	}
-
 }
