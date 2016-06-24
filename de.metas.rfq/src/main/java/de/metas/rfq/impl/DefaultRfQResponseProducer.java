@@ -20,6 +20,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
@@ -57,29 +58,36 @@ import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
  * #L%
  */
 
+/**
+ * Default {@link IRfQResponse} producer.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class DefaultRfQResponseProducer implements IRfQResponseProducer
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(DefaultRfQResponseProducer.class);
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IRfqTopicDAO rfqTopicDAO = Services.get(IRfqTopicDAO.class);
 	private final transient IRfqTopicBL rfqTopicBL = Services.get(IRfqTopicBL.class);
 	private final transient IRfQEventDispacher rfqEventDispacher = Services.get(IRfQEventDispacher.class);
-	
+
 	// Status
 	private AtomicBoolean _processed = new AtomicBoolean(false);
 	private I_C_RfQ _rfq;
-	private boolean _sendToVendor;
+	private boolean _publish;
 	private List<I_C_RfQResponse> _generatedResponses = new ArrayList<>();
-	private AtomicInteger _countSent = new AtomicInteger(0);
+	private AtomicInteger _countPublished = new AtomicInteger(0);
 
 	@Override
 	public List<I_C_RfQResponse> create()
 	{
 		markAsProcessed();
-		
+
 		final I_C_RfQ rfq = getC_RfQ();
 		rfqBL.assertComplete(rfq);
 
@@ -95,17 +103,17 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 
 		return getGeneratedResponses();
 	}
-	
+
 	private void assertNotProcessed()
 	{
 		Check.assume(!_processed.get(), "not already processed");
 	}
-	
+
 	private void markAsProcessed()
 	{
 		_processed.getAndSet(true);
 	}
-	
+
 	@Override
 	public IRfQResponseProducer setC_RfQ(I_C_RfQ rfq)
 	{
@@ -113,49 +121,46 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		this._rfq = rfq;
 		return this;
 	}
-	
-	private I_C_RfQ getC_RfQ()
+
+	protected final I_C_RfQ getC_RfQ()
 	{
 		Check.assumeNotNull(_rfq, "RfQ not null");
 		return _rfq;
 	}
-	
+
 	@Override
-	public IRfQResponseProducer setSendToVendor(boolean sendToVendor)
+	public IRfQResponseProducer setPublish(boolean publish)
 	{
 		assertNotProcessed();
-		this._sendToVendor = sendToVendor;
+		this._publish = publish;
 		return this;
 	}
-	
-	private boolean isSendToVendor()
+
+	private boolean isPublish()
 	{
-		return _sendToVendor;
+		return _publish;
 	}
-	
+
 	private void addGeneratedResponse(final I_C_RfQResponse rfqResponse)
 	{
 		Check.assumeNotNull(rfqResponse, "rfqResponse not null");
-		
-		sendToVendorIfNeeded(rfqResponse);
-		
+
+		publishIfNeeded(rfqResponse);
+
 		_generatedResponses.add(rfqResponse);
 	}
-	
-	private void sendToVendorIfNeeded(I_C_RfQResponse rfqResponse)
+
+	private void publishIfNeeded(final I_C_RfQResponse rfqResponse)
 	{
-		if(!isSendToVendor())
+		if (!isPublish())
 		{
 			return;
 		}
 
 		try
 		{
-			final boolean sent = rfqBL.sendRfQResponseToVendor(rfqResponse);
-			if (sent)
-			{
-				_countSent.incrementAndGet();
-			}
+			rfqConfiguration.getRfQResponsePublisher().publish(rfqResponse);
+			_countPublished.incrementAndGet();
 		}
 		catch (Exception e)
 		{
@@ -169,9 +174,9 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 	}
 
 	@Override
-	public int getCountSentToVendor()
+	public int getCountPublished()
 	{
-		return _countSent.get();
+		return _countPublished.get();
 	}
 
 	private void createInTrx()
@@ -195,7 +200,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 			{
 				continue;
 			}
-			
+
 			rfqEventDispacher.fireDraftCreated(rfqResponse);
 
 			addGeneratedResponse(rfqResponse);
@@ -226,7 +231,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 				&& subscriber.getC_BPartner_Location_ID() == response.getC_BPartner_Location_ID();
 	}
 
-	private boolean isGenerateForLine(final I_C_RfQLine rfqLine, final I_C_RfQ_TopicSubscriber subscriber)
+	protected boolean isGenerateForLine(final I_C_RfQLine rfqLine, final I_C_RfQ_TopicSubscriber subscriber)
 	{
 		if (!rfqLine.isActive())
 		{
@@ -243,7 +248,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		return true;
 	}
 
-	private boolean isGenerateForLineQty(final I_C_RfQLineQty lineQty)
+	protected boolean isGenerateForLineQty(final I_C_RfQLineQty lineQty)
 	{
 		if (!lineQty.isActive())
 		{
@@ -283,7 +288,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 					{
 						continue;
 					}
-	
+
 					// Create RfQ Response Line Qty
 					createRfQResponseLineQty(responseLineSupplier, lineQty);
 				}
@@ -304,12 +309,17 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 			@Override
 			public I_C_RfQResponse get()
 			{
-				return createRfqResponse(rfq, subscriber);
+				final I_C_RfQResponse rfqResponse = createRfqResponse(rfq, subscriber);
+				if (rfqResponse != null)
+				{
+					InterfaceWrapperHelper.save(rfqResponse);
+				}
+				return rfqResponse;
 			}
 		});
 	}
 
-	private I_C_RfQResponse createRfqResponse(final I_C_RfQ rfq, final I_C_RfQ_TopicSubscriber subscriber)
+	protected I_C_RfQResponse createRfqResponse(final I_C_RfQ rfq, final I_C_RfQ_TopicSubscriber subscriber)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(rfq);
 		final I_C_RfQResponse response = InterfaceWrapperHelper.create(ctx, I_C_RfQResponse.class, ITrx.TRXNAME_ThreadInherited);
@@ -333,7 +343,8 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		response.setC_BPartner_Location_ID(subscriber.getC_BPartner_Location_ID());
 		response.setAD_User_ID(subscriber.getAD_User_ID());
 
-		InterfaceWrapperHelper.save(response);
+		// NOTE: don't save it
+
 		return response;
 	}
 
@@ -344,35 +355,64 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 			@Override
 			public I_C_RfQResponseLine get()
 			{
-				return createRfqResponseLine(response, rfqLine);
+				final I_C_RfQResponseLine rfqResponseLine = createRfqResponseLine(response, rfqLine);
+				if (rfqResponseLine != null)
+				{
+					InterfaceWrapperHelper.save(rfqResponseLine);
+				}
+				return rfqResponseLine;
 			}
 		});
 	}
 
-	private I_C_RfQResponseLine createRfqResponseLine(final Supplier<I_C_RfQResponse> responseSupplier, final I_C_RfQLine rfqLine)
+	protected I_C_RfQResponseLine createRfqResponseLine(final Supplier<I_C_RfQResponse> responseSupplier, final I_C_RfQLine rfqLine)
 	{
-		final I_C_RfQResponse response = responseSupplier.get();
-		
-		final Properties ctx = InterfaceWrapperHelper.getCtx(response);
-		final I_C_RfQResponseLine responseLine = InterfaceWrapperHelper.create(ctx, I_C_RfQResponseLine.class, ITrx.TRXNAME_ThreadInherited);
-		responseLine.setAD_Org_ID(response.getAD_Org_ID());
-		responseLine.setC_RfQResponse(response);
-		//
-		responseLine.setC_RfQLine(rfqLine);
-		//
-		responseLine.setIsSelectedWinner(false);
-		responseLine.setIsSelfService(false);
-		
-		responseLine.setUseLineQty(rfqLine.isUseLineQty());
+		final I_C_RfQResponse rfqResponse = responseSupplier.get();
 
-		InterfaceWrapperHelper.save(responseLine);
-		return responseLine;
+		final Properties ctx = InterfaceWrapperHelper.getCtx(rfqResponse);
+		final I_C_RfQResponseLine rfqResponseLine = InterfaceWrapperHelper.create(ctx, I_C_RfQResponseLine.class, ITrx.TRXNAME_ThreadInherited);
+
+		//
+		// Defaults
+		rfqResponseLine.setIsSelectedWinner(false);
+		rfqResponseLine.setIsSelfService(false);
+		rfqResponseLine.setProcessed(false);
+		rfqResponseLine.setIsClosed(false);
+
+		//
+		// From RfQ Response header
+		rfqResponseLine.setC_RfQResponse(rfqResponse);
+		rfqResponseLine.setAD_Org_ID(rfqResponse.getAD_Org_ID());
+		rfqResponseLine.setC_BPartner_ID(rfqResponse.getC_BPartner_ID());
+		rfqResponseLine.setC_Currency_ID(rfqResponse.getC_Currency_ID());
+
+		//
+		// From RfQ header
+		final I_C_RfQ rfq = rfqLine.getC_RfQ();
+		rfqResponseLine.setC_RfQ(rfq);
+		rfqResponseLine.setDateResponse(rfq.getDateResponse());
+		rfqResponseLine.setDateWorkStart(rfq.getDateWorkStart());
+		rfqResponseLine.setDeliveryDays(rfq.getDeliveryDays());
+
+		//
+		// From RfQ Line
+		rfqResponseLine.setC_RfQLine(rfqLine);
+		rfqResponseLine.setLine(rfqLine.getLine());
+		rfqResponseLine.setM_Product_ID(rfqLine.getM_Product_ID());
+		rfqResponseLine.setC_UOM_ID(rfqLine.getC_UOM_ID());
+		rfqResponseLine.setQtyRequiered(rfqLine.getQty());
+		rfqResponseLine.setDescription(rfqLine.getDescription());
+		rfqResponseLine.setUseLineQty(rfqLine.isUseLineQty());
+
+		// NOTE: don't save it!
+
+		return rfqResponseLine;
 	}
 
 	private I_C_RfQResponseLineQty createRfQResponseLineQty(final Supplier<I_C_RfQResponseLine> responseLineSupplier, final I_C_RfQLineQty lineQty)
 	{
 		final I_C_RfQResponseLine responseLine = responseLineSupplier.get();
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(responseLine);
 		final I_C_RfQResponseLineQty responseQty = InterfaceWrapperHelper.create(ctx, I_C_RfQResponseLineQty.class, ITrx.TRXNAME_ThreadInherited);
 		responseQty.setAD_Org_ID(responseLine.getAD_Org_ID());

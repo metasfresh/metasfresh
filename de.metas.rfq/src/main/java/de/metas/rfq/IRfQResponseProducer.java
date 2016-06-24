@@ -27,14 +27,23 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
+/**
+ * Implementations of this interface are responsible for creating {@link I_C_RfQResponse}s for a given {@link I_C_RfQ}.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public interface IRfQResponseProducer
 {
 	List<I_C_RfQResponse> create();
 
-	int getCountSentToVendor();
+	/**
+	 * @return how many RfQ responses were published
+	 */
+	int getCountPublished();
 
 	IRfQResponseProducer setC_RfQ(I_C_RfQ rfq);
 
-	IRfQResponseProducer setSendToVendor(boolean sendToVendor);
-
+	/** Sets if we shall publish the responses after generating them */
+	IRfQResponseProducer setPublish(boolean publish);
 }
