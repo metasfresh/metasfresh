@@ -110,4 +110,58 @@ import de.metas.rfq.model.I_C_RfQResponse;
 			listener.onAfterComplete(rfqResponse);
 		}
 	}
+
+	@Override
+	public void onBeforeClose(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onBeforeClose(rfqResponse);
+		}
+	}
+
+	@Override
+	public void onAfterClose(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onAfterClose(rfqResponse);
+		}
+	}
+
+	@Override
+	public void onBeforeUnClose(final I_C_RfQ rfq)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onBeforeUnClose(rfq);
+		}
+	}
+
+	@Override
+	public void onAfterUnClose(final I_C_RfQ rfq)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onAfterUnClose(rfq);
+		}
+	}
+
+	@Override
+	public void onBeforeUnClose(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onBeforeUnClose(rfqResponse);
+		}
+	}
+
+	@Override
+	public void onAfterUnClose(final I_C_RfQResponse rfqResponse)
+	{
+		for (final IRfQEventListener listener : listeners)
+		{
+			listener.onAfterUnClose(rfqResponse);
+		}
+	}
 }

@@ -57,7 +57,7 @@ public class RfQEventListenerAdapter implements IRfQEventListener
 	}
 
 	@Override
-	public void onDraftCreated(I_C_RfQResponse rfqResponse)
+	public void onDraftCreated(final I_C_RfQResponse rfqResponse)
 	{
 		// nothing
 	}
@@ -70,6 +70,42 @@ public class RfQEventListenerAdapter implements IRfQEventListener
 
 	@Override
 	public void onAfterComplete(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeClose(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onAfterClose(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeUnClose(final I_C_RfQ rfq)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onAfterUnClose(final I_C_RfQ rfq)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeUnClose(final I_C_RfQResponse rfqResponse)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onAfterUnClose(final I_C_RfQResponse rfqResponse)
 	{
 		// nothing
 	}

@@ -31,18 +31,22 @@ public interface IRfQEventDispacher extends ISingletonService
 {
 	void registerListener(IRfQEventListener listener);
 
+	//@formatter:off
 	void fireBeforeComplete(I_C_RfQ rfq);
-
 	void fireAfterComplete(I_C_RfQ rfq);
-
 	void fireBeforeClose(I_C_RfQ rfq);
-
+	void fireBeforeUnClose(I_C_RfQ rfq);
 	void fireAfterClose(I_C_RfQ rfq);
+	void fireAfterUnClose(I_C_RfQ rfq);
+	//@formatter:on
 
+	//@formatter:off
 	void fireDraftCreated(I_C_RfQResponse rfqResponse);
-
 	void fireBeforeComplete(I_C_RfQResponse rfqResponse);
-
 	void fireAfterComplete(I_C_RfQResponse rfqResponse);
-
+	void fireBeforeClose(I_C_RfQResponse rfqResponse);
+	void fireBeforeUnClose(I_C_RfQResponse rfqResponse);
+	void fireAfterClose(I_C_RfQResponse rfqResponse);
+	void fireAfterUnClose(I_C_RfQResponse rfqResponse);
+	//@formatter:on
 }

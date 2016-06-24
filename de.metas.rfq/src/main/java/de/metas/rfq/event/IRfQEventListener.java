@@ -27,17 +27,22 @@ import de.metas.rfq.model.I_C_RfQResponse;
 
 public interface IRfQEventListener
 {
-	void onBeforeComplete(final I_C_RfQ rfq);
+	//@formatter:off
+	void onBeforeComplete(I_C_RfQ rfq);
+	void onAfterComplete(I_C_RfQ rfq);
+	void onBeforeClose(I_C_RfQ rfq);
+	void onAfterClose(I_C_RfQ rfq);
+	void onBeforeUnClose(I_C_RfQ rfq);
+	void onAfterUnClose(I_C_RfQ rfq);
+	//@formatter:on
 
-	void onAfterComplete(final I_C_RfQ rfq);
-
-	void onBeforeClose(final I_C_RfQ rfq);
-
-	void onAfterClose(final I_C_RfQ rfq);
-	
-	void onDraftCreated(final I_C_RfQResponse rfqResponse);
-
-	void onBeforeComplete(final I_C_RfQResponse rfqResponse);
-
-	void onAfterComplete(final I_C_RfQResponse rfqResponse);
+	//@formatter:off
+	void onDraftCreated(I_C_RfQResponse rfqResponse);
+	void onBeforeComplete(I_C_RfQResponse rfqResponse);
+	void onAfterComplete(I_C_RfQResponse rfqResponse);
+	void onBeforeClose(I_C_RfQResponse rfqResponse);
+	void onAfterClose(I_C_RfQResponse rfqResponse);
+	void onBeforeUnClose(I_C_RfQResponse rfqResponse);
+	void onAfterUnClose(I_C_RfQResponse rfqResponse);
+	//@formatter:on
 }

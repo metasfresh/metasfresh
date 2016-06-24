@@ -79,4 +79,42 @@ public class RfQEventDispacher implements IRfQEventDispacher
 		listeners.onAfterComplete(rfqResponse);
 	}
 
+	@Override
+	public void fireBeforeClose(final I_C_RfQResponse rfqResponse)
+	{
+		listeners.onBeforeClose(rfqResponse);
+	}
+
+	@Override
+	public void fireAfterClose(final I_C_RfQResponse rfqResponse)
+	{
+		listeners.onAfterClose(rfqResponse);
+	}
+
+	@Override
+	public void fireBeforeUnClose(I_C_RfQ rfq)
+	{
+		listeners.onBeforeUnClose(rfq);
+	}
+
+	@Override
+	public void fireAfterUnClose(I_C_RfQ rfq)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fireBeforeUnClose(I_C_RfQResponse rfqResponse)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fireAfterUnClose(I_C_RfQResponse rfqResponse)
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }
