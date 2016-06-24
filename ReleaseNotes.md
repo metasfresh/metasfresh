@@ -18,9 +18,12 @@ The actual release notes
  - FRESH-378 process to close invoice candidates
  
 ## Fixes
+ - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
+ - #107 FRESH-445 Awkward eMail encoding in Swiss language
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
  - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
-
+ - FRESH-438 Make MRP Product Info Work
+    * removed stale data and added FK-constraints and improved logging to avoid NPE
 ## Documentation
  - FRESH-323 metasfresh Developer Documentation
     * Added some clarifications and described how to import the initial DB-dump
