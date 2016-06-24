@@ -18,6 +18,7 @@ The actual release notes
  - FRESH-378 process to close invoice candidates
  
 ## Fixes
+ - #107 FRESH-445 Awkward eMail encoding in Swiss language
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
  - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
 
