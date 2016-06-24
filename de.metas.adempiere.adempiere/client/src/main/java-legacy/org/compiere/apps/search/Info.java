@@ -2029,6 +2029,7 @@ public abstract class Info extends Component
 			for (final I_AD_User_SortPref_Line_Product sortPreferenceLineProduct : sortPreferenceLineProducts)
 			{
 				final I_M_Product product = sortPreferenceLineProduct.getM_Product();
+				// FRESH-438: check for null and give an informative message if the product is null
 				if (product == null)
 				{
 					final String msg = "Missing M_Product for M_Product_ID=" + sortPreferenceLineProduct.getM_Product_ID()
