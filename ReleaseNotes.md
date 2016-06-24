@@ -39,18 +39,25 @@ The actual release notes
 
 ## Features
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+    * Changed sorting for all Dropdown entries about Periods (Month-Year) to have order-by year-month numeric desc
 
 ## Fixes
  - FRESH-412 quick input in orders not working
+    * Fixed an issue in Quick order entry in Orders (sales and purchase) window
  - FRESH-409 Creating Partner Relation throws Exception
+    * Fixing an exception that appeared when creating and saving a Business Partner relation
  - FRESH-407 M_ShipperTransportation Terminated after complete
+    * Fixing an exception that popped up when completing a shipper transportation document
  - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
+    * Introduced additional callout to adjust the corresponding locations when choosing a different Business Partner in Order Candidates Window
  - FRESH-279 DD Order CU calculation wrong when TU = 1
+    * Adjusted the Qty CU Calculation when TUQty is 1
  - FRESH-309 Missing ADR ASIs in purchase order lines since february
-    * restored attribute set instaces that might have been missing on some systems
+    * Restored attribute set instances that might have been missing in the past on some systems
  - FRESH-386 another error when sales order is automatically created as counter doc from a purchase order with packagings
+    * Fixed error that appears in sales order counter document because of automatic Handling Unit generation in complete.
  - FRESH-388 Invoice Candidates not updated for some material receipts
-    * incorporating last week's troubleshooting view
+    * Introducing a view to assist support troubleshooting
 
 # metasfresh 4.22.21
 
