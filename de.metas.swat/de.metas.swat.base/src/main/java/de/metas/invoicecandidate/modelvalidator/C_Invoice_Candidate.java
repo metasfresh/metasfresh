@@ -408,7 +408,13 @@ public class C_Invoice_Candidate
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsToClear })
+	/**
+	 * Mark the candidate as Processed_Override = Y because in case it has IsToClear on true. This kind of candidate is not relevant for the invoice
+	 * Could happen when the partner has a subscription for the kind of product in the invoice candidate
+	 * 
+	 * @param candidate
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsToClear })
 	public void ProcessIfIsToClear(final I_C_Invoice_Candidate candidate)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -420,7 +426,7 @@ public class C_Invoice_Candidate
 			return;
 		}
 
-		// ndo nothing if the closing is not required
+		// do nothing if the closing is not required
 		if (!invoiceCandBL.isCloseIfIsToClear())
 		{
 			return;

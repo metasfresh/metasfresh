@@ -385,6 +385,11 @@ public class C_Invoice
 		}
 	}
 
+	/**
+	 * Close linked invoice candidates if they were partially invoiced
+	 * 
+	 * @param invoice
+	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
 	{
@@ -404,6 +409,10 @@ public class C_Invoice
 		}
 	}
 
+	/**
+	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
+	 * @param invoice
+	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, })
@@ -418,9 +427,23 @@ public class C_Invoice
 			{
 				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate candModel = InterfaceWrapperHelper.create(candidate, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 
-				if (candModel.getProcessed_Override().equals("Y"))
+				if (candModel == null)
 				{
-					candModel.setProcessed_Override("N");
+					// shall not happen
+					continue;
+				}
+
+				final String processedOverride = candModel.getProcessed_Override();
+
+				if (processedOverride == null)
+				{
+					// nothing to do
+					continue;
+				}
+
+				if (processedOverride.equals("Y"))
+				{
+					candModel.setProcessed_Override(null);
 					InterfaceWrapperHelper.save(candModel);
 				}
 			}
