@@ -24,6 +24,7 @@ package org.adempiere.ad.persistence.modelgen;
 
 
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.text.annotation.ToStringBuilder;
 
 import com.google.common.base.Optional;
 
@@ -35,6 +36,7 @@ import com.google.common.base.Optional;
  */
 /* package */class ColumnInfo
 {
+	@ToStringBuilder(skip = true)
 	private TableAndColumnInfoRepository repository;
 	//
 	private final String tableName;
