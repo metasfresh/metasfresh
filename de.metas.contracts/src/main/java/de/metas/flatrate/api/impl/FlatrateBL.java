@@ -67,11 +67,10 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
@@ -102,6 +101,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
@@ -1585,9 +1585,10 @@ public class FlatrateBL implements IFlatrateBL
 			InterfaceWrapperHelper.save(entry);
 		}
 	}
-
+	
 	@Override
 	public I_C_Flatrate_Term createTerm(
+			final IContextAware context,
 			final I_C_BPartner bPartner,
 			final I_C_Flatrate_Conditions conditions,
 			final Timestamp startDate,
@@ -1595,8 +1596,8 @@ public class FlatrateBL implements IFlatrateBL
 			final org.compiere.model.I_M_Product product,
 			final boolean completeIt)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
-		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
+		final Properties ctx = context.getCtx();
+		final String trxName = context.getTrxName();
 
 		boolean dontCreateTerm = false;
 		final StringBuilder notCreatedReason = new StringBuilder();

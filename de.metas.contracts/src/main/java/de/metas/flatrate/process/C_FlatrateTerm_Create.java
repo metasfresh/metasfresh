@@ -4,7 +4,9 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
@@ -97,9 +99,9 @@ public abstract class C_FlatrateTerm_Create extends SvrProcess
 				@Override
 				public void run(String localTrxName) throws Exception
 				{
-					// no need to set 'localTrxName' to out bp, because we loaded the bp with ITrx.TRXNAME_ThreadInherited
+					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(getCtx());
 					final boolean completeIt = true;
-					final I_C_Flatrate_Term term = flatrateBL.createTerm(partner, conditions, startDate, userInCharge, product, completeIt);
+					final I_C_Flatrate_Term term = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, completeIt);
 
 					if (term == null)
 					{
