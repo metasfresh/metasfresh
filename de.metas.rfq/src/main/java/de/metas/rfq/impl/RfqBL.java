@@ -17,6 +17,7 @@ import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.exceptions.NoRfQLinesFoundException;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
+import de.metas.rfq.exceptions.RfQDocumentNotClosedException;
 import de.metas.rfq.exceptions.RfQDocumentNotCompleteException;
 import de.metas.rfq.exceptions.RfQDocumentNotDraftException;
 import de.metas.rfq.exceptions.RfQLineInvalidException;
@@ -357,7 +358,7 @@ public class RfqBL implements IRfqBL
 		{
 			throw new RfQDocumentClosedException(getSummary(rfqResponse));
 		}
-		
+
 		// TODO: FRESH-402 shall we throw exception if the rfqResponse was published?
 
 		rfqResponse.setProcessed(false);
@@ -385,6 +386,14 @@ public class RfqBL implements IRfqBL
 		if (!isCompleted(rfq))
 		{
 			throw new RfQDocumentNotCompleteException(getSummary(rfq));
+		}
+	}
+
+	private void assertClosed(final I_C_RfQ rfq)
+	{
+		if (!isClosed(rfq))
+		{
+			throw new RfQDocumentNotClosedException(getSummary(rfq));
 		}
 	}
 
@@ -419,10 +428,12 @@ public class RfqBL implements IRfqBL
 	{
 		assertComplete(rfq);
 
-		getRfQEventDispacher().fireBeforeClose(rfq);
+		//
+		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
+		rfQEventDispacher.fireBeforeClose(rfq);
 
 		//
-		// Close RfQ
+		// Mark as closed
 		rfq.setProcessed(true);
 		rfq.setIsClosed(true);
 		InterfaceWrapperHelper.save(rfq);
@@ -432,21 +443,34 @@ public class RfqBL implements IRfqBL
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
 		{
-			close(rfqResponse);
+			if (isClosed(rfqResponse))
+			{
+				continue;
+			}
+
+			closeInTrx(rfqResponse);
 		}
 
-		getRfQEventDispacher().fireAfterClose(rfq);
+		//
+		rfQEventDispacher.fireAfterClose(rfq);
 
+		// Make sure it's saved
 		InterfaceWrapperHelper.save(rfq);
 	}
 
-	private void close(final I_C_RfQResponse rfqResponse)
+	private void closeInTrx(final I_C_RfQResponse rfqResponse)
 	{
 		if (!isDraft(rfqResponse) && !isCompleted(rfqResponse))
 		{
 			throw new RfQDocumentNotCompleteException(getSummary(rfqResponse));
 		}
 
+		//
+		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
+		rfQEventDispacher.fireBeforeClose(rfqResponse);
+
+		//
+		// Mark as closed
 		rfqResponse.setProcessed(true);
 		rfqResponse.setIsClosed(true);
 		InterfaceWrapperHelper.save(rfqResponse);
@@ -461,6 +485,12 @@ public class RfqBL implements IRfqBL
 			rfqReponseLine.setIsClosed(true);
 			InterfaceWrapperHelper.save(rfqReponseLine);
 		}
+
+		//
+		rfQEventDispacher.fireAfterClose(rfqResponse);
+
+		// Make sure it's saved
+		InterfaceWrapperHelper.save(rfqResponse);
 	}
 
 	@Override
@@ -513,4 +543,84 @@ public class RfqBL implements IRfqBL
 		InterfaceWrapperHelper.save(rfqResponseLine);
 	}
 
+	@Override
+	public void unclose(final I_C_RfQ rfq)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
+				uncloseInTrx(rfq);
+			}
+		});
+	}
+
+	private void uncloseInTrx(final I_C_RfQ rfq)
+	{
+		assertClosed(rfq);
+
+		//
+		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
+		rfQEventDispacher.fireBeforeUnClose(rfq);
+
+		//
+		// Mark as completed
+		rfq.setIsClosed(false);
+		InterfaceWrapperHelper.save(rfq);
+
+		//
+		// Close RfQ Responses
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
+		{
+			if (!isClosed(rfqResponse))
+			{
+				continue;
+			}
+
+			uncloseInTrx(rfqResponse);
+		}
+
+		//
+		rfQEventDispacher.fireAfterUnClose(rfq);
+
+		// Make sure it's saved
+		InterfaceWrapperHelper.save(rfq);
+	}
+
+	private void uncloseInTrx(final I_C_RfQResponse rfqResponse)
+	{
+		if (!isClosed(rfqResponse))
+		{
+			throw new RfQDocumentNotClosedException(getSummary(rfqResponse));
+		}
+
+		//
+		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
+		rfQEventDispacher.fireBeforeUnClose(rfqResponse);
+
+		//
+		// Mark as NOT closed
+		rfqResponse.setIsClosed(false);
+		InterfaceWrapperHelper.save(rfqResponse);
+
+		//
+		// Close lines
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
+		for (final I_C_RfQResponseLine rfqReponseLine : rfqResponseLines)
+		{
+			rfqReponseLine.setIsClosed(false);
+			InterfaceWrapperHelper.save(rfqReponseLine);
+		}
+
+		//
+		rfQEventDispacher.fireAfterUnClose(rfqResponse);
+
+		// Make sure it's saved
+		InterfaceWrapperHelper.save(rfqResponse);
+	}
 }

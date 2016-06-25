@@ -56,6 +56,7 @@ public interface IRfqBL extends ISingletonService
 	
 	boolean isClosed(I_C_RfQ rfq);
 	void close(I_C_RfQ rfq);
+	void unclose(I_C_RfQ rfq);
 	
 	void reActivate(I_C_RfQ rfq);
 	//@formatter:on
@@ -68,4 +69,5 @@ public interface IRfqBL extends ISingletonService
 	//@formatter:on
 
 	void updateQtyPromisedAndSave(I_C_RfQResponseLine rfqResponseLine);
+
 }
