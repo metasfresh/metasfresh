@@ -74,4 +74,9 @@ public interface IAgentSync
 	@Path("rfqs")
 	@Oneway
 	void syncRfQs(List<SyncRfQ> syncRfqs);
+	
+	@POST
+	@Path("closeRfqs")
+	@Oneway
+	void closeRfQs(final List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

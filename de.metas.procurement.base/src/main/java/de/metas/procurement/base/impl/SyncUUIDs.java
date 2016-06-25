@@ -9,7 +9,6 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.util.UUIDs;
 import de.metas.rfq.model.I_C_RfQResponseLine;
-import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 /*
  * #%L
@@ -81,16 +80,6 @@ public final class SyncUUIDs
 	}
 	
 	public static final int getC_RfQResponseLine_ID(final String uuid)
-	{
-		return UUIDs.toId(uuid);
-	}
-
-	public static final String toUUIDString(I_C_RfQResponseLineQty rfqResponseLineQty)
-	{
-		return UUIDs.fromIdAsString(rfqResponseLineQty.getC_RfQResponseLineQty_ID());
-	}
-	
-	public static final int getC_RfQResponseLineQty_ID(final String uuid)
 	{
 		return UUIDs.toId(uuid);
 	}

@@ -3,6 +3,8 @@ package de.metas.procurement.sync.protocol;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /*
  * #%L
  * de.metas.procurement.sync-api
@@ -25,6 +27,7 @@ import java.util.Date;
  * #L%
  */
 
+@XmlRootElement(name = "SyncRfQ")
 public class SyncRfQ extends AbstractSyncModel
 {
 	private Date dateStart;

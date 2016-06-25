@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
@@ -76,5 +77,11 @@ public class NullAgentSync implements IAgentSync
 	public void syncRfQs(final List<SyncRfQ> syncRfqs)
 	{
 		System.out.println("syncRfQs: " + ObjectUtils.toString(syncRfqs));
+	}
+
+	@Override
+	public void closeRfQs(List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	{
+		System.out.println("closeRfQs: " + ObjectUtils.toString(syncRfQCloseEvents));
 	}
 }
