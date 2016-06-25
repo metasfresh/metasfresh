@@ -1,9 +1,10 @@
 package de.metas.procurement.base;
 
+import java.util.Properties;
+
 import org.adempiere.util.ISingletonService;
 
-import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.procurement.base.model.I_AD_User;
 
 /*
  * #%L
@@ -27,16 +28,21 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-public interface IPMM_RfQ_BL extends ISingletonService
+public interface IPMMContractsBL extends ISingletonService
 {
-	boolean isProcurement(I_C_RfQ rfq);
+	/**
+	 * Gets default AD_User_ID in charge for a new procurement contract.
+	 * 
+	 * @param ctx
+	 * @return AD_User_ID or <code>-1</code> if there is no default configured
+	 */
+	int getDefaultContractUserInCharge_ID(Properties ctx);
 
-	boolean isProcurement(I_C_RfQResponse rfqResponse);
-
-	boolean isClosed(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine);
-
-	void createDraftContractsForWinners(I_C_RfQ rfq);
-
-	void createDraftContractsForSelectedWinners(I_C_RfQResponse rfqResponse);
-
+	/**
+	 * Gets default user in charge for a new procurement contract.
+	 * 
+	 * @param ctx
+	 * @return user in charge or <code>null</code> if there is no default configured
+	 */
+	I_AD_User getDefaultContractUserInChargeOrNull(Properties ctx);
 }
