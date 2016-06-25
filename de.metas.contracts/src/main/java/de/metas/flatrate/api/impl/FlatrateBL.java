@@ -1678,7 +1678,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (completeIt)
 		{
-			Services.get(IDocActionBL.class).processEx(newTerm, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			complete(newTerm);
 			loggable.addLog("BPartner " + bPartner.getValue() + ": created and completed: " + notCreatedReason.toString());
 		}
 		else
@@ -1686,5 +1686,12 @@ public class FlatrateBL implements IFlatrateBL
 			loggable.addLog("BPartner " + bPartner.getValue() + ": created: " + notCreatedReason.toString());
 		}
 		return newTerm;
+	}
+	
+	@Override
+	public void complete(final I_C_Flatrate_Term term)
+	{
+		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
+		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 	}
 }

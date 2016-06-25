@@ -173,4 +173,11 @@ public interface IFlatrateBL extends ISingletonService
 			I_AD_User userInCharge,
 			I_M_Product product,
 			boolean completeIt);
+
+	/**
+	 * Complete given contract.
+	 * 
+	 * @param term the contract
+	 */
+	void complete(I_C_Flatrate_Term term);
 }
