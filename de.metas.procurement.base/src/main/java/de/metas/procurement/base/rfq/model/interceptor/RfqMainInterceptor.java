@@ -8,6 +8,7 @@ import org.compiere.model.I_AD_Client;
 import de.metas.procurement.base.rfq.PMMRfQResponseProducerFactory;
 import de.metas.procurement.base.rfq.PMMWebuiRfQResponsePublisher;
 import de.metas.rfq.IRfQConfiguration;
+import de.metas.rfq.event.IRfQEventDispacher;
 
 /*
  * #%L
@@ -36,6 +37,9 @@ public class RfqMainInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+		Services.get(IRfQEventDispacher.class)
+				.registerListener(PMMRfQEventListener.instance);
+		
 		Services.get(IRfQConfiguration.class)
 				.addRfQResponsesProducerFactory(PMMRfQResponseProducerFactory.instance)
 				.addRfQResponsePublisher(PMMWebuiRfQResponsePublisher.instance)
