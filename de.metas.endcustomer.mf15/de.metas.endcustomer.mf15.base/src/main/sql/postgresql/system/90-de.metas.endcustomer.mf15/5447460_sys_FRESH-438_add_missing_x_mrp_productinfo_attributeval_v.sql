@@ -1,4 +1,4 @@
---
+﻿--
 -- might be overridden in an endcustomer project
 --
 CREATE OR REPLACE FUNCTION x_mrp_productinfo_attributeval_v(IN dateat date, IN M_Product_ID numeric)
