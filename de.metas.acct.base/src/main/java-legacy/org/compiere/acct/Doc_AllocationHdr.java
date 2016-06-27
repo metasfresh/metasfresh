@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -307,7 +308,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}        	// for all lines
+		}           	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -329,23 +330,15 @@ public class Doc_AllocationHdr extends Doc
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+			
+			// In case there is a line with a writeoff amount, throw an exception. This is not supported (yet).
 
-			setC_BPartner_ID(line.getC_BPartner_ID());
+			if (line.getPaymentWriteOffAmt().signum() != 0)
+			{
+				throw new AccountingException("The line {0} has writeOff amount. This is not supported", new Object[] { line });
+			}
+			
 			final MAccount paymentAcct = line.getPaymentAcct(as);
-			// setC_BP_BankAccount_ID(paymentAcct.getAccount_ID());
-
-			if (!(line.getPaymentWriteOffAmt().signum() == 0))
-			{
-				createPaymentWriteOffAmtFacts(fact, line);
-				continue;
-			}
-
-			if (!(line.getDiscountAmt().signum() == 0))
-			{
-				createDiscountFactsFromPayment(fact, line);
-				continue;
-			}
-
 			final I_C_Payment payment = line.getC_Payment();
 
 			if (payment == null)
@@ -427,59 +420,6 @@ public class Doc_AllocationHdr extends Doc
 
 			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, paymentWriteOffAmt);
 			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), paymentWriteOffAmt, null);
-		}
-
-		//
-		// Update fact line dimensions
-		Check.assumeNotNull(fl_Payment, "fl_Payment not null");
-		fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
-		//
-		Check.assumeNotNull(fl_Discount, "fl_Discount not null");
-		fl_Discount.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Discount.setC_BPartner_ID(payment.getC_BPartner_ID());
-	}
-
-	private final void createDiscountFactsFromPayment(final Fact fact, final DocLine_Allocation line)
-	{
-		if (line.getDiscountAmt().signum() == 0)
-		{
-			return;
-		}
-
-		final I_C_Payment payment = line.getC_Payment();
-		Check.assumeNotNull(payment, "payment not null for {}", line); // shall not happen
-
-		final MAcctSchema as = fact.getAcctSchema();
-		final MAccount paymentAcct = line.getPaymentAcct(as);
-		final FactLine fl_Payment;
-		final FactLine fl_Discount;
-
-		//
-		// Case: Customer Overpayment
-		//
-		// PaymentAcct DR
-		// DiscountExpense CR
-		if (payment.isReceipt())
-		{
-			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountExp, as);
-			final BigDecimal paymentDiscountAmt = line.getDiscountAmt();
-
-			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), paymentDiscountAmt, null);
-			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), null, paymentDiscountAmt);
-		}
-		//
-		// Case: Vendor Overpayment
-		//
-		// PaymentAcct CR
-		// DiscountRevenue DR
-		else
-		{
-			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountRev, as);
-			final BigDecimal paymentDiscountAmt = line.getDiscountAmt().negate();
-
-			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, paymentDiscountAmt);
-			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), paymentDiscountAmt, null);
 		}
 
 		//
@@ -948,7 +888,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}        	// Commitment
+		}           	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1358,7 +1298,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}        	// Discount
+			}           	// Discount
 
 			//
 			// WriteOff Amount
@@ -1394,8 +1334,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}        	// WriteOff
-		}        	// for all lines
+			}           	// WriteOff
+		}           	// for all lines
 	}	// createEntries
 
 	/**
