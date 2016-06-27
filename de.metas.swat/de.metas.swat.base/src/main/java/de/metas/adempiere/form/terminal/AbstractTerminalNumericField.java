@@ -353,7 +353,7 @@ public abstract class AbstractTerminalNumericField
 					+ "\n value: " + valueOld + "->" + valueNew
 					+ "\n fireEvent: " + fireEvent
 					+ "\n fNumber: " + fNumber)
-							.throwOrLogWarningIfDeveloperMode(log);
+							.throwIfDeveloperModeOrLogWarningElse(log);
 			return;
 		}
 
