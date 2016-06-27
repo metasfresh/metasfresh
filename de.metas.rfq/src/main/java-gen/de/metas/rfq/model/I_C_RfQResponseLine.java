@@ -301,7 +301,7 @@ public interface I_C_RfQResponseLine
 	 * Set Antwort-datum.
 	 * Datum der Antwort
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -311,7 +311,7 @@ public interface I_C_RfQResponseLine
 	 * Get Antwort-datum.
 	 * Datum der Antwort
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -326,7 +326,7 @@ public interface I_C_RfQResponseLine
 	 * Set Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -336,7 +336,7 @@ public interface I_C_RfQResponseLine
 	 * Get Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -351,7 +351,7 @@ public interface I_C_RfQResponseLine
 	 * Set Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -361,7 +361,7 @@ public interface I_C_RfQResponseLine
 	 * Get Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

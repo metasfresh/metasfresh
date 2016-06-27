@@ -399,7 +399,7 @@ public interface I_C_RfQResponse_v
 	 * Set Antwort-datum.
 	 * Date of the Response
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -409,7 +409,7 @@ public interface I_C_RfQResponse_v
 	 * Get Antwort-datum.
 	 * Date of the Response
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -424,7 +424,7 @@ public interface I_C_RfQResponse_v
 	 * Set Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -434,7 +434,7 @@ public interface I_C_RfQResponse_v
 	 * Get Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

@@ -322,7 +322,7 @@ public interface I_C_RfQResponseLine_v
 	 * Set Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -332,7 +332,7 @@ public interface I_C_RfQResponseLine_v
 	 * Get Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

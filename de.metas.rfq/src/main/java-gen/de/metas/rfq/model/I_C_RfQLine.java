@@ -185,7 +185,7 @@ public interface I_C_RfQLine
 	 * Set Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -195,7 +195,7 @@ public interface I_C_RfQLine
 	 * Get Arbeit fertiggestellt.
 	 * Date when work is (planned to be) complete
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -210,7 +210,7 @@ public interface I_C_RfQLine
 	 * Set Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -220,7 +220,7 @@ public interface I_C_RfQLine
 	 * Get Arbeitsbeginn.
 	 * Date when work is (planned to be) started
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
