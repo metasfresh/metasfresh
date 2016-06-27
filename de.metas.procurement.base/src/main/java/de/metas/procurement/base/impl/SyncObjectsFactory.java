@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -20,6 +22,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -112,6 +116,9 @@ public class SyncObjectsFactory
 	/** C_BPartner_ID to {@link I_C_Flatrate_Term}s */
 	private final Multimap<Integer, I_C_Flatrate_Term> _bpartnerId2contract = MultimapBuilder.hashKeys().arrayListValues().build();
 	private boolean _bpartnerId2contract_fullyLoaded = false;
+	
+	private Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder()
+			.build();
 
 	private SyncObjectsFactory(final Date date)
 	{
@@ -327,6 +334,31 @@ public class SyncObjectsFactory
 
 	public SyncProduct createSyncProduct(final I_PMM_Product pmmProduct)
 	{
+		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
+		try
+		{
+			final SyncProduct syncProduct = syncProductsCache.get(product_uuid, new Callable<SyncProduct>()
+			{
+
+				@Override
+				public SyncProduct call() throws Exception
+				{
+					return createSyncProductNoCache(pmmProduct);
+				}
+			});
+			return syncProduct.copy();
+		}
+		catch (final ExecutionException ex)
+		{
+			throw new RuntimeException("Failed creating "+SyncProduct.class+" for "+pmmProduct, ex.getCause());
+		}
+		
+	}
+
+	private final SyncProduct createSyncProductNoCache(final I_PMM_Product pmmProduct)
+	{
+		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
+		
 		final I_M_Product product = pmmProduct.getM_Product();
 
 		String productName = pmmProduct.getProductName();
@@ -343,7 +375,7 @@ public class SyncObjectsFactory
 				&& pmmProduct.getM_Product_ID() > 0
 				&& pmmProduct.getM_HU_PI_Item_Product_ID() > 0;
 
-		syncProduct.setUuid(SyncUUIDs.toUUIDString(pmmProduct));
+		syncProduct.setUuid(product_uuid);
 		syncProduct.setName(productName);
 		syncProduct.setPackingInfo(pmmProduct.getPackDescription());
 
@@ -439,20 +471,24 @@ public class SyncObjectsFactory
 
 	private final SyncRfQ createSyncRfQ(final I_C_RfQResponseLine rfqResponseLine)
 	{
+		if (pmmRfQBL.isClosed(rfqResponseLine))
+		{
+			// shall not happen
+			return null;
+		}
+		
 		final SyncRfQ syncRfQ = new SyncRfQ();
 		syncRfQ.setUuid(SyncUUIDs.toUUIDString(rfqResponseLine));
 
 		syncRfQ.setDateStart(rfqResponseLine.getDateWorkStart());
 		syncRfQ.setDateEnd(rfqResponseLine.getDateWorkComplete());
+		syncRfQ.setDateClose(rfqResponseLine.getDateResponse());
 
 		syncRfQ.setBpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_BPartner()));
 
-		syncRfQ.setDateClose(rfqResponseLine.getDateResponse());
-		syncRfQ.setClosed(pmmRfQBL.isClosed(rfqResponseLine));
-		syncRfQ.setWinner(rfqResponseLine.isSelectedWinner());
-
 		final I_PMM_Product pmmProduct = rfqResponseLine.getPMM_Product();
-		syncRfQ.setProduct_uuid(SyncUUIDs.toUUIDString(pmmProduct));
+		final SyncProduct syncProduct = createSyncProduct(pmmProduct);
+		syncRfQ.setProduct(syncProduct);
 
 		syncRfQ.setQtyRequested(rfqResponseLine.getQtyRequiered());
 

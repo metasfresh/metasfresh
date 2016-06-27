@@ -32,14 +32,11 @@ public class SyncRfQ extends AbstractSyncModel
 {
 	private Date dateStart;
 	private Date dateEnd;
+	private Date dateClose;
 
 	private String bpartner_uuid;
 
-	private Date dateClose;
-	private boolean closed;
-	private boolean winner;
-
-	private String product_uuid;
+	private SyncProduct product;
 	private BigDecimal qtyRequested;
 
 	@Override
@@ -48,14 +45,11 @@ public class SyncRfQ extends AbstractSyncModel
 		return "SyncRfQ ["
 				+ "dateStart=" + dateStart
 				+ ", dateEnd=" + dateEnd
+				+ ", dateClose=" + dateClose
 				//
 				+ ", bpartner_uuid=" + bpartner_uuid
 				//
-				+ ", dateClose=" + dateClose
-				+ ", closed=" + closed
-				+ ", winner=" + winner
-				//
-				+ ", product_uuid=" + product_uuid
+				+ ", product=" + product
 				+ ", qtyRequested=" + qtyRequested
 				+ "]";
 	}
@@ -101,34 +95,14 @@ public class SyncRfQ extends AbstractSyncModel
 		this.dateClose = dateClose;
 	}
 
-	public boolean isClosed()
+	public SyncProduct getProduct()
 	{
-		return closed;
+		return product;
 	}
 
-	public void setClosed(final boolean closed)
+	public void setProduct(final SyncProduct product)
 	{
-		this.closed = closed;
-	}
-
-	public boolean isWinner()
-	{
-		return winner;
-	}
-
-	public void setWinner(final boolean winner)
-	{
-		this.winner = winner;
-	}
-
-	public String getProduct_uuid()
-	{
-		return product_uuid;
-	}
-
-	public void setProduct_uuid(final String product_uuid)
-	{
-		this.product_uuid = product_uuid;
+		this.product = product;
 	}
 
 	public BigDecimal getQtyRequested()
