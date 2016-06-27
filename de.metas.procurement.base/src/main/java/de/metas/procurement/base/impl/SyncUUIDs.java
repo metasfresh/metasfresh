@@ -76,8 +76,14 @@ public final class SyncUUIDs
 
 	public static final String toUUIDString(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		return UUIDs.fromIdAsString(rfqResponseLine.getC_RfQResponseLine_ID());
+		return toC_RfQReponseLine_UUID(rfqResponseLine.getC_RfQResponseLine_ID());
 	}
+	
+	public static final String toC_RfQReponseLine_UUID(final int C_RfQResponseLine_ID)
+	{
+		return UUIDs.fromIdAsString(C_RfQResponseLine_ID);
+	}
+
 	
 	public static final int getC_RfQResponseLine_ID(final String uuid)
 	{

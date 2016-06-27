@@ -151,6 +151,12 @@ public class SyncObjectsFactory
 		syncContract.setUuid(SyncUUIDs.toUUIDString(term));
 		syncContract.setDateFrom(term.getStartDate());
 		syncContract.setDateTo(term.getEndDate());
+		
+		final int rfqResponseLineId = term.getC_RfQResponseLine_ID();
+		if (rfqResponseLineId > 0)
+		{
+			syncContract.setRfq_uuid(SyncUUIDs.toC_RfQReponseLine_UUID(rfqResponseLineId));
+		}
 
 		//
 		// Contract Line: 1 line for our PMM_Product
