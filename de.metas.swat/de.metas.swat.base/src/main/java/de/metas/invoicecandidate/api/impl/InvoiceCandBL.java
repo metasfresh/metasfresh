@@ -2049,6 +2049,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
 	{
+		if(! isCloseIfPartiallyInvoiced())
+		{
+			return;
+		}
+		
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
