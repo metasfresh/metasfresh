@@ -464,7 +464,6 @@ public class ServerSyncBL implements IServerSyncBL
 		// RfQ Response Line
 		final String rfqResponseLine_UUID = syncPriceChangeEvent.getRfq_uuid();
 		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
-		SyncUUIDs.getC_RfQResponseLine_ID(rfqResponseLine_UUID);
 
 		//
 		// Price
@@ -512,12 +511,16 @@ public class ServerSyncBL implements IServerSyncBL
 		// RfQ Response Line
 		final String rfqResponseLine_UUID = syncQtyChangeEvent.getRfq_uuid();
 		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
-		SyncUUIDs.getC_RfQResponseLine_ID(rfqResponseLine_UUID);
 
 		//
 		// Qty
 		event.setType(X_PMM_RfQResponse_ChangeEvent.TYPE_Quantity);
 		event.setQty(syncQtyChangeEvent.getQty());
+		
+		//
+		// Date
+		final Timestamp datePromised = syncQtyChangeEvent.getDay() == null ? null : TimeUtil.trunc(syncQtyChangeEvent.getDay(), TimeUtil.TRUNC_DAY);
+		event.setDatePromised(datePromised);
 
 		// Product
 		event.setPMM_Product(pmmProduct);

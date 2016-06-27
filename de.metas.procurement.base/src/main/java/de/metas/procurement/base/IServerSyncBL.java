@@ -14,6 +14,7 @@ import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 /*
@@ -101,4 +102,12 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 */
 	@Override
 	public void reportWeekSupply(SyncWeeklySupplyRequest request);
+
+	/**
+	 * @param request
+	 * @see IServerSync#reportRfQChanges(SyncRfQChangeRequest)
+	 */
+	@Override
+	public void reportRfQChanges(SyncRfQChangeRequest request);
+
 }

@@ -502,6 +502,7 @@ public class RfqBL implements IRfqBL
 		}
 	}
 
+	@Override
 	public boolean isDraft(final I_C_RfQResponse rfqResponse)
 	{
 		return !rfqResponse.isProcessed();

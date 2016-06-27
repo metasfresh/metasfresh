@@ -154,7 +154,7 @@ public class PMMContractBuilder
 			createFlatrateDataEntry(contract, period);
 		}
 		// Validate
-		assertDailyFlatrateDataEntriesAreFullyAllocated();
+		assertDailyFlatrateDataEntriesAreFullyAllocated(contract);
 
 		//
 		// Complete the contract if requested
@@ -176,7 +176,7 @@ public class PMMContractBuilder
 		final I_C_Flatrate_Conditions flatrateConditions = getC_Flatrate_Conditions();
 		final Timestamp startDate = getStartDate();
 		final I_AD_User userInCharge = getAD_User_InCharge();
-		
+
 		final I_C_Flatrate_Term contract = InterfaceWrapperHelper.create(flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, product, completeItOnCreate), I_C_Flatrate_Term.class);
 		if (contract == null)
 		{
@@ -198,8 +198,6 @@ public class PMMContractBuilder
 		contract.setPMM_Product(pmmProduct);
 		contract.setM_Product(product);
 		contract.setC_UOM(getC_UOM());
-		
-		
 
 		InterfaceWrapperHelper.save(contract);
 
@@ -462,11 +460,15 @@ public class PMMContractBuilder
 		return qtySum;
 	}
 
-	private void assertDailyFlatrateDataEntriesAreFullyAllocated()
+	private void assertDailyFlatrateDataEntriesAreFullyAllocated(final I_C_Flatrate_Term contract)
 	{
 		for (final DailyFlatrateDataEntry entry : _flatrateDataEntriesByDay.values())
 		{
-			Check.assume(entry.isFullyAllocated(), "Daily entry shall be fully allocated: {}", entry);
+			if (!entry.isFullyAllocated())
+			{
+				throw new AdempiereException("Daily entry shall be fully allocated: " + entry
+						+ "\n Contract period: " + contract.getStartDate() + "->" + contract.getEndDate());
+			}
 		}
 	}
 

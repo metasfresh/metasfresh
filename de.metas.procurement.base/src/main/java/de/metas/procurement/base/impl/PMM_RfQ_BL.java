@@ -111,7 +111,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		final PMMContractBuilder contractBuilder = PMMContractBuilder.newBuilder()
 				.setCtx(InterfaceWrapperHelper.getCtx(rfqResponseLine))
 				.setFailIfNotCreated(true)
-				.setComplete(true)
+				.setComplete(false)
 				.setC_Flatrate_Conditions(conditions)
 				.setStartDate(rfqResponseLine.getDateWorkStart())
 				.setEndDate(rfqResponseLine.getDateWorkComplete())

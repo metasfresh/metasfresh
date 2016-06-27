@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
+import de.metas.procurement.base.impl.SyncUUIDs;
 import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
@@ -97,19 +98,9 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		InterfaceWrapperHelper.save(event);
 	}
 
-	private void assertRfqResponseNotClosed(final I_PMM_RfQResponse_ChangeEvent event)
-	{
-		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
-		Check.assumeNotNull(rfqResponseLine, "rfqResponseLine not null");
-
-		if (pmmRfqBL.isClosed(rfqResponseLine))
-		{
-			throw new RfQDocumentClosedException(rfqResponseLine);
-		}
-	}
-
 	private void process_PriceChangeEvent(final I_PMM_RfQResponse_ChangeEvent event)
 	{
+		updateC_RfQResponseLine(event);
 		assertRfqResponseNotClosed(event);
 		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
 
@@ -125,6 +116,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 
 	private void process_QuantityChangeEvent(final I_PMM_RfQResponse_ChangeEvent event)
 	{
+		updateC_RfQResponseLine(event);
 		assertRfqResponseNotClosed(event);
 		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
 
@@ -149,6 +141,24 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		event.setQty_Old(qtyOld);
 		event.setC_RfQResponseLineQty(rfqResponseLineQty);
 		markProcessed(event);
+	}
+	
+	private void updateC_RfQResponseLine(final I_PMM_RfQResponse_ChangeEvent event)
+	{
+		final String rfqResponseLine_uuid = event.getC_RfQResponseLine_UUID();
+		final int rfqReponseLineId = SyncUUIDs.getC_RfQResponseLine_ID(rfqResponseLine_uuid);
+		event.setC_RfQResponseLine_ID(rfqReponseLineId);
+	}
+
+	private void assertRfqResponseNotClosed(final I_PMM_RfQResponse_ChangeEvent event)
+	{
+		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
+		Check.assumeNotNull(rfqResponseLine, "rfqResponseLine not null");
+
+		if (pmmRfqBL.isClosed(rfqResponseLine))
+		{
+			throw new RfQDocumentClosedException(rfqResponseLine);
+		}
 	}
 
 	public String getProcessSummary()

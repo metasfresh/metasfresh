@@ -1,10 +1,15 @@
 package de.metas.rfq.model.interceptor;
 
+import java.sql.Timestamp;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponseLine;
@@ -38,23 +43,42 @@ public class C_RfQResponseLineQty
 	public static final ModelDynAttributeAccessor<I_C_RfQResponseLineQty, Boolean> DYNATTR_DisableResponseLineUpdate //
 	= new ModelDynAttributeAccessor<>(I_C_RfQResponseLineQty.class.getName() + "#DisableResponseLineUpdate", Boolean.class);
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE } //
+	, ifColumnsChanged = I_C_RfQResponseLineQty.COLUMNNAME_DatePromised)
+	public void validateDatePromised(final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+		final Timestamp datePromised = rfqResponseLineQty.getDatePromised();
+		if (datePromised == null)
+		{
+			throw new FillMandatoryException(I_C_RfQResponseLineQty.COLUMNNAME_DatePromised);
+		}
+
+		final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
+		final Timestamp dateWorkStart = rfqResponseLine.getDateWorkStart();
+		final Timestamp dateWorkComplete = rfqResponseLine.getDateWorkComplete();
+		if (!TimeUtil.isBetween(datePromised, dateWorkStart, dateWorkComplete))
+		{
+			throw new AdempiereException("@Invalid@ @DatePromised@ (" + dateWorkStart + " - " + dateWorkComplete + ")");
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE } //
 	, ifColumnsChanged = I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised)
 	public void updateC_RfQResponseLine_QtyPromised(final I_C_RfQResponseLineQty rfqResponseLineQty)
 	{
-		if (isResponseLineUpdate(rfqResponseLineQty))
+		if (isAllowResponseLineUpdate(rfqResponseLineQty))
 		{
 			final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
 			Services.get(IRfqBL.class).updateQtyPromisedAndSave(rfqResponseLine);
 		}
 	}
-	
+
 	public static void disableResponseLineUpdate(final I_C_RfQResponseLineQty rfqResponseLineQty)
 	{
 		DYNATTR_DisableResponseLineUpdate.setValue(rfqResponseLineQty, Boolean.TRUE);
 	}
-	
-	private static boolean isResponseLineUpdate(final I_C_RfQResponseLineQty rfqResponseLineQty)
+
+	private static boolean isAllowResponseLineUpdate(final I_C_RfQResponseLineQty rfqResponseLineQty)
 	{
 		return !DYNATTR_DisableResponseLineUpdate.isSet(rfqResponseLineQty);
 	}

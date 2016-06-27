@@ -1,8 +1,14 @@
 package de.metas.procurement.base.rfq.model.interceptor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_BL;
+import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.rfq.event.RfQEventListenerAdapter;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -38,7 +44,41 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 	}
 
 	@Override
-	public void onBeforeClose(final I_C_RfQResponse rfqResponse)
+	public void onBeforeComplete(final de.metas.rfq.model.I_C_RfQ rfq)
+	{
+		if (!Services.get(IPMM_RfQ_BL.class).isProcurement(rfq))
+		{
+			return;
+		}
+
+		final I_C_RfQ pmmRfq = InterfaceWrapperHelper.create(rfq, I_C_RfQ.class);
+
+		final List<String> notFilledMandatoryColumns = new ArrayList<>();
+		if (pmmRfq.getC_Flatrate_Conditions_ID() <= 0)
+		{
+			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_C_Flatrate_Conditions_ID);
+		}
+		if (pmmRfq.getDateWorkStart() == null)
+		{
+			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_DateWorkStart);
+		}
+		if (pmmRfq.getDateWorkComplete() == null)
+		{
+			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_DateWorkComplete);
+		}
+		if (pmmRfq.getDateResponse() == null)
+		{
+			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_DateResponse);
+		}
+		
+		if(!notFilledMandatoryColumns.isEmpty())
+		{
+			throw new FillMandatoryException(false, notFilledMandatoryColumns);
+		}
+	}
+	
+	@Override
+	public void onAfterClose(final I_C_RfQResponse rfqResponse)
 	{
 		Services.get(IPMM_RfQ_BL.class).createDraftContractsForSelectedWinners(rfqResponse);
 	}

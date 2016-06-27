@@ -36,7 +36,7 @@ public class SyncRfQChangeRequest
 	@Override
 	public String toString()
 	{
-		return "SyncRfQQtyRequest ["
+		return "SyncRfQChangeRequest ["
 				+ "priceChangeEvents=" + priceChangeEvents
 				+ ", qtyChangeEvents=" + qtyChangeEvents
 				+ "]";
@@ -62,9 +62,13 @@ public class SyncRfQChangeRequest
 		this.qtyChangeEvents = qtyChangeEvents;
 	}
 
-	public boolean isEmpty()
+	public static boolean isEmpty(final SyncRfQChangeRequest request)
 	{
-		return priceChangeEvents.isEmpty()
-				&& qtyChangeEvents.isEmpty();
+		if(request == null)
+		{
+			return true;
+		}
+		return request.priceChangeEvents.isEmpty()
+				&& request.qtyChangeEvents.isEmpty();
 	}
 }

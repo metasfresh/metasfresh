@@ -1372,6 +1372,12 @@ public class FlatrateBL implements IFlatrateBL
 				currentFirstDay = TimeUtil.addDays(lastDayOfNewTerm, 1);
 			}
 		}
+		// Case: If TermDuration is ZERO, we shall not calculate the EndDate automatically,
+		// but relly on what was set
+		else if (transition.getTermDuration() == 0)
+		{
+			return;
+		}
 		else
 		{
 			if (X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE.equals(transition.getTermDurationUnit()))
@@ -1413,9 +1419,14 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateNoticeDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp lastDayOfNewTerm = term.getEndDate();
-
+		
 		final Timestamp noticeDate;
-		if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(transition.getTermOfNoticeUnit()))
+		if(lastDayOfNewTerm == null)
+		{
+			// If Last day of new term is not set, don't calculate the noticeDate
+			noticeDate = null;
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(transition.getTermOfNoticeUnit()))
 		{
 			noticeDate = TimeUtil.addMonths(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
 		}
@@ -1432,6 +1443,7 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(false, "TermOfNoticeDuration " + transition.getTermOfNoticeUnit() + " doesn't exist");
 			noticeDate = null; // code won't be reached
 		}
+		
 		term.setNoticeDate(noticeDate);
 	}
 
@@ -1645,6 +1657,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		// FIXME: FRESH-402 replace loggable from here with exception throwning
 		if (dontCreateTerm)
 		{
 			loggable.addLog("BPartner " + bPartner.getValue() + ": not created because: " + notCreatedReason.toString());
@@ -1657,6 +1670,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
+		newTerm.setEndDate(startDate); // will be updated by BL
 		newTerm.setDropShip_BPartner(bPartner);
 
 		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.

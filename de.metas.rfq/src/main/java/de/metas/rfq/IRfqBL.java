@@ -62,6 +62,7 @@ public interface IRfqBL extends ISingletonService
 	//@formatter:on
 
 	//@formatter:off
+	boolean isDraft(I_C_RfQResponse rfqResponse);
 	void assertDraft(I_C_RfQResponse rfqResponse);
 	void complete(I_C_RfQResponse response);
 	boolean isClosed(I_C_RfQResponse rfqResponse);
@@ -69,5 +70,6 @@ public interface IRfqBL extends ISingletonService
 	//@formatter:on
 
 	void updateQtyPromisedAndSave(I_C_RfQResponseLine rfqResponseLine);
+
 
 }

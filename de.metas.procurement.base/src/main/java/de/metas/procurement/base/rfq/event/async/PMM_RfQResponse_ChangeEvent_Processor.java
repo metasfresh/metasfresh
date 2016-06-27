@@ -28,6 +28,12 @@ import de.metas.procurement.base.rfq.event.impl.PMMRfQResponseChangeEventProcess
  * #L%
  */
 
+/**
+ * Process all pending {@link I_PMM_RfQResponse_ChangeEvent} records.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class PMM_RfQResponse_ChangeEvent_Processor extends WorkpackageProcessorAdapter
 {
 	public static final void scheduleOnTrxCommit(final I_PMM_RfQResponse_ChangeEvent event)
