@@ -54,11 +54,11 @@ public class C_RfQResponseLineQty
 		}
 
 		final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
-		final Timestamp dateWorkStart = rfqResponseLine.getDateWorkStart();
-		final Timestamp dateWorkComplete = rfqResponseLine.getDateWorkComplete();
+		final Timestamp dateWorkStart = TimeUtil.truncToDay(rfqResponseLine.getDateWorkStart());
+		final Timestamp dateWorkComplete = TimeUtil.truncToDay(rfqResponseLine.getDateWorkComplete());
 		if (!TimeUtil.isBetween(datePromised, dateWorkStart, dateWorkComplete))
 		{
-			throw new AdempiereException("@Invalid@ @DatePromised@ (" + dateWorkStart + " - " + dateWorkComplete + ")");
+			throw new AdempiereException("@Invalid@ @DatePromised@: " + datePromised + " (" + dateWorkStart + " - " + dateWorkComplete + ")");
 		}
 	}
 
