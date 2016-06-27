@@ -497,6 +497,9 @@ public class SyncObjectsFactory
 		syncRfQ.setProduct(syncProduct);
 
 		syncRfQ.setQtyRequested(rfqResponseLine.getQtyRequiered());
+		syncRfQ.setQtyCUInfo(rfqResponseLine.getC_UOM().getUOMSymbol());
+		
+		syncRfQ.setCurrencyCode(rfqResponseLine.getC_Currency().getISO_Code());
 
 		return syncRfQ;
 	}

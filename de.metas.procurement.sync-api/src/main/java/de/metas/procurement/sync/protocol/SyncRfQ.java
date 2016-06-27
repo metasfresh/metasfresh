@@ -38,6 +38,9 @@ public class SyncRfQ extends AbstractSyncModel
 
 	private SyncProduct product;
 	private BigDecimal qtyRequested;
+	private String qtyCUInfo;
+
+	private String currencyCode;
 
 	@Override
 	public String toString()
@@ -50,7 +53,9 @@ public class SyncRfQ extends AbstractSyncModel
 				+ ", bpartner_uuid=" + bpartner_uuid
 				//
 				+ ", product=" + product
-				+ ", qtyRequested=" + qtyRequested
+				+ ", qtyRequested=" + qtyRequested + " " + qtyCUInfo
+				//
+				+ ", currencyCode=" + currencyCode
 				+ "]";
 	}
 
@@ -74,13 +79,12 @@ public class SyncRfQ extends AbstractSyncModel
 		this.dateEnd = dateEnd;
 	}
 
-	
 	public String getBpartner_uuid()
 	{
 		return bpartner_uuid;
 	}
-	
-	public void setBpartner_uuid(String bpartner_uuid)
+
+	public void setBpartner_uuid(final String bpartner_uuid)
 	{
 		this.bpartner_uuid = bpartner_uuid;
 	}
@@ -113,5 +117,25 @@ public class SyncRfQ extends AbstractSyncModel
 	public void setQtyRequested(final BigDecimal qtyRequested)
 	{
 		this.qtyRequested = qtyRequested;
+	}
+
+	public String getCurrencyCode()
+	{
+		return currencyCode;
+	}
+
+	public void setCurrencyCode(final String currencyCode)
+	{
+		this.currencyCode = currencyCode;
+	}
+
+	public String getQtyCUInfo()
+	{
+		return qtyCUInfo;
+	}
+
+	public void setQtyCUInfo(final String qtyCUInfo)
+	{
+		this.qtyCUInfo = qtyCUInfo;
 	}
 }
