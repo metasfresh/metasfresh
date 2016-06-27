@@ -7,30 +7,38 @@ CREATE OR REPLACE FUNCTION x_mrp_productinfo_attributeval_v(IN dateat date, IN M
 	  	ad_org_id numeric,
 	  	m_product_id numeric,
 	  	name text,
-	  	value text,
+	  	value text, -- 5
 	  	ispurchased character,
 	  	issold character,
 	  	m_product_category_id numeric,
 	  	isactive character,
-	  	dategeneral date,
+	  	dategeneral date, -- 10
 	  	groupname text,
+	  	PMM_QtyPromised_OnDate numeric,
 	  	qtyreserved_ondate numeric,
 	  	qtyordered_ondate numeric,
-	  	qtymaterialentnahme numeric,
-	  	fresh_qtyonhand_ondate numeric,
+	  	qtymaterialentnahme numeric, -- 15
+	  	fresh_qtyonhand_ondate numeric, 
 	  	fresh_qtypromised numeric,
 	  	fresh_qtymrp numeric
   	) AS
 $BODY$
 SELECT
-	ad_client_id, ad_org_id, m_product_id, name, 
-	value, ispurchased, issold, m_product_category_id, isactive,
-	DateGeneral,
+	ad_client_id, 
+	ad_org_id, 
+	m_product_id, 
+	name, 
+	value, -- 5
+	ispurchased, 
+	issold, 
+	m_product_category_id, 
+	isactive,
+	DateGeneral, -- 10
 	GroupName,
 	SUM(PMM_QtyPromised_OnDate) AS PMM_QtyPromised_OnDate, -- FRESH-86
 	SUM(qtyreserved_ondate) AS qtyreserved_ondate, 
 	SUM(qtyordered_ondate) AS qtyordered_ondate, 
-	SUM(qtymaterialentnahme) AS qtymaterialentnahme, 
+	SUM(qtymaterialentnahme) AS qtymaterialentnahme,  -- 15
 	SUM(fresh_qtyonhand_ondate) AS fresh_qtyonhand_ondate, 
 	SUM(fresh_qtypromised) AS fresh_qtypromised, 
 	SUM(fresh_qtymrp) AS fresh_qtymrp
