@@ -307,7 +307,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}   	// for all lines
+		}        	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -330,6 +330,22 @@ public class Doc_AllocationHdr extends Doc
 		{
 			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
 
+			setC_BPartner_ID(line.getC_BPartner_ID());
+			final MAccount paymentAcct = line.getPaymentAcct(as);
+			// setC_BP_BankAccount_ID(paymentAcct.getAccount_ID());
+
+			if (!(line.getPaymentWriteOffAmt().signum() == 0))
+			{
+				createPaymentWriteOffAmtFacts(fact, line);
+				continue;
+			}
+
+			if (!(line.getDiscountAmt().signum() == 0))
+			{
+				createDiscountFactsFromPayment(fact, line);
+				continue;
+			}
+
 			final I_C_Payment payment = line.getC_Payment();
 
 			if (payment == null)
@@ -337,23 +353,23 @@ public class Doc_AllocationHdr extends Doc
 				continue;
 			}
 
-			final MAccount paymentAcct = line.getPaymentAcct(as);
 			final FactLine fl_Payment;
 
 			final BigDecimal payAmt = payment.getPayAmt();
 
-			// Outgoing payment
+			// Incoming payment
 			if (payment.isReceipt())
 			{
-				// Originally on Debit. The ammount must be moved to Credit
-				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, payAmt);
+				// Originally on Credit. The amount must be moved to Debit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
+
 			}
 
-			// Incoming payment
+			// Outgoing payment
 			else
 			{
-				// Originally on Credit. The ammount must be moved to Debit
-				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
+				// Originally on Debit. The amount must be moved to Credit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, payAmt);
 			}
 
 			// Make sure the fact line was created
@@ -411,6 +427,59 @@ public class Doc_AllocationHdr extends Doc
 
 			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, paymentWriteOffAmt);
 			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), paymentWriteOffAmt, null);
+		}
+
+		//
+		// Update fact line dimensions
+		Check.assumeNotNull(fl_Payment, "fl_Payment not null");
+		fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
+		fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
+		//
+		Check.assumeNotNull(fl_Discount, "fl_Discount not null");
+		fl_Discount.setAD_Org_ID(payment.getAD_Org_ID());
+		fl_Discount.setC_BPartner_ID(payment.getC_BPartner_ID());
+	}
+
+	private final void createDiscountFactsFromPayment(final Fact fact, final DocLine_Allocation line)
+	{
+		if (line.getDiscountAmt().signum() == 0)
+		{
+			return;
+		}
+
+		final I_C_Payment payment = line.getC_Payment();
+		Check.assumeNotNull(payment, "payment not null for {}", line); // shall not happen
+
+		final MAcctSchema as = fact.getAcctSchema();
+		final MAccount paymentAcct = line.getPaymentAcct(as);
+		final FactLine fl_Payment;
+		final FactLine fl_Discount;
+
+		//
+		// Case: Customer Overpayment
+		//
+		// PaymentAcct DR
+		// DiscountExpense CR
+		if (payment.isReceipt())
+		{
+			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountExp, as);
+			final BigDecimal paymentDiscountAmt = line.getDiscountAmt();
+
+			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), paymentDiscountAmt, null);
+			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), null, paymentDiscountAmt);
+		}
+		//
+		// Case: Vendor Overpayment
+		//
+		// PaymentAcct CR
+		// DiscountRevenue DR
+		else
+		{
+			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountRev, as);
+			final BigDecimal paymentDiscountAmt = line.getDiscountAmt().negate();
+
+			fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, paymentDiscountAmt);
+			fl_Discount = fact.createLine(line, discountAcct, getC_Currency_ID(), paymentDiscountAmt, null);
 		}
 
 		//
@@ -879,7 +948,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}   	// Commitment
+		}        	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1289,7 +1358,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}   	// Discount
+			}        	// Discount
 
 			//
 			// WriteOff Amount
@@ -1325,8 +1394,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}   	// WriteOff
-		}   	// for all lines
+			}        	// WriteOff
+		}        	// for all lines
 	}	// createEntries
 
 	/**
