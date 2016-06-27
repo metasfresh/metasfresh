@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 
 import com.google.common.collect.ImmutableList;
 
@@ -72,6 +73,16 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_InOut inout = request.getModel(I_M_InOut.class);
+
+		// 
+		// Don't create InvoiceCandidates for DocSubType Saldokorrektur (FRESH-454)
+		final I_C_DocType docType = inout.getC_DocType();
+		final String docSubType = docType.getDocSubType();
+		if (de.metas.interfaces.I_C_DocType.DOCSUBTYPE_InOutAmountCorrection.equals(docSubType))
+		{
+			return ImmutableList.of();
+		}
+		
 
 		//
 		// Retrieve inout lines
