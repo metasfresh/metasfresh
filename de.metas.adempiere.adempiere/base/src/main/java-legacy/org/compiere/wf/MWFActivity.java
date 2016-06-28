@@ -46,7 +46,6 @@ import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
-import org.compiere.model.MMailText;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
@@ -69,6 +68,8 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
 
 /**
  * Workflow Activity Model.
@@ -1074,27 +1075,28 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			}
 			else
 			{
-				MClient client = MClient.get(getCtx(), getAD_Client_ID());
-				MMailText mailtext = new MMailText(getCtx(), getNode().getR_MailText_ID(), null);
-				mailtext.setPO(m_po, true); // metas: tsa
+				final IMailBL mailBL = Services.get(IMailBL.class);
+				final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(getNode().getR_MailText());
+				mailTextBuilder.setRecord(m_po, true); // metas: tsa
 
 				// metas: tsa: check for null strings
 				StringBuffer subject = new StringBuffer();
 				if (!Check.isEmpty(getNode().getDescription(), true))
 					subject.append(getNode().getDescription());
-				if (!Check.isEmpty(mailtext.getMailHeader(), true))
+				if (!Check.isEmpty(mailTextBuilder.getMailHeader(), true))
 				{
 					if (subject.length() > 0)
 						subject.append(": ");
-					subject.append(mailtext.getMailHeader());
+					subject.append(mailTextBuilder.getMailHeader());
 				}
 
 				// metas: tsa: check for null strings
-				StringBuffer message = new StringBuffer(mailtext.getMailText(true));
+				StringBuffer message = new StringBuffer(mailTextBuilder.getFullMailText());
 				if (!Check.isEmpty(getNodeHelp(), true))
 					message.append("\n-----\n").append(getNodeHelp());
 				String to = getNode().getEMail();
 
+				final MClient client = MClient.get(getCtx(), getAD_Client_ID());
 				client.sendEMail(to, subject.toString(), message.toString(), null);
 			}
 			return true;	// done
@@ -1589,12 +1591,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	private void sendEMail()
 	{
 		DocAction doc = (DocAction)m_po;
-		MMailText text = new MMailText(getCtx(), m_node.getR_MailText_ID(), null);
-		text.setPO(m_po, true);
+		
+		final IMailBL mailBL = Services.get(IMailBL.class);
+		final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(m_node.getR_MailText());
+		mailTextBuilder.setRecord(m_po, true);
 		//
 		String subject = doc.getDocumentInfo()
-				+ ": " + text.getMailHeader();
-		String message = text.getMailText(true)
+				+ ": " + mailTextBuilder.getMailHeader();
+		String message = mailTextBuilder.getFullMailText()
 				+ "\n-----\n" + doc.getDocumentInfo()
 				+ "\n" + doc.getSummary();
 		File pdf = doc.createPDF();
@@ -1602,12 +1606,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		MClient client = MClient.get(doc.getCtx(), doc.getAD_Client_ID());
 
 		// Explicit EMail
-		sendEMail(client, 0, m_node.getEMail(), subject, message, pdf, text.isHtml());
+		sendEMail(client, 0, m_node.getEMail(), subject, message, pdf, mailTextBuilder.isHtml());
 		// Recipient Type
 		String recipient = m_node.getEMailRecipient();
 		// email to document user
 		if (recipient == null || recipient.length() == 0)
-			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, text.isHtml());
+			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentBusinessPartner))
 		{
 			int index = m_po.get_ColumnIndex("AD_User_ID");
@@ -1618,7 +1622,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				{
 					int AD_User_ID = ((Integer)oo).intValue();
 					if (AD_User_ID != 0)
-						sendEMail(client, AD_User_ID, null, subject, message, pdf, text.isHtml());
+						sendEMail(client, AD_User_ID, null, subject, message, pdf, mailTextBuilder.isHtml());
 					else
 						log.debug("No User in Document");
 				}
@@ -1629,14 +1633,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				log.debug("No User Field in Document");
 		}
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentOwner))
-			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, text.isHtml());
+			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_WFResponsible))
 		{
 			MWFResponsible resp = getResponsible();
 			if (resp.isInvoker())
-				sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, text.isHtml());
+				sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 			else if (resp.isHuman())
-				sendEMail(client, resp.getAD_User_ID(), null, subject, message, pdf, text.isHtml());
+				sendEMail(client, resp.getAD_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 			else if (resp.isRole())
 			{
 				final I_AD_Role role = resp.getRole();
@@ -1644,7 +1648,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				{
 					for (final I_AD_User user : MUser.getWithRole(role))
 					{
-						sendEMail(client, user.getAD_User_ID(), null, subject, message, pdf, text.isHtml());
+						sendEMail(client, user.getAD_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 					}
 				}
 			}
@@ -1654,7 +1658,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (org.getSupervisor_ID() <= 0)
 					log.debug("No Supervisor for AD_Org_ID=" + m_po.getAD_Org_ID());
 				else
-					sendEMail(client, org.getSupervisor_ID(), null, subject, message, pdf, text.isHtml());
+					sendEMail(client, org.getSupervisor_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 			}
 		}
 	}	// sendEMail

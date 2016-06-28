@@ -20,11 +20,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
 
 /**
  *	Request Callouts
@@ -51,17 +55,18 @@ public class CalloutRequest extends CalloutEngine
 		if (value == null)
 			return "";
 
-		Integer R_MailText_ID = (Integer)value;
-		MMailText mailtext = new MMailText(ctx, R_MailText_ID.intValue(), null);
+		final Integer R_MailText_ID = (Integer)value;
+		final IMailTextBuilder mailTextBuilder = Services.get(IMailBL.class)
+				.newMailTextBuilder(InterfaceWrapperHelper.create(ctx, R_MailText_ID, I_R_MailText.class, ITrx.TRXNAME_None));
 
 		Integer userID = (Integer) mTab.getValue("AD_User_ID");
 		if (userID != null)
-			mailtext.setUser(userID.intValue());
+			mailTextBuilder.setUser(userID.intValue());
 		Integer bpID = (Integer) mTab.getValue("C_BPartner_ID");
 		if (bpID != null)
-			mailtext.setBPartner(bpID.intValue());
+			mailTextBuilder.setBPartner(bpID.intValue());
 		
-		String txt = mailtext.getMailText();
+		String txt = mailTextBuilder.getMailText();
 		txt = Env.parseContext(ctx, WindowNo, txt, false, true);
 		mTab.setValue("Result", txt);
 

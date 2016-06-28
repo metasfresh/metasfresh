@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -540,6 +541,7 @@ public class MClient extends X_AD_Client
 	 *	@param attachment optional attachment
 	 *	@return true if sent
 	 */
+	@Deprecated
 	public boolean sendEMail (String to, 
 		String subject, String message, File attachment)
 	{
@@ -555,6 +557,7 @@ public class MClient extends X_AD_Client
 	 *  @param html
 	 *	@return true if sent
 	 */
+	@Deprecated
 	public boolean sendEMail (String to, 
 		String subject, String message, File attachment, boolean html)
 	{
@@ -595,6 +598,7 @@ public class MClient extends X_AD_Client
 	 *	@param attachment optional attachment
 	 *	@return true if sent
 	 */
+	@Deprecated
 	public boolean sendEMail (MUser from, MUser to, 
 		String subject, String message, File attachment)
 	{
@@ -611,6 +615,7 @@ public class MClient extends X_AD_Client
 	 *  @param isHtml
 	 *	@return true if sent
 	 */
+	@Deprecated
 	public boolean sendEMail (MUser from, MUser to, 
 		String subject, String message, File attachment, boolean isHtml)
 	{
@@ -640,6 +645,7 @@ public class MClient extends X_AD_Client
 	 *	@param email email
 	 *	@return true if sent
 	 */
+	@Deprecated
 	public boolean sendEmailNow(MUser from, MUser to, EMail email)
 	{
 		String msg = email.send();
@@ -695,6 +701,7 @@ public class MClient extends X_AD_Client
 	 *	@param message nessage
 	 *	@return EMail
 	 */
+	@Deprecated
 	public EMail createEMail (String to, 
 		String subject, String message)
 	{
@@ -709,12 +716,14 @@ public class MClient extends X_AD_Client
 	 *  @param html
 	 *	@return EMail
 	 */
+	@Deprecated
 	public EMail createEMail (String to, 
 		String subject, String message, boolean html)
 	{
 // metas: begin
 		return createEMail(to, subject, message, html, null);
 	}
+	@Deprecated
 	public EMail createEMail(String to,
 			String subject, String message, boolean html,
 			String mailCustomType)
@@ -829,6 +838,7 @@ public class MClient extends X_AD_Client
 // metas: begin
 		return createEMail(from, to, subject, message, html, null);
 	}
+	@Deprecated
 	public EMail createEMail (MUser from, String to, 
 			String subject, String message, boolean html,
 			String mailCustomType)

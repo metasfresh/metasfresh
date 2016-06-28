@@ -34,12 +34,7 @@ import org.apache.ecs.xhtml.option;
 import org.apache.ecs.xhtml.script;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.tr;
-import org.compiere.model.MMailMsg;
-import org.compiere.model.MRequest;
-import org.compiere.model.MStore;
-import org.compiere.model.MUserMail;
 import org.compiere.util.DisplayType;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.MimeType;
@@ -47,6 +42,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -771,76 +767,6 @@ public class WebUtil
 		response.addCookie(cookie);
 	}	//	deleteCookieWebUser
 	
-	/**************************************************************************
-	 * 	Send EMail
-	 *	@param request request
-	 *	@param to web user
-	 *	@param msgType see MMailMsg.MAILMSGTYPE_*
-	 *	@param parameter object array with parameters
-	 * 	@return mail EMail.SENT_OK or error message 
-	 */
-	public static String sendEMail (HttpServletRequest request, WebUser to, String msgType, Object[] parameter)
-	{
-		WebSessionCtx wsc = WebSessionCtx.get(request);
-		MStore wStore = wsc.wstore;
-		MMailMsg mailMsg = wStore.getMailMsg(msgType);
-		//
-		StringBuffer subject = new StringBuffer(mailMsg.getSubject());
-		if (parameter.length > 0 && parameter[0] != null)
-			subject.append(parameter[0]);
-		//
-		StringBuffer message = new StringBuffer();
-		String hdr = wStore.getEMailFooter();
-		if (hdr != null && hdr.length() > 0)
-			message.append(hdr).append("\n");
-		message.append(mailMsg.getMessage());
-		if (parameter.length > 1 && parameter[1] != null)
-			message.append(parameter[1]);
-		if (mailMsg.getMessage2() != null)
-		{
-			message.append("\n")
-				.append(mailMsg.getMessage2());
-			if (parameter.length > 2 && parameter[2] != null)
-				message.append(parameter[2]);
-		}
-		if (mailMsg.getMessage3() != null)
-		{
-			message.append("\n")
-				.append(mailMsg.getMessage3());
-			if (parameter.length > 3 && parameter[3] != null)
-				message.append(parameter[3]);
-		}
-		message.append(MRequest.SEPARATOR)
-			.append("http://").append(request.getServerName()).append(request.getContextPath())
-			.append("/ - ").append(wStore.getName())
-			.append("\n").append("Request from: ").append(getFrom(request))
-			.append("\n");
-		String ftr = wStore.getEMailFooter();
-		if (ftr != null && ftr.length() > 0)
-			message.append(ftr);
-		
-		//	Create Mail
-		EMail email = wStore.createEMail(to.getEmail(), 
-			subject.toString(), message.toString());
-		//	CC Order
-		if (msgType.equals(MMailMsg.MAILMSGTYPE_OrderAcknowledgement))
-		{
-			String orderEMail = wStore.getWebOrderEMail();
-			String storeEMail = wStore.getWStoreEMail();
-			if (orderEMail != null && orderEMail.length() > 0
-				&& !orderEMail.equals(storeEMail))	//	already Bcc
-				email.addBcc(orderEMail);
-		}
-
-		//	Send
-		String retValue = email.send();
-		//	Log
-		MUserMail um = new MUserMail(mailMsg, to.getAD_User_ID(), email);
-		um.save();
-		//
-		return retValue;
-	}	//	sendEMail
-	
 	/**
 	 * 	Get Remote From info
 	 * 	@param request request
@@ -868,26 +794,6 @@ public class WebUtil
 		cookie.setMaxAge(2592000);      //  30 days in seconds   60*60*24*30
 		response.addCookie(cookie);
 	}	//	setCookieWebUser
-
-	/**
-	 * 	Resend Validation Code
-	 * 	@param request request
-	 *	@param wu user
-	 */
-	public static void resendCode(HttpServletRequest request, WebUser wu)
-	{
-		String msg = sendEMail(request, wu, 
-			MMailMsg.MAILMSGTYPE_UserVerification,
-			new Object[]{
-				request.getServerName(),
-				wu.getName(),
-				wu.getEMailVerifyCode()});
-		if (EMail.SENT_OK.equals(msg))
-			wu.setPasswordMessage ("EMail sent");
-		else
-			wu.setPasswordMessage ("Problem sending EMail: " + msg);
-	}	//	resendCode
-	
 
 	/**
 	 * 	Update Web User

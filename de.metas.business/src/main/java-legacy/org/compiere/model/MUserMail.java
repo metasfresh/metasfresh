@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.EMail;
 
 /**
@@ -61,34 +62,11 @@ public class MUserMail extends X_AD_UserMail
 	 *	@param AD_User_ID recipient user
 	 *	@param mail email
 	 */
-	public MUserMail (MMailText parent, int AD_User_ID, EMail mail)
+	public MUserMail (Properties ctx, int R_MailText_ID, int AD_User_ID, EMail mail)
 	{
-		this (parent.getCtx(), 0, parent.get_TrxName());
-		setClientOrg(parent);
+		this (ctx, 0, ITrx.TRXNAME_ThreadInherited);
 		setAD_User_ID(AD_User_ID);
-		setR_MailText_ID(parent.getR_MailText_ID());
-		//
-		if (mail.isSentOK())
-			setMessageID(mail.getMessageID());
-		else
-		{
-			setMessageID(mail.getSentMsg());
-			setIsDelivered(ISDELIVERED_No);
-		}
-	}	//	MUserMail
-	
-	/**
-	 * 	Parent Constructor
-	 *	@param parent Mail message
-	 *	@param AD_User_ID recipient user
-	 *	@param mail email
-	 */
-	public MUserMail (MMailMsg parent, int AD_User_ID, EMail mail)
-	{
-		this (parent.getCtx(), 0, parent.get_TrxName());
-		setClientOrg(parent);
-		setAD_User_ID(AD_User_ID);
-		setW_MailMsg_ID(parent.getW_MailMsg_ID());
+		setR_MailText_ID(R_MailText_ID);
 		//
 		if (mail.isSentOK())
 			setMessageID(mail.getMessageID());
@@ -107,7 +85,7 @@ public class MUserMail extends X_AD_UserMail
 	 */
 	public MUserMail (PO po, int AD_User_ID, EMail mail)
 	{
-		this (po.getCtx(), 0, null);
+		this (po.getCtx(), 0, ITrx.TRXNAME_None);
 		setClientOrg(po);
 		setAD_User_ID(AD_User_ID);
 		setSubject(mail.getSubject());
@@ -121,38 +99,4 @@ public class MUserMail extends X_AD_UserMail
 			setIsDelivered(ISDELIVERED_No);
 		}
 	}	//	MUserMail
-	
-	
-	/**
-	 * 	Is it Delivered
-	 *	@return true if yes
-	 */
-	public boolean isDelivered()
-	{
-		String s = getIsDelivered();
-		return s != null 
-			&& ISDELIVERED_Yes.equals(s);
-	}	//	isDelivered
-
-	/**
-	 * 	Is it not Delivered
-	 *	@return true if null or no
-	 */
-	public boolean isDeliveredNo()
-	{
-		String s = getIsDelivered();
-		return s == null 
-			|| ISDELIVERED_No.equals(s);
-	}	//	isDelivered
-
-	/**
-	 * 	Is Delivered unknown
-	 *	@return true if null
-	 */
-	public boolean isDeliveredUnknown()
-	{
-		String s = getIsDelivered();
-		return s == null;
-	}	//	isDeliveredUnknown
-
 }	//	MUserMail

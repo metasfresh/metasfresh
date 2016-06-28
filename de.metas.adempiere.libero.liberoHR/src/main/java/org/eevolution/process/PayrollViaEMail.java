@@ -23,10 +23,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
-import org.compiere.model.MMailText;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstancePara;
 import org.compiere.model.MProcess;
@@ -39,6 +39,9 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
+
 /**
  *  Send Mail to Interest Area Subscribers
  *
@@ -48,8 +51,7 @@ public class PayrollViaEMail extends SvrProcess
 {
 	/** What to send			*/
 	private int				m_R_MailText_ID = -1;
-	/**	Mail Text				*/
-	private MMailText		m_MailText = null;
+	private IMailTextBuilder mailTextBuilder;
 
 	/**	From (sender)			*/
 	private int				m_AD_User_ID = -1;
@@ -72,6 +74,7 @@ public class PayrollViaEMail extends SvrProcess
 	/** To Purchaser of Product	*/
 	//	comes here
 	private int 			m_AD_Process_ID=-1;
+
 
 
 	/**
@@ -125,9 +128,10 @@ public class PayrollViaEMail extends SvrProcess
 	{
 		log.info("R_MailText_ID=" + m_R_MailText_ID);
 		//	Mail Test
-		m_MailText = new MMailText (getCtx(), m_R_MailText_ID, get_TrxName());
-		if (m_MailText.getR_MailText_ID() == 0)
-			throw new Exception ("Not found @R_MailText_ID@=" + m_R_MailText_ID);
+		
+		final IMailBL mailBL = Services.get(IMailBL.class);
+		this.mailTextBuilder = mailBL.newMailTextBuilder(getCtx(), m_R_MailText_ID);
+		
 		//	Client Info
 		m_client = MClient.get (getCtx());
 		if (m_client.getAD_Client_ID() == 0)
@@ -238,18 +242,18 @@ public class PayrollViaEMail extends SvrProcess
 			MBPartner to = new MBPartner(getCtx(), C_BPartner_ID, null);
 			//m_MailText.setUser(AD_User_ID);		//	parse context
 			//BPartner_ID=to.getC_BPartner_ID();
-			String message = m_MailText.getMailText(true);
+			String message = mailTextBuilder.getFullMailText();
 			//	Unsubscribe
 			if (unsubscribe != null)
 				message += unsubscribe;
 			//
 			//EMail email = new EMail(m_client,m_from.getEMail(),to.getURL(),m_MailText.getMailHeader(), message);
-			EMail email = m_client.createEMail(m_from, to.getURL(), m_MailText.getMailHeader(), message);
-			if (m_MailText.isHtml())
-				email.setMessageHTML(m_MailText.getMailHeader(), message);
+			EMail email = m_client.createEMail(m_from, to.getURL(), mailTextBuilder.getMailHeader(), message);
+			if (mailTextBuilder.isHtml())
+				email.setMessageHTML(mailTextBuilder.getMailHeader(), message);
 			else
 			{
-				email.setSubject (m_MailText.getMailHeader());
+				email.setSubject (mailTextBuilder.getMailHeader());
 				email.setMessageText (message);
 			}
 			email.addAttachment(CreatePDF(C_BPartner_ID));

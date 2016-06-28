@@ -17,16 +17,14 @@
 package org.compiere.process;
 
 import java.io.File;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
 import org.compiere.model.MDunningRunEntry;
-import org.compiere.model.MMailText;
 import org.compiere.model.MQuery;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
@@ -36,6 +34,9 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.EMail;
+
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
 
 /**
  *	Dunning Letter Print
@@ -62,6 +63,7 @@ public class DunningPrint extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -90,6 +92,7 @@ public class DunningPrint extends SvrProcess
 	 * @return info
 	 * @throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("C_DunningRun_ID=" + p_C_DunningRun_ID + ",R_MailText_ID=" + p_R_MailText_ID 
@@ -99,14 +102,10 @@ public class DunningPrint extends SvrProcess
 		//	Need to have Template
 		if (p_EMailPDF && p_R_MailText_ID == 0)
 			throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@");
-//		String subject = "";
-		MMailText mText = null;
+		IMailTextBuilder mText = null;
 		if (p_EMailPDF)
 		{
-			mText = new MMailText (getCtx(), p_R_MailText_ID, get_TrxName());
-			if (p_EMailPDF && mText.get_ID() == 0)
-				throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@ - " + p_R_MailText_ID);
-//			subject = mText.getMailHeader();
+			mText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), p_R_MailText_ID);
 		}
 		//
 		MDunningRun run = new MDunningRun (getCtx(), p_C_DunningRun_ID, get_TrxName());
@@ -184,8 +183,8 @@ public class DunningPrint extends SvrProcess
 				}
 				mText.setUser(to);	//	variable context
 				mText.setBPartner(bp);
-				mText.setPO(entry);
-				String message = mText.getMailText(true);
+				mText.setRecord(entry);
+				String message = mText.getFullMailText();
 				if (mText.isHtml())
 					email.setMessageHTML(mText.getMailHeader(), message);
 				else
@@ -201,7 +200,7 @@ public class DunningPrint extends SvrProcess
 				}
 				//
 				String msg = email.send();
-				MUserMail um = new MUserMail(mText, entry.getAD_User_ID(), email);
+				MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), entry.getAD_User_ID(), email);
 				um.save();
 				if (msg.equals(EMail.SENT_OK))
 				{

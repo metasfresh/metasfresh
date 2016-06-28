@@ -20,18 +20,19 @@ import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
 import org.compiere.model.MClient;
-import org.compiere.model.MMailText;
 import org.compiere.model.MProductDownload;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
 import org.compiere.util.EMail;
+
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
 
 /**
  *	Deliver Assets Electronically
@@ -52,12 +53,13 @@ public class AssetDelivery extends SvrProcess
 	private int			m_NoGuarantee_MailText_ID = 0;
 	private boolean		m_AttachAsset = false;
 	//
-	private MMailText	m_MailText = null;
+	private IMailTextBuilder m_MailText;
 
 
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -94,6 +96,7 @@ public class AssetDelivery extends SvrProcess
 	 *  @return Message to be translated
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		log.info("");
@@ -200,16 +203,17 @@ public class AssetDelivery extends SvrProcess
 		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
+		
 		if (m_MailText == null || m_MailText.getR_MailText_ID() != R_MailText_ID)
-			m_MailText = new MMailText (getCtx(), R_MailText_ID, get_TrxName());
+			m_MailText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), R_MailText_ID);
 		if (m_MailText.getMailHeader() == null || m_MailText.getMailHeader().length() == 0)
 			return "** No Subject";
 
 		//	Create Mail
 		EMail email = m_client.createEMail(user.getEMail(), null, null);
-		m_MailText.setPO(user);
-		m_MailText.setPO(asset);
-		String message = m_MailText.getMailText(true);
+		m_MailText.setUser(user);
+		m_MailText.setRecord(asset);
+		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml())
 			email.setMessageHTML(m_MailText.getMailHeader(), message);
 		else
@@ -218,7 +222,7 @@ public class AssetDelivery extends SvrProcess
 			email.setMessageText (message);
 		}
 		String msg = email.send();
-		new MUserMail(m_MailText, asset.getAD_User_ID(), email).save();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email).save();
 		if (!EMail.SENT_OK.equals(msg))
 			return "** Not delivered: " + user.getEMail() + " - " + msg;
 		//
@@ -245,7 +249,9 @@ public class AssetDelivery extends SvrProcess
 		if (asset.getProductR_MailText_ID() == 0)
 			return "** Product Mail Text";
 		if (m_MailText == null || m_MailText.getR_MailText_ID() != asset.getProductR_MailText_ID())
-			m_MailText = new MMailText (getCtx(), asset.getProductR_MailText_ID(), get_TrxName());
+		{
+			m_MailText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), asset.getProductR_MailText_ID());
+		}
 		if (m_MailText.getMailHeader() == null || m_MailText.getMailHeader().length() == 0)
 			return "** No Subject";
 
@@ -260,8 +266,8 @@ public class AssetDelivery extends SvrProcess
 		if (m_client.isSmtpAuthorization())
 			email.createAuthenticator(m_client.getRequestUser(), m_client.getRequestUserPW());
 		m_MailText.setUser(user);
-		m_MailText.setPO(asset);
-		String message = m_MailText.getMailText(true);
+		m_MailText.setRecord(asset);
+		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml() || m_AttachAsset)
 			email.setMessageHTML(m_MailText.getMailHeader(), message);
 		else
@@ -285,7 +291,7 @@ public class AssetDelivery extends SvrProcess
 				log.warn("No DowloadURL for A_Asset_ID=" + A_Asset_ID);
 		}
 		String msg = email.send();
-		new MUserMail(m_MailText, asset.getAD_User_ID(), email).save();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email).save();
 		if (!EMail.SENT_OK.equals(msg))
 			return "** Not delivered: " + user.getEMail() + " - " + msg;
 

@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_R_MailText;
 import org.compiere.util.EMail;
 
 /**
@@ -152,4 +153,8 @@ public interface IMailBL extends ISingletonService
 	 * @return true if given exeption is about a connection error while trying to send the email
 	 */
 	boolean isConnectionError(Exception e);
+
+	IMailTextBuilder newMailTextBuilder(I_R_MailText mailText);
+
+	IMailTextBuilder newMailTextBuilder(Properties ctx, int R_MailText_ID);
 }

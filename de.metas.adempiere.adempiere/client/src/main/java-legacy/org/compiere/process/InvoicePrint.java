@@ -20,12 +20,10 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MMailText;
 import org.compiere.model.MQuery;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
@@ -40,6 +38,9 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailTextBuilder;
 
 /**
  *	Print Invoices on Paper or send PDFs
@@ -64,6 +65,7 @@ public class InvoicePrint extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -104,6 +106,7 @@ public class InvoicePrint extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		//	Need to have Template
@@ -115,12 +118,10 @@ public class InvoicePrint extends SvrProcess
 			+ ", DateInvoiced=" + m_dateInvoiced_From + "-" + m_dateInvoiced_To
 			+ ", DocumentNo=" + m_DocumentNo_From + "-" + m_DocumentNo_To);
 		
-		MMailText mText = null;
-		if (p_R_MailText_ID != 0)
+		IMailTextBuilder mText = null;
+		if (p_R_MailText_ID > 0)
 		{
-			mText = new MMailText(getCtx(), p_R_MailText_ID, get_TrxName());
-			if (mText.get_ID() != p_R_MailText_ID)
-				throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@ - " + p_R_MailText_ID);
+			mText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), p_R_MailText_ID);
 		}
 
 		//	Too broad selection
@@ -307,8 +308,8 @@ public class InvoicePrint extends SvrProcess
 					}
 					mText.setUser(to);					//	Context
 					mText.setBPartner(C_BPartner_ID);	//	Context
-					mText.setPO(new MInvoice(getCtx(), C_Invoice_ID, get_TrxName()));
-					String message = mText.getMailText(true);
+					mText.setRecord(new MInvoice(getCtx(), C_Invoice_ID, get_TrxName()));
+					String message = mText.getFullMailText();
 					if (mText.isHtml())
 						email.setMessageHTML(subject, message);
 					else
@@ -325,7 +326,7 @@ public class InvoicePrint extends SvrProcess
 					email.addAttachment(attachment);
 					//
 					String msg = email.send();
-					MUserMail um = new MUserMail(mText, getAD_User_ID(), email);
+					MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), getAD_User_ID(), email);
 					um.save();
 					if (msg.equals(EMail.SENT_OK))
 					{

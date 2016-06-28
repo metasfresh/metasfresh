@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import javax.mail.internet.InternetAddress;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -19,6 +20,7 @@ import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_R_MailText;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailDAO;
+import de.metas.notification.IMailTextBuilder;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -362,6 +365,23 @@ public class MailBL implements IMailBL
 		}
 
 		return false;
+	}
+
+	@Override
+	public IMailTextBuilder newMailTextBuilder(final I_R_MailText mailText)
+	{
+		return MailTextBuilder.of(mailText);
+	}
+
+	@Override
+	public IMailTextBuilder newMailTextBuilder(final Properties ctx, final int R_MailText_ID)
+	{
+		final I_R_MailText mailTextDef = InterfaceWrapperHelper.create(ctx, R_MailText_ID, I_R_MailText.class, ITrx.TRXNAME_None);
+		if(mailTextDef == null)
+		{
+			throw new AdempiereException("@Notfound@ @R_MailText_ID@=" + R_MailText_ID);
+		}
+		return MailTextBuilder.of(mailTextDef);
 	}
 
 	public static class EMailSendException extends AdempiereException
