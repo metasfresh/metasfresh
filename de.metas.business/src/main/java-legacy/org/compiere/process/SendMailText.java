@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
@@ -71,6 +69,7 @@ public class SendMailText extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -97,6 +96,7 @@ public class SendMailText extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("R_MailText_ID=" + m_R_MailText_ID);
@@ -282,7 +282,7 @@ public class SendMailText extends SvrProcess
 			email.setSubject (m_MailText.getMailHeader());
 			email.setMessageText (message);
 		}
-		if (!email.isValid() && !email.isValid(true))
+		if (!email.isValid() && !email.checkValid())
 		{
 			log.warn("NOT VALID - " + email);
 			to.setIsActive(false);

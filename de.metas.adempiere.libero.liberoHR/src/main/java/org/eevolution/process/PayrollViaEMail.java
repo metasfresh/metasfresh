@@ -77,6 +77,7 @@ public class PayrollViaEMail extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -119,6 +120,7 @@ public class PayrollViaEMail extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("R_MailText_ID=" + m_R_MailText_ID);
@@ -251,7 +253,7 @@ public class PayrollViaEMail extends SvrProcess
 				email.setMessageText (message);
 			}
 			email.addAttachment(CreatePDF(C_BPartner_ID));
-			if (!email.isValid() && !email.isValid(true))
+			if (!email.isValid() && !email.checkValid())
 			{
 				log.warn("NOT VALID - " + email);
 				to.setIsActive(false);

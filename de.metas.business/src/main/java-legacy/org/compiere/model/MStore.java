@@ -22,19 +22,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -381,9 +382,16 @@ public class MStore extends X_W_Store
 		if (from == null || from.length() == 0)
 			from = client.getRequestEMail();
 		if (email == null)
-			email = new EMail(client,
-					from, to,
-					subject, message);
+		{
+			email = new EMail(InterfaceWrapperHelper.getCtx(client)
+					, client.getSMTPHost()
+					, from
+					, to
+					, subject
+					, message
+					, false // html
+					);
+		}
 		// Authorizetion
 		if (client.isSmtpAuthorization())
 		{
