@@ -41,6 +41,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.PO;
+import org.compiere.model.X_AD_User;
 import org.compiere.process.DocAction;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -159,8 +161,34 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
-		final I_AD_User userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-		Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		I_AD_User userTo = null;
+		
+		// check if the column for the user is specified
+		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
+		{
+			final String tableName = log.getAD_Table().getTableName();
+			
+			// chekc if the column exists
+			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
+			if (existsColumn)
+			{
+				// load the column content
+				final PO po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), PO.class, trxName);
+				final Integer userToID = (Integer)po.get_Value(mailbox.getColumnUserTo());
+				if (userToID != null)
+				{
+					userTo = InterfaceWrapperHelper.create(ctx, X_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
+				}
+			}
+		}
+		
+		//
+		// fallback to old logic
+		if (userTo == null)
+		{
+			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+			Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		}
 
 		final String mailTo = userTo.getEMail();
 		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);
