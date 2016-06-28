@@ -41,8 +41,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.PO;
-import org.compiere.model.X_AD_User;
 import org.compiere.process.DocAction;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
@@ -166,18 +164,18 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// check if the column for the user is specified
 		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
 		{
-			final String tableName = log.getAD_Table().getTableName();
+			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
 			
 			// chekc if the column exists
 			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
 			if (existsColumn)
 			{
 				// load the column content
-				final PO po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), PO.class, trxName);
-				final Integer userToID = (Integer)po.get_Value(mailbox.getColumnUserTo());
+				final Object po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), Object.class, trxName);
+				final Integer userToID = InterfaceWrapperHelper.getValueOrNull(po, mailbox.getColumnUserTo());
 				if (userToID != null)
 				{
-					userTo = InterfaceWrapperHelper.create(ctx, X_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
+					userTo = InterfaceWrapperHelper.create(ctx, I_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
 				}
 			}
 		}
