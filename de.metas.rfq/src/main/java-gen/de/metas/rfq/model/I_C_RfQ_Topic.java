@@ -251,6 +251,87 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set RfQ Invitation mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Invitation_MailText_ID (int RfQ_Invitation_MailText_ID);
+
+	/**
+	 * Get RfQ Invitation mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Invitation_MailText_ID();
+
+	public org.compiere.model.I_R_MailText getRfQ_Invitation_MailText();
+
+	public void setRfQ_Invitation_MailText(org.compiere.model.I_R_MailText RfQ_Invitation_MailText);
+
+    /** Column definition for RfQ_Invitation_MailText_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText> COLUMN_RfQ_Invitation_MailText_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText>(I_C_RfQ_Topic.class, "RfQ_Invitation_MailText_ID", org.compiere.model.I_R_MailText.class);
+    /** Column name RfQ_Invitation_MailText_ID */
+    public static final String COLUMNNAME_RfQ_Invitation_MailText_ID = "RfQ_Invitation_MailText_ID";
+
+	/**
+	 * Set RfQ lost mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Lost_MailText_ID (int RfQ_Lost_MailText_ID);
+
+	/**
+	 * Get RfQ lost mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Lost_MailText_ID();
+
+	public org.compiere.model.I_R_MailText getRfQ_Lost_MailText();
+
+	public void setRfQ_Lost_MailText(org.compiere.model.I_R_MailText RfQ_Lost_MailText);
+
+    /** Column definition for RfQ_Lost_MailText_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText> COLUMN_RfQ_Lost_MailText_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText>(I_C_RfQ_Topic.class, "RfQ_Lost_MailText_ID", org.compiere.model.I_R_MailText.class);
+    /** Column name RfQ_Lost_MailText_ID */
+    public static final String COLUMNNAME_RfQ_Lost_MailText_ID = "RfQ_Lost_MailText_ID";
+
+	/**
+	 * Set RfQ win mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Win_MailText_ID (int RfQ_Win_MailText_ID);
+
+	/**
+	 * Get RfQ win mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Win_MailText_ID();
+
+	public org.compiere.model.I_R_MailText getRfQ_Win_MailText();
+
+	public void setRfQ_Win_MailText(org.compiere.model.I_R_MailText RfQ_Win_MailText);
+
+    /** Column definition for RfQ_Win_MailText_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText> COLUMN_RfQ_Win_MailText_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText>(I_C_RfQ_Topic.class, "RfQ_Win_MailText_ID", org.compiere.model.I_R_MailText.class);
+    /** Column name RfQ_Win_MailText_ID */
+    public static final String COLUMNNAME_RfQ_Win_MailText_ID = "RfQ_Win_MailText_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *

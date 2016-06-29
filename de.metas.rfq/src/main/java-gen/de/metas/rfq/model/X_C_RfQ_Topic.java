@@ -14,7 +14,7 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2080117404L;
+	private static final long serialVersionUID = 936120848L;
 
     /** Standard Constructor */
     public X_C_RfQ_Topic (Properties ctx, int C_RfQ_Topic_ID, String trxName)
@@ -164,5 +164,107 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_R_MailText getRfQ_Invitation_MailText() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Invitation_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setRfQ_Invitation_MailText(org.compiere.model.I_R_MailText RfQ_Invitation_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Invitation_MailText_ID, org.compiere.model.I_R_MailText.class, RfQ_Invitation_MailText);
+	}
+
+	/** Set RfQ Invitation mail text.
+		@param RfQ_Invitation_MailText_ID RfQ Invitation mail text	  */
+	@Override
+	public void setRfQ_Invitation_MailText_ID (int RfQ_Invitation_MailText_ID)
+	{
+		if (RfQ_Invitation_MailText_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Invitation_MailText_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Invitation_MailText_ID, Integer.valueOf(RfQ_Invitation_MailText_ID));
+	}
+
+	/** Get RfQ Invitation mail text.
+		@return RfQ Invitation mail text	  */
+	@Override
+	public int getRfQ_Invitation_MailText_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Invitation_MailText_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_R_MailText getRfQ_Lost_MailText() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Lost_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setRfQ_Lost_MailText(org.compiere.model.I_R_MailText RfQ_Lost_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Lost_MailText_ID, org.compiere.model.I_R_MailText.class, RfQ_Lost_MailText);
+	}
+
+	/** Set RfQ lost mail text.
+		@param RfQ_Lost_MailText_ID RfQ lost mail text	  */
+	@Override
+	public void setRfQ_Lost_MailText_ID (int RfQ_Lost_MailText_ID)
+	{
+		if (RfQ_Lost_MailText_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Lost_MailText_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Lost_MailText_ID, Integer.valueOf(RfQ_Lost_MailText_ID));
+	}
+
+	/** Get RfQ lost mail text.
+		@return RfQ lost mail text	  */
+	@Override
+	public int getRfQ_Lost_MailText_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Lost_MailText_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_R_MailText getRfQ_Win_MailText() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Win_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setRfQ_Win_MailText(org.compiere.model.I_R_MailText RfQ_Win_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Win_MailText_ID, org.compiere.model.I_R_MailText.class, RfQ_Win_MailText);
+	}
+
+	/** Set RfQ win mail text.
+		@param RfQ_Win_MailText_ID RfQ win mail text	  */
+	@Override
+	public void setRfQ_Win_MailText_ID (int RfQ_Win_MailText_ID)
+	{
+		if (RfQ_Win_MailText_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Win_MailText_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Win_MailText_ID, Integer.valueOf(RfQ_Win_MailText_ID));
+	}
+
+	/** Get RfQ win mail text.
+		@return RfQ win mail text	  */
+	@Override
+	public int getRfQ_Win_MailText_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Win_MailText_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }
