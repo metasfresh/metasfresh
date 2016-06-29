@@ -42,7 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.PackingMd;
@@ -56,8 +56,9 @@ import de.metas.fresh.picking.FreshProductLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsRequest;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsResult;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsResultExecutorTemplate;
@@ -306,7 +307,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				// e.g. de.metas.shipping.process.M_ShippingPackage_CreateFromPickingSlots
 				throw new AdempiereException(FreshSwingPackageItems.ERR_NO_OPEN_HU_FOUND);
 			}
-			final FreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
+			final IFreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
 			packItemToHU(unallocPackingItem, newQty, hu);
 
 			//
@@ -357,7 +358,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 			//
 			// Remote Qty from HU
-			final AbstractPackingItem pckItem = selectedProduct.getPackingItem();
+			final IPackingItem pckItem = selectedProduct.getPackingItem();
 			removeProductQty(pckItem, selectedPickingSlotKey.getM_HU(), qtyToRemove);
 
 			// FIXME: reset the qty field, remove button etc
@@ -386,17 +387,17 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		return getProductsKeyLayout().getKeys(FreshProductKey.class);
 	}
 
-	public List<AbstractPackingItem> createUnpackedForBpAndBPLoc(final List<AbstractPackingItem> packingItems, final PickingSlotKey pickingSlotKey)
+	public List<IPackingItem> createUnpackedForBpAndBPLoc(final List<IPackingItem> packingItems, final PickingSlotKey pickingSlotKey)
 	{
 		if (packingItems == null || packingItems.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<AbstractPackingItem> result = new ArrayList<>();
-		for (final AbstractPackingItem apck : packingItems)
+		final List<IPackingItem> result = new ArrayList<>();
+		for (final IPackingItem apck : packingItems)
 		{
-			final FreshPackingItem packingItem = (FreshPackingItem)apck;
+			final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
 
 			// Skip those which are not compatible with our picking slot
 			if (!pickingSlotKey.isCompatible(packingItem))
@@ -420,8 +421,8 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
 		final int key = pickingSlotKey.getM_PickingSlot().getM_PickingSlot_ID();
-		final List<AbstractPackingItem> packedItems = map.get(key);
-		final List<AbstractPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMap.KEY_UnpackedItems), pickingSlotKey);
+		final List<IPackingItem> packedItems = map.get(key);
+		final List<IPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMap.KEY_UnpackedItems), pickingSlotKey);
 
 		if (unpackedItems == null || unpackedItems.isEmpty())
 		{
@@ -433,13 +434,13 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			return PackingStates.unpacked;
 		}
 
-		final List<AbstractPackingItem> allQtyremainingitems = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> allQtyremainingitems = new ArrayList<IPackingItem>();
 
-		final List<AbstractPackingItem> partialQtyremainingitems = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> partialQtyremainingitems = new ArrayList<IPackingItem>();
 
-		for (final AbstractPackingItem upItem : unpackedItems)
+		for (final IPackingItem upItem : unpackedItems)
 		{
-			for (final AbstractPackingItem pItem : packedItems)
+			for (final IPackingItem pItem : packedItems)
 			{
 				if (pItem.getGroupingKey() == upItem.getGroupingKey())
 				{
@@ -500,7 +501,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 	}
 
-	private void packItemToHU(final FreshPackingItem itemToPack, final BigDecimal qtyToPack, final I_M_HU targetHU)
+	private void packItemToHU(final IFreshPackingItem itemToPack, final BigDecimal qtyToPack, final I_M_HU targetHU)
 	{
 		Check.assumeNotNull(targetHU, "targetHU not null");
 
@@ -539,7 +540,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBpartnerId(), itemToPack.getBpartnerLocationId());
 	}
 
-	private void removeProductQty(final AbstractPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
+	private void removeProductQty(final IPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
 	{
 		final FreshSwingPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
 
@@ -547,17 +548,17 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
 		final PackingItemsMap packItems = terminalPanel.getPackItems().copy();
 
-		List<AbstractPackingItem> itemsUnpacked = packItems.get(0);
+		List<IPackingItem> itemsUnpacked = packItems.get(PackingItemsMap.KEY_UnpackedItems);
 
-		AbstractPackingItem itemUnpacked = null;
+		IPackingItem itemUnpacked = null;
 		if (itemsUnpacked == null)
 		{
-			itemsUnpacked = new ArrayList<AbstractPackingItem>();
-			packItems.put(0, itemsUnpacked);
+			itemsUnpacked = new ArrayList<IPackingItem>();
+			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemsUnpacked);
 		}
 		else
 		{
-			for (final AbstractPackingItem item : itemsUnpacked)
+			for (final IPackingItem item : itemsUnpacked)
 			{
 				if (item.getGroupingKey() == pckItem.getGroupingKey())
 				{
@@ -570,20 +571,20 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final I_M_PickingSlot pickingSlot = selectedPickingSlotKey.getM_PickingSlot();
 		final int key = pickingSlot.getM_PickingSlot_ID();
 		// we need to remove the recently unpacked item from packed
-		final List<AbstractPackingItem> itemsPacked = packItems.remove(key);
+		final List<IPackingItem> itemsPacked = packItems.remove(key);
 		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
 
-		final List<AbstractPackingItem> itemsPackedRemaining = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> itemsPackedRemaining = new ArrayList<IPackingItem>();
 
-		for (final AbstractPackingItem itemPacked : itemsPacked)
+		for (final IPackingItem itemPacked : itemsPacked)
 		{
-			if (pckItem != itemPacked)
+			if (!pckItem.isSameAs(itemPacked))
 			{
 				itemsPackedRemaining.add(itemPacked);
 			}
 			else
 			{
-				final FreshPackingItem itemPackedNew = new FreshPackingItem(itemPacked);
+				final IFreshPackingItem itemPackedNew = FreshPackingItemHelper.copy(itemPacked);
 
 				//
 				// take out qtyToRemove from our packing item
@@ -609,7 +610,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				}
 				else
 				{
-					final FreshPackingItem newPi = new FreshPackingItem(qtyToRemoveAlloc, pckItem.getTrxName());
+					final IFreshPackingItem newPi = FreshPackingItemHelper.create(qtyToRemoveAlloc);
 					itemsUnpacked.add(newPi);
 				}
 
@@ -811,7 +812,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			@Override
 			protected void loadQtyToHU(final I_M_HU hu, final BigDecimal qty)
 			{
-				final FreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
+				final IFreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
 				packItemToHU(itemToPack, qty, hu);
 			}
 
@@ -926,7 +927,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// Get the selected shipment sched's C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
-		final FreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
 		final int bPartnerId = unallocatedPackingItem.getBpartnerId();
 		final int bPartnerLocationId = unallocatedPackingItem.getBpartnerLocationId();
@@ -950,7 +951,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 * @param itemToPack
 	 * @param hus HUs on which the quantity will be allocated
 	 */
-	private void allocateItemToHUs(final FreshPackingItem itemToPack, final Collection<I_M_HU> hus)
+	private void allocateItemToHUs(final IFreshPackingItem itemToPack, final Collection<I_M_HU> hus)
 	{
 		//
 		// Create packing context (i.e. workfile to work on)

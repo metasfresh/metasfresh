@@ -67,11 +67,10 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_C_Order;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
@@ -82,6 +81,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -513,14 +513,14 @@ public class OLCandBL implements IOLCandBL
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
-		order.setDropShip_BPartner_ID(olCand.getDropShip_BPartner_ID());
+		order.setDropShip_BPartner_ID(effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand));
 		order.setDropShip_Location_ID(olCand.getDropShip_Location_ID());
-		final boolean isDropShip = olCand.getDropShip_BPartner_ID() > 0 && olCand.getDropShip_Location_ID() > 0;
+		final boolean isDropShip = effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand) > 0 || effectiveValuesBL.getDropShip_Location_Effective_ID(olCand) > 0;
 		order.setIsDropShip(isDropShip);
 
-		order.setHandOver_Location_ID(olCand.getHandOver_Location_ID());
-		order.setHandOver_Partner_ID(olCand.getHandOver_Partner_ID());
-		order.setIsUseHandOver_Location(olCand.getHandOver_Location_ID() > 0);
+		order.setHandOver_Location_ID(effectiveValuesBL.getHandOver_Location_Effective_ID(olCand));
+		order.setHandOver_Partner_ID(effectiveValuesBL.getHandOver_Partner_Effective_ID(olCand));
+		order.setIsUseHandOver_Location(effectiveValuesBL.getHandOver_Location_Effective_ID(olCand) > 0);
 
 		if (olCand.getC_Currency_ID() > 0)
 		{
@@ -572,10 +572,10 @@ public class OLCandBL implements IOLCandBL
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			
+
 			final int bpartnerID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 			final boolean soTrx = true;
-			
+
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
 			return pricingSystemId;
 		}
@@ -619,10 +619,10 @@ public class OLCandBL implements IOLCandBL
 				|| effectiveValuesBL.getBill_User_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_User_Effective_ID(candidate)
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
 				|| !Check.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
-				|| previousCandidate.getHandOver_Partner_ID() != candidate.getHandOver_Partner_ID()
-				|| previousCandidate.getHandOver_Location_ID() != candidate.getHandOver_Location_ID()
-				|| effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate) != effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate)
-				|| effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getDropShip_Location_Effective_ID(candidate)
+				|| !Check.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
 				|| getPricingSystemId(ctx, previousCandidate, processor, trxName) != getPricingSystemId(ctx, candidate, processor, trxName))
 		{
 			return true;
@@ -1233,7 +1233,7 @@ public class OLCandBL implements IOLCandBL
 	public IPricingResult computePriceActual(final I_C_OLCand olCand, final BigDecimal qtyOverride, final int pricingSystemIdOverride, final Timestamp date)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		
+
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setReferencedObject(olCand);

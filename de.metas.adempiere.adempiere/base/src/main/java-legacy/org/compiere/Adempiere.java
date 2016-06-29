@@ -86,7 +86,7 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/**
-	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project pom.xml
+	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project <code>pom.xml</code>.<br>
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
 

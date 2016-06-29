@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="288"/>
+	<property name="ireport.y" value="63"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -94,7 +94,8 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="email">
-					<subreportParameterExpression><![CDATA[$R{mail}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[(!$F{ad_org_id}.equals(new BigDecimal(1000004))) ? $R{mail} : $R{avmail}
+                       ]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>

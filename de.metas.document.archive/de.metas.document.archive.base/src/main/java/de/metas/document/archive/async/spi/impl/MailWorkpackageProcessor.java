@@ -159,8 +159,34 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
-		final I_AD_User userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-		Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		I_AD_User userTo = null;
+		
+		// check if the column for the user is specified
+		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
+		{
+			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
+			
+			// chekc if the column exists
+			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
+			if (existsColumn)
+			{
+				// load the column content
+				final Object po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), Object.class, trxName);
+				final Integer userToID = InterfaceWrapperHelper.getValueOrNull(po, mailbox.getColumnUserTo());
+				if (userToID != null)
+				{
+					userTo = InterfaceWrapperHelper.create(ctx, I_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
+				}
+			}
+		}
+		
+		//
+		// fallback to old logic
+		if (userTo == null)
+		{
+			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+			Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		}
 
 		final String mailTo = userTo.getEMail();
 		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);

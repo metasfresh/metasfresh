@@ -13,4 +13,5 @@ de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.serverRoot/activemq-data/
 
 **/.~lock*
+*.jasper
 

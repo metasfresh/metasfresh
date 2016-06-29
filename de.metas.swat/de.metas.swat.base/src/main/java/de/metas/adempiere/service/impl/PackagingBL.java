@@ -65,7 +65,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IPackagingBL;
@@ -174,7 +174,7 @@ public class PackagingBL implements IPackagingBL
 
 			while (packLineNodes.hasMoreElements())
 			{
-				final PackingItem pi = (PackingItem)packLineNodes.nextElement().getUserObject();
+				final LegacyPackingItem pi = (LegacyPackingItem)packLineNodes.nextElement().getUserObject();
 				
 				for (final I_M_ShipmentSchedule sched : pi.getShipmentSchedules())
 				{

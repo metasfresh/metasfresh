@@ -13,22 +13,18 @@ package de.metas.banking.payment.paymentallocation.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-
-
 public class PaymentsTableModel extends AbstractAllocableDocTableModel<IPaymentRow>
 {
 	private static final long serialVersionUID = 1L;
-
 
 	// NOTE: using cast() is discouraged
 	// public static final PaymentsTableModel cast(final TableModel model)
@@ -44,6 +40,12 @@ public class PaymentsTableModel extends AbstractAllocableDocTableModel<IPaymentR
 		setAllowWriteOffAmountOfType(InvoiceWriteOffAmountType.Discount, false);
 	}
 
+	/**
+	 * DiscountAmt values are made editable if the Discount flag is set on true and made read-only if it is set on false
+	 * 
+	 * @param type
+	 * @param allowed
+	 */
 	public final void setAllowWriteOffAmountOfType(final InvoiceWriteOffAmountType type, final boolean allowed)
 	{
 		if (type == InvoiceWriteOffAmountType.Discount)

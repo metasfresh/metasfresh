@@ -148,6 +148,29 @@ public interface I_AD_MailConfig
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
+	 * Set Column User To.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setColumnUserTo (java.lang.String ColumnUserTo);
+
+	/**
+	 * Get Column User To.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getColumnUserTo();
+
+    /** Column definition for ColumnUserTo */
+    public static final org.adempiere.model.ModelColumn<I_AD_MailConfig, Object> COLUMN_ColumnUserTo = new org.adempiere.model.ModelColumn<I_AD_MailConfig, Object>(I_AD_MailConfig.class, "ColumnUserTo", null);
+    /** Column name ColumnUserTo */
+    public static final String COLUMNNAME_ColumnUserTo = "ColumnUserTo";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -204,7 +227,7 @@ public interface I_AD_MailConfig
 	 * Set Document BaseType.
 	 * Logical type of document
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -214,7 +237,7 @@ public interface I_AD_MailConfig
 	 * Get Document BaseType.
 	 * Logical type of document
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -229,7 +252,7 @@ public interface I_AD_MailConfig
 	 * Set Doc Sub Type.
 	 * Document Sub Type
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -239,7 +262,7 @@ public interface I_AD_MailConfig
 	 * Get Doc Sub Type.
 	 * Document Sub Type
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

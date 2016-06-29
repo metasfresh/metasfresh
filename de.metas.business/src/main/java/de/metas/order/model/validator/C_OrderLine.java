@@ -23,14 +23,13 @@ package de.metas.order.model.validator;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
@@ -55,23 +54,48 @@ public class C_OrderLine
 	};
 
 	/**
-	 * If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
+	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
+	 * FRESH-386: likewise, also make sure that counter document lines are unlinked as well.
 	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkSalesOrderLines(final I_C_OrderLine orderLine)
+	public void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
 	{
-		final List<I_C_OrderLine> referencingOrderLines = Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		// 09557
+		queryBL
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.create().list(I_C_OrderLine.class);
-		for (final I_C_OrderLine referencingOrderLine : referencingOrderLines)
-		{
-			referencingOrderLine.setLink_OrderLine(null);
-			InterfaceWrapperHelper.save(referencingOrderLine);
-		}
+				.create()
+				.update(new IQueryUpdater<I_C_OrderLine>()
+				{
+					@Override
+					public boolean update(final I_C_OrderLine ol)
+					{
+						ol.setLink_OrderLine(null);
+						return MODEL_UPDATED;
+					}
+				});
+
+		// FRESH-386
+		queryBL
+				.createQueryBuilder(I_C_OrderLine.class, orderLine)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
+				.create()
+				.update(new IQueryUpdater<I_C_OrderLine>()
+				{
+					@Override
+					public boolean update(final I_C_OrderLine ol)
+					{
+						ol.setRef_OrderLine(null);
+						return MODEL_UPDATED;
+					}
+				});
+
 	}
 
 	/**
@@ -154,8 +178,8 @@ public class C_OrderLine
 	})
 	public void setIsManual(final I_C_OrderLine olPO)
 	{
-		// urgent-no-taskname available yet: commenting out the code that sets IsManual bacause where that, attriibute changes don'z update the price anymore (checking for InterfaceWrapperHelper.isUI
-		// doesn't help, because it actuall *was* a UI action..the action ust didn't change one of these two)
+		// urgent-no-taskname available yet: commenting out the code that sets IsManual because where that, attribute changes don't update the price anymore (checking for InterfaceWrapperHelper.isUI
+		// doesn't help, because it actually *was* a UI action..the action just didn't change one of these two)
 		// olPO.setIsManualPrice(true);
 		// olPO.setIsManualDiscount(true);
 	}

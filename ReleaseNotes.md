@@ -12,41 +12,117 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.22.21 (upcoming)
+# metasfresh 4.24.23a
 
 ## Features
- - FRESH-349 KPI: Printing Performance
-    * adding a window to show per-shipment performance
- - FRESH-350 check if purchase inout label and print preview can run faster
- - FRESH-377 make invoice print preview faster
- - FRESH-383 make orders print preview run faster
+ - #121 FRESH-457 Make recipient of the mail configurable in Process SendPDFMailsForSelection
 
 ## Fixes
+
+# metasfresh 4.24.23
+
+## Features
+ - FRESH-378 process to close invoice candidates
+ 
+## Fixes
+ - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
+ - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
+ - #107 FRESH-445 Awkward eMail encoding in Swiss language
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+ - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
+ - FRESH-438 Make MRP Product Info Work
+    * removed stale data and added FK-constraints and improved logging to avoid NPE
+ - FRESH-306 Customer alloc with Vendor Payment: Wrong Accounting
+
+## Documentation
+ - FRESH-323 metasfresh Developer Documentation
+    * Added some clarifications and described how to import the initial DB-dump
+
+# metasfresh 4.23.22a
+
+## Features
+
+## Fixes
+ - FRESH-408 Picking Issue
+
+# metasfresh 4.23.22
+
+## Features
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+    * Changed sorting for all Dropdown entries about Periods (Month-Year) to have order-by year-month numeric desc
+
+## Fixes
+ - FRESH-412 quick input in orders not working
+    * Fixed an issue in Quick order entry in Orders (sales and purchase) window
+ - FRESH-409 Creating Partner Relation throws Exception
+    * Fixing an exception that appeared when creating and saving a Business Partner relation
+ - FRESH-407 M_ShipperTransportation Terminated after complete
+    * Fixing an exception that popped up when completing a shipper transportation document
+ - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
+    * Introduced additional callout to adjust the corresponding locations when choosing a different Business Partner in Order Candidates Window
+ - FRESH-279 DD Order CU calculation wrong when TU = 1
+    * Adjusted the Qty CU Calculation when TUQty is 1
+ - FRESH-309 Missing ADR ASIs in purchase order lines since february
+    * Restored attribute set instances that might have been missing in the past on some systems
+ - FRESH-386 another error when sales order is automatically created as counter doc from a purchase order with packagings
+    * Fixed error that appears in sales order counter document because of automatic Handling Unit generation in complete.
+ - FRESH-388 Invoice Candidates not updated for some material receipts
+    * Introducing a view to assist support troubleshooting
+
+# metasfresh 4.22.21
+
+## Features
+ - FRESH-275 Search Field in Role _Access Windows with autocomplete
+    * In Window Role, allow the user to search and autocomplete Windows, Processes, Forms and more, instead of using a dropdown list. This Functioanality allows a faster creation of Permission rules.
+ - FRESH-349 KPI: Printing Performance
+    * Adding a window to show per-shipment performance. This will help to understand if printing performance changes over time.
+ - FRESH-350 check if purchase inout label and print preview can run faster
+    * Improving Performance of material Receipt Labels in Print Preview and Printing.
+ - FRESH-377 make invoice print preview faster
+    * Improving Performance of Purchase- and Sales-Invoice Document in Print Preview and Printing.
+ - FRESH-383 make orders print preview run faster
+    * Improving Performance of Purchase- and Sales-Order-Document in Print Preview and Printing.
+
+## Fixes
+ - FRESH-400 Cut off in invoice jaspers
+    * Header Label for UOM was cut off in Invoice Document. Fixed.
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
+ 
+## Documentation
+ - Creation of HowTo's
+    * You can now find a quickly growing Set of HowTo's in our metasfresh documentation Project. Check the details here : <a href="http://metasfresh.github.io/metasfresh-documentation/">http://metasfresh.github.io/metasfresh-documentation/</a>
 
 # metasfresh 4.21.20
 
 ## Features
  - FRESH-349 KPI: Printing Performance
+    * First step in creating queries for printing performance analysis. In near future these queries will be part of an administrator Dashboard and show average Printing performance for different documenttypes.
  - FRESH-344 Move KPI SQL to repository and new DB Schema
+    * Moving all prepared KPI Queries to an own Database Schema called de_metas_fresh_kpi.
  - FRESH-347: Relation type between PMM_Purchase_Candidate and C_Order
+    * Create an AD_relationType between PMM_PurchaseCandidate and C_Order.
  - FRESH-352 Colored Bar
-    * extending WindowHeaderNotice to also allow setting the notice's foreground and background color
+    * Extending WindowHeaderNotice to also allow setting the notice's foreground and background color. Extending WindowHeaderNotice to also allow setting the notice's foreground and background color. Requirement to be able to create a different color Bar in metasfresh, so visually seperate Logins from different Organizations.
  - FRESH-342 Shipments not created
-    * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
+    * Made the shipment schedule enqueuer's doings more transparent to the user. Also added a house keeping tasks to reenqueue stale shipment schedules.
 
 ## Fixes
  - FRESH-374 duplicates asi in purchase inout print preview
+    * Fixed a minor issue in Jasper Layout for meterial receipt document.
  - FRESH-363 Client metasfresh not getting results from server due to cxf bug
-    * workaround: never log incoming payload with JMS transport until https://issues.apache.org/jira/browse/CXF-6930 is solved
+    * Workaround: Never log incoming payload with JMS transport until https://issues.apache.org/jira/browse/CXF-6930 is solved.
  - FRESH-358 Producer Invoice: Jasper Document shows Recapitulation for technical Tax
+    * Fixed a wrong display of special Tax for Urproduzenten in Switzerland.
  - FRESH-360 EDI files occasianally still have wrong encoding
+    * Fixed occasionally apperaring wrong encoding in EDI communication.
  - FRESH-356 make logo work for any org
+    * Possibility to show the Logo on Jasper Documents. The Logo is taken from Organisation or Businesspartner joined to Org-ID.
  - FRESH-351 Error when sales order is automatically created as counter doc from a purchase order with packagings
+    * Solving an issues which appeared in usage of counter documents, because of not matching packagings in each Organisation.
  - FRESH-348 purchase orders created with wrong IsTaxIncluded value
-		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
+    * Ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
 
 ## Documentation
  - GROWTH-65 Community and Legal Files
