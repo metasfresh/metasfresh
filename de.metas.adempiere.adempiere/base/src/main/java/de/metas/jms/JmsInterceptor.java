@@ -59,10 +59,10 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 		startEmbeddedBrokerIfRequired();
 	}
 
-	/** Start embedded server if running in server mode and we were asked for embedded server */
+	/** Start embedded server if running in server mode or we were asked for embedded server */
 	private void startEmbeddedBrokerIfRequired()
 	{
-		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND || Ini.getRunMode() == RunMode.WEBUI;
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
 		if ((serverMode && JmsConstants.isUseEmbeddedBroker())
 				|| CConnection.isServerEmbedded())
 		{
