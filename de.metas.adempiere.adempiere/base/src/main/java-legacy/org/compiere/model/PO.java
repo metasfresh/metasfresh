@@ -47,6 +47,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -2436,7 +2437,7 @@ public abstract class PO
 
 		//
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
-		final MSession session = get_Session();
+		final I_AD_Session session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
 		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
 
@@ -2580,13 +2581,13 @@ public abstract class PO
 		{
 			return;
 		}
-		final MSession session = get_Session();
+		final I_AD_Session session = get_Session();
 		if (session == null)
 		{
 			return;
 		}
 
-		session.logMigration(this, p_info, actionType);
+		Services.get(IMigrationLogger.class).logMigration(session, this, p_info, actionType);
 	}
 
 	/*
@@ -5063,7 +5064,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private final MSession get_Session()
+	private final I_AD_Session get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
