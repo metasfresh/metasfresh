@@ -1,0 +1,20 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>3-development-SNAPSHOT</version>
+	</parent>
+
+	<groupId>de.metas.ui.web</groupId>
+	<artifactId>metasfresh-webui-parent</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>metasfresh-webui-api</module>
+	</modules>
+
+</project>

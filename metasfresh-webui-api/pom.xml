@@ -4,16 +4,17 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
-		<groupId>de.metas</groupId>
+		<groupId>de.metas.ui.web</groupId>
+		<artifactId>metasfresh-webui-parent</artifactId>
 		<version>3-development-SNAPSHOT</version>
 	</parent>
 
-	<groupId>de.metas.ui.web</groupId>
 	<artifactId>metasfresh-webui-api</artifactId>
 	<version>3-development-SNAPSHOT</version>
 
 	<properties>
+		<start-class>de.metas.procurement.webui.Application</start-class>
+		
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -95,6 +96,22 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<executable>true</executable>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
