@@ -53,6 +53,8 @@ public interface IRfqDAO extends ISingletonService
 
 	<T extends I_C_RfQResponseLine> List<T> retrieveResponseLines(I_C_RfQResponse rfqResponse, Class<T> returnType);
 
+	boolean hasSelectedWinnerLines(I_C_RfQResponse rfqResponse);
+
 	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQLineQty rfqLineQty);
 
 	List<I_C_RfQResponseLineQty> retrieveResponseQtys(I_C_RfQResponseLine rfqResponseLine);
@@ -62,5 +64,4 @@ public interface IRfqDAO extends ISingletonService
 	BigDecimal calculateQtyPromised(I_C_RfQResponseLine rfqResponseLine);
 
 	I_C_RfQResponseLineQty retrieveResponseQty(I_C_RfQResponseLine rfqResponseLine, Date date);
-
 }

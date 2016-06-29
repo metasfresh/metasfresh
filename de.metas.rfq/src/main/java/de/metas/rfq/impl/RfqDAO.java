@@ -168,13 +168,7 @@ public class RfqDAO implements IRfqDAO
 	@Override
 	public <T extends I_C_RfQResponseLine> List<T> retrieveResponseLines(final I_C_RfQResponse rfqResponse, Class<T> returnType)
 	{
-		final List<T> lines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_RfQResponseLine.class, rfqResponse)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID, rfqResponse.getC_RfQResponse_ID())
-				.orderBy()
-				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
-				.endOrderBy()
+		final List<T> lines = retrieveResponseLinesQuery(rfqResponse) 
 				.create()
 				.list(returnType);
 
@@ -185,6 +179,26 @@ public class RfqDAO implements IRfqDAO
 		}
 
 		return lines;
+	}
+
+	private IQueryBuilder<I_C_RfQResponseLine> retrieveResponseLinesQuery(final I_C_RfQResponse rfqResponse)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_RfQResponseLine.class, rfqResponse)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID, rfqResponse.getC_RfQResponse_ID())
+				.orderBy()
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
+				.endOrderBy();
+	}
+
+	@Override
+	public boolean hasSelectedWinnerLines(final I_C_RfQResponse rfqResponse)
+	{
+		return retrieveResponseLinesQuery(rfqResponse)
+				.addEqualsFilter(I_C_RfQResponseLine.COLUMN_IsSelectedWinner, true)
+				.create()
+				.match();
 	}
 
 	@Override
