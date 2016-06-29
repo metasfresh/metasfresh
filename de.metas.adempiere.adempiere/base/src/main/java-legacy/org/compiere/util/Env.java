@@ -1421,13 +1421,12 @@ public final class Env
 	/**
 	 * Verify Language. Check that language is supported by the system
 	 *
-	 * @param ctx might be updated with new AD_Language
 	 * @param language language
 	 */
-	public static void verifyLanguage(final Properties ctx, final Language language)
+	public static void verifyLanguage(final Language language)
 	{
 		// metas: method changed for Global Language Support
-		ArrayList<String> AD_Languages = new ArrayList<String>();
+		final List<String> AD_Languages = new ArrayList<String>();
 		String sql = "SELECT "
 				+ " " + I_AD_Language.COLUMNNAME_AD_Language
 				+ " FROM " + I_AD_Language.Table_Name
