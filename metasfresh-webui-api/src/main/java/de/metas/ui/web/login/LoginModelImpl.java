@@ -20,6 +20,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.KeyNamePairList;
 import org.compiere.util.Language;
 import org.compiere.util.Login;
+import org.compiere.util.LoginContext;
 import org.compiere.util.ValueNamePair;
 import org.compiere.util.ValueNamePairList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,10 +150,10 @@ public class LoginModelImpl implements LoginModel
 
 		//
 		// Load preferences and export them to context
-		final Properties ctx = loginService.getCtx();
+		final LoginContext ctx = loginService.getCtx();
 		final UserPreference userPreference = getUserPreference();
-		userPreference.loadPreference(ctx);
-		userPreference.updateContext(ctx);
+		userPreference.loadPreference(ctx.getSessionContext());
+		userPreference.updateContext(ctx.getSessionContext());
 
 		return LoginAuthResponse.of(availableRoles);
 	}
@@ -168,16 +169,6 @@ public class LoginModelImpl implements LoginModel
 		//
 		// Update context
 		final Login loginService = getLoginService();
-		final Properties ctx = loginService.getCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, role.getKey());
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_Name, role.getName());
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getKey());
-		final int orgId = org != null ? org.getKey() : Env.CTXVALUE_AD_Org_ID_System;
-		final String orgName = org != null ? org.getName() : null;
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, orgId);
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_Name, orgName);
-		final int warehouseId = warehouse == null ? 0 : warehouse.getKey();
-		Env.setContext(ctx, Env.CTXNAME_M_Warehouse_ID, warehouseId);
 
 		//
 		// Validate login: fires login complete model interceptors
@@ -203,13 +194,14 @@ public class LoginModelImpl implements LoginModel
 
 		//
 		// Save user preferences
+		final LoginContext loginCtx = loginService.getCtx();
 		final UserSession userSession = getUserSession();
 		final UserPreference userPreference = userSession.getUserPreference();
 		// userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
-		userPreference.setProperty(UserPreference.P_ROLE, role.getKey());
-		userPreference.setProperty(UserPreference.P_CLIENT, client.getKey());
-		userPreference.setProperty(UserPreference.P_ORG, orgId);
-		userPreference.setProperty(UserPreference.P_WAREHOUSE, warehouseId);
+		userPreference.setProperty(UserPreference.P_ROLE, loginCtx.getAD_Role_ID());
+		userPreference.setProperty(UserPreference.P_CLIENT, loginCtx.getAD_Client_ID());
+		userPreference.setProperty(UserPreference.P_ORG, loginCtx.getAD_Org_ID());
+		userPreference.setProperty(UserPreference.P_WAREHOUSE, loginCtx.getM_Warehouse_ID());
 		userPreference.savePreference();
 
 		//
@@ -269,9 +261,9 @@ public class LoginModelImpl implements LoginModel
 		}
 
 		final Login loginService = getLoginService();
-		final Properties ctx = loginService.getCtx();
-		Env.verifyLanguage(ctx, language);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
+		final LoginContext ctx = loginService.getCtx();
+		Env.verifyLanguage(language);
+		ctx.setAD_Language(language.getAD_Language());
 
 		 final Locale locale = language.getLocale();
 		 getUserSession().setLocale(locale);
@@ -315,8 +307,8 @@ public class LoginModelImpl implements LoginModel
 		}
 
 		final Login loginService = getLoginService();
-		final Properties ctx = loginService.getCtx();
-		final MSession sessionPO = MSession.get(ctx, remoteAddr, remoteHost, webSessionId);
+		final LoginContext ctx = loginService.getCtx();
+		final MSession sessionPO = MSession.get(ctx.getSessionContext(), remoteAddr, remoteHost, webSessionId);
 
 		// Set HostKey
 		// FIXME: commented out because this one is not working when running over websockets (i.e. HttpServletResponse does not exists)
@@ -340,23 +332,22 @@ public class LoginModelImpl implements LoginModel
 	private void closeSessionWithError(final MSession session)
 	{
 		final Login loginService = getLoginService();
-		final Properties ctx = loginService.getCtx();
 
 		String errmsg = null;
 		final ValueNamePair vnp = MetasfreshLastError.retrieveError();
 		if (vnp != null)
 		{
-			errmsg = msgBL.translate(ctx, vnp.getValue());
+			errmsg = msgBL.translate(Env.getCtx(), vnp.getValue());
 		}
 		if (errmsg == null)
 		{
-			errmsg = msgBL.translate(ctx, "UserOrPasswordInvalid");
+			errmsg = msgBL.translate(Env.getCtx(), "UserOrPasswordInvalid");
 		}
 		//
 		session.logout();
-		Env.setContext(ctx, Env.CTXNAME_AD_Session_ID, "");
+		loginService.getCtx().resetAD_Session_ID();
+		
 		throw new AdempiereException(errmsg);
-
 	}
 
 	@Override

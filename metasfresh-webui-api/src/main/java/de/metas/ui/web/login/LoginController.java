@@ -3,6 +3,10 @@ package de.metas.ui.web.login;
 import org.compiere.util.KeyNamePairList;
 import org.compiere.util.ValueNamePair;
 import org.compiere.util.ValueNamePairList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +44,9 @@ import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
 public class LoginController
 {
 	public static final String ENDPOINT = "/rest/api/login";
+	
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	private volatile LoginModel _loginModel = null; // lazy
 	
@@ -61,7 +68,12 @@ public class LoginController
 	@RequestMapping(value = "/auth", method = RequestMethod.POST)
 	public LoginAuthResponse authenticate(@RequestBody final LoginAuthRequest request)
 	{
-		return getLoginModel().authenticate(request);
+		final LoginAuthResponse authResponse = getLoginModel().authenticate(request);
+		
+		final Authentication authentication = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
+		authenticationManager.authenticate(authentication);
+		
+		return authResponse;
 	}
 	
 	@RequestMapping(value = "/loginComplete", method = RequestMethod.POST)
