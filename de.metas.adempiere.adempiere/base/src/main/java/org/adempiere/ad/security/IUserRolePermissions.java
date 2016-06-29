@@ -35,6 +35,7 @@ import org.adempiere.ad.security.permissions.Permission;
 import org.adempiere.ad.security.permissions.ResourceAsPermission;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Optional;
 
@@ -163,6 +164,7 @@ public interface IUserRolePermissions
 	String getOrgWhere(String tableName, boolean rw);
 	String getAD_Org_IDs_AsString();
 
+	Set<KeyNamePair> getLoginClients();
 	Set<OrgResource> getLoginOrgs();
 
 	int getOrg_Tree_ID();

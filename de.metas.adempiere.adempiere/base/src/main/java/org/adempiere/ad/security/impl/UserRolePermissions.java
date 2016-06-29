@@ -68,6 +68,7 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -390,6 +391,18 @@ class UserRolePermissions implements IUserRolePermissions
 				.or(LoginOrgConstraint.DEFAULT);
 
 		return orgPermissions.getResourcesWithAccessThatMatch(Access.LOGIN, loginOrgConstraint.asOrgResourceMatcher());
+	}
+
+	@Override
+	public Set<KeyNamePair> getLoginClients()
+	{
+		final Set<KeyNamePair> clientsList = new TreeSet<>();
+		for (final OrgResource orgResource : getLoginOrgs())
+		{
+			clientsList.add(orgResource.asClientKeyNamePair());
+		}
+
+		return clientsList;
 	}
 
 	@Deprecated
