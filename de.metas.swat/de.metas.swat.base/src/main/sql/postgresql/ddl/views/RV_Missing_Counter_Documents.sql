@@ -57,7 +57,7 @@ SELECT
 	doc.DocumentNo AS DocumentNo,
 	doc.C_DocType_ID,
 	counter_doc.Counter_AD_Table_ID,
-	counter_doc.COunter_Record_ID,
+	counter_doc.Counter_Record_ID,
 	counter_doc.Counter_C_DocType_ID,
 	counter_doc.Counter_DocumentNo
 	
