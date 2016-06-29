@@ -1,0 +1,7 @@
+const config = () => {
+    return {
+
+    }
+}
+
+export default new config

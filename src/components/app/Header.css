@@ -1,0 +1,18 @@
+.navbar-wider {
+    font-size: 18px;
+    padding: .7rem 1rem !important;
+}
+
+.navbar-bordered {
+    border-bottom: 1px solid;
+}
+
+.navbar-super-faded {
+    background-color: #FFF;
+    border-bottom-color: #DEE6EC;
+}
+
+.text-brand {
+    color: $brand-color;
+    font-weight: 700;
+}
