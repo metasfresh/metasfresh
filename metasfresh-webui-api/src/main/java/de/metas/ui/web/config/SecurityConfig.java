@@ -95,7 +95,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 					.antMatchers("/rest/api/login/auth").permitAll()
 					//
 					// Others
-					.anyRequest().authenticated()
+					.anyRequest()
+						.permitAll() // FIXME: until we really implement the spring security it's better to permit ALL
+						// .authenticated()
 				//
 				.and()
 				.httpBasic()
