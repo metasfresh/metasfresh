@@ -49,7 +49,7 @@ public class VariableParserBL implements IVariableParserBL
 	{
 		if (InterfaceWrapperHelper.hasModelColumnName(model, variable))
 		{
-			return InterfaceWrapperHelper.getValue(model, variable);
+			return InterfaceWrapperHelper.getValue(model, variable).orNull();
 		}
 
 		// Check if is a TableColumnPath
