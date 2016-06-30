@@ -2,38 +2,6 @@
 
 DROP VIEW IF EXISTS RV_Missing_Counter_Documents;
 
-DROP TABLE IF EXISTS COUNTER_DocBaseType;
-
-			
-CREATE TABLE COUNTER_DocBaseType
-(
-    DocBaseType varchar(40),
-	Counter_DocBaseType varchar(40)
-);
-
-
-
-INSERT INTO COUNTER_DocBaseType
-(
-	DocBaseType ,
-	Counter_DocBaseType 
-)
-
-VALUES
-
-('SOO', 'POO'), -- Sales Order -> Puschase Order
-('POO', 'SOO'), -- Purchase Order -> Sales Order
-('API', 'ARI'), -- AP Invoice -> AR Invoice
-('ARI', 'API'), -- AR Invoice -> AP Invoice
-('MMS', 'MMR'), -- Material Delivery -> Material Receipt
-('MMR', 'MMS'), -- Material Receipt -> Material Delivery
-('APC', 'ARC'), -- AP Credit Memo -> AR Credit Memo
-('ARC', 'APC'), -- AR Credit Memo -> AP Credit Memo
-('ARR', 'APP'), -- AR Receipt -> AP Payment
-('APP', 'ARR')  -- AP Payment -> AR Receipt
-
-;
-
 
 -- This view is made for C_Order entries and their counter-documents
 -- If we start supporting other kind of counter documents in the fututre, this view will have to be updated with the logic on those tables, using unions
@@ -135,7 +103,7 @@ WHERE
 		or
 		exists
 		(
-			select 1 from COUNTER_DocBaseType where DocBaseType = doc.DocBaseType
+			select 1 from C_DocBaseType_Counter where DocBaseType = doc.DocBaseType
 		)
 	)
 

@@ -13,11 +13,11 @@ package de.metas.document.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,7 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -153,5 +154,25 @@ public class DocTypeDAO implements IDocTypeDAO
 		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
 				.create()
 				.list(I_C_DocType.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_C_DocBaseType_Counter.Table_Name + "#by#" + I_C_DocBaseType_Counter.COLUMNNAME_DocBaseType)
+	public I_C_DocBaseType_Counter retrieveDocBaseTypeCounter(@CacheCtx final Properties ctx, final String docBaseType, @CacheTrx final String trxName)
+	{
+
+		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_DocBaseType_Counter.class, ctx, trxName);
+
+		queryBuilder.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_DocBaseType_Counter.COLUMNNAME_DocBaseType, docBaseType);
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_DocBaseType_Counter.COLUMNNAME_C_DocBaseType_Counter_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy();
+
+		return queryBuilder
+				.create()
+				.first();
 	}
 }

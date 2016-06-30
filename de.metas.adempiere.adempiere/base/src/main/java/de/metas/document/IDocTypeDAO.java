@@ -13,11 +13,11 @@ package de.metas.document;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeDAO extends ISingletonService
@@ -84,4 +85,15 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return a list of docTypes never <code>null</code>. Those with <code>IsDefault</code> and with <code>AD_Org_ID > 0</code> will be first in the list.
 	 */
 	List<I_C_DocType> retrieveDocTypesByBaseType(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+
+	/**
+	 * Retrieve the DocBaseType_Counter that fits the given DocBaseType.
+	 * In case there are more of them (not currently the case in our dbs), retrieve the last created
+	 * 
+	 * @param ctx
+	 * @param docBaseType
+	 * @param trxName
+	 * @return
+	 */
+	I_C_DocBaseType_Counter retrieveDocBaseTypeCounter(Properties ctx, String docBaseType, String trxName);
 }

@@ -20,10 +20,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 
 
@@ -57,15 +61,27 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 				return -1;
 			return dtCounter.getCounter_C_DocType_ID();
 		}
+		
+		// task FRESH_417: docBaseType_Counter now has its own table.
+		final String trxName = ITrx.TRXNAME_None;
 
-		//	Indirect Relationship
+		// Indirect Relationship
 		int Counter_C_DocType_ID = 0;
-		MDocType dt = MDocType.get(ctx, C_DocType_ID);
+
+		final I_C_DocType dt = InterfaceWrapperHelper.create(ctx, C_DocType_ID, I_C_DocType.class, trxName);
 		if (!dt.isCreateCounter())
+		{
 			return -1;
-		String cDocBaseType = getCounterDocBaseType(dt.getDocBaseType());
+		}
+
+		final I_C_DocBaseType_Counter docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType(), trxName);
+
+		final String cDocBaseType = docBaseTypeCounter == null ? null : docBaseTypeCounter.getCounter_DocBaseType();
 		if (cDocBaseType == null)
+		{
 			return 0;
+		}
+		
 		MDocType[] counters = MDocType.getOfDocBaseType(ctx, cDocBaseType);
 		for (int i = 0; i < counters.length; i++)
 		{
