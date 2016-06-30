@@ -8,17 +8,14 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.ByteArrayDataSource;
 import org.compiere.util.EMail;
-import org.slf4j.Logger;
 
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
-import de.metas.logging.LogManager;
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailTextBuilder;
 import de.metas.rfq.IRfqBL;
@@ -57,7 +54,6 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(MailRfqResponsePublisherInstance.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
@@ -128,7 +124,7 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 				, userToEmail // to
 				, subject, message, mailTextBuilder.isHtml() // html
 		);
-		email.addAttachment(ByteArrayDataSource.of("rfq.pdf", pdfData));
+		email.addAttachment(ByteArrayDataSource.of("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData));
 		email.send();
 
 		//
@@ -165,7 +161,6 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 
 	public RfQReportType getRfQReportType(final I_C_RfQResponse rfqResponse)
 	{
-
 		if (rfqBL.isDraft(rfqResponse))
 		{
 			return RfQReportType.Invitation;
@@ -229,16 +224,4 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		mailTextBuilder.setRecord(rfqResponse);
 		return mailTextBuilder;
 	}
-
-	private ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
-	}
-
-	private void logError(final String msg, final Object... msgParameters)
-	{
-		getLoggable().addLog(msg, msgParameters);
-		logger.error(msg, msgParameters);
-	}
-
 }
