@@ -9,8 +9,6 @@ import org.compiere.process.SvrProcess;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
-import de.metas.rfq.IRfqDAO;
-import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -36,42 +34,32 @@ import de.metas.rfq.model.I_C_RfQResponse;
  */
 
 /**
- * Publish RfQ bidding invitations.
+ * Publish RfQ bidding invitation.
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class C_RfQ_Publish extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQResponse_Publish extends SvrProcess implements ISvrProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
-	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 
 	@Override
 	public boolean isPreconditionApplicable(final GridTab gridTab)
 	{
-		final I_C_RfQ rfq = InterfaceWrapperHelper.create(gridTab, I_C_RfQ.class);
-		return rfqBL.isCompleted(rfq);
+		final I_C_RfQResponse rfqResponse = InterfaceWrapperHelper.create(gridTab, I_C_RfQResponse.class);
+		return rfqBL.isDraft(rfqResponse);
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		rfqBL.assertComplete(rfq);
+		final I_C_RfQResponse rfqResponse = getRecord(I_C_RfQResponse.class);
+		rfqBL.assertDraft(rfqResponse);
 
 		final IRfQResponsePublisher rfqPublisher = rfqConfiguration.getRfQResponsePublisher();
-
-		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
-		{
-			if (!rfqBL.isDraft(rfqResponse))
-			{
-				continue;
-			}
-
-			rfqPublisher.publish(rfqResponse);
-		}
+		rfqPublisher.publish(rfqResponse);
 
 		return MSG_OK;
 	}
