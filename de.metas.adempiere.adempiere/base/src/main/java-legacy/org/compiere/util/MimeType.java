@@ -29,11 +29,11 @@ import com.google.common.collect.ImmutableMap;
  * @author Jorg Janke
  * @version $Id: MimeType.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
-public class MimeType
+public final class MimeType
 {
 	/**
 	 * Get Mime Type of file name
-	 * 
+	 *
 	 * @param fileName file name
 	 * @return mime type
 	 */
@@ -57,7 +57,7 @@ public class MimeType
 
 	/**
 	 * Gets file extension by mime type. Note, file extension contains the "." prefix. If extension was not found, empty string is returned.
-	 * 
+	 *
 	 * @param mimeType
 	 * @return
 	 */
@@ -76,66 +76,19 @@ public class MimeType
 		return "";
 	}
 
-	/**
-	 * Get Mime Type of file name
-	 * 
-	 * @param fileName file name
-	 * @return mime type
-	 */
-	public static MimeType get(String fileName)
-	{
-		return new MimeType(fileName, getMimeType(fileName));
-	}	// get
-
 	/** application/octet-stream */
 	public static final String TYPE_BINARY = "application/octet-stream";
 	public static final String TYPE_PDF = "application/pdf";
 	public static final String TYPE_TextPlain = "text/plain";
 
 	/**************************************************************************
-	 * MimeType
-	 * 
-	 * @param extension extension (with dot)
-	 * @param mimeType mime type
-	 */
-	public MimeType(final String extension, final String mimeType)
-	{
-		super();
-		this.m_extension = extension;
-		this.m_mimeType = mimeType;
-	}
-
-	/** Extension */
-	private final String m_extension;
-	/** MIME Type */
-	private final String m_mimeType;
-
-	/**
-	 * @return file extension
-	 */
-	public String getExtension()
-	{
-		return m_extension;
-	}
-
-	/**
-	 * @return Mime Type (Content Type).
-	 */
-	public String getMimeType()
-	{
-		return m_mimeType;
-	}
-
-	@Override
-	public String toString()
-	{
-		return m_mimeType + "(" + m_extension + ")";
-	}	// toString
-
-	/**************************************************************************
 	 * Mime / Content Type Map
 	 */
 	private static final Map<String, String> fileExtension2mimeType = ImmutableMap.<String, String> builder()
+			// Frequently used:
+			.put(".txt", TYPE_TextPlain)
+			.put(".pdf", TYPE_PDF)
+			//
 			.put(".3dm", "x-world/x-3dmf")
 			.put(".3dmf", "x-world/x-3dmf")
 			.put(".a", TYPE_BINARY)
@@ -164,7 +117,7 @@ public class MimeType
 			.put(".asf", "video/x-ms-asf")
 			.put(".asm", "text/x-asm")
 			.put(".asp", "text/asp")
-			.put(".asx", "application/x-mplayer2")
+			// .put(".asx", "application/x-mplayer2")
 			.put(".asx", "video/x-ms-asf")
 			// .put( ".asx", "video/x-ms-asf-plugin")
 			.put(".au", "audio/basic")
@@ -192,7 +145,7 @@ public class MimeType
 			.put(".bz2", "application/x-bzip2")
 			//
 			.put(".c", TYPE_TextPlain)
-			.put(".c", "text/x-c")
+			// .put(".c", "text/x-c")
 			.put(".c++", TYPE_TextPlain)
 			.put(".cat", "application/vnd.ms-pki.seccat")
 			.put(".cc", TYPE_TextPlain)
@@ -287,7 +240,7 @@ public class MimeType
 			.put(".g3", "image/g3fax")
 			.put(".gif", "image/gif")
 			.put(".gl", "video/gl")
-			.put(".gl", "video/x-gl")
+			// .put(".gl", "video/x-gl")
 			.put(".gsd", "audio/x-gsm")
 			.put(".gsm", "audio/x-gsm")
 			.put(".gsp", "application/x-gsp")
@@ -366,12 +319,12 @@ public class MimeType
 			.put(".jut", "image/jutvision")
 			//
 			.put(".kar", "audio/midi")
-			.put(".kar", "music/x-karaoke")
+			// .put(".kar", "music/x-karaoke")
 			// .put( ".ksh", "application/x-ksh")
 			.put(".ksh", "text/x-script.ksh")
 			//
 			.put(".la", "audio/nspaudio")
-			.put(".la", "audio/x-nspaudio")
+			// .put(".la", "audio/x-nspaudio")
 			.put(".lam", "audio/x-liveaudio")
 			.put(".latex", "application/x-latex")
 			.put(".lha", "application/lha")
@@ -379,21 +332,21 @@ public class MimeType
 			.put(".lhx", TYPE_BINARY)
 			.put(".list", TYPE_TextPlain)
 			.put(".lma", "audio/nspaudio")
-			.put(".lma", "audio/x-nspaudio")
+			// .put(".lma", "audio/x-nspaudio")
 			.put(".log", TYPE_TextPlain)
 			.put(".lsp", "application/x-lisp")
-			.put(".lsp", "text/x-script.lisp")
+			// .put(".lsp", "text/x-script.lisp")
 			.put(".lst", TYPE_TextPlain)
 			.put(".lsx", "text/x-la-asf")
 			.put(".ltx", "application/x-latex")
 			.put(".lzh", TYPE_BINARY)
-			.put(".lzh", "application/x-lzh")
+			// .put(".lzh", "application/x-lzh")
 			.put(".lzx", "application/lzx")
-			.put(".lzx", TYPE_BINARY)
-			.put(".lzx", "application/x-lzx")
+			// .put(".lzx", TYPE_BINARY)
+			// .put(".lzx", "application/x-lzx")
 			//
 			.put(".m", TYPE_TextPlain)
-			.put(".m", "text/x-m")
+			// .put(".m", "text/x-m")
 			.put(".m1v", "video/mpeg")
 			.put(".m2a", "audio/mpeg")
 			.put(".m2v", "video/mpeg")
@@ -404,36 +357,36 @@ public class MimeType
 			.put(".mbd", "application/mbedlet")
 			.put(".mc$", "application/x-magic-cap-package-1.0")
 			.put(".mcd", "application/mcad")
-			.put(".mcd", "application/x-mathcad")
+			// .put(".mcd", "application/x-mathcad")
 			.put(".mcf", "image/vasa")
-			.put(".mcf", "text/mcf")
+			// .put(".mcf", "text/mcf")
 			.put(".mcp", "application/netmc")
 			.put(".me", "application/x-troff-me")
 			.put(".mht", "message/rfc822")
 			.put(".mhtml", "message/rfc822")
 			.put(".mid", "application/x-midi")
-			.put(".mid", "audio/midi")
-			.put(".mid", "audio/x-mid")
-			.put(".mid", "audio/x-midi")
-			.put(".mid", "music/crescendo")
-			.put(".mid", "x-music/x-midi")
+			// .put(".mid", "audio/midi")
+			// .put(".mid", "audio/x-mid")
+			// .put(".mid", "audio/x-midi")
+			// .put(".mid", "music/crescendo")
+			// .put(".mid", "x-music/x-midi")
 			// .put( ".midi", "application/x-midi")
-			.put(".midi", "audio/midi")
+			// .put(".midi", "audio/midi")
 			// .put( ".midi", "audio/x-mid")
 			// .put( ".midi", "audio/x-midi")
-			.put(".midi", "music/crescendo")
-			.put(".midi", "x-music/x-midi")
+			// .put(".midi", "music/crescendo")
+			// .put(".midi", "x-music/x-midi")
 			.put(".mif", "application/x-frame")
-			.put(".mif", "application/x-mif")
+			// .put(".mif", "application/x-mif")
 			.put(".mime", "message/rfc822")
 			// .put( ".mime", "www/mime")
 			.put(".mjf", "audio/x-vnd.AudioExplosion.MjuiceMediaFile")
 			.put(".mjpg", "video/x-motion-jpeg")
 			.put(".mm", "application/base64")
-			.put(".mm", "application/x-meme")
+			// .put(".mm", "application/x-meme")
 			.put(".mme", "application/base64")
 			.put(".mod", "audio/mod")
-			.put(".mod", "audio/x-mod")
+			// .put(".mod", "audio/x-mod")
 			.put(".moov", "video/quicktime")
 			.put(".mov", "video/quicktime")
 			.put(".movie", "video/x-sgi-movie")
@@ -452,7 +405,7 @@ public class MimeType
 			.put(".mpe", "video/mpeg")
 			.put(".mpeg", "video/mpeg")
 			.put(".mpg", "audio/mpeg")
-			.put(".mpg", "video/mpeg")
+			// .put(".mpg", "video/mpeg")
 			.put(".mpga", "audio/mpeg")
 			.put(".mpp", "application/vnd.ms-project")
 			.put(".mpt", "application/x-project")
@@ -482,54 +435,53 @@ public class MimeType
 			//
 			.put(".p", "text/x-pascal")
 			.put(".p10", "application/pkcs10")
-			.put(".p10", "application/x-pkcs10")
+			// .put(".p10", "application/x-pkcs10")
 			.put(".p12", "application/pkcs-12")
-			.put(".p12", "application/x-pkcs12")
+			// .put(".p12", "application/x-pkcs12")
 			.put(".p7a", "application/x-pkcs7-signature")
 			.put(".p7c", "application/pkcs7-mime")
-			.put(".p7c", "application/x-pkcs7-mime")
+			// .put(".p7c", "application/x-pkcs7-mime")
 			.put(".p7m", "application/pkcs7-mime")
-			.put(".p7m", "application/x-pkcs7-mime")
+			// .put(".p7m", "application/x-pkcs7-mime")
 			.put(".p7r", "application/x-pkcs7-certreqresp")
 			.put(".p7s", "application/pkcs7-signature")
 			.put(".part", "application/pro_eng")
 			.put(".pas", "text/pascal")
 			.put(".pbm", "image/x-portable-bitmap")
 			.put(".pcl", "application/vnd.hp-PCL")
-			.put(".pcl", "application/x-pcl")
+			// .put(".pcl", "application/x-pcl")
 			.put(".pct", "image/x-pict")
 			.put(".pcx", "image/x-pcx")
 			.put(".pdb", "chemical/x-pdb")
-			.put(".pdf", TYPE_PDF)
 			.put(".pfunk", "audio/make")
-			.put(".pfunk", "audio/make.my.funk")
+			// .put(".pfunk", "audio/make.my.funk")
 			.put(".pgm", "image/x-portable-graymap")
-			.put(".pgm", "image/x-portable-greymap")
+			// .put(".pgm", "image/x-portable-greymap")
 			.put(".pic", "image/pict")
 			.put(".pict", "image/pict")
 			.put(".pkg", "application/x-newton-compatible-pkg")
 			.put(".pko", "application/vnd.ms-pki.pko")
 			.put(".pl", TYPE_TextPlain)
-			.put(".pl", "text/x-script.perl")
+			// .put(".pl", "text/x-script.perl")
 			.put(".plx", "application/x-PiXCLscript")
 			.put(".pm", "image/x-xpixmap")
-			.put(".pm", "text/x-script.perl-module")
+			// .put(".pm", "text/x-script.perl-module")
 			.put(".pm4", "application/x-pagemaker")
 			.put(".pm5", "application/x-pagemaker")
 			.put(".png", "image/png")
 			.put(".pnm", "application/x-portable-anymap")
-			.put(".pnm", "image/x-portable-anymap")
+			// .put(".pnm", "image/x-portable-anymap")
 			.put(".pot", "application/mspowerpoint")
-			.put(".pot", "application/vnd.ms-powerpoint")
+			// .put(".pot", "application/vnd.ms-powerpoint")
 			.put(".pov", "model/x-pov")
 			.put(".ppa", "application/vnd.ms-powerpoint")
 			.put(".ppm", "image/x-portable-pixmap")
 			.put(".pps", "application/mspowerpoint")
-			.put(".pps", "application/vnd.ms-powerpoint")
+			// .put(".pps", "application/vnd.ms-powerpoint")
 			.put(".ppt", "application/mspowerpoint")
-			.put(".ppt", "application/powerpoint")
-			.put(".ppt", "application/vnd.ms-powerpoint")
-			.put(".ppt", "application/x-mspowerpoint")
+			// .put(".ppt", "application/powerpoint")
+			// .put(".ppt", "application/vnd.ms-powerpoint")
+			// .put(".ppt", "application/x-mspowerpoint")
 			.put(".ppz", "application/mspowerpoint")
 			.put(".pre", "application/x-freelance")
 			.put(".prt", "application/pro_eng")
@@ -551,7 +503,7 @@ public class MimeType
 			//
 			.put(".ra", "audio/x-pn-realaudio")
 			// .put( ".ra", "audio/x-pn-realaudio-plugin")
-			.put(".ra", "audio/x-realaudio")
+			// .put(".ra", "audio/x-realaudio")
 			.put(".ram", "audio/x-pn-realaudio")
 			// .put( ".ras", "application/x-cmu-raster")
 			.put(".ras", "image/cmu-raster")
@@ -607,7 +559,7 @@ public class MimeType
 			// .put( ".shar", "application/x-bsh")
 			.put(".shar", "application/x-shar")
 			.put(".shtml", "text/html")
-			.put(".shtml", "text/x-server-parsed-html")
+			// .put(".shtml", "text/x-server-parsed-html")
 			.put(".sid", "audio/x-psid")
 			.put(".sit", "application/x-sit")
 			// .put( ".sit", "application/x-stuffit")
@@ -665,11 +617,10 @@ public class MimeType
 			.put(".tr", "application/x-troff")
 			.put(".tsi", "audio/tsp-audio")
 			.put(".tsp", "application/dsptype")
-			.put(".tsp", "audio/tsplayer")
+			// .put(".tsp", "audio/tsplayer")
 			.put(".tsv", "text/tab-separated-values")
 			.put(".turbot", "image/florian")
 			//
-			.put(".txt", TYPE_TextPlain)
 			.put(".uil", "text/x-uil")
 			.put(".uni", "text/uri-list")
 			.put(".unis", "text/uri-list")
@@ -700,7 +651,7 @@ public class MimeType
 			.put(".vqf", "audio/x-twinvq")
 			.put(".vql", "audio/x-twinvq-plugin")
 			.put(".vrml", "application/x-vrml")
-			.put(".vrml", "model/vrml")
+			// .put(".vrml", "model/vrml")
 			// .put( ".vrml", "x-world/x-vrml")
 			.put(".vrt", "x-world/x-vrt")
 			.put(".vsd", "application/x-visio")
@@ -724,7 +675,7 @@ public class MimeType
 			.put(".word", "application/msword")
 			.put(".wp", "application/wordperfect")
 			.put(".wp5", "application/wordperfect")
-			.put(".wp5", "application/wordperfect6.0")
+			// .put(".wp5", "application/wordperfect6.0")
 			.put(".wp6", "application/wordperfect")
 			.put(".wpd", "application/wordperfect")
 			// .put( ".wpd", "application/x-wpwin")
@@ -801,4 +752,9 @@ public class MimeType
 			.put(".zsh", "text/x-script.zsh")
 			//
 			.build();
+
+	private MimeType()
+	{
+	}
+
 }
