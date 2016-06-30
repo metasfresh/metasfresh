@@ -73,9 +73,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return -1;
 		}
 
-		final I_C_DocBaseType_Counter docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType(), trxName);
-
-		final String cDocBaseType = docBaseTypeCounter == null ? null : docBaseTypeCounter.getCounter_DocBaseType();
+		final String cDocBaseType = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType(), trxName);
 		if (cDocBaseType == null)
 		{
 			return 0;
@@ -91,9 +89,13 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 				break;
 			}
 			if (counter.isDefault())
+			{
 				Counter_C_DocType_ID = counter.getC_DocType_ID();
+			}
 			else if (i == 0)
+			{
 				Counter_C_DocType_ID = counter.getC_DocType_ID();
+			}
 		}
 		return Counter_C_DocType_ID;
 	}	// getCounterDocType_ID
@@ -148,9 +150,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		{
 			pstmt = null;
 		}
-		if (retValue != null) 	// valid
+		if (retValue != null)   	// valid
 			return retValue;
-		if (temp != null) 		// invalid
+		if (temp != null)   		// invalid
 			return temp;
 		return null;			// nothing found
 	}	// getCounterDocType
@@ -174,48 +176,6 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			s_cache.put(key, retValue);
 		return retValue;
 	}	// get
-
-	/**
-	 * Get Counter Document BaseType
-	 * 
-	 * @param DocBaseType Document Base Type (e.g. SOO)
-	 * @return Counter Document BaseType (e.g. POO) or null if there is none
-	 */
-	public static String getCounterDocBaseType(String DocBaseType)
-	{
-		if (DocBaseType == null)
-			return null;
-		String retValue = null;
-		// SO/PO
-		if (MDocType.DOCBASETYPE_SalesOrder.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_PurchaseOrder;
-		else if (MDocType.DOCBASETYPE_PurchaseOrder.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_SalesOrder;
-		// AP/AR Invoice
-		else if (MDocType.DOCBASETYPE_APInvoice.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARInvoice;
-		else if (MDocType.DOCBASETYPE_ARInvoice.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APInvoice;
-		// Shipment
-		else if (MDocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_MaterialReceipt;
-		else if (MDocType.DOCBASETYPE_MaterialReceipt.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_MaterialDelivery;
-		// AP/AR CreditMemo
-		else if (MDocType.DOCBASETYPE_APCreditMemo.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARCreditMemo;
-		else if (MDocType.DOCBASETYPE_ARCreditMemo.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APCreditMemo;
-		// Receipt / Payment
-		else if (MDocType.DOCBASETYPE_ARReceipt.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APPayment;
-		else if (MDocType.DOCBASETYPE_APPayment.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARReceipt;
-		//
-		else
-			s_log.error("getCounterDocBaseType for " + DocBaseType + ": None found");
-		return retValue;
-	}	// getCounterDocBaseType
 
 	/** Object Cache */
 	private static CCache<Integer, MDocTypeCounter> s_cache = new CCache<Integer, MDocTypeCounter>("C_DocTypeCounter", 20);
@@ -339,32 +299,31 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		String c_dtBT = c_dt.getDocBaseType();
 		log.debug(dtBT + " -> " + c_dtBT);
 
-		// SO / PO
-		if ((MDocType.DOCBASETYPE_SalesOrder.equals(dtBT) && MDocType.DOCBASETYPE_PurchaseOrder.equals(c_dtBT))
-				|| (MDocType.DOCBASETYPE_SalesOrder.equals(c_dtBT) && MDocType.DOCBASETYPE_PurchaseOrder.equals(dtBT)))
-			setIsValid(true);
-		// AP/AR Invoice
-		else if ((MDocType.DOCBASETYPE_APInvoice.equals(dtBT) && MDocType.DOCBASETYPE_ARInvoice.equals(c_dtBT))
-				|| (MDocType.DOCBASETYPE_APInvoice.equals(c_dtBT) && MDocType.DOCBASETYPE_ARInvoice.equals(dtBT)))
-			setIsValid(true);
-		// Shipment
-		else if ((MDocType.DOCBASETYPE_MaterialDelivery.equals(dtBT) && MDocType.DOCBASETYPE_MaterialReceipt.equals(c_dtBT))
-				|| (MDocType.DOCBASETYPE_MaterialDelivery.equals(c_dtBT) && MDocType.DOCBASETYPE_MaterialReceipt.equals(dtBT)))
-			setIsValid(true);
-		// AP/AR CreditMemo
-		else if ((MDocType.DOCBASETYPE_APCreditMemo.equals(dtBT) && MDocType.DOCBASETYPE_ARCreditMemo.equals(c_dtBT))
-				|| (MDocType.DOCBASETYPE_APCreditMemo.equals(c_dtBT) && MDocType.DOCBASETYPE_ARCreditMemo.equals(dtBT)))
-			setIsValid(true);
-		// Receipt / Payment
-		else if ((MDocType.DOCBASETYPE_ARReceipt.equals(dtBT) && MDocType.DOCBASETYPE_APPayment.equals(c_dtBT))
-				|| (MDocType.DOCBASETYPE_ARReceipt.equals(c_dtBT) && MDocType.DOCBASETYPE_APPayment.equals(dtBT)))
-			setIsValid(true);
-		else
+		boolean valid = true;
+		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(getCtx(), dtBT, get_TrxName());
+
+		if (c_dtBT == null)
+		{
+			valid = false;
+		}
+		else if (docBaseTypeCounter == null)
+		{
+			valid = false;
+		}
+
+		else if (!c_dtBT.equals(docBaseTypeCounter))
+		{
+			valid = false;
+		}
+
+		setIsValid(valid);
+
+		if (!valid)
 		{
 			log.warn("NOT - " + dtBT + " -> " + c_dtBT);
-			setIsValid(false);
 			return "Not valid";
 		}
+
 		// Counter should have document numbering
 		if (!c_dt.isDocNoControlled())
 			return "Counter Document Type should be automatically Document Number controlled";

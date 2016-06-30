@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeDAO extends ISingletonService
@@ -87,13 +86,12 @@ public interface IDocTypeDAO extends ISingletonService
 	List<I_C_DocType> retrieveDocTypesByBaseType(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
 	/**
-	 * Retrieve the DocBaseType_Counter that fits the given DocBaseType.
-	 * In case there are more of them (not currently the case in our dbs), retrieve the last created
+	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
 	 * 
 	 * @param ctx
 	 * @param docBaseType
 	 * @param trxName
 	 * @return
 	 */
-	I_C_DocBaseType_Counter retrieveDocBaseTypeCounter(Properties ctx, String docBaseType, String trxName);
+	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType, String trxName);
 }
