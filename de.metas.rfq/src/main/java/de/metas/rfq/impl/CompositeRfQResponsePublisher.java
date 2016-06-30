@@ -58,8 +58,6 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 	@Override
 	public String getDisplayName()
 	{
-		// final StringBuilder displayName = new Stri
-
 		if (_displayName == null)
 		{
 			final List<String> publisherNames = new ArrayList<>(publishers.size());
