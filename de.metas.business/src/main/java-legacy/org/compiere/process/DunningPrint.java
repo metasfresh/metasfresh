@@ -181,8 +181,8 @@ public class DunningPrint extends SvrProcess
 					errors++;
 					continue;
 				}
-				mText.setUser(to);	//	variable context
-				mText.setBPartner(bp);
+				mText.setAD_User(to);	//	variable context
+				mText.setC_BPartner(bp);
 				mText.setRecord(entry);
 				String message = mText.getFullMailText();
 				if (mText.isHtml())

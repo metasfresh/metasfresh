@@ -64,22 +64,32 @@ public interface IMailTextBuilder
 	/**
 	 * Set BPartner for parse
 	 */
-	IMailTextBuilder setBPartner(final I_C_BPartner bpartner);
+	IMailTextBuilder setC_BPartner(final I_C_BPartner bpartner);
 
 	/**
 	 * Set BPartner for parse
 	 */
-	IMailTextBuilder setBPartner(final int C_BPartner_ID);
+	IMailTextBuilder setC_BPartner(final int C_BPartner_ID);
+
+	/**
+	 * @return actual partner that will be used
+	 */
+	I_C_BPartner getC_BPartner();
 
 	/**
 	 * Set User for parse
 	 */
-	IMailTextBuilder setUser(final I_AD_User user);
+	IMailTextBuilder setAD_User(final I_AD_User user);
 
 	/**
 	 * Set User for parse
 	 */
-	IMailTextBuilder setUser(final int AD_User_ID);
+	IMailTextBuilder setAD_User(final int AD_User_ID);
+
+	/**
+	 * @return actual user that will be used
+	 */
+	I_AD_User getAD_User();
 
 	/**
 	 * Set record for parse
@@ -96,5 +106,19 @@ public interface IMailTextBuilder
 	 */
 	IMailTextBuilder setRecord(final Object record, final boolean analyse);
 
+	/**
+	 * @return actual record that will be used
+	 */
+	Object getRecord();
+
 	IMailTextBuilder setCustomVariable(final String name, final String value);
+
+	/** Optionally, set the AD_Language to be used. If not set, the partner language will be used */
+	IMailTextBuilder setAD_Language(String adLanguage);
+
+	/**
+	 * @return actual AD_Language that will be used
+	 */
+	String getAD_Language();
+
 }

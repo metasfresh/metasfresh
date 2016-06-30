@@ -271,7 +271,7 @@ public class SendMailText extends SvrProcess
 		m_list.add(ii);
 		//
 		MUser to = new MUser (getCtx(), AD_User_ID, null);
-		mailTextBuilder.setUser(AD_User_ID);		//	parse context
+		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
 		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe
 		if (unsubscribe != null)

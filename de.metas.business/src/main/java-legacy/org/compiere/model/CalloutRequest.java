@@ -61,10 +61,10 @@ public class CalloutRequest extends CalloutEngine
 
 		Integer userID = (Integer) mTab.getValue("AD_User_ID");
 		if (userID != null)
-			mailTextBuilder.setUser(userID.intValue());
+			mailTextBuilder.setAD_User(userID.intValue());
 		Integer bpID = (Integer) mTab.getValue("C_BPartner_ID");
 		if (bpID != null)
-			mailTextBuilder.setBPartner(bpID.intValue());
+			mailTextBuilder.setC_BPartner(bpID.intValue());
 		
 		String txt = mailTextBuilder.getMailText();
 		txt = Env.parseContext(ctx, WindowNo, txt, false, true);

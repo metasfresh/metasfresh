@@ -306,8 +306,8 @@ public class InvoicePrint extends SvrProcess
 						errors++;
 						continue;
 					}
-					mText.setUser(to);					//	Context
-					mText.setBPartner(C_BPartner_ID);	//	Context
+					mText.setAD_User(to);					//	Context
+					mText.setC_BPartner(C_BPartner_ID);	//	Context
 					mText.setRecord(new MInvoice(getCtx(), C_Invoice_ID, get_TrxName()));
 					String message = mText.getFullMailText();
 					if (mText.isHtml())

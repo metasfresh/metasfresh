@@ -61,12 +61,14 @@ class MailTextBuilder implements IMailTextBuilder
 	private I_AD_User _user = null;
 	private I_C_BPartner _bpartner = null;
 	private Object _record = null;
+	private String _adLanguage = null;
 	private final Map<String, String> _customVariables = new HashMap<>();
 
 	//
 	// Cache
 	private TextsVO _texts = null;
 	private final Map<String, String> text2parsedText = new HashMap<>();
+
 
 	private MailTextBuilder(final I_R_MailText mailTextDef)
 	{
@@ -190,9 +192,9 @@ class MailTextBuilder implements IMailTextBuilder
 		}
 		
 		String textParsed = text;
-		textParsed = parse(textParsed, getUser());
-		textParsed = parse(textParsed, getBPartner());
-		textParsed = parse(textParsed, getRecord());
+		textParsed = parse(textParsed, getRecord()); // first parse the record values
+		textParsed = parse(textParsed, getAD_User());
+		textParsed = parse(textParsed, getC_BPartner());
 		text2parsedText.put(text, textParsed); // cache it
 		//
 		return textParsed;
@@ -268,34 +270,35 @@ class MailTextBuilder implements IMailTextBuilder
 	}
 
 	@Override
-	public IMailTextBuilder setUser(final int AD_User_ID)
+	public IMailTextBuilder setAD_User(final int AD_User_ID)
 	{
-		setUser(Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID));
+		setAD_User(Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID));
 		return this;
 	}
 
 	@Override
-	public IMailTextBuilder setUser(final I_AD_User user)
+	public IMailTextBuilder setAD_User(final I_AD_User user)
 	{
 		_user = user;
 		text2parsedText.clear(); // reset cache
 		return this;
 	}
 
-	private I_AD_User getUser()
+	@Override
+	public I_AD_User getAD_User()
 	{
 		return _user;
 	}
 
 	@Override
-	public IMailTextBuilder setBPartner(final int C_BPartner_ID)
+	public IMailTextBuilder setC_BPartner(final int C_BPartner_ID)
 	{
-		setBPartner(C_BPartner_ID <= 0 ? null : InterfaceWrapperHelper.create(getCtx(), C_BPartner_ID, I_C_BPartner.class, ITrx.TRXNAME_None));
+		setC_BPartner(C_BPartner_ID <= 0 ? null : InterfaceWrapperHelper.create(getCtx(), C_BPartner_ID, I_C_BPartner.class, ITrx.TRXNAME_None));
 		return this;
 	}
 
 	@Override
-	public IMailTextBuilder setBPartner(final I_C_BPartner bpartner)
+	public IMailTextBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		_bpartner = bpartner;
 		
@@ -305,15 +308,29 @@ class MailTextBuilder implements IMailTextBuilder
 		return this;
 	}
 
-	private I_C_BPartner getBPartner()
+	@Override
+	public I_C_BPartner getC_BPartner()
 	{
 		return _bpartner;
 	}
 
-	private String getAD_Language()
+	@Override
+	public String getAD_Language()
 	{
-		final I_C_BPartner bpartner = getBPartner();
+		if(_adLanguage != null)
+		{
+			return _adLanguage;
+		}
+		
+		final I_C_BPartner bpartner = getC_BPartner();
 		return bpartner == null ? null : bpartner.getAD_Language();
+	}
+	
+	@Override
+	public IMailTextBuilder setAD_Language(final String adLanguage)
+	{
+		this._adLanguage = adLanguage;
+		return this;
 	}
 
 	@Override
@@ -336,21 +353,22 @@ class MailTextBuilder implements IMailTextBuilder
 			if (bpartnerIdObj instanceof Integer)
 			{
 				final int C_BPartner_ID = ((Integer)bpartnerIdObj).intValue();
-				setBPartner(C_BPartner_ID);
+				setC_BPartner(C_BPartner_ID);
 			}
 
 			final Object adUserIdObj = InterfaceWrapperHelper.getValueOrNull(record, "AD_User_ID");
 			if (adUserIdObj instanceof Integer)
 			{
 				final int AD_User_ID = ((Integer)adUserIdObj).intValue();
-				setUser(AD_User_ID);
+				setAD_User(AD_User_ID);
 			}
 		}
 
 		return this;
 	}
 
-	private Object getRecord()
+	@Override
+	public Object getRecord()
 	{
 		return _record;
 	}

@@ -128,10 +128,10 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = generatePasswordResetURL(user);
 		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
 
-		mailTextBuilder.setUser(user);
+		mailTextBuilder.setAD_User(user);
 		if (user.getC_BPartner_ID() > 0)
 		{
-			mailTextBuilder.setBPartner(user.getC_BPartner());
+			mailTextBuilder.setC_BPartner(user.getC_BPartner());
 		}
 
 		final String message = mailTextBuilder.getFullMailText();

@@ -211,7 +211,7 @@ public class AssetDelivery extends SvrProcess
 
 		//	Create Mail
 		EMail email = m_client.createEMail(user.getEMail(), null, null);
-		m_MailText.setUser(user);
+		m_MailText.setAD_User(user);
 		m_MailText.setRecord(asset);
 		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml())
@@ -265,7 +265,7 @@ public class AssetDelivery extends SvrProcess
 		}
 		if (m_client.isSmtpAuthorization())
 			email.createAuthenticator(m_client.getRequestUser(), m_client.getRequestUserPW());
-		m_MailText.setUser(user);
+		m_MailText.setAD_User(user);
 		m_MailText.setRecord(asset);
 		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml() || m_AttachAsset)
