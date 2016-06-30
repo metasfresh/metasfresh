@@ -33,20 +33,14 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 public interface IRfqBL extends ISingletonService
 {
-	boolean isQuoteSelectedLines(I_C_RfQ rfq);
-
-	boolean isQuoteTotalAmtOnly(I_C_RfQ rfq);
-
-	boolean isValidAmt(I_C_RfQResponseLineQty responseQty);
-
-	/**
-	 * Get price minus discount%.
-	 * 
-	 * @return price without discount% or null if price or discount is not valid.
-	 */
-	BigDecimal calculatePriceWithoutDiscount(I_C_RfQResponseLineQty responseQty);
-
+	//
+	// C_RfQ related methods
+	//
 	//@formatter:off
+	String getSummary(I_C_RfQ rfq);
+	boolean isQuoteSelectedLines(I_C_RfQ rfq);
+	boolean isQuoteTotalAmtOnly(I_C_RfQ rfq);
+	
 	boolean isDraft(I_C_RfQ rfq);
 	void assertDraft(I_C_RfQ rfq);
 	
@@ -61,7 +55,12 @@ public interface IRfqBL extends ISingletonService
 	void reActivate(I_C_RfQ rfq);
 	//@formatter:on
 
+	//
+	// C_RfQResponse related methods
+	//
 	//@formatter:off
+	String getSummary(I_C_RfQResponse rfqResponse);
+	
 	boolean isDraft(I_C_RfQResponse rfqResponse);
 	void assertDraft(I_C_RfQResponse rfqResponse);
 	void complete(I_C_RfQResponse response);
@@ -69,7 +68,18 @@ public interface IRfqBL extends ISingletonService
 	boolean isClosed(I_C_RfQResponseLine rfqResponseLine);
 	//@formatter:on
 
+	//
+	// C_RfQReponseLine[Qty] related methods
+	//
+	//@formatter:off
 	void updateQtyPromisedAndSave(I_C_RfQResponseLine rfqResponseLine);
-
-
+	boolean isValidAmt(I_C_RfQResponseLineQty responseQty);
+	
+	/**
+	 * Get price minus discount%.
+	 * 
+	 * @return price without discount% or null if price or discount is not valid.
+	 */
+	BigDecimal calculatePriceWithoutDiscount(I_C_RfQResponseLineQty responseQty);
+	//@formatter:on
 }

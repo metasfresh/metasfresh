@@ -525,12 +525,14 @@ public class RfqBL implements IRfqBL
 		return rfqResponseLine.isClosed();
 	}
 
-	private String getSummary(final I_C_RfQ rfq)
+	@Override
+	public String getSummary(final I_C_RfQ rfq)
 	{
 		return "@C_RfQ_ID@ #" + rfq.getDocumentNo();
 	}
 
-	private String getSummary(final I_C_RfQResponse rfqResponse)
+	@Override
+	public String getSummary(final I_C_RfQResponse rfqResponse)
 	{
 		return "@C_RfQResponse_ID@ #" + rfqResponse.getName();
 	}
