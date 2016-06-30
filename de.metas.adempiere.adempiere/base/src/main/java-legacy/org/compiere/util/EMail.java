@@ -1203,7 +1203,7 @@ public final class EMail implements Serializable
 		final InternetAddress from = getFrom();
 		if (!isValidAddress(from))
 		{
-			final String errmsg = "From is invalid=" + from;
+			final String errmsg = "No From address";
 			if(reason.length() > 0)
 				reason.append("; ");
 			reason.append(errmsg);
@@ -1214,7 +1214,7 @@ public final class EMail implements Serializable
 		final List<InternetAddress> toList = getTos();
 		if (toList.isEmpty())
 		{
-			final String errmsg = "No To";
+			final String errmsg = "No To addresses";
 			if(reason.length() > 0)
 				reason.append("; ");
 			reason.append(errmsg);
@@ -1226,7 +1226,7 @@ public final class EMail implements Serializable
 			{
 				if(!isValidAddress(to))
 				{
-					final String errmsg = "To is invalid: " + to;
+					final String errmsg = "To address is invalid (" + to + ")";
 					if(reason.length() > 0)
 						reason.append("; ");
 					reason.append(errmsg);
@@ -1239,7 +1239,7 @@ public final class EMail implements Serializable
 		final String smtpHost = getSmtpHost();
 		if(Check.isEmpty(smtpHost, true))
 		{
-			final String errmsg = "SMTP Host is invalid" + smtpHost;
+			final String errmsg = "No SMTP Host";
 			if(reason.length() > 0)
 				reason.append("; ");
 			reason.append(errmsg);
@@ -1250,7 +1250,7 @@ public final class EMail implements Serializable
 		final String subject = getSubject();
 		if (Check.isEmpty(subject, true))
 		{
-			final String errmsg = "Subject is invalid=" + subject;
+			final String errmsg = "Subject is empty";
 			if(reason.length() > 0)
 				reason.append("; ");
 			reason.append(errmsg);
