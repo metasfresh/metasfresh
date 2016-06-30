@@ -49,13 +49,6 @@
 			<artifactId>de.metas.storage</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
-
-		<!-- Needed for org.eevolution.form.bom.action.CreateRfQAction -->
-		<dependency>
-			<groupId>de.metas.rfq</groupId>
-			<artifactId>de.metas.rfq</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
 	</dependencies>
 	
 	<build>
