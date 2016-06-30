@@ -564,7 +564,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		try
 		{
 			String cssPrefix = extension != null ? extension.getClassPrefix() : null;
-			if (cssPrefix != null && cssPrefix.trim().length() == 0)
+			if(Check.isEmpty(cssPrefix, true))
 				cssPrefix = null;
 
 			table table = new table();
@@ -711,7 +711,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	 *  @param language translation language
 	 * 	@return true if success
 	 */
-	public boolean createCSV (Writer writer, char delimiter, Language language)
+	private boolean createCSV (Writer writer, char delimiter, Language language)
 	{
 		final PrintData m_printData = getPrintData();
 
@@ -789,7 +789,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	private void createCSVvalue (StringBuffer sb, char delimiter, String content)
 	{
 		//	nothing to add
-		if (content == null || content.length() == 0)
+		if (content == null || content.isEmpty())
 			return;
 		//
 		boolean needMask = false;
@@ -1115,7 +1115,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			rs = null; pstmt = null;
 		}
 		//	Nothing found
-		if (AD_ReportView_ID == 0)
+		if (AD_ReportView_ID <= 0)
 		{
 			//	Check Print format in Report Directly
 			sql = "SELECT t.AD_Table_ID,t.TableName, pf.AD_PrintFormat_ID, pf.IsForm "
@@ -1147,10 +1147,9 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-			if (AD_PrintFormat_ID == 0)
+			if (AD_PrintFormat_ID <= 0)
 			{
-				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID()
-					+ ",AD_Client_ID=" + AD_Client_ID);
+				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID() + ",AD_Client_ID=" + AD_Client_ID);
 				return null;
 			}
 		}
@@ -1168,7 +1167,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 
 		// metas 03915
-		if (query.getRestrictionCount() == 0 && pi.getRecord_ID() != 0)
+		if (query.getRestrictionCount() == 0 && pi.getRecord_ID() > 0)
 		{
 			final MTable table = MTable.get(ctx, pi.getTable_ID());
 			final String[] keyColumns = table.getKeyColumns();
@@ -1226,6 +1225,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	/** Project = 3				*/
 	public static final int		PROJECT = 3;
 	/** RfQ = 4					*/
+	@Deprecated
 	public static final int		RFQ = 4;
 	/** Remittance = 5			*/
 	public static final int		REMITTANCE = 5;
@@ -1295,12 +1295,11 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		return get(ctx, type, Record_ID,  pInstanceId, adPrintFormatToUseId, trxName);
 	}
 	// metas: added adPrintFormatToUseId parameter
-	public static ReportEngine get (Properties ctx, int type, int Record_ID, int pInstanceId, final int adPrintFormatToUseId, String trxName)
+	public static ReportEngine get (final Properties ctx, int type, int Record_ID, final int pInstanceId, final int adPrintFormatToUseId, final String trxName)
 	{
 		if (Record_ID < 1)
 		{
-			log.warn("No PrintFormat for Record_ID=" + Record_ID
-					+ ", Type=" + type);
+			log.warn("No PrintFormat for Record_ID=" + Record_ID + ", Type=" + type);
 			return null;
 		}
 		//	Order - Print Shipment or Invoice
@@ -1558,7 +1557,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		// metas: end
 
-		if (AD_PrintFormat_ID == 0)
+		if (AD_PrintFormat_ID <= 0)
 		{
 			log.error("No PrintFormat found for Type=" + type + ", Record_ID=" + Record_ID);
 			return null;
@@ -1576,7 +1575,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		//
 		
 		
-		if (DocumentNo == null || DocumentNo.length() == 0)
+		if (DocumentNo == null || DocumentNo.isEmpty())
 			DocumentNo = "DocPrint";
 		PrintInfo info = new PrintInfo(
 			DocumentNo,
