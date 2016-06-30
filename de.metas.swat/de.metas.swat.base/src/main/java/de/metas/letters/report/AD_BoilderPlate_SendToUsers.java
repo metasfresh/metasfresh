@@ -158,18 +158,22 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 	private void notifyEMail(final MADBoilerPlate text, final MUser user)
 	{
 		MADBoilerPlate.sendEMail(new IEMailEditor() {
+			@Override
 			public Object getBaseObject()
 			{
 				return user;
 			}
+			@Override
 			public int getAD_Table_ID()
 			{
 				return user.get_Table_ID();
 			}
+			@Override
 			public int getRecord_ID()
 			{
 				return user.get_ID();
 			}
+			@Override
 			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				String message = text.getTextSnippetParsed(variables);
@@ -204,8 +208,7 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 			if (email.isSentOK())
 				return;
 			// Timeout => retry
-			if (status != null && status.indexOf("Could not connect to SMTP host:") != -1
-					&& count < maxRetries)
+			if (email.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
 			{
 				log.warn("SMTP error: "+status+" [ Retry "+count+" ]");
 			}
