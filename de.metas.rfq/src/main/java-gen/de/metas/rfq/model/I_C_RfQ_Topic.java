@@ -69,35 +69,6 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Format.
-	 * Data Print Format
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
-
-	/**
-	 * Get Druck - Format.
-	 * Data Print Format
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_PrintFormat_ID();
-
-	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat();
-
-	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat);
-
-    /** Column definition for AD_PrintFormat_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat> COLUMN_AD_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat>(I_C_RfQ_Topic.class, "AD_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
-    /** Column name AD_PrintFormat_ID */
-    public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
-
-	/**
 	 * Set Ausschreibungs-Thema.
 	 * Topic for Request for Quotations
 	 *
@@ -278,6 +249,33 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_RfQ_Invitation_MailText_ID = "RfQ_Invitation_MailText_ID";
 
 	/**
+	 * Set RfQ Invitation Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Invitation_PrintFormat_ID (int RfQ_Invitation_PrintFormat_ID);
+
+	/**
+	 * Get RfQ Invitation Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Invitation_PrintFormat_ID();
+
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Invitation_PrintFormat();
+
+	public void setRfQ_Invitation_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Invitation_PrintFormat);
+
+    /** Column definition for RfQ_Invitation_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat> COLUMN_RfQ_Invitation_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat>(I_C_RfQ_Topic.class, "RfQ_Invitation_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
+    /** Column name RfQ_Invitation_PrintFormat_ID */
+    public static final String COLUMNNAME_RfQ_Invitation_PrintFormat_ID = "RfQ_Invitation_PrintFormat_ID";
+
+	/**
 	 * Set RfQ lost mail text.
 	 *
 	 * <br>Type: Table
@@ -305,6 +303,33 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_RfQ_Lost_MailText_ID = "RfQ_Lost_MailText_ID";
 
 	/**
+	 * Set RfQ Lost Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Lost_PrintFormat_ID (int RfQ_Lost_PrintFormat_ID);
+
+	/**
+	 * Get RfQ Lost Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Lost_PrintFormat_ID();
+
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Lost_PrintFormat();
+
+	public void setRfQ_Lost_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Lost_PrintFormat);
+
+    /** Column definition for RfQ_Lost_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat> COLUMN_RfQ_Lost_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat>(I_C_RfQ_Topic.class, "RfQ_Lost_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
+    /** Column name RfQ_Lost_PrintFormat_ID */
+    public static final String COLUMNNAME_RfQ_Lost_PrintFormat_ID = "RfQ_Lost_PrintFormat_ID";
+
+	/**
 	 * Set RfQ win mail text.
 	 *
 	 * <br>Type: Table
@@ -330,6 +355,33 @@ public interface I_C_RfQ_Topic
     public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText> COLUMN_RfQ_Win_MailText_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText>(I_C_RfQ_Topic.class, "RfQ_Win_MailText_ID", org.compiere.model.I_R_MailText.class);
     /** Column name RfQ_Win_MailText_ID */
     public static final String COLUMNNAME_RfQ_Win_MailText_ID = "RfQ_Win_MailText_ID";
+
+	/**
+	 * Set RfQ Won Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_Win_PrintFormat_ID (int RfQ_Win_PrintFormat_ID);
+
+	/**
+	 * Get RfQ Won Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_Win_PrintFormat_ID();
+
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Win_PrintFormat();
+
+	public void setRfQ_Win_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Win_PrintFormat);
+
+    /** Column definition for RfQ_Win_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat> COLUMN_RfQ_Win_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat>(I_C_RfQ_Topic.class, "RfQ_Win_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
+    /** Column name RfQ_Win_PrintFormat_ID */
+    public static final String COLUMNNAME_RfQ_Win_PrintFormat_ID = "RfQ_Win_PrintFormat_ID";
 
 	/**
 	 * Get Aktualisiert.

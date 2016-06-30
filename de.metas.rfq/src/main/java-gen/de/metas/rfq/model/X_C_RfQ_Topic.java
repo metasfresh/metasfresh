@@ -14,7 +14,7 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 936120848L;
+	private static final long serialVersionUID = 926860076L;
 
     /** Standard Constructor */
     public X_C_RfQ_Topic (Properties ctx, int C_RfQ_Topic_ID, String trxName)
@@ -42,43 +42,6 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
-	}
-
-	@Override
-	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, AD_PrintFormat);
-	}
-
-	/** Set Druck - Format.
-		@param AD_PrintFormat_ID 
-		Data Print Format
-	  */
-	@Override
-	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
-	{
-		if (AD_PrintFormat_ID < 1) 
-			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
-	}
-
-	/** Get Druck - Format.
-		@return Data Print Format
-	  */
-	@Override
-	public int getAD_PrintFormat_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** Set Ausschreibungs-Thema.
 		@param C_RfQ_Topic_ID 
@@ -201,6 +164,40 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	}
 
 	@Override
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Invitation_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Invitation_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setRfQ_Invitation_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Invitation_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Invitation_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, RfQ_Invitation_PrintFormat);
+	}
+
+	/** Set RfQ Invitation Druck - Format.
+		@param RfQ_Invitation_PrintFormat_ID RfQ Invitation Druck - Format	  */
+	@Override
+	public void setRfQ_Invitation_PrintFormat_ID (int RfQ_Invitation_PrintFormat_ID)
+	{
+		if (RfQ_Invitation_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Invitation_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Invitation_PrintFormat_ID, Integer.valueOf(RfQ_Invitation_PrintFormat_ID));
+	}
+
+	/** Get RfQ Invitation Druck - Format.
+		@return RfQ Invitation Druck - Format	  */
+	@Override
+	public int getRfQ_Invitation_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Invitation_PrintFormat_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_R_MailText getRfQ_Lost_MailText() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_RfQ_Lost_MailText_ID, org.compiere.model.I_R_MailText.class);
@@ -235,6 +232,40 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	}
 
 	@Override
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Lost_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Lost_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setRfQ_Lost_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Lost_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Lost_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, RfQ_Lost_PrintFormat);
+	}
+
+	/** Set RfQ Lost Druck - Format.
+		@param RfQ_Lost_PrintFormat_ID RfQ Lost Druck - Format	  */
+	@Override
+	public void setRfQ_Lost_PrintFormat_ID (int RfQ_Lost_PrintFormat_ID)
+	{
+		if (RfQ_Lost_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Lost_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Lost_PrintFormat_ID, Integer.valueOf(RfQ_Lost_PrintFormat_ID));
+	}
+
+	/** Get RfQ Lost Druck - Format.
+		@return RfQ Lost Druck - Format	  */
+	@Override
+	public int getRfQ_Lost_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Lost_PrintFormat_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_R_MailText getRfQ_Win_MailText() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_RfQ_Win_MailText_ID, org.compiere.model.I_R_MailText.class);
@@ -263,6 +294,40 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	public int getRfQ_Win_MailText_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Win_MailText_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PrintFormat getRfQ_Win_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_Win_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setRfQ_Win_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_Win_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_Win_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, RfQ_Win_PrintFormat);
+	}
+
+	/** Set RfQ Won Druck - Format.
+		@param RfQ_Win_PrintFormat_ID RfQ Won Druck - Format	  */
+	@Override
+	public void setRfQ_Win_PrintFormat_ID (int RfQ_Win_PrintFormat_ID)
+	{
+		if (RfQ_Win_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_Win_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_Win_PrintFormat_ID, Integer.valueOf(RfQ_Win_PrintFormat_ID));
+	}
+
+	/** Get RfQ Won Druck - Format.
+		@return RfQ Won Druck - Format	  */
+	@Override
+	public int getRfQ_Win_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Win_PrintFormat_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
