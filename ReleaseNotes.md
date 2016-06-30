@@ -23,6 +23,7 @@ The actual release notes
 
 ## Features
  - FRESH-378 process to close invoice candidates
+    * New Feature in Invoice Canidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
  
 ## Fixes
  - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
