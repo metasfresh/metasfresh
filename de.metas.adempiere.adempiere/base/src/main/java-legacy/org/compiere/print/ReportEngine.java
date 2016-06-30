@@ -1224,9 +1224,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	public static final int		INVOICE = 2;
 	/** Project = 3				*/
 	public static final int		PROJECT = 3;
-	/** RfQ = 4					*/
-	@Deprecated
-	public static final int		RFQ = 4;
 	/** Remittance = 5			*/
 	public static final int		REMITTANCE = 5;
 	/** Check = 6				*/
@@ -1238,25 +1235,16 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	/** Distribution Order = 9  */
 	public static final int		DISTRIBUTION_ORDER = 9;
 
-
-//	private static final String[]	DOC_TABLES = new String[] {
-//		"C_Order_Header_v", "M_InOut_Header_v", "C_Invoice_Header_v", "C_Project_Header_v",
-//		"C_RfQResponse_v",
-//		"C_PaySelection_Check_v", "C_PaySelection_Check_v",
-//		"C_DunningRunEntry_v","PP_Order_Header_v","DD_Order_Header_v" };
 	private static final String[]	DOC_BASETABLES = new String[] {
 		"C_Order", "M_InOut", "C_Invoice", "C_Project",
-		"C_RfQResponse",
 		"C_PaySelectionCheck", "C_PaySelectionCheck",
 		"C_DunningRunEntry","PP_Order", "DD_Order"};
 	private static final String[]	DOC_IDS = new String[] {
 		"C_Order_ID", "M_InOut_ID", "C_Invoice_ID", "C_Project_ID",
-		"C_RfQResponse_ID",
 		"C_PaySelectionCheck_ID", "C_PaySelectionCheck_ID",
 		"C_DunningRunEntry_ID" , "PP_Order_ID" , "DD_Order_ID" };
 	private static final int[]	DOC_TABLE_ID = new int[] {
 		I_C_Order.Table_ID, I_M_InOut.Table_ID, I_C_Invoice.Table_ID, I_C_Project.Table_ID,
-		Services.get(IADTableDAO.class).retrieveTableId("C_RfQResponse"),
 		I_C_PaySelectionCheck.Table_ID,
 		I_C_DunningRunEntry.Table_ID,
 		Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
@@ -1388,19 +1376,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 							+ " AND (dt.C_DocType_ID=bppf_ddorder.C_DocType_ID) " // Distribution Order
 				+ "WHERE d.DD_Order_ID=?"					//	info from PrintForm
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) ORDER BY pf.AD_Org_ID DESC";
-		else if (type == RFQ)
-			sql = "SELECT COALESCE(t.AD_PrintFormat_ID, pf.AD_PrintFormat_ID),"
-				+ " c.IsMultiLingualDocument,bp.AD_Language,bp.C_BPartner_ID,rr.Name "
-				+ "FROM C_RfQResponse rr"
-				+ " INNER JOIN C_RfQ r ON (rr.C_RfQ_ID=r.C_RfQ_ID)"
-				+ " INNER JOIN C_RfQ_Topic t ON (r.C_RfQ_Topic_ID=t.C_RfQ_Topic_ID)"
-				+ " INNER JOIN AD_Client c ON (rr.AD_Client_ID=c.AD_Client_ID)"
-				+ " INNER JOIN C_BPartner bp ON (rr.C_BPartner_ID=bp.C_BPartner_ID),"
-				+ " AD_PrintFormat pf "
-				+ "WHERE pf.AD_Client_ID IN (0,rr.AD_Client_ID)"
-				+ " AND pf.AD_Table_ID=725 AND pf.IsTableBased='N'"	//	from RfQ PrintFormat
-				+ " AND rr.C_RfQResponse_ID=? "				//	Info from RfQTopic
-				+ "ORDER BY t.AD_PrintFormat_ID, pf.AD_Client_ID DESC, pf.AD_Org_ID DESC";
 		// Fix [2574162] Priority to choose invoice print format not working
 		else if (type == ORDER || type == INVOICE)
 			sql = "SELECT COALESCE (bppf_order.AD_PrintFormat_ID,pf.Order_PrintFormat_ID),"					//	1
@@ -1444,6 +1419,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) "
 				+ "ORDER BY pf.AD_Org_ID DESC";
 		else	//	Get PrintFormat from Org or 0 of document client
+		{
 			sql = "SELECT COALESCE (bppf_order.AD_PrintFormat_ID,pf.Order_PrintFormat_ID),"					//	1
 				+ " COALESCE (bppf_ship.AD_PrintFormat_ID,pf.Shipment_PrintFormat_ID),"						//	2
 				//	Prio: 1. C_BP_PrintFormat 2. BPartner 3. DocType, 4. PrintFormat (Org)	//	see InvoicePrint
@@ -1496,6 +1472,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				+ "WHERE d." + DOC_IDS[type] + "=?"			//	info from PrintForm
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) "
 				+ "ORDER BY pf.AD_Org_ID DESC";
+		}
 		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1507,7 +1484,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			if (rs.next())	//	first record only
 			{
 				if (type == CHECK || type == DUNNING || type == REMITTANCE
-					|| type == PROJECT || type == RFQ || type == MANUFACTURING_ORDER || type == DISTRIBUTION_ORDER)
+					|| type == PROJECT || type == MANUFACTURING_ORDER || type == DISTRIBUTION_ORDER)
 				{
 					AD_PrintFormat_ID = rs.getInt(1);
 					copies = 1;
