@@ -2,6 +2,8 @@ package de.metas.rfq.impl;
 
 import java.sql.Timestamp;
 
+import javax.mail.internet.InternetAddress;
+
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -119,16 +121,22 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
-		archiveEventManager.fireEmailSent(
-				pdfArchive // archive
-				, X_C_Doc_Outbound_Log_Line.ACTION_EMail // action
-				, (I_AD_User)null // user
-				, email.getFrom().getAddress() // from
-				, email.getTo().getAddress() // to
-				, (String)null // cc
-				, (String)null // bcc
-				, email.getSentMsg() // status
-		);
+		{
+			final InternetAddress from = email.getFrom();
+			final String fromStr = from == null ? null : from.toString();
+			final InternetAddress to = email.getTo();
+			final String toStr = to == null ? null : to.getAddress();
+			archiveEventManager.fireEmailSent(
+					pdfArchive // archive
+					, X_C_Doc_Outbound_Log_Line.ACTION_EMail // action
+					, (I_AD_User)null // user
+					, fromStr // from
+					, toStr // to
+					, (String)null // cc
+					, (String)null // bcc
+					, email.getSentMsg() // status
+			);
+		}
 
 		//
 		// Update RfQ response (if success)

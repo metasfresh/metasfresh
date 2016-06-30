@@ -106,7 +106,10 @@ public class DefaultModelArchiver
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("record", "_record")
+				.add("record", _record)
+				.add("language", _language)
+				.add("AD_PrintFormat_ID", _adPrintFormatId)
+				.add("docOutboundConfig", _docOutboundConfig)
 				.toString();
 	}
 
