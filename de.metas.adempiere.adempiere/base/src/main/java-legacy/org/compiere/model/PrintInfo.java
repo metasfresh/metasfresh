@@ -308,15 +308,15 @@ public class PrintInfo
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("PrintInfo[");
+		final StringBuilder sb = new StringBuilder("PrintInfo[");
 		sb.append(getName());
-		if (getAD_Process_ID() != 0)
+		if (getAD_Process_ID() > 0)
 			sb.append(",AD_Process_ID=").append(getAD_Process_ID());
-		if (getAD_Table_ID() != 0)
+		if (getAD_Table_ID() > 0)
 			sb.append(",AD_Table_ID=").append(getAD_Table_ID());
-		if (getRecord_ID()!= 0)
+		if (getRecord_ID() > 0)
 			sb.append(",Record_ID=").append(getRecord_ID());
-		if (getC_BPartner_ID() != 0)
+		if (getC_BPartner_ID() > 0)
 			sb.append(",C_BPartner_ID=").append(getC_BPartner_ID());
 		
 		sb.append("]");
