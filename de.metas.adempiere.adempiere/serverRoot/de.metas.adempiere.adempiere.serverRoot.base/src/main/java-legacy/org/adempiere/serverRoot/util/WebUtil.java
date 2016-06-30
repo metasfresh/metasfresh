@@ -2,8 +2,6 @@ package org.adempiere.serverRoot.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -20,7 +18,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +34,6 @@ import org.apache.ecs.xhtml.tr;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
-import org.compiere.util.MimeType;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.compiere.util.WebDoc;
@@ -700,59 +696,6 @@ public class WebUtil
 		return line;
 	}   //  addField
 
-	/**
-	 * 	Stream File
-	 *	@param response response
-	 *	@param file file to stream
-	 *	@return error message or null
-	 */
-	public static String streamFile (HttpServletResponse response, File file)
-	{
-		if (file == null)
-			return "No File";
-		if (!file.exists())
-			return "File not found: " + file.getAbsolutePath();
-		
-		MimeType mimeType = MimeType.get(file.getAbsolutePath());
-		//	Stream File
-		try
-		{
-			int bufferSize = 2048; //	2k Buffer
-			int fileLength = (int)file.length();
-			//
-			response.setContentType(mimeType.getMimeType());
-			response.setBufferSize(bufferSize);
-			response.setContentLength(fileLength);
-			//
-			log.debug(file.toString());
-			long time = System.currentTimeMillis();		//	timer start
-			//	Get Data
-			FileInputStream in = new FileInputStream(file);
-			ServletOutputStream out = response.getOutputStream ();
-			int c = 0;
-			while ((c = in.read()) != -1)
-				out.write(c);
-			//
-			out.flush();
-			out.close();
-			in.close();
-			//
-			time = System.currentTimeMillis() - time;
-			double speed = (fileLength/1024) / ((double)time/1000);
-			log.info("Length=" 
-				+ fileLength + " - " 
-				+ time + " ms - " 
-				+ speed + " kB/sec - " + mimeType);
-		}
-		catch (IOException ex)
-		{
-			log.error(ex.toString());
-			return "Streaming error - " + ex;
-		}
-		return null;
-	}	//	streamFile
-	
-	
 	/**
 	 * 	Remove Cookie with web user by setting user to _
 	 * 	@param request request (for context path)
