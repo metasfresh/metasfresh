@@ -23,10 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -43,6 +39,9 @@ import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.EMailAuthenticator;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Request Email Processor
@@ -85,6 +84,7 @@ public class RequestEMailProcessor extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -130,6 +130,7 @@ public class RequestEMailProcessor extends SvrProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - IMAPHost=" + p_IMAPHost +
@@ -175,16 +176,16 @@ public class RequestEMailProcessor extends SvrProcess
 			return m_session;
 		
 		//	Session
-		Properties props = System.getProperties();
+		final Properties props = new Properties(System.getProperties());
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", p_IMAPHost);
 		props.put("mail.smtp.auth","true");
-		EMailAuthenticator auth = new EMailAuthenticator (p_IMAPUser, p_IMAPPwd);
+		EMailAuthenticator auth = EMailAuthenticator.of(p_IMAPUser, p_IMAPPwd);
 		//
 		m_session = Session.getDefaultInstance(props, auth);
 		m_session.setDebug(LogManager.isLevelFinest());
-		log.debug("getSession - " + m_session);
+		log.debug("getSession: {}", m_session);
 		return m_session;
 	}	//	getSession
 	

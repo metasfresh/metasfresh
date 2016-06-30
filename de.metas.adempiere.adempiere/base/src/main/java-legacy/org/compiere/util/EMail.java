@@ -571,7 +571,7 @@ public final class EMail implements Serializable
 		}
 		else
 		{
-			_auth = new EMailAuthenticator(username, password);
+			_auth = EMailAuthenticator.of(username, password);
 		}
 	}	// createAuthenticator
 	
