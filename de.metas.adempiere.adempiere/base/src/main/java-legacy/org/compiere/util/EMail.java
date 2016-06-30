@@ -995,6 +995,19 @@ public final class EMail implements Serializable
 		}
 		_attachments.add(url);
 	}	// addAttachment
+	
+	public void addAttachment(final DataSource dataSource)
+	{
+		if (dataSource == null)
+		{
+			return;
+		}
+		if (_attachments == null)
+		{
+			_attachments = new ArrayList<Object>();
+		}
+		_attachments.add(dataSource);
+	}
 
 	/**
 	 * Set the message content
