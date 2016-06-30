@@ -12,23 +12,34 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.24.23 (upcoming)
+# metasfresh 4.24.23a
+
+## Features
+ - #121 FRESH-457 Make recipient of the mail configurable in Process SendPDFMailsForSelection
+
+## Fixes
+
+# metasfresh 4.24.23
 
 ## Features
  - FRESH-378 process to close invoice candidates
+    * New Feature in Invoice Canidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
  
 ## Fixes
+ - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
  - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
  - #107 FRESH-445 Awkward eMail encoding in Swiss language
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
  - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
  - FRESH-438 Make MRP Product Info Work
     * removed stale data and added FK-constraints and improved logging to avoid NPE
+ - FRESH-306 Customer alloc with Vendor Payment: Wrong Accounting
+
 ## Documentation
  - FRESH-323 metasfresh Developer Documentation
     * Added some clarifications and described how to import the initial DB-dump
 
-# metasfresh 4.23.22a (release candidate)
+# metasfresh 4.23.22a
 
 ## Features
 

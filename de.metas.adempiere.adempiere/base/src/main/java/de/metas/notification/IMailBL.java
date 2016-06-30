@@ -61,6 +61,8 @@ public interface IMailBL extends ISingletonService
 		int getAD_Client_ID();
 
 		int getAD_User_ID();
+		
+		String getColumnUserTo();
 	}
 
 	/**
