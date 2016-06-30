@@ -23,6 +23,7 @@ import de.metas.notification.IMailBL;
 import de.metas.notification.IMailTextBuilder;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 
@@ -81,19 +82,30 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 
 	public void publish(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
 	{
+		try
+		{
+			publish0(rfqResponse, rfqReportType);
+		}
+		catch (Exception e)
+		{
+			throw RfQPublishException.wrapIfNeeded(e)
+					.setC_RfQResponse(rfqResponse);
+		}
+	}
+
+	public void publish0(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	{
 		//
 		// Check and get the user's mail where we will send the email to
 		final I_AD_User userTo = rfqResponse.getAD_User();
 		if (userTo == null)
 		{
-			logError("@Error@ {}: @NotFound@ @AD_User_ID@", rfqBL.getSummary(rfqResponse));
-			return;
+			throw new RfQPublishException(rfqResponse, "@NotFound@ @AD_User_ID@");
 		}
 		final String userToEmail = userTo.getEMail();
 		if (Check.isEmpty(userToEmail, true))
 		{
-			logError("@Error@ {}: @NotFound@ @AD_User_ID@ @Email@ - ", rfqBL.getSummary(rfqResponse), userTo);
-			return; // false;
+			throw new RfQPublishException(rfqResponse, "@NotFound@ @AD_User_ID@ @Email@ - " + userTo);
 		}
 
 		//
@@ -147,7 +159,7 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		}
 		else
 		{
-			// TODO: log errors etc. handle connection exceptions!!!
+			throw new RfQPublishException(rfqResponse, email.getSentMsg());
 		}
 	}
 

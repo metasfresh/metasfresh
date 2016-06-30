@@ -1,7 +1,9 @@
 package de.metas.rfq.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 
+import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQResponse;
@@ -52,12 +54,7 @@ public class RfQException extends AdempiereException
 
 	protected static String buildInfoString(final I_C_RfQ rfq)
 	{
-		final String documentNo = rfq == null ? "?" : rfq.getDocumentNo();
-		return new StringBuilder()
-				.append("@" + I_C_RfQ.COLUMNNAME_C_RfQ_ID + "@")
-				.append(" '").append(documentNo).append("'")
-				.toString();
-
+		return Services.get(IRfqBL.class).getSummary(rfq);
 	}
 
 	protected static String buildInfoString(final I_C_RfQLine rfqLine)
@@ -77,20 +74,7 @@ public class RfQException extends AdempiereException
 
 	protected static String buildInfoString(final I_C_RfQResponse rfqResponse)
 	{
-		final String rfqResponseStr;
-		if (rfqResponse != null)
-		{
-			rfqResponseStr = rfqResponse.getName();
-		}
-		else
-		{
-			rfqResponseStr = "?";
-		}
-
-		return new StringBuilder()
-				.append("@" + I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID + "@")
-				.append(" '").append(rfqResponseStr).append("'")
-				.toString();
+		return Services.get(IRfqBL.class).getSummary(rfqResponse);
 	}
 
 	protected static String buildInfoString(final I_C_RfQResponseLine rfqResponseLine)

@@ -528,12 +528,22 @@ public class RfqBL implements IRfqBL
 	@Override
 	public String getSummary(final I_C_RfQ rfq)
 	{
+		// NOTE: nulls shall be tolerated because the method is used for building exception error messages
+		if(rfq == null)
+		{
+			return "@C_RfQ_ID@ ?";
+		}
 		return "@C_RfQ_ID@ #" + rfq.getDocumentNo();
 	}
 
 	@Override
 	public String getSummary(final I_C_RfQResponse rfqResponse)
 	{
+		// NOTE: nulls shall be tolerated because the method is used for building exception error messages
+		if (rfqResponse == null)
+		{
+			return "@C_RfQResponse_ID@ ?";
+		}
 		return "@C_RfQResponse_ID@ #" + rfqResponse.getName();
 	}
 

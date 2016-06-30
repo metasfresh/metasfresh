@@ -33,6 +33,12 @@ public class MailRfqResponsePublisher implements IRfQResponsePublisher
 	{
 		super();
 	}
+	
+	@Override
+	public String getDisplayName()
+	{
+		return "EMail";
+	}
 
 	@Override
 	public void publish(final I_C_RfQResponse rfqResponse)

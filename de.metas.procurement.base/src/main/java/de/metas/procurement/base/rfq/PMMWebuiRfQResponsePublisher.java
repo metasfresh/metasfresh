@@ -9,6 +9,7 @@ import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
 import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.rfq.IRfQResponsePublisher;
+import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -47,9 +48,28 @@ public class PMMWebuiRfQResponsePublisher implements IRfQResponsePublisher
 	{
 		super();
 	}
+	
+	@Override
+	public String getDisplayName()
+	{
+		return "procurement WebUI";
+	}
 
 	@Override
 	public void publish(final I_C_RfQResponse rfqResponse)
+	{
+		try
+		{
+			publish0(rfqResponse);
+		}
+		catch (Exception e)
+		{
+			throw RfQPublishException.wrapIfNeeded(e)
+					.setC_RfQResponse(rfqResponse);
+		}
+	}
+
+	private void publish0(final I_C_RfQResponse rfqResponse)
 	{
 		if (!Services.get(IPMM_RfQ_BL.class).isProcurement(rfqResponse))
 		{

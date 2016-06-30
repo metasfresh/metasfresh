@@ -1,14 +1,20 @@
 package de.metas.rfq.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.rfq.IRfQResponsePublisher;
+import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -39,6 +45,8 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 
 	private final CopyOnWriteArrayList<IRfQResponsePublisher> publishers = new CopyOnWriteArrayList<>();
 
+	private String _displayName; // lazy
+
 	@Override
 	public String toString()
 	{
@@ -48,12 +56,57 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 	}
 
 	@Override
+	public String getDisplayName()
+	{
+		// final StringBuilder displayName = new Stri
+
+		if (_displayName == null)
+		{
+			final List<String> publisherNames = new ArrayList<>(publishers.size());
+			for (final IRfQResponsePublisher publisher : publishers)
+			{
+				publisherNames.add(publisher.getDisplayName());
+			}
+
+			_displayName = "composite["
+					+ Joiner.on(", ").skipNulls().join(publisherNames)
+					+ "]";
+		}
+		return _displayName;
+	}
+
+	@Override
 	public void publish(final I_C_RfQResponse response)
 	{
 		for (final IRfQResponsePublisher publisher : publishers)
 		{
-			publisher.publish(response);
+			try
+			{
+				publisher.publish(response);
+
+				onSuccess(publisher, response);
+			}
+			catch (final Exception ex)
+			{
+				onException(publisher, response, ex);
+			}
 		}
+	}
+
+	private void onSuccess(final IRfQResponsePublisher publisher, final I_C_RfQResponse response)
+	{
+		final IRfqBL rfqBL = Services.get(IRfqBL.class);
+
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		loggable.addLog("OK - " + publisher.getDisplayName() + ": " + rfqBL.getSummary(response));
+	}
+
+	private void onException(final IRfQResponsePublisher publisher, final I_C_RfQResponse response, final Exception ex)
+	{
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		loggable.addLog("@Error@ - " + publisher.getDisplayName() + ": " + ex.getMessage());
+
+		logger.warn("Publishing failed: publisher={}, response={}", publisher, response, ex);
 	}
 
 	public void addRfQResponsePublisher(final IRfQResponsePublisher publisher)
@@ -63,7 +116,10 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 		if (!added)
 		{
 			logger.warn("Publisher {} was already added to {}", publisher, publishers);
+			return;
 		}
+
+		_displayName = null; // reset
 	}
 
 }

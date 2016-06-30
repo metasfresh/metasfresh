@@ -1,5 +1,6 @@
 package de.metas.rfq;
 
+import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
@@ -34,5 +35,10 @@ import de.metas.rfq.model.I_C_RfQResponse;
  */
 public interface IRfQResponsePublisher
 {
-	void publish(I_C_RfQResponse response);
+	/**
+	 * @return user friendly name
+	 */
+	String getDisplayName();
+
+	void publish(I_C_RfQResponse response) throws RfQPublishException;
 }
