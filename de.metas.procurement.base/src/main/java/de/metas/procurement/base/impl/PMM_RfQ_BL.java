@@ -7,6 +7,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.document.engine.IDocActionBL;
+import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.PMMContractBuilder;
@@ -16,6 +18,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.exceptions.RfQDocumentNotClosedException;
+import de.metas.rfq.exceptions.RfQException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
@@ -85,29 +88,60 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		}
 
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-
 		final I_C_RfQ rfq = InterfaceWrapperHelper.create(rfqResponse.getC_RfQ(), I_C_RfQ.class);
 		final I_C_Flatrate_Conditions contractConditions = rfq.getC_Flatrate_Conditions();
 
+		//
+		// Iterate RfQ response lines and create a contract for those which are selected as a winner
 		for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse, I_C_RfQResponseLine.class))
 		{
-			if (!rfqResponseLine.isSelectedWinner())
+			if (rfqResponseLine.isSelectedWinner())
 			{
-				continue;
+				createDraftContract(rfqResponseLine, contractConditions);
+			}
+			else
+			{
+				voidContract(rfqResponseLine);
 			}
 
-			createDraftContract(rfqResponseLine, contractConditions);
 		}
 	}
 
 	private void createDraftContract(final I_C_RfQResponseLine rfqResponseLine, final I_C_Flatrate_Conditions conditions)
 	{
-		// Don't create the contract again if there is already one
-		if (rfqResponseLine.getC_Flatrate_Term_ID() > 0)
+		//
+		// Check if there is already a contract
+		final I_C_Flatrate_Term contractExisting = rfqResponseLine.getC_Flatrate_Term();
+		if (contractExisting != null)
 		{
-			return;
+			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			// Voided/Reversed contract
+			if (docActionBL.isStatusReversedOrVoided(contractExisting))
+			{
+				// => get rid of it, we will create a new one
+				rfqResponseLine.setC_Flatrate_Term(null);
+
+			}
+			// Draft/InProgress contract
+			else if (docActionBL.isStatusDraftedOrInProgress(contractExisting))
+			{
+				// => consider the contract was already created and do nothing
+				return;
+			}
+			// Completed/Closed contract
+			else if (docActionBL.isStatusCompletedOrClosed(contractExisting))
+			{
+				// => consider the contract was already created and do nothing
+				return;
+			}
+			else
+			{
+				throw new RfQException("@Invalid@ @C_Flatrate_Term_ID@ @DocStatus@: " + contractExisting.getDocStatus());
+			}
 		}
 
+		//
+		// Create a new contract
 		final PMMContractBuilder contractBuilder = PMMContractBuilder.newBuilder()
 				.setCtx(InterfaceWrapperHelper.getCtx(rfqResponseLine))
 				.setFailIfNotCreated(true)
@@ -134,7 +168,47 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 
 		final I_C_Flatrate_Term contract = contractBuilder.build();
 
+		//
+		// Link the new contract to our RfQ response line
 		rfqResponseLine.setC_Flatrate_Term(contract);
+		InterfaceWrapperHelper.save(rfqResponseLine, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void voidContract(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		//
+		// Check if there is already a contract
+		final I_C_Flatrate_Term contractExisting = rfqResponseLine.getC_Flatrate_Term();
+		if (contractExisting == null)
+		{
+			// no existing contract => nothing to do
+			return;
+		}
+
+		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		// Voided/Reversed contract
+		if (docActionBL.isStatusReversedOrVoided(contractExisting))
+		{
+			// already voided => just unlink it
+		}
+		// Draft/InProgress contract
+		else if (docActionBL.isStatusDraftedOrInProgress(contractExisting))
+		{
+			Services.get(IFlatrateBL.class).voidIt(contractExisting);
+		}
+		// Completed contract
+		else if (docActionBL.isStatusCompleted(contractExisting))
+		{
+			Services.get(IFlatrateBL.class).voidIt(contractExisting);
+		}
+		else
+		{
+			throw new RfQException("@Invalid@ @C_Flatrate_Term_ID@ @DocStatus@: " + contractExisting.getDocStatus());
+		}
+
+		//
+		// Unlink the existing contract
+		rfqResponseLine.setC_Flatrate_Term(null);
 		InterfaceWrapperHelper.save(rfqResponseLine, ITrx.TRXNAME_ThreadInherited);
 	}
 
