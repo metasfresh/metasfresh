@@ -12,6 +12,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.util.IRfQWorkDatesAware;
 import de.metas.rfq.util.RfQWorkDatesUtil;
 
@@ -85,4 +86,19 @@ public class C_RfQ
 		RfQWorkDatesUtil.updateFromDeliveryDays(workDatesAware);
 	}
 
+	@CalloutMethod(columnNames = I_C_RfQ.COLUMNNAME_C_RfQ_Topic_ID, skipIfCopying = true)
+	public void onC_RfQTopic(final I_C_RfQ rfq)
+	{
+		final I_C_RfQ_Topic rfqTopic = rfq.getC_RfQ_Topic();
+		if (rfqTopic == null)
+		{
+			return;
+		}
+
+		final String rfqTypeDefault = rfqTopic.getRfQType();
+		if (rfqTypeDefault != null)
+		{
+			rfq.setRfQType(rfqTypeDefault);
+		}
+	}
 }

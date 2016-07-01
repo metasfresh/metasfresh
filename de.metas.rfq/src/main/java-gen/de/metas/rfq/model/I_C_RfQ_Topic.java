@@ -384,6 +384,29 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_RfQ_Win_PrintFormat_ID = "RfQ_Win_PrintFormat_ID";
 
 	/**
+	 * Set Ausschreibung Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQType (java.lang.String RfQType);
+
+	/**
+	 * Get Ausschreibung Art.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRfQType();
+
+    /** Column definition for RfQType */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object> COLUMN_RfQType = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, Object>(I_C_RfQ_Topic.class, "RfQType", null);
+    /** Column name RfQType */
+    public static final String COLUMNNAME_RfQType = "RfQType";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
