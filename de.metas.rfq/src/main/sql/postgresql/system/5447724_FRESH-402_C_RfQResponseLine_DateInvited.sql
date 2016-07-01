@@ -13,11 +13,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET AD_Reference_ID=16,Updated=TO_TIMESTAMP('2016-07-01 16:29:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=11685
 ;
 
--- 01.07.2016 16:29
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_rfqresponse','DateInvited','TIMESTAMP WITH TIME ZONE',null,'NULL')
-;
-
 -- 01.07.2016 16:30
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554794,557031,0,540740,TO_TIMESTAMP('2016-07-01 16:30:11','YYYY-MM-DD HH24:MI:SS'),100,'Date when (last) invitation was sent',7,'de.metas.rfq','Y','Y','Y','N','N','N','N','N','Invited',TO_TIMESTAMP('2016-07-01 16:30:11','YYYY-MM-DD HH24:MI:SS'),100)
