@@ -52,7 +52,13 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		}
 
 		final I_C_RfQ pmmRfq = InterfaceWrapperHelper.create(rfq, I_C_RfQ.class);
+		validatePMM_RfQ(pmmRfq);
+	}
 
+	private void validatePMM_RfQ(final I_C_RfQ pmmRfq)
+	{
+		//
+		// Make sure mandatory fields are filled
 		final List<String> notFilledMandatoryColumns = new ArrayList<>();
 		if (pmmRfq.getC_Flatrate_Conditions_ID() <= 0)
 		{
@@ -70,7 +76,7 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		{
 			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_DateResponse);
 		}
-		
+		//
 		if(!notFilledMandatoryColumns.isEmpty())
 		{
 			throw new FillMandatoryException(false, notFilledMandatoryColumns);

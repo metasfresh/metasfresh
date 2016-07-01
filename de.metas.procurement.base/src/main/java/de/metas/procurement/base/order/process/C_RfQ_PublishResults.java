@@ -91,7 +91,7 @@ public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPreco
 		});
 
 		//
-		// Publish everything to webui server
+		// Publish everything to webui server (out of trx)
 		publishToWebui();
 
 		return MSG_OK;
@@ -148,6 +148,8 @@ public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPreco
 
 	private final void publishToWebui()
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+		
 		// Actually push to webui
 		webuiPush.pushRfQCloseEvents(syncRfQCloseEvents);
 
