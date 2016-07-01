@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -54,10 +52,13 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
 
 /**
  * Grid Field Model.
@@ -433,6 +434,7 @@ public class GridField
 
 	public boolean isEditable(final Properties rowCtx, final GridTabLayoutMode tabLayoutMode)
 	{
+		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final boolean checkContext = rowCtx != null;
 
 		//
@@ -446,7 +448,7 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
-				|| (m_vo.getColumnName().equals("Record_ID") && getDisplayType() == DisplayType.Button))	// Zoom
+				|| (columnBL.isRecordColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
 		{
 			return true;
 		}

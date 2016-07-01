@@ -131,6 +131,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Process;
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
@@ -2840,6 +2841,8 @@ public class APanel extends CPanel
 
 	private final void actionButton0(final VButton vButton) throws Exception
 	{
+		final IColumnBL columnBL = Services.get(IColumnBL.class);
+
 		log.info("{}", vButton);
 
 		if (m_curTab.hasChangedCurrentTabAndParents())
@@ -2852,14 +2855,14 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
-		if (columnName.equals("Record_ID"))
+		if (columnBL.isRecordColumnName (columnName))
 		{
-			int AD_Table_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, "AD_Table_ID");
-			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, "Record_ID");
+			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
+			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);
 			AEnv.zoom(AD_Table_ID, Record_ID);
 			return;
-		}     // Zoom
-
+		}    // Zoom
+		
 		// save first ---------------
 		if (m_curTab.needSave(true, false))
 			if (!cmd_save(true))
