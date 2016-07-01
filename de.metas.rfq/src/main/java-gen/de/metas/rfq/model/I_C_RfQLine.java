@@ -438,6 +438,60 @@ public interface I_C_RfQLine
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
+	 * Set Selected winners count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setRfQ_SelectedWinners_Count (int RfQ_SelectedWinners_Count);
+
+	/**
+	 * Get Selected winners count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getRfQ_SelectedWinners_Count();
+
+    /** Column definition for RfQ_SelectedWinners_Count */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQLine, Object> COLUMN_RfQ_SelectedWinners_Count = new org.adempiere.model.ModelColumn<I_C_RfQLine, Object>(I_C_RfQLine.class, "RfQ_SelectedWinners_Count", null);
+    /** Column name RfQ_SelectedWinners_Count */
+    public static final String COLUMNNAME_RfQ_SelectedWinners_Count = "RfQ_SelectedWinners_Count";
+
+	/**
+	 * Set Selected winners Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setRfQ_SelectedWinners_QtySum (java.math.BigDecimal RfQ_SelectedWinners_QtySum);
+
+	/**
+	 * Get Selected winners Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.math.BigDecimal getRfQ_SelectedWinners_QtySum();
+
+    /** Column definition for RfQ_SelectedWinners_QtySum */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQLine, Object> COLUMN_RfQ_SelectedWinners_QtySum = new org.adempiere.model.ModelColumn<I_C_RfQLine, Object>(I_C_RfQLine.class, "RfQ_SelectedWinners_QtySum", null);
+    /** Column name RfQ_SelectedWinners_QtySum */
+    public static final String COLUMNNAME_RfQ_SelectedWinners_QtySum = "RfQ_SelectedWinners_QtySum";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *

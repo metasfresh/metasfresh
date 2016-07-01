@@ -16,7 +16,7 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1072716588L;
+	private static final long serialVersionUID = 1085412018L;
 
     /** Standard Constructor */
     public X_C_RfQLine (Properties ctx, int C_RfQLine_ID, String trxName)
@@ -358,6 +358,42 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Selected winners count.
+		@param RfQ_SelectedWinners_Count Selected winners count	  */
+	@Override
+	public void setRfQ_SelectedWinners_Count (int RfQ_SelectedWinners_Count)
+	{
+		throw new IllegalArgumentException ("RfQ_SelectedWinners_Count is virtual column");	}
+
+	/** Get Selected winners count.
+		@return Selected winners count	  */
+	@Override
+	public int getRfQ_SelectedWinners_Count () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_SelectedWinners_Count);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Selected winners Qty.
+		@param RfQ_SelectedWinners_QtySum Selected winners Qty	  */
+	@Override
+	public void setRfQ_SelectedWinners_QtySum (java.math.BigDecimal RfQ_SelectedWinners_QtySum)
+	{
+		throw new IllegalArgumentException ("RfQ_SelectedWinners_QtySum is virtual column");	}
+
+	/** Get Selected winners Qty.
+		@return Selected winners Qty	  */
+	@Override
+	public java.math.BigDecimal getRfQ_SelectedWinners_QtySum () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RfQ_SelectedWinners_QtySum);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
