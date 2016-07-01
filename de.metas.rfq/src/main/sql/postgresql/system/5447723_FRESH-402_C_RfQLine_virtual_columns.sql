@@ -88,3 +88,13 @@ UPDATE AD_Column SET ColumnSQL='(select coalesce(sum(rrl.QtyPromised), 0) from C
 UPDATE AD_Column SET ColumnSQL='(select count(1) from C_RfQResponseLine rrl where rrl.C_RfQLine_ID=C_RfQLine.C_RfQLine_ID)',Updated=TO_TIMESTAMP('2016-07-01 16:21:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554792
 ;
 
+-- 01.07.2016 16:37
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select count(1) from C_RfQResponseLine rrl where rrl.C_RfQLine_ID=C_RfQLine.C_RfQLine_ID and rrl.IsSelectedWinner=''Y'')',Updated=TO_TIMESTAMP('2016-07-01 16:37:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554792
+;
+
+-- 01.07.2016 16:37
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select coalesce(sum(rrl.QtyPromised), 0) from C_RfQResponseLine rrl where rrl.C_RfQLine_ID=C_RfQLine.C_RfQLine_ID and rrl.IsSelectedWinner=''Y'')',Updated=TO_TIMESTAMP('2016-07-01 16:37:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554793
+;
+
