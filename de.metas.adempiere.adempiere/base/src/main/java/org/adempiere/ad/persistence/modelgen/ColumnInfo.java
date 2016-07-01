@@ -54,6 +54,7 @@ import com.google.common.base.Optional;
 	private String name;
 	private String description;
 	private boolean virtualColumn;
+	private boolean lazyLoading;
 	private boolean isEncrypted;
 	private boolean isKey;
 	private int seqNo;
@@ -248,6 +249,16 @@ import com.google.common.base.Optional;
 	void setVirtualColumn(final boolean virtualColumn)
 	{
 		this.virtualColumn = virtualColumn;
+	}
+	
+	public boolean isLazyLoading()
+	{
+		return lazyLoading;
+	}
+	
+	public void setLazyLoading(boolean lazyLoading)
+	{
+		this.lazyLoading = lazyLoading;
 	}
 
 	public boolean isEncrypted()
