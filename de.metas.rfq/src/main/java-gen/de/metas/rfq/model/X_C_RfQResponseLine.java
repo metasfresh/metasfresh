@@ -16,7 +16,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1677166282L;
+	private static final long serialVersionUID = 134662275L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine (Properties ctx, int C_RfQResponseLine_ID, String trxName)
@@ -301,6 +301,24 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Invited.
+		@param DateInvited 
+		Date when (last) invitation was sent
+	  */
+	@Override
+	public void setDateInvited (java.sql.Timestamp DateInvited)
+	{
+		throw new IllegalArgumentException ("DateInvited is virtual column");	}
+
+	/** Get Invited.
+		@return Date when (last) invitation was sent
+	  */
+	@Override
+	public java.sql.Timestamp getDateInvited () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvited);
 	}
 
 	/** Set Antwort-datum.

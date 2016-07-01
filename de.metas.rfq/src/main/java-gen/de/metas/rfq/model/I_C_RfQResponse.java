@@ -301,7 +301,7 @@ public interface I_C_RfQResponse
 	 * Set Invited.
 	 * Date when (last) invitation was sent
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -311,7 +311,7 @@ public interface I_C_RfQResponse
 	 * Get Invited.
 	 * Date when (last) invitation was sent
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

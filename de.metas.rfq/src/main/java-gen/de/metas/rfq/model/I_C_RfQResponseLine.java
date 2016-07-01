@@ -298,6 +298,35 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Invited.
+	 * Date when (last) invitation was sent
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDateInvited (java.sql.Timestamp DateInvited);
+
+	/**
+	 * Get Invited.
+	 * Date when (last) invitation was sent
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.sql.Timestamp getDateInvited();
+
+    /** Column definition for DateInvited */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object> COLUMN_DateInvited = new org.adempiere.model.ModelColumn<I_C_RfQResponseLine, Object>(I_C_RfQResponseLine.class, "DateInvited", null);
+    /** Column name DateInvited */
+    public static final String COLUMNNAME_DateInvited = "DateInvited";
+
+	/**
 	 * Set Antwort-datum.
 	 * Datum der Antwort
 	 *
