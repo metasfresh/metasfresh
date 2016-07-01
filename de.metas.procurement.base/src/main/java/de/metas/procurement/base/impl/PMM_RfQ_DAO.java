@@ -13,6 +13,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.rfq.model.X_C_RfQResponse;
 
 /*
  * #%L
@@ -45,7 +46,7 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_RfQResponse.COLUMN_IsClosed, false)
+				.addInArrayFilter(I_C_RfQResponse.COLUMN_DocStatus, X_C_RfQResponse.DOCSTATUS_Drafted)
 				.orderBy()
 				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
 				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)

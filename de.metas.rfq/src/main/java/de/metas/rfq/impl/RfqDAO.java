@@ -19,6 +19,7 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.rfq.model.X_C_RfQResponse;
 
 /*
  * #%L
@@ -73,9 +74,9 @@ public class RfqDAO implements IRfqDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQLine.class, rfq)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQLine.COLUMNNAME_C_RfQ_ID, rfq.getC_RfQ_ID())
+				.addEqualsFilter(I_C_RfQLine.COLUMN_C_RfQ_ID, rfq.getC_RfQ_ID())
 				.orderBy()
-				.addColumn(I_C_RfQLine.COLUMNNAME_Line)
+				.addColumn(I_C_RfQLine.COLUMN_Line)
 				.endOrderBy();
 	}
 
@@ -84,9 +85,9 @@ public class RfqDAO implements IRfqDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQLineQty.class, line)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQLineQty.COLUMNNAME_C_RfQLine_ID, line.getC_RfQLine_ID())
+				.addEqualsFilter(I_C_RfQLineQty.COLUMN_C_RfQLine_ID, line.getC_RfQLine_ID())
 				.orderBy()
-				.addColumn(I_C_RfQLineQty.COLUMNNAME_Qty)
+				.addColumn(I_C_RfQLineQty.COLUMN_Qty)
 				.endOrderBy();
 	}
 
@@ -134,9 +135,9 @@ public class RfqDAO implements IRfqDAO
 	{
 		final IQueryBuilder<I_C_RfQResponse> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponse.class, rfq)
-				.addEqualsFilter(I_C_RfQResponse.COLUMNNAME_C_RfQ_ID, rfq.getC_RfQ_ID())
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_RfQ_ID, rfq.getC_RfQ_ID())
 				.orderBy()
-				.addColumn(I_C_RfQResponse.COLUMNNAME_Price)
+				.addColumn(I_C_RfQResponse.COLUMN_Price)
 				.endOrderBy();
 
 		if (activeOnly)
@@ -145,7 +146,7 @@ public class RfqDAO implements IRfqDAO
 		}
 		if (completedOnly)
 		{
-			queryBuilder.addEqualsFilter(I_C_RfQResponse.COLUMNNAME_IsComplete, true);
+			queryBuilder.addEqualsFilter(I_C_RfQResponse.COLUMN_DocStatus, X_C_RfQResponse.DOCSTATUS_Completed);
 		}
 
 		final List<I_C_RfQResponse> responses = queryBuilder.create().list(I_C_RfQResponse.class);
@@ -186,9 +187,9 @@ public class RfqDAO implements IRfqDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLine.class, rfqResponse)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID, rfqResponse.getC_RfQResponse_ID())
+				.addEqualsFilter(I_C_RfQResponseLine.COLUMN_C_RfQResponse_ID, rfqResponse.getC_RfQResponse_ID())
 				.orderBy()
-				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
+				.addColumn(I_C_RfQResponseLine.COLUMN_C_RfQResponseLine_ID)
 				.endOrderBy();
 	}
 
@@ -207,9 +208,9 @@ public class RfqDAO implements IRfqDAO
 		final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLineQty.class, rfqLineQty)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQLineQty_ID, rfqLineQty.getC_RfQLineQty_ID())
+				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMN_C_RfQLineQty_ID, rfqLineQty.getC_RfQLineQty_ID())
 				.orderBy()
-				.addColumn(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLineQty_ID)
+				.addColumn(I_C_RfQResponseLineQty.COLUMN_C_RfQResponseLineQty_ID)
 				.endOrderBy()
 				.create()
 				.list(I_C_RfQResponseLineQty.class);
@@ -272,9 +273,9 @@ public class RfqDAO implements IRfqDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLineQty.class, responseLine)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLine_ID, responseLine.getC_RfQResponseLine_ID())
+				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMN_C_RfQResponseLine_ID, responseLine.getC_RfQResponseLine_ID())
 				.orderBy()
-				.addColumn(I_C_RfQResponseLineQty.COLUMNNAME_C_RfQResponseLineQty_ID)
+				.addColumn(I_C_RfQResponseLineQty.COLUMN_C_RfQResponseLineQty_ID)
 				.endOrderBy();
 	}
 

@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1246895596L;
+	private static final long serialVersionUID = 485650138L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -29,9 +29,9 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 			setC_RfQ_ID (0);
 			setC_RfQ_Topic_ID (0);
 			setDateResponse (new Timestamp( System.currentTimeMillis() ));
+			setDocStatus (null);
+// DR
 			setDocumentNo (null);
-			setIsClosed (false);
-// N
 			setIsInvitedVendorsOnly (false);
 // N
 			setIsQuoteAllQty (false);
@@ -408,6 +408,55 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
+	{
+
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
+	@Override
+	public java.lang.String getDocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
+
 	/** Set Beleg Nr..
 		@param DocumentNo 
 		Document sequence number of the document
@@ -444,32 +493,6 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public java.lang.String getHelp () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
-	}
-
-	/** Set Geschlossen.
-		@param IsClosed 
-		The status is closed
-	  */
-	@Override
-	public void setIsClosed (boolean IsClosed)
-	{
-		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
-	}
-
-	/** Get Geschlossen.
-		@return The status is closed
-	  */
-	@Override
-	public boolean isClosed () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsClosed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Invited Vendors Only.

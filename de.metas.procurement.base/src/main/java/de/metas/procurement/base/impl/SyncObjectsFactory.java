@@ -506,7 +506,7 @@ public class SyncObjectsFactory
 	
 	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		if (!rfqResponseLine.isClosed())
+		if (!pmmRfQBL.isClosed(rfqResponseLine))
 		{
 			logger.warn("Skip creating close event for {} because it's not closed", rfqResponseLine);
 			return null;

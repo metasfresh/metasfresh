@@ -35,6 +35,7 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
+import de.metas.rfq.model.X_C_RfQResponse;
 
 /*
  * #%L
@@ -325,10 +326,10 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		final I_C_RfQResponse response = InterfaceWrapperHelper.create(ctx, I_C_RfQResponse.class, ITrx.TRXNAME_ThreadInherited);
 
 		// Defaults
-		response.setIsComplete(false);
 		response.setIsSelectedWinner(false);
 		response.setIsSelfService(false);
 		response.setPrice(BigDecimal.ZERO);
+		response.setDocStatus(X_C_RfQResponse.DOCSTATUS_Drafted);
 		response.setProcessed(false);
 		response.setProcessing(false);
 
@@ -376,8 +377,8 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		// Defaults
 		rfqResponseLine.setIsSelectedWinner(false);
 		rfqResponseLine.setIsSelfService(false);
-		rfqResponseLine.setProcessed(false);
-		rfqResponseLine.setIsClosed(false);
+		rfqResponseLine.setDocStatus(rfqResponse.getDocStatus());
+		rfqResponseLine.setProcessed(rfqResponse.isProcessed());
 
 		//
 		// From RfQ Response header

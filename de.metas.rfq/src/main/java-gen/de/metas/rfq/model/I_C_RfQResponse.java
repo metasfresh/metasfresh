@@ -446,6 +446,31 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
@@ -494,56 +519,6 @@ public interface I_C_RfQResponse
     public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Geschlossen.
-	 * The status is closed
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsClosed (boolean IsClosed);
-
-	/**
-	 * Get Geschlossen.
-	 * The status is closed
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isClosed();
-
-    /** Column definition for IsClosed */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "IsClosed", null);
-    /** Column name IsClosed */
-    public static final String COLUMNNAME_IsClosed = "IsClosed";
-
-	/**
-	 * Set Fertigstellen.
-	 * It is complete
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsComplete (boolean IsComplete);
-
-	/**
-	 * Get Fertigstellen.
-	 * It is complete
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isComplete();
-
-    /** Column definition for IsComplete */
-    public static final org.adempiere.model.ModelColumn<I_C_RfQResponse, Object> COLUMN_IsComplete = new org.adempiere.model.ModelColumn<I_C_RfQResponse, Object>(I_C_RfQResponse.class, "IsComplete", null);
-    /** Column name IsComplete */
-    public static final String COLUMNNAME_IsComplete = "IsComplete";
 
 	/**
 	 * Set Selected Winner.

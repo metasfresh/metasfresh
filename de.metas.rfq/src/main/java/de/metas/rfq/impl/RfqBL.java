@@ -30,6 +30,8 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQ;
+import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.rfq.model.X_C_RfQResponseLine;
 
 /*
  * #%L
@@ -219,17 +221,10 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as complete
+		rfqResponse.setDocStatus(X_C_RfQResponse.DOCSTATUS_Completed);
 		rfqResponse.setProcessed(true);
-		rfqResponse.setIsComplete(true);
 		InterfaceWrapperHelper.save(rfqResponse);
-
-		//
-		// Mark lines as complete
-		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
-		{
-			rfqResponseLine.setProcessed(true);
-			InterfaceWrapperHelper.save(rfqResponseLine);
-		}
+		updateRfQResponseLinesStatus(rfqResponse, rfqResponseLines);
 
 		//
 		// Fire event: after complete
@@ -237,6 +232,23 @@ public class RfqBL implements IRfqBL
 
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfqResponse);
+	}
+
+	private final void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse)
+	{
+		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
+		updateRfQResponseLinesStatus(rfqResponse, rfqResponseLines);
+	}
+
+	private final void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse, final List<I_C_RfQResponseLine> rfqResponseLines)
+	{
+		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
+		{
+			rfqResponseLine.setDocStatus(rfqResponse.getDocStatus());
+			rfqResponseLine.setProcessed(rfqResponse.isProcessed());
+			InterfaceWrapperHelper.save(rfqResponseLine);
+		}
 	}
 
 	private final IRfQEventDispacher getRfQEventDispacher()
@@ -296,8 +308,8 @@ public class RfqBL implements IRfqBL
 		}
 
 		// Mark completed
+		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
 		rfq.setProcessed(true);
-		rfq.setIsClosed(false);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
@@ -346,8 +358,8 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as not processed
+		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Drafted);
 		rfq.setProcessed(false);
-		rfq.setIsClosed(false);
 		InterfaceWrapperHelper.save(rfq);
 	}
 
@@ -377,7 +389,9 @@ public class RfqBL implements IRfqBL
 	@Override
 	public boolean isDraft(final I_C_RfQ rfq)
 	{
-		return !rfq.isProcessed();
+		final String docStatus = rfq.getDocStatus();
+		return X_C_RfQ.DOCSTATUS_Drafted.equals(docStatus)
+				|| X_C_RfQ.DOCSTATUS_InProgress.equals(docStatus);
 	}
 
 	@Override
@@ -400,13 +414,13 @@ public class RfqBL implements IRfqBL
 	@Override
 	public boolean isCompleted(final I_C_RfQ rfq)
 	{
-		return rfq.isProcessed() && !rfq.isClosed();
+		return X_C_RfQ.DOCSTATUS_Completed.equals(rfq.getDocStatus());
 	}
 
 	@Override
 	public boolean isClosed(final I_C_RfQ rfq)
 	{
-		return rfq.isClosed();
+		return X_C_RfQ.DOCSTATUS_Closed.equals(rfq.getDocStatus());
 	}
 
 	@Override
@@ -434,8 +448,8 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as closed
+		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Closed);
 		rfq.setProcessed(true);
-		rfq.setIsClosed(true);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
@@ -471,20 +485,10 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as closed
+		rfqResponse.setDocStatus(X_C_RfQResponse.DOCSTATUS_Closed);
 		rfqResponse.setProcessed(true);
-		rfqResponse.setIsClosed(true);
 		InterfaceWrapperHelper.save(rfqResponse);
-
-		//
-		// Close lines
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
-		for (final I_C_RfQResponseLine rfqReponseLine : rfqResponseLines)
-		{
-			rfqReponseLine.setProcessed(true);
-			rfqReponseLine.setIsClosed(true);
-			InterfaceWrapperHelper.save(rfqReponseLine);
-		}
+		updateRfQResponseLinesStatus(rfqResponse);
 
 		//
 		rfQEventDispacher.fireAfterClose(rfqResponse);
@@ -505,31 +509,33 @@ public class RfqBL implements IRfqBL
 	@Override
 	public boolean isDraft(final I_C_RfQResponse rfqResponse)
 	{
-		return !rfqResponse.isProcessed();
+		final String docStatus = rfqResponse.getDocStatus();
+		return X_C_RfQ.DOCSTATUS_Drafted.equals(docStatus)
+				|| X_C_RfQ.DOCSTATUS_InProgress.equals(docStatus);
 	}
 
 	public boolean isCompleted(final I_C_RfQResponse rfqResponse)
 	{
-		return rfqResponse.isComplete() && !rfqResponse.isClosed();
+		return X_C_RfQResponse.DOCSTATUS_Completed.equals(rfqResponse.getDocStatus());
 	}
 
 	@Override
 	public boolean isClosed(final I_C_RfQResponse rfqResponse)
 	{
-		return rfqResponse.isClosed();
+		return X_C_RfQResponse.DOCSTATUS_Closed.equals(rfqResponse.getDocStatus());
 	}
 
 	@Override
 	public boolean isClosed(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		return rfqResponseLine.isClosed();
+		return X_C_RfQResponseLine.DOCSTATUS_Closed.equals(rfqResponseLine.getDocStatus());
 	}
 
 	@Override
 	public String getSummary(final I_C_RfQ rfq)
 	{
 		// NOTE: nulls shall be tolerated because the method is used for building exception error messages
-		if(rfq == null)
+		if (rfq == null)
 		{
 			return "@C_RfQ_ID@ ?";
 		}
@@ -581,11 +587,11 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as completed
-		rfq.setIsClosed(false);
+		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
-		// Close RfQ Responses
+		// UnClose RfQ Responses
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
 		{
@@ -617,18 +623,9 @@ public class RfqBL implements IRfqBL
 
 		//
 		// Mark as NOT closed
-		rfqResponse.setIsClosed(false);
+		rfqResponse.setDocStatus(X_C_RfQResponse.DOCSTATUS_Completed);
 		InterfaceWrapperHelper.save(rfqResponse);
-
-		//
-		// Close lines
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
-		for (final I_C_RfQResponseLine rfqReponseLine : rfqResponseLines)
-		{
-			rfqReponseLine.setIsClosed(false);
-			InterfaceWrapperHelper.save(rfqReponseLine);
-		}
+		updateRfQResponseLinesStatus(rfqResponse);
 
 		//
 		rfQEventDispacher.fireAfterUnClose(rfqResponse);
