@@ -50,6 +50,7 @@ public class RfqMainInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQ(), client);
 		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQLine(), client);
 		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.PMM_RfQResponse_ChangeEvent(), client);
 	}
