@@ -1708,4 +1708,12 @@ public class FlatrateBL implements IFlatrateBL
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
 		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 	}
+
+	@Override
+	public void voidIt(final I_C_Flatrate_Term term)
+	{
+		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
+		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Void, DocAction.STATUS_Voided);
+		
+	}
 }

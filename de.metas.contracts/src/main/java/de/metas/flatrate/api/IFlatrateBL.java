@@ -180,4 +180,11 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param term the contract
 	 */
 	void complete(I_C_Flatrate_Term term);
+
+	/**
+	 * Void given contract
+	 * 
+	 * @param term
+	 */
+	void voidIt(I_C_Flatrate_Term term);
 }
