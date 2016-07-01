@@ -1,6 +1,6 @@
 package de.metas.rfq.exceptions;
 
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.RfQResponsePublisherRequest;
 
 /*
  * #%L
@@ -38,13 +38,13 @@ public class RfQPublishException extends RfQException
 		return new RfQPublishException(cause.getMessage(), cause);
 	}
 
-	private I_C_RfQResponse rfqResponse;
+	private RfQResponsePublisherRequest request;
 
-	public RfQPublishException(final I_C_RfQResponse rfqResponse, final String message)
+	public RfQPublishException(final RfQResponsePublisherRequest request, final String message)
 	{
 		super(message);
 
-		setC_RfQResponse(rfqResponse);
+		setRequest(request);
 	}
 
 	private RfQPublishException(final String message, final Throwable cause)
@@ -52,9 +52,9 @@ public class RfQPublishException extends RfQException
 		super(message, cause);
 	}
 
-	public RfQPublishException setC_RfQResponse(final I_C_RfQResponse rfqResponse)
+	public RfQPublishException setRequest(final RfQResponsePublisherRequest request)
 	{
-		this.rfqResponse = rfqResponse;
+		this.request = request;
 		resetMessageBuilt();
 		return this;
 	}
@@ -64,9 +64,9 @@ public class RfQPublishException extends RfQException
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append("@Error@");
-		if (rfqResponse != null)
+		if (request != null)
 		{
-			sb.append(" ").append(buildInfoString(rfqResponse));
+			sb.append(" ").append(request.getSummary());
 		}
 		sb.append(": ");
 		sb.append(getOriginalMessage());

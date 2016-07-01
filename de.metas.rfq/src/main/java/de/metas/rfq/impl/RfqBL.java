@@ -57,8 +57,6 @@ import de.metas.rfq.model.X_C_RfQResponseLine;
 
 public class RfqBL implements IRfqBL
 {
-	// private static final Logger logger = LogManager.getLogger(RfqBL.class);
-
 	private boolean isQuoteAllLines(final I_C_RfQ rfq)
 	{
 		return X_C_RfQ.QUOTETYPE_QuoteAllLines.equals(rfq.getQuoteType());

@@ -9,6 +9,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.rfq.model.I_C_RfQLine;
 
@@ -56,7 +57,11 @@ public class C_RfQLine
 
 		rfqLine.setM_Product_ID(pmmProduct.getM_Product_ID());
 		// rfqLine.setM_AttributeSetInstance_ID(pmmProduct.getM_AttributeSetInstance_ID()); // don't set it because we want to prevent changing it
-		// rfqLine.setM_HU_PI_Item_Product_ID(pmmProduct.getM_HU_PI_Item_Product_ID()); // TODO: FRESH-402: introduce hu pi item product
-		rfqLine.setC_UOM_ID(pmmProduct.getM_HU_PI_Item_Product().getC_UOM_ID());
+
+		final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
+		if (huPIItemProduct != null)
+		{
+			rfqLine.setC_UOM_ID(huPIItemProduct.getC_UOM_ID());
+		}
 	}
 }

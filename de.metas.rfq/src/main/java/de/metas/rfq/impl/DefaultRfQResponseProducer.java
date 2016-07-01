@@ -26,6 +26,8 @@ import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.IRfqTopicBL;
 import de.metas.rfq.IRfqTopicDAO;
+import de.metas.rfq.RfQResponsePublisherRequest;
+import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
@@ -160,7 +162,10 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 
 		try
 		{
-			rfqConfiguration.getRfQResponsePublisher().publish(rfqResponse);
+			rfqConfiguration
+					.getRfQResponsePublisher()
+					.publish(RfQResponsePublisherRequest.of(rfqResponse, PublishingType.Invitation));
+			
 			_countPublished.incrementAndGet();
 		}
 		catch (Exception e)

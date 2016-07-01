@@ -6,7 +6,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -14,8 +13,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.rfq.IRfQResponsePublisher;
-import de.metas.rfq.IRfqBL;
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.RfQResponsePublisherRequest;
 
 /*
  * #%L
@@ -74,37 +72,37 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 	}
 
 	@Override
-	public void publish(final I_C_RfQResponse response)
+	public void publish(final RfQResponsePublisherRequest request)
 	{
+		Check.assumeNotNull(request, "request not null");
+		
 		for (final IRfQResponsePublisher publisher : publishers)
 		{
 			try
 			{
-				publisher.publish(response);
+				publisher.publish(request);
 
-				onSuccess(publisher, response);
+				onSuccess(publisher, request);
 			}
 			catch (final Exception ex)
 			{
-				onException(publisher, response, ex);
+				onException(publisher, request, ex);
 			}
 		}
 	}
 
-	private void onSuccess(final IRfQResponsePublisher publisher, final I_C_RfQResponse response)
+	private void onSuccess(final IRfQResponsePublisher publisher, final RfQResponsePublisherRequest request)
 	{
-		final IRfqBL rfqBL = Services.get(IRfqBL.class);
-
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
-		loggable.addLog("OK - " + publisher.getDisplayName() + ": " + rfqBL.getSummary(response));
+		loggable.addLog("OK - " + publisher.getDisplayName() + ": " + request.getSummary());
 	}
 
-	private void onException(final IRfQResponsePublisher publisher, final I_C_RfQResponse response, final Exception ex)
+	private void onException(final IRfQResponsePublisher publisher, final RfQResponsePublisherRequest request, final Exception ex)
 	{
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 		loggable.addLog("@Error@ - " + publisher.getDisplayName() + ": " + ex.getMessage());
 
-		logger.warn("Publishing failed: publisher={}, response={}", publisher, response, ex);
+		logger.warn("Publishing failed: publisher={}, request={}", publisher, request, ex);
 	}
 
 	public void addRfQResponsePublisher(final IRfQResponsePublisher publisher)

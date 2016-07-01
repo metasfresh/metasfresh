@@ -1,7 +1,7 @@
 package de.metas.rfq.impl;
 
 import de.metas.rfq.IRfQResponsePublisher;
-import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.rfq.RfQResponsePublisherRequest;
 
 /*
  * #%L
@@ -41,8 +41,8 @@ public class MailRfqResponsePublisher implements IRfQResponsePublisher
 	}
 
 	@Override
-	public void publish(final I_C_RfQResponse rfqResponse)
+	public void publish(final RfQResponsePublisherRequest request)
 	{
-		MailRfqResponsePublisherInstance.newInstance().publish(rfqResponse);
+		MailRfqResponsePublisherInstance.newInstance().publish(request);
 	}
 }

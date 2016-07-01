@@ -40,5 +40,5 @@ public interface IRfQResponsePublisher
 	 */
 	String getDisplayName();
 
-	void publish(I_C_RfQResponse response) throws RfQPublishException;
+	void publish(RfQResponsePublisherRequest request) throws RfQPublishException;
 }

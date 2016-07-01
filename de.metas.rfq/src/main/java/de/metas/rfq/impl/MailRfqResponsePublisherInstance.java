@@ -18,8 +18,9 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailTextBuilder;
-import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.RfQResponsePublisherRequest;
+import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
@@ -54,7 +55,6 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 	}
 
 	// services
-	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
@@ -69,39 +69,41 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		super();
 	}
 
-	public void publish(final I_C_RfQResponse rfqResponse)
+	public void publish(final RfQResponsePublisherRequest request)
 	{
-		final RfQReportType rfqReportType = getRfQReportType(rfqResponse);
-		publish(rfqResponse, rfqReportType);
+		final RfQReportType rfqReportType = getRfQReportType(request);
+		publish(request, rfqReportType);
 
 	}
 
-	public void publish(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	public void publish(final RfQResponsePublisherRequest request, final RfQReportType rfqReportType)
 	{
 		try
 		{
-			publish0(rfqResponse, rfqReportType);
+			publish0(request, rfqReportType);
 		}
 		catch (Exception e)
 		{
 			throw RfQPublishException.wrapIfNeeded(e)
-					.setC_RfQResponse(rfqResponse);
+					.setRequest(request);
 		}
 	}
 
-	public void publish0(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	public void publish0(final RfQResponsePublisherRequest request, final RfQReportType rfqReportType)
 	{
+		final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
+		
 		//
 		// Check and get the user's mail where we will send the email to
 		final I_AD_User userTo = rfqResponse.getAD_User();
 		if (userTo == null)
 		{
-			throw new RfQPublishException(rfqResponse, "@NotFound@ @AD_User_ID@");
+			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@");
 		}
 		final String userToEmail = userTo.getEMail();
 		if (Check.isEmpty(userToEmail, true))
 		{
-			throw new RfQPublishException(rfqResponse, "@NotFound@ @AD_User_ID@ @Email@ - " + userTo);
+			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@ @Email@ - " + userTo);
 		}
 
 		//
@@ -155,23 +157,32 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		}
 		else
 		{
-			throw new RfQPublishException(rfqResponse, email.getSentMsg());
+			throw new RfQPublishException(request, email.getSentMsg());
 		}
 	}
 
-	public RfQReportType getRfQReportType(final I_C_RfQResponse rfqResponse)
+	public RfQReportType getRfQReportType(final RfQResponsePublisherRequest request)
 	{
-		if (rfqBL.isDraft(rfqResponse))
+		final PublishingType publishingType = request.getPublishingType();
+		if (publishingType == PublishingType.Invitation)
 		{
 			return RfQReportType.Invitation;
 		}
-		else if (rfqDAO.hasSelectedWinnerLines(rfqResponse))
+		else if (publishingType == PublishingType.Close)
 		{
-			return RfQReportType.Won;
+			final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
+			if (rfqDAO.hasSelectedWinnerLines(rfqResponse))
+			{
+				return RfQReportType.Won;
+			}
+			else
+			{
+				return RfQReportType.Lost;
+			}
 		}
 		else
 		{
-			return RfQReportType.Lost;
+			throw new AdempiereException("@Invalid@ @PublishingType@: " + publishingType);
 		}
 	}
 

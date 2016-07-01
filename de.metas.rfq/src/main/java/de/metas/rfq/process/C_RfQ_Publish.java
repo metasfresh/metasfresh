@@ -10,6 +10,8 @@ import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.RfQResponsePublisherRequest;
+import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -70,7 +72,7 @@ public class C_RfQ_Publish extends SvrProcess implements ISvrProcessPrecondition
 				continue;
 			}
 
-			rfqPublisher.publish(rfqResponse);
+			rfqPublisher.publish(RfQResponsePublisherRequest.of(rfqResponse, PublishingType.Invitation));
 		}
 
 		return MSG_OK;
