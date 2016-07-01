@@ -43,10 +43,20 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		super();
 	}
 
+	private final boolean isProcurement(final de.metas.rfq.model.I_C_RfQ rfq)
+	{
+		return Services.get(IPMM_RfQ_BL.class).isProcurement(rfq);
+	}
+
+	private final boolean isProcurement(final de.metas.rfq.model.I_C_RfQResponse rfqResponse)
+	{
+		return Services.get(IPMM_RfQ_BL.class).isProcurement(rfqResponse);
+	}
+
 	@Override
 	public void onBeforeComplete(final de.metas.rfq.model.I_C_RfQ rfq)
 	{
-		if (!Services.get(IPMM_RfQ_BL.class).isProcurement(rfq))
+		if (!isProcurement(rfq))
 		{
 			return;
 		}
@@ -77,15 +87,20 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 			notFilledMandatoryColumns.add(I_C_RfQ.COLUMNNAME_DateResponse);
 		}
 		//
-		if(!notFilledMandatoryColumns.isEmpty())
+		if (!notFilledMandatoryColumns.isEmpty())
 		{
 			throw new FillMandatoryException(false, notFilledMandatoryColumns);
 		}
 	}
-	
+
 	@Override
 	public void onAfterClose(final I_C_RfQResponse rfqResponse)
 	{
+		if (!isProcurement(rfqResponse))
+		{
+			return;
+		}
+
 		Services.get(IPMM_RfQ_BL.class).createDraftContractsForSelectedWinners(rfqResponse);
 	}
 }
