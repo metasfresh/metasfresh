@@ -1,7 +1,5 @@
 package de.metas.document.impl;
 
-import java.util.HashMap;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -48,8 +47,6 @@ import de.metas.document.IDocTypeDAO;
 
 public class DocTypeDAO implements IDocTypeDAO
 {
-	private Map<String, String> docBaseTypePairs;
-
 	@Override
 	public int getDocTypeIdOrNull(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
 	{
@@ -164,35 +161,32 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_DocBaseType_Counter.Table_Name + "#by#" + I_C_DocBaseType_Counter.COLUMNNAME_DocBaseType)
-	public String retrieveDocBaseTypeCounter(@CacheCtx final Properties ctx, final String docBaseType, @CacheTrx final String trxName)
+	public String retrieveDocBaseTypeCounter(final Properties ctx, final String docBaseType)
 	{
-
-		if (docBaseTypePairs.isEmpty())
-		{
-			buildDocBaseTypePair(ctx, trxName);
-		}
+		final Map<String, String> docBaseTypePairs = retrieveDocBaseTypeCountersMap(ctx);
 
 		return docBaseTypePairs.get(docBaseType);
 	}
-	
-	private void buildDocBaseTypePair(final Properties ctx, final String trxName)
+
+	@Cached(cacheName = I_C_DocBaseType_Counter.Table_Name)
+	public Map<String, String> retrieveDocBaseTypeCountersMap(@CacheCtx final Properties ctx)
 	{
-		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_DocBaseType_Counter.class, ctx, trxName);
+		// load the existing info from the table C_DocBaseType_Counter in an immutable map
+		ImmutableMap.Builder<String, String> docBaseTypeCounters = ImmutableMap.builder();
+
+		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_DocBaseType_Counter.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
-		final List<I_C_DocBaseType_Counter> docBaseTypeCounters = queryBuilder.create().list();
-		
-		final Map<String, String> docBaseCounterMap = new HashMap<>();
-		
-		for(final I_C_DocBaseType_Counter docBaseTypeCounter : docBaseTypeCounters)
+		final List<I_C_DocBaseType_Counter> docBaseTypeCountersList = queryBuilder.create().list();
+
+		for (final I_C_DocBaseType_Counter docBaseTypeCounter : docBaseTypeCountersList)
 		{
-			docBaseCounterMap.put(docBaseTypeCounter.getDocBaseType(), docBaseTypeCounter.getCounter_DocBaseType());
+			docBaseTypeCounters.put(docBaseTypeCounter.getDocBaseType(), docBaseTypeCounter.getCounter_DocBaseType());
 		}
 
-		docBaseTypePairs = ImmutableMap.copyOf(docBaseCounterMap);
-
+		return docBaseTypeCounters.build();
 	}
+
 }

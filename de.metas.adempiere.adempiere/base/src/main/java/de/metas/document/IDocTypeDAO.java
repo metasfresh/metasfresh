@@ -90,8 +90,7 @@ public interface IDocTypeDAO extends ISingletonService
 	 * 
 	 * @param ctx
 	 * @param docBaseType
-	 * @param trxName
 	 * @return
 	 */
-	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType, String trxName);
+	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
 }

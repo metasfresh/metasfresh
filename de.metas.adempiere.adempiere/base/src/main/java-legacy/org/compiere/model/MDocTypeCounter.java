@@ -73,7 +73,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return -1;
 		}
 
-		final String cDocBaseType = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType(), trxName);
+		final String cDocBaseType = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType());
 		if (cDocBaseType == null)
 		{
 			return 0;
@@ -109,7 +109,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	 */
 	public static MDocTypeCounter getCounterDocType(Properties ctx, int C_DocType_ID)
 	{
-		Integer key = new Integer(C_DocType_ID);
+		Integer key = C_DocType_ID;
 		MDocTypeCounter retValue = s_counter.get(key);
 		if (retValue != null)
 			return retValue;
@@ -117,12 +117,17 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		// Direct Relationship
 		MDocTypeCounter temp = null;
 		String sql = "SELECT * FROM C_DocTypeCounter WHERE C_DocType_ID=? AND IsActive='Y'";
+		
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, C_DocType_ID);
-			ResultSet rs = pstmt.executeQuery();
+
+			rs = pstmt.executeQuery();
+
 			while (rs.next() && retValue == null)
 			{
 				retValue = new MDocTypeCounter(ctx, rs, null);
@@ -132,28 +137,27 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 					retValue = null;
 				}
 			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
 		}
 		catch (Exception e)
 		{
 			s_log.error("getCounterDocType", e);
 		}
-		try
+
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close();
+			DB.close(rs, pstmt);
+			rs = null;
 			pstmt = null;
 		}
-		catch (Exception e)
+
+		if (retValue != null)      	// valid
 		{
-			pstmt = null;
-		}
-		if (retValue != null)   	// valid
 			return retValue;
-		if (temp != null)   		// invalid
+		}
+		if (temp != null)      		// invalid
+		{
 			return temp;
+		}
 		return null;			// nothing found
 	}	// getCounterDocType
 
@@ -300,7 +304,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		log.debug(dtBT + " -> " + c_dtBT);
 
 		boolean valid = true;
-		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(getCtx(), dtBT, get_TrxName());
+		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(getCtx(), dtBT);
 
 		if (c_dtBT == null)
 		{
