@@ -23,17 +23,23 @@ The actual release notes
 
 ## Features
  - FRESH-378 process to close invoice candidates
-    * New Feature in Invoice Canidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
+    * New Feature in Invoice Candidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
  
 ## Fixes
  - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
+    * Changed InOut Handler to not create Invoice candidates when DocSubType is "Saldokorrektur".
  - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
+    * Moved the Notification Bar slightly up, so the OK Button, Cancel Button and Changelog Link is not covered anymore.
  - #107 FRESH-445 Awkward eMail encoding in Swiss language
+    * Simple Fix to ensure the right encoding when sending eMails.
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
- - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
+    * Fix related to Order by of Calender and Periods in all relevant Dropdown Lists.
+ - #105 FRESH-442 Annotated model interceptor
+    * Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly. Fixed.
  - FRESH-438 Make MRP Product Info Work
-    * removed stale data and added FK-constraints and improved logging to avoid NPE
+    * Removed stale data and added FK-constraints and improved logging to avoid Null Pointer Exception
  - FRESH-306 Customer alloc with Vendor Payment: Wrong Accounting
+    * Adjusted the accounting of the Alocoation of Incoming and Outgoing Payments.
 
 ## Documentation
  - FRESH-323 metasfresh Developer Documentation
