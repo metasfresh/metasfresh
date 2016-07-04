@@ -12,10 +12,16 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (upcoming)
+# metasfresh 4.25.23 (upcoming)
 
 ## Features
-
+ - #132 FRESH-468 Excel Export of report Konten-Information not working
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+ - #124 FRESH-461 Role "System Administrator" is disabled
+    * note: imho not a "fix" because we deliberately deactivate it before and now find that the normal user is better off with the role being available
+ - #125 FRESH-462 enable all entity types
+    * not a fix, the reasoning is similar to #124
+ 
 ## Fixes
 
 # metasfresh 4.24.23a
