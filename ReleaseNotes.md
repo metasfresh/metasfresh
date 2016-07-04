@@ -12,6 +12,12 @@ Additional notes:
 
 The actual release notes
 
+# metasfresh 4.x.x (upcoming)
+
+## Features
+
+## Fixes
+
 # metasfresh 4.24.23a
 
 ## Features
