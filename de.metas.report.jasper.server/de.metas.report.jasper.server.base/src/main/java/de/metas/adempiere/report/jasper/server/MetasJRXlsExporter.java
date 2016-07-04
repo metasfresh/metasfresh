@@ -6,6 +6,7 @@ import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.export.Cut;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.export.XlsReportConfiguration;
 
 /**
  * Extension of {@link JRXlsExporter} which implements our custom features (e.g. {@link #PROPERTY_COLUMN_HIDDEN}).
@@ -49,6 +50,19 @@ public class MetasJRXlsExporter extends JRXlsExporter
 		setParameter(JRXlsAbstractExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_COLUMNS, true);
 		setParameter(JRXlsAbstractExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, true);
 		setParameter(JRXlsAbstractExporterParameter.MAXIMUM_ROWS_PER_SHEET, SpreadsheetVersion.EXCEL97.getLastRowIndex());
+	}
+
+	@Override
+	protected void initReport()
+	{
+		super.initReport();
+
+		final XlsReportConfiguration configuration = getCurrentItemConfiguration();
+
+		// Exporter shall use our "nature" in order to have all properties set to Cuts.
+		nature = new MetasJRXlsExporterNature(jasperReportsContext, filter,
+				configuration.isIgnoreGraphics(),
+				configuration.isIgnorePageMargins());
 	}
 
 //	@Override
