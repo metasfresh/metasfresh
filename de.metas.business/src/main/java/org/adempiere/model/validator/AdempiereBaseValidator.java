@@ -41,6 +41,7 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -197,6 +198,17 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
 				.setCacheMapType(CacheMapType.LRU)
 				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
+				.register();
+
+		// C_DocType
+		// (FRESH-472)
+		cachingService.createTableCacheConfigBuilder(I_C_DocType.class)
+				.setEnabled(true)
+				.setInitialCapacity(100)
+				.setMaxCapacity(100)
+				.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
+				.setCacheMapType(CacheMapType.LRU)
+				.setTrxLevel(TrxLevel.All)
 				.register();
 
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.

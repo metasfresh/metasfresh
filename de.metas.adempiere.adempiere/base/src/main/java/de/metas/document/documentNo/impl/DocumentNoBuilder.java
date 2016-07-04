@@ -31,13 +31,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MDocType;
 import org.compiere.model.MSequence;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
@@ -389,7 +389,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	{
 		Check.assume(C_DocType_ID > 0, DocumentNoBuilderException.class, "C_DocType_ID > 0");
 
-		final I_C_DocType docType = MDocType.get(Env.getCtx(), C_DocType_ID);	// wrong for SERVER, but r/o
+		final I_C_DocType docType = InterfaceWrapperHelper.create(Env.getCtx(), C_DocType_ID, I_C_DocType.class, ITrx.TRXNAME_None);
 		Check.assumeNotNull(docType, DocumentNoBuilderException.class, "docType not null");
 
 		if (!docType.isDocNoControlled())
