@@ -195,11 +195,10 @@
 		</dependency>
 
 		<!-- Reporting -->
-
+		<!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.7</version>
 
 			<exclusions>
 				<!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar) 
@@ -222,7 +221,6 @@
 		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
-			<version>2.1.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>bouncycastle</groupId>
@@ -245,13 +243,15 @@
 			<version>1.0</version>
 		</dependency>
 
+		<!-- required for PI-stuff in org.adempiere.apps.graph and also other stuff
+		this is the jfreechart version also used by jasperreports-6.2.2 -->
 		<dependency>
-			<groupId>jfree</groupId>
+			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.0.12</version>
+			<version>1.0.19</version>
 		</dependency>
 
-		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->
+		<!-- workaround, see 06687 Get rid of calls to non-API (107116288996) -->
 		<!-- if you are using badly written maven plugins then blame them and add
       	<scope>provided</scope>
       	-->

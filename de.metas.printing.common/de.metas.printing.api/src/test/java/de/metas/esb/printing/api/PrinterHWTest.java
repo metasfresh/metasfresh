@@ -27,8 +27,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.printing.esb.api.PrinterHWList;
 

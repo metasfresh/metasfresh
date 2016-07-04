@@ -47,7 +47,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<extension>true</extension>
 					<packageName>${jaxb.packageName}</packageName>
 				</configuration>
 			</plugin>
