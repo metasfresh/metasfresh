@@ -23,6 +23,11 @@ The actual release notes
     * not a fix, the reasoning is similar to #124
  
 ## Fixes
+ - #137 FRESH-473 Glitches running metasfresh out of eclipse
+    * adding a lauch config to run the client with embedded server
+    * removing a not-needed dependency that might not be available
+    * ignoring local activemq data
+    * thx to @pmaingi for going through them with us
 
 # metasfresh 4.24.23a
 
