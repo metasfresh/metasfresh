@@ -19,6 +19,7 @@ The actual release notes
     * Existing users, please see [this howto](http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html) for instructions on how to update your metasfresh server
  - FRESH-397 Upgrade to JasperStudio and latest jasper version
     * updating to jasperreports-6.2.1
+ - #90 FRESH-417 Create view and window to identify missing counter documents
  - #132 FRESH-468 Excel Export of report Konten-Information not working
  - #123 FRESH-460 Users find window name "window, tab, field" confusing
  - #124 FRESH-461 Role "System Administrator" is disabled
