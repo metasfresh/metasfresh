@@ -12,7 +12,7 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.25.23 (upcoming)
+# metasfresh 4.25.24 (upcoming)
 
 ## Features
  - #132 FRESH-468 Excel Export of report Konten-Information not working
