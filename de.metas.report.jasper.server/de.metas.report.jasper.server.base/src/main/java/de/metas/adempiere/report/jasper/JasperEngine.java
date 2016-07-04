@@ -56,13 +56,12 @@ import de.metas.logging.LogManager;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
 public class JasperEngine extends AbstractReportEngine
@@ -497,9 +496,8 @@ public class JasperEngine extends AbstractReportEngine
 	private void exportAsExcel(final JasperPrint jasperPrint, final OutputStream out) throws JRException
 	{
 		final MetasJRXlsExporter exporter = new MetasJRXlsExporter();
-
-		exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-		exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+		exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, out); // Output
+		exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint); // Input
 
 		// Make sure our cells will be locked by default
 		// and assume that cells which shall not be locked are particularly specified.
