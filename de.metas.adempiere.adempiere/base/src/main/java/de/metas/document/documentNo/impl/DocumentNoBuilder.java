@@ -29,8 +29,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -38,6 +36,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.MSequence;
 import org.compiere.model.PO;
@@ -45,14 +44,17 @@ import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.logging.LogManager;
 
 /**
  * Increment and builds document numbers.
@@ -62,8 +64,9 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
  */
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
-
+	// services
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
+	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
 	public static final String PREFIX_DOCSEQ = MSequence.PREFIX_DOCSEQ; // "public" ...to be used in tests
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
@@ -314,6 +317,17 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		throw new DocumentNoBuilderException("Cannot find AD_Client_ID");
 	}
+	
+	private final int getAD_Org_ID()
+	{
+		final PO po = getPO_OrNull();
+		if (po != null)
+		{
+			return po.getAD_Org_ID();
+		}
+
+		return Env.CTXVALUE_AD_Org_ID_Any;
+	}
 
 	private DocumentSequenceInfo getDocumentSequenceInfo()
 	{
@@ -348,7 +362,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			@Override
 			public DocumentSequenceInfo get()
 			{
-				final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class).retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
+				final DocumentSequenceInfo documentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
 				return documentSeqInfo;
 			}
 		});
@@ -364,48 +378,55 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			@Override
 			public DocumentSequenceInfo get()
 			{
-				Check.assume(C_DocType_ID > 0, DocumentNoBuilderException.class, "C_DocType_ID > 0");
-
-				final MDocType dt = MDocType.get(Env.getCtx(), C_DocType_ID);	// wrong for SERVER, but r/o
-				Check.assumeNotNull(dt, DocumentNoBuilderException.class, "docType not null");
-
-				if (!dt.isDocNoControlled())
-				{
-					throw new DocumentNoBuilderException("DocType " + dt + " Not DocNo controlled")
-							// If we were asked to NOT fail on error, we assume this is a common use case which is safe to not log it as a warning.
-							.setSkipGenerateDocumentNo(!isFailOnError());
-				}
-
-				final int docSequenceId;
-				if (useDefiniteSequence)
-				{
-					if (!dt.isOverwriteSeqOnComplete())
-					{
-						throw new DocumentNoBuilderException("DocType " + dt + " does not have OverrideSeqOnComplete set")
-								.setSkipGenerateDocumentNo(true);
-					}
-
-					docSequenceId = dt.getDefiniteSequence_ID();
-					if (docSequenceId <= 0)
-					{
-						throw new DocumentNoBuilderException("No Definite Sequence for DocType - " + dt);
-					}
-				}
-				else
-				{
-					docSequenceId = dt.getDocNoSequence_ID();
-					if (docSequenceId <= 0)
-					{
-						throw new DocumentNoBuilderException("No Sequence for DocType - " + dt);
-					}
-
-				}
-				final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class).retriveDocumentSequenceInfo(docSequenceId);
-				return documentSeqInfo;
+				return retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence);
 			}
 		});
 
 		return this;
+	}
+	
+	private DocumentSequenceInfo retrieveDocumentSequenceInfoByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
+	{
+		Check.assume(C_DocType_ID > 0, DocumentNoBuilderException.class, "C_DocType_ID > 0");
+
+		final I_C_DocType docType = MDocType.get(Env.getCtx(), C_DocType_ID);	// wrong for SERVER, but r/o
+		Check.assumeNotNull(docType, DocumentNoBuilderException.class, "docType not null");
+
+		if (!docType.isDocNoControlled())
+		{
+			throw new DocumentNoBuilderException("DocType " + docType + " Not DocNo controlled")
+					// If we were asked to NOT fail on error, we assume this is a common use case which is safe to not log it as a warning.
+					.setSkipGenerateDocumentNo(!isFailOnError());
+		}
+
+		final int docSequenceId;
+		if (useDefiniteSequence)
+		{
+			if (!docType.isOverwriteSeqOnComplete())
+			{
+				throw new DocumentNoBuilderException("DocType " + docType + " does not have OverrideSeqOnComplete set")
+						.setSkipGenerateDocumentNo(true);
+			}
+
+			docSequenceId = docType.getDefiniteSequence_ID();
+			if (docSequenceId <= 0)
+			{
+				throw new DocumentNoBuilderException("No Definite Sequence for DocType - " + docType);
+			}
+		}
+		else
+		{
+			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
+			docSequenceId = docTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID());
+			if (docSequenceId <= 0)
+			{
+				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);
+			}
+
+		}
+		final DocumentSequenceInfo documentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
+		return documentSeqInfo;
+		
 	}
 
 	private PO getPO_OrNull()
