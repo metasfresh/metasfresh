@@ -103,7 +103,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		if (report == null)
 		{
 			new AdempiereException("No report was found for " + printOut)
-					.throwOrLogWarningIfDeveloperMode(logger);
+					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 
 		return report;
