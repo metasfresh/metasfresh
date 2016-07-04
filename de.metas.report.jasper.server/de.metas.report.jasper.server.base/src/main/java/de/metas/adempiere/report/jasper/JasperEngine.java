@@ -56,20 +56,21 @@ import de.metas.logging.LogManager;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.XlsReportConfiguration;
 
 public class JasperEngine extends AbstractReportEngine
 {
 	public static final Set<String> REPORT_FILE_EXTENSIONS = ImmutableSet.of("jasper", "jrxml");
-	
+
 	private static final OutputType DEFAULT_OutputType = OutputType.PDF;
-	
+
 	private static final String PARAM_REPORT_LANGUAGE = "REPORT_LANGUAGE";
 	private static final String PARAM_REPORT_LOCALE = JRParameter.REPORT_LOCALE;
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
@@ -87,7 +88,7 @@ public class JasperEngine extends AbstractReportEngine
 
 	// services
 	private final transient Logger log = LogManager.getLogger(getClass());
-	
+
 	@Override
 	public void report(final ReportContext reportContext, final OutputStream out)
 	{
@@ -135,7 +136,7 @@ public class JasperEngine extends AbstractReportEngine
 			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
 					+ ", AD_PInstance_ID=" + reportContext.getAD_PInstance_ID();
 
-			final String securityWhereClause; 
+			final String securityWhereClause;
 			if (reportContext.isApplySecuritySettings())
 			{
 				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
@@ -146,7 +147,7 @@ public class JasperEngine extends AbstractReportEngine
 			{
 				securityWhereClause = null;
 			}
-			
+
 			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
 
 			//
@@ -338,14 +339,14 @@ public class JasperEngine extends AbstractReportEngine
 			addProcessInfoParameter(jrParameters, processParam);
 		}
 	}
-	
+
 	private void addProcessInfoParameter(final Map<String, Object> jrParameters, final ProcessInfoParameter processParam)
 	{
 		if (processParam == null)
 		{
 			return;
 		}
-		
+
 		// NOTE: just to be on the safe side, for each process info parameter we are setting the ParameterName even if it's a range parameter
 		jrParameters.put(processParam.getParameterName(), processParam.getParameter());
 
@@ -448,7 +449,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return false; // not loaded
 	}
-	
+
 	private void createOutput(final OutputStream out, final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
 	{
 		if (outputType == null)
@@ -496,12 +497,13 @@ public class JasperEngine extends AbstractReportEngine
 	private void exportAsExcel(final JasperPrint jasperPrint, final OutputStream out) throws JRException
 	{
 		final MetasJRXlsExporter exporter = new MetasJRXlsExporter();
-		exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, out); // Output
-		exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint); // Input
+
+		exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+		exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
 
 		// Make sure our cells will be locked by default
 		// and assume that cells which shall not be locked are particularly specified.
-		jasperPrint.setProperty(JRXlsExporter.PROPERTY_CELL_LOCKED, "true");
+		jasperPrint.setProperty(XlsReportConfiguration.PROPERTY_CELL_LOCKED, "true");
 
 		exporter.exportReport();
 	}
