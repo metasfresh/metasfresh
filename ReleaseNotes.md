@@ -3,16 +3,20 @@
 
 This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
 
-In this document, we sort of lean on http://www.semanticreleasenotes.org/, 
-
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-The actual release notes
+Her come the actual release notes:
 
-# metasfresh 4.25.24 (upcoming)
+# metasfresh 2016-28 (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.25.24 (2016-27)
 
 ## Features
  - **FRESH-399 Upgrade to java-8**
