@@ -83,6 +83,7 @@ public class PMMContractBuilder
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
 	private final transient ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final transient IPeriodBL periodBL = Services.get(IPeriodBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
 	// Parameters
@@ -122,10 +123,10 @@ public class PMMContractBuilder
 		}
 
 		final AtomicReference<I_C_Flatrate_Term> flatrateTermRef = new AtomicReference<>(null);
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final I_C_Flatrate_Term flatrateTerm = buildInTrx();
 				flatrateTermRef.set(flatrateTerm);
@@ -177,8 +178,14 @@ public class PMMContractBuilder
 		final Timestamp startDate = getStartDate();
 		final I_AD_User userInCharge = getAD_User_InCharge();
 
-		final I_C_Flatrate_Term contract = InterfaceWrapperHelper.create(flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, product, completeItOnCreate), I_C_Flatrate_Term.class);
-		if (contract == null)
+		final I_C_Flatrate_Term contract;
+		
+		try
+		{
+			contract = InterfaceWrapperHelper.create(flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, product, completeItOnCreate), I_C_Flatrate_Term.class);
+			Check.assumeNotNull(contract, "contract not null"); // shall not happen
+		}
+		catch(Exception ex)
 		{
 			// NOTE: an error about why the contract was not created was already logged
 			if (isFailIfNotCreated())
@@ -188,6 +195,7 @@ public class PMMContractBuilder
 			}
 
 			return null;
+			
 		}
 
 		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);

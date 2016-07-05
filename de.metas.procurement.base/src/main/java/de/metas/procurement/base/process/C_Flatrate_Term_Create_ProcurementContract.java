@@ -84,7 +84,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	{
 		final I_C_Flatrate_Term term = PMMContractBuilder.newBuilder()
 				.setCtx(getCtx())
-				.setFailIfNotCreated(false)
+				.setFailIfNotCreated(true)
 				.setComplete(true)
 				.setC_Flatrate_Conditions(p_C_Flatrate_Conditions)
 				.setC_BPartner(p_C_BPartner)
@@ -95,10 +95,6 @@ public class C_Flatrate_Term_Create_ProcurementContract
 				.setAD_User_InCharge(p_AD_User_Incharge)
 				.setC_Currency(p_C_Currency)
 				.build();
-		if (term == null)
-		{
-			return MSG_OK; // the process messages will display what went wrong
-		}
 
 		setRecordToSelectAfterExecution(TableRecordReference.of(term));
 

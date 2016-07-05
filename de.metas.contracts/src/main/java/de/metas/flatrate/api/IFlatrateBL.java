@@ -164,7 +164,8 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
 	 * @param completeIt if <code>true</code>, then attempt to complete the new term
 	 *
-	 * @return the newly created and completed term or <code>null</code>.
+	 * @return the newly created and completed term; never returns <code>null</code>
+	 * @throws AdempiereException in case of any error
 	 */
 	I_C_Flatrate_Term createTerm(IContextAware context,
 			I_C_BPartner bPartner,

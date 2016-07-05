@@ -938,7 +938,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private void addLog(final String msg)
 	{
-		FlatrateBL.logger.info(msg);
+		logger.info(msg);
 		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
 	}
 
@@ -1656,12 +1656,9 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
-		// FIXME: FRESH-402 replace loggable from here with exception throwning
 		if (dontCreateTerm)
 		{
-			loggable.addLog("BPartner " + bPartner.getValue() + ": not created because: " + notCreatedReason.toString());
-			return null;
+			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason);
 		}
 
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
@@ -1693,11 +1690,6 @@ public class FlatrateBL implements IFlatrateBL
 		if (completeIt)
 		{
 			complete(newTerm);
-			loggable.addLog("BPartner " + bPartner.getValue() + ": created and completed: " + notCreatedReason.toString());
-		}
-		else
-		{
-			loggable.addLog("BPartner " + bPartner.getValue() + ": created: " + notCreatedReason.toString());
 		}
 		return newTerm;
 	}
