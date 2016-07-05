@@ -168,4 +168,10 @@ public class PlainCalloutField implements ICalloutField
 	{
 		this.recordCopyingMode = recordCopyingMode;
 	}
+
+	@Override
+	public void fireDataStatusEEvent(String AD_Message, String info, boolean isError)
+	{
+		// TODO Auto-generated method stub
+	}
 }
