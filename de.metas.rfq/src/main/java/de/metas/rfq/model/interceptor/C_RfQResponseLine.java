@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.IRfqDAO;
+import de.metas.rfq.exceptions.RfQResponseLineHasReportedPriceException;
 import de.metas.rfq.exceptions.RfQResponseLineHasReportedQtysException;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
@@ -70,6 +71,11 @@ public class C_RfQResponseLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void preventDeleteIfThereAreReportedQuantities(final I_C_RfQResponseLine rfqResponseLine)
 	{
+		if(rfqResponseLine.getPrice().signum() != 0)
+		{
+			throw new RfQResponseLineHasReportedPriceException(rfqResponseLine);
+		}
+		
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 		if (rfqDAO.hasResponseQtys(rfqResponseLine))
 		{
