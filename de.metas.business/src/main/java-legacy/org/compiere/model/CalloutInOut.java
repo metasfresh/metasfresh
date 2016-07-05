@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -30,6 +31,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 
 /**
  * Shipment/Receipt Callouts
@@ -176,81 +179,50 @@ public class CalloutInOut extends CalloutEngine {
 	 * @param mTab
 	 * @param mField
 	 * @param value
-	 * @return error message or ""
+	 * @return error message or {@link #NO_ERROR}
 	 */
-	public String docType(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
-		Integer C_DocType_ID = (Integer) value;
-		if (C_DocType_ID == null || C_DocType_ID.intValue() == 0)
-			return "";
-
-		String sql = "SELECT d.DocBaseType, d.IsDocNoControlled, s.CurrentNext, " // 1..3
-				+ "s.AD_Sequence_ID, s.StartNewYear, s.DateColumn, d.IsSOTrx " // 4..7
-				+ "FROM C_DocType d "
-				+ "LEFT OUTER JOIN AD_Sequence s ON (d.DocNoSequence_ID=s.AD_Sequence_ID) "
-				+ "WHERE C_DocType_ID=?"; // 1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try {
-			Env.setContext(ctx, WindowNo, "C_DocTypeTarget_ID", C_DocType_ID
-					.intValue());
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_DocType_ID.intValue());
-			rs = pstmt.executeQuery();
-			if (rs.next()) {
-				// Set Movement Type
-				String DocBaseType = rs.getString("DocBaseType");
-				// BF [2708789] Read IsSOTrx from C_DocType
-				String trxFlag = rs.getString(7);
-				if (DocBaseType.equals("MMS")) // Material Shipments
-				/** solve 1648131 bug vpj-cd e-evolution */
-				{
-					boolean IsSOTrx = "Y".equals(trxFlag);
-					if (IsSOTrx)
-						mTab.setValue("MovementType", "C-"); // Customer
-																// Shipments
-					else
-						mTab.setValue("MovementType", "V-"); // Vendor Return
-
-				}
-				/** END vpj-cd e-evolution */
-				else if (DocBaseType.equals("MMR")) // Material Receipts
-				/** solve 1648131 bug vpj-cd e-evolution */
-				{
-					boolean IsSOTrx = "Y".equals(trxFlag);
-					if (IsSOTrx)
-						mTab.setValue("MovementType", "C+"); // Customer Return
-					else
-						mTab.setValue("MovementType", "V+"); // Vendor Receipts
-				}
-				if (!(trxFlag.equals(mTab.getValue("IsSOTrx"))))
-					mTab.setValue("IsSOTrx", trxFlag);
-				/** END vpj-cd e-evolution */
-
-				// DocumentNo
-				if (rs.getString("IsDocNoControlled").equals("Y")) {
-					if ("Y".equals(rs.getString(5))) {
-						String dateColumn = rs.getString(6);
-						int AD_Sequence_ID = rs.getInt(4);
-						mTab
-								.setValue("DocumentNo", "<"
-										+ MSequence.getPreliminaryNoByYear(
-												mTab, AD_Sequence_ID,
-												dateColumn, null) + ">");
-					} else
-						mTab.setValue("DocumentNo", "<"
-								+ rs.getString("CurrentNext") + ">");
-				}
-			}
-		} catch (SQLException e) {
-			log.error(sql, e);
-			return e.getLocalizedMessage();
-		} finally {
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+	public String docType(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.create(mTab, I_M_InOut.class);
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(inout.getC_DocType())
+				.setOldDocumentNo(inout.getDocumentNo())
+				.setDocumentModel(inout)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return NO_ERROR;
 		}
-		return "";
+
+		// Set Movement Type
+		final String DocBaseType = documentNoInfo.getDocBaseType();
+		final boolean isSOTrx = documentNoInfo.isSOTrx(); // BF [2708789] Read IsSOTrx from C_DocType
+		// solve 1648131 bug vpj-cd e-evolution
+		if (X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType))
+		{
+			if (isSOTrx)
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
+			else
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReturns);
+		}
+		else if (X_C_DocType.DOCBASETYPE_MaterialReceipt.equals(DocBaseType))
+		{
+			if (isSOTrx)
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerReturns);
+			else
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReceipts);
+		}
+
+		inout.setIsSOTrx(isSOTrx);
+
+		// DocumentNo
+		if (documentNoInfo.isDocNoControlled())
+		{
+			inout.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+		return NO_ERROR;
 	} // docType
 
 	/**
@@ -649,8 +621,7 @@ public class CalloutInOut extends CalloutEngine {
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
 			}
-			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
+			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
@@ -672,11 +643,9 @@ public class CalloutInOut extends CalloutEngine {
 
 			// metas: make sure that MovementQty must be 1 for a product with a
 			// serial number.
-			final Integer attributeSetInstanceId = (Integer) mTab
-					.getValue(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID);
+			final Integer attributeSetInstanceId = (Integer) mTab.getValue(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID);
 			if (attributeSetInstanceId != null && attributeSetInstanceId > 0) {
-				final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance
-						.get(Env.getCtx(), attributeSetInstanceId, 0);
+				final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance.get(Env.getCtx(), attributeSetInstanceId, 0);
 				if (attributeSetInstance != null) {
 					final String serNo = attributeSetInstance.getSerNo();
 					if (serNo != null && !"".equals(serNo)
@@ -697,8 +666,7 @@ public class CalloutInOut extends CalloutEngine {
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
 			}
-			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
+			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
@@ -713,16 +681,14 @@ public class CalloutInOut extends CalloutEngine {
 			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
 			MovementQty = (BigDecimal) value;
 			int precision = MProduct.get(ctx, M_Product_ID).getUOMPrecision();
-			BigDecimal MovementQty1 = MovementQty.setScale(precision,
-					BigDecimal.ROUND_HALF_UP);
+			BigDecimal MovementQty1 = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (MovementQty.compareTo(MovementQty1) != 0) {
 				log.debug("Corrected MovementQty " + MovementQty + "->"
 						+ MovementQty1);
 				MovementQty = MovementQty1;
 				mTab.setValue("MovementQty", MovementQty);
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, MovementQty);
+			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, MovementQty);
 			if (QtyEntered == null)
 				QtyEntered = MovementQty;
 			boolean conversion = MovementQty.compareTo(QtyEntered) != 0;
