@@ -28,12 +28,16 @@ package de.metas.document.documentNo;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
+
 /**
  * @author cg
  *
  */
 public interface IDocumentNoBuilderFactory extends ISingletonService
 {
+	IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder();
+	
 	/**
 	 * Convenient method to create and prepare the builder for a given TableName.
 	 *

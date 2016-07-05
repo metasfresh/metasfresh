@@ -41,9 +41,11 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_DocTypeCounter;
+import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -199,10 +201,26 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
 				.register();
 
+		// C_DocType
+		// (#136 FRESH-472)
+		cachingService.createTableCacheConfigBuilder(I_C_DocType.class)
+				.setEnabled(true)
+				.setInitialCapacity(100)
+				.setMaxCapacity(100)
+				.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
+				.setCacheMapType(CacheMapType.LRU)
+				.setTrxLevel(TrxLevel.All)
+				.register();
+
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM_Conversion.Table_Name);
+
+		// (#136 FRESH-472)
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocType.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocType_Sequence.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocTypeCounter.Table_Name);
 
 		// Broadcast cache invalidation of AD_Client and AD_Org tables.
 		// This is needed in case there are some configuration changes and we want them to be applied ASAP, without restarting the server.
