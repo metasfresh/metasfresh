@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1246862977L;
+	private static final long serialVersionUID = -1305797989L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -529,6 +529,31 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set V.
+		@param PMM_ContractedPriceOrQty 
+		Vertrag
+	  */
+	@Override
+	public void setPMM_ContractedPriceOrQty (boolean PMM_ContractedPriceOrQty)
+	{
+		throw new IllegalArgumentException ("PMM_ContractedPriceOrQty is virtual column");	}
+
+	/** Get V.
+		@return Vertrag
+	  */
+	@Override
+	public boolean isPMM_ContractedPriceOrQty () 
+	{
+		Object oo = get_Value(COLUMNNAME_PMM_ContractedPriceOrQty);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Bestellkandidat.
