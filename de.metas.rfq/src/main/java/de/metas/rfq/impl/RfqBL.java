@@ -308,6 +308,7 @@ public class RfqBL implements IRfqBL
 		// Mark completed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
 		rfq.setProcessed(true);
+		rfq.setIsRfQResponseAccepted(true);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
@@ -358,6 +359,7 @@ public class RfqBL implements IRfqBL
 		// Mark as not processed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Drafted);
 		rfq.setProcessed(false);
+		rfq.setIsRfQResponseAccepted(false);
 		InterfaceWrapperHelper.save(rfq);
 	}
 
@@ -448,6 +450,7 @@ public class RfqBL implements IRfqBL
 		// Mark as closed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Closed);
 		rfq.setProcessed(true);
+		rfq.setIsRfQResponseAccepted(false);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
