@@ -16,7 +16,7 @@ Her come the actual release notes:
 
 ## Fixes
 
-# metasfresh 4.25.24a (2016-27a)
+# metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
 
 ## Features
  - #162 FRESH-499 modernize the server's index.html
