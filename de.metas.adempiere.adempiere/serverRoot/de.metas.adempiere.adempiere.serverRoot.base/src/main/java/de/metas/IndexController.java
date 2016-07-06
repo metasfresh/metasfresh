@@ -49,11 +49,9 @@ public class IndexController
 			productURL = "http://www.metasfresh.com";
 		}
 
-		final boolean isZkWebUIServerEnabled = org.compiere.Adempiere.isZkWebUIServerEnabled();
 
 		model.addAttribute("productName", productName);
 		model.addAttribute("productURL", productURL);
-		model.addAttribute("isZkWebUIServerEnabled", isZkWebUIServerEnabled);
 
 		return "index";
 	}
