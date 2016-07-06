@@ -15,6 +15,8 @@ fi
 #DEBUG_OPTS="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=y"
 DEBUG_OPTS=""
 
+check_java_version
+
 trace $(basename $0) "BEGIN"
 
 check_std_tool java
