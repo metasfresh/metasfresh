@@ -115,8 +115,7 @@ check_vars_server()
 	trace check_vars_server BEGIN
 
 	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
-	check_var "JAVA_HOME" $JAVA_HOME
-		
+			
 	trace check_vars_server END
 }
 
@@ -184,7 +183,6 @@ check_vars_minor()
 	trace check_vars_minor BEGIN
 
 	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
-	check_var "JAVA_HOME" $JAVA_HOME
 	check_var "PATH" $PATH
 
 	trace check_vars_minor END
