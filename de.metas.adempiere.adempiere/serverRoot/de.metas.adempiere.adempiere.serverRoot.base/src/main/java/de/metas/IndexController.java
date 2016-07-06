@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class IndexController
 {
 	/**
-	 * Note: the <code>/admin</code> path is deprecated and will be removed soon.
 	 *
 	 * @param model
 	 * @return
@@ -41,12 +40,12 @@ public class IndexController
 		String productName = org.compiere.Adempiere.getName();
 		if (productName == null || productName.isEmpty())
 		{
-			productName = "metas Fresh";
+			productName = "metasfresh";
 		}
 		String productURL = org.compiere.Adempiere.getURL();
 		if (productURL == null || productURL.isEmpty())
 		{
-			productURL = "http://www.metasfresh.com";
+			productURL = "http://www.metasfresh.com/en";
 		}
 
 
