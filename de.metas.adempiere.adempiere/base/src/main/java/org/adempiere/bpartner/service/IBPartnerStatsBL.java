@@ -3,6 +3,7 @@ package org.adempiere.bpartner.service;
 import java.math.BigDecimal;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
 /*
@@ -31,12 +32,11 @@ import org.compiere.model.I_C_BPartner_Stats;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public interface IBPartnerStatsBL extends ISingletonService
 {
+	/** @return partner statistics */
+	IBPartnerStats getBPartnerStats(I_C_BPartner bpartner);
+	
 	/**
 	 * Set the SOCreditStatus given as parameter in the bpartner statistics and save.
 	 * 
@@ -134,5 +134,4 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @return
 	 */
 	boolean isCreditStopSales(I_C_BPartner_Stats stat, BigDecimal grandTotal);
-
 }
