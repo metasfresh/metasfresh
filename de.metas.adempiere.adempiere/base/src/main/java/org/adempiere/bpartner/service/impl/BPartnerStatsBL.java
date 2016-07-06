@@ -40,6 +40,13 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	@Override
+	public IBPartnerStats getBPartnerStats(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Stats statsPO = bpartnerStatsDAO.retrieveBPartnerStats(bpartner);
+		return BPartnerStats.of(statsPO);
+	}
+
+	@Override
 	public void setSOCreditStatus(final I_C_BPartner_Stats stat, final String soCreditStatus)
 	{
 		stat.setSOCreditStatus(soCreditStatus);

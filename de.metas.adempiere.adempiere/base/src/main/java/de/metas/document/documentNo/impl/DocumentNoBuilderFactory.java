@@ -34,6 +34,11 @@ import de.metas.document.documentNo.IDocumentNoBuilderFactory;
  */
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
+	@Override
+	public IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder()
+	{
+		return new PreliminaryDocumentNoBuilder();
+	}
 
 	@Override
 	public IDocumentNoBuilder forTableName(String TableName, int AD_Client_ID, int AD_Org_ID)
@@ -57,5 +62,4 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	{
 		return new DocumentNoBuilder();
 	}
-
 }

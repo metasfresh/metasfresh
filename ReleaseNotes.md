@@ -3,14 +3,41 @@
 
 This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
 
-In this document, we sort of lean on http://www.semanticreleasenotes.org/, 
-
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-The actual release notes
+Her come the actual release notes:
+
+# metasfresh 2016-28 (upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.25.24 (2016-27)
+
+## Features
+ - **FRESH-399 Upgrade to java-8**
+    * Existing users, please see [this howto](http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html) for instructions on how to update your metasfresh server
+ - FRESH-397 Upgrade to JasperStudio and latest jasper version
+    * updating to jasperreports-6.2.1
+ - #136 FRESH-472 Sequence on Org for more than 1 Doctype
+ - #90 FRESH-417 Create view and window to identify missing counter documents
+ - #132 FRESH-468 Excel Export of report Konten-Information not working
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+ - #124 FRESH-461 Role "System Administrator" is disabled
+    * note: imho not a "fix" because we deliberately deactivate it before and now find that the normal user is better off with the role being available
+ - #125 FRESH-462 enable all entity types
+    * not a fix, the reasoning is similar to #124
+ 
+## Fixes
+ - #137 FRESH-473 Glitches running metasfresh out of eclipse
+    * adding a lauch config to run the client with embedded server
+    * removing a not-needed dependency that might not be available
+    * ignoring local activemq data
+    * thx to @pmaingi for going through them with us
 
 # metasfresh 4.24.23a
 
@@ -23,16 +50,23 @@ The actual release notes
 
 ## Features
  - FRESH-378 process to close invoice candidates
+    * New Feature in Invoice Candidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
  
 ## Fixes
  - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
+    * Changed InOut Handler to not create Invoice candidates when DocSubType is "Saldokorrektur".
  - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
+    * Moved the Notification Bar slightly up, so the OK Button, Cancel Button and Changelog Link is not covered anymore.
  - #107 FRESH-445 Awkward eMail encoding in Swiss language
+    * Simple Fix to ensure the right encoding when sending eMails.
  - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
- - #105 FRESH-442 Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly
+    * Fix related to Order by of Calender and Periods in all relevant Dropdown Lists.
+ - #105 FRESH-442 Annotated model interceptor
+    * Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly. Fixed.
  - FRESH-438 Make MRP Product Info Work
-    * removed stale data and added FK-constraints and improved logging to avoid NPE
+    * Removed stale data and added FK-constraints and improved logging to avoid Null Pointer Exception
  - FRESH-306 Customer alloc with Vendor Payment: Wrong Accounting
+    * Adjusted the accounting of the Alocoation of Incoming and Outgoing Payments.
 
 ## Documentation
  - FRESH-323 metasfresh Developer Documentation

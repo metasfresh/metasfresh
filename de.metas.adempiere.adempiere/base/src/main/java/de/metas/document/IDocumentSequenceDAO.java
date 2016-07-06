@@ -1,5 +1,7 @@
 package de.metas.document;
 
+import java.util.Date;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,6 +26,7 @@ package de.metas.document;
 
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_DocType;
 
 /**
  * DAO methods for retrieving DocumentNo sequence informations.
@@ -37,4 +40,12 @@ public interface IDocumentSequenceDAO extends ISingletonService
 
 	DocumentSequenceInfo retriveDocumentSequenceInfo(int adSequenceId);
 
+	String retrieveDocumentNoByYear(int AD_Sequence_ID, Date date);
+
+	/** @return document type sequence map */
+	DocTypeSequenceMap retrieveDocTypeSequenceMap(I_C_DocType docType);
+
+	String retrieveDocumentNo(int AD_Sequence_ID);
+
+	String retrieveDocumentNoSys(int AD_Sequence_ID);
 }

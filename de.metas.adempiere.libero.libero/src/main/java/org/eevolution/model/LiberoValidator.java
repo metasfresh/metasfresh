@@ -27,14 +27,12 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
-import org.eevolution.callout.DD_OrderLine;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
 
 /**
@@ -87,12 +85,13 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		// NOTE: keep this as the last model validators to register
 		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
 		//engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
-
-		// Callouts
-
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-
-		programaticCalloutProvider.registerAnnotatedCallout(DD_OrderLine.instance);
+	}
+	
+	@Override
+	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_Order.instance);
+		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_OrderLine.instance);
 	}
 
 	@Override

@@ -51,6 +51,8 @@ prepare()
 
 	check_dir_exists $JAVA_HOME
 	
+	check_java_version
+	
 	export JAVA_HOME=$JAVA_HOME
 	
 	check_file_exists ~/local_settings.properties
@@ -60,8 +62,9 @@ prepare()
 	if [ "$LOCAL_SETTINGS_PERMS" != "-rw-------" ]; then
 		trace prepare "file ~/local_settings.properties has permissions '$LOCAL_SETTINGS_PERMS'. It should have '-rw-------'. Use 'chmod 0600 ~/local_settings.properties' to fix "
 	fi
-
-	trace prepare END
+        
+        trace prepare END
+        
 }
 
 install_metasfresh()

@@ -3062,14 +3062,15 @@ public abstract class PO
 				if (strValue.startsWith("<") && strValue.endsWith(">"))
 				{
 					value = null;
-					int index = p_info.getColumnIndex("C_DocTypeTarget_ID");
-					if (index == -1)
+					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
+					if (docTypeIndex == -1)
 					{
-						index = p_info.getColumnIndex("C_DocType_ID");
+						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
-					if (index != -1)		//	get based on Doc Type (might return null)
+					if (docTypeIndex != -1)		//	get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
+						final int docTypeId = get_ValueAsInt(docTypeIndex);
+						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
 								.setPO(this)
 								.setFailOnError(false)

@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -55,10 +53,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  * Grid Field Model.
@@ -2227,8 +2227,15 @@ public class GridField
 	}
 
 	@Override
-	public void fireDataStatusEEvent(String AD_Message, String info, boolean isError)
+	public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
 	{
-		getGridTab().fireDataStatusEEvent(AD_Message, info, isError);
+		final GridTab gridTab = getGridTab();
+		if(gridTab == null)
+		{
+			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: AD_Message={}, info={}, isError={}", this, AD_Message, info, isError);
+			return;
+		}
+		
+		gridTab.fireDataStatusEEvent(AD_Message, info, isError);
 	}
 }
