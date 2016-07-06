@@ -7,10 +7,10 @@
 		<groupId>de.metas.ui.web</groupId>
 		<artifactId>metasfresh-webui-parent</artifactId>
 		<version>3-development-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>metasfresh-webui-api</artifactId>
-	<version>3-development-SNAPSHOT</version>
 
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
@@ -46,6 +46,11 @@
 
 		<!-- Spring -->
 		<dependency>
+			<!-- 
+				spring-session is managed to 1.0.2.RELEASE by spring-boot 1.3.3.RELEASE
+				but that version doesn't contain the annotation @EnableHazelcastHttpSession and others.
+				That's why we go with 1.2.0.RELEASE.
+			-->
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session</artifactId>
 			<version>1.2.0.RELEASE</version>
