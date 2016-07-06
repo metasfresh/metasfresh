@@ -34,7 +34,7 @@ public class IndexController
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(path = { "/", "/admin" })
+	@RequestMapping(path = { "/" })
 	public String home(final Model model)
 	{
 		String productName = org.compiere.Adempiere.getName();
