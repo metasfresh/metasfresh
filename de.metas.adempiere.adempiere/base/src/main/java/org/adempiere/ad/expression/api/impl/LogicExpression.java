@@ -23,17 +23,22 @@ package org.adempiere.ad.expression.api.impl;
  */
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
+
 /* package */class LogicExpression extends AbstractLogicExpression
 {
 	private final ILogicExpression left;
 	private final ILogicExpression right;
 	private final String operator;
+	
+	private ImmutableList<String> _parameters;
 
 	public LogicExpression(ILogicExpression left, String operator, ILogicExpression right)
 	{
@@ -178,18 +183,22 @@ import org.adempiere.util.Check;
 	@Override
 	public List<String> getParameters()
 	{
-		List<String> result = left.getParameters();
-		if (right != null)
+		if (_parameters == null)
 		{
-			for (String x : right.getParameters())
+			final List<String> result = new ArrayList<>(left.getParameters());
+			if (right != null)
 			{
-				if (!result.contains(x))
+				for (String x : right.getParameters())
 				{
-					result.add(x);
+					if (!result.contains(x))
+					{
+						result.add(x);
+					}
 				}
 			}
+			_parameters = ImmutableList.copyOf(result);
 		}
-		return result;
+		return _parameters;
 	}
 
 	public ILogicExpression getLeft()

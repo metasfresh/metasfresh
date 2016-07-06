@@ -39,7 +39,6 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
@@ -275,17 +274,14 @@ public class MOrderLine extends X_C_OrderLine
 	/**
 	 * Set Header Info
 	 *
-	 * @param orderPO order
+	 * @param order order
 	 */
-	public void setHeaderInfo(final MOrder orderPO)
+	public void setHeaderInfo(final MOrder order)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final I_C_Order order = InterfaceWrapperHelper.create(orderPO, de.metas.adempiere.model.I_C_Order.class);
 
 		m_precision = orderBL.getPrecision(order);
-
 		m_M_PriceList_ID = orderBL.retrievePriceListId(order);
-
 		m_IsSOTrx = order.isSOTrx();
 	}	// setHeaderInfo
 
@@ -854,20 +850,6 @@ public class MOrderLine extends X_C_OrderLine
 		setDiscount(discount);
 	}	// setDiscount
 
-	public I_M_PriceList getM_PriceList()
-	{
-		if (m_M_PriceList_ID <= 0)
-		{
-			// metas: use retrivePriceListId
-			m_M_PriceList_ID = Services.get(IOrderBL.class).retrievePriceListId(InterfaceWrapperHelper.create(getParent(), de.metas.adempiere.model.I_C_Order.class));
-			/*
-			 * m_M_PriceList_ID = DB.getSQLValue(get_TrxName(), "SELECT M_PriceList_ID FROM C_Order WHERE C_Order_ID=?", getC_Order_ID());
-			 */
-		}
-		MPriceList pl = MPriceList.get(getCtx(), m_M_PriceList_ID, get_TrxName());
-		return pl;
-	}
-
 	/**
 	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM
 	 *
@@ -942,15 +924,17 @@ public class MOrderLine extends X_C_OrderLine
 		if (getC_BPartner_ID() <= 0 || getC_BPartner_Location_ID() <= 0
 				|| warehouse == null || warehouse.getM_Warehouse_ID() <= 0
 				|| getC_Currency_ID() <= 0)
+		{
 			setOrder(getParent());
+		}
+		
 		// metas: try to get the pl-id from our plv
 		if (m_M_PriceList_ID <= 0)
 		{
 			final int plvId = get_ValueAsInt(de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_PriceList_Version_ID);
 			if (plvId > 0)
 			{
-				m_M_PriceList_ID = DB.getSQLValueEx(get_TrxName(),
-						"SELECT M_PriceList_ID FROM M_PriceList_Version WHERE M_PriceList_Version_ID=" + plvId);
+				m_M_PriceList_ID = DB.getSQLValueEx(get_TrxName(), "SELECT M_PriceList_ID FROM M_PriceList_Version WHERE M_PriceList_Version_ID=" + plvId);
 			}
 		}
 		// metas: end

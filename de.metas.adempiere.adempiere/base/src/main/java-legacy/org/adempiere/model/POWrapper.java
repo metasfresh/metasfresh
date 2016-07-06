@@ -28,6 +28,7 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.persistence.exceptions.ModelClassNotSupportedException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.ad.wrapper.POModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -65,7 +66,7 @@ import de.metas.logging.LogManager;
  *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
-public class POWrapper implements InvocationHandler
+public class POWrapper implements InvocationHandler, IInterfaceWrapper
 {
 	public static <T> T create(final Object po, final Class<T> cl)
 	{

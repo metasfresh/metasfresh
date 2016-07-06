@@ -256,8 +256,9 @@ public class PaySelect
 		final int AD_Reference_ID = 195;  //  MLookupInfo.getAD_Reference_ID("All_Payment Rule");
 		final Language language = Env.getLanguage(Env.getCtx());
 		final MLookupInfo info = MLookupFactory.getLookup_List(language, AD_Reference_ID);
-		final String sql = info.Query.substring(0, info.Query.indexOf(" ORDER BY"))
-			+ info.Query.substring(info.Query.indexOf(" ORDER BY"));
+		final String query = info.getSqlQuery();
+		final String sql = query.substring(0, query.indexOf(" ORDER BY"))
+			+ query.substring(query.indexOf(" ORDER BY"));
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
@@ -471,6 +472,7 @@ public class PaySelect
 		 *
 		 * @return info
 		 */
+		@Override
 		public String toString()
 		{
 			return Name;

@@ -149,10 +149,11 @@ public class PayPrint {
 		int AD_Reference_ID = 195;  //  MLookupInfo.getAD_Reference_ID("All_Payment Rule");
 		Language language = Language.getLanguage(Env.getAD_Language(Env.getCtx()));
 		MLookupInfo info = MLookupFactory.getLookup_List(language, AD_Reference_ID);
-		String sql = info.Query.substring(0, info.Query.indexOf(" ORDER BY"))
-			+ " AND " + info.KeyColumn
+		final String query = info.getSqlQuery();
+		String sql = query.substring(0, query.indexOf(" ORDER BY"))
+			+ " AND " + info.getKeyColumnFQ()
 			+ " IN (SELECT PaymentRule FROM C_PaySelectionCheck WHERE C_PaySelection_ID=?) "
-			+ info.Query.substring(info.Query.indexOf(" ORDER BY"));
+			+ query.substring(query.indexOf(" ORDER BY"));
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);

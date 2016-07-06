@@ -1,5 +1,6 @@
 package de.metas.logging;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -206,7 +207,8 @@ public class MetasfreshLastError
 	 * @author tsa
 	 */
 	@ThreadSafe
-	private static class LastErrorsInstance
+	@SuppressWarnings("serial")
+	private static class LastErrorsInstance implements Serializable
 	{
 		public static final transient Supplier<LastErrorsInstance> supplier = new Supplier<LastErrorsInstance>()
 		{

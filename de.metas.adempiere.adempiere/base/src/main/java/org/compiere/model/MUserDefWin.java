@@ -102,12 +102,12 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	 */
 	public static void apply(GridWindowVO vo)
 	{
-		for (MUserDefWin uw : get(vo.ctx, vo.AD_Window_ID))
+		for (MUserDefWin uw : get(vo.getCtx(), vo.getAD_Window_ID()))
 		{
 //			vo.Name = uw.getName();
 //			vo.Description = uw.getDescription();
 //			vo.Help = uw 	.getHelp();
-			vo.IsReadWrite = (uw.isReadOnly() ? "N" : "Y");
+			vo.setReadWrite(!uw.isReadOnly());
 		}
 	}
 

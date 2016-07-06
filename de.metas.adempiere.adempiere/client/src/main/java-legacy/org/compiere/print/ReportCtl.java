@@ -16,12 +16,10 @@
  *****************************************************************************/
 package org.compiere.print;
 
-import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.Vector;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_C_Payment;
@@ -35,14 +33,10 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.Trx;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -358,26 +352,7 @@ public final class ReportCtl
 				
 					
 					//	Execute Process
-					if (Ini.isClient())
-					{
-						ProcessCtl.process(parent, WindowNo, pi, ITrx.TRX_None);
-					}
-					else
-					{
-						try 
-						{
-							ClassLoader loader = Thread.currentThread().getContextClassLoader();
-							if (loader == null)
-								loader = ReportCtl.class.getClassLoader();
-							Class<?> clazz = loader.loadClass("org.adempiere.webui.apps.WProcessCtl"); // FIXME hardcoded zkwebui dep
-							Method method = clazz.getDeclaredMethod("process", ASyncProcess.class, Integer.TYPE, ProcessInfo.class, Trx.class);
-							method.invoke(null, parent, WindowNo, pi, null);
-						}
-						catch (Exception e)
-						{
-							throw new AdempiereException(e);
-						}
-					}
+					ProcessCtl.process(parent, WindowNo, pi, ITrx.TRX_None);
 				}
 				finally
 				{

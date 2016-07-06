@@ -22,9 +22,16 @@ package org.adempiere.ad.expression.api;
  * #L%
  */
 
-
 import java.util.List;
 
+/**
+ * Logic expression
+ * 
+ * NOTE: business logic expects that implementation of this interface to be immutable.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public interface ILogicExpression extends IExpression<Boolean>
 {
 	ILogicExpression TRUE = new ConstantLogicExpression(true);
@@ -41,4 +48,10 @@ public interface ILogicExpression extends IExpression<Boolean>
 
 	@Override
 	IExpressionEvaluator<ILogicExpression, Boolean> getEvaluator();
+
+	/** Compose this logic expression with the given one, using logic AND and return it */
+	ILogicExpression and(ILogicExpression expression);
+
+	/** Compose this logic expression with the given one, using logic OR and return it */
+	ILogicExpression or(ILogicExpression expression);
 }

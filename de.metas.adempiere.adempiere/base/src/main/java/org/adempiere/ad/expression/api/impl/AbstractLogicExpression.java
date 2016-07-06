@@ -23,6 +23,7 @@ package org.adempiere.ad.expression.api.impl;
  */
 
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.compiere.util.Evaluatee;
@@ -48,6 +49,26 @@ public abstract class AbstractLogicExpression implements ILogicExpression
 	public final LogicExpressionEvaluator getEvaluator()
 	{
 		return LogicExpressionEvaluator.instance;
+	}
+
+	@Override
+	public final ILogicExpression and(final ILogicExpression expression)
+	{
+		if (expression instanceof ConstantLogicExpression)
+		{
+			return expression.and(this);
+		}
+		return new LogicExpression(this, "&", expression);
+	}
+
+	@Override
+	public final ILogicExpression or(final ILogicExpression expression)
+	{
+		if (expression instanceof ConstantLogicExpression)
+		{
+			return expression.or(this);
+		}
+		return new LogicExpression(this, "|", expression);
 	}
 
 }

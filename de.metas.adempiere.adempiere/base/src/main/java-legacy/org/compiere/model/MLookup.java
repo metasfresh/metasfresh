@@ -685,7 +685,7 @@ public final class MLookup extends Lookup implements Serializable
 	 */
 	public int getAD_Reference_Value_ID()
 	{
-		return m_info.AD_Reference_Value_ID;
+		return m_info.getAD_Reference_Value_ID();
 	}   // getAD_Reference_Value_ID
 
 	/**
@@ -906,7 +906,7 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		// Need to check SO/PO
-		final boolean isSOTrx = DB.isSOTrx(m_info.TableName, query.getWhereClause(false));
+		final boolean isSOTrx = DB.isSOTrx(m_info.getTableName(), query.getWhereClause(false));
 		//
 		if (!isSOTrx)
 		{
@@ -1071,12 +1071,12 @@ public final class MLookup extends Lookup implements Serializable
 
 	public String getQuery()
 	{
-		return m_info.getQuery();
+		return m_info.getSqlQuery();
 	}
 
 	public String getQueryDirect()
 	{
-		return m_info.QueryDirect;
+		return m_info.getSqlQueryDirect();
 	}
 
 	public MLookupInfo getLookupInfo()

@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
@@ -55,7 +56,7 @@ import de.metas.product.IProductPA;
  * Lieferadressen nur die Adressen angezeigt, die auch als solche in der Location ausgewiesen sind. Ebenso bei den Rechnungsadressen.
  * <li>Contains proposed <a
  * href="https://sourceforge.net/tracker/index.php?func=detail&aid=1883543&group_id=176962&atid=879332" >BF_1883543</a></li>
- * 
+ *
  * @author Jorg Janke
  * @author Mark Ostermann
  */
@@ -74,7 +75,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header Change - DocType. - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -158,7 +159,7 @@ public class CalloutOrder extends CalloutEngine
 			order.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
 
-		
+
 		//
 		// When BPartner is changed, the Rules are not set if
 		// it is a POS or Credit Order (i.e. defaults from Standard
@@ -176,7 +177,7 @@ public class CalloutOrder extends CalloutEngine
 			if(bpartner != null && bpartner.getC_BPartner_ID() > 0)
 			{
 				final boolean IsSOTrx = documentNoInfo.isSOTrx();
-				
+
 				// PaymentRule
 				{
 					String paymentRule = IsSOTrx ? bpartner.getPaymentRule() : bpartner.getPaymentRulePO();
@@ -200,7 +201,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setPaymentRule(paymentRule);
 					}
 				}
-				
+
 				// Payment Term
 				{
 					final int paymentTermId = IsSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID();
@@ -209,7 +210,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId);
 					}
 				}
-				
+
 				// InvoiceRule
 				{
 					final String invoiceRule = bpartner.getInvoiceRule();
@@ -218,7 +219,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setInvoiceRule(invoiceRule);
 					}
 				}
-				
+
 				// DeliveryRule
 				{
 					final String deliveryRule = bpartner.getDeliveryRule();
@@ -227,7 +228,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setDeliveryRule(deliveryRule);
 					}
 				}
-				
+
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
@@ -236,7 +237,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setFreightCostRule(freightCostRule);
 					}
 				}
-				
+
 				// DeliveryViaRule
 				{
 					final String deliveryViaRule = bpartner.getDeliveryViaRule();
@@ -247,7 +248,7 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		
+
 		//
 		return NO_ERROR;
 	}
@@ -255,7 +256,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -265,6 +266,8 @@ public class CalloutOrder extends CalloutEngine
 	 */
 	public String bPartnerLocation(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
+		// FIXME !!!
+
 		// 05291: In case current record is on dataNew phase with Copy option set
 		// then just don't update the Bill fields but let them copy from original record
 		if (mTab.isDataNewCopy())
@@ -302,7 +305,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -310,16 +313,17 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartner(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String bPartner(final ICalloutField calloutField)
 	{
-		Integer C_BPartner_ID = (Integer)value;
-		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final int C_BPartner_ID = order.getC_BPartner_ID();
+		if (C_BPartner_ID <= 0)
 		{
-			return "";
+			return NO_ERROR;
 		}
-		final boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+		final boolean IsSOTrx = order.isSOTrx();
 		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
-		
+
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
 
@@ -372,17 +376,17 @@ public class CalloutOrder extends CalloutEngine
 			if (rs.next())
 			{
 				// metas: Auftragsart aus Kunde
-				Integer docTypeTarget = rs.getInt("SO_DocTypeTarget_ID");
-				if (IsSOTrx && docTypeTarget > 0)
+				Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
+				if (IsSOTrx && docTypeTargetId > 0)
 				{
-					mTab.setValue("C_DocTypeTarget_ID", docTypeTarget);
+					order.setC_DocTypeTarget_ID(docTypeTargetId);
 				}
 
 				// Sales Rep - If BP has a default SalesRep then default it
-				Integer salesRep = rs.getInt("SalesRep_ID");
-				if (IsSOTrx && salesRep != 0)
+				Integer salesRepId = rs.getInt("SalesRep_ID");
+				if (IsSOTrx && salesRepId != 0)
 				{
-					mTab.setValue("SalesRep_ID", salesRep);
+					order.setSalesRep_ID(salesRepId);
 				}
 				/*
 				 * // PriceList (indirect: IsTaxIncluded & Currency) Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID"); if (!rs.wasNull())
@@ -393,9 +397,11 @@ public class CalloutOrder extends CalloutEngine
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to different BP)
-				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				final Properties ctx = calloutField.getCtx();
+				final int windowNo = calloutField.getWindowNo();
+				if (C_BPartner_ID == Env.getContextAsInt(ctx, windowNo, Env.TAB_INFO, "C_BPartner_ID"))
 				{
-					final String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
+					final String loc = Env.getContext(ctx, windowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
 					if (loc.length() > 0)
 					{
 						// metas: before using the location we need to make sure
@@ -408,16 +414,12 @@ public class CalloutOrder extends CalloutEngine
 						// metas end
 					}
 				}
-				if (shipTo_ID == 0)
-					mTab.setValue("C_BPartner_Location_ID", null);
-				else
-					mTab.setValue("C_BPartner_Location_ID", shipTo_ID);
+				order.setC_BPartner_Location_ID(shipTo_ID <= 0 ? -1 : shipTo_ID);
 
 				// metas (2009 0027 G1): setting billTo location. Why has it
 				// been selected above when it isn't used?
 				final int billTo_ID = rs.getInt("Bill_Location_ID");
-				mTab.setValue("Bill_Location_ID",  //
-						billTo_ID == 0 ? null : billTo_ID);
+				order.setBill_Location_ID(billTo_ID <= 0 ? null : billTo_ID);
 						// metas: end
 
 				// metas: Einkaufsgenossenschaft
@@ -428,18 +430,18 @@ public class CalloutOrder extends CalloutEngine
 
 				// Contact - overwritten by InfoBP selection
 				int contID = rs.getInt("AD_User_ID");
-				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (C_BPartner_ID == Env.getContextAsInt(ctx, windowNo, Env.TAB_INFO, "C_BPartner_ID"))
 				{
-					String cont = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "AD_User_ID");
+					String cont = Env.getContext(ctx, windowNo, Env.TAB_INFO, "AD_User_ID");
 					if (cont.length() > 0)
 						contID = Integer.parseInt(cont);
 				}
-				if (contID == 0)
-					mTab.setValue("AD_User_ID", null);
+				if (contID <= 0)
+					order.setAD_User_ID(-1);
 				else
 				{
-					mTab.setValue("AD_User_ID", contID);
-					mTab.setValue("Bill_User_ID", contID);
+					order.setAD_User_ID(contID);
+					order.setBill_User_ID(contID);
 				}
 
 				// CreditAvailable
@@ -449,14 +451,16 @@ public class CalloutOrder extends CalloutEngine
 					{
 						double CreditAvailable = rs.getDouble("CreditAvailable");
 						if (!rs.wasNull() && CreditAvailable < 0)
-							mTab.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+						{
+							calloutField.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+						}
 					}
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-					mTab.setValue("POReference", s);
+					order.setPOReference(s);
 				// should not be reset to null if we entered already value!
 				// VHARCQ, accepted YS makes sense that way
 				// TODO: should get checked and removed if no longer needed!
@@ -467,27 +471,24 @@ public class CalloutOrder extends CalloutEngine
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
-					mTab.setValue("Description", s);
+					order.setDescription(s);
 				// IsDiscountPrinted
 				s = rs.getString("IsDiscountPrinted");
-				if (s != null && s.length() != 0)
-					mTab.setValue("IsDiscountPrinted", s);
-				else
-					mTab.setValue("IsDiscountPrinted", "N");
+				order.setIsDiscountPrinted(DisplayType.toBoolean(s));
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
-				final String OrderType = Env.getContext(ctx, WindowNo, "OrderType");
-				mTab.setValue("InvoiceRule", X_C_Order.INVOICERULE_AfterDelivery);
+				final String OrderType = Env.getContext(ctx, windowNo, "OrderType");
+				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
-				mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_OnCredit);
+				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
 				if (OrderType.equals(MOrder.DocSubType_Prepay))
 				{
-					mTab.setValue("InvoiceRule", X_C_Order.INVOICERULE_Immediate);
+					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 					// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				}
 				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
 				{
-					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
+					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 				}
 				else
 				{
@@ -499,31 +500,31 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No Check/Transfer for SO_Trx
 							s = "P"; // Payment Term
-						mTab.setValue("PaymentRule", s);
+						order.setPaymentRule(s);
 					}
 					// Payment Term
 					Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
-						mTab.setValue("C_PaymentTerm_ID", ii);
+						order.setC_PaymentTerm_ID(ii);
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("InvoiceRule", s);
+						order.setInvoiceRule(s);
 					// DeliveryRule
 					s = rs.getString("DeliveryRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue(I_C_Order.COLUMNNAME_DeliveryRule, s);
+						order.setDeliveryRule(s);
 					// FreightCostRule
 					s = rs.getString("FreightCostRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("FreightCostRule", s);
+						order.setFreightCostRule(s);
 					// DeliveryViaRule
 					s = rs.getString("DeliveryViaRule");
 					if (s != null && s.length() != 0)
 					{
 						if (IsSOTrx)  // task: 06914: for purchase orders, we use another C_BPartner column
 						{
-							mTab.setValue(I_C_Order.COLUMNNAME_DeliveryViaRule, s);
+							order.setDeliveryViaRule(s);
 						}
 					}
 
@@ -546,7 +547,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -554,14 +555,14 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartnerBill(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String bPartnerBill(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
-			return "";
-		Integer bill_BPartner_ID = (Integer)value;
-		if (bill_BPartner_ID == null || bill_BPartner_ID == 0)
-			return "";
+			return NO_ERROR;
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final int bill_BPartner_ID = order.getBill_BPartner_ID();
+		if (bill_BPartner_ID <= 0)
+			return NO_ERROR;
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
@@ -592,98 +593,89 @@ public class CalloutOrder extends CalloutEngine
 				// metas end
 				; // #1
 
-		boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+		boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, bill_BPartner_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				// PriceList (indirect: IsTaxIncluded & Currency)
-				Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
+				final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
 				if (!rs.wasNull())
-					mTab.setValue("M_PriceList_ID", ii);
+				{
+					order.setM_PriceList_ID(priceListId);
+				}
 				else
 				{ // get default PriceList
-					int i = Env.getContextAsInt(ctx, "#M_PriceList_ID");
-					if (i != 0)
-						mTab.setValue("M_PriceList_ID", i);
+					int i = Env.getContextAsInt(calloutField.getCtx(), "#M_PriceList_ID");
+					if (i > 0)
+						order.setM_PriceList_ID(i);
 				}
 
 				int bill_Location_ID = rs.getInt("Bill_Location_ID");
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to differnt BP)
-				if (bill_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (bill_BPartner_ID == Env.getContextAsInt(calloutField.getCtx(), calloutField.getWindowNo(), Env.TAB_INFO, "C_BPartner_ID"))
 				{
-					String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
+					String loc = Env.getContext(calloutField.getCtx(), calloutField.getWindowNo(), Env.TAB_INFO, "C_BPartner_Location_ID");
 					if (loc.length() > 0)
 						bill_Location_ID = Integer.parseInt(loc);
 				}
-				if (bill_Location_ID == 0)
-					mTab.setValue("Bill_Location_ID", null);
+				if (bill_Location_ID <= 0)
+					order.setBill_Location_ID(-1);
 				else
-					mTab.setValue("Bill_Location_ID", bill_Location_ID);
+					order.setBill_Location_ID(bill_Location_ID);
 
 				// Contact - overwritten by InfoBP selection
 				int contID = rs.getInt("AD_User_ID");
-				if (bill_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (bill_BPartner_ID == Env.getContextAsInt(calloutField.getCtx(), calloutField.getWindowNo(), Env.TAB_INFO, "C_BPartner_ID"))
 				{
-					String cont = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "AD_User_ID");
+					String cont = Env.getContext(calloutField.getCtx(), calloutField.getWindowNo(), Env.TAB_INFO, "AD_User_ID");
 					if (cont.length() > 0)
 						contID = Integer.parseInt(cont);
 				}
-				if (contID == 0)
-					mTab.setValue("Bill_User_ID", null);
+				if (contID <= 0)
+					order.setBill_User(null);
 				else
-					mTab.setValue("Bill_User_ID", contID);
+					order.setBill_User_ID(contID);
 
 				// CreditAvailable
 				if (IsSOTrx)
 				{
 					if (isChkCreditLimit(rs, false))
 					{
-						double CreditAvailable = rs
-								.getDouble("CreditAvailable");
+						double CreditAvailable = rs.getDouble("CreditAvailable");
 						if (!rs.wasNull() && CreditAvailable < 0)
-							mTab.fireDataStatusEEvent("CreditLimitOver",
-									DisplayType.getNumberFormat(
-											DisplayType.Amount).format(
-													CreditAvailable),
-									false);
+							calloutField.fireDataStatusEEvent("CreditLimitOver",DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
 					}
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-					mTab.setValue("POReference", s);
+					order.setPOReference(s);
 				else
-					mTab.setValue("POReference", null);
+					order.setPOReference(null);
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
-					mTab.setValue("Description", s);
+					order.setDescription(s);
 				// IsDiscountPrinted
-				s = rs.getString("IsDiscountPrinted");
-				if (s != null && s.length() != 0)
-					mTab.setValue("IsDiscountPrinted", s);
-				else
-					mTab.setValue("IsDiscountPrinted", "N");
+				order.setIsDiscountPrinted(DisplayType.toBoolean(rs.getString("IsDiscountPrinted")));
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
-				String OrderType = Env.getContext(ctx, WindowNo, "OrderType");
-				mTab.setValue("InvoiceRule",
-						X_C_Order.INVOICERULE_AfterDelivery);
-				mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_OnCredit);
+				String OrderType = order.getOrderType();
+				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
 				if (OrderType.equals(MOrder.DocSubType_Prepay))
-					mTab.setValue("InvoiceRule",
-							X_C_Order.INVOICERULE_Immediate);
+					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
-					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
+					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 				else
 				{
 					// PaymentRule
@@ -692,21 +684,18 @@ public class CalloutOrder extends CalloutEngine
 					{
 						if (s.equals("B"))  // No Cache in Non POS
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No
-							// Check/Transfer
-							// for
-							// SO_Trx
+						if (IsSOTrx && (s.equals("S") || s.equals("U"))) // No
 							s = "P"; // Payment Term
-						mTab.setValue("PaymentRule", s);
+						order.setPaymentRule(s);
 					}
 					// Payment Term
-					ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
+					final int paymentTermId = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
-						mTab.setValue("C_PaymentTerm_ID", ii);
+						order.setC_PaymentTerm_ID(paymentTermId);
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("InvoiceRule", s);
+						order.setInvoiceRule(s);
 				}
 			}
 		}
@@ -726,7 +715,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header - PriceList. (used also in Invoice) - C_Currency_ID - IsTaxIncluded Window Context: - EnforcePriceLimit - StdPrecision - M_PriceList_Version_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -755,7 +744,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/*************************************************************************
 	 * Order Line - Product. - reset C_Charge_ID / M_AttributeSetInstance_ID - PriceList, PriceStd, PriceLimit, C_Currency_ID, EnforcePriceLimit - UOM Calls Tax
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -871,7 +860,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Charge. - updates PriceActual from Charge - sets PriceLimit, PriceList to zero Calles tax
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -936,7 +925,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Tax. - basis: Product, Charge, BPartner Location - sets C_Tax_ID Calles Amount
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1034,7 +1023,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Amount. - called from QtyOrdered, Discount and PriceActual - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1196,7 +1185,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1393,7 +1382,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link CustomColNames#C_OrderLine_IS_INDIVIDUAL_DESCRIPTION}. If Both are set and isIndividualDescription is true the
 	 * product's description is copied into the order line's {@link CustomColNames#C_OrderLine_PRODUCT_DESC} field.
-	 * 
+	 *
 	 * @param mTab
 	 */
 	private void handleIndividualDescription(final Properties ctx, final GridTab mTab)
@@ -1420,7 +1409,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Decides (using the given <code>rs</code> whether the business partner's credit limit should be checked.
-	 * 
+	 *
 	 * @param rs the result set contains the data sued fpr the decision
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return

@@ -63,12 +63,12 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 		{
 			final LogicTuple tuple = (LogicTuple)expr;
 
-			final String firstEval = getValue(tuple.getOperand1(), tuple.isParameter1(), params, onVariableNotFound);
+			final String firstEval = getValue(tuple.getOperand1(), params, onVariableNotFound);
 			if (firstEval == VALUE_NotFound)
 			{
 				return null;
 			}
-			final String secondEval = getValue(tuple.getOperand2(), tuple.isParameter2(), params, onVariableNotFound);
+			final String secondEval = getValue(tuple.getOperand2(), params, onVariableNotFound);
 			if (secondEval == VALUE_NotFound)
 			{
 				return null;
@@ -132,30 +132,26 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 	/**
 	 * Gets parameter value from context
 	 * 
-	 * @param parameterName
-	 * @param isParameter
+	 * @param operand
 	 * @param source
 	 * @param onVariableNotFound
 	 * @return value or {@link #VALUE_NotFound}
 	 */
-	private final String getValue(final String parameterName,
-			final boolean isParameter,
-			final Evaluatee source,
-			final OnVariableNotFound onVariableNotFound)
+	private final String getValue(final Object operand, final Evaluatee source, final OnVariableNotFound onVariableNotFound)
 	{
 		String value;
 
 		//
 		// Case: we deal with with a parameter (which we will need to get it from context/source)
-		if (isParameter)
+		if (operand instanceof CtxName)
 		{
-			final CtxName name = CtxName.parse(parameterName);
-			value = name.getValueAsString(source);
-			final boolean valueNotFound = Env.isPropertyValueNull(parameterName, value);
+			final CtxName ctxName = (CtxName)operand;
+			value = ctxName.getValueAsString(source);
+			final boolean valueNotFound = Env.isPropertyValueNull(ctxName.getName(), value);
 			
 			// Give it another try in case it's and ID (backward compatibility)
 			// Handling of ID compare (null => 0)
-			if (valueNotFound && Env.isNumericPropertyName(parameterName))
+			if (valueNotFound && Env.isNumericPropertyName(ctxName.getName()))
 			{
 				return "0";
 			}
@@ -168,7 +164,7 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 				}
 				else if (onVariableNotFound == OnVariableNotFound.Fail)
 				{
-					throw new ExpressionEvaluationException("Parameter '" + name.getName() + "' not found int context"
+					throw new ExpressionEvaluationException("Parameter '" + ctxName.getName() + "' not found int context"
 							+ "\n Context: " + source
 							+ "\n Evaluator: " + this);
 				}
@@ -182,7 +178,7 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 		// Case: we deal with a constant value
 		else
 		{
-			value = parameterName;
+			value = operand.toString();
 			// we can trim whitespaces in this case; if user really wants to have spaces at the beginning/ending of the
 			// string, he/she shall quote it
 			value = value.trim();

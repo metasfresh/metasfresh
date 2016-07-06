@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -172,9 +173,6 @@ public final class Env
 			session.logout();
 		//
 		reset(true);	// final cache reset
-		//
-
-		CConnection.get().setAppServerCredential(null, null);
 	}
 
 	/**
@@ -262,6 +260,7 @@ public final class Env
 	public static final int TAB_INFO = 1113;
 
 	public static final String CTXNAME_AD_Client_ID = "#AD_Client_ID";
+	public static final String CTXNAME_AD_Client_Name = "#AD_Client_Name";
 	public static final int CTXVALUE_AD_Client_ID_System = IClientDAO.SYSTEM_CLIENT_ID;
 
 	public static final String CTXNAME_AD_Org_ID = "#AD_Org_ID";
@@ -291,6 +290,7 @@ public final class Env
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
 	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
+	public static final int CTXVALUE_AD_User_ID_System = 0;
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
@@ -306,6 +306,7 @@ public final class Env
 	public static final String CTXNAME_WindowName = "WindowName";
 	public static final String CTXNAME_Printer = "#Printer";
 	public static final String CTXNAME_ShowAcct = "#ShowAcct";
+	public static final String CTXNAME_AcctSchemaElementPrefix = "$Element_";
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
@@ -1420,13 +1421,12 @@ public final class Env
 	/**
 	 * Verify Language. Check that language is supported by the system
 	 *
-	 * @param ctx might be updated with new AD_Language
 	 * @param language language
 	 */
-	public static void verifyLanguage(final Properties ctx, final Language language)
+	public static void verifyLanguage(final Language language)
 	{
 		// metas: method changed for Global Language Support
-		ArrayList<String> AD_Languages = new ArrayList<String>();
+		final List<String> AD_Languages = new ArrayList<String>();
 		String sql = "SELECT "
 				+ " " + I_AD_Language.COLUMNNAME_AD_Language
 				+ " FROM " + I_AD_Language.Table_Name
@@ -1833,17 +1833,17 @@ public final class Env
 			return null;
 		}
 
-		JFrame retValue = null;
 		try
 		{
-			retValue = getFrame(s_windows.get(WindowNo));
+			return getFrame(s_windows.get(WindowNo));
 		}
 		catch (Exception e)
 		{
-			s_log.error(e.toString());
+			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
 		}
-		return retValue;
-	}	// getWindow
+		
+		return null;
+	}
 
 	/**
 	 * Remove window from active list
@@ -2611,6 +2611,16 @@ public final class Env
 	public static Adempiere getSingleAdempiereInstance()
 	{
 		return Adempiere.instance;
+	}
+	
+	/**
+	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
+	 * 
+	 * @param bean
+	 */
+	public static void autowireBean(final Object bean)
+	{
+		Adempiere.getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
 	/**

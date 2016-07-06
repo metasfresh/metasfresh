@@ -24,8 +24,6 @@ package de.metas.handlingunits.pricing.spi.impl;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,10 +31,13 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
+import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
 
 import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
 import de.metas.handlingunits.pricing.IHUPricingBL;
+import de.metas.logging.LogManager;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IAttributePricingDAO;
 import de.metas.pricing.attributebased.impl.AttributePricing;
@@ -96,7 +97,7 @@ public class HUPricing extends AttributePricing
 // @formatter:off
 //		if (attributeSetInstanceId <= 0)
 //		{
-//			logger.info("No ASI found: {}", pricingCtx);
+//			logger.debug("No ASI found: {}", pricingCtx);
 //			return Optional.absent();
 //		}
 // @formatter:on
@@ -105,7 +106,7 @@ public class HUPricing extends AttributePricing
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv == null)
 		{
-			logger.info("No price list version found: {}", pricingCtx);
+			logger.debug("No price list version found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
@@ -124,7 +125,7 @@ public class HUPricing extends AttributePricing
 				trxName);
 		if (null == productPriceAttribute || productPriceAttribute.getM_ProductPrice_Attribute_ID() <= 0)
 		{
-			logger.info("No product attribute pricing found: {}", pricingCtx);
+			logger.debug("No product attribute pricing found: {}", pricingCtx);
 			return Optional.absent(); // no matching
 		}
 

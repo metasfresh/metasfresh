@@ -21,8 +21,6 @@ import java.io.InvalidClassException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -40,15 +38,15 @@ import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
 import org.compiere.wf.MWFProcess;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -97,7 +95,7 @@ public class ProcessCtl implements Runnable
 			pi.setThrowable(e); // 03152
 			pi.setSummary(e.getLocalizedMessage());
 			pi.setError(true);
-			log.warn(pi.toString());
+			log.warn(pi.toString(), e);
 			return null;
 		}
 		catch (Error e)
@@ -117,7 +115,8 @@ public class ProcessCtl implements Runnable
 		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
 		// Get Parameters (Dialog)
-		ProcessParameter para = new ProcessParameter(Env.getFrame((Container)parent), WindowNo, pi);
+		final Container parentContainer = (parent instanceof Container) ? (Container)parent : null;
+		ProcessParameter para = new ProcessParameter(Env.getFrame(parentContainer), WindowNo, pi);
 		if (para.initDialog())
 		{
 			para.setVisible(true);

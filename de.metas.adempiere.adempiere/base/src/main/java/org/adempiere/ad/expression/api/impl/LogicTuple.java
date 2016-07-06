@@ -23,24 +23,30 @@ package org.adempiere.ad.expression.api.impl;
  */
 
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
+
+import com.google.common.collect.ImmutableList;
 
 /* package */class LogicTuple extends AbstractLogicExpression
 {
 	private final String expressionStr;
 
-	private final String operand1;
+	private final Object operand1;
 	private final boolean isParameter1;
 
-	private final String operand2;
+	private final Object operand2;
 	private final boolean isParameter2;
 
 	private final String operator;
 
-	public LogicTuple(String operand1, String operator, String operand2)
+	private ImmutableList<String> _parameters;
+
+	public LogicTuple(final String operand1, final String operator, final String operand2)
 	{
 		super();
 
@@ -50,9 +56,9 @@ import org.adempiere.util.Check;
 
 		expressionStr = operand1 + operator + operand2;
 		this.operator = operator;
-		if (operand1.indexOf('@') != -1)
+		if (operand1.indexOf(CtxName.NAME_Marker) != -1)
 		{
-			this.operand1 = operand1.replace('@', ' ').trim();
+			this.operand1 = CtxName.parseWithMarkers(operand1);
 			isParameter1 = true;
 		}
 		else
@@ -60,9 +66,9 @@ import org.adempiere.util.Check;
 			this.operand1 = operand1;
 			isParameter1 = false;
 		}
-		if (operand2.indexOf('@') != -1)
+		if (operand2.indexOf(CtxName.NAME_Marker) != -1)
 		{
-			this.operand2 = operand2.replace('@', ' ').trim();
+			this.operand2 = CtxName.parseWithMarkers(operand2);
 			isParameter2 = true;
 		}
 		else
@@ -150,24 +156,30 @@ import org.adempiere.util.Check;
 	@Override
 	public List<String> getParameters()
 	{
-		List<String> result = new ArrayList<String>();
-		if (isParameter1)
+		if (_parameters == null)
 		{
-			result.add(operand1);
+			final Set<String> result = new HashSet<String>();
+			if (operand1 instanceof CtxName)
+			{
+				result.add(((CtxName)operand1).getName());
+			}
+			if (operand2 instanceof CtxName)
+			{
+				result.add(((CtxName)operand2).getName());
+			}
+			_parameters = ImmutableList.copyOf(result);
 		}
-		if (isParameter2 && !result.contains(operand2))
-		{
-			result.add(operand2);
-		}
-		return result;
+		return _parameters;
 	}
 
-	public String getOperand1()
+	/** @return {@link CtxName} or {@link String} */
+	public Object getOperand1()
 	{
 		return operand1;
 	}
 
-	public String getOperand2()
+	/** @return {@link CtxName} or {@link String} */
+	public Object getOperand2()
 	{
 		return operand2;
 	}

@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.wrapper.GridTabModelInternalAccessor;
+import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.GridField;
@@ -48,7 +49,7 @@ import com.google.common.base.Suppliers;
  * 
  * @author Teo Sarca, www.arhipac.ro
  */
-public class GridTabWrapper implements InvocationHandler
+public class GridTabWrapper implements InvocationHandler, IInterfaceWrapper
 {
 	private static final Logger log = LogManager.getLogger(GridTabWrapper.class);
 
@@ -70,8 +71,11 @@ public class GridTabWrapper implements InvocationHandler
 	 * <li><code>null</code> if we shall preserve model's "old values" flag
 	 * </ul>
 	 * @return wrapped model or null
+	 * 
+	 * @deprecated Please don't call it directly
 	 */
-	/* package */static <T> T create(final Object model, final Class<T> cl, final Boolean useOldValues)
+	@Deprecated
+	public static <T> T create(final Object model, final Class<T> cl, final Boolean useOldValues)
 	{
 		if (model == null)
 		{

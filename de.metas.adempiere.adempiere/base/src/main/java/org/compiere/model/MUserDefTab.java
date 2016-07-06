@@ -96,7 +96,7 @@ public class MUserDefTab extends X_AD_UserDef_Tab
 			vo.Help = getHelp();
 		//
 		vo.IsSingleRow = this.isSingleRow();
-		vo.IsReadOnly = this.isReadOnly(); 
+		vo.setReadOnly(this.isReadOnly()); 
 //		vo.IsDeleteable
 //		vo.IsHighVolume
 //		vo.IsInsertRecord

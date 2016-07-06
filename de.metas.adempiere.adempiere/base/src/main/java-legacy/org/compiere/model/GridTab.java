@@ -169,7 +169,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		//
 		// Create MTable
 		m_mTable = new GridTable(m_vo.getCtx(), m_vo.AD_Table_ID, m_vo.TableName, m_vo.WindowNo, m_vo.TabNo, true, virtual);
-		m_mTable.setReadOnly(m_vo.IsReadOnly || m_vo.IsView);
+		m_mTable.setReadOnly(m_vo.isReadOnly() || m_vo.IsView);
 		m_mTable.setDeleteable(m_vo.IsDeleteable);
 		m_mTable.setGridTab(this); // metas-2009_0021_AP1_G140
 
@@ -401,11 +401,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		}
 		m_Chats = null;
 		//
-		if (m_vo.isInitFields())
-		{
-			m_vo.getFields().clear();
-		}
-		// m_vo.Fields = null;
+		m_vo.clearFields();
+		
 		m_vo = null;
 		if (m_loader != null)
 		{
@@ -427,7 +424,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	{
 		log.debug("#" + m_vo.TabNo);
 
-		if (m_vo.getFields() == null)
+		if (m_vo.getFields().isEmpty())
 		{
 			return false;
 		}
@@ -1813,7 +1810,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public boolean isPrinted()
 	{
-		return m_vo.AD_Process_ID != 0;
+		return m_vo.getPrint_Process_ID() > 0;
 	}	// isPrinted
 
 	/**
@@ -1843,7 +1840,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public int getAD_Process_ID()
 	{
-		return m_vo.AD_Process_ID;
+		return m_vo.getPrint_Process_ID();
 	}	// getAD_Process_ID
 
 	/**
@@ -1863,7 +1860,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public boolean isReadOnly()
 	{
-		if (m_vo.IsReadOnly)
+		if (m_vo.isReadOnly())
 		{
 			return true;
 		}

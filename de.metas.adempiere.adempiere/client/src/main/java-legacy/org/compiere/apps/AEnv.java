@@ -35,8 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -69,14 +67,16 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Splash;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -1054,17 +1054,17 @@ public final class AEnv
 		}	// from Client
 
 		// Check (remote) context
-		if (!mWindowVO.ctx.equals(Env.getCtx()))
+		if (!mWindowVO.getCtx().equals(Env.getCtx()))
 		{
 			// Remote Context is called by value, not reference
 			// Add Window properties to context
-			final Enumeration<?> keyEnum = mWindowVO.ctx.keys();
+			final Enumeration<?> keyEnum = mWindowVO.getCtx().keys();
 			while (keyEnum.hasMoreElements())
 			{
 				final String key = (String)keyEnum.nextElement();
 				if (key.startsWith(WindowNo + "|"))
 				{
-					final String value = mWindowVO.ctx.getProperty(key);
+					final String value = mWindowVO.getCtx().getProperty(key);
 					Env.setContext(Env.getCtx(), key, value);
 				}
 			}

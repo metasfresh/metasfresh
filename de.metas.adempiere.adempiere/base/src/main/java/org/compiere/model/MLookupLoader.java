@@ -146,7 +146,7 @@ import org.compiere.util.Util.ArrayKey;
 			final int rows = values.size();
 			if (rows >= MLookup.MAX_ROWS)
 			{
-				final String errmsg = lookupInfo.KeyColumn + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
+				final String errmsg = lookupInfo.getKeyColumnFQ() + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
 						+ "\n Fetched Rows: " + rows
 						+ "\n Max rows allowed: " + MLookup.MAX_ROWS;
 				log.warn(errmsg);

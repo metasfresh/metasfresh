@@ -39,6 +39,11 @@ import org.compiere.util.NamePair;
 public final class NullValidationRule implements IValidationRule
 {
 	public static final NullValidationRule instance = new NullValidationRule();
+	
+	public static final boolean isNull(final IValidationRule rule)
+	{
+		return rule == null || rule == instance;
+	}
 
 	private NullValidationRule()
 	{

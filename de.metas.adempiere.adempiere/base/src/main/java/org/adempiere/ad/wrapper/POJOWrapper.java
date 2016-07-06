@@ -62,7 +62,7 @@ import org.compiere.util.Evaluatee2;
  * @author tsa
  *
  */
-public class POJOWrapper implements InvocationHandler
+public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 {
 	private static final transient Logger log = LogManager.getLogger(POJOWrapper.class);
 

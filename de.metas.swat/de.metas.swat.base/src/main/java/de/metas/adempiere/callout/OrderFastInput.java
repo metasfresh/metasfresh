@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -84,24 +85,27 @@ public class OrderFastInput extends CalloutEngine
 		handlers.addHandler(handler);
 	}
 
-	public String cBPartnerId(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String cBPartnerId(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
 		{
 			return "";
 		}
+		
+		final Properties ctx = calloutField.getCtx();
+		final int WindowNo = calloutField.getWindowNo();
 		if (!Env.isSOTrx(ctx, WindowNo))
 		{
 			return "";
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
-
-		if (value != null || mField.getValue() != null)
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final Object value = calloutField.getValue();
+		//if (value != null || mField.getValue() != null)
+		if (value != null)
 		{
-			if (setShipperId(ctx, mTab, true) && !Check.isEmpty(order.getReceivedVia()) && mTab.dataSave(false))
+			final GridTab mTab = getGridTab(calloutField);
+			if (setShipperId(calloutField, true) && !Check.isEmpty(order.getReceivedVia()) && mTab.dataSave(false))
 			{
 				// final GridField productField =
 				// mTab.getField(CustomColNames.C_Order_M_PRODUCT_ID);
@@ -112,7 +116,7 @@ public class OrderFastInput extends CalloutEngine
 				// mTab.fireStateChangeEvent
 			}
 		}
-		selectFocus(mTab);
+		selectFocus(calloutField);
 		return "";
 	}
 
@@ -132,9 +136,9 @@ public class OrderFastInput extends CalloutEngine
 		return "";
 	}
 
-	private boolean setShipperId(final Properties ctx, final GridTab mTab, final boolean force)
+	private boolean setShipperId(final ICalloutField calloutField, final boolean force)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		if (!force && order.getM_Shipper_ID() > 0)
 		{
@@ -154,33 +158,33 @@ public class OrderFastInput extends CalloutEngine
 		return false;
 	}
 
-	public String mProduct(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value)
+	public String mProduct(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
 		{
 			return "";
 		}
 
-		final String msg = evalProductQtyInput(ctx, WindowNo, mTab);
-		selectFocus(mTab);
+		final String msg = evalProductQtyInput(calloutField);
+		selectFocus(calloutField);
 		return msg;
 	}
 
-	public String qtyFastInput(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value)
+	public String qtyFastInput(final ICalloutField calloutField)
 	{
-		final String msg = evalProductQtyInput(ctx, WindowNo, mTab);
-		selectFocus(mTab);
+		final String msg = evalProductQtyInput(calloutField);
+		selectFocus(calloutField);
 		return msg;
 	}
 
-	private IInfoWindowGridRowBuilders getOrderLineBuilders(final Properties ctx, final int windowNo, final GridTab gridTab)
+	private IInfoWindowGridRowBuilders getOrderLineBuilders(final ICalloutField calloutField)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		//
 		// First try: check if we already have builders from recently opened Info window
+		final Properties ctx = calloutField.getCtx();
+		final int windowNo = calloutField.getWindowNo();
 		final IInfoWindowGridRowBuilders builders = InfoWindowGridRowBuilders.getFromContextOrNull(ctx, windowNo);
 		if (builders != null)
 		{
@@ -198,6 +202,7 @@ public class OrderFastInput extends CalloutEngine
 		}
 
 		final InfoWindowGridRowBuilders singletonBuilder = new InfoWindowGridRowBuilders();
+		final GridTab gridTab = getGridTab(calloutField);
 		final IGridTabRowBuilder builder = handlers.createLineBuilderFromHeader(gridTab);
 		builder.setSource(order);
 		singletonBuilder.addGridTabRowBuilder(productId, builder);
@@ -207,11 +212,11 @@ public class OrderFastInput extends CalloutEngine
 		return singletonBuilder;
 	}
 
-	public String evalProductQtyInput(final Properties ctx, final int WindowNo, final GridTab mTab)
+	public String evalProductQtyInput(final ICalloutField calloutField)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
-		final IInfoWindowGridRowBuilders orderLineBuilders = getOrderLineBuilders(ctx, WindowNo, mTab);
+		final IInfoWindowGridRowBuilders orderLineBuilders = getOrderLineBuilders(calloutField);
 		final Set<Integer> recordIds = orderLineBuilders.getRecordIds();
 		if (recordIds.isEmpty())
 		{
@@ -226,46 +231,41 @@ public class OrderFastInput extends CalloutEngine
 		// are most probably in the mid of something that might prevent
 		// changes to the actual swing component
 		final boolean saveRecord = true;
-		clearFieldsLater(WindowNo, mTab, saveRecord);
+		clearFieldsLater(calloutField, saveRecord);
 
 		for (final int recordId : recordIds)
 		{
 			final IGridTabRowBuilder builder = orderLineBuilders.getGridTabRowBuilder(recordId);
 			log.info("Calling addOrderLine for recordId=" + recordId + " and with builder=" + builder);
 
-			addOrderLine(ctx, WindowNo, order, builder);
+			addOrderLine(calloutField.getCtx(), order, builder);
 		}
-		mTab.dataRefreshRecursively();
+		getGridTab(calloutField).dataRefreshRecursively();
 
 		// make sure that the freight amount is up to date
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final boolean fixPrice = X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule());
 		if (!fixPrice)
 		{
-			orderBL.updateFreightAmt(ctx, order, ITrx.TRXNAME_None);
+			orderBL.updateFreightAmt(calloutField.getCtx(), order, ITrx.TRXNAME_None);
 		}
 
 		return NO_ERROR;
 	}
 
-	private void clearFieldsLater(final int WindowNo, 
-			final GridTab mTab, 
-			final boolean save)
+	private void clearFieldsLater(final ICalloutField calloutField, final boolean save)
 	{
-		Services.get(IClientUI.class).invokeLater(WindowNo, new Runnable()
+		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				clearFields(mTab, save);
+				clearFields(calloutField, save);
 			}
 		});
 	}
 
-	private boolean addOrderLine(final Properties ctx,
-			final int windowNo,
-			final I_C_Order order,
-			final IGridTabRowBuilder builder)
+	private boolean addOrderLine(final Properties ctx, final I_C_Order order, final IGridTabRowBuilder builder)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
@@ -364,11 +364,12 @@ public class OrderFastInput extends CalloutEngine
 		}
 	}
 
-	private void selectFocus(final GridTab mTab)
+	private void selectFocus(final ICalloutField calloutField)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		final Integer bPartnerId = order.getC_BPartner_ID();
+		final GridTab mTab = getGridTab(calloutField);
 		if (bPartnerId <= 0 && mTab.getField(COLUMNNAME_C_BPartner_ID).isDisplayed(true))
 		{
 			mTab.getField(COLUMNNAME_C_BPartner_ID).requestFocus();
@@ -394,13 +395,31 @@ public class OrderFastInput extends CalloutEngine
 		handlers.requestFocus(mTab);
 	}
 
-	public static void clearFields(final GridTab gridTab,
-			final boolean save)
+	public static void clearFields(final ICalloutField calloutField, final boolean save)
+	{
+		final GridTab gridTab = getGridTab(calloutField);
+		clearFields(gridTab, save);
+	}
+
+	@Deprecated
+	public static void clearFields(final GridTab gridTab, final boolean save)
 	{
 		handlers.clearFields(gridTab);
 		if (save)
 		{
 			gridTab.dataSave(true);
 		}
+	}
+
+	@Deprecated
+	private final static GridTab getGridTab(final ICalloutField calloutField)
+	{
+		if (calloutField instanceof GridField)
+		{
+			final GridField gridField = (GridField)calloutField;
+			return gridField.getGridTab();
+		}
+		
+		return null;
 	}
 }

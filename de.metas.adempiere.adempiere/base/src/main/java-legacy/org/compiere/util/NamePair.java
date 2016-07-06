@@ -19,6 +19,8 @@ package org.compiere.util;
 import java.io.Serializable;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *  Name Pair Interface
  *
@@ -56,6 +58,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	 *  Returns display value
 	 *  @return name
 	 */
+	@JsonProperty("n")
 	public final String getName()
 	{
 		return m_name;

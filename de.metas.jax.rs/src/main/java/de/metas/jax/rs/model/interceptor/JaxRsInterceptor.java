@@ -10,8 +10,10 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import de.metas.jax.rs.IJaxRsBL;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -37,6 +39,8 @@ import de.metas.jax.rs.IJaxRsBL;
 
 public class JaxRsInterceptor extends AbstractModuleInterceptor
 {
+	private static final Logger logger = LogManager.getLogger(JaxRsInterceptor.class);
+
 
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
@@ -44,14 +48,17 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
-		if (Ini.getRunMode() == RunMode.BACKEND || CConnection.isServerEmbedded())
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
+		if (serverMode || CConnection.isServerEmbedded())
 		{
 			// in embedded mode, we assume that a local JMS broker was already started by this module's AddOnn implementation.
+			logger.info("Creating JAX-RS server endpoints");
 			jaxRsBL.createServerEndPoints();
 		}
 
-		if (Ini.getRunMode() != RunMode.BACKEND)
+		if (!serverMode)
 		{
+			logger.info("Creating JAX-RS client endpoints");
 			jaxRsBL.createClientEndPoints(ctx);
 		}
 	}
