@@ -16,6 +16,14 @@ Her come the actual release notes:
 
 ## Fixes
 
+# metasfresh 4.25.24a (2016-27a)
+
+## Features
+ - #162 FRESH-499 modernize the server's index.html
+
+## Fixes
+ - #147 FRESH-484 Error creating manual DD_Order
+
 # metasfresh 4.25.24 (2016-27)
 
 ## Features
