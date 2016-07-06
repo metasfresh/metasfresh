@@ -49,11 +49,7 @@ prepare()
 	check_vars_server
 	check_rollout_user
 
-	check_dir_exists $JAVA_HOME
-	
 	check_java_version
-	
-	export JAVA_HOME=$JAVA_HOME
 	
 	check_file_exists ~/local_settings.properties
 	
