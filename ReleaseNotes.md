@@ -16,6 +16,16 @@ Her come the actual release notes:
 
 ## Fixes
 
+# metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
+
+## Features
+ - #162 FRESH-499 modernize the server's index.html
+ - #139 FRESH-475 Check for java8 in the rollout-scripts
+
+## Fixes
+ - #147 FRESH-484 Error creating manual DD_Order
+ - #148 FRESH-485 de.metas.async.api.<WP-Name>.AD_User_InCharge_ID can't be overriden on org level
+
 # metasfresh 4.25.24 (2016-27)
 
 ## Features
