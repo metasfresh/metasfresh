@@ -56,7 +56,7 @@ import de.metas.product.IProductPA;
  * Lieferadressen nur die Adressen angezeigt, die auch als solche in der Location ausgewiesen sind. Ebenso bei den Rechnungsadressen.
  * <li>Contains proposed <a
  * href="https://sourceforge.net/tracker/index.php?func=detail&aid=1883543&group_id=176962&atid=879332" >BF_1883543</a></li>
- * 
+ *
  * @author Jorg Janke
  * @author Mark Ostermann
  */
@@ -75,7 +75,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header Change - DocType. - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -85,10 +85,6 @@ public class CalloutOrder extends CalloutEngine
 	 */
 	public String docType(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 	{
-		// FIXME !!
-		// 05291
-		final boolean dataCopy = mTab.isDataNewCopy();
-
 		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
@@ -163,7 +159,7 @@ public class CalloutOrder extends CalloutEngine
 			order.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
 
-		
+
 		//
 		// When BPartner is changed, the Rules are not set if
 		// it is a POS or Credit Order (i.e. defaults from Standard
@@ -181,7 +177,7 @@ public class CalloutOrder extends CalloutEngine
 			if(bpartner != null && bpartner.getC_BPartner_ID() > 0)
 			{
 				final boolean IsSOTrx = documentNoInfo.isSOTrx();
-				
+
 				// PaymentRule
 				{
 					String paymentRule = IsSOTrx ? bpartner.getPaymentRule() : bpartner.getPaymentRulePO();
@@ -205,7 +201,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setPaymentRule(paymentRule);
 					}
 				}
-				
+
 				// Payment Term
 				{
 					final int paymentTermId = IsSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID();
@@ -214,7 +210,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId);
 					}
 				}
-				
+
 				// InvoiceRule
 				{
 					final String invoiceRule = bpartner.getInvoiceRule();
@@ -223,7 +219,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setInvoiceRule(invoiceRule);
 					}
 				}
-				
+
 				// DeliveryRule
 				{
 					final String deliveryRule = bpartner.getDeliveryRule();
@@ -232,7 +228,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setDeliveryRule(deliveryRule);
 					}
 				}
-				
+
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
@@ -241,7 +237,7 @@ public class CalloutOrder extends CalloutEngine
 						order.setFreightCostRule(freightCostRule);
 					}
 				}
-				
+
 				// DeliveryViaRule
 				{
 					final String deliveryViaRule = bpartner.getDeliveryViaRule();
@@ -252,7 +248,7 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		
+
 		//
 		return NO_ERROR;
 	}
@@ -260,7 +256,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -271,7 +267,7 @@ public class CalloutOrder extends CalloutEngine
 	public String bPartnerLocation(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
 		// FIXME !!!
-		
+
 		// 05291: In case current record is on dataNew phase with Copy option set
 		// then just don't update the Bill fields but let them copy from original record
 		if (mTab.isDataNewCopy())
@@ -309,7 +305,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -327,7 +323,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		final boolean IsSOTrx = order.isSOTrx();
 		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
-		
+
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
 
@@ -551,7 +547,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -719,7 +715,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header - PriceList. (used also in Invoice) - C_Currency_ID - IsTaxIncluded Window Context: - EnforcePriceLimit - StdPrecision - M_PriceList_Version_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -748,7 +744,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/*************************************************************************
 	 * Order Line - Product. - reset C_Charge_ID / M_AttributeSetInstance_ID - PriceList, PriceStd, PriceLimit, C_Currency_ID, EnforcePriceLimit - UOM Calls Tax
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -864,7 +860,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Charge. - updates PriceActual from Charge - sets PriceLimit, PriceList to zero Calles tax
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -929,7 +925,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Tax. - basis: Product, Charge, BPartner Location - sets C_Tax_ID Calles Amount
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1027,7 +1023,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Amount. - called from QtyOrdered, Discount and PriceActual - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1189,7 +1185,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo current Window No
 	 * @param mTab Grid Tab
@@ -1386,7 +1382,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link CustomColNames#C_OrderLine_IS_INDIVIDUAL_DESCRIPTION}. If Both are set and isIndividualDescription is true the
 	 * product's description is copied into the order line's {@link CustomColNames#C_OrderLine_PRODUCT_DESC} field.
-	 * 
+	 *
 	 * @param mTab
 	 */
 	private void handleIndividualDescription(final Properties ctx, final GridTab mTab)
@@ -1413,7 +1409,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Decides (using the given <code>rs</code> whether the business partner's credit limit should be checked.
-	 * 
+	 *
 	 * @param rs the result set contains the data sued fpr the decision
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return
