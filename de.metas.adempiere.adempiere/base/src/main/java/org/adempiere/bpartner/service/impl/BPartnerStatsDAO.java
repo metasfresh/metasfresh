@@ -309,9 +309,14 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	private I_C_BPartner_Stats getC_BPartner_Stats(final IBPartnerStats bpStats)
 	{
-		BPartnerStats bpStatsInstance = (BPartnerStats)bpStats;
+		final BPartnerStats bpStatsInstance;
+		
+		if (InterfaceWrapperHelper.isInstanceOf(bpStats, BPartnerStats.class))
+		{
+			bpStatsInstance = (BPartnerStats)bpStats;
+		}
 
-		if (bpStatsInstance == null)
+		else
 		{
 			// in case there is another implementation of IBPartnerStats, create a new BPartnerStats instance
 
