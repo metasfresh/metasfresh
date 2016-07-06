@@ -26,12 +26,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 
 import com.google.common.base.MoreObjects;
 
@@ -139,19 +138,20 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
+		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final List<I_C_BPartner> bpartners = queueDAO.retrieveItems(workpackage, I_C_BPartner.class, localTrxName);
 
 		for (final I_C_BPartner bpartner : bpartners)
 		{
-			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 
-			bpartnerStatsBL.updateTotalOpenBalance(stats);
-			bpartnerStatsBL.updateActualLifeTimeValue(stats);
-			bpartnerStatsBL.updateSOCreditUsed(stats);
-			bpartnerStatsBL.updateSOCreditStatus(stats);
+			bpartnerStatsDAO.updateTotalOpenBalance(stats);
+			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
+			bpartnerStatsDAO.updateSOCreditUsed(stats);
+			bpartnerStatsDAO.updateSOCreditStatus(stats);
 
 		}
 
