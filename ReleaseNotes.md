@@ -20,6 +20,7 @@ Her come the actual release notes:
 
 ## Fixes
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+ - #151 FRESH-491 When creating a new organization, don't create org access for System role
 
 # metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
 
