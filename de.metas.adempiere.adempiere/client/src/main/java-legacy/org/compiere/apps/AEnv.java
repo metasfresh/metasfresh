@@ -35,8 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -69,14 +67,16 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Splash;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -626,23 +626,33 @@ public final class AEnv
 		int AD_Window_ID = 0;
 		int PO_Window_ID = 0;
 		final String sql = "SELECT TableName, AD_Window_ID, PO_Window_ID FROM AD_Table WHERE AD_Table_ID=?";
+		
+		ResultSet rs = null;
+		PreparedStatement pstmt = null;
 		try
 		{
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
+			
+			rs = pstmt.executeQuery();
+			
 			if (rs.next())
 			{
 				TableName = rs.getString(1);
 				AD_Window_ID = rs.getInt(2);
 				PO_Window_ID = rs.getInt(3);
 			}
-			rs.close();
-			pstmt.close();
+			
 		}
 		catch (final SQLException e)
 		{
 			log.error(sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		zoom(TableName, Record_ID, AD_Window_ID, PO_Window_ID);
