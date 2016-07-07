@@ -12,7 +12,6 @@
 
 	<groupId>de.metas.rfq</groupId>
 	<artifactId>de.metas.rfq</artifactId>
-	<version>3-development-SNAPSHOT</version>
 
 	<properties>
 		<migration-sql-basedir>43-de.metas.rfq</migration-sql-basedir>
