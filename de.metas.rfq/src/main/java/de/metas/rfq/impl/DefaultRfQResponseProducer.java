@@ -64,7 +64,7 @@ import de.metas.rfq.model.X_C_RfQResponse;
 /**
  * Default {@link IRfQResponse} producer.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class DefaultRfQResponseProducer implements IRfQResponseProducer

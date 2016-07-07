@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.notification.process;
+package de.metas.email.process;
 
 /*
  * #%L
@@ -40,7 +40,8 @@ import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 
 /**
- * @author tsa
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class EMailConfigTest extends SvrProcess

@@ -1,4 +1,4 @@
-package de.metas.notification.process;
+package de.metas.email.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,8 +34,8 @@ import de.metas.process.Param;
 
 /**
  * Test the {@link I_R_MailText}.
- * 
- * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class R_MailText_Test extends SvrProcess

@@ -39,7 +39,7 @@ import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
 
-import de.metas.email.EMailAuthenticator;
+import de.metas.email.MailAuthenticator;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -181,7 +181,7 @@ public class RequestEMailProcessor extends SvrProcess
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", p_IMAPHost);
 		props.put("mail.smtp.auth","true");
-		EMailAuthenticator auth = EMailAuthenticator.of(p_IMAPUser, p_IMAPPwd);
+		MailAuthenticator auth = MailAuthenticator.of(p_IMAPUser, p_IMAPPwd);
 		//
 		m_session = Session.getDefaultInstance(props, auth);
 		m_session.setDebug(LogManager.isLevelFinest());

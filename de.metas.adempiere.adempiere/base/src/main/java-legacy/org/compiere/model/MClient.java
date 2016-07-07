@@ -47,7 +47,7 @@ import de.metas.email.IMailBL;
  *
  *  @author Jorg Janke
  *  @version $Id: MClient.java,v 1.2 2006/07/30 00:58:37 jjanke Exp $
- *  
+ *
  * @author Carlos Ruiz - globalqss
  *    integrate bug fix reported by Teo Sarca
  *    [ 1619085 ] Client setup creates duplicate trees
@@ -57,7 +57,7 @@ import de.metas.email.IMailBL;
 public class MClient extends X_AD_Client
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6482473737885701403L;
 
@@ -77,7 +77,7 @@ public class MClient extends X_AD_Client
 		{
 			return null;
 		}
-		
+
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, AD_Client_ID);
 		return LegacyAdapters.convertToPO(client);
 	}	//	get
@@ -129,7 +129,7 @@ public class MClient extends X_AD_Client
 			//	setName (null);
 				setAD_Org_ID(0);
 				setIsMultiLingualDocument (false);
-				setIsSmtpAuthorization (false);	
+				setIsSmtpAuthorization (false);
 				setIsUseBetaFunctions (true);
 				setIsServerEMail(false);
 				setAD_Language(Language.getBaseAD_Language());
@@ -230,8 +230,8 @@ public class MClient extends X_AD_Client
 		}
 		return m_language;
 	}	//	getLanguage
-	
-	
+
+
 	/**
 	 * 	Set AD_Language
 	 *	@param AD_Language new language
@@ -242,7 +242,7 @@ public class MClient extends X_AD_Client
 		m_language = null;
 		super.setAD_Language (AD_Language);
 	}	//	setAD_Language
-	
+
 	/**
 	 * 	Get AD_Language
 	 *	@return Language
@@ -267,8 +267,8 @@ public class MClient extends X_AD_Client
 			return lang.getLocale();
 		return Locale.getDefault();
 	}	//	getLocale
-	
-	
+
+
 	/**************************************************************************
 	 * 	Create Trees and Setup Client Info
 	 * 	@param language language
@@ -388,7 +388,7 @@ public class MClient extends X_AD_Client
 
 		//	Create ClientInfo
 		MClientInfo clientInfo = new MClientInfo (this,
-			AD_Tree_Org_ID, AD_Tree_BPartner_ID, AD_Tree_Project_ID, 
+			AD_Tree_Org_ID, AD_Tree_BPartner_ID, AD_Tree_Project_ID,
 			AD_Tree_SalesRegion_ID, AD_Tree_Product_ID,
 			AD_Tree_Campaign_ID, AD_Tree_Activity_ID, get_TrxName());
 		success = clientInfo.save();
@@ -396,7 +396,7 @@ public class MClient extends X_AD_Client
 	}	//	createTrees
 
 	/**
-	 * 	Get AD_Tree_Account_ID created in setup client info 
+	 * 	Get AD_Tree_Account_ID created in setup client info
 	 *	@return Account Tree ID
 	 */
 	public int getSetup_AD_Tree_Account_ID()
@@ -413,8 +413,8 @@ public class MClient extends X_AD_Client
 		String aa = getAutoArchive();
 		return aa != null && !aa.equals(AUTOARCHIVE_None);
 	}	//	isAutoArchive
-	
-	
+
+
 	/**
 	 * 	Update Trl Tables automatically?
 	 * 	@param TableName table name
@@ -431,11 +431,14 @@ public class MClient extends X_AD_Client
 			return false;
 		return true;
 	}	//	isMultiLingualDocument
-	
+
 	/**************************************************************************
-	 * 	Test EMail
-	 *	@return OK or error
+	 * Test EMail
+	 *
+	 * @return OK or error
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
+	@Deprecated
 	public String testEMail()
 	{
 		if (getRequestEMail() == null || getRequestEMail().length() == 0)
@@ -471,7 +474,7 @@ public class MClient extends X_AD_Client
 			return ex.getLocalizedMessage();
 		}
 	}	//	testEMail
-	
+
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
@@ -480,7 +483,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (int AD_User_ID, String subject, String message, File attachment)
@@ -490,7 +493,7 @@ public class MClient extends X_AD_Client
 			attachments.add(attachment);
 		return sendEMailAttachments(AD_User_ID, subject, message, attachments);
 	}
-	
+
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
@@ -499,14 +502,14 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional collection of attachments
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments)
 	{
 		return sendEMailAttachments(AD_User_ID, subject, message, attachments, false);
 	}
-	
+
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
@@ -516,13 +519,13 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional collection of attachments
 	 * @param html
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	private boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments, boolean html)
 	{
 		MUser to = MUser.get(getCtx(), AD_User_ID);
-		String toEMail = to.getEMail(); 
+		String toEMail = to.getEMail();
 		if (toEMail == null || toEMail.length() == 0)
 		{
 			log.warn("No EMail for recipient: " + to);
@@ -542,7 +545,7 @@ public class MClient extends X_AD_Client
 			return false;
 		}
 	}	//	sendEMail
-	
+
 	/**
 	 * Send EMail from Request User - no trace
 	 * 
@@ -551,14 +554,14 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (String to, String subject, String message, File attachment)
 	{
 		return sendEMail(to, subject, message, attachment, false);
 	}
-	
+
 	/**
 	 * Send EMail from Request User - no trace
 	 * 
@@ -568,7 +571,7 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param html
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (String to, String subject, String message, File attachment, boolean html)
@@ -610,14 +613,14 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (MUser from, MUser to, String subject, String message, File attachment)
 	{
 		return sendEMail(from, to, subject, message, attachment, false);
 	}
-	
+
 	/**
 	 * Send EMail from User
 	 * 
@@ -628,7 +631,7 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param isHtml
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (MUser from, MUser to, String subject, String message, File attachment, boolean isHtml)
@@ -636,7 +639,7 @@ public class MClient extends X_AD_Client
 		EMail email = createEMail(from, to, subject, message, isHtml);
 		if (email == null)
 			return false;
-		
+
 		if (attachment != null)
 			email.addAttachment(attachment);
 		InternetAddress emailFrom = email.getFrom();
@@ -659,7 +662,7 @@ public class MClient extends X_AD_Client
 	 * @param to to user
 	 * @param email email
 	 * @return true if sent
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEmailNow(MUser from, MUser to, EMail email)
@@ -687,11 +690,11 @@ public class MClient extends X_AD_Client
 		if (emailSentStatus.isSentOK())
 		{
 			if (from != null)
-				log.info("Sent Email: " + email.getSubject() 
+				log.info("Sent Email: " + email.getSubject()
 					+ " from " + from.getEMail()
 					+ " to " + to.getEMail());
 			else
-				log.info("Sent Email: " + email.getSubject() 
+				log.info("Sent Email: " + email.getSubject()
 					+ " to " + to.getEMail());
 			return true;
 		}
@@ -717,7 +720,7 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (String to, String subject, String message)
@@ -727,7 +730,7 @@ public class MClient extends X_AD_Client
 		final String mailCustomType = null;
 		return createEMail(from, to, subject, message, html, mailCustomType);
 	}
-	
+
 	/************
 	 * Create EMail from Request User
 	 * 
@@ -736,7 +739,7 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (String to, String subject, String message, boolean html)
@@ -754,14 +757,14 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (I_AD_User from, I_AD_User to, String subject, String message)
 	{
 		return createEMail(from, to, subject, message, false);
 	}
-	
+
 	/**
 	 * Create EMail from User
 	 * 
@@ -771,7 +774,7 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	private EMail createEMail (I_AD_User from, I_AD_User userTo, String subject, String message, boolean html)
@@ -790,16 +793,16 @@ public class MClient extends X_AD_Client
 		return createEMail(from, userTo.getEMail(), subject, message, html, mailCustomType);
 
 	}	//	createEMail
-	
+
 	/**
-	 * Create EMail from User
+	 * Create EMail from User.
 	 * 
 	 * @param from optional sender
 	 * @param to recipient
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (I_AD_User from, String to, String subject, String message)
@@ -808,7 +811,7 @@ public class MClient extends X_AD_Client
 		final String mailCustomType = null;
 		return createEMail(from, to, subject, message, html, mailCustomType);
 	}
-	
+
 	/**
 	 * Create EMail from User
 	 * 
@@ -818,7 +821,7 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated Please use {@link IMailBL}
+	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (I_AD_User from, String to, String subject, String message, boolean html)

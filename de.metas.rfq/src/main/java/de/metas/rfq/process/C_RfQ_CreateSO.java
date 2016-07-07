@@ -47,7 +47,7 @@ import de.metas.rfq.model.I_C_RfQLineQty;
  * If a margin is entered on RfQ Line Quantity, it overwrites the general margin.
  * The margin is the percentage added to the Best Response Amount.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_CreateSO extends SvrProcess

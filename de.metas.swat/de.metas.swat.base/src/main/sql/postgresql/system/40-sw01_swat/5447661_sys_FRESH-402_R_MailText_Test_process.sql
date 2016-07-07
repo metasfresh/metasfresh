@@ -35,7 +35,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 30.06.2016 12:41
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,138,0,540694,540973,30,'AD_User_ID',TO_TIMESTAMP('2016-06-30 12:41:43','YYYY-MM-DD HH24:MI:SS'),100,'User within the system - Internal or Business Partner Contact','D',0,'The User identifies a unique user in the system. This could be an internal user or a business partner contact','Y','N','Y','N','N','N','Ansprechpartner',20,TO_TIMESTAMP('2016-06-30 12:41:43','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,138,0,540694,540973,30,'AD_User_ID',TO_TIMESTAMP('2016-06-30 12:41:43','YYYY-MM-DD HH24:MI:SS'),100,'User within the system - Internal or Business Partner Contact','de.metas.swat',0,'The User identifies a unique user in the system. This could be an internal user or a business partner contact','Y','N','Y','N','N','N','Ansprechpartner',20,TO_TIMESTAMP('2016-06-30 12:41:43','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 30.06.2016 12:41
@@ -45,7 +45,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 30.06.2016 12:42
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,126,0,540694,540974,30,'AD_Table_ID',TO_TIMESTAMP('2016-06-30 12:42:04','YYYY-MM-DD HH24:MI:SS'),100,'Database Table information','D',0,'The Database Table provides the information of the table definition','Y','N','Y','N','N','N','DB-Tabelle',30,TO_TIMESTAMP('2016-06-30 12:42:04','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,126,0,540694,540974,30,'AD_Table_ID',TO_TIMESTAMP('2016-06-30 12:42:04','YYYY-MM-DD HH24:MI:SS'),100,'Database Table information','de.metas.swat',0,'The Database Table provides the information of the table definition','Y','N','Y','N','N','N','DB-Tabelle',30,TO_TIMESTAMP('2016-06-30 12:42:04','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 30.06.2016 12:42
@@ -65,12 +65,12 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 30.06.2016 12:42
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540694,416,TO_TIMESTAMP('2016-06-30 12:42:35','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2016-06-30 12:42:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540694,416,TO_TIMESTAMP('2016-06-30 12:42:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y',TO_TIMESTAMP('2016-06-30 12:42:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 30.06.2016 12:52
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,109,0,540694,540976,18,106,'AD_Language',TO_TIMESTAMP('2016-06-30 12:52:28','YYYY-MM-DD HH24:MI:SS'),100,'NULL','Sprache für diesen Eintrag','D',0,'Definiert die Sprache für Anzeige und Aufbereitung','Y','N','Y','N','N','N','Sprache',50,TO_TIMESTAMP('2016-06-30 12:52:28','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,109,0,540694,540976,18,106,'AD_Language',TO_TIMESTAMP('2016-06-30 12:52:28','YYYY-MM-DD HH24:MI:SS'),100,'NULL','Sprache für diesen Eintrag','de.metas.swat',0,'Definiert die Sprache für Anzeige und Aufbereitung','Y','N','Y','N','N','N','Sprache',50,TO_TIMESTAMP('2016-06-30 12:52:28','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 30.06.2016 12:52

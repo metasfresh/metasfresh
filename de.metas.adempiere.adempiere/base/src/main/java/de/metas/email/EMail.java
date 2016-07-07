@@ -66,6 +66,8 @@ import de.metas.session.jaxrs.IServerService;
  * 
  * To send the message, please use {@link #send()}.
  * 
+ * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
+
  * @author metas-dev <dev@metasfresh.com>
  */
 @SuppressWarnings("serial")
@@ -351,10 +353,10 @@ public final class EMail implements Serializable
 		final Mailbox mailbox = getMailbox();
 		final String smtpHost = mailbox.getSmtpHost();
 
-		final EMailAuthenticator auth;
+		final MailAuthenticator auth;
 		if (mailbox.isSmtpAuthorization())
 		{
-			auth = EMailAuthenticator.of(mailbox.getUsername(), mailbox.getPassword());
+			auth = MailAuthenticator.of(mailbox.getUsername(), mailbox.getPassword());
 		}
 		else
 		{

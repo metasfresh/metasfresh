@@ -36,18 +36,20 @@ import com.google.common.base.MoreObjects;
  */
 
 /**
- * Username/Password EMail {@link Authenticator}.
- * 
+ * Simple username/password based email {@link Authenticator}.
+ * <p>
+ * This is basically a reimplementation of the class of <code>org.compiere.util.EMailAuthenticator</code> which was authored (according to the javadoc) by Joerg Janke
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @SuppressWarnings("serial")
 @Immutable
-public final class EMailAuthenticator extends Authenticator implements Serializable
+public class MailAuthenticator extends Authenticator implements Serializable
 {
-	public static final EMailAuthenticator of(final String username, final String password)
+	public static final MailAuthenticator of(final String username, final String password)
 	{
-		return new EMailAuthenticator(username, password);
+		return new MailAuthenticator(username, password);
 	}
 
 	@JsonProperty("username")
@@ -64,7 +66,7 @@ public final class EMailAuthenticator extends Authenticator implements Serializa
 	 * @param password user password
 	 */
 	@JsonCreator
-	private EMailAuthenticator(@JsonProperty("username") final String username, @JsonProperty("password") final String password)
+	private MailAuthenticator(@JsonProperty("username") final String username, @JsonProperty("password") final String password)
 	{
 		super();
 

@@ -31,7 +31,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 /**
  * Complete given {@link I_C_RfQResponse}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class C_RfQResponse_Complete extends SvrProcess
 {

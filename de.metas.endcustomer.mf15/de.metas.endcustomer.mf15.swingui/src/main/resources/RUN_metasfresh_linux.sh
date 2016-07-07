@@ -48,11 +48,11 @@ fi
 #  SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
 SECURE=
 
-# MaxPermSize is required when we run with java-7
-MEMORY_OPTS="-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError"
+MEMORY_OPTS="-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"
 
-#Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
-JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+# -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
+# -Dsun.java2d.xrender=false is related to http://stackoverflow.com/questions/34188495/how-can-i-work-around-the-classcastexception-in-java2d-bug-id-7172749 . The problem happens in some X environments
+JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dsun.java2d.xrender=false -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
 
 echo "JAVA_OPTS = $JAVA_OPTS"
 echo "JAR_FILE = $JAR_FILE"

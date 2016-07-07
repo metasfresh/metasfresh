@@ -12,7 +12,6 @@ import javax.activation.URLDataSource;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
-import org.compiere.util.ByteArrayDataSource;
 import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -168,7 +167,7 @@ public final class EMailAttachment implements Serializable
 		}
 		else
 		{
-			return ByteArrayDataSource.of(filename, content);
+			return ByteArrayBackedDataSource.of(filename, content);
 		}
 	}
 

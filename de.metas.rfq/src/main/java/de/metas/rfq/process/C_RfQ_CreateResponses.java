@@ -40,7 +40,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 /**
  * Create {@link I_C_RfQResponse}s from {@link I_C_RfQ}'s topic.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrecondition

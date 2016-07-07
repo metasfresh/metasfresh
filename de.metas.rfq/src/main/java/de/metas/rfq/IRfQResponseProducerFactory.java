@@ -30,7 +30,7 @@ import de.metas.rfq.model.I_C_RfQ;
  * 
  * To register your implementation, please use {@link IRfQConfiguration#addRfQResponsesProducerFactory(IRfQResponseProducerFactory)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IRfQResponseProducerFactory

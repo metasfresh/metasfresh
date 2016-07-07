@@ -29,7 +29,7 @@ import org.compiere.model.I_AD_Client;
 /**
  * RfQ module activator
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class RfQModuleActivator extends AbstractModuleInterceptor

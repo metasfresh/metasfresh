@@ -35,7 +35,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 /**
  * Close {@link I_C_RfQ} and it's {@link I_C_RfQResponse}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_Close extends SvrProcess implements ISvrProcessPrecondition
