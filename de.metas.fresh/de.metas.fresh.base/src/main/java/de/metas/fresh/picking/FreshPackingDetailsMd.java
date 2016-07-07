@@ -86,7 +86,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 
 			final int productId = freshPackingItem.getProductId();
 			final int bpartnerId = freshPackingItem.getBpartnerId();
-			final int bpartnerLocationId = freshPackingItem.getBpartnerLocationId();
+			final int bpartnerLocationId = freshPackingItem.getC_BPartner_Location_ID();
 			final Set<Integer> warehouseIds = freshPackingItem.getWarehouseIds();
 
 			//

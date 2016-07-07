@@ -152,7 +152,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	{
 		if (bpLocation == null)
 		{
-			final int partnerLocId = getBpartnerLocationId();
+			final int partnerLocId = getC_BPartner_Location_ID();
 			if (partnerLocId > 0)
 			{
 				bpLocation = InterfaceWrapperHelper.create(Env.getCtx(), partnerLocId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
@@ -162,7 +162,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public int getBpartnerLocationId()
+	public int getC_BPartner_Location_ID()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -171,7 +171,9 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		}
 
 		// all scheds must have the same partner
-		return shipmentSchedules.iterator().next().getC_BPartner_Location_ID();
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedules.iterator().next());
+		return bpartnerLocationId;
 	}
 
 	@Override

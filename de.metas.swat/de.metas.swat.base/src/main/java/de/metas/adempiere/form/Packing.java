@@ -10,18 +10,17 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_DeliveryViaRule;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
@@ -85,7 +84,7 @@ import de.metas.product.IStoragePA;
 
 /**
  * Packing View
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -157,7 +156,7 @@ public abstract class Packing extends MvcGenForm
 
 	/**
 	 * Display given error to user
-	 * 
+	 *
 	 * @param e
 	 */
 	protected void displayError(final Throwable e)
@@ -434,6 +433,9 @@ public abstract class Packing extends MvcGenForm
 
 	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
 	{
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 		final Collection<IPackingItem> unallocatedLines = new ArrayList<IPackingItem>();
 
 		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<ArrayKey, IPackingItem>();
@@ -443,10 +445,12 @@ public abstract class Packing extends MvcGenForm
 			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
 			if (sched.isDisplayed() || displayNonItems)
 			{
-				final BigDecimal qtyToDeliver = Services.get(IShipmentScheduleEffectiveBL.class).getQtyToDeliver(sched);
+				final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
 				final Map<I_M_ShipmentSchedule, BigDecimal> schedWithQty = Collections.singletonMap(sched, qtyToDeliver);
 
-				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched);
+				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+				final boolean includeBPartner = true;
+				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(sched, includeBPartner);
 
 				IPackingItem item = key2Sched.get(key);
 				if (item == null)
@@ -490,10 +494,10 @@ public abstract class Packing extends MvcGenForm
 		for (final I_M_PackagingContainer pc : pcs)
 		{
 			final BigDecimal qtyAvail = storagePA.retrieveQtyAvailable(
-					warehouseId, // M_Warehouse_ID
-					0, // M_Locator_ID
+					warehouseId,  // M_Warehouse_ID
+					0,  // M_Locator_ID
 					pc.getM_Product_ID(),
-					0, // M_AttributeSetInstance_ID
+					0,  // M_AttributeSetInstance_ID
 					ITrx.TRXNAME_None);
 
 			final AvailableBins bin = new AvailableBins(ctx, pc, qtyAvail.intValue(), null);
@@ -549,7 +553,7 @@ public abstract class Packing extends MvcGenForm
 
 	/**
 	 * Lock given shipment schedules
-	 * 
+	 *
 	 * @param ctx
 	 * @param olsAndScheds
 	 */
@@ -561,7 +565,7 @@ public abstract class Packing extends MvcGenForm
 			public void run(String localTrxName)
 			{
 				shipmentSchedulePA.createLocksForShipmentRun(olsAndScheds,
-						adPInstanceId, // AD_PInstance_ID
+						adPInstanceId,  // AD_PInstance_ID
 						Env.getAD_User_ID(ctx),
 						localTrxName);
 			}
@@ -575,7 +579,7 @@ public abstract class Packing extends MvcGenForm
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
-		
+
 		trxManager.run(new TrxRunnable()
 		{
 			@Override
@@ -589,8 +593,7 @@ public abstract class Packing extends MvcGenForm
 						adUserId,
 						adPInstanceId,
 						updateOnlyLocked,
-						localTrxName
-						);
+						localTrxName);
 				shipmentSchedulePA.deleteUnprocessedLocksForShipmentRun(
 						adPInstanceId,
 						adUserId,
@@ -609,10 +612,9 @@ public abstract class Packing extends MvcGenForm
 			public void run(String localTrxName)
 			{
 				shipmentSchedulePA.markLocksForShipmentRunProcessed(
-						adPInstanceId, // AD_PInstance_ID
+						adPInstanceId,  // AD_PInstance_ID
 						adUserId,
-						localTrxName
-						);
+						localTrxName);
 			}
 		});
 	}
@@ -649,14 +651,11 @@ public abstract class Packing extends MvcGenForm
 		pi.setTitle("Kommisionierungsbelege");
 		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
-		final ProcessInfoParameter pipSelectection =
-				new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null);
+		final ProcessInfoParameter pipSelectection = new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null);
 
-		final ProcessInfoParameter pipShipper =
-				new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null);
+		final ProcessInfoParameter pipShipper = new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null);
 
-		final ProcessInfoParameter pipNonItems =
-				new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null);
+		final ProcessInfoParameter pipNonItems = new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null);
 
 		pi.setParameter(new ProcessInfoParameter[] { pipSelectection, pipShipper, pipNonItems });
 
