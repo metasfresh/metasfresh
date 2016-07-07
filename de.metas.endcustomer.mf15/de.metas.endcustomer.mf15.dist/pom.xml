@@ -334,7 +334,7 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.rfc</groupId>
+			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
