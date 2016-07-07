@@ -18,6 +18,7 @@ Her come the actual release notes:
  - #150 FRESH-492 Fix implementation for BPartner Statistics
    * refactoring/code improvement
  - #128 FRESH-465 Extend Record_ID Column Implementation
+ - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
