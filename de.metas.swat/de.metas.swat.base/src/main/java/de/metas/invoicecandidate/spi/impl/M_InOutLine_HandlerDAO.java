@@ -41,7 +41,7 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 /**
  * DAO to support {@link M_InOut_Handler} and {@link M_InOutLine_Handler}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 /* package */class M_InOutLine_HandlerDAO

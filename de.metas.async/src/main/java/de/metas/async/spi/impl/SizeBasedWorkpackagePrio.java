@@ -33,7 +33,7 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
  * The configuration is done via <code>AD_SysConfig</code>. See {@link SysconfigBackedSizeBasedWorkpackagePrioConfig} for details.
  * For the case that no size-based priority was configured, <code>medium</code> is returned as the default priority.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
  */
 public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy

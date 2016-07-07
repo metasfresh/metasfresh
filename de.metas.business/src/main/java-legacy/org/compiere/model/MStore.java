@@ -22,20 +22,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
-import de.metas.session.jaxrs.IServerService;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.Mailbox;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Web Store
@@ -353,8 +355,7 @@ public class MStore extends X_W_Store
 	 * @param message nessage
 	 * @return EMail
 	 */
-	public EMail createEMail(String to,
-			String subject, String message)
+	private EMail createEMail(final String to, final String subject, final String message)
 	{
 		if (to == null || to.length() == 0)
 		{
@@ -362,92 +363,49 @@ public class MStore extends X_W_Store
 			return null;
 		}
 		//
-		EMail email = null;
-		MClient client = MClient.get(getCtx(), getAD_Client_ID());
-		if (client.isServerEMail() && Ini.isClient())
-		{
-			final IServerService server = Services.get(IServerService.class);
-			try
-			{
-				email = server.createEMail(Env.getRemoteCallCtx(getCtx()), getAD_Client_ID(),
-						to, subject, message);
-			}
-			catch (Exception ex)
-			{
-				log.error(getName() + " - AppsServer error", ex);
-			}
-		}
-		String from = getWStoreEMail();
-		if (from == null || from.length() == 0)
-			from = client.getRequestEMail();
-		if (email == null)
-			email = new EMail(client,
-					from, to,
-					subject, message);
-		// Authorizetion
-		if (client.isSmtpAuthorization())
-		{
-			if (getWStoreEMail() != null && getWStoreUser() != null && getWStoreUserPW() != null)
-				email.createAuthenticator(getWStoreUser(), getWStoreUserPW());
-			else
-				email.createAuthenticator(client.getRequestUser(), client.getRequestUserPW());
-		}
+		
+		final String mailCustomType = null;
+		final boolean html = false;
+		final EMail email = Services.get(IMailBL.class).createEMail(getCtx(), getMailbox(), mailCustomType, subject, message, html);
+		
 		// Bcc
-		email.addBcc(from);
+		email.addBcc(getWStoreEMail());
 		//
 		return email;
 	}	// createEMail
-
-	/**
-	 * Send EMail from WebStore User
-	 *
-	 * @param to recipient email address
-	 * @param subject subject
-	 * @param message message - add header & footer
-	 * @return true if sent
-	 */
-	public boolean sendEMail(String to,
-			String subject, String message)
+	
+	private final Mailbox getMailbox()
 	{
-		if (message == null || message.length() == 0)
+		final I_AD_Client client = getAD_Client();
+		final boolean isSmtpAuthorization = client.isSmtpAuthorization();
+		final Mailbox.Builder mailboxBuilder = Mailbox.builder()
+				.setSmtpHost(client.getRequestEMail())
+				.setEmail(client.getRequestEMail())
+				.setUsername(client.getRequestUser())
+				.setPassword(client.getRequestUserPW())
+				.setSmtpAuthorization(isSmtpAuthorization)
+				.setSendFromServer(client.isServerEMail())
+				.setAD_Client_ID(client.getAD_Client_ID());
+		
+		final String wstoreEMail = getWStoreEMail();
+		if(!Check.isEmpty(wstoreEMail, true))
 		{
-			log.warn("No Message");
-			return false;
+			mailboxBuilder.setEmail(wstoreEMail);
 		}
-		StringBuffer msgText = new StringBuffer();
-		if (getEMailHeader() != null)
-			msgText.append(getEMailHeader());
-		msgText.append(message);
-		if (getEMailFooter() != null)
-			msgText.append(getEMailFooter());
-		//
-		EMail email = createEMail(to, subject, msgText.toString());
-		if (email == null)
-			return false;
 
-		try
+		// Authorization
+		if (isSmtpAuthorization
+				&& !Check.isEmpty(wstoreEMail, true)
+				&& getWStoreUser() != null
+				&& getWStoreUserPW() != null)
 		{
-			String msg = email.send();
-			if (EMail.SENT_OK.equals(email.send()))
-			{
-				log.info("Sent EMail " + subject + " to " + to);
-				return true;
-			}
-			else
-			{
-				log.warn("Could NOT Send Email: " + subject
-						+ " to " + to + ": " + msg
-						+ " (" + getName() + ")");
-				return false;
-			}
+			mailboxBuilder.setUsername(getWStoreUser());
+			mailboxBuilder.setPassword(getWStoreUserPW());
 		}
-		catch (Exception ex)
-		{
-			log.error(getName() + " - " + ex.getLocalizedMessage());
-			return false;
-		}
-	}	// sendEMail
 
+		return mailboxBuilder.build();
+	}
+	
 	/**
 	 * Test WebStore EMail
 	 *
@@ -465,17 +423,16 @@ public class MStore extends X_W_Store
 			return "Could not create Web Store EMail: " + getName();
 		try
 		{
-			String msg = email.send();
-			if (EMail.SENT_OK.equals(email.send()))
+			final EMailSentStatus emailSentStatus = email.send();
+			if (emailSentStatus.isSentOK())
 			{
 				log.info("Sent Test EMail to " + getWStoreEMail());
 				return "OK";
 			}
 			else
 			{
-				log.warn("Could NOT send Test Email to "
-						+ getWStoreEMail() + ": " + msg);
-				return msg;
+				log.warn("Could NOT send Test Email to " + getWStoreEMail() + ": " + emailSentStatus.getSentMsg());
+				return emailSentStatus.getSentMsg();
 			}
 		}
 		catch (Exception ex)

@@ -37,7 +37,7 @@ import de.metas.document.ICounterDocBL;
 /**
  * Interceptor used to intercept {@link DocAction}s that might need a counter document
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class CounterDocHandlerInterceptor extends AbstractModelInterceptor

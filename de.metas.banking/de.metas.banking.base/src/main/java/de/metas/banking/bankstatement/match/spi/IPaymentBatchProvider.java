@@ -29,7 +29,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 /**
  * Implementations of this interface are responsible for providing the {@link IPaymentBatch} for {@link I_C_Payment}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPaymentBatchProvider

@@ -37,7 +37,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 /**
  * The implementation iterates HUs (and their children) and collect the packing material products from those HUs.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <T> type of the optional "source" (inoutLine, oderLine or other) the respective HU belongs to.
  *            In the case of M_InOutLine, this allows the implementation to later on set the <code>M_PackingMaterial_InOutLine_ID</code> of the source-iol.

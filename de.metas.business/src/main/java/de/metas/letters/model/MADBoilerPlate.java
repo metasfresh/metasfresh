@@ -39,11 +39,10 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.DataSource;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
@@ -79,13 +78,18 @@ import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailSentStatus;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -210,17 +214,25 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final int AD_Table_ID = editor.getAD_Table_ID();
 		final int Record_ID = editor.getRecord_ID();
 		//
-		EMail email = editor.sendEMail(from, toEmail, "", variables);
+		final EMail email = editor.sendEMail(from, toEmail, "", variables);
 		if (withRequest)
 			createRequest(email, AD_Table_ID, Record_ID, variables);
 	}
 
-	public static void createRequest(EMail email,
+	private static void createRequest(EMail email,
 			int parent_table_id, int parent_record_id,
 			Map<String, Object> variables)
 	{
-		if (email == null || !email.isSentOK())
+		if (email == null)
+		{
 			return;
+		}
+		
+		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
+		if (!emailSentStatus.isSentOK())
+		{
+			return;
+		}
 
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = (Integer)variables.get(MADBoilerPlate.VAR_SalesRep_ID);
@@ -240,19 +252,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		//
 		// Attach email attachments to this request
 		final MAttachment requestAttachment = request.createAttachment();
-		for (final Object a : email.getAttachments())
+		for (final EMailAttachment emailAttachment : email.getAttachments())
 		{
-			if (a == null)
+			try
 			{
-				continue;
+				final DataSource dataSource = emailAttachment.createDataSource();
+				requestAttachment.addEntry(dataSource);
 			}
-			else if (a instanceof File)
+			catch (Exception e)
 			{
-				requestAttachment.addEntry((File)a);
-			}
-			else
-			{
-				log.warn("Object type not supported - " + a + " - " + a.getClass());
+				log.warn("Failed adding {} to {}", emailAttachment, requestAttachment);
 			}
 		}
 		if (requestAttachment.getEntryCount() > 0)

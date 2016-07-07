@@ -42,7 +42,7 @@ import org.jdesktop.swingx.JXTaskPane;
 /**
  * A favorite shortcut group in {@link FavoritesGroupContainer}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class FavoritesGroup

@@ -36,7 +36,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
  * task 09833
  * Default ctx provider for printing info of C_PrintJobInstructions. (Fallback to the original print job instruction's error message, as it used to be before the ctx providers were added)
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class DefaultPrintingNotificationCtxProvider implements INotificationCtxProvider

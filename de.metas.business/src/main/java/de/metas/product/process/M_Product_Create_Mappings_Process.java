@@ -35,7 +35,7 @@ import de.metas.product.model.I_M_Product_Mapping;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * 
  *         This process creates M_Product_Mappings between 2 products from 2 different organizations.
  *         In case the mapping exists for one of the products, it is set for the other one, too.

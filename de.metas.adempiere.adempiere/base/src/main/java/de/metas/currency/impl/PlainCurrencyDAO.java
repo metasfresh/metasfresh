@@ -43,7 +43,7 @@ import de.metas.currency.ICurrencyDAO;
 /**
  * Plain {@link ICurrencyDAO} implementation, exclusively to be used for testing.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PlainCurrencyDAO extends CurrencyDAO

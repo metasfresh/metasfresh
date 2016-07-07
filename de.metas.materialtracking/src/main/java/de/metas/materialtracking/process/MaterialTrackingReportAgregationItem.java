@@ -31,7 +31,7 @@ import de.metas.materialtracking.model.I_PP_Order;
 /**
  * A pojo used in creating Items for the CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class MaterialTrackingReportAgregationItem

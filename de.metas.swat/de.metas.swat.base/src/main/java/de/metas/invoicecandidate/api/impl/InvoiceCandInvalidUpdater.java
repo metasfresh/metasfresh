@@ -476,7 +476,7 @@ import de.metas.lock.api.ILock;
 	/**
 	 * IC update result.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private static final class ICUpdateResult
@@ -509,7 +509,7 @@ import de.metas.lock.api.ILock;
 	/**
 	 * IC update exception handler
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private final class ICTrxItemExceptionHandler extends FailTrxItemExceptionHandler

@@ -32,7 +32,7 @@ import org.adempiere.plaf.FindPanelUI;
 /**
  * Container for {@link FindPanel} to be used for embedding it in standard windows.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class FindPanelContainer

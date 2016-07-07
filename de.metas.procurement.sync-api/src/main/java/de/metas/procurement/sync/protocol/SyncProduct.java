@@ -38,6 +38,17 @@ public class SyncProduct extends AbstractSyncModel
 	{
 		return "SyncProduct [name=" + name + ", packingInfo=" + packingInfo + ", shared=" + shared + ", namesTrl=" + namesTrl + "]";
 	}
+	
+	public SyncProduct copy()
+	{
+		final SyncProduct to = new SyncProduct();
+		copyTo(to);
+		to.setName(getName());
+		to.setPackingInfo(getPackingInfo());
+		to.setShared(isShared());
+		to.setNamesTrl(new HashMap<>(getNamesTrl()));
+		return to;
+	}
 
 	public String getName()
 	{

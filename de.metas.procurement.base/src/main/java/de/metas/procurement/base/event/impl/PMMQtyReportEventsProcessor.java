@@ -38,7 +38,7 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  * Process {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.<br>
  * The actual work is done by {@link PMMQtyReportEventTrxItemProcessor}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PMMQtyReportEventsProcessor

@@ -42,7 +42,7 @@ import de.metas.logging.LogManager;
 /**
  * Command to hide a range of columns if a given condition is met.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class HideColumnIfCommand extends AbstractCommand

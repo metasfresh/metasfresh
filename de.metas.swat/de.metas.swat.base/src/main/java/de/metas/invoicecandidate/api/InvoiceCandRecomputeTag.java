@@ -30,7 +30,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 /**
  * Immutable recompute tag used to tag invoice candidates.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class InvoiceCandRecomputeTag

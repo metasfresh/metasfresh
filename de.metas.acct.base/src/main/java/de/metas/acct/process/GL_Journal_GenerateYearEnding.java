@@ -54,7 +54,7 @@ import org.compiere.util.TimeUtil;
 /**
  * Process used to create year ending bookings.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GL_Journal_GenerateYearEnding extends SvrProcess

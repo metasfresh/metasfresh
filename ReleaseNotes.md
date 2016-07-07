@@ -13,6 +13,7 @@ Her come the actual release notes:
 # metasfresh 2016-28 (upcoming)
 
 ## Features
+ - FRESH-402 Procurement bidding
  - #119 FRESH-455 different email per org in inout print preview
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
  - #150 FRESH-492 Fix implementation for BPartner Statistics
@@ -24,7 +25,7 @@ Her come the actual release notes:
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
  - #151 FRESH-491 When creating a new organization, don't create org access for System role
 
-# metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
+# metasfresh 4.25.24a (2016-27a)
 
 ## Features
  - #162 FRESH-499 modernize the server's index.html

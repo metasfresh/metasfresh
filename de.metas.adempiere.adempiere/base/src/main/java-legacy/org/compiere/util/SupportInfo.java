@@ -42,7 +42,7 @@ import de.metas.logging.LogManager;
 /**
  * Helper class to provide technical support informations.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class SupportInfo

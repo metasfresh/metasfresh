@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Conversion Type
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public enum ConversionType

@@ -39,7 +39,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * A copy of that wrapped item can be obtained via {@link #createNewState()}.<br>
  * Changes can be made to this this copy incrementally, and can then be "flushed" onto the original wrapped instance by calling {@link #commit(IFreshPackingItem)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @see TransactionalFreshPackingItemSupport
  */
 public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem

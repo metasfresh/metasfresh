@@ -27,7 +27,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 /**
  * {@link I_C_Flatrate_Term} lifecycle handler.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFlatrateHandler

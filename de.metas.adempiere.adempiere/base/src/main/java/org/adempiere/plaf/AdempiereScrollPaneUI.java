@@ -123,7 +123,7 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 	 *
 	 * Basically an event is considered NOT eligible, when the scroll bars are not displayed.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private class ScrollPaneMouseWheelListener implements MouseWheelListener

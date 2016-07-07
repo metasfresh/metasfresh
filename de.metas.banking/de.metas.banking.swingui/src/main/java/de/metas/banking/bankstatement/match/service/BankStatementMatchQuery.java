@@ -38,7 +38,7 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 /**
  * Immutable bank statement query (value object)
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @see IBankStatementMatchDAO
  *
  */

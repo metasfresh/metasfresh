@@ -50,7 +50,7 @@ import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 /**
  * The panel displayed on window's top which allows user to filter which bank statement lines and payments he/she will see.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class QueryPanel extends CPanel

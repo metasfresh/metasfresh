@@ -40,7 +40,7 @@ import de.metas.document.engine.IDocActionBL;
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CreateCounterDocPP extends WorkpackageProcessorAdapter

@@ -7,7 +7,6 @@ import java.util.Properties;
 
 import org.compiere.model.MAdvertisement;
 import org.compiere.model.MAsset;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MCommissionRun;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
@@ -19,14 +18,13 @@ import org.compiere.model.MPayment;
 import org.compiere.model.MRegistration;
 import org.compiere.model.MRequest;
 import org.compiere.model.MRequestType;
-import org.compiere.model.MRfQ;
-import org.compiere.model.MRfQResponse;
 import org.compiere.model.MTimeExpense;
 import org.compiere.model.X_AD_UserBPAccess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFActivity;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -1158,99 +1156,4 @@ public class WebInfo
 		log.debug("A_Registration_ID=" + m_id + " - " + retValue);
 		return retValue;
 	}	//	getRegistration
-
-	
-	/**
-	 * 	Get RfQs.
-	 * 	Where Response is Accepted, Self Service and either
-	 *  all vendors or this vendor is selected.
-	 *	@return request for quotations
-	 */
-	public ArrayList<MRfQ> getRfQs()
-	{
-		m_infoMessage = null;
-		ArrayList<MRfQ> list = new ArrayList<MRfQ>();
-		String sql = "SELECT * "
-			+ "FROM C_RfQ r "
-			+ "WHERE r.IsRfQResponseAccepted='Y'"
-			+ " AND r.IsSelfService='Y' AND r.IsActive='Y' AND r.Processed='N'"
-			+ " AND (r.IsInvitedVendorsOnly='N'"
-			+	" OR EXISTS (SELECT * FROM C_RfQResponse rr "
-			+	" WHERE r.C_RfQ_ID=rr.C_RfQ_ID AND rr.C_BPartner_ID=?)) "
-			+ "ORDER BY r.Name";
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, getC_BPartner_ID());
-			rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MRfQ (m_ctx, rs, null));
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-		log.debug("#" + list.size());
-		return list;
-	}	//	getRfQs
-
-	/**
-	 * 	Get RfQ Response.
-	 * 	Needs to have ID set first
-	 *	@return rfq of BP with ID
-	 */
-	public MRfQResponse getRfQResponse()
-	{
-		m_infoMessage = null;
-		MRfQResponse retValue = null;
-		String sql = "SELECT * FROM C_RfQResponse "
-			+ "WHERE C_RfQ_ID=?"
-			+ " AND C_BPartner_ID=? AND IsActive='Y'";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_id);
-			pstmt.setInt(2, getC_BPartner_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-				retValue = new MRfQResponse (m_ctx, rs, null);
-		}
-		catch (Exception e)
-		{
-			log.error("C_RfQResponse_ID=" + m_id, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-		//	No Response existing
-		if (retValue == null)
-		{
-			MRfQ rfq = new MRfQ (m_ctx, m_id, null);
-			//	We can create a Response ?
-			if (rfq.get_ID() != 0 && rfq.isSelfService() 
-				&& rfq.isRfQResponseAccepted() && !rfq.isInvitedVendorsOnly() 
-				&& getC_BPartner_ID() > 0 && getAD_User_ID() > 0)
-			{
-				MBPartner bp = new MBPartner (m_ctx, getC_BPartner_ID(), null);
-				bp.setPrimaryAD_User_ID(getAD_User_ID());				
-				retValue = new MRfQResponse (rfq, bp);	//	may have no lines
-				retValue.save();
-			}
-		}
-		//
-		log.debug("C_RfQResponse_ID=" + m_id + " - " + retValue);
-		return retValue;
-	}	//	getRfQResponse
 }

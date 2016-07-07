@@ -67,11 +67,10 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
@@ -102,6 +101,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
@@ -938,7 +938,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private void addLog(final String msg)
 	{
-		FlatrateBL.logger.info(msg);
+		logger.info(msg);
 		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
 	}
 
@@ -1372,6 +1372,12 @@ public class FlatrateBL implements IFlatrateBL
 				currentFirstDay = TimeUtil.addDays(lastDayOfNewTerm, 1);
 			}
 		}
+		// Case: If TermDuration is ZERO, we shall not calculate the EndDate automatically,
+		// but relly on what was set
+		else if (transition.getTermDuration() == 0)
+		{
+			return;
+		}
 		else
 		{
 			if (X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE.equals(transition.getTermDurationUnit()))
@@ -1413,9 +1419,14 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateNoticeDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp lastDayOfNewTerm = term.getEndDate();
-
+		
 		final Timestamp noticeDate;
-		if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(transition.getTermOfNoticeUnit()))
+		if(lastDayOfNewTerm == null)
+		{
+			// If Last day of new term is not set, don't calculate the noticeDate
+			noticeDate = null;
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(transition.getTermOfNoticeUnit()))
 		{
 			noticeDate = TimeUtil.addMonths(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
 		}
@@ -1432,6 +1443,7 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(false, "TermOfNoticeDuration " + transition.getTermOfNoticeUnit() + " doesn't exist");
 			noticeDate = null; // code won't be reached
 		}
+		
 		term.setNoticeDate(noticeDate);
 	}
 
@@ -1585,9 +1597,10 @@ public class FlatrateBL implements IFlatrateBL
 			InterfaceWrapperHelper.save(entry);
 		}
 	}
-
+	
 	@Override
 	public I_C_Flatrate_Term createTerm(
+			final IContextAware context,
 			final I_C_BPartner bPartner,
 			final I_C_Flatrate_Conditions conditions,
 			final Timestamp startDate,
@@ -1595,8 +1608,8 @@ public class FlatrateBL implements IFlatrateBL
 			final org.compiere.model.I_M_Product product,
 			final boolean completeIt)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
-		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
+		final Properties ctx = context.getCtx();
+		final String trxName = context.getTrxName();
 
 		boolean dontCreateTerm = false;
 		final StringBuilder notCreatedReason = new StringBuilder();
@@ -1643,11 +1656,9 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 		if (dontCreateTerm)
 		{
-			loggable.addLog("BPartner " + bPartner.getValue() + ": not created because: " + notCreatedReason.toString());
-			return null;
+			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason);
 		}
 
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
@@ -1656,6 +1667,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
+		newTerm.setEndDate(startDate); // will be updated by BL
 		newTerm.setDropShip_BPartner(bPartner);
 
 		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
@@ -1677,13 +1689,23 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (completeIt)
 		{
-			Services.get(IDocActionBL.class).processEx(newTerm, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-			loggable.addLog("BPartner " + bPartner.getValue() + ": created and completed: " + notCreatedReason.toString());
-		}
-		else
-		{
-			loggable.addLog("BPartner " + bPartner.getValue() + ": created: " + notCreatedReason.toString());
+			complete(newTerm);
 		}
 		return newTerm;
+	}
+	
+	@Override
+	public void complete(final I_C_Flatrate_Term term)
+	{
+		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
+		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+	}
+
+	@Override
+	public void voidIt(final I_C_Flatrate_Term term)
+	{
+		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
+		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Void, DocAction.STATUS_Voided);
+		
 	}
 }

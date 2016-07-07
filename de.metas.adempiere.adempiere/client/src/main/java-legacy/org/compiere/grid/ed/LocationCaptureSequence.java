@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Immutable object for parsing and storing the Location capture sequence.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class LocationCaptureSequence

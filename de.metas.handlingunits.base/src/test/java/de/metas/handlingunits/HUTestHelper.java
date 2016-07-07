@@ -133,7 +133,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 /**
  * This class sets up basic master data like attributes and HU-items that can be used in testing.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class HUTestHelper

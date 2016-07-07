@@ -68,4 +68,11 @@ public abstract class AbstractSyncModel
 	{
 		this.syncConfirmationId = syncConfirmationId;
 	}
+	
+	protected void copyTo(final AbstractSyncModel to)
+	{
+		to.setUuid(getUuid());
+		to.setDeleted(isDeleted());
+		to.setSyncConfirmationId(getSyncConfirmationId());
+	}
 }

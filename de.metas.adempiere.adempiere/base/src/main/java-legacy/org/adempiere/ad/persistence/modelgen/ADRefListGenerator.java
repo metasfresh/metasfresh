@@ -27,7 +27,7 @@ import org.adempiere.util.Check;
 /**
  * Generates Java code for AD_Ref_List items.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ADRefListGenerator

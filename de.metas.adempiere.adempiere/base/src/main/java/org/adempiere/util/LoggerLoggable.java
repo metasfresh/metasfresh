@@ -30,7 +30,7 @@ import ch.qos.logback.classic.Level;
 /**
  * Wraps {@link Logger} as {@link ILoggable}
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class LoggerLoggable extends LogbackLoggable

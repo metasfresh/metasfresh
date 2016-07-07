@@ -33,7 +33,7 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * task 09833
  * Composite to gather all the registered notification ctx providers and return the most fit message from them
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CompositePrintingNotificationCtxProvider implements INotificationCtxProvider

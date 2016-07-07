@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Immutable document type sequence map (indexed by AD_Client_ID, AD_Org_ID).
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class DocTypeSequenceMap

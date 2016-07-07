@@ -42,7 +42,7 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 /**
  * Wraps a {@link I_PMM_QtyReport_Event} and behaves like an {@link IPMMPricingAware}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware

@@ -29,7 +29,8 @@ package de.metas.letters.model;
 import java.util.Map;
 
 import org.compiere.model.MUser;
-import org.compiere.util.EMail;
+
+import de.metas.email.EMail;
 
 /**
  * @author teo_sarca

@@ -66,7 +66,7 @@ import com.google.common.base.Supplier;
  * <p>
  * <code>AD_Sysconfig</code> with unparsable int positions or misspelled priority are ignored.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<Integer, ConstantWorkpackagePrio>

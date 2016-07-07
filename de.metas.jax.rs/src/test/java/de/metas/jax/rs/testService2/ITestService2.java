@@ -33,7 +33,7 @@ import de.metas.jax.rs.testService.ITestService;
 /**
  * See {@link ITestService} for documentation.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Path("/testService2/")

@@ -29,7 +29,7 @@ import javax.swing.plaf.ColorUIResource;
 /**
  * UI settings for Calendar date and time picker.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class CalendarUI

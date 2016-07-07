@@ -9,7 +9,9 @@ import javax.ws.rs.PathParam;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.EMail;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 
 /*
  * #%L
@@ -24,11 +26,11 @@ import org.compiere.util.EMail;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,35 +82,14 @@ public interface IServerService extends ISingletonService
 	public ProcessInfo workflow(Properties ctx, ProcessInfo pi, int AD_Workflow_ID);
 
 	/**
-	 * Create EMail from Server (Request User)
-	 *
-	 * @param ctx Context
-	 * @param AD_Client_ID client
-	 * @param to recipient email address
-	 * @param subject subject
-	 * @param message message
-	 * @return EMail
+	 * Send the email
+	 * 
+	 * @param email
+	 * @return email sent status
 	 */
 	@POST
-	@Path("createEMail")
-	public EMail createEMail(Properties ctx, int AD_Client_ID, String to,
-			String subject, String message);
-
-	/**
-	 * Create EMail from Server (Request User)
-	 *
-	 * @param ctx Context
-	 * @param AD_Client_ID client
-	 * @param AD_User_ID user to send email from
-	 * @param to recipient email address
-	 * @param subject subject
-	 * @param message message
-	 * @return EMail
-	 */
-	@POST
-	@Path("createEMail")
-	public EMail createEMail(Properties ctx, int AD_Client_ID, int AD_User_ID,
-			String to, String subject, String message);
+	@Path("sendEMail")
+	EMailSentStatus sendEMail(EMail email);
 
 	/**
 	 * Execute task on server

@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -44,11 +42,13 @@ import org.adempiere.util.collections.Predicate;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.logging.LogManager;
 
 /**
  *  User Model
@@ -608,14 +608,19 @@ public class MUser extends X_AD_User
 	 */
 	public boolean isCanSendEMail()
 	{
-		String s = getEMailUser();
-		if (s == null || s.length() == 0)
+		final String emailUser = getEMailUser();
+		if(Check.isEmpty(emailUser, true))
+		{
 			return false;
+		}
+		
 		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
 		if (!MClient.get(getCtx()).isSmtpAuthorization())
+		{
 			return true;
-		s = getEMailUserPW();
-		return s != null && s.length() > 0;
+		}
+		final String emailPassword = getEMailUserPW();
+		return !Check.isEmpty(emailPassword, false);
 	}	//	isCanSendEMail
 
 	/**
