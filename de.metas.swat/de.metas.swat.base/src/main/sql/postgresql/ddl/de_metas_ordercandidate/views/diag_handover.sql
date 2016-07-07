@@ -30,6 +30,6 @@ WHERE true;
 COMMENT ON VIEW de_metas_ordercandidate.diag_handover IS 'Issue #100 FRESH-435: can be used to show if C_ORder''s handover references are OK according to our current logic:
  * o_HandOver_Partner_ID_correct: if a handOver partner is set in the C_OLCand, then it shall also be set in the C_Order, even if it does not differ from the C_Order''s C_BPartner_ID
  * o_HandOver_Location_ID_correct: similar to partner, if a handover location is set in the olc, then it shall also be set in o, even if it does not differ from o''s C_BPartner_Location_ID
- * o_should_UseHandOver_Location: if the order has a handover location, then it shall have IsUseHandOver_Location=''Y''.
+ * o_should_UseHandOver_Location: if the olc has a handover location, then it shall have IsUseHandOver_Location=''Y''.
 Important: the order might be reactivated and things might be changed manually. In that case the order might seem wrong according to this view.';
 

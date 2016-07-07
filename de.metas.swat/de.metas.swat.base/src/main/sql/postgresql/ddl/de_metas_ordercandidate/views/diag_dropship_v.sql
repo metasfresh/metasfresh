@@ -32,5 +32,5 @@ WHERE true;
 COMMENT ON VIEW de_metas_ordercandidate.diag_dropship_v IS 'Issue #100 FRESH-435: select C_Orders with their C_OLCands and checks if the C_Orders'' dropship IDs are consistent with the C_OlCands'' IDs, according to our current logic:
  * o_DropShip_BPartner_ID_correct: if a dropship partner is set in the olc, then it shall also be set in o, even if it does not differ from o''s C_BPartner_ID
  * o_DropShip_Location_ID_correct: similar to partner, if a dropship location is set in the olc, then it shall also be set in o, even if it does not differ from o''s C_BPartner_Location_ID
- * o_should_be_dropship: if olc has a an explicit dropship location or partner, then this lcoation should also be explicitly 
+ * o_should_be_dropship: if olc has a an explicit dropship location or partner, then the order should be flagged accordingly
 Important: the order might be reactivated and things might be changed manually. In that case the order might seem wrong according to this view.';
