@@ -43,10 +43,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.impl.EMailSendException;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
@@ -224,19 +226,18 @@ public class ShipperTransportationMailNotification implements ModelValidator
 		int count = 0;
 		do
 		{
-			final String status = email.send();
+			final EMailSentStatus emailSentStatus = email.send();
 			count++;
-			if (email.isSentOK())
+			if (emailSentStatus.isSentOK())
 				return;
 			// Timeout => retry
-			if (status != null && status.indexOf("Could not connect to SMTP host:") != -1
-					&& count < maxRetries)
+			if (emailSentStatus.isSentConnectionError() && count < maxRetries)
 			{
-				log.warn("SMTP error: " + status + " [ Retry " + count + " ]");
+				log.warn("SMTP error: {} [ Retry {}/{} ]", emailSentStatus, count, maxRetries);
 			}
 			else
 			{
-				throw new AdempiereException(status);
+				throw new EMailSendException(emailSentStatus);
 			}
 		}
 		while (true);

@@ -28,11 +28,12 @@ import org.compiere.model.MStore;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Msg;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -293,8 +294,10 @@ public class SendMailText extends SvrProcess
 			to.save();
 			return Boolean.FALSE;
 		}
-		boolean OK = EMail.SENT_OK.equals(email.send());
-		new MUserMail(getCtx(), m_R_MailText_ID, AD_User_ID, email).save();
+
+		final EMailSentStatus emailSentStatus = email.send();
+		final boolean OK = emailSentStatus.isSentOK();
+		new MUserMail(getCtx(), m_R_MailText_ID, AD_User_ID, email, emailSentStatus).save();
 		//
 		if (OK)
 			log.debug(to.getEMail());

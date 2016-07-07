@@ -1,4 +1,4 @@
-package de.metas.notification;
+package de.metas.email;
 
 /*
  * #%L
@@ -32,7 +32,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_R_MailText;
-import org.compiere.util.EMail;
 
 /**
  * Mail configuration
@@ -43,30 +42,6 @@ import org.compiere.util.EMail;
 public interface IMailBL extends ISingletonService
 {
 	/**
-	 * Mailbox configuration
-	 */
-	interface IMailbox
-	{
-		String getSmtpHost();
-
-		String getEmail();
-
-		String getUsername();
-
-		String getPassword();
-
-		boolean isSmtpAuthorization();
-
-		boolean isSendFromServer();
-
-		int getAD_Client_ID();
-
-		int getAD_User_ID();
-		
-		String getColumnUserTo();
-	}
-
-	/**
 	 * @param client
 	 * @param AD_Org_ID
 	 * @param AD_Process_ID
@@ -74,7 +49,7 @@ public interface IMailBL extends ISingletonService
 	 * @param user
 	 * @return mailBox
 	 */
-	IMailbox findMailBox(I_AD_Client client,
+	Mailbox findMailBox(I_AD_Client client,
 			int AD_Org_ID,
 			int AD_Process_ID,
 			I_C_DocType docType,
@@ -125,7 +100,7 @@ public interface IMailBL extends ISingletonService
 	 * @return email created
 	 */
 	EMail createEMail(Properties ctx,
-			IMailbox mailbox,
+			Mailbox mailbox,
 			String to,
 			String subject,
 			String message,

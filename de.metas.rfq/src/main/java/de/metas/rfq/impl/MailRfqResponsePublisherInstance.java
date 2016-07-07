@@ -10,14 +10,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.ByteArrayDataSource;
-import org.compiere.util.EMail;
 
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
@@ -92,7 +92,7 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 	public void publish0(final RfQResponsePublisherRequest request, final RfQReportType rfqReportType)
 	{
 		final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
-		
+
 		//
 		// Check and get the user's mail where we will send the email to
 		final I_AD_User userTo = rfqResponse.getAD_User();
@@ -126,8 +126,8 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 				, userToEmail // to
 				, subject, message, mailTextBuilder.isHtml() // html
 		);
-		email.addAttachment(ByteArrayDataSource.of("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData));
-		email.send();
+		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData);
+		final EMailSentStatus emailSentStatus = email.send();
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
@@ -144,20 +144,20 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 					, toStr // to
 					, (String)null // cc
 					, (String)null // bcc
-					, email.getSentMsg() // status
+					, emailSentStatus.getSentMsg() // status
 			);
 		}
 
 		//
 		// Update RfQ response (if success)
-		if (email.isSentOK())
+		if (emailSentStatus.isSentOK())
 		{
 			rfqResponse.setDateInvited(new Timestamp(System.currentTimeMillis()));
 			InterfaceWrapperHelper.save(rfqResponse);
 		}
 		else
 		{
-			throw new RfQPublishException(request, email.getSentMsg());
+			throw new RfQPublishException(request, emailSentStatus.getSentMsg());
 		}
 	}
 

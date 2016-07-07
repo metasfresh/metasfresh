@@ -38,8 +38,8 @@ import javax.mail.Store;
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
-import org.compiere.util.EMailAuthenticator;
 
+import de.metas.email.EMailAuthenticator;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

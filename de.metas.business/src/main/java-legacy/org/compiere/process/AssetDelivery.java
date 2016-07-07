@@ -29,10 +29,11 @@ import org.compiere.model.MProductDownload;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *	Deliver Assets Electronically
@@ -221,10 +222,10 @@ public class AssetDelivery extends SvrProcess
 			email.setSubject (m_MailText.getMailHeader());
 			email.setMessageText (message);
 		}
-		String msg = email.send();
-		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email).save();
-		if (!EMail.SENT_OK.equals(msg))
-			return "** Not delivered: " + user.getEMail() + " - " + msg;
+		final EMailSentStatus emailSentStatus = email.send();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email, emailSentStatus).save();
+		if (!emailSentStatus.isSentOK())
+			return "** Not delivered: " + user.getEMail() + " - " + emailSentStatus.getSentMsg();
 		//
 		return user.getEMail();
 	}	//	sendNoGuaranteeMail
@@ -263,8 +264,6 @@ public class AssetDelivery extends SvrProcess
 			asset.setIsActive(false);
 			return "** Invalid EMail: " + user.getEMail();
 		}
-		if (m_client.isSmtpAuthorization())
-			email.createAuthenticator(m_client.getRequestUser(), m_client.getRequestUserPW());
 		m_MailText.setAD_User(user);
 		m_MailText.setRecord(asset);
 		String message = m_MailText.getFullMailText();
@@ -290,10 +289,10 @@ public class AssetDelivery extends SvrProcess
 			else
 				log.warn("No DowloadURL for A_Asset_ID=" + A_Asset_ID);
 		}
-		String msg = email.send();
-		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email).save();
-		if (!EMail.SENT_OK.equals(msg))
-			return "** Not delivered: " + user.getEMail() + " - " + msg;
+		final EMailSentStatus emailSentStatus = email.send();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email, emailSentStatus).save();
+		if (!emailSentStatus.isSentOK())
+			return "** Not delivered: " + user.getEMail() + " - " + emailSentStatus.getSentMsg();
 
 		MAssetDelivery ad = asset.confirmDelivery(email, user.getAD_User_ID());
 		ad.save();

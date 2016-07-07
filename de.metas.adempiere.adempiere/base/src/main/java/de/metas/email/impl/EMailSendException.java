@@ -1,11 +1,8 @@
-package de.metas.notification;
+package de.metas.email.impl;
 
-import java.util.List;
+import org.adempiere.exceptions.AdempiereException;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_C_DocType;
+import de.metas.email.EMailSentStatus;
 
 /*
  * #%L
@@ -29,17 +26,29 @@ import org.compiere.model.I_C_DocType;
  * #L%
  */
 
-public interface IMailDAO extends ISingletonService
+/**
+ * Exception thrown when an email could not be sent.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class EMailSendException extends AdempiereException
 {
+	private static final long serialVersionUID = -4519372831111638967L;
+
+	private final boolean connectionError;
+
+	public EMailSendException(final EMailSentStatus emailSentStatus)
+	{
+		super(emailSentStatus.getSentMsg());
+		this.connectionError = emailSentStatus.isSentConnectionError();
+	}
 
 	/**
-	 * @param client
-	 * @param orgID
-	 * @param processID
-	 * @param docType
-	 * @param customType
-	 * @return The {@link I_AD_MailConfig} entries that fit the given parameters, empty list if none found
+	 * @return true if the email could not be sent because there were connection problems
 	 */
-	List<I_AD_MailConfig> retrieveMailConfigs(I_AD_Client client, int orgID, int processID, I_C_DocType docType, String customType);
-
+	public boolean isConnectionError()
+	{
+		return connectionError;
+	}
 }

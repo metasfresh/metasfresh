@@ -6,8 +6,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_R_MailText;
 import org.compiere.process.SvrProcess;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 import de.metas.process.Param;
 
 /*

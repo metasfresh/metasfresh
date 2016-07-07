@@ -1,4 +1,4 @@
-package de.metas.notification.impl;
+package de.metas.email.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +14,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_MailText;
 
 import de.metas.adempiere.service.IVariableParserBL;
+import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslation;
-import de.metas.notification.IMailTextBuilder;
 
 /*
  * #%L

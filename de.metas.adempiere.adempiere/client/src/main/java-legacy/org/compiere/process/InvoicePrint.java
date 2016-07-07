@@ -34,13 +34,14 @@ import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *	Print Invoices on Paper or send PDFs
@@ -325,10 +326,10 @@ public class InvoicePrint extends SvrProcess
 					log.debug(to + " - " + attachment);
 					email.addAttachment(attachment);
 					//
-					String msg = email.send();
-					MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), getAD_User_ID(), email);
+					final EMailSentStatus emailSentStatus = email.send();
+					MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), getAD_User_ID(), email, emailSentStatus);
 					um.save();
-					if (msg.equals(EMail.SENT_OK))
+					if (emailSentStatus.isSentOK())
 					{
 						addLog (C_Invoice_ID, null, null,
 						  DocumentNo + " @RequestActionEMailOK@ - " + to.getEMail());
@@ -338,7 +339,7 @@ public class InvoicePrint extends SvrProcess
 					else
 					{
 						addLog (C_Invoice_ID, null, null,
-						  DocumentNo + " @RequestActionEMailError@ " + msg
+						  DocumentNo + " @RequestActionEMailError@ " + emailSentStatus.getSentMsg()
 						  + " - " + to.getEMail());
 						errors++;
 					}

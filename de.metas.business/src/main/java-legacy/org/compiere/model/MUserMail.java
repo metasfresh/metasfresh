@@ -20,7 +20,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.EMail;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 
 /**
  * 	User Mail Model
@@ -62,17 +64,17 @@ public class MUserMail extends X_AD_UserMail
 	 *	@param AD_User_ID recipient user
 	 *	@param mail email
 	 */
-	public MUserMail (Properties ctx, int R_MailText_ID, int AD_User_ID, EMail mail)
+	public MUserMail (Properties ctx, int R_MailText_ID, int AD_User_ID, final EMail mail, final EMailSentStatus mailSentStatus)
 	{
 		this (ctx, 0, ITrx.TRXNAME_ThreadInherited);
 		setAD_User_ID(AD_User_ID);
 		setR_MailText_ID(R_MailText_ID);
 		//
-		if (mail.isSentOK())
-			setMessageID(mail.getMessageID());
+		if (mailSentStatus.isSentOK())
+			setMessageID(mailSentStatus.getMessageId());
 		else
 		{
-			setMessageID(mail.getSentMsg());
+			setMessageID(mailSentStatus.getSentMsg());
 			setIsDelivered(ISDELIVERED_No);
 		}
 	}	//	MUserMail
@@ -83,7 +85,7 @@ public class MUserMail extends X_AD_UserMail
 	 *	@param AD_User_ID recipient user
 	 *	@param mail email
 	 */
-	public MUserMail (PO po, int AD_User_ID, EMail mail)
+	public MUserMail (PO po, int AD_User_ID, EMail mail, EMailSentStatus mailSentStatus)
 	{
 		this (po.getCtx(), 0, ITrx.TRXNAME_None);
 		setClientOrg(po);
@@ -91,11 +93,11 @@ public class MUserMail extends X_AD_UserMail
 		setSubject(mail.getSubject());
 		setMailText(mail.getMessageCRLF());
 		//
-		if (mail.isSentOK())
-			setMessageID(mail.getMessageID());
+		if (mailSentStatus.isSentOK())
+			setMessageID(mailSentStatus.getMessageId());
 		else
 		{
-			setMessageID(mail.getSentMsg());
+			setMessageID(mailSentStatus.getSentMsg());
 			setIsDelivered(ISDELIVERED_No);
 		}
 	}	//	MUserMail

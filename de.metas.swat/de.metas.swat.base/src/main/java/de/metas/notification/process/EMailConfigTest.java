@@ -33,10 +33,11 @@ import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.Mailbox;
 
 /**
  * @author tsa
@@ -145,7 +146,7 @@ public class EMailConfigTest extends SvrProcess
 	{
 		final I_AD_Client client = clientDAO.retriveClient(getCtx(), p_AD_Client_ID);
 
-		final IMailbox mailbox = mailBL.findMailBox(
+		final Mailbox mailbox = mailBL.findMailBox(
 				client,
 				p_AD_Org_ID,
 				p_AD_Process_ID,
@@ -157,10 +158,10 @@ public class EMailConfigTest extends SvrProcess
 				p_Subject, p_Message, p_IsHtml);
 		addLog("EMail: " + email);
 
-		final String msg = email.send();
-		if (!EMail.SENT_OK.equals(msg))
+		final EMailSentStatus emailSentStatus = email.send();
+		if (!emailSentStatus.isSentOK())
 		{
-			addLog("Send error: " + msg);
+			addLog("Send error: " + emailSentStatus.getSentMsg());
 		}
 	}
 }

@@ -32,9 +32,9 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import org.compiere.model.MClient;
-import org.compiere.util.EMailAuthenticator;
 import org.slf4j.Logger;
 
+import de.metas.email.EMailAuthenticator;
 import de.metas.logging.LogManager;
 
 /**

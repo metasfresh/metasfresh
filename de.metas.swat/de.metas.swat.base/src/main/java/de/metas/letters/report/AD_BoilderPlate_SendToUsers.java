@@ -44,8 +44,10 @@ import org.compiere.model.MUser;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.EMail;
 
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.impl.EMailSendException;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
@@ -203,18 +205,18 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 		int count = 0;
 		do
 		{
-			final String status = email.send();
+			final EMailSentStatus emailSentStatus = email.send();
 			count++;
-			if (email.isSentOK())
+			if (emailSentStatus.isSentOK())
 				return;
 			// Timeout => retry
-			if (email.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
+			if (emailSentStatus.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
 			{
-				log.warn("SMTP error: "+status+" [ Retry "+count+" ]");
+				log.warn("SMTP error: " + emailSentStatus + " [ Retry " + count + " ]");
 			}
 			else
 			{
-				throw new AdempiereException(status);
+				throw new EMailSendException(emailSentStatus);
 			}
 		}
 		while(true);

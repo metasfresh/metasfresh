@@ -35,12 +35,13 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -265,7 +266,8 @@ public class PayrollViaEMail extends SvrProcess
 				return Boolean.FALSE;
 			}
 			
-			boolean OK = EMail.SENT_OK.equals(email.send());
+			final EMailSentStatus emailSentStatus = email.send();
+			final boolean OK = emailSentStatus.isSentOK();
 			//new MUserMail(m_MailText, AD_User_ID, email).save();
 			//
 			

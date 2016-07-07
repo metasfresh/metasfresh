@@ -33,10 +33,11 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *	Dunning Letter Print
@@ -199,10 +200,10 @@ public class DunningPrint extends SvrProcess
 					email.addAttachment(attachment);
 				}
 				//
-				String msg = email.send();
-				MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), entry.getAD_User_ID(), email);
+				final EMailSentStatus emailSentStatus = email.send();
+				MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), entry.getAD_User_ID(), email, emailSentStatus);
 				um.save();
-				if (msg.equals(EMail.SENT_OK))
+				if (emailSentStatus.isSentOK())
 				{
 					addLog (entry.get_ID(), null, null,
 						bp.getName() + " @RequestActionEMailOK@");
@@ -212,7 +213,7 @@ public class DunningPrint extends SvrProcess
 				else
 				{
 					addLog (entry.get_ID(), null, null,
-						bp.getName() + " @RequestActionEMailError@ " + msg);
+						bp.getName() + " @RequestActionEMailError@ " + emailSentStatus.getSentMsg());
 					errors++;
 				}
 			}
