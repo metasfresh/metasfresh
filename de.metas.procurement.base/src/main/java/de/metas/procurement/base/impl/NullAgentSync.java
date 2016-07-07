@@ -35,7 +35,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
 /**
  * An mocked implementation which only prints the requests to System.out.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class NullAgentSync implements IAgentSync

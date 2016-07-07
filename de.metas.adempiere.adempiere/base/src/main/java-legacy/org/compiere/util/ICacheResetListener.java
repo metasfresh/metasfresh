@@ -25,7 +25,7 @@ package org.compiere.util;
 /**
  * Cache reset listener.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @see CacheMgt#addCacheResetListener(String, ICacheResetListener)
  */

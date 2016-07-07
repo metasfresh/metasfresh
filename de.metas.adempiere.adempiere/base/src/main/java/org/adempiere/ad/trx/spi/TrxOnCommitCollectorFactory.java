@@ -33,7 +33,7 @@ import com.google.common.base.Supplier;
 /**
  * Template factory class for algorithms which collect items on transaction level and process the collected items on transaction commit.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <CollectorType> collector type. An instance of this class is stored in transaction properties and it will be processed when the transaction is committed.
  * @param <ItemType> item type. Items are collected in CollectorType instances.

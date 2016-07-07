@@ -38,7 +38,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * <p>
  * Note that currently we don't have to use the Consumes and Produces annotations, because we specify those types in the client.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Path("/agentsync")

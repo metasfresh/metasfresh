@@ -80,7 +80,7 @@ import de.metas.dpd.service.RoutingService;
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class StandardServices implements IAddOn

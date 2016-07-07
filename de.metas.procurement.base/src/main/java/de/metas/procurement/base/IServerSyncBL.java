@@ -51,7 +51,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  * </ul>
  *
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @AD_JavaClass(ignore = true)

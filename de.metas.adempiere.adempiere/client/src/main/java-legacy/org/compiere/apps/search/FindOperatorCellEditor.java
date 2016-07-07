@@ -12,7 +12,7 @@ import org.compiere.util.ValueNamePair;
 /**
  * Advanced search table - cell editor for Operator cell
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindOperatorCellEditor extends FindCellEditor

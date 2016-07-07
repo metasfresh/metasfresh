@@ -70,7 +70,7 @@ import de.metas.banking.bankstatement.match.service.impl.BankStatementPaymentMat
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 07994 Kontoauszugsimport (109116274972)
  */
 class BankStatementMatchPanel extends CPanel

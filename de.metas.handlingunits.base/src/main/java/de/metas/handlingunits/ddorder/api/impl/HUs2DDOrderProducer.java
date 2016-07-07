@@ -89,7 +89,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
  *
  * NOTE: this producer is NOT actually moving them, but it's just creating draft DD Orders to move them.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @task 08639
  */

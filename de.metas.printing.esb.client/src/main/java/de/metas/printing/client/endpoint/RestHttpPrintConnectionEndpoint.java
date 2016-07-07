@@ -64,7 +64,7 @@ import de.metas.printing.esb.api.PrinterHWList;
 /**
  * Endpoint that queries the printing system via http.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint

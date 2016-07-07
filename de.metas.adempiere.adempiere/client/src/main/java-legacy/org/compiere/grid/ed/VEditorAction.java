@@ -34,7 +34,7 @@ import javax.swing.KeyStroke;
 /**
  * Base {@link Action} class to be used for implementing {@link VEditor} actions.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 abstract class VEditorAction extends AbstractAction

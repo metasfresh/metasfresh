@@ -65,7 +65,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 /**
  * {@link MaterialTrackingDocuments}'s pricing informations
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 /* package */final class MaterialTrackingDocumentsPricingInfo
 {

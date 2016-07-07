@@ -31,7 +31,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
 /**
  * Service which allows us to PUSH from metasfresh server to webui server.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IWebuiPush extends ISingletonService

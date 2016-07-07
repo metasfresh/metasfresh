@@ -32,7 +32,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
  * <p>
  * Note: this should even work with an inactive handler.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_Invoice_Candidate_Create_Missing_Single_Handler

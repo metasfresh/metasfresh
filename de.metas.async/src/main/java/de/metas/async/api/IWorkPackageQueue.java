@@ -45,7 +45,7 @@ import de.metas.lock.exceptions.UnlockFailedException;
 /**
  * Use {@link IWorkPackageQueueFactory} to get an instance.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IWorkPackageQueue

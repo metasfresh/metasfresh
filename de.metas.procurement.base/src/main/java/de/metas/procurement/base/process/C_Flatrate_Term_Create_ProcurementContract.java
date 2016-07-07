@@ -53,7 +53,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
 /**
  * Process used to create procurement contracts
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)

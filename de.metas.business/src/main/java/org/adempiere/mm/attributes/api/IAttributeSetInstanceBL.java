@@ -33,7 +33,7 @@ import de.metas.product.IProductBL;
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IAttributeSetInstanceBL extends ISingletonService

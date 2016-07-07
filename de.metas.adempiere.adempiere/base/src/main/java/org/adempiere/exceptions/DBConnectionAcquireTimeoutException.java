@@ -25,7 +25,7 @@ package org.adempiere.exceptions;
 /**
  * Exception thrown when a database connection acquiring was timed out.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class DBConnectionAcquireTimeoutException extends DBNoConnectionException

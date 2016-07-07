@@ -34,7 +34,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 /**
  * Opens the {@link IPaymentBatch} related window for currently selected {@link IPayment}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class OpenPaymentBatchWindowAction extends AbstractPaymentTableAction

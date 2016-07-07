@@ -32,7 +32,7 @@ import org.compiere.swing.table.TableInfo;
 /**
  * Models the matching between {@link IBankStatementLine} and one or more {@link IPayment}s.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @TableInfo(defaultHideAll = true)

@@ -37,7 +37,7 @@ import de.metas.logging.LogManager;
  * <p>
  * This interceptor needs its own record in {@link org.compiere.model.I_AD_ModelValidator} and its own entitytype, because there shall never be an embedded broker when we run in minimal mode.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class JmsInterceptor extends AbstractModuleInterceptor

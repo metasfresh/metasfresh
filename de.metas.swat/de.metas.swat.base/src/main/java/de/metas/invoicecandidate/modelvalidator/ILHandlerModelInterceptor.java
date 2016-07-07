@@ -38,7 +38,7 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
 /**
  * Interceptor used to intercept invoice candidates relevant documents and manage their life cycle.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class ILHandlerModelInterceptor extends AbstractModelInterceptor

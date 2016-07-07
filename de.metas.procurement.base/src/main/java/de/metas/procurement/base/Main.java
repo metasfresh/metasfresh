@@ -48,7 +48,7 @@ import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 /**
  * Module activator
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class Main extends AbstractModuleInterceptor

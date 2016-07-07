@@ -42,7 +42,7 @@ import de.metas.currency.ICurrencyDAO;
 /**
  * Helper class used to execute GL_Distribution on a given {@link IAccountDimension}, amount and qty.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GLDistributionBuilder

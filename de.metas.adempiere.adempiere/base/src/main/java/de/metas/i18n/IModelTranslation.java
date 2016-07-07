@@ -25,7 +25,7 @@ package de.metas.i18n;
 /**
  * Contains all translated column values for a particular model (record) and a particular AD_Language.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IModelTranslation

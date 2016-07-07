@@ -69,7 +69,7 @@ import de.metas.payment.esr.ESRConstants;
  * 
  * This shall be a short living object.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class ClientSetup

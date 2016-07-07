@@ -41,7 +41,7 @@ import de.metas.procurement.sync.protocol.SyncConfirmation;
 /**
  * Sync confirmation collector and sender.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class SyncConfirmationsSender

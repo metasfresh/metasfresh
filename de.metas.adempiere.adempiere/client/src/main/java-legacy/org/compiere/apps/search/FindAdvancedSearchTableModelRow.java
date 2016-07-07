@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Advanced search table row model.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindAdvancedSearchTableModelRow

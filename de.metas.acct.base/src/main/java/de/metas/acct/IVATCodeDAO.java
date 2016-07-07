@@ -27,7 +27,7 @@ import org.adempiere.util.ISingletonService;
 /**
  * {@link VATCode} DAO
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IVATCodeDAO extends ISingletonService

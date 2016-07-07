@@ -38,7 +38,7 @@ import org.compiere.swing.CButton;
 /**
  * A favorite shortcut item in {@link FavoritesGroup}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FavoriteItem

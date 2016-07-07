@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Advanced search table - cell renderer and editor for AND/OR join option.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
