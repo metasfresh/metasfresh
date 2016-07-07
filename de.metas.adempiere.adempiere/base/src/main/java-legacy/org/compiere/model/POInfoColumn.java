@@ -18,10 +18,13 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
 
 /**
  * PO Info Column Info Value Object
@@ -86,7 +89,7 @@ public final class POInfoColumn implements Serializable
 		{
 			ColumnClass = Boolean.class;
 		}
-		else if (columnName.equals("Record_ID"))
+		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
 		{
 			displayTypeToSet = org.compiere.util.DisplayType.ID;
 			ColumnClass = Integer.class;

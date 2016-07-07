@@ -16,21 +16,12 @@
  *****************************************************************************/
 package org.compiere.dbPort;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,14 +30,12 @@ import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.service.ISysConfigBL;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_MigrationScript;
-import org.compiere.model.MSequence;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Convert SQL to Target DB
@@ -85,11 +74,10 @@ public abstract class Convert
 	private boolean                 m_verbose = true;
 
 	/**	Logger	*/
-	private static Logger	log	= LogManager.getLogger(Convert.class);
+	private static final transient Logger log = LogManager.getLogger(Convert.class);
 	
-    private static FileOutputStream tempFilePg = null;
-    private static Writer writerPg;
-
+	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
+	
     /**
 	 *  Set Verbose
 	 *  @param verbose
@@ -461,50 +449,31 @@ public abstract class Convert
 		if (logMigrationScript)
 		{
 			if (dontLog(oraStatement))
+			{
 				return;
+			}
+			
 			// task it_FRESH_47 : we only need scripts for Postgresql database
 			// Log postgres migration scripts in temp directory
 			// migration_script_postgresql.sql
 
-			try
+			if (pgStatement == null)
 			{
-				if (pgStatement == null)
-				{
-					// if oracle call convert for postgres before logging
-					Convert_PostgreSQL convert = new Convert_PostgreSQL();
-					List<String> r = convert.convert(oraStatement);
-					pgStatement = r.get(0);
-				}
-				if (tempFilePg == null)
-				{
-					File fileNamePg = createMigrationScriptFile("postgresql");
-					tempFilePg = new FileOutputStream(fileNamePg, true);
-					writerPg = new BufferedWriter(new OutputStreamWriter(tempFilePg, "UTF8"));
-				}
-				writeLogMigrationScript(writerPg, pgStatement);
+				// if oracle call convert for postgres before logging
+				final Convert_PostgreSQL convert = new Convert_PostgreSQL();
+				final List<String> r = convert.convert(oraStatement);
+				pgStatement = r.get(0);
 			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			
+			pgMigrationScriptWriter.appendSqlStatement(pgStatement);
 		}
 	}
 	
-	private static final File createMigrationScriptFile(final String dbType) throws IOException
+	public static final void closeMigrationScriptFiles()
 	{
-		final int scriptId = (MSequence.getNextID(0, I_AD_MigrationScript.Table_Name)* 10);
-		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-
-		final String prefix = scriptId + "_migration_script_"
-				+ dateFormat.format(new Date())
-				+ "_";
-		final String sufix = "_"
-				+ dbType
-				+ ".sql";
-		final File file = File.createTempFile(prefix, sufix);
-		return file;
+		pgMigrationScriptWriter.close();
 	}
-
+	
 	private static boolean dontLog(String statement)
 	{
 		// metas: teo_sarca: end
@@ -551,27 +520,6 @@ public abstract class Convert
 		return false;
 	}
 
-	private static void writeLogMigrationScript(Writer w, String statement) throws IOException
-	{
-		final String prm_COMMENT = Services.get(ISysConfigBL.class).getValue("DICTIONARY_ID_COMMENTS");
-		// log time and date
-		SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
-		String dateTimeText = format.format(new Timestamp(System.currentTimeMillis()));
-		w.append("-- ");
-		w.append(dateTimeText);
-		w.append("\n");
-		// log sysconfig comment
-		w.append("-- ");
-		w.append(prm_COMMENT);
-		w.append("\n");
-		// log statement
-		w.append(statement);
-		// close statement
-		w.append("\n;\n\n");
-		// flush stream - teo_sarca BF [ 1894474 ]
-		w.flush();
-	}
-
 	/**
 	 * Mark given keyword as native.
 	 * 
@@ -584,5 +532,4 @@ public abstract class Convert
 	{
 		return keyword;
 	}
-
 }   //  Convert

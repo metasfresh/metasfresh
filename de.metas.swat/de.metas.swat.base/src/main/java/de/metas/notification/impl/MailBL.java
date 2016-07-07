@@ -49,12 +49,14 @@ public class MailBL implements IMailBL
 		private final boolean isSendFromServer;
 		private final int adClientId;
 		private final int adUserId;
+		private final String colummnUserTo;
 
 		public Mailbox(final String smtpHost, final String email,
 				final String username, final String password,
 				final boolean isSmtpAuthorization,
 				final boolean isSendFromServer,
-				final int AD_Client_ID, final int AD_User_ID)
+				final int AD_Client_ID, final int AD_User_ID,
+				final String colummnUserTo)
 		{
 			this.smtpHost = smtpHost;
 			this.email = email;
@@ -64,6 +66,7 @@ public class MailBL implements IMailBL
 			this.isSendFromServer = isSendFromServer;
 			adClientId = AD_Client_ID;
 			adUserId = AD_User_ID;
+			this.colummnUserTo = colummnUserTo;
 		}
 
 		@Override
@@ -115,6 +118,12 @@ public class MailBL implements IMailBL
 		}
 
 		@Override
+		public String getColumnUserTo() 
+		{
+			return colummnUserTo;
+		}
+		
+		@Override
 		public String toString()
 		{
 			return "Mailbox [smtpHost=" + smtpHost
@@ -127,6 +136,7 @@ public class MailBL implements IMailBL
 					+ ", userId=" + adUserId
 					+ "]";
 		}
+
 	}
 
 	// @Cached
@@ -150,7 +160,8 @@ public class MailBL implements IMailBL
 					mailbox.isSmtpAuthorization(),
 					mailbox.isSendFromServer(),
 					mailbox.getAD_Client_ID(),
-					user.getAD_User_ID());
+					user.getAD_User_ID(),
+					mailbox.getColumnUserTo());
 		}
 		return mailbox;
 	}
@@ -174,7 +185,8 @@ public class MailBL implements IMailBL
 						adMailbox.isSmtpAuthorization(),
 						client.isServerEMail(),
 						client.getAD_Client_ID(),
-						-1 // AD_User_ID
+						-1, // AD_User_ID
+						config.getColumnUserTo()
 				);
 				log.debug("Found: " + getSummary(config) + "=>" + mailbox);
 				return mailbox;
@@ -188,7 +200,8 @@ public class MailBL implements IMailBL
 				client.isSmtpAuthorization(),
 				client.isServerEMail(),
 				client.getAD_Client_ID(),
-				-1 // AD_User_ID
+				-1, // AD_User_ID
+				null // ColumnUserTo
 		);
 		log.debug("Fallback to AD_Client settings: " + mailbox);
 		return mailbox;

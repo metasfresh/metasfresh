@@ -20,8 +20,14 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -30,6 +36,10 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 
 /**
  * Shipment/Receipt Callouts
@@ -57,52 +67,48 @@ public class CalloutInOut extends CalloutEngine {
 	 * @param value
 	 * @return error message or ""
 	 */
-	public String order(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
-		Integer C_Order_ID = (Integer) value;
-		if (C_Order_ID == null || C_Order_ID.intValue() == 0)
-			return "";
+	public String order(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.create(mTab, I_M_InOut.class);
+		
+		final I_C_Order order = inout.getC_Order();
+		if(order == null || order.getC_Order_ID() <= 0)
+		{
+			return NO_ERROR;
+		}
+		
 		// No Callout Active to fire dependent values
 		if (isCalloutActive()) // prevent recursive
-			return "";
+			return NO_ERROR;
 
 		// Get Details
-		MOrder order = new MOrder(ctx, C_Order_ID.intValue(), null);
-		if (order.get_ID() != 0) {
-			mTab.setValue("DateOrdered", order.getDateOrdered());
-			mTab.setValue("POReference", order.getPOReference());
-			mTab.setValue("AD_Org_ID", new Integer(order.getAD_Org_ID()));
-			mTab.setValue("AD_OrgTrx_ID", new Integer(order.getAD_OrgTrx_ID()));
-			mTab.setValue("C_Activity_ID",
-					new Integer(order.getC_Activity_ID()));
-			mTab.setValue("C_Campaign_ID",
-					new Integer(order.getC_Campaign_ID()));
-			mTab.setValue("C_Project_ID", new Integer(order.getC_Project_ID()));
-			mTab.setValue("User1_ID", new Integer(order.getUser1_ID()));
-			mTab.setValue("User2_ID", new Integer(order.getUser2_ID()));
-			
-			// 05251 begin: we need to use the advisor; code taken from MInOut(MOrder...) constructor
-			final I_M_Warehouse wh =  Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-			Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
-			mTab.setValue("M_Warehouse_ID", new Integer(wh.getM_Warehouse_ID()));
-			// 05251 end
-			
-			//
-			mTab.setValue("DeliveryRule", order.getDeliveryRule());
-			mTab.setValue("DeliveryViaRule", order.getDeliveryViaRule());
-			mTab.setValue("M_Shipper_ID", new Integer(order.getM_Shipper_ID()));
-			mTab.setValue("FreightCostRule", order.getFreightCostRule());
-			mTab.setValue("FreightAmt", order.getFreightAmt());
+		inout.setDateOrdered(order.getDateOrdered());
+		inout.setPOReference(order.getPOReference());
+		inout.setAD_Org_ID(order.getAD_Org_ID());
+		inout.setAD_OrgTrx_ID(order.getAD_OrgTrx_ID());
+		inout.setC_Activity_ID(order.getC_Activity_ID());
+		inout.setC_Campaign_ID(order.getC_Campaign_ID());
+		inout.setC_Project_ID(order.getC_Project_ID());
+		inout.setUser1_ID(order.getUser1_ID());
+		inout.setUser2_ID(order.getUser2_ID());
+		
+		// Warehouse (05251 begin: we need to use the advisor)
+		final I_M_Warehouse wh =  Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
+		inout.setM_Warehouse_ID(wh.getM_Warehouse_ID());
+		
+		//
+		inout.setDeliveryRule(order.getDeliveryRule());
+		inout.setDeliveryViaRule(order.getDeliveryViaRule());
+		inout.setM_Shipper_ID(order.getM_Shipper_ID());
+		inout.setFreightCostRule(order.getFreightCostRule());
+		inout.setFreightAmt(order.getFreightAmt());
 
-			mTab.setValue("C_BPartner_ID",
-					new Integer(order.getC_BPartner_ID()));
-
-			// [ 1867464 ]
-			mTab.setValue("C_BPartner_Location_ID", new Integer(order
-					.getC_BPartner_Location_ID()));
-			mTab.setValue("AD_User_ID", new Integer(order.getAD_User_ID()));
-		}
-		return "";
+		inout.setC_BPartner_ID(order.getC_BPartner_ID());
+		inout.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+		inout.setAD_User_ID(new Integer(order.getAD_User_ID()));
+		
+		return NO_ERROR;
 	} // order
 
 	/**
@@ -176,81 +182,50 @@ public class CalloutInOut extends CalloutEngine {
 	 * @param mTab
 	 * @param mField
 	 * @param value
-	 * @return error message or ""
+	 * @return error message or {@link #NO_ERROR}
 	 */
-	public String docType(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
-		Integer C_DocType_ID = (Integer) value;
-		if (C_DocType_ID == null || C_DocType_ID.intValue() == 0)
-			return "";
-
-		String sql = "SELECT d.DocBaseType, d.IsDocNoControlled, s.CurrentNext, " // 1..3
-				+ "s.AD_Sequence_ID, s.StartNewYear, s.DateColumn, d.IsSOTrx " // 4..7
-				+ "FROM C_DocType d "
-				+ "LEFT OUTER JOIN AD_Sequence s ON (d.DocNoSequence_ID=s.AD_Sequence_ID) "
-				+ "WHERE C_DocType_ID=?"; // 1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try {
-			Env.setContext(ctx, WindowNo, "C_DocTypeTarget_ID", C_DocType_ID
-					.intValue());
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_DocType_ID.intValue());
-			rs = pstmt.executeQuery();
-			if (rs.next()) {
-				// Set Movement Type
-				String DocBaseType = rs.getString("DocBaseType");
-				// BF [2708789] Read IsSOTrx from C_DocType
-				String trxFlag = rs.getString(7);
-				if (DocBaseType.equals("MMS")) // Material Shipments
-				/** solve 1648131 bug vpj-cd e-evolution */
-				{
-					boolean IsSOTrx = "Y".equals(trxFlag);
-					if (IsSOTrx)
-						mTab.setValue("MovementType", "C-"); // Customer
-																// Shipments
-					else
-						mTab.setValue("MovementType", "V-"); // Vendor Return
-
-				}
-				/** END vpj-cd e-evolution */
-				else if (DocBaseType.equals("MMR")) // Material Receipts
-				/** solve 1648131 bug vpj-cd e-evolution */
-				{
-					boolean IsSOTrx = "Y".equals(trxFlag);
-					if (IsSOTrx)
-						mTab.setValue("MovementType", "C+"); // Customer Return
-					else
-						mTab.setValue("MovementType", "V+"); // Vendor Receipts
-				}
-				if (!(trxFlag.equals(mTab.getValue("IsSOTrx"))))
-					mTab.setValue("IsSOTrx", trxFlag);
-				/** END vpj-cd e-evolution */
-
-				// DocumentNo
-				if (rs.getString("IsDocNoControlled").equals("Y")) {
-					if ("Y".equals(rs.getString(5))) {
-						String dateColumn = rs.getString(6);
-						int AD_Sequence_ID = rs.getInt(4);
-						mTab
-								.setValue("DocumentNo", "<"
-										+ MSequence.getPreliminaryNoByYear(
-												mTab, AD_Sequence_ID,
-												dateColumn, null) + ">");
-					} else
-						mTab.setValue("DocumentNo", "<"
-								+ rs.getString("CurrentNext") + ">");
-				}
-			}
-		} catch (SQLException e) {
-			log.error(sql, e);
-			return e.getLocalizedMessage();
-		} finally {
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+	public String docType(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.create(mTab, I_M_InOut.class);
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(inout.getC_DocType())
+				.setOldDocumentNo(inout.getDocumentNo())
+				.setDocumentModel(inout)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return NO_ERROR;
 		}
-		return "";
+
+		// Set Movement Type
+		final String DocBaseType = documentNoInfo.getDocBaseType();
+		final boolean isSOTrx = documentNoInfo.isSOTrx(); // BF [2708789] Read IsSOTrx from C_DocType
+		// solve 1648131 bug vpj-cd e-evolution
+		if (X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType))
+		{
+			if (isSOTrx)
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
+			else
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReturns);
+		}
+		else if (X_C_DocType.DOCBASETYPE_MaterialReceipt.equals(DocBaseType))
+		{
+			if (isSOTrx)
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerReturns);
+			else
+				inout.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReceipts);
+		}
+
+		inout.setIsSOTrx(isSOTrx);
+
+		// DocumentNo
+		if (documentNoInfo.isDocNoControlled())
+		{
+			inout.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+		return NO_ERROR;
 	} // docType
 
 	/**
@@ -263,115 +238,81 @@ public class CalloutInOut extends CalloutEngine {
 	 * @param value
 	 * @return error message or ""
 	 */
-	public String bpartner(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
-		Integer C_BPartner_ID = (Integer) value;
-		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
-			return "";
-
-		// metas: B062: Aenderung fuer die Ermittlung von Preisliste und Anschrift.
-		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
-				+ "p.SO_Description,p.IsDiscountPrinted,"
-				+ "p.SO_CreditLimit-stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ " AS CreditAvailable,"
-				+ "l.C_BPartner_Location_ID,c.AD_User_ID,"
-				+ "COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID,"
-				+ "COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID "
-				+ "FROM C_BPartner p"
-				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
-				+ " JOIN C_BP_Group g ON p.C_BP_Group_ID=g.C_BP_Group_ID"
-				+ " LEFT JOIN C_BPartner_Location l ON p.C_BPartner_ID=l.C_BPartner_ID"
-				+ " LEFT JOIN AD_User c ON p.C_BPartner_ID=c.C_BPartner_ID "
-				+ "WHERE l.IsActive='Y'"
-				+ " AND p.C_BPartner_ID=?"; // 1
-		//metas: ende
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try {
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_BPartner_ID.intValue());
-			rs = pstmt.executeQuery();
-			if (rs.next()) {
-				// [ 1867464 ]
-				boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo,
-						"IsSOTrx"));
-				
-				// metas: B062: Abfrage und Zuweisung von Preisliste und Anschrift
-				// (aus CalloutOrder Kopiert)
-				
-				// PriceList (indirect: IsTaxIncluded & Currency)
-				Integer ii = new Integer(rs.getInt(IsSOTrx ? "M_PriceList_ID"
-						: "PO_PriceList_ID"));
-				if (!rs.wasNull())
-					mTab.setValue("M_PriceList_ID", ii);
-				else { // get default PriceList
-					int i = Env.getContextAsInt(ctx, "#M_PriceList_ID");
-					if (i != 0)
-						mTab.setValue("M_PriceList_ID", new Integer(i));
-				}
-				int shipTo_ID = rs.getInt("C_BPartner_Location_ID");
-				// overwritten by InfoBP selection - works only if InfoWindow
-				// was used otherwise creates error (uses last value, may belong
-				// to differnt BP)
-				if (C_BPartner_ID.toString().equals(
-						Env.getContext(ctx, WindowNo, Env.TAB_INFO,
-								"C_BPartner_ID"))) {
-					String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO,
-							"C_BPartner_Location_ID");
-					if (loc.length() > 0)
-						shipTo_ID = Integer.parseInt(loc);
-				}
-				if (shipTo_ID == 0)
-					mTab.setValue("C_BPartner_Location_ID", null);
-				else
-					mTab.setValue("C_BPartner_Location_ID", new Integer(
-							shipTo_ID));
-				//metas: B062 ende
-				
-				if (!IsSOTrx) {
-					// Location
-					ii = new Integer(rs
-							.getInt("C_BPartner_Location_ID"));
-					if (rs.wasNull())
-						mTab.setValue("C_BPartner_Location_ID", null);
-					else
-						mTab.setValue("C_BPartner_Location_ID", ii);
-					// Contact
-					ii = new Integer(rs.getInt("AD_User_ID"));
-					if (rs.wasNull())
-						mTab.setValue("AD_User_ID", null);
-					else
-						mTab.setValue("AD_User_ID", ii);
-				}
-
-				// Bugs item #1679818: checking for SOTrx only
-				if (IsSOTrx) {
-					// CreditAvailable
-					double CreditAvailable = rs.getDouble("CreditAvailable");
-					if (!rs.wasNull() && CreditAvailable < 0)
-						mTab.fireDataStatusEEvent("CreditLimitOver",
-								DisplayType.getNumberFormat(DisplayType.Amount)
-										.format(CreditAvailable), false);
-				}//
-			}
-		} catch (SQLException e) {
-			log.error(sql, e);
-			return e.getLocalizedMessage();
-		} finally {
-			DB.close(rs, pstmt);
+	public String bpartner(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.create(mTab, I_M_InOut.class);
+		final I_C_BPartner bpartner = inout.getC_BPartner();
+		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		{
+			return NO_ERROR;
 		}
 
-		return "";
+		final boolean isSOTrx = inout.isSOTrx();
+
+		//
+		// BPartner Location (i.e. ShipTo)
+		final I_C_BPartner_Location shipToLocation = suggestShipToLocation(ctx, WindowNo, bpartner);
+		inout.setC_BPartner_Location(shipToLocation);
+
+		//
+		// BPartner Contact
+		if (!isSOTrx)
+		{
+			I_AD_User contact = null;
+			if (shipToLocation != null)
+			{
+				contact = Services.get(IBPartnerBL.class).retrieveUserForLoc(shipToLocation);
+			}
+			if (contact == null)
+			{
+				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
+			}
+			inout.setAD_User(contact);
+		}
+
+		//
+		// Check SO credit available
+		if (isSOTrx)
+		{
+			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
+			if (soCreditUsed.signum() < 0)
+			{
+				mTab.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(soCreditUsed), false);
+			}
+		}
+		return NO_ERROR;
 	} // bpartner
+	
+	public static I_C_BPartner_Location suggestShipToLocation(final Properties ctx, final int windowNo, final I_C_BPartner bpartner)
+	{
+		final int infoWindow_bpartnerId = Env.getContextAsInt(ctx, windowNo, Env.TAB_INFO, "C_BPartner_ID");
+		int infoWindow_bpartnerLocationId = -1;
+		if (bpartner.getC_BPartner_ID() == infoWindow_bpartnerId)
+		{
+			infoWindow_bpartnerLocationId = Env.getContextAsInt(ctx, windowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
+		}
+		
+		final List<I_C_BPartner_Location> shipToLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerShipToLocations(bpartner);
+		if (shipToLocations.isEmpty())
+		{
+			return null;
+		}
+		
+		if(infoWindow_bpartnerLocationId > 0)
+		{
+			for (final I_C_BPartner_Location shipToLocation : shipToLocations)
+			{
+				if (shipToLocation.getC_BPartner_Location_ID() == infoWindow_bpartnerLocationId)
+				{
+					return shipToLocation;
+				}
+			}
+		}
+		
+		final I_C_BPartner_Location shipToLocation = shipToLocations.get(0);
+		return shipToLocation;
+	}
 
 	/**
 	 * M_Warehouse. Set Organization and Default Locator
@@ -383,10 +324,10 @@ public class CalloutInOut extends CalloutEngine {
 	 * @param value
 	 * @return error message or ""
 	 */
-	public String warehouse(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
+	public String warehouse(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
 		if (isCalloutActive())
-			return "";
+			return NO_ERROR;
 		Integer M_Warehouse_ID = (Integer) value;
 		if (M_Warehouse_ID == null || M_Warehouse_ID.intValue() == 0)
 			return "";
@@ -414,9 +355,7 @@ public class CalloutInOut extends CalloutEngine {
 					Env.setContext(ctx, WindowNo, 0, "M_Locator_ID", null);
 				else {
 					log.info("M_Locator_ID=" + ii);
-					Env
-							.setContext(ctx, WindowNo, "M_Locator_ID", ii
-									.intValue());
+					Env.setContext(ctx, WindowNo, "M_Locator_ID", ii.intValue());
 				}
 			}
 		} catch (SQLException e) {
@@ -649,8 +588,7 @@ public class CalloutInOut extends CalloutEngine {
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
 			}
-			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
+			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
@@ -672,11 +610,9 @@ public class CalloutInOut extends CalloutEngine {
 
 			// metas: make sure that MovementQty must be 1 for a product with a
 			// serial number.
-			final Integer attributeSetInstanceId = (Integer) mTab
-					.getValue(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID);
+			final Integer attributeSetInstanceId = (Integer) mTab.getValue(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID);
 			if (attributeSetInstanceId != null && attributeSetInstanceId > 0) {
-				final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance
-						.get(Env.getCtx(), attributeSetInstanceId, 0);
+				final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance.get(Env.getCtx(), attributeSetInstanceId, 0);
 				if (attributeSetInstance != null) {
 					final String serNo = attributeSetInstance.getSerNo();
 					if (serNo != null && !"".equals(serNo)
@@ -697,8 +633,7 @@ public class CalloutInOut extends CalloutEngine {
 				QtyEntered = QtyEntered1;
 				mTab.setValue("QtyEntered", QtyEntered);
 			}
-			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
+			MovementQty = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 				MovementQty = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(MovementQty) != 0;
@@ -713,23 +648,20 @@ public class CalloutInOut extends CalloutEngine {
 			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
 			MovementQty = (BigDecimal) value;
 			int precision = MProduct.get(ctx, M_Product_ID).getUOMPrecision();
-			BigDecimal MovementQty1 = MovementQty.setScale(precision,
-					BigDecimal.ROUND_HALF_UP);
+			BigDecimal MovementQty1 = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (MovementQty.compareTo(MovementQty1) != 0) {
 				log.debug("Corrected MovementQty " + MovementQty + "->"
 						+ MovementQty1);
 				MovementQty = MovementQty1;
 				mTab.setValue("MovementQty", MovementQty);
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, MovementQty);
+			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, MovementQty);
 			if (QtyEntered == null)
 				QtyEntered = MovementQty;
 			boolean conversion = MovementQty.compareTo(QtyEntered) != 0;
 			log.debug("UOM=" + C_UOM_To_ID + ", MovementQty=" + MovementQty
 					+ " -> " + conversion + " QtyEntered=" + QtyEntered);
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y"
-					: "N");
+			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
 			mTab.setValue("QtyEntered", QtyEntered);
 		}
 		//
@@ -751,8 +683,8 @@ public class CalloutInOut extends CalloutEngine {
 	 *            new value
 	 * @return error message or ""
 	 */
-	public String asi(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value) {
+	public String asi(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
 		if (isCalloutActive())
 			return "";
 		Integer M_ASI_ID = (Integer) value;
@@ -760,42 +692,33 @@ public class CalloutInOut extends CalloutEngine {
 			return "";
 		//
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-				"M_Warehouse_ID");
+		int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo, "M_Warehouse_ID");
 		int M_Locator_ID = Env.getContextAsInt(ctx, WindowNo, "M_Locator_ID");
 		log.debug("M_Product_ID=" + M_Product_ID + ", M_ASI_ID=" + M_ASI_ID
 				+ " - M_Warehouse_ID=" + M_Warehouse_ID + ", M_Locator_ID="
 				+ M_Locator_ID);
 		// Check Selection
-		int M_AttributeSetInstance_ID = Env.getContextAsInt(Env.getCtx(),
-				WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID");
+		int M_AttributeSetInstance_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID");
 		if (M_ASI_ID.intValue() == M_AttributeSetInstance_ID) {
-			int selectedM_Locator_ID = Env.getContextAsInt(Env.getCtx(),
-					WindowNo, Env.TAB_INFO, "M_Locator_ID");
+			int selectedM_Locator_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, Env.TAB_INFO, "M_Locator_ID");
 			if (selectedM_Locator_ID != 0) {
 				log.debug("Selected M_Locator_ID=" + selectedM_Locator_ID);
-				mTab
-						.setValue("M_Locator_ID", new Integer(
-								selectedM_Locator_ID));
+				mTab.setValue("M_Locator_ID", new Integer(selectedM_Locator_ID));
 			}
 		}
 
 		// metas: make sure that MovementQty must be 1 for a product with a
 		// serial number.
-		final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance
-				.get(Env.getCtx(), M_AttributeSetInstance_ID, 0);
-		final BigDecimal qtyEntered = (BigDecimal) mTab
-				.getValue(I_M_InOutLine.COLUMNNAME_QtyEntered);
+		final MAttributeSetInstance attributeSetInstance = MAttributeSetInstance.get(Env.getCtx(), M_AttributeSetInstance_ID, 0);
+		final BigDecimal qtyEntered = (BigDecimal) mTab.getValue(I_M_InOutLine.COLUMNNAME_QtyEntered);
 		if (attributeSetInstance != null) {
 			final String serNo = attributeSetInstance.getSerNo();
 			if (serNo != null
 					&& !"".equals(serNo)
-					&& (qtyEntered == null || qtyEntered
-							.compareTo(BigDecimal.ONE) != 0)) {
+					&& (qtyEntered == null || qtyEntered.compareTo(BigDecimal.ONE) != 0)) {
 
 				Services.get(IClientUI.class).info(WindowNo, null, MSG_SERIALNO_QTY_ONE);
-				mTab.setValue(I_M_InOutLine.COLUMNNAME_QtyEntered,
-						BigDecimal.ONE);
+				mTab.setValue(I_M_InOutLine.COLUMNNAME_QtyEntered, BigDecimal.ONE);
 			}
 		}
 		// metas end

@@ -1,15 +1,15 @@
 /******************************************************************************
- * Copyright (C) 2009 Low Heng Sin                                            *
- * Copyright (C) 2009 Idalica Corporation                                     *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Copyright (C) 2009 Low Heng Sin *
+ * Copyright (C) 2009 Idalica Corporation *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package de.metas.banking.payment.paymentallocation.form;
 
@@ -23,6 +23,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Supplier;
@@ -66,6 +67,11 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	private BigDecimal totalPaymentCandidatesAmt = BigDecimal.ZERO;
 	// @formatter:on
+
+	/**
+	 * Field to keep the value of the "Discount" flag
+	 */
+	private boolean isDiscountFlagTrue = false;
 
 	private final IProcessor<Exception> contextWarningsConsumer = new IProcessor<Exception>()
 	{
@@ -174,6 +180,27 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 	 */
 	private void onRowSelectedChanged(final IAllocableDocRow row)
 	{
+		// FRESH-306: Make sure the payment lines' DiscountAmt is up to date.
+		// In case no invoice line is selected, the DIscountAmt values must be 0 and readonly.
+		final int selectedInvoices = getInvoiceRowsSelected().size();
+
+		if (selectedInvoices <= 0)
+		{
+			paymentsTableModel.setAllowWriteOffAmountOfType(InvoiceWriteOffAmountType.Discount, false);
+
+			for (final IPaymentRow paymentRow : getPaymentRowsSelected())
+			{
+				paymentRow.setDiscountAmt(Env.ZERO);
+			}
+		}
+
+		// Otherwise (if there is at least one invoice selected) the DiscountAmt must be consistent with the "Discount" flag:
+		// Read-only and 0 if the flag is not set, editable if the flag is set.
+		else
+		{
+			paymentsTableModel.setAllowWriteOffAmountOfType(InvoiceWriteOffAmountType.Discount, isDiscountFlagTrue);
+		}
+
 		//
 		// Row was just selected:
 		if (row.isSelected())
@@ -264,8 +291,22 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 	 */
 	protected final void onAllowWriteOffFlagChanged(final InvoiceWriteOffAmountType type, final boolean allowed)
 	{
+		// FRESH-360: update the field with the current value of "Discount" flag
+
+		if (InvoiceWriteOffAmountType.Discount == type)
+		{
+			isDiscountFlagTrue = allowed;
+		}
+
 		invoicesTableModel.setAllowWriteOffAmountOfType(type, allowed);
-		paymentsTableModel.setAllowWriteOffAmountOfType(type, allowed);
+
+		final int selectedInvoices = getInvoiceRowsSelected().size();
+
+		// Only allow a DiscountAmt in payments if at least one invoice is selected.
+		if (selectedInvoices > 0)
+		{
+			paymentsTableModel.setAllowWriteOffAmountOfType(type, allowed);
+		}
 
 		final PaymentAllocationContext context = createPaymentAllocationContext();
 
@@ -290,7 +331,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		invoicesTableModel.fireTableRowsUpdated(invoiceRows);
 	}
 
-	/** @return true if given write-off type is allowed */
+	/**
+	 * @return true if given write-off type is allowed
+	 */
 	protected final boolean isAllowWriteOffAmountOfType(final InvoiceWriteOffAmountType type)
 	{
 		return invoicesTableModel.isAllowWriteOffAmountOfType(type);
@@ -414,8 +457,8 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 				.setMultiCurrency(isMultiCurrency())
 				.setAllowedWriteOffTypes(invoicesTableModel.getAllowedWriteOffTypes())
 				.setWarningsConsumer(contextWarningsConsumer)
-		//
-		;
+				//
+				;
 	}
 
 	private PaymentAllocationContext createPaymentAllocationContext()
@@ -457,7 +500,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		final Date payementsLatestDocumentDate = paymentsTableModel.getLatestDocumentDate();
 		return TimeUtil.max(invoicesLatestDocumentDate, payementsLatestDocumentDate);
 	}
-	
+
 	/**
 	 * Returns the latest document date of all invoices and payments, or <code>null</code> if {@link #isMultiCurrency()} returns <code>true</code>.
 	 */
@@ -480,7 +523,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		return getTotalsSupplier().get();
 	}
 
-	/** @return totals supplier which calculates the totals just when it is called */
+	/**
+	 * @return totals supplier which calculates the totals just when it is called
+	 */
 	private final Supplier<PaymentAllocationTotals> getTotalsSupplier()
 	{
 		return new Supplier<PaymentAllocationTotals>()

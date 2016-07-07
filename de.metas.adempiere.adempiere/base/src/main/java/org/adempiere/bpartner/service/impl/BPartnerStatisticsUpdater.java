@@ -27,12 +27,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 
 /**
  * Synchronous implementation; note that there is also an async implementation which sets up a work package to to the job later and in background.
@@ -43,8 +42,8 @@ public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 	@Override
 	public void updateBPartnerStatistics(Properties ctx, Set<Integer> bpartnerIds, String trxName)
 	{
-		// Services
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		
 		if (bpartnerIds == null || bpartnerIds.isEmpty())
 		{
 			return;
@@ -54,12 +53,12 @@ public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 		while (it.hasNext())
 		{
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, it.next(), I_C_BPartner.class, trxName);
-			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-			bpartnerStatsBL.updateTotalOpenBalance(stats);
-			bpartnerStatsBL.updateActualLifeTimeValue(stats);
-			bpartnerStatsBL.updateSOCreditUsed(stats);
-			bpartnerStatsBL.updateSOCreditStatus(stats);
+			bpartnerStatsDAO.updateTotalOpenBalance(stats);
+			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
+			bpartnerStatsDAO.updateSOCreditUsed(stats);
+			bpartnerStatsDAO.updateSOCreditStatus(stats);
 		}
 
 	}

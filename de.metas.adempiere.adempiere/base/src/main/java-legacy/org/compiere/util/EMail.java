@@ -472,7 +472,7 @@ public final class EMail implements Serializable
 
 			for (final Address address : addresses)
 			{
-				message.addHeader("X-AdempiereDebug-" + type.toString(), address.toString());
+				message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
 			}
 		}
 		else
@@ -1051,13 +1051,13 @@ public final class EMail implements Serializable
 		// Simple Message
 		if (m_attachments == null || m_attachments.size() == 0)
 		{
-			if (m_messageHTML == null || m_messageHTML.length() == 0)
+			if (Check.isEmpty(m_messageHTML))
 			{
-				m_msg.setText(getMessageCRLF(), charSetName);
+				m_msg.setText(getMessageCRLF(), charSetName, "plain"); // just explicitly adding "plain" for better contrast with "html"
 			}
 			else
 			{
-				m_msg.setDataHandler(new DataHandler(new ByteArrayDataSource(m_messageHTML, charSetName, "text/html")));
+				m_msg.setText(m_messageHTML, charSetName, "html"); // #107 FRESH-445: this call solves the issue
 			}
 			//
 			log.debug("(simple) " + getSubject());
@@ -1070,11 +1070,11 @@ public final class EMail implements Serializable
 
 			if (Check.isEmpty(m_messageHTML, true))
 			{
-				mbp_1.setText(getMessageCRLF(), charSetName);
+				mbp_1.setText(getMessageCRLF(), charSetName, "plain"); // just explicitly adding "plain" for better contrast with "html"
 			}
 			else
 			{
-				mbp_1.setDataHandler(new DataHandler(new ByteArrayDataSource(m_messageHTML, charSetName, "text/html")));
+				mbp_1.setText(m_messageHTML, charSetName, "html"); // #107 FRESH-445: this call solves the issue
 			}
 
 			// Create Multipart and its parts to it

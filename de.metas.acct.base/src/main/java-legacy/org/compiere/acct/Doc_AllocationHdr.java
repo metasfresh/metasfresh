@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -22,10 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -42,11 +41,13 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Post Allocation Documents.
@@ -195,6 +196,30 @@ public class Doc_AllocationHdr extends Doc
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
+		int countPayments = 0;
+		int countInvoices = 0;
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+			if (line.hasInvoiceDocument())
+			{
+				countInvoices++;
+			}
+			if (line.hasPaymentDocument())
+			{
+				countPayments++;
+			}
+		}
+
+		//
+		//
+		if (countPayments > 0 && countInvoices == 0)
+		{
+			createFacts_PaymentAllocation(fact);
+			m_facts.add(fact);
+			return m_facts;
+		}
+
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
@@ -283,7 +308,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}	// for all lines
+		}           	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -291,6 +316,62 @@ public class Doc_AllocationHdr extends Doc
 		m_facts.add(fact);
 		return m_facts;
 	}   // createFact
+
+	/**
+	 * Create facts for payments in the case when no invoice was involved.
+	 * The pay Amt will go to Credit for outgoing payments and to Debit for Incoming payments
+	 * 
+	 * @param fact
+	 */
+	private void createFacts_PaymentAllocation(final Fact fact)
+	{
+		final MAcctSchema as = fact.getAcctSchema();
+
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+			
+			// In case there is a line with a writeoff amount, throw an exception. This is not supported (yet).
+
+			if (line.getPaymentWriteOffAmt().signum() != 0)
+			{
+				throw new AccountingException("The line {0} has writeOff amount. This is not supported", new Object[] { line });
+			}
+			
+			final MAccount paymentAcct = line.getPaymentAcct(as);
+			final I_C_Payment payment = line.getC_Payment();
+
+			if (payment == null)
+			{
+				continue;
+			}
+
+			final FactLine fl_Payment;
+
+			final BigDecimal payAmt = payment.getPayAmt();
+
+			// Incoming payment
+			if (payment.isReceipt())
+			{
+				// Originally on Credit. The amount must be moved to Debit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
+
+			}
+
+			// Outgoing payment
+			else
+			{
+				// Originally on Debit. The amount must be moved to Credit
+				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, payAmt);
+			}
+
+			// Make sure the fact line was created
+			Check.assumeNotNull(fl_Payment, "fl_Payment not null");
+
+			fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
+			fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
+		}
+	}
 
 	/**
 	 * Creates facts related to {@link DocLine_Allocation#getPaymentWriteOffAmt()}.
@@ -807,7 +888,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}	// Commitment
+		}           	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1217,7 +1298,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}	// Discount
+			}           	// Discount
 
 			//
 			// WriteOff Amount
@@ -1253,8 +1334,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}	// WriteOff
-		}	// for all lines
+			}           	// WriteOff
+		}           	// for all lines
 	}	// createEntries
 
 	/**

@@ -93,12 +93,10 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
-			<version>1.7</version>
 		</dependency>
 
 		<dependency>
@@ -135,12 +133,15 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.jxls</groupId>
 			<artifactId>jxls-poi</artifactId>
 			<version>1.0.9</version>
+		</dependency>
+			<!-- 
 			<exclusions>
-				<!-- exclude those because jasperreports already brings them -->
+				- exclude those because jasperreports already brings them -
 				<exclusion>
 					<groupId>org.apache.poi</groupId>
 					<artifactId>poi</artifactId>
@@ -151,6 +152,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 				</exclusion>
 			</exclusions>
 		</dependency>
+		 -->
 	</dependencies>
 
 	<build>

@@ -13,15 +13,14 @@ package de.metas.flatrate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,6 +38,7 @@ import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -77,12 +77,25 @@ public class C_Invoice_Candidate implements ModelValidator
 	@Override
 	public String modelChange(final PO po, final int type) throws Exception
 	{
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		
 		final I_C_Invoice_Candidate invoiceCand = InterfaceWrapperHelper.create(po, I_C_Invoice_Candidate.class);
 
 		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 		{
 			final I_C_Flatrate_Term term = flatrateDAO.retrieveNonSimTermOrNull(invoiceCand);
 			invoiceCand.setIsToClear(term != null);
+			
+			// FRESH-378
+			// Mark the candidate as Processed_Override = Y because in case it has IsToClear on true. This kind of candidate is not relevant for the invoice
+			// Could happen when the partner has a subscription for the kind of product in the invoice candidate
+			if(term != null)
+			{
+				if (invoiceCandBL.isCloseIfIsToClear())
+				{
+					invoiceCand.setProcessed_Override("Y");
+				}
+			}
 
 		}
 		if (type == TYPE_BEFORE_CHANGE)
@@ -93,6 +106,16 @@ public class C_Invoice_Candidate implements ModelValidator
 			{
 				invoiceCand.setIsToClear(newIsToClear);
 				Services.get(IInvoiceCandDAO.class).invalidateCand(invoiceCand);
+			}
+			
+			// FRESH-378
+			// Make sure the invoice candidate is closed (if required) if the invoice candidate is set to be cleared
+			if(newIsToClear)
+			{
+				if (invoiceCandBL.isCloseIfIsToClear())
+				{
+					invoiceCand.setProcessed_Override("Y");
+				}
 			}
 
 			if (newIsToClear && po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered))
@@ -129,12 +152,10 @@ public class C_Invoice_Candidate implements ModelValidator
 
 		if (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE)
 		{
-			final boolean qtyChanged =
-					po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice)
-							|| po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
+			final boolean qtyChanged = po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice)
+					|| po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
 
-			final boolean isToClearChanged =
-					po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_IsToClear);
+			final boolean isToClearChanged = po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_IsToClear);
 
 			if ((qtyChanged || isToClearChanged) && invoiceCand.isToClear())
 			{
