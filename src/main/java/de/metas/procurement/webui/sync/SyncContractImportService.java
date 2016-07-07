@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.procurement.webui.event.ContractChangedEvent;
+import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.ContractLine;
@@ -55,6 +57,8 @@ public class SyncContractImportService extends AbstractSyncImportService
 	@Autowired
 	@Lazy
 	private SyncProductImportService productsImportService;
+	@Autowired
+	private MFEventBus applicationEventBus;
 
 	public Contract importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
@@ -87,7 +91,9 @@ public class SyncContractImportService extends AbstractSyncImportService
 		//
 		// Save created/updated lines
 		contractLinesRepo.save(contractLinesToSave);
-
+		
+		applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
+		
 		return contract;
 	}
 	
@@ -108,6 +114,7 @@ public class SyncContractImportService extends AbstractSyncImportService
 		contract.setDeleted(false);
 		contract.setDateFrom(syncContract.getDateFrom());
 		contract.setDateTo(syncContract.getDateTo());
+		contract.setRfq_uuid(syncContract.getRfq_uuid());
 		contractsRepo.save(contract);
 		logger.debug("Imported: {} -> {}", syncContract, contract);
 		

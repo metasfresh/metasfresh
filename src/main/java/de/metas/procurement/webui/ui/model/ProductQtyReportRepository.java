@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutionException;
 
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.spring.i18n.I18N;
 
@@ -21,9 +23,13 @@ import com.google.gwt.thirdparty.guava.common.cache.LoadingCache;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.ObjectProperty;
 
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.MFProcurementUI;
+import de.metas.procurement.webui.event.ContractChangedEvent;
+import de.metas.procurement.webui.event.MFEventBus;
+import de.metas.procurement.webui.event.ProductSupplyChangedEvent;
+import de.metas.procurement.webui.event.UIApplicationEventListenerAdapter;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Contracts;
@@ -31,6 +37,7 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.ISendService;
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 
@@ -47,22 +54,27 @@ import de.metas.procurement.webui.util.DateUtils;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class ProductQtyReportRepository
 {
+	private static final Logger logger = LoggerFactory.getLogger(ProductQtyReportContainer.class);
+	
 	@Autowired
-    private I18N i18n;
+	private I18N i18n;
 
-	@Autowired(required = true)
-	IProductSuppliesService productSuppliesRepository;
+	@Autowired
+	private IProductSuppliesService productSuppliesRepository;
+
+	@Autowired
+	private MFEventBus applicationEventBus;
 
 	private final User user;
 	private final Contracts contracts;
@@ -94,9 +106,23 @@ public class ProductQtyReportRepository
 
 		this.user = user;
 		this.contracts = contracts;
-	}
 
-	private final ObjectProperty<Integer> notSentCounterProperty = new ObjectProperty<>(0);
+		applicationEventBus.register(new UIApplicationEventListenerAdapter()
+		{
+			@Override
+			public void onContractChanged(final ContractChangedEvent event)
+			{
+				resetCacheOnContractChanged(event);
+			}
+
+			@Override
+			public void onProductSupplyChanged(final ProductSupplyChangedEvent event)
+			{
+				updateOnProductSupplyChanged(event);
+			}
+		});
+
+	}
 
 	private final User getUser()
 	{
@@ -117,9 +143,15 @@ public class ProductQtyReportRepository
 	{
 		if (_productsContracted == null)
 		{
-			List<Product> products = getContracts().getProducts();
-			Collections.sort(products, Product.comparatorByName(i18n.getLocale()));
-			_productsContracted = ImmutableList.copyOf(products);
+			synchronized (this)
+			{
+				if (_productsContracted == null)
+				{
+					final List<Product> products = getContracts().getProducts();
+					Collections.sort(products, Product.comparatorByName(i18n.getLocale()));
+					_productsContracted = ImmutableList.copyOf(products);
+				}
+			}
 		}
 		return _productsContracted;
 	}
@@ -128,10 +160,24 @@ public class ProductQtyReportRepository
 	{
 		if (_productsFavorite == null)
 		{
-			final User user = getUser();
-			_productsFavorite = ImmutableList.copyOf(productSuppliesRepository.getUserFavoriteProducts(user));
+			synchronized (this)
+			{
+				if (_productsFavorite == null)
+				{
+					final User user = getUser();
+					_productsFavorite = ImmutableList.copyOf(productSuppliesRepository.getUserFavoriteProducts(user));
+				}
+			}
 		}
 		return _productsFavorite;
+	}
+
+	private void resetProductsFavorite()
+	{
+		synchronized (this)
+		{
+			_productsFavorite = null;
+		}
 	}
 
 	public List<Product> getProductsContractedButNotFavorite()
@@ -145,7 +191,7 @@ public class ProductQtyReportRepository
 	public void addFavoriteProduct(final Product product)
 	{
 		productSuppliesRepository.addUserFavoriteProduct(getUser(), product);
-		_productsFavorite = null; // FIXME: optimization: i think it would be better to just add it to internal list
+		resetProductsFavorite(); // FIXME: optimization: i think it would be better to just add it to internal list
 
 		//
 		// Migrate existing daily report containers
@@ -180,7 +226,7 @@ public class ProductQtyReportRepository
 		{
 			return; // already deleted
 		}
-		_productsFavorite = null; // FIXME: optimization: i think it would be better to just add it to internal list
+		resetProductsFavorite(); // FIXME: optimization: i think it would be better to just add it to internal list
 
 		//
 		// Migrate existing daily report containers
@@ -193,10 +239,10 @@ public class ProductQtyReportRepository
 				deletedItems.add(deletedItem);
 			}
 		}
-		
+
 		// make sure the ZERO quantities were reported
 		send(deletedItems);
-		
+
 		//
 		// Migrate the week containers
 		for (final WeekProductQtyReportContainer weekContainer : week2productQtyContainer.values())
@@ -209,11 +255,17 @@ public class ProductQtyReportRepository
 	{
 		if (_productsNotContracted == null)
 		{
-			final List<Product> productsNotContracted = new ArrayList<>(productSuppliesRepository.getAllSharedProducts());
-			final Collection<Product> contractedProducts = getProductsContracted();
-			productsNotContracted.removeAll(contractedProducts);
-			Collections.sort(productsNotContracted, Product.comparatorByName(i18n.getLocale()));
-			this._productsNotContracted = ImmutableList.copyOf(productsNotContracted);
+			synchronized (this)
+			{
+				if (_productsNotContracted == null)
+				{
+					final List<Product> productsNotContracted = new ArrayList<>(productSuppliesRepository.getAllSharedProducts());
+					final Collection<Product> contractedProducts = getProductsContracted();
+					productsNotContracted.removeAll(contractedProducts);
+					Collections.sort(productsNotContracted, Product.comparatorByName(i18n.getLocale()));
+					_productsNotContracted = ImmutableList.copyOf(productsNotContracted);
+				}
+			}
 		}
 		return _productsNotContracted;
 	}
@@ -286,14 +338,14 @@ public class ProductQtyReportRepository
 			for (final Object itemId : productQtyReportContainer.getItemIds())
 			{
 				final BeanItem<ProductQtyReport> item = productQtyReportContainer.getItem(itemId);
-				if(item == null)
+				if (item == null)
 				{
 					continue;
 				}
 				items.add(item);
 			}
 		}
-		
+
 		send(items);
 	}
 
@@ -301,7 +353,7 @@ public class ProductQtyReportRepository
 	public void send(final List<BeanItem<ProductQtyReport>> items)
 	{
 		final Contracts contracts = getContracts();
-		
+
 		for (final BeanItem<ProductQtyReport> item : items)
 		{
 			send(contracts, item);
@@ -328,46 +380,14 @@ public class ProductQtyReportRepository
 
 		//
 		// Flag as sent
-		productQtyReport.setQtySent(qty);
+		productQtyReport.setSentFieldsFromActualFields();
 		updateSentStatus(item);
 	}
 
 	public void updateSentStatus(final BeanItem<ProductQtyReport> item)
 	{
-		final ProductQtyReport bean = item.getBean();
-		final boolean sent = bean.getQty().compareTo(bean.getQtySent()) == 0;
-		
-		@SuppressWarnings("unchecked")
-		final Property<Boolean> sentProperty = item.getItemProperty(ProductQtyReport.PROPERY_Sent);
-		if (sentProperty.getValue() == sent)
-		{
-			return;
-		}
-
-		sentProperty.setValue(sent);
-
-		//
-		// Adjust the not-sent counter
-		if (sent)
-		{
-			final int counter = notSentCounterProperty.getValue();
-			notSentCounterProperty.setValue(counter > 0 ? counter - 1: 0); // guard against negative counters (i.e. some bug)
-		}
-		else
-		{
-			int counter = notSentCounterProperty.getValue();
-			notSentCounterProperty.setValue(counter + 1);
-		}
-	}
-	
-	public Property<Integer> getNotSentCounterProperty()
-	{
-		return notSentCounterProperty;
-	}
-
-	public int getNotSentCounter()
-	{
-		return notSentCounterProperty.getValue();
+		final ISendService sendService = MFProcurementUI.getCurrentMFSession().getSendService();
+		sendService.updateSentStatus(item);
 	}
 
 	public WeekProductQtyReportContainer getWeek(final Date aDayInWeek)
@@ -395,6 +415,57 @@ public class ProductQtyReportRepository
 		}
 
 		return weekContainer;
+	}
+
+	protected void resetCacheOnContractChanged(final ContractChangedEvent event)
+	{
+		logger.debug("Reseting cache because of {}", event);
+		
+		synchronized (this)
+		{
+			contracts.resetContractsCache();
+			_productsContracted = null;
+			_productsNotContracted = null;
+			resetProductsFavorite();
+		}
+	}
+
+	private void updateOnProductSupplyChanged(final ProductSupplyChangedEvent event)
+	{
+		logger.debug("Updating product supplies for {}", event);
+		
+		final Date day = event.getDay();
+		final ProductQtyReportContainer dailySupplies = day2productQtyReportContainer.getIfPresent(day);
+		if (dailySupplies == null)
+		{
+			return;
+		}
+
+		final Product product = event.getProduct();
+		if (product == null)
+		{
+			return;
+		}
+
+		//
+		// Get/create product qty report entry
+		BeanItem<ProductQtyReport> item = dailySupplies.getItemByProduct(product);
+		if (item == null)
+		{
+			final ProductQtyReport productQtyReport = ProductQtyReport.of(product, day);
+			item = dailySupplies.addBean(productQtyReport);
+		}
+
+		//
+		// Set quantity
+		setQty(item, event.getQty());
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static final void setQty(final BeanItem<ProductQtyReport> item, final BigDecimal qty)
+	{
+		final Property qtyProperty = item.getItemProperty(ProductQtyReport.PROPERTY_Qty);
+		qtyProperty.setValue(qty);
 	}
 
 }

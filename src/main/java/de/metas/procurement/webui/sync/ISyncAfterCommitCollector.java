@@ -1,14 +1,13 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.model.Rfq;
+import de.metas.procurement.webui.model.RfqQty;
 import de.metas.procurement.webui.model.WeekSupply;
 
 /*
  * #%L
- * de.metas.procurement.webui
+ * metasfresh-procurement-webui
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -19,22 +18,24 @@ import de.metas.procurement.webui.model.WeekSupply;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IServerSyncService
+public interface ISyncAfterCommitCollector
 {
-	void awaitInitialSyncComplete(long timeout, TimeUnit unit) throws InterruptedException;
 
-	void reportProductSuppliesAsync(List<ProductSupply> productSupplies);
+	ISyncAfterCommitCollector add(ProductSupply productSupply);
 
-	void reportWeeklySupplyAsync(List<WeekSupply> weeklySupplies);
+	ISyncAfterCommitCollector add(WeekSupply weeklySupply);
 
-	ISyncAfterCommitCollector syncAfterCommit();
+	ISyncAfterCommitCollector add(Rfq rfq);
+
+	ISyncAfterCommitCollector add(RfqQty rfqQty);
+
 }

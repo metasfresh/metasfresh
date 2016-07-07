@@ -9,6 +9,7 @@ import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.service.ISendService;
 import de.metas.procurement.webui.util.DateUtils;
 
 /*
@@ -33,12 +34,11 @@ import de.metas.procurement.webui.util.DateUtils;
  * #L%
  */
 
-public final class ProductQtyReport
+public final class ProductQtyReport implements ISendService.ISendAwareBean
 {
 	public static final String PROPERY_Id = "id";
 	public static final String PROPERY_ProductName = "productName";
 	public static final String PROPERTY_Qty = "qty";
-	public static final String PROPERY_Sent = "sent";
 
 	public static final ProductQtyReport of(final Product product, final Date day)
 	{
@@ -132,7 +132,7 @@ public final class ProductQtyReport
 	{
 		return product.getPackingInfo(locale);
 	}
-
+	
 	public Date getDay()
 	{
 		return (Date)day.clone();
@@ -153,11 +153,13 @@ public final class ProductQtyReport
 		this.qty = qty;
 	}
 
+	@Override
 	public boolean isSent()
 	{
 		return sent;
 	}
 
+	@Override
 	public void setSent(final boolean sent)
 	{
 		this.sent = sent;
@@ -176,5 +178,17 @@ public final class ProductQtyReport
 	public void setQtySent(final BigDecimal qtySent)
 	{
 		this.qtySent = qtySent;
+	}
+	
+	@Override
+	public boolean checkSent()
+	{
+		return getQty().compareTo(getQtySent()) == 0;
+	}
+	
+	@Override
+	public void setSentFieldsFromActualFields()
+	{
+		setQtySent(getQty());
 	}
 }

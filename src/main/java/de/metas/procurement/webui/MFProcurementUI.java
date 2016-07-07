@@ -17,6 +17,7 @@ import com.google.gwt.thirdparty.guava.common.base.Supplier;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.PreserveOnRefresh;
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.Page;
@@ -37,14 +38,15 @@ import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window.CloseListener;
 import com.vaadin.ui.themes.ValoTheme;
 
+import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.event.UIEventBus;
 import de.metas.procurement.webui.event.UserLoggedInEvent;
 import de.metas.procurement.webui.event.UserLogoutRequestEvent;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.server.NotificationErrorHandler;
 import de.metas.procurement.webui.service.IContractsService;
+import de.metas.procurement.webui.service.ISendService;
 import de.metas.procurement.webui.ui.component.MFNavigator;
-import de.metas.procurement.webui.ui.model.ProductQtyReportRepository;
 import de.metas.procurement.webui.ui.view.LoginView;
 import de.metas.procurement.webui.ui.view.MainView;
 import de.metas.procurement.webui.ui.view.PasswordResetView;
@@ -62,9 +64,30 @@ import fi.jasoft.qrcode.QRCode;
 @Theme(Constants.THEME_NAME)
 @PreserveOnRefresh
 @JavaScript({ JavascriptUtils.RESOURCE_JQuery, JavascriptUtils.RESOURCE_MainJS, JavascriptUtils.RESOURCE_Swiped })
+@Push
 public class MFProcurementUI extends UI
 {
-
+	public static final String getBpartner_uuid(final UI ui)
+	{
+		if (ui == null)
+		{
+			return null;
+		}
+		if(!(ui instanceof MFProcurementUI))
+		{
+			return null;
+		}
+		
+		final MFProcurementUI procurementUI = (MFProcurementUI)ui;
+		MFSession mfSession = procurementUI.getMFSession();
+		if(mfSession == null)
+		{
+			return null;
+		}
+		
+		return mfSession.getBpartner_uuid();
+	}
+	
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
 	private static final String STYLE_QRCodeWindow = "qr-code-window";
@@ -83,6 +106,9 @@ public class MFProcurementUI extends UI
 	@Lazy
 	private LoggingConfiguration loggingConfiguration;
 
+	@Autowired(required = true)
+	private MFEventBus applicationEventBus;
+
 	public MFProcurementUI()
 	{
 		super();
@@ -98,7 +124,6 @@ public class MFProcurementUI extends UI
 		// final Logger logger = Logger.getLogger(ConnectorTracker.class.getName());
 		// logger.setLevel(Level.ALL);
 		// }
-
 	}
 
 	@Override
@@ -129,6 +154,14 @@ public class MFProcurementUI extends UI
 				})
 				.setDefaultView(MainView.class)
 				.setViewNoLoginRequired(PasswordResetView.NAME, PasswordResetView.class);
+	}
+
+	@Override
+	public void detach()
+	{
+		super.detach();
+		
+		applicationEventBus.unregisterAllExpired();
 	}
 
 	@Override
@@ -242,13 +275,13 @@ public class MFProcurementUI extends UI
 	private final void doLogout()
 	{
 		logger.debug("User logging out...");
-		
-		getSession().setAttribute(MFSession.class, null);
 
+		getSession().setAttribute(MFSession.class, null);
 		JavascriptUtils.setBeforePageUnloadMessage(null);
 
-		getNavigator().navigateToLoginView();
-		
+		getPage().setLocation("/");
+		close();
+
 		logger.debug("User logged done");
 	}
 
@@ -347,8 +380,10 @@ public class MFProcurementUI extends UI
 
 	private final boolean confirmNotSentProductQtyReports()
 	{
-		final ProductQtyReportRepository productQtyReportRepository = getMFSession().getProductQtyReportRepository();
-		if (productQtyReportRepository.getNotSentCounter() <= 0)
+		final MFSession mfSession = getMFSession();
+
+		final ISendService sendService = mfSession.getSendService();
+		if (sendService.getNotSentCounter() <= 0)
 		{
 			return true;
 		}
@@ -376,7 +411,7 @@ public class MFProcurementUI extends UI
 			@Override
 			public void buttonClick(final ClickEvent event)
 			{
-				productQtyReportRepository.sendAll();
+				sendService.sendAll();
 				confirmDialog.close();
 				doLogout();
 			}

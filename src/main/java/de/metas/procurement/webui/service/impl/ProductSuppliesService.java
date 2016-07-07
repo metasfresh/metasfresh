@@ -13,19 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.vaadin.spring.i18n.I18N;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
-
-import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
-import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.UserProduct;
@@ -33,11 +26,11 @@ import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
-import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserProductRepository;
 import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 
@@ -95,9 +88,6 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Autowired
 	private IServerSyncService syncService;
-
-	@Autowired
-	private SyncConfirmRepository syncConfirmRepo;
 
 	@Override
 	public List<Product> getUserFavoriteProducts(final User user)
@@ -313,113 +303,15 @@ public class ProductSuppliesService implements IProductSuppliesService
 		}
 
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
 
 		return weeklySupplies;
 	}
 
-	private SyncAfterCommit syncAfterCommit()
+	private ISyncAfterCommitCollector syncAfterCommit()
 	{
-		if (!TransactionSynchronizationManager.isActualTransactionActive())
-		{
-			throw new RuntimeException("Not in transaction");
-		}
-
-		SyncAfterCommit instance = null;
-		for (final TransactionSynchronization sync : TransactionSynchronizationManager.getSynchronizations())
-		{
-			if (sync instanceof SyncAfterCommit)
-			{
-				instance = (SyncAfterCommit)sync;
-				logger.debug("Found SyncAfterCommit instance: {}", instance);
-			}
-		}
-
-		if (instance == null)
-		{
-			instance = new SyncAfterCommit();
-			TransactionSynchronizationManager.registerSynchronization(instance);
-
-			logger.debug("Registered synchronization: {}", instance);
-		}
-
-		return instance;
+		return syncService.syncAfterCommit();
 	}
 
-	/**
-	 * Creates {@link SyncConfirm} records and invokes {@link IServerSyncService}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
-	 */
-	private final class SyncAfterCommit extends TransactionSynchronizationAdapter
-	{
-		private final List<ProductSupply> productSupplies = new ArrayList<>();
-		private final List<WeekSupply> weeklySupplies = new ArrayList<>();
-
-		public SyncAfterCommit add(final ProductSupply productSupply)
-		{
-			createAndStoreSyncConfirmRecord(productSupply);
-			productSupplies.add(productSupply);
-
-			logger.debug("Enqueued {}", productSupply);
-			return this;
-		}
-
-		public SyncAfterCommit add(final WeekSupply weeklySupply)
-		{
-			createAndStoreSyncConfirmRecord(weeklySupply);
-			weeklySupplies.add(weeklySupply);
-			return this;
-		}
-
-		/**
-		 * Creates a new local DB record for the given <code>abstractEntity</code>.
-		 *
-		 * @param abstractEntity
-		 * @return
-		 */
-		private SyncConfirm createAndStoreSyncConfirmRecord(AbstractSyncConfirmAwareEntity abstractEntity)
-		{
-			final SyncConfirm syncConfirmRecord = new SyncConfirm();
-			syncConfirmRecord.setEntryType(abstractEntity.getClass().getSimpleName());
-			syncConfirmRecord.setEntryUuid(abstractEntity.getUuid());
-			syncConfirmRecord.setEntryId(abstractEntity.getId());
-
-			syncConfirmRepo.save(syncConfirmRecord);
-
-			abstractEntity.setSyncConfirmId(syncConfirmRecord.getId());
-
-			return syncConfirmRecord;
-		}
-
-		@Override
-		public void afterCommit()
-		{
-			logger.debug("Synchronizing: {}", this);
-
-			//
-			// Sync daily product supplies
-			{
-				final List<ProductSupply> productSupplies = ImmutableList.copyOf(this.productSupplies);
-				this.productSupplies.clear();
-				if (!productSupplies.isEmpty())
-				{
-					syncService.reportProductSuppliesAsync(productSupplies);
-				}
-			}
-
-			//
-			// Sync weekly product supplies
-			{
-				final List<WeekSupply> weeklySupplies = ImmutableList.copyOf(this.weeklySupplies);
-				this.weeklySupplies.clear();
-				if (!weeklySupplies.isEmpty())
-				{
-					syncService.reportWeeklySupplyAsync(weeklySupplies);
-				}
-			}
-		}
-	}
 }

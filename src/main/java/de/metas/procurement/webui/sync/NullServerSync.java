@@ -11,6 +11,7 @@ import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
 
@@ -72,5 +73,11 @@ public class NullServerSync implements IServerSync
 	{
 		logger.info("Asked about info message. Returning empty string.");
 		return "";
+	}
+
+	@Override
+	public void reportRfQChanges(SyncRfQChangeRequest request)
+	{
+		logger.info("Got {}", request);
 	}
 }

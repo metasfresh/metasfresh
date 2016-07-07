@@ -56,7 +56,9 @@ public class Contract extends AbstractEntity
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NotNull
 	private BPartner bpartner;
-
+	
+	private String rfq_uuid;
+	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "contract", cascade=CascadeType.REMOVE)
 	private List<ContractLine> contractLines = new ArrayList<>();
 
@@ -98,6 +100,21 @@ public class Contract extends AbstractEntity
 	public void setDateTo(final Date dateTo)
 	{
 		this.dateTo = dateTo;
+	}
+
+	public void setRfq_uuid(String rfq_uuid)
+	{
+		this.rfq_uuid =rfq_uuid;
+	}
+	
+	public String getRfq_uuid()
+	{
+		return rfq_uuid;
+	}
+	
+	public boolean isRfq()
+	{
+		return rfq_uuid != null;
 	}
 
 	public List<ContractLine> getContractLines()
@@ -151,4 +168,5 @@ public class Contract extends AbstractEntity
 	{
 		return DateUtils.between(date, getDateFrom(), getDateTo());
 	}
+
 }

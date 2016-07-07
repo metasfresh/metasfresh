@@ -27,6 +27,7 @@ import de.metas.procurement.webui.MFProcurementUI;
 import de.metas.procurement.webui.event.UIEventBus;
 import de.metas.procurement.webui.event.UserLogoutRequestEvent;
 import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.service.ISendService;
 import de.metas.procurement.webui.ui.component.BeansVerticalComponentGroup;
 import de.metas.procurement.webui.ui.component.DateNavigation;
 import de.metas.procurement.webui.ui.component.GenericProductButton;
@@ -161,12 +162,25 @@ public class DailyReportingView extends MFProcurementNavigationView
 					onProductAdd();
 				}
 			});
+			
+			final Button rfqButton = new Button(i18n.get("DailyReportingView.rfqButton"));
+			rfqButton.setStyleName("no-decoration");
+			rfqButton.setIcon(FontAwesome.MONEY);
+			rfqButton.addClickListener(new ClickListener()
+			{
+				@Override
+				public void buttonClick(final ClickEvent event)
+				{
+					onRfQ();
+				}
+			});
 
+			final ISendService sendService = MFProcurementUI.getCurrentMFSession().getSendService();
 			final Button sendButton = new Button(i18n.get("DailyReportingView.sendButton"));
 			sendButton.setStyleName("no-decoration");
 			sendButton.setIcon(FontAwesome.CHECK);
 			final TextOverlay sendButtonOverlay = TextOverlay.extend(sendButton);
-			sendButtonOverlay.setPropertyDataSource(productQtyReportRepository.getNotSentCounterProperty());
+			sendButtonOverlay.setPropertyDataSource(sendService.getNotSentCounterProperty());
 			sendButtonOverlay.setConverter(TextOverlay.CONVERTER_PositiveCounterOrNull);
 			sendButton.addClickListener(new ClickListener()
 			{
@@ -190,7 +204,7 @@ public class DailyReportingView extends MFProcurementNavigationView
 			});
 
 			final Toolbar toolbar = new Toolbar();
-			toolbar.addComponents(weekViewButton, addProductButton, sendButton, infoButton);
+			toolbar.addComponents(weekViewButton, addProductButton, sendButton, infoButton, rfqButton);
 			setToolbar(toolbar);
 		}
 
@@ -224,10 +238,17 @@ public class DailyReportingView extends MFProcurementNavigationView
 		final SelectProductView selectProductView = new SelectProductView(productQtyReportRepository);
 		getNavigationManager().navigateTo(selectProductView);
 	}
+	
+	protected void onRfQ()
+	{
+		final RfQsListView rfqsView = new RfQsListView();
+		getNavigationManager().navigateTo(rfqsView);
+	}
 
 	protected void onSend()
 	{
-		productQtyReportRepository.sendAll();
+		final ISendService sendService = MFProcurementUI.getCurrentMFSession().getSendService();
+		sendService.sendAll();
 	}
 
 	protected void onInfo()
@@ -248,7 +269,6 @@ public class DailyReportingView extends MFProcurementNavigationView
 
 	public static class ProductItemButton extends GenericProductButton<ProductQtyReport>
 	{
-		private static final String STYLE_Sent = "sent";
 		private final DailyProductQtyReportView reportQtyView = new DailyProductQtyReportView();
 
 		public ProductItemButton()
@@ -288,26 +308,6 @@ public class DailyReportingView extends MFProcurementNavigationView
 		protected String extractDescription(final ProductQtyReport bean)
 		{
 			return quantityToString(bean == null ? null : bean.getQty());
-		}
-
-		@Override
-		protected Product extractProduct(final ProductQtyReport bean)
-		{
-			return bean.getProduct();
-		}
-
-		@Override
-		protected void afterUpdateUI(final ProductQtyReport bean)
-		{
-			final boolean sent = bean != null && bean.isSent();
-			if (sent)
-			{
-				addStyleName(STYLE_Sent);
-			}
-			else
-			{
-				removeStyleName(STYLE_Sent);
-			}
 		}
 
 		private void actionRemove()

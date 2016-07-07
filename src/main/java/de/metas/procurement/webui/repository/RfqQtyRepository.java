@@ -1,14 +1,17 @@
-package de.metas.procurement.webui.service.impl;
+package de.metas.procurement.webui.repository;
 
-import org.springframework.stereotype.Service;
+import java.util.List;
 
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.Contracts;
-import de.metas.procurement.webui.service.IContractsService;
+import javax.transaction.Transactional;
+
+import org.springframework.stereotype.Repository;
+
+import de.metas.procurement.webui.model.Rfq;
+import de.metas.procurement.webui.model.RfqQty;
 
 /*
  * #%L
- * de.metas.procurement.webui
+ * metasfresh-procurement-webui
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -28,12 +31,9 @@ import de.metas.procurement.webui.service.IContractsService;
  * #L%
  */
 
-@Service
-public class ContractsService implements IContractsService
+@Repository
+@Transactional
+public interface RfqQtyRepository extends AbstractRepository<RfqQty>
 {
-	@Override
-	public Contracts getContracts(final BPartner bpartner)
-	{
-		return new Contracts(bpartner);
-	}
+	public List<RfqQty> findByRfq(Rfq rfq);
 }

@@ -133,5 +133,4 @@ public class SyncProductImportService extends AbstractSyncImportService
 
 		logger.debug("Deleted: {}", product);
 	}
-
 }

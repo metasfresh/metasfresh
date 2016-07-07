@@ -1,11 +1,14 @@
 package de.metas.procurement.webui.sync;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.metas.procurement.sync.protocol.SyncBPartner;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 
@@ -44,6 +47,9 @@ public class SyncBPartnerImportService extends AbstractSyncImportService
 	@Autowired
 	@Lazy
 	private SyncUserImportService usersImportService;
+	@Autowired
+	@Lazy
+	private SyncRfqImportService rfqImportService;
 
 	public BPartner importBPartner(final SyncBPartner syncBpartner)
 	{
@@ -67,6 +73,18 @@ public class SyncBPartnerImportService extends AbstractSyncImportService
 			{
 				logger.warn("Failed importing contracts for {}. Skipped", bpartner, ex);
 			}
+		}
+
+		//
+		// RfQs
+		try
+		{
+			final List<SyncRfQ> rfqs = syncBpartner.getRfqs();
+			rfqImportService.importRfQs(bpartner, rfqs);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed importing contracts for {}. Skipped", bpartner, ex);
 		}
 
 		return bpartner;

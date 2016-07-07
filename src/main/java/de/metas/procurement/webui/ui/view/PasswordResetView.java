@@ -59,8 +59,6 @@ public class PasswordResetView extends CustomComponent implements View
 		Application.autowire(this);
 
 		addStyleName(STYLE);
-
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

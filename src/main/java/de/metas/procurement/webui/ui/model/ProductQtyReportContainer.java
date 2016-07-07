@@ -67,17 +67,6 @@ public final class ProductQtyReportContainer extends BeanItemContainer<ProductQt
 		return products;
 	}
 
-	public void addOrReplace(final ProductQtyReport productQtyReport)
-	{
-		Preconditions.checkNotNull(productQtyReport, "productQtyReport not null");
-
-		final ProductQtyReport itemId = productQtyReport;
-
-		removeItem(itemId);
-		addItem(itemId);
-		sort();
-	}
-
 	@Override
 	public void addAll(Collection<? extends ProductQtyReport> collection)
 	{
@@ -111,6 +100,30 @@ public final class ProductQtyReportContainer extends BeanItemContainer<ProductQt
 		}
 
 		return null;
+	}
+	
+	public BeanItem<ProductQtyReport> getItemByProduct(final Product product)
+	{
+		if (product == null)
+		{
+			return null;
+		}
+
+		for (final ProductQtyReport itemId : getAllItemIds())
+		{
+			if (product.equals(itemId.getProduct()))
+			{
+				return getItem(itemId);
+			}
+		}
+
+		return null;
+	}
+	
+	@Override
+	public BeanItem<ProductQtyReport> addBean(final ProductQtyReport bean)
+	{
+		return super.addBean(bean);
 	}
 
 	public final boolean addBeanItem(final BeanItem<ProductQtyReport> item)

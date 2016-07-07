@@ -128,6 +128,16 @@ public final class DateUtils
 		return cal.getTime();
 	}
 
+	public static Date addMonths(final Date date, final int monthsToAdd)
+	{
+		Preconditions.checkNotNull(date, "date not null");
+
+		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		cal.setTimeInMillis(date.getTime());
+		cal.add(Calendar.MONTH, monthsToAdd);
+		return cal.getTime();
+	}
+
 	/**
 	 * @param date
 	 * @return week number string formated as "KWxx"

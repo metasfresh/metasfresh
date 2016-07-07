@@ -6,7 +6,10 @@ import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IContractsService;
+import de.metas.procurement.webui.service.ISendService;
+import de.metas.procurement.webui.service.impl.SendService;
 import de.metas.procurement.webui.ui.model.ProductQtyReportRepository;
+import de.metas.procurement.webui.ui.model.RfqHeaderContainer;
 
 /*
  * #%L
@@ -18,14 +21,14 @@ import de.metas.procurement.webui.ui.model.ProductQtyReportRepository;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,34 +41,71 @@ public final class MFSession
 	}
 
 	private final User user;
+	private final String bpartner_uuid;
+
 	private final Contracts contracts;
 	private final ProductQtyReportRepository productQtyReportRepository;
+	private RfqHeaderContainer _activeRfqsContainer; // lazy
+
+	private final ISendService sendService = new SendService();
 
 	private MFSession(final Builder builder)
 	{
 		super();
-		this.user = builder.getUser();
-		
+		Application.autowire(this);
+
+		user = builder.getUser();
+		bpartner_uuid = user.getBpartner().getUuid();
+
 		final BPartner bpartner = user.getBpartner();
-		this.contracts = builder.getContractsRepository().getContracts(bpartner);
-		
-		this.productQtyReportRepository = new ProductQtyReportRepository(user, contracts);
+		contracts = builder.getContractsRepository().getContracts(bpartner);
+
+		productQtyReportRepository = new ProductQtyReportRepository(user, contracts);
 	}
 
-	/** @return current logged user; never returns null */
+	/**
+	 * @return current logged user; never returns null
+	 */
 	public User getUser()
 	{
 		return user;
+	}
+
+	public String getBpartner_uuid()
+	{
+		return bpartner_uuid;
 	}
 
 	public Contracts getContracts()
 	{
 		return contracts;
 	}
-	
+
 	public ProductQtyReportRepository getProductQtyReportRepository()
 	{
 		return productQtyReportRepository;
+	}
+
+	public RfqHeaderContainer getActiveRfqs()
+	{
+		if (_activeRfqsContainer == null)
+		{
+			synchronized (this)
+			{
+				if (_activeRfqsContainer == null)
+				{
+					final RfqHeaderContainer activeRfqsContainer = new RfqHeaderContainer(user);
+					activeRfqsContainer.loadAll();
+					_activeRfqsContainer = activeRfqsContainer;
+				}
+			}
+		}
+		return _activeRfqsContainer;
+	}
+
+	public ISendService getSendService()
+	{
+		return sendService;
 	}
 
 	public static final class Builder
@@ -83,7 +123,7 @@ public final class MFSession
 			return new MFSession(this);
 		}
 
-		public Builder setUser(User user)
+		public Builder setUser(final User user)
 		{
 			this.user = user;
 			return this;
@@ -95,7 +135,7 @@ public final class MFSession
 			return user;
 		}
 
-		public Builder setContractsRepository(IContractsService contractsRepository)
+		public Builder setContractsRepository(final IContractsService contractsRepository)
 		{
 			this.contractsRepository = contractsRepository;
 			return this;

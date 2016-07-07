@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.procurement.webui.Application;
 
 /*
@@ -30,11 +32,11 @@ import de.metas.procurement.webui.Application;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,6 +61,10 @@ public class AgentSync implements IAgentSync
 	@Autowired
 	@Lazy
 	private SyncConfirmationsImportService confirmationsImportService;
+
+	@Autowired
+	@Lazy
+	private SyncRfqImportService rfqImportService;
 
 	public AgentSync()
 	{
@@ -137,6 +143,50 @@ public class AgentSync implements IAgentSync
 			catch (Exception e)
 			{
 				logger.error("Failed importing confirmation: {}", syncConfirmation, e);
+			}
+		}
+	}
+
+	@Override
+	public void syncRfQs(final List<SyncRfQ> syncRfqs)
+	{
+		logger.debug("Got: {}", syncRfqs);
+		if (syncRfqs == null || syncRfqs.isEmpty())
+		{
+			return;
+		}
+
+		for (final SyncRfQ syncRfq : syncRfqs)
+		{
+			try
+			{
+				rfqImportService.importRfQ(syncRfq);
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed importing RfQ: {}", syncRfq, e);
+			}
+		}
+	}
+
+	@Override
+	public void closeRfQs(final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	{
+		logger.debug("Got: {}", syncRfQCloseEvents);
+		if (syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		{
+			return;
+		}
+
+		for (final SyncRfQCloseEvent syncRfQCloseEvent : syncRfQCloseEvents)
+		{
+			try
+			{
+				rfqImportService.importRfQCloseEvent(syncRfQCloseEvent);
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed importing: {}", syncRfQCloseEvent, e);
 			}
 		}
 	}

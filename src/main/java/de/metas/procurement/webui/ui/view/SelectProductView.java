@@ -165,11 +165,5 @@ public class SelectProductView extends MFProcurementNavigationView
 		{
 			return null;
 		}
-
-		@Override
-		protected Product extractProduct(final Product bean)
-		{
-			return bean;
-		}
 	}
 }

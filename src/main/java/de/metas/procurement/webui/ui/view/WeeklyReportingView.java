@@ -182,12 +182,6 @@ public class WeeklyReportingView extends MFProcurementNavigationView
 		}
 
 		@Override
-		protected Product extractProduct(WeekProductQtyReport bean)
-		{
-			return bean.getProduct();
-		}
-
-		@Override
 		protected void afterUpdateUI(WeekProductQtyReport bean)
 		{
 			final Trend nextWeekTrend = bean == null ? null : bean.getNextWeekTrend();

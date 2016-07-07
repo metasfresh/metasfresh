@@ -137,7 +137,7 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 		return contractLine;
 	}
 
-	private void setContractLine(final ContractLine contractLine)
+	public void setContractLine(final ContractLine contractLine)
 	{
 		this.contractLine = contractLine;
 	}

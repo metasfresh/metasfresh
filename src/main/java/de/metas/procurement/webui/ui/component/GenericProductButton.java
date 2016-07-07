@@ -1,7 +1,6 @@
 package de.metas.procurement.webui.ui.component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,9 +16,10 @@ import com.vaadin.event.ContextClickEvent.ContextClickListener;
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.MFProcurementUI;
-import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.service.ISendService;
 import de.metas.procurement.webui.ui.model.ProductQtyReportRepository;
 import de.metas.procurement.webui.util.ProductNameCaptionBuilder;
+import de.metas.procurement.webui.util.QuantityUtils;
 import de.metas.procurement.webui.util.SwipeHelper;
 import de.metas.procurement.webui.util.SwipeHelper.ComponentSwipe;
 import de.metas.procurement.webui.util.SwipeHelper.SwipeHandler;
@@ -37,11 +37,11 @@ import de.metas.procurement.webui.util.SwipeHelper.SwipeHandler;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,19 +50,20 @@ import de.metas.procurement.webui.util.SwipeHelper.SwipeHandler;
 public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<BT>
 {
 	public static final String STYLE = "product-button";
-	
+	protected static final String STYLE_Sent = "sent";
+
 	protected static final String ACTION_Remove = "ProductButton.action.remove";
 	protected static final String ACTION_Remove_DefaultCaption = "Remove";
 
 	private static final AtomicLong nextId = new AtomicLong(0);
 
 	@Autowired
-    protected I18N i18n;
+	protected I18N i18n;
 
 	//
 	// Context menu actions
 	private Set<Action> actions = new LinkedHashSet<>();
-	
+
 	//
 	// Swipe support
 	private boolean swipeEnabled = false;
@@ -73,7 +74,7 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 	{
 		super();
 		Application.autowire(this);
-		
+
 		addStyleName(STYLE);
 
 		addContextClickListener(new ContextClickListener()
@@ -98,7 +99,7 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 			return;
 		}
 		swipeEnabled = true;
-		
+
 		final GenericProductButton<BT> button = this;
 
 		if (getId() == null)
@@ -126,6 +127,20 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 		final String description = extractDescription(bean);
 		setDescription(description);
 
+		//
+		// Update sent style
+		final boolean sent = bean != null
+				&& (bean instanceof ISendService.ISendAwareBean)
+				&& ((ISendService.ISendAwareBean)bean).isSent();
+		if (sent)
+		{
+			addStyleName(STYLE_Sent);
+		}
+		else
+		{
+			removeStyleName(STYLE_Sent);
+		}
+
 		afterUpdateUI(bean);
 	}
 
@@ -133,20 +148,13 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 
 	protected abstract String extractDescription(final BT bean);
 
-	protected abstract Product extractProduct(final BT bean);
-
 	protected void afterUpdateUI(final BT bean)
 	{
 	}
 
 	protected final String quantityToString(final BigDecimal qty)
 	{
-		if (qty == null)
-		{
-			return "0";
-		}
-
-		return qty.setScale(0, RoundingMode.UP).toString();
+		return QuantityUtils.toString(qty);
 	}
 
 	protected final String buildCaptionFromProductName(final String productName, final String packingInfo)
@@ -168,7 +176,7 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 			}
 			return;
 		}
-		
+
 		final ComponentSwipe swipeOld = _currentSwipeComponent; // usually it shall be null
 		_currentSwipeComponent = swipe;
 		try
@@ -201,7 +209,7 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 		Preconditions.checkNotNull(action, "action is null");
 		actions.add(action);
 	}
-	
+
 	protected List<Action> getActions()
 	{
 		return new ArrayList<>(actions);
@@ -221,14 +229,14 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 	{
 		return swipeAction;
 	}
-	
+
 	private void showContextMenu()
 	{
 		if (actions.isEmpty())
 		{
 			return;
 		}
-		
+
 		final ProductButtonContextActionsView contextActionsView = new ProductButtonContextActionsView(this);
 		getNavigationManager().navigateTo(contextActionsView);
 	}
@@ -236,12 +244,12 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 	public static interface Action
 	{
 		public String getCaption();
-		
+
 		public String getDescription();
 
 		public void execute(GenericProductButton<?> button);
 	}
-	
+
 	public static abstract class ActionAdapter implements Action
 	{
 		private String caption;
@@ -250,7 +258,7 @@ public abstract class GenericProductButton<BT> extends BeanItemNavigationButton<
 		{
 			super();
 		}
-		
+
 		public ActionAdapter(final String caption)
 		{
 			super();
