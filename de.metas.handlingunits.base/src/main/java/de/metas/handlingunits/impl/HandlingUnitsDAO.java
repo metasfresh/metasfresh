@@ -789,6 +789,24 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#AD_Org_ID#IsDefaultLU")
+	public I_M_HU_PI retrieveDefaultLUOrNull(@CacheCtx final Properties ctx, final int adOrgId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClientOrSystem()
+				.addEqualsFilter(I_M_HU_PI.COLUMN_IsDefaultLU, true)
+				.addInArrayFilter(I_M_HU_PI.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, adOrgId)
+				.orderBy()
+				.addColumn(I_M_HU_PI.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.firstOnly(I_M_HU_PI.class);
+
+	}
+
+	@Override
 	public I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(
 			final @CacheCtx Properties ctx,
 			final I_M_Product product_NOTUSED,
