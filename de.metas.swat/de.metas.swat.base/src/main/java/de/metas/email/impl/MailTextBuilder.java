@@ -1,4 +1,4 @@
-package de.metas.notification.impl;
+package de.metas.email.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +14,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_MailText;
 
 import de.metas.adempiere.service.IVariableParserBL;
+import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslation;
-import de.metas.notification.IMailTextBuilder;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import de.metas.notification.IMailTextBuilder;
  * #L%
  */
 
-class MailTextBuilder implements IMailTextBuilder
+public class MailTextBuilder implements IMailTextBuilder
 {
 	public static final MailTextBuilder of(final I_R_MailText mailTextDef)
 	{
@@ -95,7 +95,7 @@ class MailTextBuilder implements IMailTextBuilder
 	{
 		return html;
 	}
-	
+
 	@Override
 	public int getR_MailText_ID()
 	{
@@ -190,7 +190,7 @@ class MailTextBuilder implements IMailTextBuilder
 		{
 			return text2parsedText.get(text);
 		}
-		
+
 		String textParsed = text;
 		textParsed = parse(textParsed, getRecord()); // first parse the record values
 		textParsed = parse(textParsed, getAD_User());
@@ -301,10 +301,10 @@ class MailTextBuilder implements IMailTextBuilder
 	public IMailTextBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		_bpartner = bpartner;
-		
+
 		_texts = null; // reset texts
 		text2parsedText.clear(); // reset cache
-		
+
 		return this;
 	}
 
@@ -321,11 +321,11 @@ class MailTextBuilder implements IMailTextBuilder
 		{
 			return _adLanguage;
 		}
-		
+
 		final I_C_BPartner bpartner = getC_BPartner();
 		return bpartner == null ? null : bpartner.getAD_Language();
 	}
-	
+
 	@Override
 	public IMailTextBuilder setAD_Language(final String adLanguage)
 	{
@@ -346,7 +346,7 @@ class MailTextBuilder implements IMailTextBuilder
 	{
 		_record = record;
 		text2parsedText.clear(); // reset cache
-		
+
 		if (analyse)
 		{
 			final Object bpartnerIdObj = InterfaceWrapperHelper.getValueOrNull(record, "C_BPartner_ID");

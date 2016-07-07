@@ -1,4 +1,4 @@
-package de.metas.notification;
+package de.metas.email;
 
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;

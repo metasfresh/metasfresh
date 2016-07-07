@@ -34,7 +34,7 @@ import de.metas.rfq.model.I_C_RfQ;
 /**
  * ReActivates a completed {@link I_C_RfQ}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_ReActivate extends SvrProcess implements ISvrProcessPrecondition

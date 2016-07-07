@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.notification.process;
+package de.metas.email.process;
 
 /*
  * #%L
@@ -35,11 +35,12 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailBL.IMailbox;
 
 /**
- * @author tsa
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class EMailConfigTest extends SvrProcess

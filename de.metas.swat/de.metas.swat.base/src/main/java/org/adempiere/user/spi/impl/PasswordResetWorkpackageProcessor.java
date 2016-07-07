@@ -34,7 +34,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.notification.IMailBL;
+import de.metas.email.IMailBL;
 
 public class PasswordResetWorkpackageProcessor implements IWorkpackageProcessor
 {

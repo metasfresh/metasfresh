@@ -31,7 +31,7 @@ import de.metas.rfq.model.I_C_RfQ;
  * 
  * This is the central point for registering all your producers, factories etc.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IRfQConfiguration extends ISingletonService

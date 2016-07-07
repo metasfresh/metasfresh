@@ -35,8 +35,8 @@ import org.compiere.util.ASyncProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *	Dunning Letter Print

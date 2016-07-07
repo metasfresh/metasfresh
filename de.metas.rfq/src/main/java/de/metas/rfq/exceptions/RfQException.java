@@ -35,7 +35,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 /**
  * Base exception class for RfQ module
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class RfQException extends AdempiereException

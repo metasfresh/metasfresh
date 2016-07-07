@@ -39,8 +39,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *	Print Invoices on Paper or send PDFs

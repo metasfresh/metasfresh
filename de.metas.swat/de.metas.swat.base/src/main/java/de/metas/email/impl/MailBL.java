@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.notification.impl;
+package de.metas.email.impl;
 
 import java.util.List;
 import java.util.Properties;
@@ -26,10 +26,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.email.IMailBL;
+import de.metas.email.IMailDAO;
+import de.metas.email.IMailTextBuilder;
 import de.metas.logging.LogManager;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailDAO;
-import de.metas.notification.IMailTextBuilder;
 import de.metas.session.jaxrs.IServerService;
 
 /**

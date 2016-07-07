@@ -52,9 +52,9 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailBL.IMailbox;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
 
 /**
  * Workpackage processor for mails

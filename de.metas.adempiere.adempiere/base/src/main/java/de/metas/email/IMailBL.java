@@ -1,4 +1,4 @@
-package de.metas.notification;
+package de.metas.email;
 
 /*
  * #%L

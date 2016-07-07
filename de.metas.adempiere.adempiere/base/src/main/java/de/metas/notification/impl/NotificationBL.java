@@ -17,8 +17,8 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailBL.IMailbox;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;

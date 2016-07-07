@@ -44,9 +44,9 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Client;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 import de.metas.logging.LogManager;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
 
 public class UserBL implements IUserBL
 {

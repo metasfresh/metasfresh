@@ -29,6 +29,11 @@ import de.metas.rfq.model.I_C_RfQ;
  * #L%
  */
 
+/**
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class C_RfQ_RankResponses extends SvrProcess
 {
 	// services

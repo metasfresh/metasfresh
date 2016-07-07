@@ -40,7 +40,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 /**
  * Publish RfQ bidding invitations.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_Publish extends SvrProcess implements ISvrProcessPrecondition

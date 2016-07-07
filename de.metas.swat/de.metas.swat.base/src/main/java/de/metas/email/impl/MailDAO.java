@@ -1,4 +1,4 @@
-package de.metas.notification.impl;
+package de.metas.email.impl;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_C_DocType;
 
-import de.metas.notification.IMailDAO;
+import de.metas.email.IMailDAO;
 
 /*
  * #%L

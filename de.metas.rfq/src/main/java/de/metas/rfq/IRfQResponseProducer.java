@@ -30,7 +30,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 /**
  * Implementations of this interface are responsible for creating {@link I_C_RfQResponse}s for a given {@link I_C_RfQ}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IRfQResponseProducer

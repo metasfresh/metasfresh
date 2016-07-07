@@ -68,8 +68,8 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailTextBuilder;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  * Workflow Activity Model.

@@ -48,7 +48,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
  * If a Response is marked as Selected Winner, all lines are created (and Selected Winner of other responses ignored).
  * If there is no response marked as Selected Winner, the lines are used.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_RfQ_CreatePO extends SvrProcess

@@ -55,8 +55,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.smtp.SMTPMessage;
 
+import de.metas.email.IMailBL;
 import de.metas.logging.LogManager;
-import de.metas.notification.IMailBL;
 
 /**
  * EMail Object. Resources: http://java.sun.com/products/javamail/index.html http://java.sun.com/products/javamail/FAQ.html
