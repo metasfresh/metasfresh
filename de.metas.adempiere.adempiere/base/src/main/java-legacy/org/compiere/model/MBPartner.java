@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -365,7 +365,7 @@ public class MBPartner extends X_C_BPartner
 	/** Prim User */
 	private Integer m_primaryAD_User_ID = null;
 	/** Credit Limit recently calcualted */
-	
+
 	/** BP Group */
 	private MBPGroup m_group = null;
 
@@ -550,7 +550,7 @@ public class MBPartner extends X_C_BPartner
 	 */
 	public MBPBankAccount[] getBankAccounts(boolean requery)
 	{
-		if (m_accounts != null && m_accounts.length >= 0 && !requery)  // re-load
+		if (m_accounts != null && m_accounts.length >= 0 && !requery)   // re-load
 			return m_accounts;
 		//
 		ArrayList<MBPBankAccount> list = new ArrayList<MBPBankAccount>();
@@ -597,17 +597,14 @@ public class MBPartner extends X_C_BPartner
 	@Override
 	public String toString()
 	{
-		// service
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
 		StringBuffer sb = new StringBuffer("MBPartner[ID=").append(get_ID())
 				.append(",Value=").append(getValue()).append(",Name=").append(
 						getName())
 				.append(",Open=").append(
-						bpartnerStatsBL.getTotalOpenBalance(stats))
+						stats.getTotalOpenBalance())
 				.append("]");
 		return sb.toString();
 	} // toString
@@ -779,14 +776,11 @@ public class MBPartner extends X_C_BPartner
 	 */
 	public boolean isCreditStopHold()
 	{
-		//service
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-		
-		String status = bpartnerStatsBL.getSOCreditStatus(stats);
-		
+		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+
+		final String status = stats.getSOCreditStatus();
+
 		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(status)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(status);
 	} // isCreditStopHold

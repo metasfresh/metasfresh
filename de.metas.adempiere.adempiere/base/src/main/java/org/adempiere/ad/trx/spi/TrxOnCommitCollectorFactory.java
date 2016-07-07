@@ -102,6 +102,23 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 							// Process the collector.
 							processCollector(collector);
 						}
+						
+						@Override
+						public void afterRollback(final ITrx trx)
+						{
+							// Get the transaction level collector.
+							// The collector is removed to avoid double processing.
+							// If there is no collector, do nothing.
+							final CollectorType collector = trx.setProperty(trxProperyName, null);
+							if (collector == null)
+							{
+								return;
+							}
+							
+							// Process the collector.
+							discardCollector(collector);
+							
+						}
 					});
 
 					// Return the newly created collector. 
@@ -156,4 +173,16 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 * @param collector
 	 */
 	protected abstract void processCollector(final CollectorType collector);
+	
+	/**
+	 * Discard the collector.
+	 * 
+	 * This method is called on transaction rollback.
+	 * @param collector
+	 */
+	protected void discardCollector(final CollectorType collector)
+	{
+		// nothing at this level
+	}
+
 }
