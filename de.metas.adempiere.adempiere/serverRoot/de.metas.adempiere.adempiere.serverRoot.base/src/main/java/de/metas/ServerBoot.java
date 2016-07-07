@@ -51,9 +51,9 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
  */
 
 /**
- * Metasfresh server boot.
+ * metasfresh server boot.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 @SpringBootApplication
 @ServletComponentScan(value = { "de.metas", "org.adempiere" })
