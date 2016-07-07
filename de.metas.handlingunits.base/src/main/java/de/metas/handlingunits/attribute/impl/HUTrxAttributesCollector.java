@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -40,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -48,6 +47,7 @@ import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAda
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
+import de.metas.logging.LogManager;
 
 /**
  * Listens on {@link IAttributeStorage}s changes and logs the change.
