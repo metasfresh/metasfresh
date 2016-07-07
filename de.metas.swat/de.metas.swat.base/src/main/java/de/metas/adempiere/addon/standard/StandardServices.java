@@ -66,7 +66,6 @@ import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
-import de.metas.adempiere.service.IVariableParserBL;
 import de.metas.adempiere.service.impl.CalendarDAO;
 import de.metas.adempiere.service.impl.GlobalLockSystem;
 import de.metas.adempiere.service.impl.OrderBL;
@@ -74,7 +73,6 @@ import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
-import de.metas.adempiere.service.impl.VariableParserBL;
 import de.metas.dpd.service.RoutingService;
 
 /**
@@ -121,7 +119,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(IGlobalLockSystem.class, new GlobalLockSystem());
 		Services.registerService(IAppDictionaryBL.class, new AppDictionaryBL());
 		Services.registerService(ITableColumnPathBL.class, new TableColumnPathBL());
-		Services.registerService(IVariableParserBL.class, new VariableParserBL());
 
 		// us316: Printer Routing Service
 		// NOTE: we need to register this service here because we need it before any database connection

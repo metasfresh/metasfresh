@@ -20,18 +20,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
-import org.compiere.model.MMailText;
 import org.compiere.model.MStore;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Msg;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -43,8 +45,7 @@ public class SendMailText extends SvrProcess
 {
 	/** What to send			*/
 	private int				m_R_MailText_ID = -1;
-	/**	Mail Text				*/
-	private MMailText		m_MailText = null;
+	private IMailTextBuilder mailTextBuilder;
 
 	/**	From (sender)			*/
 	private int				m_AD_User_ID = -1;
@@ -71,6 +72,7 @@ public class SendMailText extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -97,13 +99,15 @@ public class SendMailText extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("R_MailText_ID=" + m_R_MailText_ID);
-		//	Mail Test
-		m_MailText = new MMailText (getCtx(), m_R_MailText_ID, get_TrxName());
-		if (m_MailText.getR_MailText_ID() == 0)
-			throw new Exception ("Not found @R_MailText_ID@=" + m_R_MailText_ID);
+		
+		//	Mail Text
+		final IMailBL mailBL = Services.get(IMailBL.class);
+		this.mailTextBuilder = mailBL.newMailTextBuilder(getCtx(), m_R_MailText_ID);
+		
 		//	Client Info
 		m_client = MClient.get (getCtx());
 		if (m_client.getAD_Client_ID() == 0)
@@ -268,21 +272,21 @@ public class SendMailText extends SvrProcess
 		m_list.add(ii);
 		//
 		MUser to = new MUser (getCtx(), AD_User_ID, null);
-		m_MailText.setUser(AD_User_ID);		//	parse context
-		String message = m_MailText.getMailText(true);
+		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
+		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe
 		if (unsubscribe != null)
 			message += unsubscribe;
 		//
-		EMail email = m_client.createEMail(m_from, to, m_MailText.getMailHeader(), message);
-		if (m_MailText.isHtml())
-			email.setMessageHTML(m_MailText.getMailHeader(), message);
+		EMail email = m_client.createEMail(m_from, to, mailTextBuilder.getMailHeader(), message);
+		if (mailTextBuilder.isHtml())
+			email.setMessageHTML(mailTextBuilder.getMailHeader(), message);
 		else
 		{
-			email.setSubject (m_MailText.getMailHeader());
+			email.setSubject (mailTextBuilder.getMailHeader());
 			email.setMessageText (message);
 		}
-		if (!email.isValid() && !email.isValid(true))
+		if (!email.isValid() && !email.checkValid())
 		{
 			log.warn("NOT VALID - " + email);
 			to.setIsActive(false);
@@ -290,8 +294,10 @@ public class SendMailText extends SvrProcess
 			to.save();
 			return Boolean.FALSE;
 		}
-		boolean OK = EMail.SENT_OK.equals(email.send());
-		new MUserMail(m_MailText, AD_User_ID, email).save();
+
+		final EMailSentStatus emailSentStatus = email.send();
+		final boolean OK = emailSentStatus.isSentOK();
+		new MUserMail(getCtx(), m_R_MailText_ID, AD_User_ID, email, emailSentStatus).save();
 		//
 		if (OK)
 			log.debug(to.getEMail());

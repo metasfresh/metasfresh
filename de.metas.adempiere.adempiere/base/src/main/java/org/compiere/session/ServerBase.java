@@ -30,16 +30,15 @@ import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
-import org.compiere.model.MClient;
 import org.compiere.model.MTask;
-import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfo;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -151,56 +150,11 @@ public class ServerBase implements IServerService
 		return pi;
 	}	// workflow
 
-	/**
-	 * Create EMail from Server (Request User)
-	 *
-	 * @param ctx Context
-	 * @param AD_Client_ID client
-	 * @param to recipient email address
-	 * @param subject subject
-	 * @param message message
-	 * @return EMail
-	 */
 	@Override
-	public EMail createEMail(final Properties ctx, final int AD_Client_ID,
-			final String to, final String subject, String message)
+	public EMailSentStatus sendEMail(final EMail email)
 	{
-		final MClient client = MClient.get(ctx, AD_Client_ID);
-		boolean html = false;
-		if (message != null && message.startsWith(EMail.HTML_MAIL_MARKER))
-		{
-			html = true;
-			message = message.substring(EMail.HTML_MAIL_MARKER.length());
-		}
-		return client.createEMail(to, subject, message, html);
-	}	// createEMail
-
-	/**
-	 * Create EMail from Server (Request User)
-	 *
-	 * @param ctx Context
-	 * @param AD_Client_ID client
-	 * @param AD_User_ID user to send email from
-	 * @param to recipient email address
-	 * @param subject subject
-	 * @param message message
-	 * @return EMail
-	 */
-	@Override
-	public EMail createEMail(final Properties ctx, final int AD_Client_ID,
-			final int AD_User_ID,
-			final String to, final String subject, String message)
-	{
-		final MClient client = MClient.get(ctx, AD_Client_ID);
-		final MUser from = new MUser(ctx, AD_User_ID, null);
-		boolean html = false;
-		if (message != null && message.startsWith(EMail.HTML_MAIL_MARKER))
-		{
-			html = true;
-			message = message.substring(EMail.HTML_MAIL_MARKER.length());
-		}
-		return client.createEMail(from, to, subject, message, html);
-	}	// createEMail
+		return email.send();
+	}
 
 	/**
 	 * Execute task on server

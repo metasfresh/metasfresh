@@ -646,7 +646,17 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	public final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
-		return m_pi.getRecord(modelClass, getTrxName());
+		String trxName = getTrxName();
+		
+		// In case the transaction is null, it's better to use the thread inherited trx marker.
+		// This will cover the cases when the process runs out of transaction
+		// but the transaction is managed inside the process implementation and this method is called from there.
+		if(trxManager.isNull(trxName))
+		{
+			trxName = ITrx.TRXNAME_ThreadInherited;
+		}
+		
+		return m_pi.getRecord(modelClass, trxName);
 	}
 
 	/**

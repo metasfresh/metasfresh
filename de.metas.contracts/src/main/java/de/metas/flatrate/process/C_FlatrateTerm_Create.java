@@ -3,15 +3,16 @@ package de.metas.flatrate.process;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.TrxRunnable;
+import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -30,17 +31,19 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public abstract class C_FlatrateTerm_Create extends SvrProcess
 {
+	// services
+	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private Timestamp startDate;
 	private Timestamp endDate;
@@ -87,38 +90,56 @@ public abstract class C_FlatrateTerm_Create extends SvrProcess
 	 */
 	private void createTermForBPartners()
 	{
-		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
 		for (final I_C_BPartner partner : IteratorUtils.asIterable(getBPartners()))
 		{
 			// create each term in its own transaction
-			Services.get(ITrxManager.class).run(new TrxRunnable()
+			trxManager.run(new TrxRunnableAdapter()
 			{
 				@Override
-				public void run(String localTrxName) throws Exception
+				public void run(final String localTrxName)
 				{
-					// no need to set 'localTrxName' to out bp, because we loaded the bp with ITrx.TRXNAME_ThreadInherited
-					final boolean completeIt = true;
-					final I_C_Flatrate_Term term = flatrateBL.createTerm(partner, conditions, startDate, userInCharge, product, completeIt);
+					createTerm(partner);
+				}
 
-					if (term == null)
-					{
-						return;
-					}
-					if (product != null)
-					{
-						term.setM_Product_ID(product.getM_Product_ID());
-					}
+				@Override
+				public boolean doCatch(Throwable ex)
+				{
+					addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
+					log.warn("Failed creating contract for {}", partner, ex);
+					return true; // rollback
+				}
 
-					if (endDate != null)
-					{
-						term.setEndDate(endDate);
-					}
-
-					InterfaceWrapperHelper.save(term);
+				@Override
+				public void doFinally()
+				{
+					addLog("@Created@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 				}
 			});
 		}
+	}
+
+	private I_C_Flatrate_Term createTerm(final I_C_BPartner partner)
+	{
+		final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(getCtx());
+		final boolean completeIt = true;
+		final I_C_Flatrate_Term term = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, completeIt);
+		if (term == null)
+		{
+			return null;
+		}
+
+		if (product != null)
+		{
+			term.setM_Product_ID(product.getM_Product_ID());
+		}
+
+		if (endDate != null)
+		{
+			term.setEndDate(endDate);
+		}
+
+		InterfaceWrapperHelper.save(term);
+		return term;
 	}
 
 	/**

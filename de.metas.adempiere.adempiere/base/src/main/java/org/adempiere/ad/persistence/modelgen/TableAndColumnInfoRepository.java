@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -129,6 +130,7 @@ public class TableAndColumnInfoRepository
 				+ ", c.SeqNo" // 19
 				+ ", c.IsIdentifier" // 20
 				+ ", t.AccessLevel" // 21
+				+ ", c.IsLazyLoading" // 22
 				+ " FROM AD_Column c "
 				+ " INNER JOIN AD_Table t ON (t.AD_Table_ID=c.AD_Table_ID)"
 				+ " WHERE c.AD_Table_ID=?"
@@ -183,6 +185,8 @@ public class TableAndColumnInfoRepository
 							.setAD_Table_ID(adTableId)
 							.setAccessLevel(accessLevel);
 				}
+				
+				final boolean isLazyLoading = DisplayType.toBoolean(rs.getString("IsLazyLoading")); // 22
 
 				final ColumnInfo columnInfo = new ColumnInfo(tableName,
 						columnName,
@@ -198,6 +202,7 @@ public class TableAndColumnInfoRepository
 						seqNo,
 						adTableId);
 				columnInfo.setIdentifier(isIdentifier);
+				columnInfo.setLazyLoading(isLazyLoading);
 				columnInfo.setRepository(this);
 				columnName2columnInfos.put(columnInfo.getColumnName(), columnInfo);
 			}

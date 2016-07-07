@@ -44,8 +44,10 @@ import org.compiere.model.MUser;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.EMail;
 
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.impl.EMailSendException;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
@@ -158,18 +160,22 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 	private void notifyEMail(final MADBoilerPlate text, final MUser user)
 	{
 		MADBoilerPlate.sendEMail(new IEMailEditor() {
+			@Override
 			public Object getBaseObject()
 			{
 				return user;
 			}
+			@Override
 			public int getAD_Table_ID()
 			{
 				return user.get_Table_ID();
 			}
+			@Override
 			public int getRecord_ID()
 			{
 				return user.get_ID();
 			}
+			@Override
 			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				String message = text.getTextSnippetParsed(variables);
@@ -199,19 +205,18 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 		int count = 0;
 		do
 		{
-			final String status = email.send();
+			final EMailSentStatus emailSentStatus = email.send();
 			count++;
-			if (email.isSentOK())
+			if (emailSentStatus.isSentOK())
 				return;
 			// Timeout => retry
-			if (status != null && status.indexOf("Could not connect to SMTP host:") != -1
-					&& count < maxRetries)
+			if (emailSentStatus.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
 			{
-				log.warn("SMTP error: "+status+" [ Retry "+count+" ]");
+				log.warn("SMTP error: " + emailSentStatus + " [ Retry " + count + " ]");
 			}
 			else
 			{
-				throw new AdempiereException(status);
+				throw new EMailSendException(emailSentStatus);
 			}
 		}
 		while(true);

@@ -33,7 +33,12 @@
 			<artifactId>de.metas.procurement.sync-api</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>de.metas.rfq</groupId>
+			<artifactId>de.metas.rfq</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>

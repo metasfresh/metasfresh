@@ -34,9 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IArchiveDAO;
-import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -216,15 +214,5 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		}
 
 		return true;
-	}
-
-	public Class<? extends IWorkpackageProcessor> getDocOutboundWorkpackageProcessorClass()
-	{
-		return DocOutboundWorkpackageProcessor.class;
-	}
-
-	public IWorkpackageProcessor getDocOutboundWorkpackageProcessor()
-	{
-		return new DocOutboundWorkpackageProcessor();
 	}
 }
