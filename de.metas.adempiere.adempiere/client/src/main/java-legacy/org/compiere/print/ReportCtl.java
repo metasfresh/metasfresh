@@ -140,8 +140,6 @@ public final class ReportCtl
 			return startDocumentPrint(ReportEngine.SHIPMENT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 217)		//	C_Project
 			return startDocumentPrint(ReportEngine.PROJECT, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
-		else if (pi.getAD_Process_ID() == 276)		//	C_RfQResponse
-			return startDocumentPrint(ReportEngine.RFQ, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
 		else if (pi.getAD_Process_ID() == 313)		//	C_Payment
 			return startCheckPrint(pi.getRecord_ID(), !pi.isPrintPreview());
 		/**

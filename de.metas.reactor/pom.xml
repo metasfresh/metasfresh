@@ -21,9 +21,6 @@
 	<modules>
 		<module>../de.metas.assemblies</module>
 
-		<!-- FRESH-271: de.metas.parent now has this reactor pom as module, so to avoid a loop, we cannot have it as module anymore -->
-		<!-- module>../de.metas.parent</module -->
-
 		<module>../de.metas.migration</module>
 		<module>../de.metas.scripts.rollout</module>
 		
@@ -89,6 +86,8 @@
 		
 		<module>../de.metas.procurement.sync-api</module>
 		<module>../de.metas.procurement.base</module>
+		
+		<module>../de.metas.rfq</module>
 	</modules>
 			
 	  <build>
@@ -98,7 +97,6 @@
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-enforcer-plugin</artifactId>
 			<!-- see the plugin management section in de.metas.parent on why we don't use 1.4.1 -->
-			<version>1.3.1</version>
 			<executions>
 			  <execution>
 				<id>enforce-banned-dependencies</id>

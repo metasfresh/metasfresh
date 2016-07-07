@@ -1,5 +1,7 @@
 package de.metas.procurement.base.model;
 
+import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
+
 /*
  * #%L
  * de.metas.procurement.base
@@ -30,4 +32,12 @@ public interface I_C_Flatrate_Term extends de.metas.flatrate.model.I_C_Flatrate_
 	I_PMM_Product getPMM_Product();
 	void setPMM_Product(I_PMM_Product PMM_Product);
 	//@formatter:on
+	
+	//@formatter:off
+	public static final String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+	int getC_RfQResponseLine_ID();
+	I_C_RfQResponseLine getC_RfQResponseLine();
+	void setC_RfQResponseLine(de.metas.rfq.model.I_C_RfQResponseLine C_RfQResponseLine);
+	//@formatter:on
+	
 }

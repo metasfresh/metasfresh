@@ -1,11 +1,15 @@
 package de.metas.procurement.base;
 
+import java.util.List;
+
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.sync.SyncRfQCloseEvent;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 
 /*
  * #%L
@@ -72,4 +76,7 @@ public interface IWebuiPush extends ISingletonService
 	 */
 	void pushAllBPartners();
 
+	void pushRfQs(List<SyncRfQ> syncRfqs);
+
+	void pushRfQCloseEvents(List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

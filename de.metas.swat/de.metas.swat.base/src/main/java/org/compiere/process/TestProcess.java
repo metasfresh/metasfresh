@@ -28,9 +28,11 @@ package org.compiere.process;
 
 import org.adempiere.util.ProcessUtil;
 import org.compiere.model.MClient;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 
 /**
  * @author cg
@@ -58,9 +60,8 @@ public class TestProcess extends SvrProcess
 				"test",
 				message,
 				true);
-		String status = "Check Setup";
-		status = email.send();
-		System.out.println(status);
+		final EMailSentStatus emailSentStatus = email.send();
+		System.out.println(emailSentStatus);
 		//
 		return "test";
 	}

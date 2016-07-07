@@ -45,10 +45,11 @@ import org.compiere.model.PO;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
 import de.metas.banking.model.I_C_Payment;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 import de.schaeffer.compiere.constants.Constants;
 
 /**
@@ -424,7 +425,9 @@ public class CCPaymentReserveProcess extends SvrProcess {
 			if (!email.isValid()) {
 				log.error("Unable to send mail (not valid) - " + email);
 			}
-			final boolean ok = EMail.SENT_OK.equals(email.send());
+			
+			final EMailSentStatus emailSentStatus = email.send();
+			final boolean ok = emailSentStatus.isSentOK();
 			//
 			if (ok) {
 				log.debug("sucessfully sent to " + emailAddresses[i]);

@@ -43,6 +43,8 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
+import de.metas.adempiere.util.CacheModel;
+import de.metas.adempiere.util.CacheModelId;
 import de.metas.adempiere.util.CacheReloadIfTrue;
 import de.metas.adempiere.util.CacheTrx;
 
@@ -130,7 +132,19 @@ import de.metas.adempiere.util.CacheTrx;
 					final CacheReloadIfTrueParamDescriptor paramDescriptor = new CacheReloadIfTrueParamDescriptor(parameterType, parameterIndex, annotation);
 					descriptorsBuilder.add(paramDescriptor);
 					createGenericDescriptor = false;
-					
+				}
+				else if (annotation instanceof CacheModelId)
+				{
+					final CacheModelIdParamDescriptor paramDescriptor = new CacheModelIdParamDescriptor(parameterType, parameterIndex, annotation);
+					descriptorsBuilder.add(paramDescriptor);
+					createGenericDescriptor = false;
+				}
+				else if (annotation instanceof CacheModel)
+				{
+					descriptorsBuilder.add(new CacheCtxParamDescriptor(parameterType, parameterIndex, annotation));
+					descriptorsBuilder.add(new CacheTrxParamDescriptor(parameterType, parameterIndex, annotation));
+					descriptorsBuilder.add(new CacheModelIdParamDescriptor(parameterType, parameterIndex, annotation));
+					createGenericDescriptor = false;
 				}
 			}
 

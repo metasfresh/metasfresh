@@ -888,6 +888,13 @@ public class InterfaceWrapperHelper
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
 		return keyColumnName;
 	}
+	
+	public static final String getModelKeyColumnName(final Object model)
+	{
+		final String tableName = getModelTableName(model);
+		return getKeyColumnName(tableName);
+	}
+
 
 	/**
 	 * Get Table_ID of wrapped model. If model is null, an exception will be thrown
