@@ -11,7 +11,7 @@ By opening a pull request for this repository, you license your contribution und
 
 **GNU GENERAL PUBLIC LICENSE (GPL) Version 2 or any later version**
 
-You can find a copy of the license [here](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt).
+You can find a copy of the license [here](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md).
 
 Note that we intent to switch to GPL-3 in the future. 
 
@@ -37,7 +37,7 @@ We know that our documentation is still patchy and are keen to improve it!
 
 # How to get help
 
-* Here is our current developer's documentation, about how to get the code to compile etc: https://github.com/metasfresh/metasfresh-documentation/blob/master/developers/developer_doc_getting_started.md.
+* Here is our current developer's documentation, about how to get the code to compile etc: http://docs.metasfresh.org/pages/developers/index_en
  - Just like with the metasfresh code, we are also grateful for contributions to this documentation
 * We have a gitter chat dedicated to this repository. You can enter it at https://gitter.im/metasfresh/metasfresh
 

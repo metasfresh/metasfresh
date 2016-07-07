@@ -3,10 +3,10 @@ package de.metas.jmx;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
+import org.compiere.dbPort.Convert;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -24,13 +24,11 @@ public class Metasfresh
 	@ManagedOperation
 	public String[] getActiveTrxNames()
 	{
-		ITrx[] trxs = Services.get(ITrxManager.class).getActiveTransactions();
-		String[] result = new String[trxs.length];
-		for (int i = 0; i < trxs.length; i++)
-		{
-			result[i] = trxs[i].getTrxName();
-		}
-		return result;
+		return Services.get(ITrxManager.class)
+				.getActiveTransactionsList()
+				.stream()
+				.map((trx) -> trx.getTrxName())
+				.toArray((size) -> new String[size]);
 	}
 
 	@ManagedOperation
@@ -71,5 +69,11 @@ public class Metasfresh
 	public void resetLocalCache()
 	{
 		CacheMgt.get().reset();
+	}
+	
+	@ManagedOperation
+	public void rotateMigrationScriptFile()
+	{
+		Convert.closeMigrationScriptFiles();
 	}
 }

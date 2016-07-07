@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
+
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -88,12 +89,10 @@ public class C_Invoice_Candidate
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure is up2date.
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
-					I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
+			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
+			I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
 	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -106,10 +105,8 @@ public class C_Invoice_Candidate
 		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE,
-					ModelValidator.TYPE_BEFORE_SAVE_TRX },
-			ifColumnsChanged = {
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,
+			ModelValidator.TYPE_BEFORE_SAVE_TRX }, ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_PriceEntered, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_Discount, I_C_Invoice_Candidate.COLUMNNAME_Discount_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID,
@@ -134,23 +131,19 @@ public class C_Invoice_Candidate
 	// invoiceCandDB.invalidateCand(ic);
 	// }
 
-	@ModelChange(
-			timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
-					I_C_Invoice_Candidate.COLUMNNAME_Processed_Override, // task 08567
-			})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered,
+			I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced,
+			I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
+			I_C_Invoice_Candidate.COLUMNNAME_Processed_Override, // task 08567
+	})
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 		invoiceCandBL.updateProcessedFlag(ic);
 	}
 
-	@ModelChange(
-			timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced })
 	public void updateOrderLineQtyInvoiced(final I_C_Invoice_Candidate ic)
 	{
 		if (ic.getC_OrderLine_ID() > 0)
@@ -210,20 +203,14 @@ public class C_Invoice_Candidate
 	 * @param candidate
 	 * @task 08457
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
-			ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override
-					, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override
-					, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID
-					, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {
+			I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
 	public void updatePriceActual_Net_Effective(final I_C_Invoice_Candidate candidate)
 	{
 		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
 	}
 
-	@ModelChange(
-			timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsError })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsError })
 	public void resetErrorFields(final I_C_Invoice_Candidate ic)
 	{
 		if (!ic.isError())
@@ -321,7 +308,7 @@ public class C_Invoice_Candidate
 			InterfaceWrapperHelper.save(iol);
 		}
 	}
-	
+
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 * 
@@ -335,15 +322,15 @@ public class C_Invoice_Candidate
 		//
 		// Skip recreation scheduling if we were asked to avoid that
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		if(invoiceCandDAO.isAvoidRecreate(ic))
+		if (invoiceCandDAO.isAvoidRecreate(ic))
 		{
 			return;
 		}
-		
+
 		//
 		// Get linked model
 		final Object model = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
-		if(model == null)
+		if (model == null)
 		{
 			// Record is missing. It might be because the model was deleted.
 			// => nothing to do
@@ -367,8 +354,7 @@ public class C_Invoice_Candidate
 	 *
 	 * @param ic
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void resetQtyToInvoiceFulFilled(final I_C_Invoice_Candidate ic)
 	{
 		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))

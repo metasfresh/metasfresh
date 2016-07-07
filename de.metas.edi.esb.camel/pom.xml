@@ -205,7 +205,7 @@
 						
 						Thx to http://www.regexpal.com/
 						-->
-						<Bundle-Version>0.0.0.${metasfresh-dependency.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						<Bundle-Version>0.0.0.${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include de.metas.printing.esb.api in our bundle. Don't make it 
 							an extra bundle, unless there is *another* OSGI-bundle such as esb.printing 
@@ -232,28 +232,29 @@
 				</executions>
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
-					<sources>
-						<source>src/main/xsd/schema.xsd</source>
-					</sources>
 				</configuration>
 
 				<dependencies>
+<!--
 					<dependency>
 						<groupId>org.jvnet.jaxb2_commons</groupId>
 						<artifactId>jaxb2-basics</artifactId>
 						<version>0.6.5</version>
 					</dependency>
-					<dependency>
+-->
+
 						<!-- explicitly using this version because if the plugin runs with 
 							e.g. xerces 2.6.2, we get this error: org.xml.sax.SAXNotRecognizedException: 
 							Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not 
 							recognized. -->
+<!-- 
+					<dependency>
 						<groupId>xerces</groupId>
 						<artifactId>xercesImpl</artifactId>
 						<version>2.9.1</version>
 					</dependency>
+-->
 				</dependencies>
-
 			</plugin>
 		</plugins>
 	</build>

@@ -8,6 +8,7 @@
 de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.serverRoot/log/
-/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.serverRoot/activemq-data/
+**/activemq-data/
 
 **/.~lock*
+*.jasper

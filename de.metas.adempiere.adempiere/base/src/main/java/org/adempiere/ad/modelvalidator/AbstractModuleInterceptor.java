@@ -10,12 +10,12 @@ package org.adempiere.ad.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,6 +47,7 @@ import de.metas.event.Topic;
  * <li>module configuration
  * <li>sub-sequent interceptors and callouts registration
  * </ul>
+ * Note that module interceptors can also be registered in the "the normal ways" like any other model insterceptor. For example  via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
  *
  * @author tsa
  *
@@ -72,7 +73,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		setupEventBus();
 		onAfterInit();
 	}
-	
+
 	/**
 	 * Called by {@link #onInit(IModelValidationEngine, I_AD_Client)} right before method execution is finishing.
 	 */
@@ -121,7 +122,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 	{
 		// nothing on this level
 	}
-	
+
 	private final void setupEventBus()
 	{
 		final List<Topic> userNotificationsTopics = getAvailableUserNotificationsTopics();
@@ -135,7 +136,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		}
 
 	}
-	
+
 	/** @return available user notifications topics to listen */
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
@@ -147,7 +148,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 	{
 		// nothing
 	}
-	
+
 	/** Does nothing. Module interceptors are not allowed to intercept models or documents */
 	@Override
 	public final void onModelChange(final Object model, final ModelChangeType changeType) throws Exception

@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -57,6 +55,7 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderBL;
@@ -64,6 +63,7 @@ import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 public class OrderLineBL implements IOrderLineBL
@@ -76,9 +76,6 @@ public class OrderLineBL implements IOrderLineBL
 
 	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
-
-	// task 08002
-	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	@Override
 	public void setPricesIfNotIgnored(final Properties ctx,

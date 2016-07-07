@@ -13,7 +13,7 @@
 	</parameter>
 	<parameter name="printname" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[SELECT 0;]]>
+		<![CDATA[select 0;]]>
 	</queryString>
 	<field name="?column?" class="java.lang.Integer"/>
 	<title>

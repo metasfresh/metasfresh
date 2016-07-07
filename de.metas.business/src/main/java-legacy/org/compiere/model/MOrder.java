@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -627,7 +628,7 @@ public class MOrder extends X_C_Order implements DocAction
 			final MOrderLine fromLine)
 	{
 		final MOrderLine line = new MOrderLine(this);
-		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
+		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID()); // note: this copies *all* columns, also those with IsCalculated='Y'
 		line.setC_Order_ID(getC_Order_ID());
 		line.setOrder(this);
 		line.set_ValueNoCheck("C_OrderLine_ID", I_ZERO);	// new
@@ -692,7 +693,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (counter)
 		{
 			fromLine.setRef_OrderLine_ID(line.getC_OrderLine_ID());
-			fromLine.saveEx(get_TrxName());
+			InterfaceWrapperHelper.save(fromLine);
 		}
 
 		return 1;
@@ -760,27 +761,6 @@ public class MOrder extends X_C_Order implements DocAction
 			return null;
 		return re.getPDF(file);
 	}	// createPDF
-
-	/**
-	 * Set Price List (and Currency, TaxIncluded) when valid
-	 *
-	 * @param M_PriceList_ID price list
-	 */
-	@Override
-	public void setM_PriceList_ID(int M_PriceList_ID)
-	{
-		MPriceList pl = MPriceList.get(getCtx(), M_PriceList_ID, null);
-		if (pl.get_ID() == M_PriceList_ID)
-		{
-			super.setM_PriceList_ID(M_PriceList_ID);
-			setC_Currency_ID(pl.getC_Currency_ID());
-			setIsTaxIncluded(pl.isTaxIncluded());
-		}
-		// metas: make sure that ther pricing system is in sync wth the new pl
-		InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class)
-				.setM_PricingSystem_ID(InterfaceWrapperHelper.create(pl, de.metas.adempiere.model.I_M_PriceList.class).getM_PricingSystem_ID());
-		// metas: end
-	}	// setM_PriceList_ID
 
 	/**************************************************************************
 	 * Get <b>active</b> Lines of Order
@@ -1406,10 +1386,10 @@ public class MOrder extends X_C_Order implements DocAction
 				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-				final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
-				final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-				final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+				final String soCreditStatus = stats.getSOCreditStatus();
 
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
@@ -1429,9 +1409,9 @@ public class MOrder extends X_C_Order implements DocAction
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
 						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 
-				final String calculateSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
+				final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
 
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculateSOCreditStatus))
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 				{
 					m_processMsg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal

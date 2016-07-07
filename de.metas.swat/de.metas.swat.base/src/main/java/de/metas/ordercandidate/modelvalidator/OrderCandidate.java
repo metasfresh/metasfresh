@@ -73,6 +73,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_OLCand(), client);
 		engine.addModelValidator(new OLCandGenerator(), client);
 		engine.addModelValidator(new C_OLCandProcessor(), client);
+		engine.addModelValidator(new C_OrderLine(), client);
 
 		// task 08803: registering this listener *after* C_OLCand, because C_OLCand can call IOLCandValdiatorBL.validate, and this listener (which is actually a model interceptor) needs to be called
 		// after that (if there is any change).

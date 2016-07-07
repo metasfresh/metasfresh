@@ -1,100 +1,109 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-	<title th:text="${productName} + ' Application Home'">Product Application Home</title>
-	<meta name="description" content="metas Fresh Application Home"/>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<link href="css/standard.css" rel="stylesheet" type="text/css"/>
-	<link rel="shortcut icon" href="favicon_32.png" />
+<title th:text="${productName} + ' Application Home'">Product
+	Application Home</title>
+<meta name="description" content="metas Fresh Application Home" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="css/standard.css" rel="stylesheet" type="text/css" />
+<link rel="shortcut icon" href="favicon_32.png" />
 </head>
 <body>
-	<table border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tbody>
-			<tr>
+	<font face="Helvetica Arial, Helvetica, sans-serif">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tbody>
+				<tr>
+					<td background="header_banner.png" height="60">
+						<table border="0" cellpadding="5" cellspacing="0" width="100%">
+							<tbody>
+								<tr>
+									<td align="left" valign="middle" width="477"></td>
+									<td align="left" valign="bottom"><a
+										th:href="${productURL}" target="_blank"><img
+											src="logo.png" alt="logo" align="right" border="0" /></a></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td background="header_bar.jpg" height="60">
+						<table border="0" cellpadding="5" cellspacing="0" width="100%">
+							<tbody>
+								<tr>
+									<td align="left" valign="middle"><font color="#76B828"
+										size="4">Welcome to the <span th:text="${productName}" />
+											Home Page!
+									</font> <br /></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
 
-				<td background="header_banner.png" height="60">
-					<table border="0" cellpadding="5" cellspacing="0" width="100%">
+				<tr>
+					<td height="77">
+						<table border="0" cellpadding="5" cellspacing="0" width="100%">
 
-						<tbody>
-							<tr>
-								<td align="left" valign="middle" width="477"></td>
-								<td align="left" valign="bottom"><a th:href="${productURL}" target="_blank"><img src="logo.png" alt="logo" align="right" border="0"/></a></td>
-							</tr>
-						</tbody>
-					</table>
-				</td>
-			</tr>
-			<tr>
-				<td background="header_bar.jpg" height="60">
-					<table border="0" cellpadding="5" cellspacing="0" width="100%">
-						<tbody>
-							<tr>
-								<td align="left" valign="middle"><font color="#76B828" face="Arial, Helvetica, sans-serif" size="4">Welcome to the <span th:text="${productName}"/> Home Page!</font> <br/></td>
-							</tr>
-						</tbody>
-					</table>
-				</td>
-			</tr>
+							<!--DWLayoutTable-->
+							<tbody>
+								<tr>
+									<td bgcolor="#BBED80">
+										<h2>
+											<font color="#000000">Portable Desktop Client</font>
+										</h2>
+									</td>
 
-			<tr>
-				<td height="77">
-					<table border="0" cellpadding="5" cellspacing="0" width="100%">
+									<td bgcolor="#fbf8f1"><a
+										href="/download/metasfresh-client.zip"><img src="zip.gif"
+											th:alt="${productName} + ' Client zip'" align="right"
+											border="0" height="32" width="32" /></a>Runs under windows and
+										Linux.<br /> Download and extract the desktop client <a
+										href="/download/metasfresh-client.zip"
+										th:title="'Download ' + ${productName} + ' Client'">zip</a>
+										file on your computer.<br /> 
+										See the <a href="http://metasfresh.com/en/client-installation">client installation documentation</a> for details.</td>
+								</tr>
+								<tr>
+									<td bgcolor="#BBED80" valign="top">
+										<h2>
+											<font color="#000000">Server Admin</font>
+										</h2>
+									</td>
+									<td bgcolor="#fbf8f1"><a href="serverMonitor">Server
+											Management</a></td>
+								</tr>
+								<tr>
+									<td bgcolor="#BBED80" valign="top">
+										<h2>
+											<font color="#000000">Additional Binaries</font>
+										</h2>
+									</td>
+									<td bgcolor="#fbf8f1">Binaries required for advanced usage
+										scenarios
+										<ul>
+											<li><a href="/download/de.metas.admin.webui.jar">Spring-Boot
+													Admin WebUI</a></li>
+											<li><a href="/download/de.metas.edi.esb.camel.jar">EDI
+													ESB bundle</a></li>
+											<li><a
+												href="/download/de.metas.document.archive.esb.camel.jar">Archive
+													ESB bundle</a></li>
+											<li><a href="/download/de.metas.printing.esb.camel.jar">Printing
+													ESB bundle</a></li>
+											<li><a
+												href="/download/de.metas.printing.esb.client-jar-with-dependencies.jar">Printing
+													standalone client</a></li>
+										</ul>
+									</td>
+								</tr>
 
-						<!--DWLayoutTable-->
-						<tbody>
-							<tr>
-								<td bgcolor="#BBED80">
-									<h2>
-										<font color="#000000">Portable Desktop Client</font>
-									</h2>
-								</td>
-
-								<td bgcolor="#fbf8f1"><a href="/download/metasfresh-client.zip"><img src="zip.gif" th:alt="${productName} + ' Client zip'" align="right" border="0" height="32" width="32"/></a>Runs under windows and Linux.<br/>Instructions: Install a Java
-									Runtime Environment (Java 7 or later); Download and extract the desktop client <a href="/download/metasfresh-client.zip" th:title="'Download ' + ${productName} + ' Client'">zip</a> file on your computer.</td>
-							</tr>
-							<tr th:if="${isZkWebUIServerEnabled} == true">
-								<td bgcolor="#BBED80" valign="top">
-									<h2>
-										<font color="#000000">Web Application</font>
-									</h2>
-								</td>
-								<td bgcolor="#fbf8f1"><a href="/webui">webUI</a> - contributed by Posterita</td>
-
-							</tr>
-
-							<tr>
-								<td bgcolor="#BBED80" valign="top">
-									<h2>
-										<font color="#000000">Server Admin</font>
-									</h2>
-								</td>
-								<td bgcolor="#fbf8f1">
-									<a href="serverMonitor">Server Management</a>
-								</td>
-							</tr>
-							<tr>
-								<td bgcolor="#BBED80" valign="top">
-									<h2>
-										<font color="#000000">Additional Binaries</font>
-									</h2>
-								</td>
-								<td bgcolor="#fbf8f1">
-									Binaries required for advanced usage scenarios 
-									<ul>
-										<li><a href="/download/de.metas.admin.webui.jar">Spring-Boot Admin WebUI</a></li>
-										<li><a href="/download/de.metas.edi.esb.camel.jar">EDI ESB bundle</a></li>
-										<li><a href="/download/de.metas.document.archive.esb.camel.jar">Archive ESB bundle</a></li>
-										<li><a href="/download/de.metas.printing.esb.camel.jar">Printing ESB bundle</a></li>
-										<li><a href="/download/de.metas.printing.esb.client-jar-with-dependencies.jar">Printing standalone client</a></li>
-									</ul>
-								</td>
-							</tr>
-
-						</tbody>
-					</table>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</font>
 </body>
 </html>

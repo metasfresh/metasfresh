@@ -60,7 +60,6 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -368,10 +367,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final org.compiere.model.I_C_BPartner partner = sched.getC_BPartner();
 			
 			// FRESH-334 retrieve the bp product for org or for org 0
-			final I_AD_Org organization = product.getAD_Org();
+			final int orgId = product.getAD_Org_ID();
 
 			final de.metas.interfaces.I_C_BPartner_Product bpp =
-					InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, organization),
+					InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
 							de.metas.interfaces.I_C_BPartner_Product.class);
 
 			if (bpp == null)
@@ -1239,5 +1238,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener)
 	{
 		listeners.addShipmentScheduleQtyUpdateListener(listener);
+	}
+	
+	@Override
+	public void closeShipmentSchedule(I_M_ShipmentSchedule schedule)
+	{
+		final BigDecimal qtyDelivered = schedule.getQtyDelivered();
+		
+		schedule.setQtyOrdered_Override(qtyDelivered);
+		
+		InterfaceWrapperHelper.save(schedule);
 	}
 }

@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -108,11 +108,10 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrievePickedAndDeliveredRecordsQuery(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
-						.filter(createPickedAndDeliveredFilter(shipmentSchedule))
-						.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
+				.filter(createPickedAndDeliveredFilter(shipmentSchedule))
+				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
@@ -211,30 +210,31 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder =
-				queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
-						.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
-						.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
-						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
-		return linesBuilder.
-				addOnlyActiveRecordsFilter().
-				create().
-				list(I_M_ShipmentSchedule.class);
+		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
+				.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
+				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
+		return linesBuilder.addOnlyActiveRecordsFilter().create().list(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(I_M_InOutLine inoutLine)
+	public List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(final I_M_InOutLine inoutLine)
+	{
+		return retrieveSchedulesForInOutLineQuery(inoutLine)
+				.create()
+				.list(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public IQueryBuilder<I_M_ShipmentSchedule> retrieveSchedulesForInOutLineQuery(final I_M_InOutLine inoutLine)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder =
-				queryBL.createQueryBuilder(I_M_InOutLine.class, inoutLine)
-						.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOutLine_ID, inoutLine.getM_InOutLine_ID())
-						.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
-						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
-		return linesBuilder.
-				addOnlyActiveRecordsFilter().
-				create().
-				list(I_M_ShipmentSchedule.class);
+		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inoutLine)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOutLine_ID, inoutLine.getM_InOutLine_ID())
+				.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
+				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
+		return linesBuilder
+				.addOnlyActiveRecordsFilter();
 	}
 }

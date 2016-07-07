@@ -59,9 +59,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -86,7 +83,7 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/**
-	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project pom.xml
+	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project <code>pom.xml</code>.<br>
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
 
@@ -764,7 +761,7 @@ public class Adempiere
 		if (runMode == RunMode.BACKEND)
 		{
 			final boolean skipHouseKeeping = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
-			logger.info("Sysconfig {} = {}", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
+			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
 			if (!skipHouseKeeping)
 			{
 				// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
@@ -874,39 +871,4 @@ public class Adempiere
 	}
 
 	private static boolean unitTestMode = false;
-
-	/**
-	 * @return if running on server side and the ZK webui server is enabled
-	 */
-	public static boolean isZkWebUIServerEnabled()
-	{
-		final Boolean enabled = zkWebUIServerEnabledSupplier.get();
-		return enabled != null && enabled.booleanValue();
-	}
-
-	private static final Supplier<Boolean> zkWebUIServerEnabledSupplier = Suppliers.memoize(new Supplier<Boolean>()
-	{
-		@Override
-		public Boolean get()
-		{
-			if (Ini.isClient())
-			{
-				return false;
-			}
-
-			try
-			{
-				Thread.currentThread().getContextClassLoader()
-						.loadClass("org.adempiere.webui.AdempiereWebUI");
-				return true;
-			}
-			catch (Throwable e)
-			{
-				// ignore any exception
-			}
-
-			return false;
-		}
-	});
-
 }	// Adempiere

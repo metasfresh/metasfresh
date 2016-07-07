@@ -20,8 +20,10 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -94,19 +96,17 @@ public class MDocType extends X_C_DocType
 	 *	@param C_DocType_ID id
 	 *	@return document type
 	 */
-	static public MDocType get (Properties ctx, int C_DocType_ID)
+	public static MDocType get (final Properties ctx, final int C_DocType_ID)
 	{
-		MDocType retValue = (MDocType)s_cache.get(C_DocType_ID);
-		if (retValue == null)
+		if(C_DocType_ID <= 0)
 		{
-			retValue = new MDocType (ctx, C_DocType_ID, null);
-			s_cache.put(C_DocType_ID, retValue);
+			return null;
 		}
-		return retValue; 
+		
+		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
+		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, C_DocType_ID, I_C_DocType.class, ITrx.TRXNAME_None);
+		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
-	
-	/**	Cache					*/
-	static private CCache<Integer,MDocType>	s_cache = new CCache<Integer,MDocType>(Table_Name, 20);
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -194,6 +194,7 @@ public class MDocType extends X_C_DocType
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MDocType[");
@@ -257,6 +258,7 @@ public class MDocType extends X_C_DocType
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		/*if (getAD_Org_ID() != 0)
@@ -270,6 +272,7 @@ public class MDocType extends X_C_DocType
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (newRecord && success)
