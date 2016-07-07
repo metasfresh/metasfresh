@@ -34,7 +34,7 @@ import de.metas.printing.esb.camel.inout.bean.PRTCPrintJobInstructionsConfirmTyp
 /**
  * This route forwards the printing client's response to metasfresh.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PRTPrinterPackageResponseRoute extends RouteBuilder
