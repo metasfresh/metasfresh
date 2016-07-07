@@ -170,6 +170,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
 
 	/**
+	 * Retrieves the default LU.
+	 * @param ctx
+	 * @param adOrgId
+	 * @return default LU or <code>null</code>.
+	 */
+	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
+
+	/**
 	 *
 	 * @param pi
 	 * @param bpartner
