@@ -37,13 +37,14 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.product.IProductBL;
@@ -79,250 +80,177 @@ public class CalloutOrder extends CalloutEngine
 	 * @param mTab Model Tab
 	 * @param mField Model Field
 	 * @param value The new value
-	 * @return Error message or ""
+	 * @return error message or {@link #NO_ERROR}
 	 */
-	public String docType(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String docType(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 	{
-		// 05291
-		final boolean dataCopy = mTab.isDataNewCopy();
-
 		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
-
-		final int C_DocType_ID = order.getC_DocTypeTarget_ID();
-		if (C_DocType_ID <= 0)
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(order.getC_DocTypeTarget())
+				.setOldDocType_ID(order.getC_DocType_ID())
+				.setOldDocumentNo(order.getDocumentNo())
+				.setDocumentModel(order)
+				.buildOrNull();
+		if (documentNoInfo == null)
 		{
 			return NO_ERROR;
 		}
 
-		// Re-Create new DocNo, if there is a doc number already
-		// and the existing source used a different Sequence number
-		String oldDocNo = order.getDocumentNo();
-		boolean newDocNo = (oldDocNo == null);
-		if (!newDocNo && oldDocNo.startsWith("<") && oldDocNo.endsWith(">"))
-			newDocNo = true;
-		Integer oldC_DocType_ID = order.getC_DocType_ID();
+		// Set Context: Document Sub Type for Sales Orders
+		final String docSubType = documentNoInfo.getDocSubType();
+		order.setOrderType(docSubType);
 
-		String sql = "SELECT d.DocSubType,d.HasCharges,'N'," // 1..3
-				+ "d.IsDocNoControlled,s.CurrentNext,s.CurrentNextSys," // 4..6
-				+ "s.AD_Sequence_ID,d.IsSOTrx, " // 7..8
-				+ "s.StartNewYear, s.DateColumn " // 9..10
-				+ " FROM C_DocType d "
-				+ " LEFT OUTER JOIN AD_Sequence s ON (d.DocNoSequence_ID=s.AD_Sequence_ID)"
-				+ " WHERE C_DocType_ID=?"; // #1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		// No Drop Ship other than Standard
+		final boolean dataCopy = mTab.isDataNewCopy(); // 05291
+		if (!docSubType.equals(MOrder.DocSubType_Standard) && !dataCopy)
 		{
-			int AD_Sequence_ID = 0;
+			order.setIsDropShip(false);
+		}
 
-			// Get old AD_SeqNo for comparison
-			if (!newDocNo && oldC_DocType_ID.intValue() != 0)
+		//
+		// Delivery Rule
+		if (docSubType.equals(MOrder.DocSubType_POS))
+		{
+			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
+		}
+		// NOTE: Don't override default configured DeliveryRule (see task 09250)
+		// else
+		// {
+		// if (DocSubType.equals(MOrder.DocSubType_Prepay))
+		// {
+		// order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
+		// }
+		// else
+		// {
+		// order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
+		// }
+		// }
+
+		// Invoice Rule
+		if (docSubType.equals(MOrder.DocSubType_POS)
+				|| docSubType.equals(MOrder.DocSubType_Prepay)
+				|| docSubType.equals(MOrder.DocSubType_OnCredit))
+		{
+			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
+		}
+		else
+		{
+			order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+		}
+
+		// Payment Rule - POS Order
+		if (docSubType.equals(MOrder.DocSubType_POS))
+		{
+			order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+		}
+		else
+		{
+			order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+		}
+
+		// Set Context:
+		Env.setContext(ctx, WindowNo, I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
+
+		// DocumentNo
+		if(documentNoInfo.isDocNoControlled())
+		{
+			order.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+		
+		//
+		// When BPartner is changed, the Rules are not set if
+		// it is a POS or Credit Order (i.e. defaults from Standard
+		// BPartner)
+		// This re-reads the Rules and applies them.
+		if (docSubType.equals(MOrder.DocSubType_POS)
+				|| docSubType.equals(MOrder.DocSubType_Prepay))  // not
+		{
+			// for POS/PrePay
+			;
+		}
+		else
+		{
+			final I_C_BPartner bpartner = order.getC_BPartner();
+			if(bpartner != null && bpartner.getC_BPartner_ID() > 0)
 			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, oldC_DocType_ID.intValue());
-				rs = pstmt.executeQuery();
-				if (rs.next())
-					AD_Sequence_ID = rs.getInt(7);
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_DocType_ID);
-			rs = pstmt.executeQuery();
-			String DocSubType = "";
-			boolean IsSOTrx = true;
-			if (rs.next())  // we found document type
-			{
-				// Set Context: Document Sub Type for Sales Orders
-				DocSubType = rs.getString(1);
-				if (DocSubType == null)
-					DocSubType = "--";
-				order.setOrderType(DocSubType);
-
-				// No Drop Ship other than Standard
-				if (!DocSubType.equals(MOrder.DocSubType_Standard) && !dataCopy)
+				final boolean IsSOTrx = documentNoInfo.isSOTrx();
+				
+				// PaymentRule
 				{
-					order.setIsDropShip(false);
-				}
-
-				//
-				// Delivery Rule
-				if (DocSubType.equals(MOrder.DocSubType_POS))
-				{
-					order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
-				}
-				// NOTE: Don't override default configured DeliveryRule (see task 09250)
-				// else
-				// {
-				// if (DocSubType.equals(MOrder.DocSubType_Prepay))
-				// {
-				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
-				// }
-				// else
-				// {
-				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
-				// }
-				// }
-
-				// Invoice Rule
-				if (DocSubType.equals(MOrder.DocSubType_POS)
-						|| DocSubType.equals(MOrder.DocSubType_Prepay)
-						|| DocSubType.equals(MOrder.DocSubType_OnCredit))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				}
-				else
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
-				}
-
-				// Payment Rule - POS Order
-				if (DocSubType.equals(MOrder.DocSubType_POS))
-				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
-				}
-				else
-				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
-				}
-
-				// IsSOTrx
-				if ("N".equals(rs.getString(8)))
-				{
-					IsSOTrx = false;
-				}
-
-				// Set Context:
-				Env.setContext(ctx, WindowNo, "HasCharges", rs.getString(2));
-
-				// DocumentNo
-				if (rs.getString(4).equals("Y"))  // IsDocNoControlled
-				{
-					if (!newDocNo && AD_Sequence_ID != rs.getInt(7))
+					String paymentRule = IsSOTrx ? bpartner.getPaymentRule() : bpartner.getPaymentRulePO();
+					if (paymentRule != null && paymentRule.length() != 0)
 					{
-						newDocNo = true;
-					}
-					if (newDocNo)
-					{
-						if (Ini.isPropertyBool(Ini.P_ADEMPIERESYS)
-								&& Env.getAD_Client_ID(Env.getCtx()) < 1000000)
+						if (IsSOTrx
+								// No Cash/Check/Transfer:
+								&& (paymentRule.equals(X_C_Order.PAYMENTRULE_Cash)
+										|| paymentRule.equals(X_C_Order.PAYMENTRULE_Check)
+										|| paymentRule.equals("U") // FIXME: we no longer have this PaymentRule... so drop it from here
+										)
+							)
 						{
-							order.setDocumentNo("<" + rs.getString(6) + ">");
+							// for SO_Trx
+							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
-						else
+						if (!IsSOTrx && (paymentRule.equals(X_C_Order.PAYMENTRULE_Cash)))  // No Cash for PO_Trx
 						{
-							if ("Y".equals(rs.getString(9)))
-							{
-								String dateColumn = rs.getString(10);
-								{
-									order.setDocumentNo("<"
-											+ MSequence.getPreliminaryNoByYear(
-													mTab, rs.getInt(7), dateColumn,
-													null)
-											+ ">");
-								}
-							}
-							else
-							{
-								order.setDocumentNo("<" + rs.getString(5) + ">");
-							}
+							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
+						order.setPaymentRule(paymentRule);
 					}
 				}
-
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-
-				// When BPartner is changed, the Rules are not set if
-				// it is a POS or Credit Order (i.e. defaults from Standard
-				// BPartner)
-				// This re-reads the Rules and applies them.
-				if (DocSubType.equals(MOrder.DocSubType_POS)
-						|| DocSubType.equals(MOrder.DocSubType_Prepay))  // not
-					// for
-					// POS/PrePay
-					;
-				else
+				
+				// Payment Term
 				{
-					sql = "SELECT PaymentRule,C_PaymentTerm_ID," // 1..2
-							+ "InvoiceRule,DeliveryRule," // 3..4
-							+ "FreightCostRule,DeliveryViaRule, " // 5..6
-							+ "PaymentRulePO,PO_PaymentTerm_ID "
-							+ "FROM C_BPartner " + "WHERE C_BPartner_ID=?"; // #1
-					pstmt = DB.prepareStatement(sql, null);
-					int C_BPartner_ID = order.getC_BPartner_ID();
-					Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
-					pstmt.setInt(1, C_BPartner_ID);
-					//
-					rs = pstmt.executeQuery();
-					if (rs.next())
+					final int paymentTermId = IsSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID();
+					if (paymentTermId > 0)
 					{
-						// PaymentRule
-						String s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
-						if (s != null && s.length() != 0)
-						{
-							if (IsSOTrx
-									&& (s.equals("B") || s.equals("S") || s.equals("U")))  // No Cash/Check/Transfer
-								// for SO_Trx
-								s = "P"; // Payment Term
-							if (!IsSOTrx && (s.equals("B")))  // No Cash for PO_Trx
-								s = "P"; // Payment Term
-							order.setPaymentRule(s);
-						}
-						// Payment Term
-						Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
-						if (!rs.wasNull())
-						{
-							order.setC_PaymentTerm_ID(ii);
-						}
-						// InvoiceRule
-						s = rs.getString(3);
-						if (s != null && s.length() != 0)
-						{
-							order.setInvoiceRule(s);
-						}
-						// DeliveryRule
-						s = rs.getString(4);
-						if (s != null && s.length() != 0)
-						{
-							order.setDeliveryRule(s);
-						}
-						// FreightCostRule
-						s = rs.getString(5);
-						if (s != null && s.length() != 0)
-						{
-							order.setFreightCostRule(s);
-						}
-						// DeliveryViaRule
-						s = rs.getString(6);
-						if (s != null && s.length() != 0)
-						{
-							order.setDeliveryViaRule(s);
-						}
+						order.setC_PaymentTerm_ID(paymentTermId);
+					}
+				}
+				
+				// InvoiceRule
+				{
+					final String invoiceRule = bpartner.getInvoiceRule();
+					if (invoiceRule != null && invoiceRule.length() != 0)
+					{
+						order.setInvoiceRule(invoiceRule);
+					}
+				}
+				
+				// DeliveryRule
+				{
+					final String deliveryRule = bpartner.getDeliveryRule();
+					if (deliveryRule != null && deliveryRule.length() != 0)
+					{
+						order.setDeliveryRule(deliveryRule);
+					}
+				}
+				
+				// FreightCostRule
+				{
+					final String freightCostRule = bpartner.getFreightCostRule();
+					if (freightCostRule != null && freightCostRule.length() != 0)
+					{
+						order.setFreightCostRule(freightCostRule);
+					}
+				}
+				
+				// DeliveryViaRule
+				{
+					final String deliveryViaRule = bpartner.getDeliveryViaRule();
+					if (deliveryViaRule != null && deliveryViaRule.length() != 0)
+					{
+						order.setDeliveryViaRule(deliveryViaRule);
 					}
 				}
 			}
 		}
-
-		// re-read customer rules
-
-		catch (SQLException e)
-		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return "";
-	}// docType
+		
+		//
+		return NO_ERROR;
+	}
 
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -

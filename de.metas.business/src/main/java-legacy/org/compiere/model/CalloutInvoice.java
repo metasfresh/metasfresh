@@ -35,6 +35,8 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.tax.api.ITaxBL;
 
@@ -63,65 +65,50 @@ public class CalloutInvoice extends CalloutEngine
 	 * @param mTab tab
 	 * @param mField field
 	 * @param value value
-	 * @return null or error message
+	 * @return error message or {@link #NO_ERROR}
 	 */
-	public String docType(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String docType(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 	{
-		Integer C_DocType_ID = (Integer)value;
-		if (C_DocType_ID == null || C_DocType_ID.intValue() == 0)
-			return "";
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(invoice.getC_DocTypeTarget())
+				.setOldDocumentNo(invoice.getDocumentNo())
+				.setDocumentModel(invoice)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return NO_ERROR;
+		}
 
-		final String sql = "SELECT d.HasCharges,'N',d.IsDocNoControlled," // 1..3
-				+ "s.CurrentNext, d.DocBaseType, " // 4..5
-				+ "s.StartNewYear, s.DateColumn, s.AD_Sequence_ID " // 6..8
-				+ " FROM C_DocType d "
-				+ " LEFT OUTER JOIN AD_Sequence s ON (d.DocNoSequence_ID=s.AD_Sequence_ID)"
-				+ " WHERE C_DocType_ID=?";		// 1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		// Charges - Set Context
+		Env.setContext(ctx, WindowNo, I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
+
+		// DocumentNo
+		if (documentNoInfo.isDocNoControlled())
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_DocType_ID.intValue());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				// Charges - Set Context
-				Env.setContext(ctx, WindowNo, "HasCharges", rs.getString(1));
-				// DocumentNo
-				if (rs.getString(3).equals("Y"))
-				{
-					if ("Y".equals(rs.getString(6)))
-					{
-						String dateColumn = rs.getString(7);
-						mTab.setValue("DocumentNo",
-								"<"
-										+ MSequence.getPreliminaryNoByYear(mTab, rs.getInt(8), dateColumn, null)
-										+ ">");
-					}
-					else
-						mTab.setValue("DocumentNo", "<" + rs.getString(4) + ">");
-				}
-				// DocBaseType - Set Context
-				String s = rs.getString(5);
-				Env.setContext(ctx, WindowNo, "DocBaseType", s);
-				// AP Check & AR Credit Memo
-				if (s.startsWith("AP"))
-					mTab.setValue("PaymentRule", "S");    // Check
-				else if (s.endsWith("C"))
-					mTab.setValue("PaymentRule", "P");    // OnCredit
-			}
+			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
-		catch (SQLException e)
+
+		// DocBaseType - Set Context
+		final String docBaseType = documentNoInfo.getDocBaseType();
+		Env.setContext(ctx, WindowNo, I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+		// AP Check & AR Credit Memo
+		if (docBaseType == null)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			// nothing
 		}
-		finally
+		if (docBaseType.startsWith("AP"))
 		{
-			DB.close(rs, pstmt);
+			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_Check); // Check
 		}
-		return "";
+		else if (docBaseType.endsWith("C"))
+		{
+			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_OnCredit); // OnCredit
+		}
+
+		//
+		return NO_ERROR;
 	}	// docType
 
 	/**
