@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,6 +39,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -66,6 +65,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class used to iterate TUs assigned to a receipt schedule and adjust their product storage with their WeightNet attribute.
@@ -331,6 +331,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 		logger.debug("Allocation request: {}", allocationRequest);
 
 		final HULoader huloader = new HULoader(source, destination);
+		// Don't transfer the attributes because this will override the ones that were set by the user in Wareneingang-POS (see FRESH-92)
+		huloader.setSkipAttributesTransfer(true);
 		logger.debug("HULoader: {}", huloader);
 		
 		final IAllocationResult allocationResult = huloader.load(allocationRequest);
