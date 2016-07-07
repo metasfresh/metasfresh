@@ -45,6 +45,7 @@ import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.ClassnameScanner;
+import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
@@ -57,6 +58,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.service.IColumnBL;
 
 import de.metas.logging.LogManager;
 
@@ -553,7 +556,7 @@ public class ModelInterfaceGenerator
 		}
 		// Record_ID
 		// TODO: hardcoded
-		else if (columnName.equalsIgnoreCase("Record_ID"))
+		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
 		{
 			return Integer.class;
 		}

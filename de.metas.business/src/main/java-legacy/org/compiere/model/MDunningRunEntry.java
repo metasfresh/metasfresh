@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.util.Services;
@@ -254,7 +254,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		I_C_DunningLevel level = getC_DunningLevel();
 		// Set Amt
@@ -270,10 +270,12 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			{
 				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
 
-				final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(thisBPartner);
+				final IBPartnerStats stats =bpartnerStatsDAO.retrieveBPartnerStats(thisBPartner);
+				
 				if (level.isSetCreditStop())
 				{
-					bpartnerStatsBL.setSOCreditStatus(stats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop);
+					// set this particular credit status in the bp stats
+					bpartnerStatsDAO.setSOCreditStatus(stats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop);
 				}
 				if (level.isSetPaymentTerm())
 				{

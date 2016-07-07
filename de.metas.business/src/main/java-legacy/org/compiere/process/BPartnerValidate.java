@@ -22,12 +22,11 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
@@ -115,11 +114,10 @@ public class BPartnerValidate extends SvrProcess
 	 */
 	private void checkBP(MBPartner bp) throws SQLException
 	{
-		final IBPartnerStatsBL bpartnerStatBL = Services.get(IBPartnerStatsBL.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
-		final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
 		addLog(0, null, null, bp.getName() + ":");
 		// See also VMerge.postMerge
@@ -133,9 +131,9 @@ public class BPartnerValidate extends SvrProcess
 
 		//
 		// if (bp.getSO_CreditUsed().signum() != 0)
-		addLog(0, null, bpartnerStatBL.getSOCreditUsed(stats), Msg.getElement(getCtx(), "SO_CreditUsed"));
-		addLog(0, null, bpartnerStatBL.getTotalOpenBalance(stats), Msg.getElement(getCtx(), "TotalOpenBalance"));
-		addLog(0, null, bpartnerStatBL.getActualLifeTimeValue(stats), Msg.getElement(getCtx(), "ActualLifeTimeValue"));
+		addLog(0, null, stats.getSOCreditUsed(), Msg.getElement(getCtx(), "SO_CreditUsed"));
+		addLog(0, null, stats.getTotalOpenBalance(), Msg.getElement(getCtx(), "TotalOpenBalance"));
+		addLog(0, null, stats.getActualLifeTimeValue(), Msg.getElement(getCtx(), "ActualLifeTimeValue"));
 		//
 		commitEx();
 	}	// checkBP

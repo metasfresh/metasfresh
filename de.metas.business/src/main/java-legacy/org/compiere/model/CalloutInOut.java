@@ -26,7 +26,7 @@ import java.util.Properties;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -274,8 +274,8 @@ public class CalloutInOut extends CalloutEngine {
 		// Check SO credit available
 		if (isSOTrx)
 		{
-			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsBL.class).getBPartnerStats(bpartner);
-			final BigDecimal soCreditUsed = bpartnerStats.getSoCreditUsed();
+			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{
 				mTab.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(soCreditUsed), false);

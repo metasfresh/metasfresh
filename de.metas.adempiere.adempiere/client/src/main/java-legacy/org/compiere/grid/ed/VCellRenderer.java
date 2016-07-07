@@ -21,8 +21,6 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -36,14 +34,19 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
+import org.adempiere.util.Services;
 import org.compiere.grid.GridController;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTabLayoutMode;
 import org.compiere.model.Lookup;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Table Cell Renderer based on DisplayType
@@ -354,7 +357,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			// Button
 			else if (m_displayType == DisplayType.Button)
 			{
-				if ("Record_ID".equals(m_columnName))
+				if (Services.get(IColumnBL.class).isRecordColumnName(m_columnName))
 					retValue = "#" + value + "#";
 				else
 					retValue = null;

@@ -15,9 +15,13 @@ Her come the actual release notes:
 ## Features
  - #119 FRESH-455 different email per org in inout print preview
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+ - #150 FRESH-492 Fix implementation for BPartner Statistics
+   * refactoring/code improvement
+ - #128 FRESH-465 Extend Record_ID Column Implementation
 
 ## Fixes
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+ - #151 FRESH-491 When creating a new organization, don't create org access for System role
 
 # metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
 
