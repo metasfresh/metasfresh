@@ -13,6 +13,7 @@ Her come the actual release notes:
 # metasfresh 2016-28 (upcoming)
 
 ## Features
+ - #119 FRESH-455 different email per org in inout print preview
 
 ## Fixes
 
