@@ -17,6 +17,6 @@ Repository containing all our eclipse config files (formatter, code cleanup, tem
 
 ### Manual configuration of the XML editor
 
-![eclipse_xml_editor](https://github.com/metasfresh/metasfresh-eclipse-config/raw/master/doc/eclipse_java_code_templates.png)
+![eclipse_xml_editor](https://github.com/metasfresh/metasfresh-eclipse-config/raw/master/doc/eclipse_xml_editor.png)
 
-Most impartantly, please make sure that eclipse doesn't format XML comments
+Most importantly, please make sure that eclipse doesn't format XML comments
