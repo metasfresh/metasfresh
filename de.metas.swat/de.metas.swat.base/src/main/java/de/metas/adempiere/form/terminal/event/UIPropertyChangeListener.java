@@ -13,15 +13,14 @@ package de.metas.adempiere.form.terminal.event;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -31,7 +30,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 
@@ -43,25 +45,11 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
  */
 public abstract class UIPropertyChangeListener implements PropertyChangeListener
 {
-	public static UIPropertyChangeListener wrap(final ITerminalFactory terminalFactory,
-			final IComponent parent,
-			final PropertyChangeListener listener)
-	{
-		Check.assumeNotNull(listener, "listener not null");
-		return new UIPropertyChangeListener(terminalFactory, parent)
-		{
-
-			@Override
-			protected void propertyChangeEx(final PropertyChangeEvent evt) throws Exception
-			{
-				listener.propertyChange(evt);
-			}
-		};
-	}
-
 	// NOTE: to prevent memory leaks we are storing terminalFactory and parent references as weak references
 	private final WeakReference<ITerminalFactory> terminalFactoryRef;
 	private final WeakReference<IComponent> parentRef;
+
+	private boolean _useSeparateThread = false;
 
 	public UIPropertyChangeListener(final ITerminalFactory terminalFactory, final IComponent parent)
 	{
@@ -79,6 +67,15 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 		this(parent.getTerminalContext().getTerminalFactory(), parent);
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("parent", parentRef.get())
+				.toString();
+	}
+
 	protected final IComponent getParent()
 	{
 		return parentRef.get();
@@ -92,50 +89,56 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 		final Object component = parentRef.get().getComponent();
 		if (component == null)
 		{
-			propertyChange0(evt);
+			try
+			{
+				propertyChangeEx(evt);
+			}
+			catch (Exception e)
+			{
+				handleException(e);
+			}
 			return;
 		}
 		else
 		{
-			Services.get(IClientUI.class).executeLongOperation(component, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					propertyChange0(evt);
-				}
-			});
+			Services.get(IClientUI.class)
+					.invoke()
+					.setParentComponent(component)
+					.setLongOperation(true)
+					.setUseSeparateThread(isUseSeparateThread())
+					.setOnFail(OnFail.UseHandler)
+					.setExceptionHandler((ex) -> handleException(ex))
+					.invoke(() -> propertyChangeEx(evt));
 		}
 	}
 
-	/**
-	 * Display UI exception where necessary
-	 *
-	 * @param evt
-	 */
-	private final void propertyChange0(final PropertyChangeEvent evt)
+	private void handleException(final Exception e)
 	{
-		try
-		{
-			propertyChangeEx(evt);
-		}
-		catch (final Exception e)
-		{
-			final ITerminalFactory terminalFactory = terminalFactoryRef.get();
-			final IComponent parent = parentRef.get();
+		final ITerminalFactory terminalFactory = terminalFactoryRef.get();
+		final IComponent parent = parentRef.get();
 
-			// If terminalFactory reference expired, we fallback to IClientUI
-			if (terminalFactory == null)
-			{
-				final int windowNo = Env.WINDOW_MAIN;
-				Services.get(IClientUI.class).warn(windowNo, e);
-			}
-			else
-			{
-				terminalFactory.showWarning(parent, "Error", e);
-			}
+		// If terminalFactory reference expired, we fallback to IClientUI
+		if (terminalFactory == null)
+		{
+			final int windowNo = Env.WINDOW_MAIN;
+			Services.get(IClientUI.class).warn(windowNo, e);
+		}
+		else
+		{
+			terminalFactory.showWarning(parent, "Error", e);
 		}
 	}
+	
+	public UIPropertyChangeListener setUseSeparateThread(final boolean useSeparateThread)
+	{
+		this._useSeparateThread = useSeparateThread;
+		return this;
+	}
+	
+	protected boolean isUseSeparateThread()
+	{
+		return _useSeparateThread;
+	}
 
-	protected abstract void propertyChangeEx(PropertyChangeEvent evt) throws Exception;
+	protected abstract void propertyChangeEx(PropertyChangeEvent evt);
 }

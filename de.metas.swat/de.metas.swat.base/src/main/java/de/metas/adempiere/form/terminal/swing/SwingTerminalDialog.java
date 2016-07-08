@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import org.compiere.apps.AEnv;
+import org.compiere.apps.AGlassPane;
 import org.compiere.swing.CDialog;
 
 import de.metas.adempiere.form.terminal.IComponent;
@@ -56,6 +57,9 @@ class SwingTerminalDialog extends TerminalDialog
 		// When user closes the window from "X" button, do nothing because we will handle it
 		// using our custom WindowAdapter
 		dialogSwing.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		// Install the glass pane
+		dialogSwing.setGlassPane(new AGlassPane());
 	}
 
 	@Override
