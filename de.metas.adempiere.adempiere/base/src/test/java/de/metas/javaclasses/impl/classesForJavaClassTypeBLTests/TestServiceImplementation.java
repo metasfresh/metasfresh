@@ -26,7 +26,7 @@ package de.metas.javaclasses.impl.classesForJavaClassTypeBLTests;
 /**
  * This class is one of those used by {@link de.metas.javaclasses.impl.JavaClassBLTests}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TestServiceImplementation implements TestsIAnnotatedServiceInterface

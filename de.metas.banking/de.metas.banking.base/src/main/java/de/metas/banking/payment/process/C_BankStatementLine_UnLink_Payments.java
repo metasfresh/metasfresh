@@ -39,7 +39,7 @@ import de.metas.document.engine.IDocActionBL;
 /**
  * Process used to unlink all payments of selected {@link I_C_BankStatementLine}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_BankStatementLine_UnLink_Payments extends SvrProcess

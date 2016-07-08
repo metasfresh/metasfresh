@@ -28,7 +28,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 /**
  * {@link IBankStatementListener} adapter.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class BankStatementListenerAdapter implements IBankStatementListener

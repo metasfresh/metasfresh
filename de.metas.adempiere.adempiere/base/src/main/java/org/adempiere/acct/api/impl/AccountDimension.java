@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Immutable {@link IAccountDimension} implementation
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class AccountDimension implements IAccountDimension

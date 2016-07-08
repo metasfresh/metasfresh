@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 962481209L;
+	private static final long serialVersionUID = 1984611341L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -199,22 +199,6 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		return ii.intValue();
 	}
 
-	/** Set ContractLine UUID.
-		@param ContractLine_UUID ContractLine UUID	  */
-	@Override
-	public void setContractLine_UUID (java.lang.String ContractLine_UUID)
-	{
-		set_Value (COLUMNNAME_ContractLine_UUID, ContractLine_UUID);
-	}
-
-	/** Get ContractLine UUID.
-		@return ContractLine UUID	  */
-	@Override
-	public java.lang.String getContractLine_UUID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ContractLine_UUID);
-	}
-
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
@@ -250,6 +234,22 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ContractLine UUID.
+		@param ContractLine_UUID ContractLine UUID	  */
+	@Override
+	public void setContractLine_UUID (java.lang.String ContractLine_UUID)
+	{
+		set_Value (COLUMNNAME_ContractLine_UUID, ContractLine_UUID);
+	}
+
+	/** Get ContractLine UUID.
+		@return ContractLine UUID	  */
+	@Override
+	public java.lang.String getContractLine_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContractLine_UUID);
 	}
 
 	/** Set Zugesagter Termin.

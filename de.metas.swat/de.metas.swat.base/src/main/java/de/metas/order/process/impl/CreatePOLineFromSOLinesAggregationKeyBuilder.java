@@ -31,7 +31,7 @@ import de.metas.interfaces.I_C_OrderLine;
  */
 /**
  * Used by {@link CreatePOLineFromSOLinesAggregator} to create the keys that decide which sales order line belongs to which purchase order line.
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder

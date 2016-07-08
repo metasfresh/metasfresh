@@ -39,7 +39,7 @@ import de.metas.jax.rs.TestPojo;
  * It's also possible to create the proxy from a class, if cglib-nodeps is available (sais this documentation: http://cxf.apache.org/docs/jax-rs-client-api.html#JAX-RSClientAPI-Proxy-basedAPI ).
  * </ul>
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Path("/testService/")

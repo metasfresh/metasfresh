@@ -33,7 +33,7 @@ import org.compiere.util.Env;
 /**
  * {@link VTreePanel}'s search support: allows user to search in tree menu.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class VTreePanelSearchSupport

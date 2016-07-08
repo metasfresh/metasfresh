@@ -45,7 +45,7 @@ import de.metas.order.process.impl.CreatePOFromSOsAggregator;
  * Creates pruchase order(s) from sales order(s).
  * This process is to replace the old org.compiere.process.OrderPOCreate.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
 public class C_Order_CreatePOFromSOs

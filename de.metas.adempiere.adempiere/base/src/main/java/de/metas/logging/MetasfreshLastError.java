@@ -37,7 +37,7 @@ import com.google.common.base.Supplier;
  * 
  * NOTE: in future we will remove this class, because the feature is legacy.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class MetasfreshLastError

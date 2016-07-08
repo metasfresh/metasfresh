@@ -40,7 +40,7 @@ import com.google.common.base.Supplier;
 /**
  * Transactional support helper for {@link TransactionalFreshPackingItem}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TransactionalFreshPackingItemSupport
@@ -136,7 +136,7 @@ public class TransactionalFreshPackingItemSupport
 	/**
 	 * Transactional item state holder.
 	 * 
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private static final class ItemState

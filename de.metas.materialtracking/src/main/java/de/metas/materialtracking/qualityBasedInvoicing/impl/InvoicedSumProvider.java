@@ -39,7 +39,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 /**
  * This is the default implementation.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class InvoicedSumProvider implements IInvoicedSumProvider

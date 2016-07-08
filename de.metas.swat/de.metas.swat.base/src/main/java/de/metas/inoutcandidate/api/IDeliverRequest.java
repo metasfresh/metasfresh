@@ -30,7 +30,7 @@ import de.metas.inoutcandidate.spi.IInOutCandHandler;
  * Instances of this class are provided by {@link IInOutCandHandlerBL#createDeliverRequest(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)}, but the actual implementation is in the implementaers
  * of {@link IInOutCandHandler}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IDeliverRequest

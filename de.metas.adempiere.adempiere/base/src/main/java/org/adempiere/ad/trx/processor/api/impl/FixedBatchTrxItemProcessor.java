@@ -32,7 +32,7 @@ import org.adempiere.util.Check;
  * <p>
  * Use {@link org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder#setItemsPerBatch(int)} in order to get an instance.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT> item type
  * @param <RT> result type

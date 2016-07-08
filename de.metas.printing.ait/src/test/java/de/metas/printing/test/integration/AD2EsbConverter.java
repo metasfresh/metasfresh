@@ -53,7 +53,7 @@ import de.metas.printing.model.I_C_Print_PackageInfo;
 /**
  * Utility class that simulates metasfresh's replication import processor and request/response framework.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Ignore

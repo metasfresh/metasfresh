@@ -25,8 +25,6 @@ package org.compiere.print;
 
 import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MProcess;
 import org.compiere.model.MQuery;
@@ -37,6 +35,9 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.ServerProcessCtl;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 
@@ -179,8 +180,6 @@ public class ServerReportCtl {
 			return startDocumentPrint(ReportEngine.SHIPMENT, null, pi.getRecord_ID(), null);
 		else if (pi.getAD_Process_ID() == 217)		//	C_Project
 			return startDocumentPrint(ReportEngine.PROJECT, null, pi.getRecord_ID(), null);
-		else if (pi.getAD_Process_ID() == 276)		//	C_RfQResponse
-			return startDocumentPrint(ReportEngine.RFQ, null, pi.getRecord_ID(), null);
 		else if (pi.getAD_Process_ID() == 159)		//	Dunning
 			return startDocumentPrint(ReportEngine.DUNNING, null, pi.getRecord_ID(), null);
  	    else if (pi.getAD_Process_ID() == 202			//	Financial Report

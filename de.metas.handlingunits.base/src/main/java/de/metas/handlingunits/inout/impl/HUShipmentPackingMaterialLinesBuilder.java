@@ -28,9 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -40,6 +38,7 @@ import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -65,6 +64,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private boolean configurable = true;
 	private I_M_InOut _shipment;
@@ -263,14 +263,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 		//
 		// Collect LU packing materials from overrides
-		// NOTE: in case of quick shipment the requirement is to add the 1xEUR-Tauschpalette Holz for all lines
+		// NOTE: in case of quick shipment the requirement is to add the 1x(Default LU) for all lines
 		if (isManualPackingMaterials(shipmentLine) && !_manualLUCollected)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(shipmentLine);
-			final I_M_HU_PI paletPI = retrieveDefaultManualLU(ctx);
-			if (paletPI != null)
+			final int adOrgId = shipmentLine.getAD_Org_ID();
+			final I_M_HU_PI luPI = handlingUnitsDAO.retrieveDefaultLUOrNull(ctx, adOrgId);
+			if (luPI != null)
 			{
-				packingMaterialsCollector.addM_HU_PI(paletPI, 1, shipmentLine);
+				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLine);
 			}
 			
 			_manualLUCollected = true;
@@ -300,17 +301,6 @@ public class HUShipmentPackingMaterialLinesBuilder
 		packingMaterialsCollector.getAndResetCountTUs();
 	}
 	
-	/** @return default LU PI to be used when using manual packing materials; it also can be <code>null</code> */
-	private final I_M_HU_PI retrieveDefaultManualLU(final Properties ctx)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_HU_PI.COLUMN_M_HU_PI_ID, 1000006) // FIXME: hardcoded EUR-Tauschpalette Holz
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.create()
-				.firstOnly(I_M_HU_PI.class);
-	}
-
 	private I_M_InOutLine createPackingMaterialLine(final HUPackingMaterialDocumentLineCandidate pmCandidate)
 	{
 		final I_M_InOut inout = getM_InOut();

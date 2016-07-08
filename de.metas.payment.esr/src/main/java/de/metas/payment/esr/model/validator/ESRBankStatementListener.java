@@ -32,7 +32,7 @@ import de.metas.payment.esr.api.IESRImportBL;
 /**
  * Listens to bank statement events and manages the relation with ESR.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class ESRBankStatementListener extends BankStatementListenerAdapter

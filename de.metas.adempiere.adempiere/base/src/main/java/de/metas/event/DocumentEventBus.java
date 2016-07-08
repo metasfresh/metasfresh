@@ -36,7 +36,7 @@ import com.google.common.base.Function;
 /**
  * An convenient event bus implementation which allows APIs to easily notify about documents.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <ModelType>
  */

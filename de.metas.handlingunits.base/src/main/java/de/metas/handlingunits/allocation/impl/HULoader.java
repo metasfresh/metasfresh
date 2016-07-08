@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -71,6 +70,7 @@ public class HULoader
 	private boolean allowPartialUnloads = false;
 	private boolean allowPartialLoads = false;
 	private boolean forceLoad = false;
+	private boolean skipAttributesTransfer = false;
 
 	/**
 	 * The current executor. Will be <code>null</code> while no loading is taking place.
@@ -90,7 +90,7 @@ public class HULoader
 		this.source = source;
 		this.destination = destination;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -369,7 +369,11 @@ public class HULoader
 				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
 
-				transferAttributes(huContext, unloadTrxPartial, loadTrx, qtyUnloaded); // qtyUnloaded will be assumed before actual unload so that we know to decrease from inside the HUStorage
+				// Transfer attributes if allowed
+				if (!isSkipAttributesTransfer())
+				{
+					transferAttributes(huContext, unloadTrxPartial, loadTrx, qtyUnloaded); // qtyUnloaded will be assumed before actual unload so that we know to decrease from inside the HUStorage
+				}
 
 				// Notify the listeners that we performed an unload/load transaction
 				huContext.getTrxListeners().onUnloadLoadTransaction(huContext, unloadTrxPartial, loadTrx);
@@ -401,11 +405,11 @@ public class HULoader
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = getTrxAttributesBuilder();
 			final List<IHUTransactionAttribute> attributeTrxs = trxAttributesBuilder.getAndClearTransactions();
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
-					loadResult.getQtyToAllocate(), // qtyToAllocate
-					loadResult.getQtyAllocated(), // qtyAllocated
-					trxs, // transactions
+					loadResult.getQtyToAllocate(),   // qtyToAllocate
+					loadResult.getQtyAllocated(),   // qtyAllocated
+					trxs,   // transactions
 					attributeTrxs // attribute transactions
-					);
+			);
 			huTrxBL.createTrx(huContext, result);
 
 			//
@@ -446,8 +450,8 @@ public class HULoader
 
 		return new HUTransaction(
 				unloadTrx.getReferencedModel(),
-				unloadTrx.getM_HU_Item(), // HU Item
-				unloadTrx.getVHU_Item(), // VHU Item
+				unloadTrx.getM_HU_Item(),   // HU Item
+				unloadTrx.getVHU_Item(),   // VHU Item
 				unloadTrx_Product,
 				qtyUnloadPartial,
 				unloadTrx.getDate());
@@ -585,5 +589,23 @@ public class HULoader
 				return null;
 			}
 		});
+	}
+
+	/**
+	 * Advises the {@link HULoader} to skip transferring the attributes.
+	 * 
+	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
+	 */
+	public void setSkipAttributesTransfer(final boolean skipAttributesTransfer)
+	{
+		this.skipAttributesTransfer = skipAttributesTransfer;
+	}
+
+	/**
+	 * @return true if attributes shall NOT be transferred
+	 */
+	public boolean isSkipAttributesTransfer()
+	{
+		return skipAttributesTransfer;
 	}
 }

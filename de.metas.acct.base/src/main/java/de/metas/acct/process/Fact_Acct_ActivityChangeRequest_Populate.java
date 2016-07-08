@@ -41,7 +41,7 @@ import de.metas.process.Process;
 /**
  * Populates {@link I_Fact_Acct_ActivityChangeRequest} table by filtering from {@link I_Fact_Acct_ActivityChangeRequest_Source_v}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)

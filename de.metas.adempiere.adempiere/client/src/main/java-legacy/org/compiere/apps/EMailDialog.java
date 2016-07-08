@@ -34,8 +34,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -64,14 +62,17 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * EMail Dialog
@@ -616,14 +617,14 @@ public class EMailDialog
 				email.addAttachment(pdf);
 			}
 			// metas: end
-			// status = email.send(); // metas: commented
-			status = sendEMail(email); // metas
+			
+			final EMailSentStatus emailSentStatus = email.send();
 			//
 			if (m_user != null)
 			{
-				new MUserMail(m_user, m_user.getAD_User_ID(), email).save();
+				new MUserMail(m_user, m_user.getAD_User_ID(), email, emailSentStatus).save();
 			}
-			if (email.isSentOK())
+			if (emailSentStatus.isSentOK())
 			{
 				updateDocExchange(msgBL.getMsg(ctx, "MessageSent")); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 				ADialog.info(0, this, "MessageSent");
@@ -779,11 +780,6 @@ public class EMailDialog
 	public EMail getEMail()
 	{
 		return email;
-	}
-
-	private String sendEMail(final EMail email)
-	{
-		return email.send();
 	}
 
 	// Document Attachment:

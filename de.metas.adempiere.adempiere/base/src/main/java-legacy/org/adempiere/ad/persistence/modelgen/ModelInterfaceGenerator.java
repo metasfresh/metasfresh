@@ -60,6 +60,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -76,7 +77,6 @@ import de.metas.logging.LogManager;
  */
 public class ModelInterfaceGenerator
 {
-
 	private String packageName = "";
 
 	public static final String NL = "\n";
@@ -86,9 +86,10 @@ public class ModelInterfaceGenerator
 	// NOTE: we are not appending ANY license to generated files because we assume this will be done automatically by a maven plugin.
 
 	/** Logger */
-	private static Logger log = LogManager.getLogger(ModelInterfaceGenerator.class);
+	private static final transient Logger log = LogManager.getLogger(ModelInterfaceGenerator.class);
 
-	// private final TableAndColumnInfoRepository repository;
+	private static final String DEPRECATED_MSG_SetterForVirtualColumn = "Please don't use it because this is a virtual column";
+	private static final String DEPRECATED_MSG_GetterForLazyLoadingColumn = "Please don't use it because this is a lazy loading column and it might affect the performances";
 
 	public ModelInterfaceGenerator(final TableInfo tableInfo, String directory, String packageName)
 	{
@@ -261,28 +262,45 @@ public class ModelInterfaceGenerator
 		// Setter
 		if (isGenerateSetter(columnInfo.getColumnName()))
 		{
+			String deprecatedSetter = null;
+			if (columnInfo.isVirtualColumn())
+			{
+				deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
+			}
+			
 			// Create Java Comment
-			generateJavaComment("Set", columnInfo, sb);
-			// public void setColumn (xxx variable)
+			generateJavaComment(sb, columnInfo, "Set", deprecatedSetter);
+			appendDeprecatedIfNotNull(sb, deprecatedSetter);
 			sb.append("\tpublic void set").append(columnInfo.getColumnName()).append(" (")
 					.append(dataType).append(" ").append(columnInfo.getColumnName()).append(");");
 		}
 
 		//
 		// Getter
-		generateJavaComment("Get", columnInfo, sb);
-		sb.append("\tpublic ").append(dataType);
-		if (clazz.equals(Boolean.class))
 		{
-			sb.append(" is");
-			if (columnInfo.getColumnName().toLowerCase().startsWith("is"))
-				sb.append(columnInfo.getColumnName().substring(2));
+			String deprecatedGetter = null;
+			if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
+			{
+				deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
+			}
+			
+			generateJavaComment(sb, columnInfo, "Get", deprecatedGetter);
+			appendDeprecatedIfNotNull(sb, deprecatedGetter);
+			sb.append("\tpublic ").append(dataType);
+			if (clazz.equals(Boolean.class))
+			{
+				sb.append(" is");
+				if (columnInfo.getColumnName().toLowerCase().startsWith("is"))
+					sb.append(columnInfo.getColumnName().substring(2));
+				else
+					sb.append(columnInfo.getColumnName());
+			}
 			else
-				sb.append(columnInfo.getColumnName());
+			{
+				sb.append(" get").append(columnInfo.getColumnName());
+			}
+			sb.append("();");
 		}
-		else
-			sb.append(" get").append(columnInfo.getColumnName());
-		sb.append("();");
 		//
 
 		//
@@ -294,14 +312,33 @@ public class ModelInterfaceGenerator
 			//
 			if (fieldName != null && referenceClassName != null)
 			{
-				sb.append("\n").append("\tpublic " + referenceClassName + " get").append(fieldName).append("();");
+				//
+				// Model getter
+				{
+					String deprecatedGetter = null;
+					if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
+					{
+						deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
+					}
+					sb.append("\n");
+					appendDeprecatedIfNotNull(sb, deprecatedGetter);
+					sb.append("\tpublic " + referenceClassName + " get").append(fieldName).append("();");
+				}
 
-				// metas: begin: model setter
+				//
+				// Model setter
 				if (isGenerateSetter(columnInfo.getColumnName()))
 				{
-					sb.append("\n\tpublic void set" + fieldName + "(" + referenceClassName + " " + fieldName + ");");
+					String deprecatedSetter = null;
+					if (columnInfo.isVirtualColumn())
+					{
+						deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
+					}
+					
+					sb.append("\n");
+					appendDeprecatedIfNotNull(sb, deprecatedSetter);
+					sb.append("\tpublic void set" + fieldName + "(" + referenceClassName + " " + fieldName + ");");
 				}
-				// metas: end
 			}
 		}
 
@@ -324,7 +361,12 @@ public class ModelInterfaceGenerator
 	}
 
 	// ****** Set/Get Comment ******
-	public void generateJavaComment(final String startOfComment, final ColumnInfo columnInfo, StringBuilder result)
+	private void generateJavaComment(
+			final StringBuilder result //
+			, final ColumnInfo columnInfo //
+			, final String startOfComment //
+			, final String deprecated //
+	)
 	{
 		final String propertyName = columnInfo.getName();
 
@@ -353,9 +395,28 @@ public class ModelInterfaceGenerator
 		//
 		// Virtual Column:
 		result.append("\n\t * <br>Virtual Column: ").append(columnInfo.isVirtualColumn());
+		if (columnInfo.isLazyLoading())
+		{
+			result.append(" (lazy loading)");
+		}
+		
+		if (deprecated != null)
+		{
+			result.append("\n\t * @deprecated ").append(deprecated);
+		}
 
 		//
 		result.append("\n\t */\n");
+	}
+	
+	private void appendDeprecatedIfNotNull(final StringBuilder result, final String deprecated)
+	{
+		if (deprecated == null)
+		{
+			return;
+		}
+		
+		result.append("\t@Deprecated\n");
 	}
 
 	/*

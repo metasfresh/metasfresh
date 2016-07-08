@@ -14,6 +14,7 @@ import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 /*
@@ -51,7 +52,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  * </ul>
  *
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @AD_JavaClass(ignore = true)
@@ -101,4 +102,12 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 */
 	@Override
 	public void reportWeekSupply(SyncWeeklySupplyRequest request);
+
+	/**
+	 * @param request
+	 * @see IServerSync#reportRfQChanges(SyncRfQChangeRequest)
+	 */
+	@Override
+	public void reportRfQChanges(SyncRfQChangeRequest request);
+
 }

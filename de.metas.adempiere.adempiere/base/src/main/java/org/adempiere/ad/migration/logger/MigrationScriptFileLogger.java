@@ -50,7 +50,7 @@ import de.metas.logging.LogManager;
 /**
  * SQL migration script file logger.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class MigrationScriptFileLogger

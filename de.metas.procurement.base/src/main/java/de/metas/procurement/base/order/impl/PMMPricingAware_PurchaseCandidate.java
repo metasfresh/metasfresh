@@ -42,7 +42,7 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 /**
  * Wraps a {@link I_PMM_PurchaseCandidate} and behaves like an {@link IPMMPricingAware}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware

@@ -31,7 +31,7 @@ import com.google.common.base.MoreObjects;
 /**
  * Immutable helper class which stores the a pair of amounts in source currency and in accounted currency.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class AmountSourceAndAcct

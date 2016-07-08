@@ -36,7 +36,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 /**
  * Internal service used by BankStatement matching UI to retrieve the data.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 07994 Kontoauszugsimport (109116274972)
  */
 public interface IBankStatementMatchDAO extends ISingletonService

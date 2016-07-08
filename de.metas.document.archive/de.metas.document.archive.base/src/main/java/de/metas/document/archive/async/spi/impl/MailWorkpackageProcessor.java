@@ -42,7 +42,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.process.DocAction;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
@@ -52,9 +51,10 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.email.EMail;
+import de.metas.email.IMailBL;
+import de.metas.email.Mailbox;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
 
 /**
  * Workpackage processor for mails
@@ -157,7 +157,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final I_C_DocType docType = log.getC_DocType();
 
-		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
+		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
 		I_AD_User userTo = null;
 		

@@ -36,7 +36,7 @@ import org.compiere.util.TimeUtil;
 /**
  * Represents a field which can be searched in {@link FindPanel}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class FindPanelSearchField

@@ -42,7 +42,7 @@ import de.metas.process.Param;
 /**
  * Contains information about process class fields which were marked as parameters (i.e. annotated with {@link Param}).
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class ProcessClassParamInfo

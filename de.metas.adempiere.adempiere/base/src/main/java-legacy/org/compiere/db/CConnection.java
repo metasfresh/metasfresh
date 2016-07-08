@@ -1361,7 +1361,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Implementors provide a IStatusService proxy, implementation or whatever that can be used by the CConnection to talk to the application server.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	public interface IStatusServiceEndPointProvider

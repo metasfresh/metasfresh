@@ -46,7 +46,7 @@ import de.metas.migration.scanner.IScriptScanner;
  * against.
  *
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdapter

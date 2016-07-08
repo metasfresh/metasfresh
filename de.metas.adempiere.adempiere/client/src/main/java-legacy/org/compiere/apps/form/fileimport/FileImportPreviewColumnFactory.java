@@ -14,7 +14,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
 
 /**
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class FileImportPreviewColumnFactory extends ColumnFactory

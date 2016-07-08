@@ -32,7 +32,7 @@ import de.metas.acct.model.I_Fact_Acct_Log;
 /**
  * {@link I_Fact_Acct_Log} BL.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFactAcctLogBL extends ISingletonService

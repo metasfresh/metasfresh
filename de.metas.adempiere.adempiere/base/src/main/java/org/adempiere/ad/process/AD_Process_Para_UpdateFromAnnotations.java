@@ -48,7 +48,7 @@ import de.metas.adempiere.model.I_AD_Process;
  * <p>
  * <b>IMPORTANT:</b> this process is an early prototype! Expect the generated <code>AD_Process_Para</code> to be wrong (e.g. wrong <code>AD_Reference_ID</code>).
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class AD_Process_Para_UpdateFromAnnotations extends SvrProcess

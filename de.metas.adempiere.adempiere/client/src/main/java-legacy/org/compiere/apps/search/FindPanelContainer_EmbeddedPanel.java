@@ -35,7 +35,7 @@ import org.adempiere.util.Check;
  * 
  * Calling {@link #setExpanded(boolean)} will just show/hide the FindPanel.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindPanelContainer_Embedded extends FindPanelContainer

@@ -35,7 +35,7 @@ import de.metas.ordercandidate.spi.IOLCandValdiator;
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
  */
 public class OLCandLocationValidator implements IOLCandValdiator

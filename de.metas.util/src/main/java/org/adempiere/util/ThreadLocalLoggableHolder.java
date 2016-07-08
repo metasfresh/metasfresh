@@ -31,7 +31,7 @@ import ch.qos.logback.classic.Level;
 /**
  * Holds the {@link ILoggable} instance of current thread.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class ThreadLocalLoggableHolder

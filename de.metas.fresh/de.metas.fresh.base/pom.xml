@@ -187,6 +187,12 @@
 			<artifactId>de.metas.procurement.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.rfq</groupId>
+			<artifactId>de.metas.rfq</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
 	</dependencies>
 
 </project>

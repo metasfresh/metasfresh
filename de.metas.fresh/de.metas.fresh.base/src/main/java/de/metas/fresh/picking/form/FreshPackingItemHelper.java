@@ -33,7 +33,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 /**
  * Helper class used to manage {@link IFreshPackingItem} instances.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class FreshPackingItemHelper

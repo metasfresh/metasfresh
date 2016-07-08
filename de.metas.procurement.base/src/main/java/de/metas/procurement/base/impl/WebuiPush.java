@@ -21,11 +21,13 @@ import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 
 /*
  * #%L
@@ -212,5 +214,39 @@ public class WebuiPush implements IWebuiPush
 
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
 		agent.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
+	}
+
+	@Override
+	public void pushRfQs(final List<SyncRfQ> syncRfqs)
+	{
+		if(syncRfqs == null || syncRfqs.isEmpty())
+		{
+			return;
+		}
+		
+		final IAgentSync agent = getAgentSyncOrNull();
+		if (agent == null)
+		{
+			return;
+		}
+		
+		agent.syncRfQs(syncRfqs);
+	}
+
+	@Override
+	public void pushRfQCloseEvents(final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	{
+		if(syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		{
+			return;
+		}
+		
+		final IAgentSync agent = getAgentSyncOrNull();
+		if (agent == null)
+		{
+			return;
+		}
+		
+		agent.closeRfQs(syncRfQCloseEvents);
 	}
 }

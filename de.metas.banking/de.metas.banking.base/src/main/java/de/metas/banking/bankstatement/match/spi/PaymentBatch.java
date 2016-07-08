@@ -36,7 +36,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 /**
  * {@link IPaymentBatch} implementation.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class PaymentBatch implements IPaymentBatch
