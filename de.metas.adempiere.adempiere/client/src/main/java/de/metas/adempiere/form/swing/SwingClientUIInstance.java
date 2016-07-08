@@ -28,8 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
