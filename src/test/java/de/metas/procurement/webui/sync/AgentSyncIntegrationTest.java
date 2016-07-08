@@ -349,8 +349,6 @@ public class AgentSyncIntegrationTest
 
 		//
 		// set up the database
-		//
-		// set up the database
 		final BPartner bpartner = new BPartner();
 		bpartner.setUuid(bpartnerUUID);
 		bpartner.setName("Test");

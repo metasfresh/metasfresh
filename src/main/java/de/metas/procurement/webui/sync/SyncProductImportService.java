@@ -24,14 +24,14 @@ import de.metas.procurement.webui.repository.ProductTrlRepository;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,6 +53,15 @@ public class SyncProductImportService extends AbstractSyncImportService
 		return importProduct(syncProduct, product);
 	}
 
+	/**
+	 * Imports the given <code>syncProduct</code>, updating the given <code>product</code> if feasible.
+	 * If it's not feasible, then the method attempts to load the {@link Product} to update using the given <code>syncProduct</code>'s UUID.<br>
+	 * If there is no such existing product, the method creates a new one.
+	 *
+	 * @param syncProduct
+	 * @param product the product to be updated. If <code>null</code> or if its UUID doesn't match the given <code>syncProduct</code>'s UUID, then this parameter is ignored.
+	 * @return
+	 */
 	public Product importProduct(final SyncProduct syncProduct, Product product)
 	{
 		final String uuid = syncProduct.getUuid();

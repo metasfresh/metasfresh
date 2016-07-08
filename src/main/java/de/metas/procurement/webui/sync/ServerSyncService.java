@@ -129,6 +129,9 @@ public class ServerSyncService implements IServerSyncService
 		});
 	}
 
+	/**
+	 * Sends a {@link SyncAllRequest} to metasfresh. The request will be processed by {@link #process(SyncAllRequest)}.
+	 */
 	@ManagedOperation
 	public void syncAllAsync()
 	{
@@ -136,6 +139,11 @@ public class ServerSyncService implements IServerSyncService
 		syncAllAsync(callback);
 	}
 
+	/**
+	 * Like {@link #syncAllAsync()}, with a callback instance to be invoked when the sync is complete.
+	 *
+	 * @param callback instance whose <code>run()</code> method shall be executed after the sync, also if the sync failed.
+	 */
 	public void syncAllAsync(final Runnable callback)
 	{
 		final SyncAllRequest request = SyncAllRequest.of(callback);
@@ -168,7 +176,7 @@ public class ServerSyncService implements IServerSyncService
 		}
 
 		//
-		logger.debug("Fetching products from server and import it");
+		logger.debug("Fetching products from server and importing them");
 		try
 		{
 			final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();

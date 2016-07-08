@@ -71,12 +71,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>de.metas.commons.cxf</groupId>
-			<artifactId>metasfresh-commons-cxf</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.sync-api</artifactId>
 			<version>${metasfresh-dependency.version}</version>
