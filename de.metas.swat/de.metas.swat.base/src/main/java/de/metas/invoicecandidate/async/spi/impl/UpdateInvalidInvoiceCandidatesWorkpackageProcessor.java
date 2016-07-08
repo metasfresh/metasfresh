@@ -51,7 +51,7 @@ import de.metas.lock.api.ILock;
  *
  *
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter

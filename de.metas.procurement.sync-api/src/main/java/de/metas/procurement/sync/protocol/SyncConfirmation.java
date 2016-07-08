@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Used by the remote endpoint to confirm that the package was received.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task https://metasfresh.atlassian.net/browse/FRESH-206
  *
  */

@@ -37,7 +37,7 @@ import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 07994 Kontoauszugsimport (109116274972)
  */
 public class BankStatementMatchForm

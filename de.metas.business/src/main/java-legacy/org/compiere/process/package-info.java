@@ -2,7 +2,7 @@
  * 
  */
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 package org.compiere.process;

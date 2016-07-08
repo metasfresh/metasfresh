@@ -31,7 +31,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 /**
  * Allows us for module tests to just assume that ICs from a previous quality inspection where meanwhile properly invoiced.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class MockedInvoicedSumProvider implements IInvoicedSumProvider

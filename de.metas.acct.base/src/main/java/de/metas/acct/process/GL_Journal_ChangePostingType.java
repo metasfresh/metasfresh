@@ -37,7 +37,7 @@ import org.compiere.process.SvrProcess;
 /**
  * Change the PostingType of {@link I_GL_JournalBatch}/{@link I_GL_Journal} and re-post the GL_Journals.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GL_Journal_ChangePostingType extends SvrProcess

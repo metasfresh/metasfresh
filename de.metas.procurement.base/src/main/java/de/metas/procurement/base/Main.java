@@ -48,7 +48,7 @@ import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 /**
  * Module activator
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class Main extends AbstractModuleInterceptor
@@ -87,6 +87,10 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance, client);
 		// Master data: messages
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Message.instance, client);
+		
+		//
+		// RfQ
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.RfqMainInterceptor(), client);
 	}
 
 	@Override

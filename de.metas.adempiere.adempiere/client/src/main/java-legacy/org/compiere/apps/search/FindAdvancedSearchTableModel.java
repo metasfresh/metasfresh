@@ -15,7 +15,7 @@ import org.compiere.util.ValueNamePair;
 /**
  * Advanced search table model.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 class FindAdvancedSearchTableModel extends AbstractTableModel
 {

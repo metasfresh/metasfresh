@@ -31,7 +31,7 @@ import org.adempiere.util.ISingletonService;
  * <li>schedule the invalidated candidates to be updated
  * </ul>
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IInvoiceCandUpdateSchedulerService extends ISingletonService

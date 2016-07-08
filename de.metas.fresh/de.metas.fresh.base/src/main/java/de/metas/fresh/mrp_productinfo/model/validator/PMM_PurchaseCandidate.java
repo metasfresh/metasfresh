@@ -8,7 +8,7 @@ import de.metas.fresh.mrp_productinfo.async.spi.impl.UpdateMRPProductInfoTableWo
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task https://metasfresh.atlassian.net/browse/FRESH-86
  *
  */

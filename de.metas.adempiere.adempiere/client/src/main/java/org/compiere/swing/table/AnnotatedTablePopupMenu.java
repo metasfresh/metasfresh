@@ -40,7 +40,7 @@ import org.compiere.swing.PopupMenuListenerAdapter;
 /**
  * Popup menu for {@link AnnotatedJXTable}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class AnnotatedTablePopupMenu extends JPopupMenu

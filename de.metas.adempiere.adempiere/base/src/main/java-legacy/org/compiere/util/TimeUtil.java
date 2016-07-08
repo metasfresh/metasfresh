@@ -943,6 +943,12 @@ public class TimeUtil
 		cal.set(Calendar.DAY_OF_YEAR, 1);
 		return new Timestamp(cal.getTimeInMillis());
 	}	// trunc
+	
+	public static final Timestamp truncToDay(final Date dayTime)
+	{
+		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
+	}
+
 
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the

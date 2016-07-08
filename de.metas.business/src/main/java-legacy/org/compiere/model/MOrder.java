@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1390,10 +1391,10 @@ public class MOrder extends X_C_Order implements DocAction
 				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-				final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
-				final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-				final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+				final String soCreditStatus = stats.getSOCreditStatus();
 
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
@@ -1413,9 +1414,9 @@ public class MOrder extends X_C_Order implements DocAction
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
 						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 
-				final String calculateSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
+				final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
 
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculateSOCreditStatus))
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 				{
 					m_processMsg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal

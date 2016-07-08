@@ -27,7 +27,7 @@ import org.adempiere.util.Check;
 /**
  * To be used when it comes to class loading.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IClassInstanceProvider

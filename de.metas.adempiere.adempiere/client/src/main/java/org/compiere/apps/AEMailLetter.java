@@ -37,9 +37,9 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MUser;
 import org.compiere.swing.CMenuItem;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
+import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 

@@ -10,32 +10,32 @@ package de.metas.adempiere.util.cache;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.annotation.Annotation;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 
 /**
  * Handles {@link CacheCtx} annotation.
- * 
+ *
  * @author tsa
  *
  */
@@ -44,18 +44,21 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 	private static final transient Logger logger = LogManager.getLogger(CacheCtxParamDescriptor.class);
 
 	private final int parameterIndex;
+	private final boolean isModel;
 
-	CacheCtxParamDescriptor(Class<?> parameterType, int parameterIndex, Annotation annotation)
+	CacheCtxParamDescriptor(final Class<?> parameterType, final int parameterIndex, final Annotation annotation)
 	{
 		super();
 
 		this.parameterIndex = parameterIndex;
 		if (Properties.class.isAssignableFrom(parameterType))
 		{
-			// nothing to do
+			isModel = false;
 		}
-		// NOTE: in future we would also support model objects
-		// else if (is model object)
+		else if (InterfaceWrapperHelper.isModelInterface(parameterType))
+		{
+			isModel = true;
+		}
 		else
 		{
 			throw new CacheIntrospectionException("Parameter has unsupported type")
@@ -67,7 +70,6 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 	public void extractKeyParts(final CacheKeyBuilder keyBuilder, final Object targetObject, final Object[] params)
 	{
 		final Object ctxObj = params[parameterIndex];
-
 		if (ctxObj == null)
 		{
 			keyBuilder.setSkipCaching();
@@ -81,12 +83,36 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 			return;
 		}
 
-		// Make sure it's a Properties instance (shall not happen)
-		if (!(ctxObj instanceof Properties))
+		Properties ctx = null;
+		boolean error = false;
+		Exception errorException = null;
+		if (isModel)
+		{
+			try
+			{
+				ctx = InterfaceWrapperHelper.getCtx(ctxObj);
+			}
+			catch (final Exception ex)
+			{
+				error = true;
+				errorException = ex;
+			}
+		}
+		else if (ctxObj instanceof Properties)
+		{
+			ctx = (Properties)ctxObj;
+		}
+		else
+		{
+			error = true;
+		}
+
+		if (error)
 		{
 			keyBuilder.setSkipCaching();
 
 			final CacheGetException ex = new CacheGetException("Invalid parameter type.")
+					.addSuppressIfNotNull(errorException)
 					.setTargetObject(targetObject)
 					.setMethodArguments(params)
 					.setInvalidParameter(parameterIndex, ctxObj)
@@ -95,7 +121,6 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 			return;
 		}
 
-		final Properties ctx = (Properties)ctxObj;
 		final ArrayKey key = buildCacheKey(ctx);
 		keyBuilder.add(key);
 	}
@@ -120,7 +145,7 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 	 * </ul>
 	 * The aim of this method is to be used for hot fixes, where we can not implement services which annotated cached methods, but want just to fix the issue.
 	 * That's also why the method is flagged as deprecated from the very beginning.
-	 * 
+	 *
 	 * @param ctx1
 	 * @param ctx2
 	 * @return true if given contexts shall be considered equal from caching perspective

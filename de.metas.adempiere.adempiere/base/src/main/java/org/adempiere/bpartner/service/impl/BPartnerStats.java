@@ -20,11 +20,11 @@ import com.google.common.base.MoreObjects;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,6 +36,12 @@ class BPartnerStats implements IBPartnerStats
 		return new BPartnerStats(stats);
 	}
 
+	/**
+	 * This field is added just in case there will be another implementation of IBPartnerStats which will not include the I_C_BPartner_Stats field.
+	 * Using this ID, it would still be possible to load the data for further processing
+	 */
+	private int bpartnerID;
+
 	private final BigDecimal totalOpenBalance;
 
 	private final BigDecimal actualLifeTimeValue;
@@ -44,10 +50,13 @@ class BPartnerStats implements IBPartnerStats
 
 	private String soCreditStatus;
 
+	private I_C_BPartner_Stats stats;
+
 	private BPartnerStats(final I_C_BPartner_Stats stats)
 	{
 		super();
 
+		this.stats = stats;
 		totalOpenBalance = stats.getTotalOpenBalance();
 		actualLifeTimeValue = stats.getActualLifeTimeValue();
 		soCreditUsed = stats.getSO_CreditUsed();
@@ -75,15 +84,26 @@ class BPartnerStats implements IBPartnerStats
 	}
 
 	@Override
-	public BigDecimal getSoCreditUsed()
+	public BigDecimal getSOCreditUsed()
 	{
 		return soCreditUsed;
 	}
 
 	@Override
-	public String getSoCreditStatus()
+	public String getSOCreditStatus()
 	{
 		return soCreditStatus;
+	}
+
+	protected I_C_BPartner_Stats getC_BPartner_Stats()
+	{
+		return stats;
+	}
+	
+	@Override
+	public int getC_BPartner_ID()
+	{
+		return bpartnerID;
 	}
 
 }

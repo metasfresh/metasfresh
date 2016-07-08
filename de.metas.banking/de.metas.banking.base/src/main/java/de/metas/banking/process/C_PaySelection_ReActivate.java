@@ -34,7 +34,7 @@ import de.metas.banking.payment.IPaySelectionBL;
 /**
  * Re-activate the selected payment selection.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class C_PaySelection_ReActivate extends SvrProcess implements ISvrProcessPrecondition

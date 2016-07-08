@@ -26,7 +26,7 @@ import org.jdesktop.swingx.JXTable;
 /**
  * Advanced search table.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindAdvancedSearchTable extends JXTable

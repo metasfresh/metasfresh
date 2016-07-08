@@ -46,7 +46,7 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 /**
  * Updates selected {@link I_PMM_PurchaseCandidate} prices.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task https://metasfresh.atlassian.net/browse/FRESH-202
  */
 public class PMM_Purchase_Candidate_UpdatePricing extends SvrProcess

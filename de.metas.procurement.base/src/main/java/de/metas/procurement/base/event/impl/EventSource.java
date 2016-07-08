@@ -39,7 +39,7 @@ import de.metas.lock.api.LockOwner;
  * #L%
  */
 
-class EventSource<ET> implements Iterator<ET>, IAutoCloseable
+public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 {
 	private static final String COLUMNNAME_Processed = "Processed";
 	

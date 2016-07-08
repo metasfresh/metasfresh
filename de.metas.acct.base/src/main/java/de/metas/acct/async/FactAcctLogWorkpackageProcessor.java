@@ -37,7 +37,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 /**
  * Processes {@link I_Fact_Acct_Log}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class FactAcctLogWorkpackageProcessor extends WorkpackageProcessorAdapter

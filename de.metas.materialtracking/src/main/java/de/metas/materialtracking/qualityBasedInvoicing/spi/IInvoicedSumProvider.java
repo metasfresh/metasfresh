@@ -30,7 +30,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  * We encapsulated the code like this so that we can provide a mocked implementation when doing module
  * tests.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IInvoicedSumProvider

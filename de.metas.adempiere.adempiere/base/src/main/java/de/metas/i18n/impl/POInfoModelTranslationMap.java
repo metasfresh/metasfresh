@@ -47,7 +47,7 @@ import de.metas.logging.LogManager;
 /**
  * {@link IModelTranslationMap} implementation which lazy loads all translations of a given database record, identified by {@link POInfo} and a given recordId.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class POInfoModelTranslationMap implements IModelTranslationMap

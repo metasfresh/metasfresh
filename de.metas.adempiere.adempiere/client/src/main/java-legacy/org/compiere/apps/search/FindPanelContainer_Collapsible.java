@@ -38,7 +38,7 @@ import org.jdesktop.swingx.JXTaskPane;
 /**
  * {@link FindPanelContainer} implementation as a collapsible pane.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindPanelContainer_Collapsible extends FindPanelContainer

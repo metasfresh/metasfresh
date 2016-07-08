@@ -25,7 +25,7 @@ package de.metas.document.documentNo.impl;
 /**
  * DocumentNo together with some document type infos.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IDocumentNoInfo

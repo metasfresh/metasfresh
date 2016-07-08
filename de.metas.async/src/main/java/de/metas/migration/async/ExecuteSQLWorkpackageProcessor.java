@@ -44,7 +44,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 /**
  * Processor used to execute a given SQL code and if there were some records updated, re-enqueue a new workpackage to execute it again, until nothing left.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter

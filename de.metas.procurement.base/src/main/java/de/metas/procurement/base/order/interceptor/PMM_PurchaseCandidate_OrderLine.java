@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;

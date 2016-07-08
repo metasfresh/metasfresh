@@ -35,7 +35,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 /**
  * Invoice candidates testing helper.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class InvoiceCandidatesTestHelper

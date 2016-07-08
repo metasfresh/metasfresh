@@ -40,7 +40,7 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 /**
  * {@link IQualityInspectionSchedulable} which wraps an {@link IAttributeStorage}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class AttributeStorageQualityInspectionSchedulable implements IQualityInspectionSchedulable

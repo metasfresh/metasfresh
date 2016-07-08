@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1505030657L;
+	private static final long serialVersionUID = -1968760873L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -22,7 +22,6 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
       super (ctx, PMM_Product_ID, trxName);
       /** if (PMM_Product_ID == 0)
         {
-			setM_HU_PI_Item_Product_ID (0);
 			setM_Product_ID (0);
 			setPMM_Product_ID (0);
         } */

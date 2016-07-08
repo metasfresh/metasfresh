@@ -29,7 +29,7 @@ import org.compiere.model.I_M_Attribute;
 /**
  * Implementations of this interface are objects (usually HUs) which can be flagged as "scheduled for Quality Inspection".
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 08639
  */
 public interface IQualityInspectionSchedulable

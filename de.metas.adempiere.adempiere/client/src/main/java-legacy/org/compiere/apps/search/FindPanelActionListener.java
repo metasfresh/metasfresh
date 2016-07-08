@@ -25,7 +25,7 @@ package org.compiere.apps.search;
 /**
  * {@link FindPanel}'s action listener.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class FindPanelActionListener

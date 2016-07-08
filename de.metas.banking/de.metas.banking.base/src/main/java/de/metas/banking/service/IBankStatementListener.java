@@ -32,7 +32,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
  * 
  * To register a new listener, please use {@link IBankStatementListenerService}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IBankStatementListener

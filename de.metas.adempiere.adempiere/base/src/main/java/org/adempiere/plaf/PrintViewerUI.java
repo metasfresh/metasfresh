@@ -25,7 +25,7 @@ package org.adempiere.plaf;
 /**
  * UI settings for standard report viewer.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class PrintViewerUI
 {

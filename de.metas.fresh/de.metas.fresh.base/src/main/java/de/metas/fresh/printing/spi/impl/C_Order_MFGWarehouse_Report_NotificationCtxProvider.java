@@ -41,7 +41,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * 
  *         task 09833
  *         Implementation of the notification ctx provider for C_Order_MFGWarehouse_Report.

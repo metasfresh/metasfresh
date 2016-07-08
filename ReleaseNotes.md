@@ -13,16 +13,27 @@ Her come the actual release notes:
 # metasfresh 2016-28 (upcoming)
 
 ## Features
+ - FRESH-402 Procurement bidding
+ - #119 FRESH-455 different email per org in inout print preview
+ - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+ - #150 FRESH-492 Fix implementation for BPartner Statistics
+   * refactoring/code improvement
+ - #128 FRESH-465 Extend Record_ID Column Implementation
+ - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
+ - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+ - #151 FRESH-491 When creating a new organization, don't create org access for System role
 
-# metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
+# metasfresh 4.25.24a (2016-27a)
 
 ## Features
  - #162 FRESH-499 modernize the server's index.html
  - #139 FRESH-475 Check for java8 in the rollout-scripts
 
 ## Fixes
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+   * also updated menu items
  - #147 FRESH-484 Error creating manual DD_Order
  - #148 FRESH-485 de.metas.async.api.<WP-Name>.AD_User_InCharge_ID can't be overriden on org level
 

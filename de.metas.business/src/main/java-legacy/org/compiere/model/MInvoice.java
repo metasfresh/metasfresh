@@ -39,6 +39,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1332,16 +1333,15 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (isSOTrx() && !isReversal())
 		{
 			// task FRESH-152
-			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true)))
 			{
 				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-						+ bpartnerStatsBL.getTotalOpenBalance(stats)
+						+ stats.getTotalOpenBalance()
 						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
 			}
 		}

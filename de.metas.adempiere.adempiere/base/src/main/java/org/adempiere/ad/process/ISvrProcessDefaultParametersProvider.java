@@ -27,7 +27,7 @@ import org.compiere.model.Null;
 /**
  * Let your process implement this interface if you want to provide some default values for process parameters. Those values will be set when the UI parameters panel will be presented to user.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ISvrProcessDefaultParametersProvider

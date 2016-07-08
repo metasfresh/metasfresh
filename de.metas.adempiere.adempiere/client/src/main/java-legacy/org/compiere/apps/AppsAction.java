@@ -50,7 +50,7 @@ import org.compiere.util.Env;
  * To create a new {@link AppsAction}, please use {@link #builder()}.
  *
  * @author Jorg Janke
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class AppsAction extends AbstractAction
 {

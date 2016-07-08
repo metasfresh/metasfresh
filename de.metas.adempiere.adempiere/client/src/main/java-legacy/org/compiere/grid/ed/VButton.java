@@ -24,8 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.images.Images;
@@ -36,12 +34,16 @@ import org.compiere.model.GridField;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CButton;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  General Button.
@@ -110,7 +112,7 @@ public final class VButton extends CButton
 		{
 			setIcon(Images.getImageIcon2("Copy16"));       // 16*16
 		}
-		else if (columnName.equals("Record_ID"))
+		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
 		{
 			setIcon(Images.getImageIcon2("Zoom16"));       // 16*16
 			this.setText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "ZoomDocument"));
@@ -171,24 +173,28 @@ public final class VButton extends CButton
 	 */
 	@Override
 	public void setValue(Object value)
-	{
+	{		
 		m_value = value;
 		String text = m_text;
 
-		//	Nothing to show or Record_ID
-		if (value == null || m_columnName.equals("Record_ID"))
+		// Nothing to show or Record_ID
+		if (value == null || Services.get(IColumnBL.class).isRecordColumnName(m_columnName))
+		{
 			;
+		}
 		else if (m_values != null)
+		{
 			text = m_values.get(value);
+		}
 		else if (m_lookup != null)
 		{
-			NamePair pp = m_lookup.get (value);
+			NamePair pp = m_lookup.get(value);
 			if (pp != null)
 				text = pp.getName();
 		}
-		//	Display it
-		setText (text != null ? text : "");
-	}	//	setValue
+		// Display it
+		setText(text != null ? text : "");
+	}	// setValue
 
 	/**
 	 *  Property Change Listener
@@ -371,7 +377,7 @@ public final class VButton extends CButton
 	@Override
 	public void setField (GridField mField)
 	{
-		if (mField.getColumnName().endsWith("_ID") && !mField.getColumnName().equals("Record_ID"))
+		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordColumnName(mField.getColumnName()))
 		{
 			m_lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 				mField.getAD_Column_ID(), DisplayType.Search);

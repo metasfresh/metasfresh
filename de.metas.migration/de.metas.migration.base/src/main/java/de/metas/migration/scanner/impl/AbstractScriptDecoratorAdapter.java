@@ -29,7 +29,7 @@ import de.metas.migration.scanner.IScriptScannerFactory;
 /**
  * Delegator that delegates everything to an internal scanner.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class AbstractScriptDecoratorAdapter implements IScriptScanner

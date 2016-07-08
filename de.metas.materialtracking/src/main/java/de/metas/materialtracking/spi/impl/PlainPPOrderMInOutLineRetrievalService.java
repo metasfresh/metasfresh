@@ -19,7 +19,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 /**
  * Simple map-based implementation that can be used for testing.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PlainPPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetrievalService

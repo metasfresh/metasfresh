@@ -626,23 +626,33 @@ public final class AEnv
 		int AD_Window_ID = 0;
 		int PO_Window_ID = 0;
 		final String sql = "SELECT TableName, AD_Window_ID, PO_Window_ID FROM AD_Table WHERE AD_Table_ID=?";
+		
+		ResultSet rs = null;
+		PreparedStatement pstmt = null;
 		try
 		{
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
+			
+			rs = pstmt.executeQuery();
+			
 			if (rs.next())
 			{
 				TableName = rs.getString(1);
 				AD_Window_ID = rs.getInt(2);
 				PO_Window_ID = rs.getInt(3);
 			}
-			rs.close();
-			pstmt.close();
+			
 		}
 		catch (final SQLException e)
 		{
 			log.error(sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		zoom(TableName, Record_ID, AD_Window_ID, PO_Window_ID);

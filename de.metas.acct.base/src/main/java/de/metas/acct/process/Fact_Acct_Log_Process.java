@@ -38,7 +38,7 @@ import de.metas.acct.model.I_Fact_Acct_Log;
 /**
  * Process pending {@link I_Fact_Acct_Log} records.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class Fact_Acct_Log_Process extends SvrProcess

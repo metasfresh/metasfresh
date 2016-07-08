@@ -96,7 +96,7 @@ class CityAutoCompleter extends JTextComponentAutoCompleter
 	/**
 	 * Source of {@link CityVO}s.
 	 * 
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private final class CitiesSource implements ResultItemSource

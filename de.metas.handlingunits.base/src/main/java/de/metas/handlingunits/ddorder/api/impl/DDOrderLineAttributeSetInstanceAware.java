@@ -33,7 +33,7 @@ import com.google.common.base.MoreObjects;
 /**
  * Wraps {@link I_DD_OrderLine} and makes it behave like {@link IAttributeSetInstanceAware}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class DDOrderLineAttributeSetInstanceAware implements IAttributeSetInstanceAware
