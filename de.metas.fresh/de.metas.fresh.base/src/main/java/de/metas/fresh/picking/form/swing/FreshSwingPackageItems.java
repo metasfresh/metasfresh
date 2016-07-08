@@ -537,7 +537,6 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// fresh_06178: Allocate picking slot on the newly packed item
-		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBpartnerId(), itemToPack.getC_BPartner_Location_ID());
 	}
 
 	private void removeProductQty(final IPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
@@ -929,7 +928,6 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// Get the selected shipment sched's C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
 		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
-		final int bPartnerId = unallocatedPackingItem.getBpartnerId();
 		final int bPartnerLocationId = unallocatedPackingItem.getC_BPartner_Location_ID();
 
 		//

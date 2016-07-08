@@ -41,7 +41,7 @@ public interface IFreshPackingItem extends IPackingItem
 
 	I_C_BPartner getC_BPartner();
 
-	int getBpartnerId();
+	int getC_BPartner_ID();
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 

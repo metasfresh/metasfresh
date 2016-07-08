@@ -201,7 +201,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	{
 		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
 		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
-		return freshItem1.getBpartnerId() == freshItem2.getBpartnerId();
+		return freshItem1.getC_BPartner_ID() == freshItem2.getC_BPartner_ID();
 	}
 
 	@Override
