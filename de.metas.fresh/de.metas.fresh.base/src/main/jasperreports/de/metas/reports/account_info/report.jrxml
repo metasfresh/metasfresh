@@ -21,6 +21,8 @@
 	<parameter name="ad_org_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
 	$P{Account_ID},
