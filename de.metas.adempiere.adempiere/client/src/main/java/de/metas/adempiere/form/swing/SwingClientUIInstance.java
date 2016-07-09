@@ -43,6 +43,7 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.form.AbstractClientUIInstance;
 import de.metas.adempiere.form.IAskDialogBuilder;
+import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.adempiere.form.IClientUIInvoker;
 
 class SwingClientUIInstance extends AbstractClientUIInstance
@@ -258,6 +259,12 @@ class SwingClientUIInstance extends AbstractClientUIInstance
 	public IClientUIInvoker invoke()
 	{
 		return new SwingClientUIInvoker(this);
+	}
+	
+	@Override
+	public IClientUIAsyncInvoker invokeAsync()
+	{
+		return new SwingClientUIAsyncInvoker();
 	}
 
 	@Override

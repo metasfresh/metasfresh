@@ -40,11 +40,11 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 
 	private boolean invokeLater;
 	private boolean longOperation;
-	private boolean useSeparateThread = false;
 	private OnFail onFail = OnFail.ShowErrorPopup;
 	private IExceptionHandler exceptionHandler;
 	private Object parentComponent;
 	private int parentWindowNo;
+	//
 	private Runnable runnable = null;
 
 	public AbstractClientUIInvoker(final IClientUIInstance clientUI)
@@ -185,19 +185,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 
 	protected final boolean isLongOperation()
 	{
-		return longOperation || isUseSeparateThread();
-	}
-
-	@Override
-	public final IClientUIInvoker setUseSeparateThread(final boolean useSeparateThread)
-	{
-		this.useSeparateThread = useSeparateThread;
-		return this;
-	}
-
-	protected final boolean isUseSeparateThread()
-	{
-		return useSeparateThread;
+		return longOperation;
 	}
 
 	@Override
@@ -254,7 +242,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		this.runnable = runnable;
 		return this;
 	}
-
+	
 	private final Runnable getRunnable()
 	{
 		return runnable;

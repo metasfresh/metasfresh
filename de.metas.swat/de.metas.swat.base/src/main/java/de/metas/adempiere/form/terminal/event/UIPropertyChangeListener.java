@@ -49,8 +49,6 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 	private final WeakReference<ITerminalFactory> terminalFactoryRef;
 	private final WeakReference<IComponent> parentRef;
 
-	private boolean _useSeparateThread = false;
-
 	public UIPropertyChangeListener(final ITerminalFactory terminalFactory, final IComponent parent)
 	{
 		super();
@@ -105,7 +103,6 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 					.invoke()
 					.setParentComponent(component)
 					.setLongOperation(true)
-					.setUseSeparateThread(isUseSeparateThread())
 					.setOnFail(OnFail.UseHandler)
 					.setExceptionHandler((ex) -> handleException(ex))
 					.invoke(() -> propertyChangeEx(evt));
@@ -129,16 +126,5 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 		}
 	}
 	
-	public UIPropertyChangeListener setUseSeparateThread(final boolean useSeparateThread)
-	{
-		this._useSeparateThread = useSeparateThread;
-		return this;
-	}
-	
-	protected boolean isUseSeparateThread()
-	{
-		return _useSeparateThread;
-	}
-
 	protected abstract void propertyChangeEx(PropertyChangeEvent evt);
 }

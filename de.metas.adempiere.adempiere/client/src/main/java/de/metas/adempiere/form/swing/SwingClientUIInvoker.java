@@ -1,7 +1,5 @@
 package de.metas.adempiere.form.swing;
 
-import java.awt.Color;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -26,16 +24,10 @@ import java.awt.Color;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Window;
 
-import javax.annotation.Nullable;
-import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.compiere.apps.AEnv;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.AbstractClientUIInvoker;
@@ -82,11 +74,6 @@ import de.metas.adempiere.form.IClientUIInvoker;
 			}
 
 			return runnable;
-		}
-
-		if (isUseSeparateThread())
-		{
-			return new SwingWorkerRunnable(componentSwing, runnable);
 		}
 
 		return new Runnable()
@@ -137,192 +124,5 @@ import de.metas.adempiere.form.IClientUIInvoker;
 				SwingUtilities.invokeLater(runnable);
 			}
 		};
-	}
-
-	private static final RootPaneContainer findRootPaneContainer(@Nullable final Component comp)
-	{
-		final RootPaneContainer rootPaneContainer = AEnv.getParentComponent(comp, RootPaneContainer.class);
-		if (rootPaneContainer == null)
-		{
-			final AdempiereException ex = new AdempiereException("No " + RootPaneContainer.class + " found."
-					+ "Ignore, but please check because this could be a development error."
-					+ "\n Component: " + comp);
-			logger.warn(ex.getLocalizedMessage(), ex);
-		}
-		return rootPaneContainer;
-	}
-
-	private static final Window findWindow(@Nullable final RootPaneContainer rootPaneContainer)
-	{
-		final Component comp;
-		if (rootPaneContainer == null)
-		{
-			comp = null;
-		}
-		else if (rootPaneContainer instanceof Window)
-		{
-			return (Window)rootPaneContainer;
-		}
-		else if (rootPaneContainer instanceof Component)
-		{
-			comp = (Component)rootPaneContainer;
-		}
-		else
-		{
-			comp = rootPaneContainer.getRootPane();
-		}
-
-		final Window window = AEnv.getParentComponent(comp, Window.class);
-		if (window == null)
-		{
-			final AdempiereException ex = new AdempiereException("No " + Window.class + " found."
-					+ "Ignore, but please check because this could be a development error."
-					+ "\n RootPaneContainer: " + rootPaneContainer
-					+ "\n Component: " + comp);
-			logger.warn(ex.getLocalizedMessage(), ex);
-		}
-		return window;
-	}
-
-	private final class SwingWorkerRunnable implements Runnable
-	{
-		// Parameters
-		private final Component parentComponent;
-		private final Runnable runnable;
-
-		// State
-		private Cursor cursorOld;
-		private Window window;
-		private Component glassPane;
-		private Boolean glassPaneVisibleOld;
-
-		public SwingWorkerRunnable(@Nullable final Component parentComponent, final Runnable runnable)
-		{
-			super();
-
-			this.parentComponent = parentComponent;
-
-			Check.assumeNotNull(runnable, "runnable not null");
-			this.runnable = runnable;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "SwingWorker[" + runnable + "]";
-		}
-
-
-		@Override
-		public void run()
-		{
-			if (SwingUtilities.isEventDispatchThread())
-			{
-				runNow();
-				return;
-			}
-
-			SwingUtilities.invokeLater(() -> runNow());
-		}
-
-		private final void runNow()
-		{
-			beforeRunnable();
-
-			final SwingWorker<Void, Void> swingWorker = new SwingWorker<Void, Void>()
-			{
-				@Override
-				protected Void doInBackground() throws Exception
-				{
-					System.out.println("Do in background runnable in " + Thread.currentThread() + ", runnable=" + runnable);
-					runnable.run();
-					return null;
-				}
-
-				@Override
-				protected void done()
-				{
-					try
-					{
-						get(); // => throw exceptions if any
-					}
-					catch (final Exception e)
-					{
-						handleException(e);
-					}
-					finally
-					{
-						afterRunnable();
-					}
-				}
-			};
-			swingWorker.execute();
-		}
-
-		/** Before {@link #runnable} was executed. This method runs in EDT. */
-		private void beforeRunnable()
-		{
-			System.out.println("Before runnable in " + Thread.currentThread() + ", runnable=" + runnable);
-
-			final RootPaneContainer rootPaneContainer = findRootPaneContainer(parentComponent);
-			if (rootPaneContainer == null)
-			{
-				return;
-			}
-			window = findWindow(rootPaneContainer);
-			if (window == null)
-			{
-				return;
-			}
-
-			//
-			// Cursor
-			cursorOld = window.getCursor();
-			window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-			//
-			// Glass pane
-			glassPane = rootPaneContainer.getGlassPane();
-			if (glassPane == null)
-			{
-				final AdempiereException ex = new AdempiereException("We were asked to show a glasspane but the root pane does not have a glass pane set."
-						+ "Ignore, but please check because this could be a development error."
-						+ "\n Root container: " + rootPaneContainer
-						+ "\n Runnable: " + runnable);
-				logger.warn(ex.getLocalizedMessage(), ex);
-				return;
-			}
-			glassPaneVisibleOld = glassPane.isVisible();
-			glassPane.setVisible(true);
-			glassPane.setBackground(Color.RED);
-		}
-
-		/** After {@link #runnable} was executed. This method runs in EDT. */
-		private void afterRunnable()
-		{
-			System.out.println("After runnable in " + Thread.currentThread() + ", runnable=" + runnable);
-
-			//
-			// Hide the glass pane
-			if (glassPane != null && glassPaneVisibleOld != null)
-			{
-				glassPane.setVisible(glassPaneVisibleOld);
-			}
-
-			//
-			// Restore the cursor
-			if (window != null)
-			{
-				window.setCursor(cursorOld);
-			}
-
-			//
-			// Reset state
-			window = null;
-			cursorOld = null;
-			//
-			glassPane = null;
-			glassPaneVisibleOld = null;
-		}
 	}
 }
