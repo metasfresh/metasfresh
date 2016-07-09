@@ -141,6 +141,8 @@ public interface IClientUIInstance
 	 * @return UI invoker helper
 	 */
 	IClientUIInvoker invoke();
+	
+	IClientUIAsyncInvoker invokeAsync();
 
 	/**
 	 * Display given URL.
