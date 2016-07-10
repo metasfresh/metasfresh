@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.plaf.MetasfreshGlassPane;
 import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.util.Util;
@@ -105,12 +106,15 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 		private final Component parentComponent;
 		private final IClientUIAsyncRunnable<InitialValueType, ResultType, PartialResultType> runnable;
 		private final InitialValueType initialValue;
+		private int _estimatedDurationSeconds = 0;
+		private String _waitingMessage = null;
 
 		// State
 		private Cursor cursorOld;
 		private Window window;
-		private Component glassPane;
-		private Boolean glassPaneVisibleOld;
+		private MetasfreshGlassPane glassPane;
+		private boolean glassPaneVisibleOld;
+		private String glassPaneMessageOld;
 
 		public AsyncExecutor(
 				final Component parentComponent //
@@ -134,6 +138,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 					.add("runnable", runnable)
 					.add("inialValue", initialValue)
 					.add("state", getState())
+					.add("estimatedDurationSeconds", _estimatedDurationSeconds > 0 ? _estimatedDurationSeconds : null)
 					.add("parentComponent", parentComponent)
 					.omitNullValues()
 					.toString();
@@ -143,6 +148,50 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 		public final InitialValueType getInitialValue()
 		{
 			return initialValue;
+		}
+
+		@Override
+		public void setEstimatedDurationSeconds(final int estimatedDurationSeconds)
+		{
+			if (this._estimatedDurationSeconds == estimatedDurationSeconds)
+			{
+				return;
+			}
+			this._estimatedDurationSeconds = estimatedDurationSeconds;
+
+			// Update the glass pane
+			final MetasfreshGlassPane glassPane = this.glassPane;
+			if (glassPane != null && glassPane.isVisible())
+			{
+				glassPane.setBusyTimer(estimatedDurationSeconds);
+			}
+		}
+
+		private int getEstimatedDurationSeconds()
+		{
+			return _estimatedDurationSeconds;
+		}
+
+		@Override
+		public void setWaitingMessage(final String waitingMessage)
+		{
+			if (Check.equals(this._waitingMessage, waitingMessage))
+			{
+				return;
+			}
+			this._waitingMessage = waitingMessage;
+
+			// Update the glass pane
+			final MetasfreshGlassPane glassPane = this.glassPane;
+			if (glassPane != null && glassPane.isVisible() && waitingMessage != null)
+			{
+				glassPane.setMessagePlain(waitingMessage);
+			}
+		}
+
+		private String getWaitingMessage()
+		{
+			return _waitingMessage;
 		}
 
 		public final void prepareAndExecute()
@@ -199,7 +248,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 
 			//
 			// Show the glass pane
-			glassPane = rootPaneContainer.getGlassPane();
+			glassPane = MetasfreshGlassPane.getOrNull(rootPaneContainer);
 			if (glassPane == null)
 			{
 				final String errmsg = "We were asked to show a glasspane but the root pane does not have a glass pane set."
@@ -210,6 +259,13 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 				return;
 			}
 			glassPaneVisibleOld = glassPane.isVisible();
+			glassPaneMessageOld = glassPane.getMessagePlain();
+			glassPane.setBusyTimer(getEstimatedDurationSeconds());
+			final String waitingMessage = getWaitingMessage();
+			if (waitingMessage != null)
+			{
+				glassPane.setMessagePlain(waitingMessage);
+			}
 			glassPane.setVisible(true);
 		}
 
@@ -219,10 +275,12 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			logger.debug("Final UI update: {}", this);
 
 			//
-			// Hide the glass pane
-			if (glassPane != null && glassPaneVisibleOld != null)
+			// Hide the glass pane and restore it's state
+			if (glassPane != null)
 			{
+				glassPane.setBusyTimer(0);
 				glassPane.setVisible(glassPaneVisibleOld);
+				glassPane.setMessagePlain(glassPaneMessageOld);
 			}
 
 			//
@@ -238,7 +296,8 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			cursorOld = null;
 			//
 			glassPane = null;
-			glassPaneVisibleOld = null;
+			glassPaneVisibleOld = false;
+			glassPaneMessageOld = null;
 		}
 
 		@Override
