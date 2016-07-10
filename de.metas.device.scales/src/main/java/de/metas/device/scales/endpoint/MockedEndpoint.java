@@ -36,12 +36,12 @@ import java.util.Random;
  */
 public class MockedEndpoint extends TcpConnectionEndPoint
 {
+	private int delayMillis = 1 * 1000;
 	private final Random random = new Random(System.currentTimeMillis());
 
 	@Override
 	public String sendCmd(final String cmd)
 	{
-		final int delayMillis = 1 * 1000;
 		System.out.println("Waiting " + delayMillis + "ms before returning the " + this + " result for command '" + cmd + "'");
 		try
 		{
