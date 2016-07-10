@@ -76,6 +76,12 @@ public interface IClientUIAsyncInvoker
 		 */
 		InitialValueType getInitialValue();
 
+		/** Sets how much time this execution will take (estimated). */
+		void setEstimatedDurationSeconds(int estimatedDurationSeconds);
+
+		/** Sets which shall be the message displayed to user while waiting */
+		void setWaitingMessage(String waitingMessage);
+
 		/**
 		 * Ask the executor to publish some partial results to UI thread.
 		 *
@@ -120,8 +126,10 @@ public interface IClientUIAsyncInvoker
 		 *
 		 * <p>
 		 * <b>WARNING: when implementing this method, please make sure you are not calling any UI specific updating (e.g. your are not access Swing components).
-		 * <br>All UI specific things shall happen in UI methods (those postfixed with InUI) 
-		 * <br>If you want to ask the UI thread to do some updates to UI, please publish some partial results by calling one of the {@link IClientUIAsyncExecutor#publishPartialResult(Object)} methods.</b>
+		 * <br>
+		 * All UI specific things shall happen in UI methods (those postfixed with InUI)
+		 * <br>
+		 * If you want to ask the UI thread to do some updates to UI, please publish some partial results by calling one of the {@link IClientUIAsyncExecutor#publishPartialResult(Object)} methods.</b>
 		 * </p>
 		 *
 		 * @param executor
