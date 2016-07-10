@@ -51,6 +51,8 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
  * <li>{@link #finallyUpdateUI(IClientUIAsyncExecutor, Object)}: (optional) update the UI after everything was processed.
  * </ul>
  * 
+ * If you want to access the {@link PropertyChangeEvent} which started this processing, please use {@link IClientUIAsyncExecutor#getInitialValue()}.
+ * 
  * @author metas-dev <dev@metasfresh.com>
  *
  * @param <ResultType>

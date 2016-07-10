@@ -39,6 +39,8 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 
 /**
  * Wraps a {@link PropertyChangeListener} but catches the exceptions and show them to user.
+ * 
+ * If your {@link #propertyChangeEx(PropertyChangeEvent)} will perform a long running operation, please consider using {@link UIAsyncPropertyChangeListener}.
  *
  * @author tsa
  *
@@ -125,6 +127,6 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 			terminalFactory.showWarning(parent, "Error", e);
 		}
 	}
-	
+
 	protected abstract void propertyChangeEx(PropertyChangeEvent evt);
 }

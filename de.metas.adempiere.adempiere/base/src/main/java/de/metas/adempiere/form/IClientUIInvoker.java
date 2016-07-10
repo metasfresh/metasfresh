@@ -48,13 +48,6 @@ public interface IClientUIInvoker
 		UseHandler,
 	}
 	
-	public static interface IAsyncRunnable
-	{
-		Object runInBackground();
-
-		void updateUI(Object result);
-	}
-	
 	/** Exception handler */
 	public static interface IExceptionHandler
 	{
@@ -111,11 +104,13 @@ public interface IClientUIInvoker
 	 * NOTE: Implementations may open a separate thread for this.
 	 * 
 	 * @param longOperation
+	 * @deprecated Please consider using {@link IClientUI#invokeAsync()}.
 	 */
+	@Deprecated
 	IClientUIInvoker setLongOperation(final boolean longOperation);
 
 	/**
-	 * Advice the UI to call the runnable in a separate UI event.
+	 * Advice the UI to call the runnable in a separate UI event, EVEN IF this method was called from the UI thread.
 	 * 
 	 * @param invokeLater
 	 */
