@@ -20,7 +20,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.util.EMail;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 
 /**
  *  Asset Delivery Model
@@ -65,6 +66,7 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 	 * 	Create Asset Delivery for EMail
 	 * 	@param asset asset
 	 * 	@param email email
+	 * @param emailSentStatus 
 	 * 	@param AD_User_ID BP Contact
 	 */
 	public MAssetDelivery (MAsset asset, EMail email, int AD_User_ID)
@@ -79,7 +81,9 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 		setMovementDate (new Timestamp (System.currentTimeMillis ()));
 		//	EMail
 		setEMail(email.getTo().toString());
-		setMessageID(email.getMessageID());
+		
+		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
+		setMessageID(emailSentStatus.getMessageId());
 		//	Who
 		setAD_User_ID(AD_User_ID);
 		//

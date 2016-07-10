@@ -24,6 +24,7 @@ package de.metas.adempiere.service.impl;
 
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -38,10 +39,11 @@ import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_PeriodControl;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IPeriodBL;
+import de.metas.logging.LogManager;
 
 public class PeriodBL implements IPeriodBL
 {
@@ -140,4 +142,29 @@ public class PeriodBL implements IPeriodBL
 			InterfaceWrapperHelper.save(pc);
 		}
 	}
+
+	@Override
+	public boolean isInPeriod(final I_C_Period period, final Date date)
+	{
+		if (date == null)
+		{
+			return false;
+		}
+
+		final Timestamp dateOnly = TimeUtil.getDay(date);
+		final Timestamp from = TimeUtil.getDay(period.getStartDate());
+		if (dateOnly.before(from))
+		{
+			return false;
+		}
+
+		final Timestamp to = TimeUtil.getDay(period.getEndDate());
+		if (dateOnly.after(to))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 }

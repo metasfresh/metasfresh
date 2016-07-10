@@ -24,8 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -40,10 +38,12 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.IPeriodBL;
 import de.metas.adempiere.service.IPeriodDAO;
+import de.metas.logging.LogManager;
 
 /**
  *  Calendar Period Model
@@ -126,31 +126,23 @@ public class MPeriod extends X_C_Period
 	 * @param ctx
 	 * @param DateAcct
 	 * @param C_Calendar_ID
-	 * @return MPeriod
-	 * @deprecated
-	 */
-	@Deprecated
-	public static MPeriod findByCalendar(Properties ctx, Timestamp DateAcct, int C_Calendar_ID) {
-		return findByCalendar(ctx, DateAcct, C_Calendar_ID, ITrx.TRXNAME_None);
-	}
-		
-	/**
-	 * 
-	 * @param ctx
-	 * @param DateAcct
-	 * @param C_Calendar_ID
 	 * @param trxName
 	 * @return MPeriod
 	 */
-	public static MPeriod findByCalendar(Properties ctx, Timestamp DateAcct, int C_Calendar_ID, String trxName) {
+	public static MPeriod findByCalendar(Properties ctx, Timestamp DateAcct, int C_Calendar_ID, String trxName)
+	{
+		final IPeriodBL periodBL = Services.get(IPeriodBL.class);
+		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 		
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		//	Search in Cache first
 		Iterator<MPeriod> it = s_cache.values().iterator();
 		while (it.hasNext())
 		{
 			MPeriod period = it.next();
-			if (period.getC_Calendar_ID() == C_Calendar_ID && period.isStandardPeriod() && period.isInPeriod(DateAcct) 
+			if (period.getC_Calendar_ID() == C_Calendar_ID
+					&& calendarBL.isStandardPeriod(period)
+					&& periodBL.isInPeriod(period, DateAcct) 
 					&& period.getAD_Client_ID() == AD_Client_ID)  // globalqss - CarlosRuiz - Fix [ 1820810 ] Wrong Period Assigned to Fact_Acct
 				return period;
 		}
@@ -179,8 +171,10 @@ public class MPeriod extends X_C_Period
 				MPeriod period = new MPeriod(ctx, rs, trxName);
 				Integer key = new Integer(period.getC_Period_ID());
 				s_cache.put (key, period);
-				if (period.isStandardPeriod())
+				if (calendarBL.isStandardPeriod(period))
+				{
 					retValue = period;
+				}
 			}
 		}
 		catch (SQLException e)
@@ -417,25 +411,6 @@ public class MPeriod extends X_C_Period
 	}
 
 	/**
-	 * 	Date In Period
-	 *	@param date date
-	 *	@return true if in period
-	 */
-	public boolean isInPeriod (Timestamp date)
-	{
-		if (date == null)
-			return false;
-		Timestamp dateOnly = TimeUtil.getDay(date);
-		Timestamp from = TimeUtil.getDay(getStartDate());
-		if (dateOnly.before(from))
-			return false;
-		Timestamp to = TimeUtil.getDay(getEndDate());
-		if (dateOnly.after(to))
-			return false;
-		return true;
-	}	//	isInPeriod
-	
-	/**
 	 * Is Period Open for Doc Base Type. The check includes <code>Period_OpenHistory</code> and <code>Period_OpenFuture</code> from the given <code>ad_Org_ID</code>'s accounting schema.
 	 * 
 	 * @param DocBaseType document base type
@@ -488,7 +463,7 @@ public class MPeriod extends X_C_Period
 					return false;
 				}
 				//	We are OK
-				if (isInPeriod(today))
+				if (Services.get(IPeriodBL.class).isInPeriod(this, today))
 				{
 					as.setC_Period_ID(getC_Period_ID());
 					InterfaceWrapperHelper.save(as);
@@ -518,18 +493,6 @@ public class MPeriod extends X_C_Period
 		return X_C_PeriodControl.PERIODSTATUS_Open.equals(pc.getPeriodStatus());
 	}	//	isOpen
 
-	/**
-	 * Standard Period
-	 * 
-	 * @return true if standard calendar perios
-	 * @deprecated Please use {@link ICalendarBL#isStandardPeriod(I_C_Period)}
-	 */
-	@Deprecated
-	public boolean isStandardPeriod()
-	{
-		return Services.get(ICalendarBL.class).isStandardPeriod(this);
-	}	// isStandardPeriod	
-	
 	/**
 	 * 	Before Save.
 	 * 	Truncate Dates

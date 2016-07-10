@@ -13,6 +13,7 @@ Her come the actual release notes:
 # metasfresh 2016-28 (upcoming)
 
 ## Features
+ - FRESH-402 Procurement bidding
  - #119 FRESH-455 different email per org in inout print preview
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
  - #150 FRESH-492 Fix implementation for BPartner Statistics
@@ -28,7 +29,9 @@ Her come the actual release notes:
 
 ## Features
  - #162 FRESH-499 modernize the server's index.html
+    * Adjusted the index.html to upgrade of metasfresh to Java 8 usage.
  - #139 FRESH-475 Check for java8 in the rollout-scripts
+    * Adjusted the rollout scripts of metasfresh to Java 8 usage.
 
 ## Fixes
  - #123 FRESH-460 Users find window name "window, tab, field" confusing
@@ -42,15 +45,18 @@ Her come the actual release notes:
  - **FRESH-399 Upgrade to java-8**
     * Existing users, please see [this howto](http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html) for instructions on how to update your metasfresh server
  - FRESH-397 Upgrade to JasperStudio and latest jasper version
-    * updating to jasperreports-6.2.1
+    * Update of Reports and Documents in metasfresh to use the latest Jasper Studio and Jasper Reports Version. Updating to jasperreports-6.2.1
  - #136 FRESH-472 Sequence on Org for more than 1 Doctype
+    * Enhancement of Document Sequence seperation among different Organisations. Implemented so that Organisations may uses same Doctypes but seperated Doc Sequences.
  - #90 FRESH-417 Create view and window to identify missing counter documents
+    * Implemented View to allow check if counter Documents are missing.
  - #132 FRESH-468 Excel Export of report Konten-Information not working
  - #123 FRESH-460 Users find window name "window, tab, field" confusing
+    * Adjusted Name of Window "Windows, Tabs and Fields"
  - #124 FRESH-461 Role "System Administrator" is disabled
-    * note: imho not a "fix" because we deliberately deactivate it before and now find that the normal user is better off with the role being available
+    * Note: Not a "fix" because we deliberately deactivated it before and now find that the normal user is better off with the role being available.
  - #125 FRESH-462 enable all entity types
-    * not a fix, the reasoning is similar to #124
+    * Not a fix, the reasoning is similar to #124
  
 ## Fixes
  - #137 FRESH-473 Glitches running metasfresh out of eclipse
