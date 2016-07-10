@@ -149,6 +149,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 			final IExceptionHandler exceptionHandler = getExceptionHandler();
 			if (exceptionHandler == null)
 			{
+				logger.warn("No exception handler was configurated and OnFail=UseHandler. Throwing the exception");
 				// fallback
 				throw AdempiereException.wrapIfNeeded(e);
 			}

@@ -118,8 +118,11 @@ public interface IClientUIAsyncInvoker
 		/**
 		 * Actual processing (executed in a background thread).
 		 *
-		 * WARNING: when implementing this method, please make sure you are not calling any UI specific updating.
-		 * If you want to ask the UI thread to do some updates to UI, please publish some partial results by calling one of the {@link IClientUIAsyncExecutor#publishPartialResult(Object)} methods.
+		 * <p>
+		 * <b>WARNING: when implementing this method, please make sure you are not calling any UI specific updating (e.g. your are not access Swing components).
+		 * <br>All UI specific things shall happen in UI methods (those postfixed with InUI) 
+		 * <br>If you want to ask the UI thread to do some updates to UI, please publish some partial results by calling one of the {@link IClientUIAsyncExecutor#publishPartialResult(Object)} methods.</b>
+		 * </p>
 		 *
 		 * @param executor
 		 * @throws Exception
