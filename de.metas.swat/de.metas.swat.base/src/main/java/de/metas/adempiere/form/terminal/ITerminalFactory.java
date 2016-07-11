@@ -115,9 +115,9 @@ public interface ITerminalFactory
 
 	void showInfo(IComponent component, String title, String message);
 
-	void showWarning(IComponent component, String title, Exception e);
+	void showWarning(IComponent component, String title, Throwable e);
 
-	void showWarning(IComponent component, String title, String message, Exception e);
+	void showWarning(IComponent component, String title, String message, Throwable e);
 
 	/**
 	 * Starts asking user a question.

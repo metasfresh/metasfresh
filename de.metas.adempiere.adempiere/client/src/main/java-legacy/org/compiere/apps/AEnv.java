@@ -38,6 +38,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -1184,12 +1185,13 @@ public final class AEnv
 	}
 
 	/**
-	 *
-	 * @param comp
+	 * Searches for nearest parent of <code>comp</code> which implements given <code>parentType</code>.
+	 * 
+	 * @param comp component or null
 	 * @param parentType
-	 * @return parent component which implements given type
+	 * @return parent component which implements given type or <code>null</code>
 	 */
-	public static final <T> T getParentComponent(final Component comp, final Class<T> parentType)
+	public static final <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
 	{
 		if (comp == null)
 		{
