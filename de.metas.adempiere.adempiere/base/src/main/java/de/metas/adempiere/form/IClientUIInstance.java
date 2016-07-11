@@ -25,6 +25,8 @@ package de.metas.adempiere.form;
 
 import java.io.InputStream;
 
+import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncRunnable;
+
 /**
  * It's the Client User Interface in a particular user session.
  *
@@ -113,7 +115,10 @@ public interface IClientUIInstance
 	 * @param runnable
 	 * @see #invoke()
 	 * @see IClientUIInvoker#setLongOperation(boolean)
+	 * 
+	 * @deprecated Please consider using {@link #invokeAsync()}.
 	 */
+	@Deprecated
 	void executeLongOperation(Object component, Runnable runnable);
 
 	/**
@@ -141,6 +146,13 @@ public interface IClientUIInstance
 	 * @return UI invoker helper
 	 */
 	IClientUIInvoker invoke();
+	
+	/**
+	 * Creates an UI invoker which is able to execute a long running {@link IClientUIAsyncRunnable} in a background thread.
+	 * 
+	 * @return async invoker
+	 */
+	IClientUIAsyncInvoker invokeAsync();
 
 	/**
 	 * Display given URL.
