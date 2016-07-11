@@ -13,6 +13,7 @@ Her come the actual release notes:
 # metasfresh 2016-28 (upcoming)
 
 ## Features
+ - #185 Fresh-512 Receipt POS - sometimes gets wrong numbers from weighting machines
  - FRESH-402 Procurement bidding
  - #119 FRESH-455 different email per org in inout print preview
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
