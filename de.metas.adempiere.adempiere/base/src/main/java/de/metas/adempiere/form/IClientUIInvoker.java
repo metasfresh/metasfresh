@@ -44,6 +44,14 @@ public interface IClientUIInvoker
 		ShowErrorPopup,
 		/** Propagate the exception */
 		ThrowException,
+		/** Use provided exception handler. See {@link IClientUIInvoker#setExceptionHandler(IExceptionHandler)}. */
+		UseHandler,
+	}
+	
+	/** Exception handler */
+	public static interface IExceptionHandler
+	{
+		void handleException(Exception e);
 	}
 
 	/**
@@ -87,6 +95,8 @@ public interface IClientUIInvoker
 	 * @param onFail
 	 */
 	IClientUIInvoker setOnFail(OnFail onFail);
+	
+	IClientUIInvoker setExceptionHandler(final IExceptionHandler exceptionHandler);
 
 	/**
 	 * Advice that given runnable will be a long operation. In case of long operations the Waiting cursor will be shown.
@@ -94,11 +104,13 @@ public interface IClientUIInvoker
 	 * NOTE: Implementations may open a separate thread for this.
 	 * 
 	 * @param longOperation
+	 * @deprecated Please consider using {@link IClientUI#invokeAsync()}.
 	 */
+	@Deprecated
 	IClientUIInvoker setLongOperation(final boolean longOperation);
 
 	/**
-	 * Advice the UI to call the runnable in a separate UI event.
+	 * Advice the UI to call the runnable in a separate UI event, EVEN IF this method was called from the UI thread.
 	 * 
 	 * @param invokeLater
 	 */

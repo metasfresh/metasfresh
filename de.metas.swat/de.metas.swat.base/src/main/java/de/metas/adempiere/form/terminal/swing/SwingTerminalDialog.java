@@ -32,6 +32,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.apps.AEnv;
 import org.compiere.swing.CDialog;
 
@@ -56,6 +57,9 @@ class SwingTerminalDialog extends TerminalDialog
 		// When user closes the window from "X" button, do nothing because we will handle it
 		// using our custom WindowAdapter
 		dialogSwing.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		// Install the glass pane
+		MetasfreshGlassPane.install(dialogSwing);
 	}
 
 	@Override

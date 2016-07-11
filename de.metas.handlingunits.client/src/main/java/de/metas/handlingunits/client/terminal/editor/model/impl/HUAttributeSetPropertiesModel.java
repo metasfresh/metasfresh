@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
@@ -51,6 +49,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,6 +74,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.logging.LogManager;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {
@@ -295,10 +295,10 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 					@Override
 					public Object invoke()
 					{
-						logger.debug("Device: {}; Request: {}", new Object[] { deviceToAddInputMethodFor, request });
+						logger.debug("Device: {}; Request: {}", deviceToAddInputMethodFor, request);
 
 						final ISingleValueResponse response = deviceToAddInputMethodFor.accessDevice(request);
-						logger.debug("Device {}; Response: {}", new Object[] { deviceToAddInputMethodFor, response });
+						logger.debug("Device {}; Response: {}", deviceToAddInputMethodFor, response);
 
 						return response.getSingleValue();
 					}
