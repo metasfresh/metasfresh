@@ -1,8 +1,8 @@
-package de.metas.notification;
+package de.metas.notification.spi.impl;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_User;
+
+import com.google.common.base.Optional;
 
 import de.metas.notification.spi.INotificationCtxProvider;
 
@@ -10,7 +10,7 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,24 +28,27 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * #L%
  */
 
-public interface INotificationBL extends ISingletonService
+/**
+ * {@link INotificationCtxProvider} implementation which always return {@link Optional#absent()}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public final class NullNotificationCtxProvider implements INotificationCtxProvider
 {
-	void notifyUser(I_AD_User recipient,
-			String adMessage,
-			String messageText,
-			ITableRecordReference referencedrecord);
+	public static final transient NullNotificationCtxProvider instance = new NullNotificationCtxProvider();
+
+	private NullNotificationCtxProvider()
+	{
+		super();
+	}
 
 	/**
-	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.
-	 * 
-	 * @param ctxProvider
+	 * @return always {@link Optional#absent()}
 	 */
-	void addCtxProvider(INotificationCtxProvider ctxProvider);
-
-	/**
-	 * Sets the default {@link INotificationCtxProvider} to be used if none of the registered ones match.
-	 * 
-	 * @param defaultCtxProvider
-	 */
-	void setDefaultCtxProvider(INotificationCtxProvider defaultCtxProvider);
+	@Override
+	public Optional<String> getTextMessageIfApplies(final ITableRecordReference referencedRecord)
+	{
+		return Optional.absent();
+	}
 }
