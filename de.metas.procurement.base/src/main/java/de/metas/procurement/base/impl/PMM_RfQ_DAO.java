@@ -14,7 +14,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
-import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.rfq.model.X_C_RfQResponseLine;
 
 /*
  * #%L
@@ -41,31 +41,32 @@ import de.metas.rfq.model.X_C_RfQResponse;
 public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 {
 	@Override
-	public List<I_C_RfQResponse> retrieveActiveResponses(final Properties ctx, final int bpartnerId)
+	public List<I_C_RfQResponseLine> retrieveActiveResponseLines(final Properties ctx, final int bpartnerId)
 	{
-		return retrieveActiveResponsesQuery(ctx)
-				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
+		return retrieveActiveResponseLinesQuery(ctx)
+				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.list(I_C_RfQResponse.class);
+				.list(I_C_RfQResponseLine.class);
 	}
 
 	@Override
-	public List<I_C_RfQResponse> retrieveAllActiveResponses(final Properties ctx)
+	public List<I_C_RfQResponseLine> retrieveAllActiveResponseLines(final Properties ctx)
 	{
-		return retrieveActiveResponsesQuery(ctx)
+		return retrieveActiveResponseLinesQuery(ctx)
 				.create()
-				.list(I_C_RfQResponse.class);
+				.list(I_C_RfQResponseLine.class);
 	}
 
-	private IQueryBuilder<I_C_RfQResponse> retrieveActiveResponsesQuery(final Properties ctx)
+	private IQueryBuilder<I_C_RfQResponseLine> retrieveActiveResponseLinesQuery(final Properties ctx)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_C_RfQResponseLine.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RfQResponse.COLUMN_DocStatus, X_C_RfQResponse.DOCSTATUS_Drafted)
+				.addInArrayFilter(I_C_RfQResponseLine.COLUMNNAME_DocStatus, X_C_RfQResponseLine.DOCSTATUS_Drafted)
 				.orderBy()
-				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
-				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID)
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_Line)
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
 				.endOrderBy();
 	}
 

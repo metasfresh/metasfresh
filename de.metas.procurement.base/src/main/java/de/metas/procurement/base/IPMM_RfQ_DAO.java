@@ -34,9 +34,9 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 
 public interface IPMM_RfQ_DAO extends ISingletonService
 {
-	List<I_C_RfQResponse> retrieveAllActiveResponses(Properties ctx);
+	List<I_C_RfQResponseLine> retrieveAllActiveResponseLines(Properties ctx);
 
-	List<I_C_RfQResponse> retrieveActiveResponses(Properties ctx, int bpartnerId);
+	List<I_C_RfQResponseLine> retrieveActiveResponseLines(Properties ctx, int bpartnerId);
 
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
