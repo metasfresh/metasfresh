@@ -10,7 +10,7 @@ Additional notes:
 
 Her come the actual release notes:
 
-# metasfresh 2016-28 (upcoming)
+# metasfresh 4.26.25 (2016-28, upcoming)
 
 ## Features
  - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
