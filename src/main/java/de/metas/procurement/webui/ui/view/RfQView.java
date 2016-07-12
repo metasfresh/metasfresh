@@ -11,7 +11,6 @@ import com.vaadin.addon.touchkit.ui.VerticalComponentGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import de.metas.procurement.webui.ui.component.BeanItemNavigationButton;
@@ -228,6 +227,7 @@ public class RfQView extends MFProcurementNavigationView
 	private static class RfqPriceButton extends BeanItemNavigationButton<RfqHeader>
 	{
 		private final NumberEditorView<RfqHeader> editorView = new NumberEditorView<>(RfqHeader.PROPERTY_Price);
+		private final StringToPriceConverter priceConverter = new StringToPriceConverter();
 
 		public RfqPriceButton()
 		{
@@ -238,6 +238,8 @@ public class RfQView extends MFProcurementNavigationView
 		@Override
 		protected void onItemChanged(final BeanItem<RfqHeader> item)
 		{
+			final RfqHeader rfqHeader = item == null ? null : item.getBean();
+			priceConverter.setCurrencyCode(rfqHeader == null ? null : rfqHeader.getCurrencyCode());
 			editorView.setItem(item);
 		}
 
@@ -245,9 +247,8 @@ public class RfQView extends MFProcurementNavigationView
 		protected void updateUI(final RfqHeader bean)
 		{
 			final BigDecimal price = bean.getPrice();
-			final String priceStr = StringToPriceConverter.instance.convertToPresentation(price, String.class, UI.getCurrent().getLocale());
-			final String currencyCode = bean.getCurrencyCode();
-			setDescription(priceStr + " " + currencyCode);
+			final String priceStr = priceConverter.convertToPresentation(price);
+			setDescription(priceStr);
 		}
 	}
 
