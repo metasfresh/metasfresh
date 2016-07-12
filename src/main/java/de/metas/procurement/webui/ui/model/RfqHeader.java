@@ -195,7 +195,7 @@ public class RfqHeader implements ISendService.ISendAwareBean
 
 	public BigDecimal getPrice()
 	{
-		return price;
+		return price == null ? BigDecimal.ZERO : price;
 	}
 
 	public void setPrice(final BigDecimal price)
@@ -209,12 +209,12 @@ public class RfqHeader implements ISendService.ISendAwareBean
 
 	public void setPriceSent(final BigDecimal priceSent)
 	{
-		this.priceSent = priceSent;
+		this.priceSent = priceSent == null ? BigDecimal.ZERO : priceSent;
 	}
 
 	public BigDecimal getPriceSent()
 	{
-		return priceSent;
+		return priceSent == null ? BigDecimal.ZERO : priceSent;
 	}
 
 	public BigDecimal getQtyRequested()
