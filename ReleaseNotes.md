@@ -10,7 +10,15 @@ Additional notes:
 
 Her come the actual release notes:
 
-# metasfresh 4.26.25 (2016-28, upcoming)
+# metasfresh 4.26.25a (2016-28a, RC)
+
+## Features
+
+## Fixes
+ - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
+ - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
+ 
+# metasfresh 4.26.25 (2016-28)
 
 ## Features
  - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
