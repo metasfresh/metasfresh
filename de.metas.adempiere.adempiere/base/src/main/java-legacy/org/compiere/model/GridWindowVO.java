@@ -179,7 +179,7 @@ public class GridWindowVO implements Serializable
 			}
 			else
 			{
-				throw new WindowLoadException("@NotFound@", "-", windowName, AD_Window_ID);
+				throw new WindowLoadException("@NotFound@", "ID=" + Env.getAD_Role_ID(ctx) + " (does not matter)", windowName, AD_Window_ID);
 			}
 		}
 		catch (SQLException ex)
