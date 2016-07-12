@@ -21,13 +21,17 @@ class ProductSearch extends Component {
                     </div>
                     <div className="form-group col-sm-3">
                         <label>Product quantity</label>
-                        <input className="form-control form-control-meta" type="number"/>
-                        <i className="meta-icon-edit input-icon-right"></i>
+                        <div className="input-icon-container input-block">
+                            <input className="form-control form-control-meta" type="number"/>
+                            <i className="meta-icon-edit input-icon-right"></i>
+                        </div>
                     </div>
                     <div className="form-group col-sm-3">
                         <label>Discount</label>
-                        <input className="form-control form-control-meta" type="number"/>
-                        <i className="meta-icon-edit input-icon-right"></i>
+                        <div className="input-icon-container input-block">
+                            <input className="form-control form-control-meta" type="number"/>
+                            <i className="meta-icon-edit input-icon-right"></i>
+                        </div>
                     </div>
                     <div className="form-group col-sm-2">
                         <label/>

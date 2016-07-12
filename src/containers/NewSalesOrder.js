@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 
-import SOHeader from '../components/salesOrder/SOHeader.js';
 import Purchaser from '../components/salesOrder/Purchaser.js';
 import ProductSearch from '../components/salesOrder/ProductSearch.js';
 import ProductTable from '../components/salesOrder/ProductTable.js';
@@ -10,7 +9,6 @@ export default class NewSalesOrder extends Component {
     render() {
         return (
             <div>
-                <SOHeader/>
                 <div className="container">
                     <div className="row">
                         <div className="col-xs-6">

@@ -22,24 +22,28 @@ class OrderInfo extends Component {
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Order</label>
                         <div className="col-sm-9">
-                            <input className="form-control form-control-meta" type="text"/>
-                            <i className="meta-icon-calendar input-icon-right"></i>
+                            <div className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="text"/>
+                                <i className="meta-icon-calendar input-icon-right"></i>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Promised date</label>
                         <div className="col-sm-9">
-                            <input className="form-control form-control-meta" type="text"/>
-                            <i className="meta-icon-calendar input-icon-right"></i>
-
+                            <div className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="text"/>
+                                <i className="meta-icon-calendar input-icon-right"></i>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Provisioning</label>
                         <div className="col-sm-9">
-                            <input className="form-control form-control-meta" type="text"/>
-                            <i className="meta-icon-calendar input-icon-right"></i>
-
+                            <div className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="text"/>
+                                <i className="meta-icon-calendar input-icon-right"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -47,17 +51,19 @@ class OrderInfo extends Component {
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Order date</label>
                         <div className="col-sm-9">
-                            <input className="form-control form-control-meta" type="text"/>
-                            <i className="meta-icon-down input-icon-right input-icon-sm"></i>
-
+                            <div className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="text"/>
+                                <i className="meta-icon-down input-icon-right input-icon-sm"></i>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Warehouse</label>
                         <div className="col-sm-9">
-                            <input className="form-control form-control-meta" type="text"/>
-                            <i className="meta-icon-down input-icon-right input-icon-sm"></i>
-
+                            <div className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="text"/>
+                                <i className="meta-icon-down input-icon-right input-icon-sm"></i>
+                            </div>
                         </div>
                     </div>
                 </div>

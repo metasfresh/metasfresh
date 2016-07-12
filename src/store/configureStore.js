@@ -1,13 +1,16 @@
 import thunk from 'redux-thunk'
 import rootReducer from '../reducers'
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, compose } from 'redux'
 import { routerMiddleware } from 'react-router-redux'
 
 export default function configureStore(history){
     const middleware = [thunk, routerMiddleware(history)]
     const store = createStore(
         rootReducer,
-        applyMiddleware(...middleware)
+        compose(
+            applyMiddleware(...middleware),
+            window.devToolsExtension ? window.devToolsExtension() : f => f
+        )
     )
 
     if (module.hot) {

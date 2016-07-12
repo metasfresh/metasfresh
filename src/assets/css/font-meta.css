@@ -2,11 +2,11 @@
 
 @font-face {
   font-family: "meta";
-  src:url("../fonts/meta.eot");
-  src:url("../fonts/meta.eot?#iefix") format("embedded-opentype"),
-    url("../fonts/meta.woff") format("woff"),
-    url("../fonts/meta.ttf") format("truetype"),
-    url("../fonts/meta.svg#meta") format("svg");
+  src:url("fonts/meta.eot");
+  src:url("fonts/meta.eot?#iefix") format("embedded-opentype"),
+    url("fonts/meta.woff") format("woff"),
+    url("fonts/meta.ttf") format("truetype"),
+    url("fonts/meta.svg#meta") format("svg");
   font-weight: normal;
   font-style: normal;
 
@@ -73,4 +73,43 @@
 }
 .meta-icon-share:before {
   content: "\6c";
+}
+.meta-icon-trash:before {
+  content: "\6d";
+}
+.meta-icon-file:before {
+  content: "\6e";
+}
+.meta-icon-hamburger:before {
+  content: "\6f";
+}
+.meta-icon-list:before {
+  content: "\70";
+}
+.meta-icon-clone-1:before {
+  content: "\72";
+}
+.meta-icon-delete-1:before {
+  content: "\77";
+}
+.meta-icon-generate-1:before {
+  content: "\78";
+}
+.meta-icon-logout-1:before {
+  content: "\7a";
+}
+.meta-icon-message-1:before {
+  content: "\41";
+}
+.meta-icon-preview-1:before {
+  content: "\42";
+}
+.meta-icon-print-1:before {
+  content: "\43";
+}
+.meta-icon-report-1:before {
+  content: "\44";
+}
+.meta-icon-settings-1:before {
+  content: "\45";
 }
