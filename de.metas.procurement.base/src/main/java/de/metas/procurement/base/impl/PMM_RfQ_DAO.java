@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 
@@ -42,19 +43,32 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 	@Override
 	public List<I_C_RfQResponse> retrieveActiveResponses(final Properties ctx, final int bpartnerId)
 	{
+		return retrieveActiveResponsesQuery(ctx)
+				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.list(I_C_RfQResponse.class);
+	}
+
+	@Override
+	public List<I_C_RfQResponse> retrieveAllActiveResponses(final Properties ctx)
+	{
+		return retrieveActiveResponsesQuery(ctx)
+				.create()
+				.list(I_C_RfQResponse.class);
+	}
+
+	private IQueryBuilder<I_C_RfQResponse> retrieveActiveResponsesQuery(final Properties ctx)
+	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
 				.addInArrayFilter(I_C_RfQResponse.COLUMN_DocStatus, X_C_RfQResponse.DOCSTATUS_Drafted)
 				.orderBy()
 				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
 				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)
-				.endOrderBy()
-				//
-				.create()
-				.list(I_C_RfQResponse.class);
+				.endOrderBy();
 	}
+
 	
 	@Override
 	public List<I_C_RfQResponseLine> retrieveResponseLines(final I_C_RfQResponse rfqResponse)
