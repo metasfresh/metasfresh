@@ -12,3 +12,5 @@ Please stay tuned...
 
 * one can run it from eclipse
 * by default, it listens on port 8080
+* swagger UI url: http://localhost:8080/swagger-ui.html
+* 
