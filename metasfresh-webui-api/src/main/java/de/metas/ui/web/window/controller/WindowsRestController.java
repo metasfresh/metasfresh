@@ -63,10 +63,11 @@ public class WindowsRestController
 	{
 		// FIXME: only for testing
 		final Properties ctx = Env.getCtx();
-		Env.setContext(ctx, "#AD_Client_ID", 1000000);
-		Env.setContext(ctx, "#AD_Org_ID", 1000000);
-		Env.setContext(ctx, "#AD_Role_ID", 1000000);
-		Env.setContext(ctx, "#AD_User_ID", 100);
+		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
+		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
 	}
 
 	@RequestMapping(value = "/openWindow/{adWindowId}", method = RequestMethod.GET)
