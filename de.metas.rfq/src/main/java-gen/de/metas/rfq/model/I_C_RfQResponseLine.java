@@ -705,7 +705,7 @@ public interface I_C_RfQResponseLine
 	 * Set Qty Requiered.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
@@ -714,7 +714,7 @@ public interface I_C_RfQResponseLine
 	 * Get Qty Requiered.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getQtyRequiered();

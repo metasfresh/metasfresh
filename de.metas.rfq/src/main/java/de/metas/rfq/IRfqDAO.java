@@ -64,4 +64,6 @@ public interface IRfqDAO extends ISingletonService
 	BigDecimal calculateQtyPromised(I_C_RfQResponseLine rfqResponseLine);
 
 	I_C_RfQResponseLineQty retrieveResponseQty(I_C_RfQResponseLine rfqResponseLine, Date date);
+
+	boolean hasQtyRequiered(I_C_RfQResponse rfqResponse);
 }
