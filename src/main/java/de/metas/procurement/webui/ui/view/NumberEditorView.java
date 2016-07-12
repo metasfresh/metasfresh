@@ -7,6 +7,7 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.spring.i18n.I18N;
 
+import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 import com.vaadin.addon.touchkit.ui.NavigationManager;
 import com.vaadin.addon.touchkit.ui.NavigationManager.NavigationEvent;
 import com.vaadin.addon.touchkit.ui.NavigationManager.NavigationListener;
@@ -16,6 +17,7 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.StringToBigDecimalConverter;
 import com.vaadin.data.validator.BigDecimalRangeValidator;
 import com.vaadin.event.FieldEvents.FocusEvent;
@@ -39,14 +41,14 @@ import de.metas.procurement.webui.util.JavascriptUtils;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,28 +57,27 @@ import de.metas.procurement.webui.util.JavascriptUtils;
 public class NumberEditorView<BT> extends MFProcurementNavigationView
 {
 	private static final String STYLE = "DailyProductQtyReportView"; // FIXME
-	
+
 	private final String numberPropertyId;
 
 	@Autowired
-    private I18N i18n;
+	private I18N i18n;
 
 	private BeanItem<BT> item;
-	
+
 	private Form form;
 
-	private final NavigationListener navigationListener = new NavigationListener()
-	{
+	private final NavigationListener navigationListener=new NavigationListener(){
 
+	@Override public void navigate(final NavigationEvent event){final NavigationManager navigationManager=getNavigationManager();if(navigationManager!=null&&navigationManager.getCurrentComponent()!=NumberEditorView.this){commit();navigationManager.removeListener(this);}}};
+
+	private Converter<String, BigDecimal> numberConverter = new StringToBigDecimalConverter(){
 		@Override
-		public void navigate(final NavigationEvent event)
+		protected NumberFormat getFormat(Locale locale)
 		{
-			final NavigationManager navigationManager = getNavigationManager();
-			if (navigationManager != null && navigationManager.getCurrentComponent() != NumberEditorView.this)
-			{
-				commit();
-				navigationManager.removeListener(this);
-			}
+			final NumberFormat format = super.getFormat(locale);
+			format.setGroupingUsed(false); // FRESH-126
+			return format;
 		}
 	};
 
@@ -84,8 +85,14 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 	{
 		super();
 		addStyleName(STYLE);
-		
+
 		this.numberPropertyId = numberPropertyId;
+	}
+
+	public NumberEditorView<BT> setNumberConverter(final Converter<String, BigDecimal> numberConverter)
+	{
+		this.numberConverter = Preconditions.checkNotNull(numberConverter, "numberConverter");
+		return this;
 	}
 
 	@Override
@@ -102,7 +109,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 		// Content
 		{
 			final VerticalLayout content = new VerticalLayout();
-	
+
 			//
 			// Quantity input
 			{
@@ -110,10 +117,10 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 				form.focus();
 				content.addComponent(form);
 			}
-	
+
 			setContent(content);
 		}
-		
+
 		getNavigationManager().addNavigationListener(navigationListener);
 	}
 
@@ -133,11 +140,11 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 		if (bean != null)
 		{
 			caption = "RfqQuantityReport"; // FIXME
-//			final Locale locale = i18n.getLocale();
-//			caption = ProductNameCaptionBuilder.newBuilder()
-//					.setProductName(bean.getProductName(locale))
-//					.setProductPackingInfo(bean.getProductPackingInfo(locale))
-//					.build();
+			// final Locale locale = i18n.getLocale();
+			// caption = ProductNameCaptionBuilder.newBuilder()
+			// .setProductName(bean.getProductName(locale))
+			// .setProductPackingInfo(bean.getProductPackingInfo(locale))
+			// .build();
 		}
 		else
 		{
@@ -145,22 +152,24 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 		}
 		setCaption(caption);
 	}
-	
-	/** @return true if all fields are valid and commit was successful */
+
+	/**
+	 * @return true if all fields are valid and commit was successful
+	 */
 	private boolean commit()
 	{
 		if (form != null)
 		{
 			form.commit();
-			
+
 			if (!form.isValid())
 			{
 				return false;
 			}
-			
+
 			form = null;
 		}
-		
+
 		return true;
 	}
 
@@ -178,7 +187,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 	{
 		private final TextField qty;
 		private final FieldGroup binder;
-		
+
 		public Form(final BeanItem<BT> item)
 		{
 			super();
@@ -187,15 +196,8 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 			//
 			// Qty
 			qty = new NumberField();
-			qty.setConverter(new StringToBigDecimalConverter(){
-				@Override
-				protected NumberFormat getFormat(Locale locale)
-				{
-					final NumberFormat format = super.getFormat(locale);
-					format.setGroupingUsed(false); // FRESH-126
-					return format;
-				}
-			});
+			qty.setConverter(numberConverter);
+			qty.setConversionError(i18n.get("DailyProductQtyReportView.error.InvalidValue"));
 			qty.addValidator(new BigDecimalRangeValidator(i18n.get("DailyProductQtyReportView.error.InvalidValue"), BigDecimal.ZERO, null)); // FRESH-144
 			qty.setImmediate(true);
 
@@ -217,7 +219,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 			{
 
 				@Override
-				public void focus(FocusEvent event)
+				public void focus(final FocusEvent event)
 				{
 					commitAndGoBack();
 				}
@@ -234,7 +236,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 			addShortcutListener(new ShortcutListener("submit", KeyCode.ENTER, null)
 			{
 				@Override
-				public void handleAction(Object sender, Object target)
+				public void handleAction(final Object sender, final Object target)
 				{
 					commitAndGoBack();
 				}
@@ -242,7 +244,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 
 			qty.selectAll();
 			qty.focus();
-			
+
 			// Listen value change on qty field, just to catch events which are coming after user navigated outside of this view.
 			// This is a workaround to cover following case:
 			// * write something in Qty box
@@ -250,18 +252,17 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 			qty.addValueChangeListener(new Property.ValueChangeListener()
 			{
 				@Override
-				public void valueChange(ValueChangeEvent event)
+				public void valueChange(final ValueChangeEvent event)
 				{
 					updateSentStatus();
 				}
 			});
 		}
-		
 
 		private final void updateSentStatus()
 		{
 			// FIXME: do we need this?
-//			productQtyReportRespository.updateSentStatus(item);
+			// productQtyReportRespository.updateSentStatus(item);
 		}
 
 		public boolean isValid()
@@ -275,9 +276,9 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 			{
 				// Validate all fields
 				qty.validate(); // throws InvalidValueException which will be handled on upper level
-				
+
 				binder.commit();
-				
+
 				updateSentStatus();
 			}
 			catch (final CommitException e)

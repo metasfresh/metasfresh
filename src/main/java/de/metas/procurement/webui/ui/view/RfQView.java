@@ -226,7 +226,8 @@ public class RfQView extends MFProcurementNavigationView
 
 	private static class RfqPriceButton extends BeanItemNavigationButton<RfqHeader>
 	{
-		private final NumberEditorView<RfqHeader> editorView = new NumberEditorView<>(RfqHeader.PROPERTY_Price);
+		private final NumberEditorView<RfqHeader> editorView = new NumberEditorView<RfqHeader>(RfqHeader.PROPERTY_Price)
+				.setNumberConverter(new StringToPriceConverter());
 		private final StringToPriceConverter priceConverter = new StringToPriceConverter();
 
 		public RfqPriceButton()

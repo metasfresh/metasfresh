@@ -212,6 +212,7 @@ public class DailyProductQtyReportView extends MFProcurementNavigationView
 					return format;
 				}
 			});
+			qty.setConversionError(i18n.get("DailyProductQtyReportView.error.InvalidValue"));
 			qty.addValidator(new BigDecimalRangeValidator(i18n.get("DailyProductQtyReportView.error.InvalidValue"), BigDecimal.ZERO, null)); // FRESH-144
 			qty.setImmediate(true);
 
