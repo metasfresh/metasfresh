@@ -23,6 +23,7 @@ import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -64,7 +65,7 @@ import fi.jasoft.qrcode.QRCode;
 @Theme(Constants.THEME_NAME)
 @PreserveOnRefresh
 @JavaScript({ JavascriptUtils.RESOURCE_JQuery, JavascriptUtils.RESOURCE_MainJS, JavascriptUtils.RESOURCE_Swiped })
-@Push
+@Push(transport = Transport.WEBSOCKET_XHR)  // NOTE: we need XHR because we are using "remember me" cookie
 public class MFProcurementUI extends UI
 {
 	public static final String getBpartner_uuid(final UI ui)
@@ -73,21 +74,21 @@ public class MFProcurementUI extends UI
 		{
 			return null;
 		}
-		if(!(ui instanceof MFProcurementUI))
+		if (!(ui instanceof MFProcurementUI))
 		{
 			return null;
 		}
-		
+
 		final MFProcurementUI procurementUI = (MFProcurementUI)ui;
 		MFSession mfSession = procurementUI.getMFSession();
-		if(mfSession == null)
+		if (mfSession == null)
 		{
 			return null;
 		}
-		
+
 		return mfSession.getBpartner_uuid();
 	}
-	
+
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
 	private static final String STYLE_QRCodeWindow = "qr-code-window";
@@ -160,7 +161,7 @@ public class MFProcurementUI extends UI
 	public void detach()
 	{
 		super.detach();
-		
+
 		applicationEventBus.unregisterAllExpired();
 	}
 

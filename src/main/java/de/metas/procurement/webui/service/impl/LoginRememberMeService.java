@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gwt.thirdparty.guava.common.base.Objects;
 import com.google.gwt.thirdparty.guava.common.base.Throwables;
 import com.vaadin.server.Page;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 
 import de.metas.procurement.webui.model.User;
@@ -94,13 +95,12 @@ public class LoginRememberMeService
 			return null;
 		}
 
-		final Cookie cookie = getRememberMeCookie();
-		if (cookie == null)
+		final String rememberMeToken = getRememberMeCookieValue();
+		if(rememberMeToken == null)
 		{
 			logger.trace("Returning no cookie");
 			return null;
 		}
-		final String rememberMeToken = cookie.getValue();
 		try
 		{
 			final RememberMeToken token = jsonObjectMapper.readValue(rememberMeToken, RememberMeToken.class);
@@ -112,12 +112,30 @@ public class LoginRememberMeService
 			throw Throwables.propagate(e);
 		}
 	}
+	
+	private String getRememberMeCookieValue()
+	{
+		final Cookie cookie = getRememberMeCookie();
+		if (cookie == null)
+		{
+			return null;
+		}
+		final String rememberMeToken = cookie.getValue();
+		return rememberMeToken;
+	}
 
 	private Cookie getRememberMeCookie()
 	{
+		final VaadinRequest vaadinRequest = VaadinService.getCurrentRequest();
+		if(vaadinRequest == null)
+		{
+			logger.warn("Could not get the VaadinRequest. It might be that we are called from a websocket connection.");
+			return null;
+		}
+		
 		//
 		// Get the remember me cookie
-		final Cookie[] cookies = VaadinService.getCurrentRequest().getCookies();
+		final Cookie[] cookies = vaadinRequest.getCookies();
 		if (cookies == null)
 		{
 			return null;
