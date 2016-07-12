@@ -33,6 +33,7 @@ Her come the actual release notes:
  - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
+ - #197 FRESH-519 Payment void or reverse correct
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
  - #151 FRESH-491 When creating a new organization, don't create org access for System role
 
