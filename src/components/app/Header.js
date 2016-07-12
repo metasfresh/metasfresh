@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import './Header.css';
 
-import SubHeader from './SubHeader';
+import Subheader from './SubHeader';
 
 import {
     showSubHeader,
@@ -16,12 +16,21 @@ class Header extends Component {
     handleSubheaderOpen = () => {
         const {dispatch, isSubheaderShow} = this.props;
 
-        dispatch((isSubheaderShow ? hideSubHeader() : showSubHeader()));
+        if(isSubheaderShow){
+            dispatch(hideSubHeader());
+        }else{
+            dispatch(showSubHeader());
+        }
+    }
+    handleBackdropClick = () => {
+        this.props.dispatch(hideSubHeader());
     }
     render() {
         const {isSubheaderShow} = this.props;
+
         return (
             <div>
+            {isSubheaderShow ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
             <nav className="header header-super-faded">
                 <div className="container">
                     <div className="row">
@@ -59,7 +68,7 @@ class Header extends Component {
                     </div>
                 </div>
             </nav>
-            <SubHeader open={isSubheaderShow} />
+            <Subheader open={isSubheaderShow} />
             </div>
         )
     }
@@ -72,13 +81,12 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler } = state;
+    const { salesOrderStateHandler, routing } = state;
     const {
         isSubheaderShow
     } = salesOrderStateHandler || {
         isSubheaderShow: false
     }
-
     return {
         isSubheaderShow
     }

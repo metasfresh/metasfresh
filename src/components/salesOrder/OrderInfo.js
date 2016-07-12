@@ -10,11 +10,11 @@ class OrderInfo extends Component {
             <div className="panel panel-spaced">
                 <div className="row">
                     <div className="col-xs-5">
-                        Billing status
+                        Shipment status
                         <div className="label label-warning pull-xs-right">Open</div>
                     </div>
                     <div className="col-xs-5 col-xs-offset-1">
-                        Shipment status
+                        Billing status
                         <div className="label label-warning pull-xs-right">Open</div>
                     </div>
                 </div>
@@ -84,13 +84,6 @@ OrderInfo.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler } = state;
-    const {
-
-    } = salesOrderStateHandler || {
-
-    }
-
     return {
 
     }

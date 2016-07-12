@@ -1,6 +1,11 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
 
+/**
+ *  IMPORTANT NOTE
+ *  Backdrop is on the 200th z-index level
+ */
+
 * {
     margin:0;
 }
@@ -15,6 +20,16 @@ body {
     background-color:$brand-color-primary;
     color: #fff;
 }
+
+/*
+ *  Extension for bootstrap grid
+ */
+ @media (min-width: 1900px){
+    .container {
+        max-width: 1824px;
+    }
+}
+
 
 .label-faded {
     background-color: $brand-light-color;
@@ -345,4 +360,10 @@ body {
 }
 .context-menu-item:last-of-type{
     margin:0;
+}
+.backdrop {
+    position: fixed;
+    width:100%;
+    height:100%;
+    z-index: 200;
 }

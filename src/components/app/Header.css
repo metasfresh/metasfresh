@@ -50,8 +50,13 @@
 }
 
 .subheader-item {
+    color: inherit;
+    width: 100%;
+    display: block;
     padding: .75rem 1.25rem;
     cursor: pointer;
+    text-decoration: none !important;
+
 }
 
 .subheader-item:hover {

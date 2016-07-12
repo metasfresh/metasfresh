@@ -1,9 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import {connect} from 'react-redux';
+import {push} from 'react-router-redux';
 import './Header.css';
 
-export default class SubHeader extends Component {
+import {
+    hideSubHeader
+} from '../../actions/SalesOrderActions'
+
+class Subheader extends Component {
     constructor(props){
         super(props);
+    }
+    redirect = (where) => {
+        const {dispatch} = this.props;
+        dispatch(hideSubHeader(where));
+        dispatch(push('sales-order'));
     }
     render() {
         return (
@@ -12,6 +23,9 @@ export default class SubHeader extends Component {
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column">
+                                <div className="subheader-item" onClick={()=> this.redirect('sales-order')}>
+                                    <i className="meta-icon-report-1" /> New
+                                </div>
                                 <div className="subheader-item"><i className="meta-icon-preview-1" /> Preview</div>
                                 <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
                                 <div className="subheader-item"><i className="meta-icon-message-1" /> Send message</div>
@@ -51,3 +65,18 @@ export default class SubHeader extends Component {
         )
     }
 }
+
+
+
+
+
+Subheader.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+function mapStateToProps(state) {
+    return {
+    }
+}
+Subheader = connect(mapStateToProps)(Subheader);
+
+export default Subheader;

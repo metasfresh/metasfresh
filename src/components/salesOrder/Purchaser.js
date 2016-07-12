@@ -27,36 +27,12 @@ class Purchaser extends Component {
 
                 <div className="panel-title">Purchaser</div>
                 <Dropdown items={purchaser.recent} />
-                <div className="form-group row">
-                    <label className="col-sm-4 form-control-label">Invoice partner</label>
-                    <div className="col-sm-8">
-                        <div className="input-icon-container input-block">
-                            <input
-                                onChange={this.handleInvoiceChange}
-                                value={purchaser.invoice}
-                                ref={(c)=>this.invoiceInput=c}
-                                className="form-control form-control-meta"
-                                type="text"
-                            />
-                            <i className="meta-icon-edit input-icon-right"></i>
-                        </div>
-                    </div>
-                </div>
-                <div className="form-group row">
-                    <label className="col-sm-4 form-control-label">Unloading partner</label>
-                    <div className="col-sm-8">
-                        <div className="input-icon-container input-block">
-                            <input
-                                onChange={this.handleUnloadingChange}
-                                value={purchaser.unloading}
-                                ref={(c)=>this.unloadingInput=c}
-                                className="form-control form-control-meta"
-                                type="text"
-                            />
-                            <i className="meta-icon-edit input-icon-right"></i>
-                        </div>
-                    </div>
-                </div>
+
+                <div className="panel-title">Invoice partner</div>
+                <Dropdown items={purchaser.recent} />
+
+                <div className="panel-title">Unloading partner</div>
+                <Dropdown items={purchaser.recent} />
             </div>
         )
     }

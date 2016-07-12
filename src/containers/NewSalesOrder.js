@@ -6,6 +6,9 @@ import ProductTable from '../components/salesOrder/ProductTable.js';
 import OrderInfo from '../components/salesOrder/OrderInfo.js';
 
 export default class NewSalesOrder extends Component {
+    constructor(props){
+        super(props);
+    }
     render() {
         return (
             <div>
