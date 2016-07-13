@@ -34,7 +34,7 @@ class ProductTable extends Component {
         e.preventDefault();
 
         const {selectedProducts, dispatch} = this.props
-        const selectMore = e.nativeEvent.metaKey;
+        const selectMore = e.nativeEvent.metaKey || e.ctrlKey;
         const selectRange = e.shiftKey;
         const isSelected = index > -1;
         const isAnySelected = selectedProducts.length > 0;
