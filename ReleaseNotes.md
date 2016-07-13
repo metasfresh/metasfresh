@@ -15,6 +15,7 @@ Her come the actual release notes:
 ## Features
 
 ## Fixes
+ - #204 FRESH-525 db_columns_fk view is not working correctly anymore
  - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
  - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
  - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
