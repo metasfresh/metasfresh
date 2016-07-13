@@ -1,34 +1,95 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import {connect} from 'react-redux';
+
+import DropdownPartnerItem from './DropdownPartnerItem';
+import {autocomplete} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
         super(props);
     }
-    handleSelect = (e) => {
+    handleSelect = (e, select) => {
+        this.inputSearch.value = select.name;
+        this.inputSearchRest.innerHTML = select.address + " VAT " + select.vat;
+        this.handleBlur();
+    }
+    handleBlur = () => {
+        this.dropdown.classList.remove("input-dropdown-focused");
+    }
+    handleFocus = (e) => {
         e.preventDefault();
-        this.dropdown.blur();
+        this.props.dispatch(autocomplete(''));
+        this.dropdown.classList.add("input-dropdown-focused");
+    }
+    handleChange = (e) => {
+        e.preventDefault();
+        this.props.dispatch(autocomplete(this.inputSearch.value));
+    }
+    renderRecent = () => {
+        return this.props.recentPartners.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
     }
     render() {
+        const {autocomplete} = this.props;
         return (
-            <div tabIndex="0" ref={(c) => this.dropdown = c} className="input-dropdown">
+            <div
+                tabIndex="0"
+                ref={(c) => this.dropdown = c}
+                onFocus={()=>this.inputSearch.focus()}
+                className="input-dropdown"
+            >
                 <div className="input-toggled">
-                    <span className="font-weight-bold">Jazzy Innovations</span>
-                    <i className="icon-rounded icon-rounded-space pull-xs-right">x</i>
-                    <span className="pull-xs-right">Tracka 18, Gliwice, Poland, VAT 541-141-56-23</span>
+                    <div className="input-toggled-editable">
+                        <input
+                            type="text"
+                            className="input-dropdown-field"
+                            onFocus={this.handleFocus}
+                            onChange={this.handleChange}
+                            ref={(c) => this.inputSearch = c}
+                        />
+                    </div>
+                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest">
+
+                    </div>
                 </div>
+                <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        Recent partners
+                        {autocomplete.query ? "Are you looking for..." : "Recent partners"}
                     </div>
-                    <div className="input-dropdown-list-option" onClick={this.handleSelect}>
-                        <p className="input-dropdown-item-title">Jazzy Innovations</p>
-                        <p className="input-dropdown-item-subtitle">Tracka 18, Gliwice, Poland</p>
-                        <p className="input-dropdown-item-subtitle">VAT 541-141-56-23</p>
+                    <div>
+                        {this.renderRecent()}
                     </div>
                 </div>
             </div>
         )
     }
 }
+
+
+Dropdown.propTypes = {
+    recentPartners: PropTypes.array.isRequired,
+    autocomplete: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired
+};
+
+function mapStateToProps(state) {
+    const {salesOrderStateHandler} = state;
+    const {
+        recentPartners,
+        autocomplete
+    } = salesOrderStateHandler || {
+        recentPartners: [],
+        autocomplete: {
+            query: ""
+        }
+    }
+
+    return {
+        recentPartners,
+        autocomplete
+    }
+}
+
+Dropdown = connect(mapStateToProps)(Dropdown)
 
 export default Dropdown

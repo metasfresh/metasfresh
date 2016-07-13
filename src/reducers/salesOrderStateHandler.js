@@ -38,7 +38,31 @@ const initialState = {
         value: ''
     },
     selectedProducts: [],
-    isSubheaderShow: false
+    isSubheaderShow: false,
+    autocomplete: {
+        query: "",
+        results: [{
+            name: 'Jazzy Innovations',
+            address: 'Tracka 18, Gliwice, Poland',
+            vat: '541-141-56-23'
+        }]
+    },
+    recentPartners: [{
+        id: 1,
+        name: 'Jazzy Innovations',
+        address: 'Tracka 18, Gliwice, Poland',
+        vat: '541-141-56-23'
+    },{
+        id: 2,
+        name: 'Innovations',
+        address: 'Jazzy 18, Gliwice, Poland',
+        vat: '541-141-56-23'
+    },{
+        id: 3,
+        name: 'Jazzy',
+        address: 'Innovation 18, Gliwice, Poland',
+        vat: '541-141-56-23'
+    }]
 }
 
 export default function salesOrderStateHandler(state = initialState, action) {
@@ -115,6 +139,12 @@ export default function salesOrderStateHandler(state = initialState, action) {
                     products: state.products.products.map(product => {
                         return product;
                     })
+                })
+            })
+        case types.AUTOCOMPLETE:
+            return Object.assign({}, state, {
+                autocomplete: Object.assign({}, state.autocomplete, {
+                    query: action.query
                 })
             })
 

@@ -84,3 +84,10 @@ export function hideSubHeader() {
         type: 'HIDE_SUBHEADER'
     }
 }
+
+export function autocomplete(query) {
+    return {
+        type: 'AUTOCOMPLETE',
+        query: query
+    }
+}
