@@ -56,7 +56,9 @@ import de.metas.procurement.webui.util.JavascriptUtils;
 @SuppressWarnings("serial")
 public class NumberEditorView<BT> extends MFProcurementNavigationView
 {
-	private static final String STYLE = "DailyProductQtyReportView"; // FIXME
+	private static final String STYLE = DailyProductQtyReportView.STYLE; // FIXME: refactor to a common style
+
+	// private static final Logger logger = LoggerFactory.getLogger(NumberEditorView.class);
 
 	private final String numberPropertyId;
 
@@ -67,13 +69,25 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 
 	private Form form;
 
-	private final NavigationListener navigationListener=new NavigationListener(){
+	private final NavigationListener navigationListener = new NavigationListener()
+	{
 
-	@Override public void navigate(final NavigationEvent event){final NavigationManager navigationManager=getNavigationManager();if(navigationManager!=null&&navigationManager.getCurrentComponent()!=NumberEditorView.this){commit();navigationManager.removeListener(this);}}};
-
-	private Converter<String, BigDecimal> numberConverter = new StringToBigDecimalConverter(){
 		@Override
-		protected NumberFormat getFormat(Locale locale)
+		public void navigate(final NavigationEvent event)
+		{
+			final NavigationManager navigationManager = getNavigationManager();
+			if (navigationManager != null && navigationManager.getCurrentComponent() != NumberEditorView.this)
+			{
+				commit();
+				navigationManager.removeListener(this);
+			}
+		}
+	};
+
+	private Converter<String, BigDecimal> numberConverter = new StringToBigDecimalConverter()
+	{
+		@Override
+		protected NumberFormat getFormat(final Locale locale)
 		{
 			final NumberFormat format = super.getFormat(locale);
 			format.setGroupingUsed(false); // FRESH-126
@@ -87,11 +101,19 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 		addStyleName(STYLE);
 
 		this.numberPropertyId = numberPropertyId;
+		setCaptionAndTranslate(numberPropertyId);
 	}
 
 	public NumberEditorView<BT> setNumberConverter(final Converter<String, BigDecimal> numberConverter)
 	{
 		this.numberConverter = Preconditions.checkNotNull(numberConverter, "numberConverter");
+		return this;
+	}
+
+	public NumberEditorView<BT> setCaptionAndTranslate(final String captionMessage, final Object... arguments)
+	{
+		final String captionTrl = i18n.getWithDefault(captionMessage, captionMessage, arguments);
+		setCaption(captionTrl);
 		return this;
 	}
 
@@ -133,24 +155,6 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 	public void setItem(final BeanItem<BT> itemNew)
 	{
 		item = itemNew;
-
-		final BT bean = item == null ? null : item.getBean();
-
-		final String caption;
-		if (bean != null)
-		{
-			caption = "RfqQuantityReport"; // FIXME
-			// final Locale locale = i18n.getLocale();
-			// caption = ProductNameCaptionBuilder.newBuilder()
-			// .setProductName(bean.getProductName(locale))
-			// .setProductPackingInfo(bean.getProductPackingInfo(locale))
-			// .build();
-		}
-		else
-		{
-			caption = null;
-		}
-		setCaption(caption);
 	}
 
 	/**
@@ -261,8 +265,7 @@ public class NumberEditorView<BT> extends MFProcurementNavigationView
 
 		private final void updateSentStatus()
 		{
-			// FIXME: do we need this?
-			// productQtyReportRespository.updateSentStatus(item);
+			// nothing
 		}
 
 		public boolean isValid()

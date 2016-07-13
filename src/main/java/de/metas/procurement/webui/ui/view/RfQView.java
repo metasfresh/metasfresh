@@ -226,8 +226,12 @@ public class RfQView extends MFProcurementNavigationView
 
 	private static class RfqPriceButton extends BeanItemNavigationButton<RfqHeader>
 	{
+		private static final String MSG_EditorCaption = "RfQView.PriceEditor.caption";
+		
 		private final NumberEditorView<RfqHeader> editorView = new NumberEditorView<RfqHeader>(RfqHeader.PROPERTY_Price)
-				.setNumberConverter(new StringToPriceConverter());
+				.setNumberConverter(new StringToPriceConverter())
+				.setCaptionAndTranslate(MSG_EditorCaption);
+
 		private final StringToPriceConverter priceConverter = new StringToPriceConverter();
 
 		public RfqPriceButton()
@@ -255,7 +259,11 @@ public class RfQView extends MFProcurementNavigationView
 
 	private static class RfqQuantityButton extends BeanItemNavigationButton<RfqQuantityReport>
 	{
-		private final NumberEditorView<RfqQuantityReport> editorView = new NumberEditorView<>(RfqQuantityReport.PROPERTY_Qty);
+		private static final String MSG_EditorCaption = "RfQView.QtyEditor.caption";
+
+		private final NumberEditorView<RfqQuantityReport> editorView = new NumberEditorView<RfqQuantityReport>(RfqQuantityReport.PROPERTY_Qty)
+				.setCaptionAndTranslate(MSG_EditorCaption, "?");
+		
 		private final StringToQuantityConverter qtyConverter;
 
 		public RfqQuantityButton()
@@ -282,6 +290,8 @@ public class RfQView extends MFProcurementNavigationView
 			final BigDecimal qty = rfqQuantityReport.getQty();
 			final String qtyStr = qtyConverter.convertToPresentation(qty, String.class, getLocale());
 			setDescription(qtyStr);
+			
+			editorView.setCaptionAndTranslate(MSG_EditorCaption, dayStr);
 		}
 	}
 }

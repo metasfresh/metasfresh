@@ -61,7 +61,7 @@ import de.metas.procurement.webui.util.ProductNameCaptionBuilder;
 @SuppressWarnings("serial")
 public class DailyProductQtyReportView extends MFProcurementNavigationView
 {
-	private static final String STYLE = "DailyProductQtyReportView";
+	static final String STYLE = "DailyProductQtyReportView";
 
 	@Autowired
     private I18N i18n;
