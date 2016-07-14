@@ -23,6 +23,8 @@ class Dropdown extends Component {
     }
     handleChange = (e) => {
         e.preventDefault();
+        this.inputSearchRest.innerHTML = "";
+        this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
     }
     renderRecent = () => {
@@ -35,13 +37,14 @@ class Dropdown extends Component {
                 tabIndex="0"
                 ref={(c) => this.dropdown = c}
                 onFocus={()=>this.inputSearch.focus()}
+                onBlur={this.handleBlur}
                 className="input-dropdown"
             >
                 <div className="input-toggled">
                     <div className="input-toggled-editable">
                         <input
                             type="text"
-                            className="input-dropdown-field"
+                            className="input-dropdown-field font-weight-bold"
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
