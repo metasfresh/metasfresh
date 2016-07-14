@@ -14,7 +14,9 @@ $$
 UPDATE
 	C_Invoice
 SET
-	PaymentRule = 'P'
+	PaymentRule = 'P',
+	Updated = now(),
+	Updatedby = 99
 WHERE 
 	PaymentRule = 'S'
 
