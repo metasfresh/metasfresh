@@ -62,7 +62,7 @@ class ProductTableItem extends Component {
                 <td
                     key="amount"
                     tabIndex="0"
-                    // onDoubleClick={this.handleEditProperty}
+                    onDoubleClick={this.handleEditProperty}
                 >
                     <span>{product.amount}</span>
                 </td>
@@ -70,7 +70,7 @@ class ProductTableItem extends Component {
                 <td
                     key="quantity"
                     tabIndex="0"
-                    // onDoubleClick={this.handleEditProperty}
+                    onDoubleClick={this.handleEditProperty}
                 >
                     <span>{product.quantity}</span>
                 </td>
