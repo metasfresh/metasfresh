@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Uncomment this option to disable the client from comparing its own version with the version stored in the AD_System database table
+#METASFRESH_CLIENT_CHECK_OPTS="-Dde.metas.clientcheck.Enabled=false"
+
 if [ $METASFRESH_HOME ]; then
 	echo "Using environment variable METASFRESH_HOME = $METASFRESH_HOME"
 elif [ $ADEMPIERE_HOME ]; then
@@ -65,5 +68,5 @@ echo "about to execute"
 echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -jar $JAR_FILE"
 echo "================================"
 
-$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
+$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
 

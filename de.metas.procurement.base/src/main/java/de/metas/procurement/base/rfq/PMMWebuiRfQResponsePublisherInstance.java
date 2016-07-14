@@ -8,12 +8,15 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IFlatrateBL;
+import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
+import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
@@ -22,8 +25,6 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.rfq.IRfqBL;
-import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.model.I_C_RfQResponse;
@@ -58,10 +59,12 @@ class PMMWebuiRfQResponsePublisherInstance
 	}
 
 	// services
-	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
+	private static final Logger logger = LogManager.getLogger(PMMWebuiRfQResponsePublisherInstance.class);
+	private final transient IPMM_RfQ_DAO pmmRfqDAO = Services.get(IPMM_RfQ_DAO.class);
+	private final transient IPMM_RfQ_BL pmmRfqBL = Services.get(IPMM_RfQ_BL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
 	private final transient SyncObjectsFactory syncObjectsFactory = SyncObjectsFactory.newFactory();
 	private final transient IWebuiPush webuiPush = Services.get(IWebuiPush.class);
@@ -81,12 +84,9 @@ class PMMWebuiRfQResponsePublisherInstance
 	public void publish(final RfQResponsePublisherRequest request)
 	{
 		final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
-		if (!Services.get(IPMM_RfQ_BL.class).isProcurement(rfqResponse))
+		if (!pmmRfqBL.isProcurement(rfqResponse))
 		{
-			return;
-		}
-		if (!rfqBL.isClosed(rfqResponse))
-		{
+			logger.debug("Skip publishing {} because it's not procurement related", request);
 			return;
 		}
 
@@ -99,6 +99,11 @@ class PMMWebuiRfQResponsePublisherInstance
 		{
 			publishRfqClose(rfqResponse);
 		}
+		else
+		{
+			logger.debug("Skip publishing {} because publishing type is unknown", request);
+			return;
+		}
 
 		pushToWebUI();
 	}
@@ -109,15 +114,16 @@ class PMMWebuiRfQResponsePublisherInstance
 				.createSyncRfQs(rfqResponse);
 		if (syncRfqs.isEmpty())
 		{
+			logger.debug("Skip publishing the invitations because there are none for {}", rfqResponse);
 			return;
 		}
 
-		syncRfqs.addAll(syncRfqs);
+		this.syncRfQs.addAll(syncRfqs);
 	}
 
 	private void publishRfqClose(final I_C_RfQResponse rfqResponse)
 	{
-		for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse, I_C_RfQResponseLine.class))
+		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfqDAO.retrieveResponseLines(rfqResponse))
 		{
 			publishRfQClose(rfqResponseLine);
 		}
@@ -166,8 +172,7 @@ class PMMWebuiRfQResponsePublisherInstance
 
 	private final void pushToWebUI()
 	{
-		Services.get(ITrxManager.class)
-				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.registerListener(new TrxListenerAdapter()
 				{
 					@Override

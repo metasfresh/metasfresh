@@ -23,22 +23,25 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface IPMM_RfQ_DAO extends ISingletonService
 {
-	List<I_C_RfQResponse> retrieveActiveResponses(Properties ctx, int bpartnerId);
+	List<I_C_RfQResponseLine> retrieveAllActiveResponseLines(Properties ctx);
+
+	List<I_C_RfQResponseLine> retrieveActiveResponseLines(Properties ctx, int bpartnerId);
 
 	List<I_C_RfQResponseLine> retrieveResponseLines(I_C_RfQResponse rfqResponse);
 
 	List<I_C_RfQResponseLineQty> retrieveResponseLineQtys(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine);
 
 	I_C_RfQResponseLineQty retrieveResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine, Date date);
+
 }

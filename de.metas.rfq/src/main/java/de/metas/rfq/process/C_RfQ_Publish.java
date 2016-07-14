@@ -1,6 +1,9 @@
 package de.metas.rfq.process;
 
+import java.util.List;
+
 import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
@@ -65,10 +68,17 @@ public class C_RfQ_Publish extends SvrProcess implements ISvrProcessPrecondition
 
 		final IRfQResponsePublisher rfqPublisher = rfqConfiguration.getRfQResponsePublisher();
 
-		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
+		final List<I_C_RfQResponse> rfqResponses = rfqDAO.retrieveAllResponses(rfq);
+		if(rfqResponses.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @C_RfQResponse_ID@");
+		}
+		
+		for (final I_C_RfQResponse rfqResponse : rfqResponses)
 		{
 			if (!rfqBL.isDraft(rfqResponse))
 			{
+				log.debug("Skip publishing the RfQ invitation for {} because document is not draft", rfqResponse);
 				continue;
 			}
 

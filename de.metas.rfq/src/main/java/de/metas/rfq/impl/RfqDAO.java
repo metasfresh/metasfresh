@@ -291,4 +291,14 @@ public class RfqDAO implements IRfqDAO
 		}
 		return NumberUtils.stripTrailingDecimalZeros(qtyPromised);
 	}
+	
+	@Override
+	public boolean hasQtyRequiered(final I_C_RfQResponse rfqResponse)
+	{
+		return retrieveResponseLinesQuery(rfqResponse)
+				.addNotEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_QtyRequiered, BigDecimal.ZERO)
+				.create()
+				.match();
+	}
+
 }

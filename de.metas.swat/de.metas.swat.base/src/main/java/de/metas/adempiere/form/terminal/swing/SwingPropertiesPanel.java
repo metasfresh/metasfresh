@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.awt.Container;
@@ -34,13 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
+import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncExecutor;
 import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IPropertiesPanel;
@@ -61,14 +60,15 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
+import de.metas.adempiere.form.terminal.event.UIAsyncPropertyChangeListener;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.logging.LogManager;
 
 /* package */final class SwingPropertiesPanel implements IPropertiesPanel
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(SwingPropertiesPanel.class);
-	
+
 	private static final float DEFAULT_FONT_SIZE = 12f;
 	private static final String DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS = "";
 	private static final String DEFAULT_LABEL_CONSTRAINTS = "right, wmin 50, shrink 100";
@@ -98,12 +98,12 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 		}
 	};
 
-	/* package */SwingPropertiesPanel(final ITerminalContext terminalContext)
+	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext)
 	{
 		this(terminalContext, DEFAULT_CONTAINER_CONSTARAINTS);
 	}
 
-	/* package */SwingPropertiesPanel(final ITerminalContext terminalContext, final String containerConstraints)
+	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext, final String containerConstraints)
 	{
 		super();
 
@@ -357,27 +357,32 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 			inputMethodButton.setEnabled(true);
 
 			inputMethodButton.addListener(/* add the action's listener */
-					new UIPropertyChangeListener(inputMethodButton)
+					new UIAsyncPropertyChangeListener<Object, Void>(inputMethodButton)
 					{
 						@Override
-						public void propertyChangeEx(final PropertyChangeEvent evt)
+						public Object runInBackground(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor)
 						{
 							final Object value = inputMethod.invoke();
-							
+							return value;
+						};
+
+						@Override
+						public void finallyUpdateUI(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor, final Object value)
+						{
 							// Guard against concurrency issues, when the model was changed in meantime.
 							// Shall not happen, but better safe then sorry
 							final IPropertiesPanelModel modelActual = getModel();
 							if (model != modelActual)
 							{
 								final TerminalException ex = new TerminalException("Internal error: skip setting the value aquired from input method because model changed in meantime."
-										+"\n Model: "+model
-										+"\n Model(now): "+modelActual
-										+"\n Input method: "+inputMethod
-										+"\n Value aquired: "+value);
+										+ "\n Model: " + model
+										+ "\n Model(now): " + modelActual
+										+ "\n Input method: " + inputMethod
+										+ "\n Value aquired: " + value);
 								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
-							
+
 							editor.setValue(value, true); // fireEvent=true
 						}
 					});
@@ -391,7 +396,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 	/**
 	 * Create editing component and registers the change listners to it.
-	 * 
+	 *
 	 * TODO (workaround): Note that because we can have any number of different display types, we can keep the {@link ITerminalField} raw and pass it through within this implementation.
 	 *
 	 * @param propertyName
@@ -406,8 +411,8 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 		{
 			final ITerminalNumericField editor = factory.createTerminalNumericField(propertyName, displayType,
 					SwingPropertiesPanel.DEFAULT_FONT_SIZE,
-					true, // withButtons,
-					false, // withLabel
+					true,   // withButtons,
+					false,   // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
 			editor.addListener(new PropertyChangeListener()
 			{
@@ -527,8 +532,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 					if (textFieldActionPerformed
 							|| fireValueChangedOnFocusLost && isValueChanged
-							|| isFocusLost
-					)
+							|| isFocusLost)
 					{
 						final Object value = editor.getText();
 						setValueFromUI(propertyName, value, editor);
@@ -644,7 +648,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 	}
 
 	@Override
-	public void setVerticalScrollBarPolicy(ScrollPolicy scrollPolicy)
+	public void setVerticalScrollBarPolicy(final ScrollPolicy scrollPolicy)
 	{
 		scroll.setVerticalScrollBarPolicy(scrollPolicy);
 	}

@@ -57,7 +57,7 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		// shall never happen if the message is set.
 		if (msg.isEmpty())
 		{
-			setSpecialColumnsName(to);
+			super.setSpecialColumnsName(to);
 		}
 
 		to.set_CustomColumn(I_AD_Role.COLUMNNAME_Name, msg);

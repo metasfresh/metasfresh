@@ -14,7 +14,7 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 97038244L;
+	private static final long serialVersionUID = -2139452456L;
 
     /** Standard Constructor */
     public X_C_RfQ_Topic (Properties ctx, int C_RfQ_Topic_ID, String trxName)
@@ -192,6 +192,74 @@ public class X_C_RfQ_Topic extends org.compiere.model.PO implements I_C_RfQ_Topi
 	public int getRfQ_Invitation_PrintFormat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_Invitation_PrintFormat_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_R_MailText getRfQ_InvitationWithoutQty_MailText() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setRfQ_InvitationWithoutQty_MailText(org.compiere.model.I_R_MailText RfQ_InvitationWithoutQty_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID, org.compiere.model.I_R_MailText.class, RfQ_InvitationWithoutQty_MailText);
+	}
+
+	/** Set RfQ without Qty Invitation mail text.
+		@param RfQ_InvitationWithoutQty_MailText_ID RfQ without Qty Invitation mail text	  */
+	@Override
+	public void setRfQ_InvitationWithoutQty_MailText_ID (int RfQ_InvitationWithoutQty_MailText_ID)
+	{
+		if (RfQ_InvitationWithoutQty_MailText_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID, Integer.valueOf(RfQ_InvitationWithoutQty_MailText_ID));
+	}
+
+	/** Get RfQ without Qty Invitation mail text.
+		@return RfQ without Qty Invitation mail text	  */
+	@Override
+	public int getRfQ_InvitationWithoutQty_MailText_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PrintFormat getRfQ_InvitationWithoutQty_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setRfQ_InvitationWithoutQty_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_InvitationWithoutQty_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, RfQ_InvitationWithoutQty_PrintFormat);
+	}
+
+	/** Set RfQ without Qty Invitation Druck - Format.
+		@param RfQ_InvitationWithoutQty_PrintFormat_ID RfQ without Qty Invitation Druck - Format	  */
+	@Override
+	public void setRfQ_InvitationWithoutQty_PrintFormat_ID (int RfQ_InvitationWithoutQty_PrintFormat_ID)
+	{
+		if (RfQ_InvitationWithoutQty_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID, Integer.valueOf(RfQ_InvitationWithoutQty_PrintFormat_ID));
+	}
+
+	/** Get RfQ without Qty Invitation Druck - Format.
+		@return RfQ without Qty Invitation Druck - Format	  */
+	@Override
+	public int getRfQ_InvitationWithoutQty_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

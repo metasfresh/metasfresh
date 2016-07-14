@@ -109,7 +109,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
-		Services.get(INotificationBL.class).addCtxProvider(new C_Order_MFGWarehouse_Report_NotificationCtxProvider());
+		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_NotificationCtxProvider.instance);
 	}
 
 	@Override

@@ -43,10 +43,8 @@ import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -339,25 +337,22 @@ public class Doc_AllocationHdr extends Doc
 			}
 			
 			final MAccount paymentAcct = line.getPaymentAcct(as);
-			final I_C_Payment payment = line.getC_Payment();
 
-			if (payment == null)
+			if (!line.hasPaymentDocument())
 			{
 				continue;
 			}
 
 			final FactLine fl_Payment;
 
-			final BigDecimal payAmt = payment.getPayAmt();
+			final BigDecimal payAmt = line.getAllocatedAmt();
 
 			// Incoming payment
-			if (payment.isReceipt())
+			if (line.isPaymentReceipt())
 			{
 				// Originally on Credit. The amount must be moved to Debit
 				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
-
 			}
-
 			// Outgoing payment
 			else
 			{
@@ -368,8 +363,8 @@ public class Doc_AllocationHdr extends Doc
 			// Make sure the fact line was created
 			Check.assumeNotNull(fl_Payment, "fl_Payment not null");
 
-			fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
-			fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
+			fl_Payment.setAD_Org_ID(line.getPaymentOrg_ID());
+			fl_Payment.setC_BPartner_ID(line.getPaymentBPartner_ID());
 		}
 	}
 
