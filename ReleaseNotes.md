@@ -14,8 +14,10 @@ Her come the actual release notes:
 
 ## Features
  - #152 Improvements in  counter documents view and window
+ - #173 Window Dunning Candidates - new Field DocumentNo
 
 ## Fixes
+ - #100 EDI wrong handover location in Picking Terminal
 
 # metasfresh 4.26.25a (2016-28a)
 
