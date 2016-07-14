@@ -53,13 +53,16 @@ class ProductTableItem extends Component {
         const index = selectedProducts.indexOf(product.id);
         const isSelected = index > -1;
         return (
-            <tr onClick={onClick} className={isSelected ? "row-selected" : null}>
+            <tr
+                onClick={onClick}
+                className={isSelected ? "row-selected" : null}
+            >
                 <td>{product.id}</td>
                 <td>{product.name}</td>
                 <td
                     key="amount"
                     tabIndex="0"
-                    onDoubleClick={this.handleEditProperty}
+                    // onDoubleClick={this.handleEditProperty}
                 >
                     <span>{product.amount}</span>
                 </td>
@@ -67,7 +70,7 @@ class ProductTableItem extends Component {
                 <td
                     key="quantity"
                     tabIndex="0"
-                    onDoubleClick={this.handleEditProperty}
+                    // onDoubleClick={this.handleEditProperty}
                 >
                     <span>{product.quantity}</span>
                 </td>

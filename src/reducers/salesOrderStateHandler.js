@@ -29,7 +29,7 @@ const initialState = {
             price: 2.0,
             priceFor: 'Each',
             discount: 0
-        }, 50),
+        }, 400),
         containers: [{id: 123}]
     },
     productEdited: {
