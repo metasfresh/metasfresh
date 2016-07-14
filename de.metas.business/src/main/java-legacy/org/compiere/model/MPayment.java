@@ -2814,14 +2814,22 @@ public final class MPayment extends X_C_Payment
 		super.setC_Order_ID(C_Order_ID);
 
 		// checking doc type of C_Order_ID=" + C_Order_ID
-		final MOrder order = new MOrder(getCtx(), C_Order_ID, get_TrxName());
-		final MDocType orderDocType = MDocType.get(getCtx(), order.getC_DocType_ID());
+		final I_C_Order order = getC_Order();
+		if(order == null || order.getC_Order_ID() <= 0)
+		{
+			return;
+		}
+		
+		final I_C_DocType orderDocType = order.getC_DocType();
+		if (orderDocType == null)
+		{
+			return; // shall not happen
+		}
 
-		final String docSubType = orderDocType.getDocSubType();
-
-		if (!MDocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				&& !MDocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
-				&& !MDocType.DOCSUBTYPE_PrepayOrder.equals(docSubType))
+		final String orderDocSubType = orderDocType.getDocSubType();
+		if (!X_C_DocType.DOCSUBTYPE_POSOrder.equals(orderDocSubType)
+				&& !X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(orderDocSubType)
+				&& !X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(orderDocSubType))
 		{
 
 			// nothing to do

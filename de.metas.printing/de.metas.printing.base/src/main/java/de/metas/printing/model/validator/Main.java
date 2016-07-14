@@ -140,7 +140,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Default Printing Info ctx provider
-		Services.get(INotificationBL.class).addCtxProvider(new DefaultPrintingNotificationCtxProvider());
+		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingNotificationCtxProvider.instance);
 	}
 
 	@Override

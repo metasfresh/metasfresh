@@ -31,6 +31,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.google.common.base.MoreObjects;
+
 public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 {
 
@@ -92,10 +94,13 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 		this.port = port;
 		return this;
 	}
-
+	
 	@Override
 	public String toString()
 	{
-		return String.format("TcpConnectionEndPoint [hostName=%s, port=%s]", hostName, port);
+		return MoreObjects.toStringHelper(this)
+				.add("hostName", hostName)
+				.add("port", port)
+				.toString();
 	}
 }

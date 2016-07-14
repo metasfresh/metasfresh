@@ -10,23 +10,20 @@ package de.metas.adempiere.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Component;
 import java.awt.Cursor;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -39,7 +36,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 
 /* package */class SwingClientUIInvoker extends AbstractClientUIInvoker
 {
-	public SwingClientUIInvoker(IClientUIInstance clientUI)
+	public SwingClientUIInvoker(final IClientUIInstance clientUI)
 	{
 		super(clientUI);
 	}
@@ -93,15 +90,16 @@ import de.metas.adempiere.form.IClientUIInvoker;
 				final Cursor cursorOld = componentSwing.getCursor();
 				try
 				{
+					// Show waiting cursor
 					componentSwing.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+					//
+					// Actually invoke the runner
 					runnable.run();
-					// final Thread thread = createUserThread(runnable, null); // TODO (won't work in Swing event queue)
-					// thread.start();
-					// thread.join();
 				}
 				finally
 				{
+					// Restore the cursor
 					componentSwing.setCursor(cursorOld);
 				}
 			}
@@ -127,5 +125,4 @@ import de.metas.adempiere.form.IClientUIInvoker;
 			}
 		};
 	}
-
 }

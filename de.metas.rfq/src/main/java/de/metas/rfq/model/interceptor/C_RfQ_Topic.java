@@ -1,12 +1,14 @@
-package de.metas.notification.spi;
+package de.metas.rfq.model.interceptor;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.CopyRecordFactory;
 
-import com.google.common.base.Optional;
+import de.metas.rfq.model.I_C_RfQ_Topic;
 
 /*
  * #%L
- * de.metas.printing.base
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -26,13 +28,13 @@ import com.google.common.base.Optional;
  * #L%
  */
 
-public interface INotificationCtxProvider
+@Interceptor(I_C_RfQ_Topic.class)
+public class C_RfQ_Topic
 {
-	/**
-	 * Gets the text message that will get into {@code I_AD_Note} as <code>TextMsg</code>.
-	 * 
-	 * @param referencedRecord
-	 * @return text message or {@link Optional#absent()} if it does not apply.
-	 */
-	public Optional<String> getTextMessageIfApplies(ITableRecordReference referencedRecord);
+	@Init
+	void configureCopyWithDetailsSupport()
+	{
+		CopyRecordFactory.enableForTableName(I_C_RfQ_Topic.Table_Name);
+	}
+
 }

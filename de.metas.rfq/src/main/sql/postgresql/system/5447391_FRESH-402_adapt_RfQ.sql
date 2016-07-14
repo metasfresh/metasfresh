@@ -40,13 +40,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 23.06.2016 16:01
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_RfQ ADD RfQType CHAR(1) DEFAULT 'D' NOT NULL
-;
+--ALTER TABLE C_RfQ ADD RfQType CHAR(1) DEFAULT 'D' NOT NULL
+--;
 
 -- 23.06.2016 16:01
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_RfQ ADD CONSTRAINT C_RfQ_Key PRIMARY KEY (RfQType)
-;
+--ALTER TABLE C_RfQ ADD CONSTRAINT C_RfQ_Key PRIMARY KEY (RfQType)
+--;
 
 -- 23.06.2016 16:01
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
