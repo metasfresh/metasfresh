@@ -113,3 +113,6 @@
 .meta-icon-settings-1:before {
   content: "\45";
 }
+.meta-icon-close:before {
+  content: "\71";
+}

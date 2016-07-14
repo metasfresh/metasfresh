@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 
-import Purchaser from '../components/salesOrder/Purchaser.js';
-import ProductSearch from '../components/salesOrder/ProductSearch.js';
-import ProductTable from '../components/salesOrder/ProductTable.js';
-import OrderInfo from '../components/salesOrder/OrderInfo.js';
+import Purchaser from '../components/salesOrder/Purchaser';
+import ProductSearch from '../components/salesOrder/ProductSearch';
+import ProductTable from '../components/salesOrder/ProductTable';
+import OrderInfo from '../components/salesOrder/OrderInfo';
+import OrderList from '../components/salesOrder/OrderList';
 
 export default class NewSalesOrder extends Component {
     constructor(props){
@@ -12,6 +13,7 @@ export default class NewSalesOrder extends Component {
     render() {
         return (
             <div>
+                <OrderList />
                 <div className="container">
                     <div className="row">
                         <div className="col-xs-6">

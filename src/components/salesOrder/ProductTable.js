@@ -119,7 +119,7 @@ class ProductTable extends Component {
                     ) : null }
                 </div>
                 <div className=" panel panel-primary panel-bordered panel-bordered-force">
-                    <table className="table table-striped">
+                    <table className="table table-bordered-vertically table-striped">
                         <thead>
                             <ProductTableHeader />
                         </thead>

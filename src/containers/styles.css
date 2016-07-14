@@ -3,7 +3,12 @@
 
 /**
  *  IMPORTANT NOTE
- *  Backdrop is on the 200th z-index level
+ *
+ * Layers
+ * - 0 - default - all static elements like tables or forms
+ * - < 100 - elements that are over static content (order list)
+ * - 200 - backdrop
+ * - 200 < - elements that are over backdrop (header expanded)
  */
 
 * {
@@ -50,6 +55,18 @@ body {
 .text-brand {
     font-weight: 700;
     color: $brand-color-primary;
+}
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 3px;
+    border: 1px solid $brand-light-color;
+    font-size: 16px;
+    line-height: 30px;
+    text-align: center;
+    text-decoration: none !important;
+    color: $brand-font-color;
 }
 
 .btn-square {
@@ -247,13 +264,15 @@ body {
     color: #fff;
 }
 
-.table thead th:last-child {
-    border-right:0;
-}
-
 .table td {
     cursor: pointer;
     border-top:0;
+}
+
+.table.table-bordered-horizontally td{
+    border-bottom:1px solid #DEE6EC;
+}
+.table.table-bordered-vertically td{
     border-right:1px solid #DEE6EC;
 }
 
@@ -396,4 +415,28 @@ body {
     width:100%;
     height:100%;
     z-index: 200;
+}
+
+.order-list-panel{
+    position: fixed;
+    display: none;
+    height:100%;
+    width: 472px;
+    background-color: #fff;
+    border-right: 1px solid #dee6ec;
+    z-index: 50;
+}
+.order-list-panel-open {
+    display: block;
+}
+
+.order-list-panel-header{
+    padding-right:10px;
+}
+.order-list-panel-icon {
+    margin: 12px 5px;
+}
+
+.order-list-panel-body{
+    font-size: 12px;
 }

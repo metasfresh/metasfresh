@@ -1,10 +1,10 @@
 import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
-const dataBenchmark = (obj) => {
+const dataBenchmark = (obj, count) => {
     let objects = [];
     let i;
-    for(i=0; i<50; ++i){
+    for(i=0; i<count; ++i){
         let tmp = Object.assign({}, obj);
         tmp.id = i;
         objects.push(tmp);
@@ -29,7 +29,7 @@ const initialState = {
             price: 2.0,
             priceFor: 'Each',
             discount: 0
-        }),
+        }, 50),
         containers: [{id: 123}]
     },
     productEdited: {
@@ -62,7 +62,14 @@ const initialState = {
         name: 'Jazzy',
         address: 'Innovation 18, Gliwice, Poland',
         vat: '541-141-56-23'
-    }]
+    }],
+    orderList: dataBenchmark({
+        id: 0,
+        purchaser: 'Jazzy Innovations',
+        amount: 123,
+        ordered: "23.12.15",
+        status: "WIP"
+    }, 10)
 }
 
 export default function salesOrderStateHandler(state = initialState, action) {
