@@ -27,6 +27,12 @@ class Dropdown extends Component {
         this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
     }
+    handleClear = (e) => {
+        e.preventDefault();
+        this.inputSearchRest.innerHTML = "";
+        this.inputSearch.value = "";
+        this.props.dispatch(autocomplete(""));
+    }
     renderRecent = () => {
         return this.props.recentPartners.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
     }
@@ -51,7 +57,9 @@ class Dropdown extends Component {
                         />
                     </div>
                     <div ref={c => this.inputSearchRest = c} className="input-toggled-rest">
-
+                    </div>
+                    <div className="input-toggled-icon">
+                        <i onClick={this.handleClear} className="icon-rounded icon-rounded-space">x</i>
                     </div>
                 </div>
                 <div className="clearfix" />

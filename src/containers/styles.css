@@ -21,6 +21,13 @@ body {
     color: #fff;
 }
 
+*:focus {
+    outline-color: $brand-font-color;
+    outline-width:1px;
+    outline-offset:0px;
+    outline-style: inset;
+}
+
 /*
  *  Extension for bootstrap grid
  */
@@ -155,8 +162,13 @@ body {
     float:left;
 }
 
+.input-toggled-icon {
+    width:25px;
+    float:right;
+}
+
 .input-toggled-editable {
-    width: 40%;
+    width: 30%;
     float: left;
 }
 .input-toggled-rest {
@@ -262,8 +274,7 @@ body {
 }
 
 .row-selected {
-    background-color: #8099ab !important;
-    color: #fff;
+    background-color: #d5e3ec !important;
 }
 
 .table-sub-summary-row{
