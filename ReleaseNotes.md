@@ -10,9 +10,14 @@ Additional notes:
 
 Her come the actual release notes:
 
-# metasfresh 4.26.25a (2016-28a, RC)
+# metasfresh 2016-29
 
 ## Features
+ - #152 Improvements in  counter documents view and window
+
+## Fixes
+
+# metasfresh 4.26.25a (2016-28a)
 
 ## Fixes
  - #204 FRESH-525 db_columns_fk view is not working correctly anymore
