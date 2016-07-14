@@ -18,6 +18,7 @@ Her come the actual release notes:
 
 ## Fixes
  - #100 EDI wrong handover location in Picking Terminal
+ - #174 Report Konten-Information empty c_activity_id
 
 # metasfresh 4.26.25a (2016-28a)
 
