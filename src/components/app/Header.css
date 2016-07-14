@@ -1,7 +1,17 @@
 @import '../../containers/variables.css';
 
+
+.header-sticky-distance{
+    margin-top: 56px;
+}
+
 .header {
     border-bottom: 1px solid;
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    z-index: 100;
 }
 
 .header-middle {

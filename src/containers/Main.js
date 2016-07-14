@@ -7,7 +7,7 @@ export default class Main extends Component {
         return (
             <div>
                 <Header/>
-                <div>
+                <div className="header-sticky-distance">
                     { this.props.children }
                 </div>
             </div>

@@ -7,6 +7,7 @@
  * Layers
  * - 0 - default - all static elements like tables or forms
  * - < 100 - elements that are over static content (order list)
+ * - 100 - header
  * - 200 - backdrop
  * - 200 < - elements that are over backdrop (header expanded)
  */
