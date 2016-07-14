@@ -20,6 +20,7 @@ package de.metas.dunning.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_Dunning_Candidate
@@ -338,7 +339,29 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 			 return 0;
 		return ii.intValue();
 	}
+	
+	
+	
+	/** Set Beleg Nr..
+	@param DocumentNo 
+	Document sequence number of the document
+  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+	
+	/** Get Beleg Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+	}
 
+	
 	/** Set Datum Fälligkeit.
 		@param DueDate 
 		Datum, zu dem Zahlung fällig wird

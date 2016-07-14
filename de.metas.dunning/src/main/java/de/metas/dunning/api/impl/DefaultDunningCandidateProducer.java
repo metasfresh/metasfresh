@@ -26,8 +26,6 @@ package de.metas.dunning.api.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
@@ -36,6 +34,7 @@ import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
@@ -50,6 +49,7 @@ import de.metas.dunning.exception.NotImplementedDunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.logging.LogManager;
 
 /**
  * Default implementation.
@@ -111,6 +111,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			candidate = dunningDAO.newInstance(context, I_C_Dunning_Candidate.class);
 			candidate.setAD_Table_ID(tableId);
 			candidate.setRecord_ID(sourceDoc.getRecordId());
+			candidate.setDocumentNo(sourceDoc.getDocumentNo());
 			candidate.setC_DunningLevel(dunningLevel);
 			candidate.setProcessed(false);
 			candidate.setIsDunningDocProcessed(false);
