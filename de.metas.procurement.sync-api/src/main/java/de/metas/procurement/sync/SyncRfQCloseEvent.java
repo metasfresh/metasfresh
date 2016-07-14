@@ -39,6 +39,7 @@ import de.metas.procurement.sync.protocol.SyncProductSupply;
 public class SyncRfQCloseEvent
 {
 	private String rfq_uuid;
+	private boolean winnerKnown;
 	private boolean winner;
 
 	private List<SyncProductSupply> plannedSupplies = new ArrayList<>();
@@ -48,6 +49,7 @@ public class SyncRfQCloseEvent
 	{
 		return "SyncRfQCloseEvent ["
 				+ "rfq_uuid=" + rfq_uuid
+				+ ", winnerKnown=" + winnerKnown
 				+ ", winner=" + winner
 				+ ", plannedSupplies=" + plannedSupplies
 				+ "]";
@@ -61,6 +63,16 @@ public class SyncRfQCloseEvent
 	public void setRfq_uuid(String rfq_uuid)
 	{
 		this.rfq_uuid = rfq_uuid;
+	}
+	
+	public void setWinnerKnown(boolean winnerKnown)
+	{
+		this.winnerKnown = winnerKnown;
+	}
+	
+	public boolean isWinnerKnown()
+	{
+		return winnerKnown;
 	}
 
 	public boolean isWinner()

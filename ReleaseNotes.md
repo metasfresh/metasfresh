@@ -14,8 +14,15 @@ Her come the actual release notes:
 
 ## Features
  - #152 Improvements in  counter documents view and window
-
+ - #173 Window Dunning Candidates - new Field DocumentNo
+ - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
+   * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
+ 
 ## Fixes
+ - #100 EDI wrong handover location in Picking Terminal
+ - #174 Report Konten-Information empty c_activity_id
+ - #203 Payment writeoff not possible for Incoming Payment
+ - #175 C_Invoice_Update_PaymentRule
 
 # metasfresh 4.26.25a (2016-28a)
 

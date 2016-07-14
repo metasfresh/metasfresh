@@ -182,6 +182,12 @@ public class DefaultDunningCandidateProducerFactoryTest
 			return false;
 		}
 
+		@Override
+		public String getDocumentNo()
+		{
+			return null;
+		}
+
 	}
 
 	private DefaultDunningCandidateProducerFactory factory;

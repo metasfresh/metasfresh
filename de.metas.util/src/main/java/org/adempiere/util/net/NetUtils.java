@@ -13,18 +13,19 @@ package org.adempiere.util.net;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.adempiere.util.Check;
 
 public final class NetUtils
 {
@@ -38,19 +39,32 @@ public final class NetUtils
 	 */
 	public static IHostIdentifier getLocalHost()
 	{
-		InetAddress lh;
+		InetAddress localHostAddress;
 		try
 		{
-			lh = InetAddress.getLocalHost();
+			localHostAddress = InetAddress.getLocalHost();
 		}
 		catch (UnknownHostException e)
 		{
 			// fallback
-			lh = InetAddress.getLoopbackAddress();
+			localHostAddress = InetAddress.getLoopbackAddress();
 		}
-		
-		final String hostAddress = lh.getHostAddress();
-		final String hostName = lh.getHostName();
+
+		return of(localHostAddress);
+	}
+
+	public static IHostIdentifier of(final String hostOrAddress) throws UnknownHostException
+	{
+		Check.assumeNotEmpty(hostOrAddress, "hostOrAddress not empty");
+		final InetAddress inetAddress = InetAddress.getByName(hostOrAddress);
+		return of(inetAddress);
+	}
+
+	public static IHostIdentifier of(final InetAddress inetAddress)
+	{
+		Check.assumeNotNull(inetAddress, "inetAddress not null");
+		final String hostAddress = inetAddress.getHostAddress();
+		final String hostName = inetAddress.getHostName();
 
 		return new IHostIdentifier()
 		{
