@@ -609,8 +609,8 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if picking slot accepts packingItem's BPartner and Location
-		final int bpartnerId = packingItem.getBpartnerId();
-		final int bpartnerLocationId = packingItem.getBpartnerLocationId();
+		final int bpartnerId = packingItem.getC_BPartner_ID();
+		final int bpartnerLocationId = packingItem.getC_BPartner_Location_ID();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
 			return false;

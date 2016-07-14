@@ -10,7 +10,25 @@ Additional notes:
 
 Her come the actual release notes:
 
-# metasfresh 4.26.25 (2016-28, upcoming)
+# metasfresh 2016-29
+
+## Features
+ - #152 Improvements in  counter documents view and window
+ - #173 Window Dunning Candidates - new Field DocumentNo
+
+## Fixes
+ - #100 EDI wrong handover location in Picking Terminal
+ - #174 Report Konten-Information empty c_activity_id
+
+# metasfresh 4.26.25a (2016-28a)
+
+## Fixes
+ - #204 FRESH-525 db_columns_fk view is not working correctly anymore
+ - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
+ - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
+ - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
+
+# metasfresh 4.26.25 (2016-28)
 
 ## Features
  - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
@@ -25,6 +43,7 @@ Her come the actual release notes:
  - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
+ - #197 FRESH-519 Payment void or reverse correct
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
  - #151 FRESH-491 When creating a new organization, don't create org access for System role
 

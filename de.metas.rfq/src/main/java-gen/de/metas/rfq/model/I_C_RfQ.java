@@ -769,6 +769,52 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_QuoteType = "QuoteType";
 
 	/**
+	 * Set Bid end date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfq_BidEndDate (java.sql.Timestamp Rfq_BidEndDate);
+
+	/**
+	 * Get Bid end date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getRfq_BidEndDate();
+
+    /** Column definition for Rfq_BidEndDate */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_Rfq_BidEndDate = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "Rfq_BidEndDate", null);
+    /** Column name Rfq_BidEndDate */
+    public static final String COLUMNNAME_Rfq_BidEndDate = "Rfq_BidEndDate";
+
+	/**
+	 * Set Bid start date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfq_BidStartDate (java.sql.Timestamp Rfq_BidStartDate);
+
+	/**
+	 * Get Bid start date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getRfq_BidStartDate();
+
+    /** Column definition for Rfq_BidStartDate */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_Rfq_BidStartDate = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "Rfq_BidStartDate", null);
+    /** Column name Rfq_BidStartDate */
+    public static final String COLUMNNAME_Rfq_BidStartDate = "Rfq_BidStartDate";
+
+	/**
 	 * Set Ausschreibung Art.
 	 *
 	 * <br>Type: List

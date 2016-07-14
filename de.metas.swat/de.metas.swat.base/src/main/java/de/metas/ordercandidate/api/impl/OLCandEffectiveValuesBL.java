@@ -152,12 +152,6 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final int dropShipBPartnerID = dropShipBPartnerOverride == null ? 0 : dropShipBPartnerOverride;
 
 		final int bpartnerID = getC_BPartner_Effective_ID(olCand);
-		
-		if (dropShipBPartnerID == bpartnerID)
-		{
-			// if the dropship partner is the same as C_BPartner, return 0
-			return 0;
-		}
 
 		if (dropShipBPartnerID > 0)
 		{
@@ -176,12 +170,6 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final int dropShipLocationID = dropShipLocationOverride == null ? 0 : dropShipLocationOverride;
 
 		final int bpLocationId = getC_BP_Location_Effective_ID(olCand);
-
-		if (dropShipLocationID == bpLocationId)
-		{
-			// if the dropship location is the same as the C_BPartner_Location, return 0
-			return 0;
-		}
 
 		if (dropShipLocationID > 0)
 		{
@@ -271,12 +259,6 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 		final int bpartnerId = getC_BPartner_Effective_ID(olCand);
 
-		if (handOverPartnerID == bpartnerId)
-		{
-			// if the handover partner is the same as the C_BPartner return 0
-			return 0;
-		}
-
 		if (handOverPartnerID > 0)
 		{
 			// the handover partner was set
@@ -286,7 +268,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 		// fall-back to C_BPartner
 		return bpartnerId;
-		
+
 	}
 
 	@Override
@@ -307,16 +289,9 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 		final int bpLocationId = getC_BP_Location_Effective_ID(olCand);
 
-		if (handOverLocationID == bpLocationId)
-		{
-			// if the handover location is the same as the C_BPartner_Location return 0
-			return 0;
-		}
-
 		if (handOverLocationID > 0)
 		{
 			// the handover location was set
-
 			return handOverLocationID;
 		}
 

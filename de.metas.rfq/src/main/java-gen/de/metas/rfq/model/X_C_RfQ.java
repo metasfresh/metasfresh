@@ -16,7 +16,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 485650138L;
+	private static final long serialVersionUID = 212133419L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -37,6 +37,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 			setIsQuoteAllQty (false);
 // N
 			setIsQuoteTotalAmt (false);
+// N
 			setIsRfQResponseAccepted (true);
 // Y
 			setIsSelfService (true);
@@ -744,6 +745,38 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public java.lang.String getQuoteType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_QuoteType);
+	}
+
+	/** Set Bid end date.
+		@param Rfq_BidEndDate Bid end date	  */
+	@Override
+	public void setRfq_BidEndDate (java.sql.Timestamp Rfq_BidEndDate)
+	{
+		set_Value (COLUMNNAME_Rfq_BidEndDate, Rfq_BidEndDate);
+	}
+
+	/** Get Bid end date.
+		@return Bid end date	  */
+	@Override
+	public java.sql.Timestamp getRfq_BidEndDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Rfq_BidEndDate);
+	}
+
+	/** Set Bid start date.
+		@param Rfq_BidStartDate Bid start date	  */
+	@Override
+	public void setRfq_BidStartDate (java.sql.Timestamp Rfq_BidStartDate)
+	{
+		set_Value (COLUMNNAME_Rfq_BidStartDate, Rfq_BidStartDate);
+	}
+
+	/** Get Bid start date.
+		@return Bid start date	  */
+	@Override
+	public java.sql.Timestamp getRfq_BidStartDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Rfq_BidStartDate);
 	}
 
 	/** 

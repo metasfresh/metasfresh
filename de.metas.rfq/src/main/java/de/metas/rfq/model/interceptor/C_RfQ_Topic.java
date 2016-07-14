@@ -1,10 +1,16 @@
-package de.metas.dunning.api;
+package de.metas.rfq.model.interceptor;
+
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.CopyRecordFactory;
+
+import de.metas.rfq.model.I_C_RfQ_Topic;
 
 /*
  * #%L
- * de.metas.dunning
+ * de.metas.rfq
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,50 +28,13 @@ package de.metas.dunning.api;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-/**
- * Dunnable document.
- * 
- * 
- * A dunnable document, is a document which can be dunned.
- * 
- * @author tsa
- * 
- */
-public interface IDunnableDoc
+@Interceptor(I_C_RfQ_Topic.class)
+public class C_RfQ_Topic
 {
-	int getAD_Client_ID();
+	@Init
+	void configureCopyWithDetailsSupport()
+	{
+		CopyRecordFactory.enableForTableName(I_C_RfQ_Topic.Table_Name);
+	}
 
-	int getAD_Org_ID();
-
-	int getC_BPartner_ID();
-
-	int getC_BPartner_Location_ID();
-
-	int getContact_ID();
-
-	int getC_Currency_ID();
-
-	BigDecimal getTotalAmt();
-
-	BigDecimal getOpenAmt();
-
-	Date getDueDate();
-
-	Date getGraceDate();
-
-	int getDaysDue();
-
-	String getTableName();
-
-	int getRecordId();
-
-	boolean isInDispute();
-	
-	//FRESH-504: Add DocumentNo
-	
-	String getDocumentNo();
 }

@@ -10,12 +10,12 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,14 +62,14 @@ import de.metas.shipping.interfaces.I_M_Package;
 
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
 public class PackingTreeModel extends DefaultTreeModel
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 447858978512397688L;
 
@@ -128,7 +128,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	}
 
 	private int bp_id;
-	
+
 	public int getBp_id()
 	{
 		return bp_id;
@@ -140,12 +140,12 @@ public class PackingTreeModel extends DefaultTreeModel
 	}
 
 
-	
-	
+
+
 	public PackingTreeModel(final Collection<IPackingItem> unallocatedItems, final Collection<AvailableBins> availableBins, final int C_BPartner_ID, final int C_BPartner_Location_ID, final int M_Warehouse_Dest_ID, final boolean isGroupingByWarehouseDest)
 	{
 		super(new DefaultMutableTreeNode());
-		
+
 		this.isGroupingByWarehouseDest = isGroupingByWarehouseDest;
 
 		// create deep copies of the input data to allow a reset
@@ -179,26 +179,26 @@ public class PackingTreeModel extends DefaultTreeModel
 		setBp_id(C_BPartner_ID);
 		setC_BPartner_Location_ID(C_BPartner_Location_ID);
 		setM_Warehouse_Dest_Id(M_Warehouse_Dest_ID);
-		
+
 		initTree(isGroupingByWarehouseDest);
 	}
 
-	
+
 	public PackingTreeModel(final Properties ctx, final I_M_PackagingTree savedTree, final Collection<AvailableBins> availableBins, final int C_BPartnerLocation_ID, final int M_Warehouse_Dest_ID, final boolean isGroupByWarehouseDest)
 	{
 		super(new DefaultMutableTreeNode());
 		this.savedTree =  savedTree;
-		
+
 		this.isGroupingByWarehouseDest = isGroupByWarehouseDest;
-		
+
 		this.unpackedItems = getSavedUnpackedItems(savedTree);
-		
+
 		final ArrayList<AvailableBins> binsCopies = new ArrayList<AvailableBins>(availableBins.size());
 		for (final AvailableBins bins : availableBins)
 		{
 			binsCopies.add(new AvailableBins(bins));
 		}
-		
+
 		this.availableBins = Collections.unmodifiableList(binsCopies);
 
 		final DefaultMutableTreeNode root = (DefaultMutableTreeNode)getRoot();
@@ -211,14 +211,14 @@ public class PackingTreeModel extends DefaultTreeModel
 
 		nodeAvaiableBinsParent = new DefaultMutableTreeNode("Verpackungen");
 		root.add(nodeAvaiableBinsParent);
-		
+
 		setBp_id(savedTree.getC_BPartner_ID());
 		setC_BPartner_Location_ID(C_BPartnerLocation_ID);
 		setM_Warehouse_Dest_Id(M_Warehouse_Dest_ID);
 
 		initSavedTree(ctx, isGroupByWarehouseDest);
 	}
-	
+
 	public Collection<AvailableBins> getSavedAvailableBins(final Properties ctx, I_M_PackagingTree  savedTree)
 	{
 		List<PackagingTreeItemComparable> avail = PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_AvailableBox);
@@ -229,11 +229,11 @@ public class PackingTreeModel extends DefaultTreeModel
 		}
 		return avalaiableContainers;
 	}
-	
+
 	public Collection<LegacyPackingItem> getSavedUnpackedItems(I_M_PackagingTree  savedTree)
 	{
 		List<PackagingTreeItemComparable> unPackedItems =  PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_UnPackedItem);
-		
+
 		final ArrayList<LegacyPackingItem> itemCopies = new ArrayList<LegacyPackingItem>(unPackedItems.size());
 		for (X_M_PackagingTreeItem upck : unPackedItems)
 		{
@@ -256,10 +256,10 @@ public class PackingTreeModel extends DefaultTreeModel
 			LegacyPackingItem item = new LegacyPackingItem(schedWithQty, upck.getGroupID(), ITrx.TRXNAME_None);
 			itemCopies.add(item);
 		}
-		
+
 		return Collections.unmodifiableList(itemCopies);
 	}
-	
+
 	private void initSavedTree(final Properties ctx, final boolean isGroupByWarehouseDest)
 	{
 		for (final LegacyPackingItem currentItem : this.unpackedItems)
@@ -268,7 +268,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 			insertNodeInto(itemNode, nodeUnpackedItemsParent, nodeUnpackedItemsParent.getChildCount());
 		}
-		
+
 		final List<PackagingTreeItemComparable> boxes = PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_Box);
 		// get also open boxes from other trees
 		final List<PackagingTreeItemComparable> openBoxes =  PackingTreeBL.getOpenBoxes(getC_BPartner_Location_ID(),getM_Warehouse_Dest_Id(), isGroupByWarehouseDest);
@@ -276,24 +276,24 @@ public class PackingTreeModel extends DefaultTreeModel
 		final List<PackagingTreeItemComparable> allBoxes  = new ArrayList<PackagingTreeItemComparable>();
 		allBoxes.addAll(boxes);
 		allBoxes.addAll(openBoxes);
-		
+
 		List<PackagingTreeItemComparable> finalList = new ArrayList<PackagingTreeItemComparable>();
 		for (X_M_PackagingTreeItem pi : allBoxes)
 		{
 			PackagingTreeItemComparable pic = new PackagingTreeItemComparable(pi.getCtx(), pi.getM_PackagingTreeItem_ID(), pi.get_TrxName());
-			
-			// don't let saved config to overwrite the real packages			
+
+			// don't let saved config to overwrite the real packages
 			if (pic.getM_PackageTree_ID() > 0)
 			{
 				I_M_Package openPackage = InterfaceWrapperHelper.create(pic.getM_PackageTree().getM_Package(), I_M_Package.class);
-				
+
 				List<MPackageLine> plines = MPackageLine.get(pi.getCtx(), openPackage.getM_Package_ID(), pi.get_TrxName());
-				
+
 				if (!plines.isEmpty() && plines.get(0).getM_InOutLine().getM_InOut().getC_BPartner_ID() != getBp_id() )
 				{
 					continue;
 				}
-				
+
 				if (isGroupByWarehouseDest && openPackage.getM_Warehouse_Dest_ID() != getM_Warehouse_Dest_Id())
 				{
 					continue;
@@ -307,17 +307,17 @@ public class PackingTreeModel extends DefaultTreeModel
 
 		// products form containers
 		List<PackagingTreeItemComparable> packedItems =  PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_PackedItem);
-		List<X_M_PackagingTreeItem> notShippedItems = new ArrayList<X_M_PackagingTreeItem>(); 
+		List<X_M_PackagingTreeItem> notShippedItems = new ArrayList<X_M_PackagingTreeItem>();
 		for (X_M_PackagingTreeItem pack : packedItems)
 		{
 			if (pack.getM_PackageTree_ID() > 0)
 			{
 				continue;
-				
+
 			}
 			notShippedItems.add(pack);
 		}
-		
+
 		int i = 0;
 		for (X_M_PackagingTreeItem box : finalList)
 		{
@@ -326,7 +326,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			{
 				usedBin.setReady(true);
 			}
-			
+
 			if (box.getM_PackageTree_ID() > 0)
 			{
 				final int M_Package_ID = box.getM_PackageTree().getM_Package_ID();
@@ -335,12 +335,12 @@ public class PackingTreeModel extends DefaultTreeModel
 					usedBin.setM_Package_ID(box.getM_PackageTree().getM_Package_ID());
 				}
 			}
-			
-			
+
+
 			final DefaultMutableTreeNode binNode = new DefaultMutableTreeNode(usedBin);
 			insertNodeInto(binNode, nodeUsedBinsParent, i);
 			i++;
-			
+
 
 			int j = 0;
 			for (X_M_PackagingTreeItem pack : notShippedItems)
@@ -356,7 +356,7 @@ public class PackingTreeModel extends DefaultTreeModel
 							throw new AdempiereException();
 						schedWithQty.put(sched, schedItem.getQty());
 					}
-					
+
 					if (schedWithQty.isEmpty())
 					{
 						continue;
@@ -378,8 +378,8 @@ public class PackingTreeModel extends DefaultTreeModel
 			insertNodeInto(binNode, nodeAvaiableBinsParent, nodeAvaiableBinsParent.getChildCount());
 		}
 	}
-	
-	
+
+
 	private void initTree( final boolean isGroupByWarehouseDest)
 	{
 		for (final LegacyPackingItem currentItem : this.unpackedItems)
@@ -395,35 +395,35 @@ public class PackingTreeModel extends DefaultTreeModel
 
 			insertNodeInto(binNode, nodeAvaiableBinsParent, nodeAvaiableBinsParent.getChildCount());
 		}
-		
+
 		// add open bins
 		// get also open boxes from other trees
 		final List<PackagingTreeItemComparable> openBoxes =  PackingTreeBL.getOpenBoxes(getC_BPartner_Location_ID(), getM_Warehouse_Dest_Id(), isGroupByWarehouseDest);
-				
-		
+
+
 		List<PackagingTreeItemComparable> finalList = new ArrayList<PackagingTreeItemComparable>();
 		for (X_M_PackagingTreeItem pi : openBoxes)
 		{
-			
+
 			PackagingTreeItemComparable pic = new PackagingTreeItemComparable(pi.getCtx(), pi.getM_PackagingTreeItem_ID(), pi.get_TrxName());
-			// don't let saved config to overwrite the real packages			
+			// don't let saved config to overwrite the real packages
 			if (pic.getM_PackageTree_ID() > 0)
 			{
 				I_M_Package openPackage = InterfaceWrapperHelper.create(pic.getM_PackageTree().getM_Package(), I_M_Package.class);
-				
+
 				List<MPackageLine> plines = MPackageLine.get(pi.getCtx(), openPackage.getM_Package_ID(), pi.get_TrxName());
-				
+
 				if (!plines.isEmpty() && plines.get(0).getM_InOutLine().getM_InOut().getC_BPartner_ID() != getBp_id() )
 				{
 					continue;
 				}
-				
+
 				if (isGroupByWarehouseDest && openPackage.getM_Warehouse_Dest_ID() != getM_Warehouse_Dest_Id())
 				{
 					continue;
 				}
 			}
-			
+
 			if (!finalList.contains(pic))
 			{
 				finalList.add(pic);
@@ -453,8 +453,8 @@ public class PackingTreeModel extends DefaultTreeModel
 			insertNodeInto(binNode, nodeUsedBinsParent, i);
 			i++;
 		}
-		
-		
+
+
 	}
 
 	public DefaultMutableTreeNode getUsedBins()
@@ -521,22 +521,22 @@ public class PackingTreeModel extends DefaultTreeModel
 	{
 		lockedNodes.add(lockedNode);
 	}
-	
+
 	public void removeLockedNode(DefaultMutableTreeNode lockedNode)
 	{
 		lockedNodes.remove(lockedNode);
 	}
-	
+
 	public void removeAllLockedNode()
 	{
 		lockedNodes =  new ArrayList<DefaultMutableTreeNode>();
-	} 
-	
+	}
+
 	public boolean isLockedNode(DefaultMutableTreeNode lockedNode)
 	{
 		return lockedNodes.contains(lockedNode);
 	}
-	
+
 	public ArrayList<DefaultMutableTreeNode> fetchLockedNodes()
 	{
 		return lockedNodes;
@@ -647,6 +647,8 @@ public class PackingTreeModel extends DefaultTreeModel
 	{
 		final Map<ArrayKey, Map<I_M_ShipmentSchedule, BigDecimal>> key2Scheds = new HashMap<ArrayKey, Map<I_M_ShipmentSchedule, BigDecimal>>();
 
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
 		final Enumeration<DefaultMutableTreeNode> enPackedItemsToRemove = usedBinToRemoveNode.children();
 
 		// iterate the packed items of the bin to be removed
@@ -666,7 +668,10 @@ public class PackingTreeModel extends DefaultTreeModel
 				// Group all scheds by their grouping key.
 				// Note: for normal products, there is only item node for each productId, but to div/misc products,
 				// there is one per orderLineId.
-				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(schedToRemove);
+
+				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+				final boolean includeBPartner = true;
+				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(schedToRemove, includeBPartner);
 				Map<I_M_ShipmentSchedule, BigDecimal> scheds = key2Scheds.get(key);
 
 				if (scheds == null)
@@ -787,7 +792,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 	/**
 	 * Removes the given quantity from the node representing a packing item. Might remove the node as a whole.
-	 * 
+	 *
 	 * @param packingItemNode
 	 * @param oldUsedBin
 	 * @param qty
@@ -848,7 +853,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 	/**
 	 * Adds a {@link LegacyPackingItem} to another node
-	 * 
+	 *
 	 * @param newUsedBinNode
 	 * @param qtysToTransfer
 	 * @param packingItem
@@ -935,7 +940,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	 * For the given <code>packingItemToMatch</code>, this method returns the first tree node that is a child of the
 	 * given <code>usedBinNode</code> and to whose packingItem the shipment schedules of <code>packingItemToMatch</code>
 	 * can be added.
-	 * 
+	 *
 	 * @param usedBinNode
 	 * @param packingItemToMatch
 	 * @return
@@ -967,7 +972,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	 * packages, <br>
 	 * if the bin is specified; <br>
 	 * if the bin is null, will return the total qty from all packages
-	 * 
+	 *
 	 * @param packingItemToMatch
 	 * @param specificBin
 	 *            may be <code>null</code>. If set, then the Qty of the given bin is returned
@@ -982,7 +987,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		{
 			final DefaultMutableTreeNode currentUsedBin = enumUsedBins.nextElement();
 			final Enumeration<DefaultMutableTreeNode> piNodeEnum = currentUsedBin.children();
-			
+
 			while (piNodeEnum.hasMoreElements())
 			{
 				final DefaultMutableTreeNode packingItemNode = piNodeEnum.nextElement();
@@ -993,7 +998,7 @@ public class PackingTreeModel extends DefaultTreeModel
 				{
 					continue;
 				}
-				
+
 				if (packingItem.getGroupingKey() == packingItemToMatch.getGroupingKey())
 				{
 					if (null != specificBin && specificBin.equals(currentUsedBin))
@@ -1008,17 +1013,17 @@ public class PackingTreeModel extends DefaultTreeModel
 					}
 				}
 			}
-				
+
 		}
 		return qty;
 	}
-	
-	
-	public class PackingTreeItemComparator implements Comparator<X_M_PackagingTreeItem> 
+
+
+	public class PackingTreeItemComparator implements Comparator<X_M_PackagingTreeItem>
 	{
 
 		@Override
-		 public int compare(X_M_PackagingTreeItem pi1, X_M_PackagingTreeItem pi2) 
+		 public int compare(X_M_PackagingTreeItem pi1, X_M_PackagingTreeItem pi2)
 		{
 			// compare items
 			return pi1.get_ID() - pi2.get_ID();
