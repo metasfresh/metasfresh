@@ -15,6 +15,8 @@ Her come the actual release notes:
 ## Features
  - #152 Improvements in  counter documents view and window
  - #173 Window Dunning Candidates - new Field DocumentNo
+ - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
+   * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
 
 ## Fixes
  - #100 EDI wrong handover location in Picking Terminal
