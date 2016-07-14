@@ -6,21 +6,17 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocActionBL;
-import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
@@ -62,8 +58,6 @@ class PMMWebuiRfQResponsePublisherInstance
 	private static final Logger logger = LogManager.getLogger(PMMWebuiRfQResponsePublisherInstance.class);
 	private final transient IPMM_RfQ_DAO pmmRfqDAO = Services.get(IPMM_RfQ_DAO.class);
 	private final transient IPMM_RfQ_BL pmmRfqBL = Services.get(IPMM_RfQ_BL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
 	private final transient SyncObjectsFactory syncObjectsFactory = SyncObjectsFactory.newFactory();
@@ -131,42 +125,13 @@ class PMMWebuiRfQResponsePublisherInstance
 
 	private void publishRfQClose(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		checkCompleteContract(rfqResponseLine);
-
 		// Create and collect the RfQ close event
-		final SyncRfQCloseEvent syncRfQCloseEvent = syncObjectsFactory.createSyncRfQCloseEvent(rfqResponseLine);
+		final boolean winnerKnown = true;
+		final SyncRfQCloseEvent syncRfQCloseEvent = syncObjectsFactory.createSyncRfQCloseEvent(rfqResponseLine, winnerKnown);
 		if (syncRfQCloseEvent != null)
 		{
 			syncRfQCloseEvents.add(syncRfQCloseEvent);
 			syncProductSuppliesRequest.getProductSupplies().addAll(syncRfQCloseEvent.getPlannedSupplies());
-		}
-	}
-
-	private void checkCompleteContract(final I_C_RfQResponseLine rfqResponseLine)
-	{
-		if (!rfqResponseLine.isSelectedWinner())
-		{
-			// TODO: make sure the is no contract
-			return;
-		}
-
-		final I_C_Flatrate_Term contract = rfqResponseLine.getC_Flatrate_Term();
-		if (contract == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_Flatrate_Term_ID@: " + rfqResponseLine);
-		}
-
-		if (docActionBL.isStatusDraftedOrInProgress(contract))
-		{
-			flatrateBL.complete(contract);
-		}
-		else if (docActionBL.isStatusCompleted(contract))
-		{
-			// already completed => nothing to do
-		}
-		else
-		{
-			throw new AdempiereException("@Invalid@ @DocStatus@: " + contract);
 		}
 	}
 

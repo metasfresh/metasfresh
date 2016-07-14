@@ -62,8 +62,14 @@ public interface IRfqBL extends ISingletonService
 	String getSummary(I_C_RfQResponse rfqResponse);
 	
 	boolean isDraft(I_C_RfQResponse rfqResponse);
+	boolean isDraft(I_C_RfQResponseLine rfqResponseLine);
 	void assertDraft(I_C_RfQResponse rfqResponse);
+	//
 	void complete(I_C_RfQResponse response);
+	boolean isCompleted(I_C_RfQResponse rfqResponse);
+	boolean isCompleted(I_C_RfQResponseLine rfqResponseLine);
+	//
+	void close(I_C_RfQResponse rfqResponse);
 	boolean isClosed(I_C_RfQResponse rfqResponse);
 	boolean isClosed(I_C_RfQResponseLine rfqResponseLine);
 	//@formatter:on

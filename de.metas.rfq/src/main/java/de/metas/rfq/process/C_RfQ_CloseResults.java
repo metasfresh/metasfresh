@@ -1,4 +1,4 @@
-package de.metas.procurement.base.order.process;
+package de.metas.rfq.process;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -6,19 +6,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
-import de.metas.procurement.base.IPMM_RfQ_BL;
-import de.metas.procurement.base.rfq.model.I_C_RfQ;
-import de.metas.rfq.IRfQConfiguration;
-import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
-import de.metas.rfq.RfQResponsePublisherRequest;
-import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
+import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.rfq
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -38,14 +33,17 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPrecondition
+/**
+ * Close {@link I_C_RfQResponse}s of given {@link I_C_RfQ}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class C_RfQ_CloseResults extends SvrProcess implements ISvrProcessPrecondition
 {
 	// services
-	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-	private final transient IPMM_RfQ_BL pmmRfqBL = Services.get(IPMM_RfQ_BL.class);
-
 
 	@Override
 	public boolean isPreconditionApplicable(final GridTab gridTab)
@@ -58,21 +56,18 @@ public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPreco
 	protected String doIt()
 	{
 		final I_C_RfQ rfq = getRecord(I_C_RfQ.class);
-		final IRfQResponsePublisher rfQResponsePublisher = rfqConfiguration.getRfQResponsePublisher();
 
 		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
 		{
-			if (!rfqBL.isClosed(rfqResponse))
+			if (!rfqBL.isCompleted(rfqResponse))
 			{
-				addLog("@Error@ @NotClosed@: {}", rfqBL.getSummary(rfqResponse));
-				continue;
+				addLog("@Warning@ @NotClosed@: {}", rfqBL.getSummary(rfqResponse));
 			}
-			
-			pmmRfqBL.checkCompleteContractsForWinners(rfqResponse);
 
-			rfQResponsePublisher.publish(RfQResponsePublisherRequest.of(rfqResponse, PublishingType.Close));
+			rfqBL.close(rfqResponse);
 		}
 
 		return MSG_OK;
 	}
+
 }
