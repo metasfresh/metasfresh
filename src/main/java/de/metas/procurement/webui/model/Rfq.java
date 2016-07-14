@@ -56,6 +56,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	@NotNull
 	private Date dateClose;
 	private boolean closed;
+	private boolean winnerKnown;
 	private boolean winner;
 
 	@ManyToOne
@@ -90,6 +91,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 				//
 				.add("dateClosed", dateClose)
 				.add("closed", closed)
+				.add("winnerKnown", winnerKnown)
 				.add("winner", winner)
 				//
 				.add("product", product)
@@ -154,6 +156,16 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	public void setClosed(final boolean closed)
 	{
 		this.closed = closed;
+	}
+	
+	public boolean isWinnerKnown()
+	{
+		return winnerKnown;
+	}
+	
+	public void setWinnerKnown(boolean winnerKnown)
+	{
+		this.winnerKnown = winnerKnown;
 	}
 
 	public boolean isWinner()

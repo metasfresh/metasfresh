@@ -154,7 +154,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 			return;
 		}
 
-		if (rfq.isClosed())
+		if (rfq.isClosed() && rfq.isWinnerKnown())
 		{
 			logger.warn("RfQ {} is already closed when we got {}. Skip importing the event.", rfq, syncRfQCloseEvent);
 			return;
@@ -163,11 +163,16 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		//
 		// Update the RfQ
 		rfq.setClosed(true);
-		rfq.setWinner(syncRfQCloseEvent.isWinner());
+		if (syncRfQCloseEvent.isWinnerKnown())
+		{
+			rfq.setWinnerKnown(true);
+			rfq.setWinner(syncRfQCloseEvent.isWinner());
+		}
+		
 		rfqRepo.save(rfq);
 		applicationEventBus.post(RfqChangedEvent.of(rfq));
 
-		if (syncRfQCloseEvent.isWinner())
+		if (syncRfQCloseEvent.isWinnerKnown() && syncRfQCloseEvent.isWinner())
 		{
 			final List<SyncProductSupply> plannedSupplies = syncRfQCloseEvent.getPlannedSupplies();
 			if (plannedSupplies != null && !plannedSupplies.isEmpty())
