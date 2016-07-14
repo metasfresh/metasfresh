@@ -13,7 +13,6 @@ export default class NewSalesOrder extends Component {
     render() {
         return (
             <div>
-                <OrderList />
                 <div className="container">
                     <div className="row">
                         <div className="col-xs-6">
