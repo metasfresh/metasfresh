@@ -41,7 +41,12 @@ public class WebConfig extends WebMvcConfigurerAdapter
 	public void addCorsMappings(final CorsRegistry registry)
 	{
 		// FIXME: for now we enable CORS for the whole REST API
-		// registry.addMapping(ENDPOINT_ROOT + "/**");r
+		// registry.addMapping(ENDPOINT_ROOT + "/**");
+		
+		// NOTE: this seems to not work (i.e. headers are not added), so:
+		// pls check de.metas.ui.web.config.CORSFilter.doFilter(ServletRequest, ServletResponse, FilterChain)
+		// because we are setting the headers there... and that works!
+		
 		registry.addMapping("/**");
 	}
 }

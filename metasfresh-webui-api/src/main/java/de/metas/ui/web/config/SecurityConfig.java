@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 import de.metas.ui.web.security.MetasfreshUserDetailsService;
 
@@ -84,6 +85,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	{
 		//@formatter:off
 		http
+				.addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class)
+		
 				.csrf().disable() // FIXME: disabled for now... need to figure out how to configure with REST
 				.authorizeRequests()
 					//
