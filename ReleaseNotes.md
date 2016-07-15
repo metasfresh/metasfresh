@@ -31,6 +31,7 @@ Her come the actual release notes:
  - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
  - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
  - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
+    * Fixed the newly introduced Feature about allocating 2 Payments (in-out) in cornercase with partial allocated Payments.
 
 # metasfresh 4.26.25 (2016-28)
 
@@ -53,8 +54,9 @@ Her come the actual release notes:
 
 ## Fixes
  - #197 FRESH-519 Payment void or reverse correct
- - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Fixed a Bug that could occure when trying to void or reverse-correct a Payment Document.
  - #151 FRESH-491 When creating a new organization, don't create org access for System role
+    * Now we don't automatically create an Org Access for System Role anymore.
 
 # metasfresh 4.25.24a (2016-27a)
 
