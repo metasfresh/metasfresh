@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Maps;
 
+import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window.PropertyNameSet;
 import de.metas.ui.web.window.datasource.SaveResult;
 import de.metas.ui.web.window.model.WindowModel;
@@ -54,7 +55,7 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping(value = WindowsRestController.ENDPOINT)
 public class WindowsRestController
 {
-	public static final String ENDPOINT = "/rest/api/windows";
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/windows";
 
 	private final AtomicInteger _nextWindowNo = new AtomicInteger(1);
 	private final Map<Integer, WindowModelInstance> _windowModels = Maps.newConcurrentMap();
