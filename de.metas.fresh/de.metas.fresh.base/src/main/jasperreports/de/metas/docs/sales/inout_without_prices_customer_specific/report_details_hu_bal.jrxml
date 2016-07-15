@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-07-08T08:25:22 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-07-15T11:12:01 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout_without_prices_customer_specific/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -103,7 +103,7 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 		</band>
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean(!$P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
 					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 				</reportElement>
@@ -115,7 +115,7 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 		</band>
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
 					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 				</reportElement>
