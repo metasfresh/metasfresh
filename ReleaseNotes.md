@@ -42,8 +42,9 @@ Her come the actual release notes:
  - FRESH-402 Procurement bidding
     * Major new Feature allowing an efficient Procurement Request for bidding workflow, including the extended Procurement bidding web application and automated creation of procurement candidates for selected winners.
  - #119 FRESH-455 different email per org in inout print preview
- - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
     * Possibility to define and use different eMail adresses for InOuts, depending on document Organization.
+ - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Changed the Fieldreference in Subtab to Search-Field to improve opening Performance.
  - #150 FRESH-492 Fix implementation for BPartner Statistics
     * Refactoring, code improvement
  - #128 FRESH-465 Extend Record_ID Column Implementation
