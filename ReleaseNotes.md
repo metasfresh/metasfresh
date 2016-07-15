@@ -36,14 +36,18 @@ Her come the actual release notes:
 
 ## Features
  - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
-    * small layout-change; thx to @Spavetti for contributing :-)
+    * Small layout-change and additional field for quality inspection. Thanks to our new contributor @Spavetti
  - #185 Fresh-512 Receipt POS - sometimes gets wrong numbers from weighting machines
+    * Additional glasspane implementation to avoid uncontrolled button activations during the wighing process in Material receipt. Extended logging of weighing information.
  - FRESH-402 Procurement bidding
+    * Major new Feature allowing an efficient Procurement Request for bidding workflow, including the extended Procurement bidding web application and automated creation of procurement candidates for selected winners.
  - #119 FRESH-455 different email per org in inout print preview
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Possibility to define and use different eMail adresses for InOuts, depending on document Organization.
  - #150 FRESH-492 Fix implementation for BPartner Statistics
-   * refactoring/code improvement
+    * Refactoring, code improvement
  - #128 FRESH-465 Extend Record_ID Column Implementation
+    * Extended the Record_ID column Feature to allow more than 1 generic table-record-button to jump to referenced Dataset.
  - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
