@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window.shared.login.LoginAuthRequest;
 import de.metas.ui.web.window.shared.login.LoginAuthResponse;
 import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
@@ -43,13 +44,13 @@ import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
 @RequestMapping(value = LoginController.ENDPOINT)
 public class LoginController
 {
-	public static final String ENDPOINT = "/rest/api/login";
-	
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";
+
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
 	private volatile LoginModel _loginModel = null; // lazy
-	
+
 	private LoginModel getLoginModel()
 	{
 		if (_loginModel == null)
@@ -69,13 +70,13 @@ public class LoginController
 	public LoginAuthResponse authenticate(@RequestBody final LoginAuthRequest request)
 	{
 		final LoginAuthResponse authResponse = getLoginModel().authenticate(request);
-		
+
 		final Authentication authentication = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
 		authenticationManager.authenticate(authentication);
-		
+
 		return authResponse;
 	}
-	
+
 	@RequestMapping(value = "/loginComplete", method = RequestMethod.POST)
 	public void loginComplete(@RequestBody final LoginCompleteRequest request)
 	{

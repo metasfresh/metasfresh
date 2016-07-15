@@ -58,6 +58,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	{
 		// the endpoint for websocket connections
 		registry.addEndpoint(ENDPOINT)
+				.setAllowedOrigins("*") // FIXME: for now we allow any origin
 				.addInterceptors(new WebSocketHandshakeInterceptor())
 				.withSockJS()
 				//
@@ -79,7 +80,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	{
 		registration.setInterceptors(new WebSocketChannelInterceptor());
 	}
-	
+
 	@Override
 	public boolean configureMessageConverters(List<MessageConverter> messageConverters)
 	{

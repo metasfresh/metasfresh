@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window.shared.ImageResource;
 import de.metas.ui.web.window.shared.ImageResource.ResourceType;
 import de.metas.ui.web.window.shared.menu.MainMenuItem;
@@ -49,7 +50,7 @@ import de.metas.ui.web.window.shared.menu.MainMenuItem.MenuItemType;
 @RequestMapping(value = MenuController.ENDPOINT)
 public class MenuController
 {
-	public static final String ENDPOINT = "/rest/api/menu";
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/menu";
 
 	@RequestMapping(value = "/root", method = RequestMethod.GET)
 	public MainMenuItem getRoot()
