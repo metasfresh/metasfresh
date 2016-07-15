@@ -1,11 +1,11 @@
 -- DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_rfq_response_report_details(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_rfq_response_report_details(IN record_id numeric, IN ad_language character varying)
-  RETURNS TABLE(productname character varying, packdescription character varying, qtypromised numeric, uomsymbol character varying, currency character, price numeric) AS
+  RETURNS TABLE(productname character varying, packdescription character varying, qtyrequiered numeric, uomsymbol character varying, currency character, price numeric) AS
 $$
 SELECT	COALESCE(pt.name,pmm.ProductName) AS productname, 
 	pmm.packdescription, 
-	rl.qtypromised, 
+	rl.qtyrequiered, 
 	COALESCE(uomt.uomsymbol,uom.uomsymbol) AS uomsymbol,
 	c.iso_code AS currency,
 	rl.price as price
@@ -24,3 +24,4 @@ WHERE rr.C_RfQResponse_ID = $1
 $$
   LANGUAGE sql STABLE
  ;
+

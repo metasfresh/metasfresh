@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-14T18:28:25 -->
+<!-- 2016-07-15T09:18:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/rfq_win/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -21,10 +21,10 @@
 	</queryString>
 	<field name="productname" class="java.lang.String"/>
 	<field name="packdescription" class="java.lang.String"/>
-	<field name="qtypromised" class="java.math.BigDecimal"/>
+	<field name="qtyrequiered" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="price" class="java.math.BigDecimal"/>
 	<field name="currency" class="java.lang.String"/>
+	<field name="price" class="java.math.BigDecimal"/>
 	<variable name="qtyToInvoice" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -136,7 +136,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{qtypromised}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{qtyrequiered}.equals(BigDecimal.ZERO) ? null : $F{qtyrequiered}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-31" mode="Transparent" x="483" y="0" width="56" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="3c3bdbc9-6338-48a9-bb1e-675723e3acde"/>
