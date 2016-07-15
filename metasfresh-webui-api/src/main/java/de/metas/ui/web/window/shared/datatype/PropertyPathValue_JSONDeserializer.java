@@ -36,6 +36,8 @@ import de.metas.ui.web.json.JsonHelper;
 
 public class PropertyPathValue_JSONDeserializer extends JsonDeserializer<PropertyPathValue>
 {
+	// private static final Logger logger = LogManager.getLogger(PropertyPathValue_JSONDeserializer.class);
+
 	@Override
 	public PropertyPathValue deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException, JsonProcessingException
 	{
@@ -51,11 +53,16 @@ public class PropertyPathValue_JSONDeserializer extends JsonDeserializer<Propert
 		final Object value;
 		if (valueType == null)
 		{
-			value = null;
+			throw new RuntimeException("No value type '" + PropertyPathValue_JSONSerializer.PROPERTY_ValueType + "' found in " + root);
+			// value = null;
 		}
 		else
 		{
 			final JsonNode valueNode = root.get(PropertyPathValue_JSONSerializer.PROPERTY_Value);
+			if (valueNode == null)
+			{
+				throw new RuntimeException("Property '" + PropertyPathValue_JSONSerializer.PROPERTY_Value + "' was not found in " + root);
+			}
 			value = mapper.treeToValue(valueNode, valueType);
 		}
 
