@@ -53,8 +53,14 @@ public class PropertyPathValue_JSONDeserializer extends JsonDeserializer<Propert
 		final Object value;
 		if (valueType == null)
 		{
-			throw new RuntimeException("No value type '" + PropertyPathValue_JSONSerializer.PROPERTY_ValueType + "' found in " + root);
-			// value = null;
+			// Fail if there is a value set.
+			// Else we can consider the value null.
+			if (root.get(PropertyPathValue_JSONSerializer.PROPERTY_Value) != null)
+			{
+				throw new RuntimeException("No value type '" + PropertyPathValue_JSONSerializer.PROPERTY_ValueType + "' found in " + root);
+			}
+			
+			value = null;
 		}
 		else
 		{
