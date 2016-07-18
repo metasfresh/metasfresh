@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import DropdownPartnerItem from './DropdownPartnerItem';
-import {autocomplete} from '../../actions/SalesOrderActions';
+import {autocomplete, autocompleteRequest} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
@@ -26,6 +26,7 @@ class Dropdown extends Component {
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
+        this.props.dispatch(autocompleteRequest(this.inputSearch.value, "C_BPartner_ID"));
     }
     handleClear = (e) => {
         e.preventDefault();
@@ -35,6 +36,9 @@ class Dropdown extends Component {
     }
     renderRecent = () => {
         return this.props.recentPartners.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
+    }
+    renderLookup = () => {
+        return this.props.autocomplete.results.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
     }
     render() {
         const {autocomplete} = this.props;
@@ -68,7 +72,7 @@ class Dropdown extends Component {
                         {autocomplete.query ? "Are you looking for..." : "Recent partners"}
                     </div>
                     <div>
-                        {this.renderRecent()}
+                        {autocomplete.query ? this.renderLookup() : this.renderRecent()}
                     </div>
                 </div>
             </div>

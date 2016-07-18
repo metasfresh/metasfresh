@@ -25,10 +25,10 @@ class Purchaser extends Component {
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
 
-                <div className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>
+                <div className="panel-title">{salesOrderWindow.C_BPartner_ID ? salesOrderWindow.C_BPartner_ID.caption : ""}</div>
                 <Dropdown items={purchaser.recent} />
 
-                <div className="panel-title">{salesOrderWindow.Bill_BPartner_ID.caption}</div>
+                <div className="panel-title">{salesOrderWindow.Bill_BPartner_ID ? salesOrderWindow.Bill_BPartner_ID.caption : ""}</div>
                 <Dropdown items={purchaser.recent} />
 
                 <div className="panel-title">Unloading partner</div>
@@ -52,7 +52,7 @@ function mapStateToProps(state) {
         salesOrderWindow
     } = salesOrderStateHandler || {
         purchaser: {},
-        salesOrderWindow
+        salesOrderWindow: {}
     }
 
     return {

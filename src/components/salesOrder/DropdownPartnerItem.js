@@ -8,9 +8,9 @@ class DropdownPartnerItem extends Component {
         const {partner} = this.props;
         return (
             <div className="input-dropdown-list-option" onClick={(e) => this.props.onClick(e, partner)}>
-                <p className="input-dropdown-item-title">{partner.name}</p>
-                <p className="input-dropdown-item-subtitle">{partner.address}</p>
-                <p className="input-dropdown-item-subtitle">VAT {partner.vat}</p>
+                <p className="input-dropdown-item-title">{partner.n}</p>
+                <p className="input-dropdown-item-subtitle">{partner.n}</p>
+                <p className="input-dropdown-item-subtitle">VAT {partner.n}</p>
             </div>
         )
     }

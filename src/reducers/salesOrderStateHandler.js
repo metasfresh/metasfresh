@@ -160,6 +160,12 @@ export default function salesOrderStateHandler(state = initialState, action) {
                     query: action.query
                 })
             })
+        case types.AUTOCOMPLETE_SUCCESS:
+            return Object.assign({}, state, {
+                autocomplete: Object.assign({}, state.autocomplete, {
+                    results: action.results
+                })
+            })
         case types.NEW_SALES_ORDER_CREATED:
             return Object.assign({}, state, {
                 salesOrderWindow: action.response

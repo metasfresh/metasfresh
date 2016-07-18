@@ -100,6 +100,34 @@ export function autocomplete(query) {
         query: query
     }
 }
+export function autocompleteSuccess(results) {
+    return {
+        type: 'AUTOCOMPLETE_SUCCESS',
+        results: results
+    }
+}
+export function autocompleteRequest(query, propertyName) {
+    return (dispatch) => {
+        axios.post(config.API_URL + '/windows/executeCommand/1', {
+  "propertyPath": {
+    "gridPropertyName": null,
+    "rowId": null,
+    "propertyName": {
+      "n": "C_BPartner_ID#values"
+    }
+  },
+  "commandId": "find",
+  "params": {
+    "filter": "G",
+    "firstRow": 0,
+    "pageLength": 10
+  }
+})
+        .then((response) => {
+            dispatch(autocompleteSuccess(response.data.value.l));
+        });
+    }
+}
 
 export function newSalesOrderSuccess(response) {
     return {
