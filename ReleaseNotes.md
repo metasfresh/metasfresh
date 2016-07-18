@@ -28,7 +28,8 @@ Her come the actual release notes:
  - #203 Payment writeoff not possible for Incoming Payment
  - #175 C_Invoice_Update_PaymentRule
  - #210 product appears twice in invoice print preview
- 
+ - FRESH-529 drop qtyreserved from product info
+
 # metasfresh 4.26.25a (2016-28a)
 
 ## Fixes
