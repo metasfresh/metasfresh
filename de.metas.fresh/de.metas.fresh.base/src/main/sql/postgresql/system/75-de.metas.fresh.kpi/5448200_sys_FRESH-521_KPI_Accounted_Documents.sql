@@ -11,7 +11,7 @@ RETURNS TABLE
 AS
 $$
 
-select x.before, y.after
+select x.before :: numeric, y.after :: numeric
 from
 (
 
