@@ -17,7 +17,9 @@ Her come the actual release notes:
  - #173 Window Dunning Candidates - new Field DocumentNo
  - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
    * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
- 
+ - FRESH-402 Procurement bidding
+   * adding jasper file for the procurement documents
+
 ## Fixes
  - #100 EDI wrong handover location in Picking Terminal
  - #174 Report Konten-Information empty c_activity_id
