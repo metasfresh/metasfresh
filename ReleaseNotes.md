@@ -19,6 +19,7 @@ Her come the actual release notes:
    * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
  - FRESH-402 Procurement bidding
    * adding jasper file for the procurement documents
+ - FRESH-509 #181 Customer specific Lieferschein without Price
 
 ## Fixes
  - #100 EDI wrong handover location in Picking Terminal
