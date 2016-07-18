@@ -101,13 +101,20 @@ export function autocomplete(query) {
     }
 }
 
+export function newSalesOrderSuccess(response) {
+    return {
+        type: 'NEW_SALES_ORDER_CREATED',
+        response: response
+    }
+}
+
 export function createWindow(){
     return (dispatch) => {
         axios.get(config.API_URL + '/windows/openWindow/143')
         .then((response) => {
             return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
         }).then((response) => {
-            console.log(response.data.childDescriptors.Auftrag.childDescriptors);
+            dispatch(newSalesOrderSuccess(response.data.childDescriptors.Auftrag.childDescriptors));
         });
     }
 }

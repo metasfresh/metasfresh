@@ -21,14 +21,14 @@ class Purchaser extends Component {
         this.props.dispatch(invoiceChanged(this.invoiceInput.value));
     }
     render() {
-        const {purchaser} = this.props;
+        const {purchaser, salesOrderWindow} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
 
-                <div className="panel-title">Purchaser</div>
+                <div className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>
                 <Dropdown items={purchaser.recent} />
 
-                <div className="panel-title">Invoice partner</div>
+                <div className="panel-title">{salesOrderWindow.Bill_BPartner_ID.caption}</div>
                 <Dropdown items={purchaser.recent} />
 
                 <div className="panel-title">Unloading partner</div>
@@ -40,6 +40,7 @@ class Purchaser extends Component {
 
 
 Purchaser.propTypes = {
+    salesOrderWindow: PropTypes.object.isRequired,
     purchaser: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -47,13 +48,16 @@ Purchaser.propTypes = {
 function mapStateToProps(state) {
     const { salesOrderStateHandler } = state;
     const {
-        purchaser
+        purchaser,
+        salesOrderWindow
     } = salesOrderStateHandler || {
-        purchaser: {}
+        purchaser: {},
+        salesOrderWindow
     }
 
     return {
-        purchaser
+        purchaser,
+        salesOrderWindow
     }
 }
 

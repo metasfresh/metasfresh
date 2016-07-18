@@ -13,6 +13,7 @@ const dataBenchmark = (obj, count) => {
 }
 
 const initialState = {
+    salesOrderWindow: {},
     purchaser: {
         recent: [],
         purchaser: '',
@@ -158,6 +159,10 @@ export default function salesOrderStateHandler(state = initialState, action) {
                 autocomplete: Object.assign({}, state.autocomplete, {
                     query: action.query
                 })
+            })
+        case types.NEW_SALES_ORDER_CREATED:
+            return Object.assign({}, state, {
+                salesOrderWindow: action.response
             })
 
         default:
