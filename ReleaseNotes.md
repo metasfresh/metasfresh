@@ -19,9 +19,10 @@ Her come the actual release notes:
    * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
  - FRESH-402 Procurement bidding
    * adding jasper file for the procurement documents
- - FRESH-509 #181 Customer specific Lieferschein without Price
+ - #181 Customer specific Lieferschein without Price
 
 ## Fixes
+ - #216 Accounting: Invoice grand total Fact_Acct line was not found
  - #100 EDI wrong handover location in Picking Terminal
  - #174 Report Konten-Information empty c_activity_id
  - #203 Payment writeoff not possible for Incoming Payment
