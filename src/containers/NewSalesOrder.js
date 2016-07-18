@@ -13,7 +13,7 @@ import {
 class NewSalesOrder extends Component {
     constructor(props){
         super(props);
-        // this.props.dispatch(createWindow());
+        this.props.dispatch(createWindow());
     }
     render() {
         return (

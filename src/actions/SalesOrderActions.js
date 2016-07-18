@@ -107,7 +107,7 @@ export function createWindow(){
         .then((response) => {
             return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
         }).then((response) => {
-            console.log(response.data);
+            console.log(response.data.childDescriptors.Auftrag.childDescriptors);
         });
     }
 }
