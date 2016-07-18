@@ -529,10 +529,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void invalidateCand(final I_C_Invoice_Candidate ic)
 	{
-		final int invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
-		Check.assume(invoiceCandidateId > 0, "ic has an ID>0; ic={}", ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
+		if (ic.getC_Invoice_Candidate_ID() <= 0)
+		{
+			return; // nothing to do; we can only invalidate candidates that were saved as least once
+		}
 
+		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 		invalidateCands(Collections.singleton(ic), trxName);
 	}
 
