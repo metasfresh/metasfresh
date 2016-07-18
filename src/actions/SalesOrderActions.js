@@ -1,4 +1,6 @@
 import * as types from '../constants/ActionTypes'
+import axios from 'axios';
+import config from '../config';
 
 export function unloadingChanged(value) {
     return {
@@ -85,9 +87,27 @@ export function hideSubHeader() {
     }
 }
 
+export function toggleOrderList(value) {
+    return {
+        type: 'TOGGLE_ORDER_LIST',
+        value: !!value
+    }
+}
+
 export function autocomplete(query) {
     return {
         type: 'AUTOCOMPLETE',
         query: query
+    }
+}
+
+export function createWindow(){
+    return (dispatch) => {
+        axios.get(config.API_URL + '/windows/openWindow/143')
+        .then((response) => {
+            return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
+        }).then((response) => {
+            console.log(response.data);
+        });
     }
 }

@@ -6,7 +6,8 @@ import Subheader from './SubHeader';
 
 import {
     showSubHeader,
-    hideSubHeader
+    hideSubHeader,
+    toggleOrderList
 } from '../../actions/SalesOrderActions'
 
 class Header extends Component {
@@ -21,6 +22,10 @@ class Header extends Component {
         }else{
             dispatch(showSubHeader());
         }
+    }
+    handleOrderListToggle = () => {
+        const {dispatch, isOrderListShow} = this.props;
+        dispatch(toggleOrderList(!isOrderListShow));
     }
     handleBackdropClick = () => {
         this.props.dispatch(hideSubHeader());
@@ -53,7 +58,7 @@ class Header extends Component {
                             </div>
                         </div>
                         <div className="col-sm-4">
-                            <div className="pull-xs-right btn-square btn-meta-primary">
+                            <div className="pull-xs-right btn-square btn-meta-primary" onClick={this.handleOrderListToggle}>
                                 <i className="meta-icon-list" />
                             </div>
                             <div className="header-middle pull-xs-right">
@@ -77,18 +82,22 @@ class Header extends Component {
 
 Header.propTypes = {
     isSubheaderShow: PropTypes.bool.isRequired,
+    isOrderListShow: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
     const { salesOrderStateHandler, routing } = state;
     const {
-        isSubheaderShow
+        isSubheaderShow,
+        isOrderListShow
     } = salesOrderStateHandler || {
-        isSubheaderShow: false
+        isSubheaderShow: false,
+        isOrderListShow: false
     }
     return {
-        isSubheaderShow
+        isSubheaderShow,
+        isOrderListShow
     }
 }
 

@@ -1,6 +1,6 @@
 const config = () => {
     return {
-
+        API_URL: ''
     }
 }
 

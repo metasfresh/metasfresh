@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import {connect} from 'react-redux';
 
 import Purchaser from '../components/salesOrder/Purchaser';
 import ProductSearch from '../components/salesOrder/ProductSearch';
@@ -6,9 +7,14 @@ import ProductTable from '../components/salesOrder/ProductTable';
 import OrderInfo from '../components/salesOrder/OrderInfo';
 import OrderList from '../components/salesOrder/OrderList';
 
-export default class NewSalesOrder extends Component {
+import {
+    createWindow
+} from '../actions/SalesOrderActions';
+
+class NewSalesOrder extends Component {
     constructor(props){
         super(props);
+        // this.props.dispatch(createWindow());
     }
     render() {
         return (
@@ -32,3 +38,19 @@ export default class NewSalesOrder extends Component {
         );
     }
 }
+
+
+
+NewSalesOrder.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+function mapStateToProps(state) {
+    return {
+
+    }
+}
+
+NewSalesOrder = connect(mapStateToProps)(NewSalesOrder)
+
+export default NewSalesOrder;

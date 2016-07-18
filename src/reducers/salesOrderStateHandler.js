@@ -69,7 +69,8 @@ const initialState = {
         amount: 123,
         ordered: "23.12.15",
         status: "WIP"
-    }, 10)
+    }, 10),
+    isOrderListShow: false
 }
 
 export default function salesOrderStateHandler(state = initialState, action) {
@@ -139,6 +140,10 @@ export default function salesOrderStateHandler(state = initialState, action) {
         case types.HIDE_SUBHEADER:
             return Object.assign({}, state, {
                 isSubheaderShow: false
+            })
+        case types.TOGGLE_ORDER_LIST:
+            return Object.assign({}, state, {
+                isOrderListShow: action.value
             })
         case types.DELETE_SELECTED_PRODUCTS:
             return Object.assign({}, state, {
