@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-07-15T11:11:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -34,33 +36,33 @@
 	<detail>
 		<band height="56" splitType="Stretch">
 			<textField>
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUReturns}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f2805df3-fac3-4b9d-86b8-582327e2627e" key="textField-19" x="349" y="0" width="54" height="12" forecolor="#000000"/>
+				<reportElement key="textField-19" x="349" y="0" width="54" height="12" forecolor="#000000" uuid="f2805df3-fac3-4b9d-86b8-582327e2627e"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="29b3439c-dc9f-4453-a34b-742c951b1566" x="35" y="25" width="490" height="1"/>
+				<reportElement x="35" y="25" width="490" height="1" uuid="29b3439c-dc9f-4453-a34b-742c951b1566"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement uuid="2f286b6b-d9a7-4cad-8018-8ee095fe43c2" x="35" y="40" width="490" height="1"/>
+				<reportElement x="35" y="40" width="490" height="1" uuid="2f286b6b-d9a7-4cad-8018-8ee095fe43c2"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement uuid="dc6eb0e9-7506-43b4-8e51-2cabfd9f65e9" x="35" y="55" width="490" height="1"/>
+				<reportElement x="35" y="55" width="490" height="1" uuid="dc6eb0e9-7506-43b4-8e51-2cabfd9f65e9"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>
@@ -68,21 +70,21 @@
 		</band>
 		<band height="69">
 			<textField>
-				<reportElement uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4" key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{GoodsNote}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049" key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Signature} + ":"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="2d2bef7b-44cf-45d4-b528-93208eb77818" x="129" y="48" width="396" height="1"/>
+				<reportElement x="129" y="48" width="396" height="1" uuid="2d2bef7b-44cf-45d4-b528-93208eb77818"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>
@@ -90,30 +92,22 @@
 		</band>
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean(!$P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Hinweis Zollrecht Art. 55 ZV: „Falls die Waren zu Beginn der Bewirtschaftungsphase noch auf Handelsstufe " +
-"vorhanden sind, ist für die entsprechende Menge über den gesicherten Internetzugang der Eidg. Zollverwaltung " +
-"eine neue Zollanmeldung einzureichen. \n" +
-"\n" +
-"Sämtliche Produkte mit der Herkunft CH entsprechen dem Standard SwissGAP \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{bottomnote}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Remarque: „Quiconque dispose encore, dans le circuit de commercialisation, de produits agricoles au sens " +
-"de l'art. 7 de l'ordonnance du 7 décembre 1998 sur l'importation et l'exportation de légumes, de fruits et de " +
-"plantes horticoles (OIELFP)1 doit présenter une nouvelle déclaration en douane pour ces produits.“\n" +
-"\n" +
-"Les produits de provenance Suisse (CH) répondent au standard SwissGAP \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{bottomnote}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
