@@ -6,6 +6,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
+import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
@@ -43,6 +44,8 @@ public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPreco
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IPMM_RfQ_BL pmmRfqBL = Services.get(IPMM_RfQ_BL.class);
+
 
 	@Override
 	public boolean isPreconditionApplicable(final GridTab gridTab)
@@ -62,7 +65,10 @@ public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPreco
 			if (!rfqBL.isClosed(rfqResponse))
 			{
 				addLog("@Error@ @NotClosed@: {}", rfqBL.getSummary(rfqResponse));
+				continue;
 			}
+			
+			pmmRfqBL.checkCompleteContractsForWinners(rfqResponse);
 
 			rfQResponsePublisher.publish(RfQResponsePublisherRequest.of(rfqResponse, PublishingType.Close));
 		}

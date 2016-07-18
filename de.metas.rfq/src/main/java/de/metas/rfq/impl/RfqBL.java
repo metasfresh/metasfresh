@@ -156,7 +156,7 @@ public class RfqBL implements IRfqBL
 		assertDraft(rfqResponse);
 
 		final I_C_RfQ rfq = rfqResponse.getC_RfQ();
-		assertComplete(rfq);
+		assertClosed(rfq);
 
 		//
 		// Fire event: before complete
@@ -182,8 +182,6 @@ public class RfqBL implements IRfqBL
 		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
 		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
 		{
-			final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = rfqDAO.retrieveResponseQtys(rfqResponseLine);
-
 			//
 			// If all lines and qtys shall be quoted, make sure this is respected
 			if (isQuoteAllLines)
@@ -192,6 +190,8 @@ public class RfqBL implements IRfqBL
 				{
 					throw new RfQResponseLineInvalidException(rfqResponseLine, "@IsActive@=@N@");
 				}
+
+				final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = rfqDAO.retrieveResponseQtys(rfqResponseLine);
 				if (!isAnyValidAmt(rfqResponseLineQtys))
 				{
 					throw new RfQResponseLineInvalidException(rfqResponseLine, "No amount or amount is not valid");
@@ -202,6 +202,7 @@ public class RfqBL implements IRfqBL
 			// Do we have an amount for all line qtys
 			if (isQuoteAllQty)
 			{
+				final List<I_C_RfQResponseLineQty> rfqResponseLineQtys = rfqDAO.retrieveResponseQtys(rfqResponseLine);
 				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqResponseLineQtys)
 				{
 					if (!rfqResponseLineQty.isActive())
@@ -458,12 +459,12 @@ public class RfqBL implements IRfqBL
 		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
 		{
-			if (isClosed(rfqResponse))
+			if (!isDraft(rfqResponse))
 			{
 				continue;
 			}
 
-			closeInTrx(rfqResponse);
+			completeInTrx(rfqResponse);
 		}
 
 		//
@@ -471,6 +472,21 @@ public class RfqBL implements IRfqBL
 
 		// Make sure it's saved
 		InterfaceWrapperHelper.save(rfq);
+	}
+
+	@Override
+	public void close(final I_C_RfQResponse rfqResponse)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				InterfaceWrapperHelper.setTrxName(rfqResponse, ITrx.TRXNAME_ThreadInherited);
+				closeInTrx(rfqResponse);
+			}
+		});
 	}
 
 	private void closeInTrx(final I_C_RfQResponse rfqResponse)
@@ -511,13 +527,28 @@ public class RfqBL implements IRfqBL
 	public boolean isDraft(final I_C_RfQResponse rfqResponse)
 	{
 		final String docStatus = rfqResponse.getDocStatus();
-		return X_C_RfQ.DOCSTATUS_Drafted.equals(docStatus)
-				|| X_C_RfQ.DOCSTATUS_InProgress.equals(docStatus);
+		return X_C_RfQResponse.DOCSTATUS_Drafted.equals(docStatus)
+				|| X_C_RfQResponse.DOCSTATUS_InProgress.equals(docStatus);
 	}
 
+	@Override
+	public boolean isDraft(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		final String docStatus = rfqResponseLine.getDocStatus();
+		return X_C_RfQResponseLine.DOCSTATUS_Drafted.equals(docStatus)
+				|| X_C_RfQResponseLine.DOCSTATUS_InProgress.equals(docStatus);
+	}
+
+	@Override
 	public boolean isCompleted(final I_C_RfQResponse rfqResponse)
 	{
 		return X_C_RfQResponse.DOCSTATUS_Completed.equals(rfqResponse.getDocStatus());
+	}
+
+	@Override
+	public boolean isCompleted(final I_C_RfQResponseLine rfqResponseLine)
+	{
+		return X_C_RfQResponseLine.DOCSTATUS_Completed.equals(rfqResponseLine.getDocStatus());
 	}
 
 	@Override

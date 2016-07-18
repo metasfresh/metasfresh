@@ -196,6 +196,33 @@ public interface I_C_Dunning_Candidate
 	  * Anzahl der Tage der Fälligkeit (negativ: Fällig in Anzahl Tagen)
 	  */
 	public int getDaysDue();
+	
+	
+	
+	/**
+	 * Set Beleg Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Beleg Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocumentNo();
+
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
     /** Column name DueDate */
     public static final String COLUMNNAME_DueDate = "DueDate";

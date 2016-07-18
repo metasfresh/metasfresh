@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -43,10 +42,8 @@ import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -308,7 +305,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}           	// for all lines
+		}            	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -330,46 +327,50 @@ public class Doc_AllocationHdr extends Doc
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
-			
+
+			// FRESH-523: Make sure the partner of the payment is set in the Doc. It will be needed when selecting the correct Account
+			setC_BPartner_ID(line.getPaymentBPartner_ID());
+
 			// In case there is a line with a writeoff amount, throw an exception. This is not supported (yet).
 
 			if (line.getPaymentWriteOffAmt().signum() != 0)
 			{
-				throw new AccountingException("The line {0} has writeOff amount. This is not supported", new Object[] { line });
+				// In case the allocations are for writeoff lines, also create the fact acct lines for writeoff.
+				createPaymentWriteOffAmtFacts(fact, line);
 			}
-			
-			final MAccount paymentAcct = line.getPaymentAcct(as);
-			final I_C_Payment payment = line.getC_Payment();
-
-			if (payment == null)
-			{
-				continue;
-			}
-
-			final FactLine fl_Payment;
-
-			final BigDecimal payAmt = payment.getPayAmt();
-
-			// Incoming payment
-			if (payment.isReceipt())
-			{
-				// Originally on Credit. The amount must be moved to Debit
-				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), payAmt, null);
-
-			}
-
-			// Outgoing payment
 			else
 			{
-				// Originally on Debit. The amount must be moved to Credit
-				fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, payAmt);
+
+				final MAccount paymentAcct = line.getPaymentAcct(as);
+
+				if (!line.hasPaymentDocument())
+				{
+					continue;
+				}
+
+				final FactLine fl_Payment;
+
+				final BigDecimal allocatedAmt = line.getAllocatedAmt();
+
+				// Incoming payment
+				if (line.isPaymentReceipt())
+				{
+					// Originally on Credit. The amount must be moved to Debit
+					fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), allocatedAmt, null);
+				}
+				// Outgoing payment
+				else
+				{
+					// Originally on Debit. The amount must be moved to Credit, with different sign
+					fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, allocatedAmt.negate());
+				}
+
+				// Make sure the fact line was created
+				Check.assumeNotNull(fl_Payment, "fl_Payment not null");
+
+				fl_Payment.setAD_Org_ID(line.getPaymentOrg_ID());
+				fl_Payment.setC_BPartner_ID(line.getPaymentBPartner_ID());
 			}
-
-			// Make sure the fact line was created
-			Check.assumeNotNull(fl_Payment, "fl_Payment not null");
-
-			fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
-			fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
 		}
 	}
 
@@ -888,7 +889,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}           	// Commitment
+		}            	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1298,7 +1299,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}           	// Discount
+			}            	// Discount
 
 			//
 			// WriteOff Amount
@@ -1334,8 +1335,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}           	// WriteOff
-		}           	// for all lines
+			}            	// WriteOff
+		}            	// for all lines
 	}	// createEntries
 
 	/**

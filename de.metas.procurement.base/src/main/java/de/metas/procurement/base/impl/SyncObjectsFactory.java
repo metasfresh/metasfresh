@@ -530,7 +530,7 @@ public class SyncObjectsFactory
 
 	private final SyncRfQ createSyncRfQ(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		if (pmmRfQBL.isClosed(rfqResponseLine))
+		if (!pmmRfQBL.isDraft(rfqResponseLine))
 		{
 			// shall not happen
 			return null;
@@ -557,19 +557,23 @@ public class SyncObjectsFactory
 		return syncRfQ;
 	}
 
-	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine)
+	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine, final boolean winnerKnown)
 	{
-		if (!pmmRfQBL.isClosed(rfqResponseLine))
+		if(!pmmRfQBL.isCompletedOrClosed(rfqResponseLine))
 		{
-			logger.warn("Skip creating close event for {} because it's not closed", rfqResponseLine);
+			logger.warn("Skip creating close event for {} because it's not completed or closed", rfqResponseLine);
 			return null;
 		}
 
 		final SyncRfQCloseEvent event = new SyncRfQCloseEvent();
 		event.setRfq_uuid(SyncUUIDs.toUUIDString(rfqResponseLine));
-		event.setWinner(rfqResponseLine.isSelectedWinner());
+		event.setWinnerKnown(winnerKnown);
+		if(winnerKnown)
+		{
+			event.setWinner(rfqResponseLine.isSelectedWinner());
+		}
 
-		if (event.isWinner())
+		if (winnerKnown && event.isWinner())
 		{
 			final List<SyncProductSupply> plannedSyncProductSupplies = createPlannedSyncProductSupplies(rfqResponseLine);
 			event.getPlannedSupplies().addAll(plannedSyncProductSupplies);

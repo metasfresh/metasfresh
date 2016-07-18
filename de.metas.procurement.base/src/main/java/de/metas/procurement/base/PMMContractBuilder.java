@@ -190,8 +190,7 @@ public class PMMContractBuilder
 			// NOTE: an error about why the contract was not created was already logged
 			if (isFailIfNotCreated())
 			{
-				// TODO: fetch the actual error message
-				throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@");
+				throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@: " + ex.getLocalizedMessage(), ex);
 			}
 
 			return null;

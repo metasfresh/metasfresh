@@ -37,6 +37,8 @@ public class RfQModuleActivator extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
 	{
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ_Topic(), client);
+
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ(), client);
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQLine(), client);
 

@@ -155,7 +155,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
 		Check.assumeNotNull(rfqResponseLine, "rfqResponseLine not null");
 
-		if (pmmRfqBL.isClosed(rfqResponseLine))
+		if (pmmRfqBL.isCompletedOrClosed(rfqResponseLine))
 		{
 			throw new RfQDocumentClosedException(rfqResponseLine);
 		}
