@@ -5,10 +5,6 @@ class OrderList extends Component {
     constructor(props) {
         super(props);
     }
-    handleClose = (e) => {
-        e.preventDefault();
-        this.panel.classList.remove('order-list-panel-open');
-    }
     renderTableBody = () => {
         return this.props.orderList.map((order) => {
             return (
@@ -23,20 +19,15 @@ class OrderList extends Component {
         });
     }
     render() {
+        const {isOrderListShow} = this.props;
         return (
-            <div ref={(c)=>this.panel=c} className="order-list-panel order-list-panel-open">
+            <div ref={(c)=>this.panel=c} className={"order-list-panel " + (isOrderListShow ? "order-list-panel-open":"")}>
                 <div className="order-list-panel-header">
-                    <div
-                        onClick={this.handleClose}
-                        className="btn-square btn-meta-primary"
-                    >
-                        <i className="meta-icon-close" />
-                    </div>
 
-                    <a href="#" className="btn-icon order-list-panel-icon pull-xs-right">
+                    <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
                         <i className="meta-icon-preview-1" />
                     </a>
-                    <a href="#" className="btn-icon order-list-panel-icon pull-xs-right">
+                    <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
                         <i className="meta-icon-calendar" />
                     </a>
                 </div>
@@ -68,11 +59,14 @@ OrderList.propTypes = {
 function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
+        isOrderListShow,
         orderList
     } = salesOrderStateHandler || {
+        isOrderListShow: false,
         orderList: []
     }
     return {
+        isOrderListShow,
         orderList
     }
 }

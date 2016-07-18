@@ -5,7 +5,6 @@ import Purchaser from '../components/salesOrder/Purchaser';
 import ProductSearch from '../components/salesOrder/ProductSearch';
 import ProductTable from '../components/salesOrder/ProductTable';
 import OrderInfo from '../components/salesOrder/OrderInfo';
-import OrderList from '../components/salesOrder/OrderList';
 
 import {
     createWindow

@@ -31,11 +31,11 @@ class Header extends Component {
         this.props.dispatch(hideSubHeader());
     }
     render() {
-        const {isSubheaderShow} = this.props;
+        const {isSubheaderShow, isOrderListShow} = this.props;
 
         return (
             <div>
-            {isSubheaderShow ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
+            {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
             <nav className="header header-super-faded">
                 <div className="container">
                     <div className="row">
@@ -59,7 +59,7 @@ class Header extends Component {
                         </div>
                         <div className="col-sm-4">
                             <div className="pull-xs-right btn-square btn-meta-primary" onClick={this.handleOrderListToggle}>
-                                <i className="meta-icon-list" />
+                                {isOrderListShow ? <i className="meta-icon-close" />: <i className="meta-icon-list" />}
                             </div>
                             <div className="header-middle pull-xs-right">
                                 <div className="btn-group">

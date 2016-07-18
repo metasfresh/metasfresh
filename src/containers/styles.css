@@ -424,15 +424,16 @@ body {
     height:100%;
     width: 472px;
     background-color: #fff;
-    border-right: 1px solid #dee6ec;
+    border-left: 1px solid #dee6ec;
     z-index: 50;
+    right:0;
 }
 .order-list-panel-open {
     display: block;
 }
 
 .order-list-panel-header{
-    padding-right:10px;
+    padding-left:10px;
 }
 .order-list-panel-icon {
     margin: 12px 5px;
