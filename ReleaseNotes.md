@@ -27,7 +27,8 @@ Her come the actual release notes:
  - #174 Report Konten-Information empty c_activity_id
  - #203 Payment writeoff not possible for Incoming Payment
  - #175 C_Invoice_Update_PaymentRule
-
+ - #210 product appears twice in invoice print preview
+ 
 # metasfresh 4.26.25a (2016-28a)
 
 ## Fixes
