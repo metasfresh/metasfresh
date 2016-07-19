@@ -38,6 +38,9 @@ import de.metas.jax.rs.IJaxRsBL;
 public class JaxRsInterceptor extends AbstractModuleInterceptor
 {
 
+	/**
+	 * Register JAX-RS endpoints. Disable this model interceptor to avoid registering them.
+	 */
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -46,7 +49,7 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 
 		if (Ini.getRunMode() == RunMode.BACKEND || CConnection.isServerEmbedded())
 		{
-			// in embedded mode, we assume that a local JMS broker was already started by this module's AddOnn implementation.
+			// in ServerEmbedded mode, we assume that a local JMS broker was already started by this module's AddOn implementation.
 			jaxRsBL.createServerEndPoints();
 		}
 
