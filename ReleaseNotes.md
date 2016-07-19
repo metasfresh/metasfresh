@@ -8,7 +8,14 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-Her come the actual release notes:
+Here come the actual release notes:
+
+# metasfresh 4.28.26 (2016-30, upcoming)
+
+## Features
+ - #201 KPI Accounted Documents
+
+## Fixes
 
 # metasfresh 4.27.26 (2016-29, RC)
 
