@@ -148,7 +148,7 @@ public class MRPInfoWindow extends InfoSimple
 					{
 						//
 						// Set conference mode on/off
-						final Boolean isConferenceSortPreferences = (Boolean)isConferenceSortPreferencesCheckBox.getValue();
+						final Boolean isConferenceSortPreferences = isConferenceSortPreferencesCheckBox.isSelected();
 						setConferenceSortPreferences(isConferenceSortPreferences);
 
 						//
