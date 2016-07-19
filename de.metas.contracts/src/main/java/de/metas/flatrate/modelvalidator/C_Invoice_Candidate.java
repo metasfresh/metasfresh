@@ -91,7 +91,7 @@ public class C_Invoice_Candidate
 			invoiceCandDAO.invalidateCand(invoiceCand);
 		}
 
-		final boolean dateOrdereChanged = InterfaceWrapperHelper.isValueChanged(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_DateOrdered);
+		final boolean dateOrdereChanged = InterfaceWrapperHelper.isValueChanged(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_DateOrdered) && !InterfaceWrapperHelper.isNew(invoiceCand);
 		if (newIsToClear && dateOrdereChanged)
 		{
 			Check.assume(false, "Column I_C_Invoice_Cand." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " is not updatable");

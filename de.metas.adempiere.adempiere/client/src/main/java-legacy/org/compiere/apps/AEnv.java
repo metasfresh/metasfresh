@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -49,6 +49,7 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -439,7 +440,7 @@ public final class AEnv
 		final JMenu menu = new JMenu();
 		String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), AD_Message);
 		final int pos = text.indexOf('&');
-		if (pos != -1 && text.length() > pos)	// We have a nemonic
+		if (pos != -1 && text.length() > pos)   	// We have a nemonic
 		{
 			final char ch = text.toUpperCase().charAt(pos + 1);
 			if (ch != ' ')
@@ -588,7 +589,7 @@ public final class AEnv
 			return;
 		}
 		final int pos = text.indexOf('&');
-		if (pos != -1)					// We have a nemonic
+		if (pos != -1)   					// We have a nemonic
 		{
 			final char ch = text.charAt(pos + 1);
 			b.setMnemonic(ch);
@@ -625,23 +626,23 @@ public final class AEnv
 		int AD_Window_ID = 0;
 		int PO_Window_ID = 0;
 		final String sql = "SELECT TableName, AD_Window_ID, PO_Window_ID FROM AD_Table WHERE AD_Table_ID=?";
-		
+
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, AD_Table_ID);
-			
+
 			rs = pstmt.executeQuery();
-			
+
 			if (rs.next())
 			{
 				TableName = rs.getString(1);
 				AD_Window_ID = rs.getInt(2);
 				PO_Window_ID = rs.getInt(3);
 			}
-			
+
 		}
 		catch (final SQLException e)
 		{
@@ -782,11 +783,11 @@ public final class AEnv
 				adWindowIdToUse = PO_Window_ID;
 			}
 		}
-		else if (isSOTrx == null) // but PO_Window_ID <=0
+		else if (isSOTrx == null)    // but PO_Window_ID <=0
 		{
 			adWindowIdToUse = AD_Window_ID;
 		}
-		else if (isSOTrx) // sales trx window
+		else if (isSOTrx)    // sales trx window
 		{
 			adWindowIdToUse = AD_Window_ID;
 		}
@@ -990,7 +991,7 @@ public final class AEnv
 		}
 
 		// Try to connect
-		//CLogMgt.enable(false);
+		// CLogMgt.enable(false);
 		try
 		{
 			s_serverTries++;
@@ -1007,7 +1008,7 @@ public final class AEnv
 		}
 		finally
 		{
-			//CLogMgt.enable(true);
+			// CLogMgt.enable(true);
 		}
 		//
 		return ok;
@@ -1042,7 +1043,7 @@ public final class AEnv
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
-		if (AD_Window_ID != 0 && Ini.isCacheWindow())	// try cache
+		if (AD_Window_ID != 0 && Ini.isCacheWindow())   	// try cache
 		{
 			mWindowVO = s_windows.get(AD_Window_ID);
 			if (mWindowVO != null)
@@ -1060,7 +1061,7 @@ public final class AEnv
 			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID);
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
-		}	// from Client
+		}   	// from Client
 
 		// Check (remote) context
 		if (!mWindowVO.ctx.equals(Env.getCtx()))
@@ -1084,7 +1085,8 @@ public final class AEnv
 	}   // getWindow
 
 	/**
-	 * Post Immediate.
+	 * Post Immediate. This method is usually triggered from the UI. However, the posting might still be executed on the server,
+	 * depending on the {@link ClientAccountingStatus} which can be configured via <code>AD_SysConfig</code> or startup parameter.
 	 *
 	 * If there is any error, an error dialog will be displayed to user.
 	 *
@@ -1194,7 +1196,7 @@ public final class AEnv
 
 	/**
 	 * Searches for nearest parent of <code>comp</code> which implements given <code>parentType</code>.
-	 * 
+	 *
 	 * @param comp component or null
 	 * @param parentType
 	 * @return parent component which implements given type or <code>null</code>

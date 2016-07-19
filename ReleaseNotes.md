@@ -8,21 +8,34 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-Her come the actual release notes:
+Here come the actual release notes:
 
-# metasfresh 2016-29
+# metasfresh 4.28.26 (2016-30, upcoming)
+
+## Features
+ - #201 KPI Accounted Documents
+
+## Fixes
+
+# metasfresh 4.27.26 (2016-29, RC)
 
 ## Features
  - #152 Improvements in  counter documents view and window
  - #173 Window Dunning Candidates - new Field DocumentNo
  - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
    * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
- 
+ - FRESH-402 Procurement bidding
+   * adding jasper file for the procurement documents
+ - #181 Customer specific Lieferschein without Price
+
 ## Fixes
+ - #216 Accounting: Invoice grand total Fact_Acct line was not found
  - #100 EDI wrong handover location in Picking Terminal
  - #174 Report Konten-Information empty c_activity_id
  - #203 Payment writeoff not possible for Incoming Payment
  - #175 C_Invoice_Update_PaymentRule
+ - #210 product appears twice in invoice print preview
+ - FRESH-529 drop qtyreserved from product info
 
 # metasfresh 4.26.25a (2016-28a)
 
@@ -31,25 +44,32 @@ Her come the actual release notes:
  - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
  - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
  - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
+    * Fixed the newly introduced Feature about allocating 2 Payments (in-out) in cornercase with partial allocated Payments.
 
 # metasfresh 4.26.25 (2016-28)
 
 ## Features
  - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
-    * small layout-change; thx to @Spavetti for contributing :-)
+    * Small layout-change and additional field for quality inspection. Thanks to our new contributor @Spavetti
  - #185 Fresh-512 Receipt POS - sometimes gets wrong numbers from weighting machines
+    * Additional glasspane implementation to avoid uncontrolled button activations during the wighing process in Material receipt. Extended logging of weighing information.
  - FRESH-402 Procurement bidding
+    * Major new Feature allowing an efficient Procurement Request for bidding workflow, including the extended Procurement bidding web application and automated creation of procurement candidates for selected winners.
  - #119 FRESH-455 different email per org in inout print preview
+    * Possibility to define and use different eMail adresses for InOuts, depending on document Organization.
  - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Changed the Fieldreference in Subtab to Search-Field to improve opening Performance.
  - #150 FRESH-492 Fix implementation for BPartner Statistics
-   * refactoring/code improvement
+    * Refactoring, code improvement
  - #128 FRESH-465 Extend Record_ID Column Implementation
+    * Extended the Record_ID column Feature to allow more than 1 generic table-record-button to jump to referenced Dataset.
  - #145 FRESH-482 Don't log migration scripts if the transaction failed
 
 ## Fixes
  - #197 FRESH-519 Payment void or reverse correct
- - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Fixed a Bug that could occure when trying to void or reverse-correct a Payment Document.
  - #151 FRESH-491 When creating a new organization, don't create org access for System role
+    * Now we don't automatically create an Org Access for System Role anymore.
 
 # metasfresh 4.25.24a (2016-27a)
 

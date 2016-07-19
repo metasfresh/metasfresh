@@ -14,9 +14,6 @@
 @Rem CLIENT_REMOTE_DEBUG_OPTS   ->  Commandline-Options (Arguments) to use, if Debugging is enabled
 @Rem JMX_REMOTE_DEBUG_OPTS      ->  Same as CLIENT_REMOTE_DEBUG_OPTS
 
-@REM Uncomment this option to disable the client from comparing its own version with the version stored in the AD_System database table
-@REM SET METASFRESH_CLIENT_CHECK_OPTS="-Dde.metas.clientcheck.Enabled=false"
-
 :ADEMPIERE_DEBUG_PORTS
 @SET /a DBG_PORT=10000
 @SET /a MAX_DBG_PORT=10100
@@ -117,7 +114,7 @@ SET CLASSPATH=%JAR%
 
 :START
 SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true
-"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %METASFRESH_CLIENT_CHECK_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
+"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL

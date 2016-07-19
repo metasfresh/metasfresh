@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-07-14T18:11:00 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_summary" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/rfq_information_without_qty/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.docs_rfq_response_report_details_summary_invitation_without_qty($P{RECORD_ID}, $P{ad_language})]]>
+	</queryString>
+	<field name="startbiddate" class="java.sql.Timestamp"/>
+	<field name="endbiddate" class="java.sql.Timestamp"/>
+	<field name="dateresponse" class="java.sql.Timestamp"/>
+	<field name="invitationtext" class="java.lang.String"/>
+	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
+		<variableExpression><![CDATA[1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<detail>
+		<band height="40" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement key="textField-16" x="36" y="10" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{startNotice}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy, HH.mm">
+				<reportElement key="textField-16" x="172" y="10" width="76" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startbiddate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy hh:mm Uhr">
+				<reportElement key="textField-16" x="248" y="10" width="78" height="12" uuid="b98a90be-4e28-4640-a91f-7998fc3b7bd1"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{hour}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="30">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{endNotice}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy, HH.mm">
+				<reportElement key="textField-16" x="172" y="0" width="76" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{endbiddate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy hh:mm Uhr">
+				<reportElement key="textField-16" x="248" y="0" width="78" height="12" uuid="54a2d907-e2c4-48c8-9d27-83f25fc12918"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{hour}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="30">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{dateResponse}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy, HH.mm">
+				<reportElement key="textField-16" x="172" y="0" width="76" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateresponse}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy hh:mm Uhr">
+				<reportElement key="textField-16" x="248" y="0" width="78" height="12" uuid="59323e47-c02f-4aa9-b7b4-84caf5e9e4f9"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{hour}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="41">
+			<textField>
+				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{shipment}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement key="textField-16" x="172" y="0" width="385" height="40" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{dailyPurchase}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="140">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement key="textField-16" x="172" y="0" width="348" height="140" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invitationtext}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{information}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1038,7 +1038,7 @@ public class Doc_AllocationHdr extends Doc
 
 		final MAccount discountAccount = getAccount(isDiscountExpense ? Doc.ACCTTYPE_DiscountExp : Doc.ACCTTYPE_DiscountRev, as);
 		final MAccount writeOffAccount = getAccount(Doc.ACCTTYPE_WriteOff, as);
-		final Doc_AllocationTax tax = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
+		final Doc_AllocationTax taxCorrection = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
 
 		// FIXME: metas-tsa: fix how we retrieve the tax bookings of the invoice, i.e.
 		// * here we retrieve all Fact_Acct records which are not on line level.
@@ -1057,12 +1057,8 @@ public class Doc_AllocationHdr extends Doc
 				.endOrderBy()
 				.create()
 				.list(I_Fact_Acct.class);
-		for (final I_Fact_Acct invoiceFactLine : invoiceFactLines)
-		{
-			tax.addInvoiceFact(invoiceFactLine);
-		}
 		// Invoice Not posted
-		if (tax.getLineCount() == 0)
+		if (invoiceFactLines.isEmpty())
 		{
 			throw newPostingException()
 					.setC_AcctSchema(as)
@@ -1070,14 +1066,9 @@ public class Doc_AllocationHdr extends Doc
 					.setDocLine(line)
 					.setDetailMessage("Invoice not posted yet - " + line);
 		}
-		// size = 1 if no tax
-		if (tax.getLineCount() < 2)
-		{
-			// return true;
-			return; // OK
-		}
-
-		tax.createEntries(fact, line);
+		taxCorrection.addInvoiceFacts(invoiceFactLines);
+		
+		taxCorrection.createEntries(fact, line);
 	}	// createTaxCorrection
 }   // Doc_Allocation
 
@@ -1123,7 +1114,9 @@ public class Doc_AllocationHdr extends Doc
 	private final MAccount m_WriteOffAccount;
 	private final BigDecimal m_WriteOffAmt;
 	private final boolean isDiscountExpense;
-	private final List<I_Fact_Acct> m_facts = new ArrayList<>();
+	//
+	private I_Fact_Acct _invoiceGrandTotalFact;
+	private final List<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
 
 	private final PostingException newPostingException()
 	{
@@ -1131,24 +1124,69 @@ public class Doc_AllocationHdr extends Doc
 	}
 
 	/**
+	 * Add Invoice Fact Lines
+	 *
+	 * @param facts invoice fact lines
+	 */
+	public void addInvoiceFacts(final Iterable<I_Fact_Acct> facts)
+	{
+		for (final I_Fact_Acct fact : facts)
+		{
+			addInvoiceFact(fact);
+		}
+	}
+
+	/**
 	 * Add Invoice Fact Line
 	 *
 	 * @param fact fact line
 	 */
-	public void addInvoiceFact(final I_Fact_Acct fact)
+	private void addInvoiceFact(final I_Fact_Acct fact)
 	{
-		m_facts.add(fact);
+		if (fact.getC_Tax_ID() > 0)
+		{
+			_invoiceTaxFacts.add(fact);
+		}
+		else
+		{
+			Check.assumeNull(_invoiceGrandTotalFact, "only one invoice grand total fact line set");
+			_invoiceGrandTotalFact = fact;
+		}
 	}
 
-	/**
-	 * Get Line Count
-	 *
-	 * @return number of lines
-	 */
-	public int getLineCount()
+	private I_Fact_Acct getInvoiceGrandTotalFact()
 	{
-		return m_facts.size();
-	}	// getLineCount
+		Check.assumeNotNull(_invoiceGrandTotalFact, "_invoiceGrandTotalFact not null");
+		return _invoiceGrandTotalFact;
+	}
+	
+	private BigDecimal getInvoiceGrandTotalAmt()
+	{
+		final I_Fact_Acct invoiceGrandTotalFact = getInvoiceGrandTotalFact();
+		final BigDecimal amtSourceDr = invoiceGrandTotalFact.getAmtAcctDr();
+		if(amtSourceDr.signum() != 0)
+		{
+			return amtSourceDr;
+		}
+		
+		final BigDecimal amtSourceCr = invoiceGrandTotalFact.getAmtAcctCr();
+		if(amtSourceCr.signum() != 0)
+		{
+			return amtSourceCr;
+		}
+		
+		return BigDecimal.ZERO;
+	}
+	
+	private List<I_Fact_Acct> getInvoiceTaxFacts()
+	{
+		return _invoiceTaxFacts;
+	}
+	
+	public boolean hasInvoiceTaxFacts()
+	{
+		return !_invoiceTaxFacts.isEmpty();
+	}
 
 	private final MAccount getTaxDiscountAcct(final MAcctSchema as, final int taxId)
 	{
@@ -1170,53 +1208,29 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	public void createEntries(final Fact fact, final DocLine_Allocation line)
 	{
+		// If there are no tax facts, there is no need to do tax correction
+		if (!hasInvoiceTaxFacts())
+		{
+			return;
+		}
+		
 		final MAcctSchema as = fact.getAcctSchema();
 
 		//
 		// Get total index (the Receivables/Liabilities line)
-		BigDecimal invoiceGrandTotalAmt = Env.ZERO;
-		int invoiceGrandTotalIndex = -1;
-		for (int i = 0; i < m_facts.size(); i++)
-		{
-			final I_Fact_Acct factAcct = m_facts.get(i);
-			if (factAcct.getAmtSourceDr().compareTo(invoiceGrandTotalAmt) > 0)
-			{
-				invoiceGrandTotalAmt = factAcct.getAmtSourceDr();
-				invoiceGrandTotalIndex = i;
-			}
-			if (factAcct.getAmtSourceCr().compareTo(invoiceGrandTotalAmt) > 0)
-			{
-				invoiceGrandTotalAmt = factAcct.getAmtSourceCr();
-				invoiceGrandTotalIndex = i;
-			}
-		}
-		if (invoiceGrandTotalIndex < 0)
-		{
-			throw newPostingException()
-					.setC_AcctSchema(as)
-					.setFact(fact)
-					.setDocLine(line)
-					.setDetailMessage("Invoice grand total Fact_Acct line was not found");
-		}
-		log.info("Total Invoice = " + invoiceGrandTotalAmt + " - " + m_facts.get(invoiceGrandTotalIndex));
+		final BigDecimal invoiceGrandTotalAmt = getInvoiceGrandTotalAmt();
 
 		//
-		// Iterate the tax lines
+		// Iterate the invoice tax facts
 		final int precision = as.getStdPrecision();
-		for (int i = 0; i < m_facts.size(); i++)
+		for (final I_Fact_Acct taxFactAcct : getInvoiceTaxFacts())
 		{
-			// Skip the total lines
-			if (i == invoiceGrandTotalIndex)
-			{
-				continue;
-			}
-
 			//
 			// Get the C_Tax_ID
-			final I_Fact_Acct taxFactAcct = m_facts.get(i);
 			final int taxId = taxFactAcct.getC_Tax_ID();
 			if (taxId <= 0)
 			{
+				// shall not happen
 				newPostingException()
 						.setC_AcctSchema(as)
 						.setFact(fact)

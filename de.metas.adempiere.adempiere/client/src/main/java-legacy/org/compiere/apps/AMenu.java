@@ -34,8 +34,6 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -68,18 +66,20 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Splash;
 import org.compiere.wf.IADWorkflowBL;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Application Menu Controller
@@ -560,10 +560,17 @@ public final class AMenu extends CFrame
 
 	public void logout()
 	{
-		windowManager.close();
-		preDispose();
-		super.dispose();
-		AEnv.logout();
+		try
+		{
+			windowManager.close();
+			preDispose();
+			super.dispose();
+			AEnv.logout();
+		}
+		catch (Exception ex)
+		{
+			Services.get(IClientUI.class).error(m_WindowNo, ex);
+		}
 	}
 
 	/**
