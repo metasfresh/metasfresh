@@ -256,7 +256,7 @@ body {
 }
 .table *::selection{
     background-color:transparent;
-    color:inherit;
+    color:$brand-font-color;
 }
 
 .table thead th {
