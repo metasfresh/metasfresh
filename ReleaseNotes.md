@@ -10,7 +10,7 @@ Additional notes:
 
 Her come the actual release notes:
 
-# metasfresh 2016-29
+# metasfresh 4.2016-29 (upcoming)
 
 ## Features
  - #152 Improvements in  counter documents view and window
