@@ -26,7 +26,7 @@ class Purchaser extends Component {
             <div className="panel panel-bordered panel-spaced panel-primary">
 
                 <div className="panel-title">{salesOrderWindow.C_BPartner_ID ? salesOrderWindow.C_BPartner_ID.caption : ""}</div>
-                <Dropdown items={purchaser.recent} />
+                <Dropdown recent={purchaser.recent} property="C_BPartner_ID" items={purchaser.recent} />
 
                 <div className="panel-title">{salesOrderWindow.Bill_BPartner_ID ? salesOrderWindow.Bill_BPartner_ID.caption : ""}</div>
                 <Dropdown items={purchaser.recent} />

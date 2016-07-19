@@ -4,13 +4,15 @@ class DropdownPartnerItem extends Component {
     constructor(props) {
         super(props);
     }
+    renderSubitems = (items) => {
+        return items.map((item) => <p className="input-dropdown-item-subtitle">{item}</p>);
+    }
     render() {
-        const {partner} = this.props;
+        const {data} = this.props;
         return (
             <div className="input-dropdown-list-option" onClick={(e) => this.props.onClick(e, partner)}>
-                <p className="input-dropdown-item-title">{partner.n}</p>
-                <p className="input-dropdown-item-subtitle">{partner.n}</p>
-                <p className="input-dropdown-item-subtitle">VAT {partner.n}</p>
+                <p className="input-dropdown-item-title">{data[0]}</p>
+                {this.renderSubitems(data.shift())}
             </div>
         )
     }

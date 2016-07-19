@@ -64,6 +64,10 @@ const initialState = {
         address: 'Innovation 18, Gliwice, Poland',
         vat: '541-141-56-23'
     }],
+    recentProducts: [{
+        id: 1,
+        name: 'Salad'
+    }],
     orderList: dataBenchmark({
         id: 0,
         purchaser: 'Jazzy Innovations',

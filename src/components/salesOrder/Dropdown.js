@@ -9,8 +9,8 @@ class Dropdown extends Component {
         super(props);
     }
     handleSelect = (e, select) => {
-        this.inputSearch.value = select.name;
-        this.inputSearchRest.innerHTML = select.address + " VAT " + select.vat;
+        this.inputSearch.value = select.n;
+        this.inputSearchRest.innerHTML = select.n + " VAT " + select.n;
         this.handleBlur();
     }
     handleBlur = () => {
@@ -26,7 +26,7 @@ class Dropdown extends Component {
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
-        this.props.dispatch(autocompleteRequest(this.inputSearch.value, "C_BPartner_ID"));
+        this.props.dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
     }
     handleClear = (e) => {
         e.preventDefault();
@@ -35,10 +35,11 @@ class Dropdown extends Component {
         this.props.dispatch(autocomplete(""));
     }
     renderRecent = () => {
-        return this.props.recentPartners.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
+        const {recent} = this.props;
+        return recent.map(item => <DropdownPartnerItem key={item.id} data={item} onClick={this.handleSelect}/> );
     }
     renderLookup = () => {
-        return this.props.autocomplete.results.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
+        return this.props.autocomplete.results.map(partner => <DropdownPartnerItem key={partner.id} data={partner} onClick={this.handleSelect}/> );
     }
     render() {
         const {autocomplete} = this.props;
@@ -69,7 +70,7 @@ class Dropdown extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {autocomplete.query ? "Are you looking for..." : "Recent partners"}
+                        {autocomplete.query ? "Are you looking for..." : "Recent lookups"}
                     </div>
                     <div>
                         {autocomplete.query ? this.renderLookup() : this.renderRecent()}
@@ -90,17 +91,14 @@ Dropdown.propTypes = {
 function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
-        recentPartners,
         autocomplete
     } = salesOrderStateHandler || {
-        recentPartners: [],
         autocomplete: {
             query: ""
         }
     }
 
     return {
-        recentPartners,
         autocomplete
     }
 }
