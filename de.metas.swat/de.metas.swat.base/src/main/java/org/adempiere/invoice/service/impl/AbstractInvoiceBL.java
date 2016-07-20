@@ -110,6 +110,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
 	
 	//FRESH-488: Payment rule from sys config
+	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
 	@Override
 	public final I_C_Invoice creditInvoice(final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
@@ -1383,5 +1384,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public String getDefaultPaymentRule()
 	{
+		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_C_Invoice_PaymentRule, X_C_Invoice.PAYMENTRULE_OnCredit);
 	}
 }

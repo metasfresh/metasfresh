@@ -121,6 +121,7 @@ public class C_Invoice
 		invoice.setM_PriceList_ID(priceListNew.getM_PriceList_ID());
 	}
 
+	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID})
 	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
 	{
 
