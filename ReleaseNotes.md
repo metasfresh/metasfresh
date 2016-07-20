@@ -10,13 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.28.26 (2016-30, upcoming)
+# metasfresh 4.28.27 (2016-30, upcoming)
 
 ## Features
  - #201 KPI Accounted Documents
  - #212 MRPProductInfo display Conference flag with sys config
 
 ## Fixes
+ - #153 PaymentRule = S in Invoice
 
 # metasfresh 4.27.26 (2016-29, RC)
 
