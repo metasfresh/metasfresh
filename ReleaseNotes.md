@@ -8,9 +8,18 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-Her come the actual release notes:
+Here come the actual release notes:
 
-# metasfresh 4.27.26 (2016-29, upcoming)
+# metasfresh 4.28.27 (2016-30, upcoming)
+
+## Features
+ - #201 KPI Accounted Documents
+ - #212 MRPProductInfo display Conference flag with sys config
+
+## Fixes
+ - #153 PaymentRule = S in Invoice
+
+# metasfresh 4.27.26 (2016-29, RC)
 
 ## Features
  - #152 Improvements in  counter documents view and window
