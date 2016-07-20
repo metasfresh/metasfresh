@@ -203,7 +203,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			setDocStatus(DOCSTATUS_Drafted);		// Draft
 			setDocAction(DOCACTION_Complete);
 			//
-			setPaymentRule(PAYMENTRULE_OnCredit);	// Payment Terms
+			// FRESH-488: Get the default payment rule form the system configuration
+			setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule());	// Payment Terms
 
 			setDateInvoiced(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
@@ -391,28 +392,44 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public void setBPartner(MBPartner bp)
 	{
 		if (bp == null)
+		{
 			return;
+		}
 
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		// Set Defaults
 		int ii = 0;
 		if (isSOTrx())
+		{
 			ii = bp.getC_PaymentTerm_ID();
+		}
 		else
+		{
 			ii = bp.getPO_PaymentTerm_ID();
+		}
 		if (ii != 0)
+		{
 			setC_PaymentTerm_ID(ii);
+		}
 		//
 		if (isSOTrx())
+		{
 			ii = bp.getM_PriceList_ID();
+		}
 		else
+		{
 			ii = bp.getPO_PriceList_ID();
+		}
 		if (ii != 0)
+		{
 			setM_PriceList_ID(ii);
+		}
 		//
 		String ss = bp.getPaymentRule();
 		if (ss != null)
+		{
 			setPaymentRule(ss);
+		}
 
 		// Set Locations
 		MBPartnerLocation[] locs = bp.getLocations(false);
@@ -426,15 +443,21 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			}
 			// set to first
 			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			{
 				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+			}
 		}
 		if (getC_BPartner_Location_ID() == 0)
+		{
 			log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
+		}
 
 		// Set Contact
 		MUser[] contacts = bp.getContacts(false);
 		if (contacts != null && contacts.length > 0) 	// get first User
+		{
 			setAD_User_ID(contacts[0].getAD_User_ID());
+		}
 	}	// setBPartner
 
 	/**

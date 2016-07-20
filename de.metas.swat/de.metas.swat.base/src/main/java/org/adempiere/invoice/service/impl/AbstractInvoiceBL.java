@@ -60,6 +60,7 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -107,6 +108,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// System configurations (public for testing)
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
+	
+	//FRESH-488: Payment rule from sys config
 
 	@Override
 	public final I_C_Invoice creditInvoice(final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
@@ -1375,5 +1378,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.lineDone()
 			.create(true); // completeIt = true
 		// @formatter:on
+	}
+	
+	@Override
+	public String getDefaultPaymentRule()
+	{
 	}
 }
