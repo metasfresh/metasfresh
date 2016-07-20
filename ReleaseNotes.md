@@ -14,6 +14,7 @@ Here come the actual release notes:
 
 ## Features
  - #201 KPI Accounted Documents
+ - #212 MRPProductInfo display Conference flag with sys config
 
 ## Fixes
 
