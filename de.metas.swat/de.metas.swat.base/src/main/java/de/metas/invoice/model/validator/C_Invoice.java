@@ -60,7 +60,7 @@ public class C_Invoice
 	{
 		// Setup callout C_Invoice
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new de.metas.adempiere.callout.C_Invoice());
+		calloutProvider.registerAnnotatedCallout(new de.metas.invoice.callout.C_Invoice());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })

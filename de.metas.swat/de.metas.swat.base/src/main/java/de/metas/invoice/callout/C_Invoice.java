@@ -1,4 +1,4 @@
-package de.metas.adempiere.callout;
+package de.metas.invoice.callout;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.adempiere.callout;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -30,14 +29,19 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_M_PriceList;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 
 @Callout(I_C_Invoice.class)
@@ -115,5 +119,40 @@ public class C_Invoice
 		}
 
 		invoice.setM_PriceList_ID(priceListNew.getM_PriceList_ID());
+	}
+
+	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID})
+	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
+	{
+
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(invoice.getC_DocTypeTarget())
+				.setOldDocumentNo(invoice.getDocumentNo())
+				.setDocumentModel(invoice)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return;
+		}
+
+		// FRESH-488: Kept from old callout
+		Env.setContext(field.getCtx(), field.getWindowNo(), I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
+
+		// DocumentNo
+		if (documentNoInfo.isDocNoControlled())
+		{
+			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+		// FRESH-488: Kept from old callout
+		// DocBaseType - Set Context
+		final String docBaseType = documentNoInfo.getDocBaseType();
+		Env.setContext(field.getCtx(), field.getWindowNo(), I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+
+		// Task FRESH-488: Set the payment rule to the one from the sys config independent of doctype-letters
+		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		invoice.setPaymentRule(paymentRuleToUse);
+
 	}
 }
