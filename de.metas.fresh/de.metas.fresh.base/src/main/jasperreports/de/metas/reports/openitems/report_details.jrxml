@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-20T15:30:37 -->
+<!-- 2016-07-21T18:09:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -185,7 +185,7 @@ DocumentNo]]>
 					<textElement textAlignment="Right">
 						<font fontName="SansSerif" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["("+$V{total_currency_convert}.setScale( 2, RoundingMode.HALF_UP )+")"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{total_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="55fcb0b0-726d-44c5-ac79-8ef6aee32020">
@@ -200,7 +200,7 @@ DocumentNo]]>
 					<textElement textAlignment="Right">
 						<font fontName="SansSerif" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["("+$V{open_currency_convert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{open_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="cc34f4d5-0be4-4894-8cee-bbce7aa6c644"/>
@@ -330,7 +330,7 @@ DocumentNo]]>
 					<textElement textAlignment="Right">
 						<font fontName="SansSerif" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["("+$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )+")"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d4173f88-feea-46e5-9445-b17649663e42">
@@ -345,7 +345,7 @@ DocumentNo]]>
 					<textElement textAlignment="Right">
 						<font fontName="SansSerif" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["("+$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="89d6466f-a28d-4f8b-b14d-00faeaf614f3"/>
@@ -651,7 +651,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["("+$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-79" x="386" y="25" width="70" height="12" isRemoveLineWhenBlank="true" uuid="44447678-63ba-44eb-8418-a54077bd73ed">
@@ -666,7 +666,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["("+$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -887,7 +887,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["(" + $F{grandtotalconvert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{grandtotalconvert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="386" y="11" width="70" height="12" isRemoveLineWhenBlank="true" uuid="efbd7f2d-3d5d-4589-96ca-b707d28a81ea"/>
@@ -900,7 +900,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["(" + $F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP ) ]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33"/>
@@ -1000,7 +1000,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["("+$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-79" x="385" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d5ea6955-5ca2-4490-b6ce-c5b614e779a9">
@@ -1015,7 +1015,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["("+$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP ) +")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="455" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2"/>
