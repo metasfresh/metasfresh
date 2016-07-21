@@ -15,7 +15,8 @@ Here come the actual release notes:
 ## Features
  - #201 KPI Accounted Documents
  - #212 MRPProductInfo display Conference flag with sys config
-
+ - #226 show accounting currency in open items report
+ 
 ## Fixes
  - #153 PaymentRule = S in Invoice
 
