@@ -118,7 +118,7 @@ FROM
 			C_Invoice_v i
 			LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
 			LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
-			
+			--LEFT OUTER JOIN Fact_Acct fa ON fa.ad_table_id = get_table_id('C_Invoice') and record_id=i.c_invoice_id 
 			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=i.ad_client_id 
 			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
 			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
