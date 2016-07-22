@@ -24,7 +24,9 @@ package de.metas.allocation.api;
 
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
@@ -87,4 +89,11 @@ public interface IAllocationDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice);
+
+	/**
+	 * @param ctx
+	 * @param startTime
+	 * @return
+	 */
+	List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 }

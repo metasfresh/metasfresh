@@ -1,12 +1,18 @@
-package org.adempiere.acct.api;
+package de.metas.acct.api;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.util.ISingletonService;
+
+import de.metas.acct.spi.IDocumentRepostingHandler;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,29 +30,20 @@ import java.util.Date;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_GL_Journal;
-import org.compiere.model.I_GL_JournalBatch;
-
-public interface IGLJournalDAO extends ISingletonService
-
+public interface IDocumentBL extends ISingletonService
 {
+
 	/**
-	 * Retrieve all the active GL_Journal entries (if any) for the GL_JournalBatch given as parameter
-	 * 
-	 * @param batch
-	 * @return
+	 * @param handler
 	 */
-	List<I_GL_Journal> retrieveJournalsForBatch(I_GL_JournalBatch batch);
+	void registerHandler(IDocumentRepostingHandler handler);
 
 	/**
 	 * @param ctx
 	 * @param startTime
 	 * @return
 	 */
-	List<I_GL_Journal> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+	List<Object> retrievePostedWithoutFactActt(Properties ctx, Timestamp startTime);
+
+
 }

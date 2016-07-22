@@ -1,5 +1,7 @@
 package de.metas.banking.service;
 
+import java.util.Date;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -24,6 +26,7 @@ package de.metas.banking.service;
 
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BankStatement;
@@ -47,4 +50,11 @@ public interface IBankStatementDAO extends ISingletonService
 	 * @return true if given payment is present on any bank statement line or reference.
 	 */
 	boolean isPaymentOnBankStatement(I_C_Payment payment);
+
+	/**
+	 * @param ctx
+	 * @param startTime
+	 * @return
+	 */
+	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 }

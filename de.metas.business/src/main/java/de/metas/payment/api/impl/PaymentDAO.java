@@ -93,4 +93,5 @@ public class PaymentDAO extends AbstractPaymentDAO
 		}
 		return sqlValueBD;
 	}
+
 }

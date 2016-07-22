@@ -13,11 +13,11 @@ package de.metas.allocation.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,12 +26,15 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,6 +43,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
 
@@ -115,7 +119,7 @@ public class AllocationDAO implements IAllocationDAO
 		return retrieveLines(ctx, allocationHdrId, retrieveAll, trxName);
 	}
 
-	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID+"#retrieveAll")
+	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
 	/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
 			final int allocationHdrId,
 			final boolean retrieveAll,
@@ -125,11 +129,11 @@ public class AllocationDAO implements IAllocationDAO
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocationHdrId);
 
-		if(!retrieveAll)
+		if (!retrieveAll)
 		{
 			builder
-			.addOnlyActiveRecordsFilter()
-			.addOnlyContextClient();
+					.addOnlyActiveRecordsFilter()
+					.addOnlyContextClient();
 		}
 		return builder
 				.orderBy()
@@ -214,6 +218,7 @@ public class AllocationDAO implements IAllocationDAO
 		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
 		return retValue;
 	}
+
 	@Override
 	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final org.compiere.model.I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
 	{
@@ -226,7 +231,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty()) // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())        // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -270,5 +275,37 @@ public class AllocationDAO implements IAllocationDAO
 		// ? ROUND(NVL(v_AllocatedAmt,0), 2);
 		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
 		return retValue == null ? BigDecimal.ZERO : retValue;
+	}
+
+	@Override
+	public List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
+		subQueryBuilder
+			
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class));
+
+		final IQueryBuilder<I_C_AllocationHdr> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationHdr.class, ctx, trxName)
+			
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder
+				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
+				;
+		if (startTime != null)
+		{
+			queryBuilder.addCompareFilter(I_C_AllocationHdr.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+		queryBuilder
+				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
+				;
+
+		return queryBuilder
+				.create()
+				.list();
+
 	}
 }

@@ -24,14 +24,21 @@ package de.metas.payment.api.impl;
 
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -61,5 +68,37 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_C_PaySelectionLine.class);
+	}
+	
+	
+	
+	@Override
+	public List<I_C_Payment> retrievePostedWithoutFactAcct(final Properties ctx, final Timestamp startTime)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
+		subQueryBuilder
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
+
+		final IQueryBuilder<I_C_Payment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Payment.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
+				;
+		if (startTime != null)
+		{
+			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+		queryBuilder
+				.addNotInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
+				;
+
+		return queryBuilder
+				.create()
+				.list();
+
 	}
 }

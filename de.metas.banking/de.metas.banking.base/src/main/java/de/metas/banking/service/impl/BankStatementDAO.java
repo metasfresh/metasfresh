@@ -1,5 +1,7 @@
 package de.metas.banking.service.impl;
 
+import java.util.Date;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -24,14 +26,21 @@ package de.metas.banking.service.impl;
 
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.process.DocAction;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 
@@ -110,5 +119,43 @@ public class BankStatementDAO implements IBankStatementDAO
 		}
 
 		return false;
+	}
+	
+	@Override
+	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
+		subQueryBuilder
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+
+		final IQueryBuilder<I_C_BankStatement> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatement.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
+				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed);
+
+		
+		//TODO
+		// trx amt from lines shall not be 0 (probably sum)
+		//queryBuilder.filter(nonZeroFilter);
+		
+		if (startTime != null)
+		{
+			queryBuilder.addCompareFilter(I_C_Invoice.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+		queryBuilder
+				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
+				;
+
+		return queryBuilder
+				.create()
+				.list();
+
 	}
 }

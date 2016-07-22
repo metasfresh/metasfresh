@@ -24,7 +24,9 @@ package de.metas.payment.api;
 
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AllocationLine;
@@ -73,4 +75,11 @@ public interface IPaymentDAO extends ISingletonService
 	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
+
+	/**
+	 * @param ctx
+	 * @param startTime
+	 * @return
+	 */
+	List<I_C_Payment> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 }
