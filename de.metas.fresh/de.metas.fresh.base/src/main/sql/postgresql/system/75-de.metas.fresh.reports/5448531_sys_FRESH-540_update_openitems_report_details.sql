@@ -39,12 +39,36 @@ SELECT
 	oi.BPValue as Value,
 	oi.BPName as Name,
 	oi.IsInPaySelection as PassForPayment,
-	oi.GrandTotalConvert,
-	oi.OpenAmtConvert,
-	oi.main_iso_code
+	(CASE WHEN (cc.C_Currency_ID != c.C_Currency_ID) THEN currencyConvert(oi.GrandTotal
+			, cc.C_Currency_ID -- p_curfrom_id
+			, c.C_Currency_ID -- p_curto_id
+			, $8 -- p_convdate (Reference_Date)
+			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
+			, oi.AD_Client_ID
+			, oi.ad_org_id
+			)
+		ELSE NULL
+	END)	AS GrandTotalConvert,
+	(CASE WHEN (cc.C_Currency_ID != c.C_Currency_ID) THEN currencyConvert(oi.OpenAmt
+			, cc.C_Currency_ID -- p_curfrom_id
+			, c.C_Currency_ID -- p_curto_id
+			, $8 -- p_convdate (Reference_Date)
+			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
+			, oi.AD_Client_ID
+			, oi.ad_org_id
+			)
+		ELSE NULL
+	END)	AS OpenAmtConvert,
+	(CASE WHEN (cc.C_Currency_ID != c.C_Currency_ID) THEN c.iso_code
+	ELSE NULL 
+	END) AS main_currency
 	
 FROM de_metas_endcustomer_fresh_reports.OpenItems_Report($8, $10) oi
 
+LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=oi.ad_client_id 
+LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
+LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
+INNER JOIN C_Currency cc ON cc.iso_code=oi.CurrencyCode
 
 WHERE
 	oi.AD_Org_ID = (CASE WHEN $1 IS NULL THEN oi.AD_Org_ID ELSE $1 END)

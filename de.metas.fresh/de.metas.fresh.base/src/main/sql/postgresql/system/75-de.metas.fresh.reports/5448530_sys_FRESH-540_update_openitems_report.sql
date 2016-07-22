@@ -28,10 +28,6 @@ create table de_metas_endcustomer_fresh_reports.OpenItems_Report
 	, AD_Client_ID numeric
 	, InvoiceCollectionType char(1)
 	, Reference_Date date
-
-	,grandtotalconvert numeric
-	,openamtconvert numeric
-	,main_iso_code char(3)
 );
 
 
@@ -63,23 +59,7 @@ SELECT
 	oi.AD_Org_ID,
 	oi.AD_Client_ID,
 	oi.InvoiceCollectionType,
-	$1 as Reference_Date,
-	-- foreign currency
-	(case when oi.main_currency != oi.C_Currency_ID 
-		THEN oi.GrandTotal * 
-			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') limit 1 ) 
-	ELSE NULL 
-	END) AS grandtotalconvert,
-	(case when oi.main_currency != oi.C_Currency_ID 
-		THEN oi.OpenAmt * 
-			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') limit 1 ) 
-	ELSE NULL 
-	END) AS openamtconvert,
-
-	(case when oi.main_currency != oi.C_Currency_ID 
-		THEN oi.main_iso_code
-	ELSE NULL
-	END) AS main_iso_code
+	$1 as Reference_Date
 FROM
 	(
 		SELECT
@@ -111,19 +91,11 @@ FROM
 			i.InvoiceCollectionType,
 			i.C_Currency_ID,
 			i.C_Invoice_ID,
-			i.MultiplierAP,
-			c.C_Currency_ID as main_currency,
-			c.iso_code as main_iso_code
+			i.MultiplierAP
 		FROM
 			C_Invoice_v i
 			LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
 			LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
-			
-			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=i.ad_client_id 
-			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
-			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
-			
-
 		WHERE true
 			AND i.DocStatus IN ('CO','CL','RE')
 	)as oi

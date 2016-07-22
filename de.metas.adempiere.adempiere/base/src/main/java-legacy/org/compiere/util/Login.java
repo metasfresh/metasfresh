@@ -37,6 +37,7 @@ import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.model.I_M_PriceList_Version;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
@@ -46,7 +47,9 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCountry;
@@ -964,7 +967,11 @@ public class Login
 					+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
 					+ "WHERE c.IsKey='Y' AND t.IsActive='Y'"
 					+ " AND EXISTS (SELECT * FROM AD_Column cc "
-					+ " WHERE ColumnName = 'IsDefault' AND t.AD_Table_ID=cc.AD_Table_ID AND cc.IsActive='Y')";
+					+ " WHERE ColumnName = 'IsDefault' AND t.AD_Table_ID=cc.AD_Table_ID AND cc.IsActive='Y')"
+					
+					// FRESH-536: Do not load pricelist and pricelist version 
+					+ " AND t." + I_AD_Table.COLUMNNAME_AD_Table_ID + " <> " + InterfaceWrapperHelper.getTableId(I_M_PriceList.class)
+					+ " AND t." + I_AD_Table.COLUMNNAME_AD_Table_ID + " <> " + InterfaceWrapperHelper.getTableId(I_M_PriceList_Version.class);
 			pstmt = DB.prepareStatement(sqlDefaulValues, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 			while (rs.next())
