@@ -25,12 +25,15 @@ Here come the actual release notes:
 
 ## Features
  - #152 Improvements in  counter documents view and window
+   * Added different fields. Renamed fields for better understanding. Added different validation rules.
  - #173 Window Dunning Candidates - new Field DocumentNo
+   * Included the Invoice Document No. in Dunning Candidates window.
  - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
-   * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
+   * Skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
  - FRESH-402 Procurement bidding
-   * adding jasper file for the procurement documents
+   * Adding jasper file for the procurement documents
  - #181 Customer specific Lieferschein without Price
+   * New Jasper Shipment Document that does not show the prices for each line.
 
 ## Fixes
  - #216 Accounting: Invoice grand total Fact_Acct line was not found
