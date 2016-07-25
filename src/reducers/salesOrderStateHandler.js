@@ -42,27 +42,11 @@ const initialState = {
     isSubheaderShow: false,
     autocomplete: {
         query: "",
-        results: [{
-            name: 'Jazzy Innovations',
-            address: 'Tracka 18, Gliwice, Poland',
-            vat: '541-141-56-23'
-        }]
+        results: []
     },
     recentPartners: [{
         id: 1,
-        name: 'Jazzy Innovations',
-        address: 'Tracka 18, Gliwice, Poland',
-        vat: '541-141-56-23'
-    },{
-        id: 2,
-        name: 'Innovations',
-        address: 'Jazzy 18, Gliwice, Poland',
-        vat: '541-141-56-23'
-    },{
-        id: 3,
-        name: 'Jazzy',
-        address: 'Innovation 18, Gliwice, Poland',
-        vat: '541-141-56-23'
+        n: 'Jazzy Innovations'
     }],
     recentProducts: [{
         id: 1,

@@ -11,7 +11,6 @@ class ProductSearch extends Component {
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
                 <div className="panel-title">{salesOrderWindow.M_Product_ID ? salesOrderWindow.M_Product_ID.caption : ""}</div>
-                <Dropdown items={recentProducts} />
                 <div className="row">
                     <div className="form-group col-sm-4">
                         <label>Packages amount</label>

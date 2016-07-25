@@ -2,15 +2,16 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import DropdownPartnerItem from './DropdownPartnerItem';
-import {autocomplete, autocompleteRequest} from '../../actions/SalesOrderActions';
+import {autocomplete, autocompleteRequest, autocompleteSuccess} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
         super(props);
     }
     handleSelect = (e, select) => {
+        e.preventDefault();
         this.inputSearch.value = select.n;
-        this.inputSearchRest.innerHTML = select.n + " VAT " + select.n;
+        this.inputSearchRest.innerHTML = select.n;
         this.handleBlur();
     }
     handleBlur = () => {
@@ -18,21 +19,26 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        this.props.dispatch(autocomplete(''));
+        this.handleChange();
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
-        e.preventDefault();
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
-        this.props.dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
+
+        if(this.inputSearch.value == ""){
+            this.props.dispatch(autocompleteSuccess([]));
+        }else{
+            this.props.dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
+        }
     }
     handleClear = (e) => {
         e.preventDefault();
         this.inputSearchRest.innerHTML = "";
         this.inputSearch.value = "";
         this.props.dispatch(autocomplete(""));
+        this.props.dispatch(autocompleteSuccess([]));
     }
     renderRecent = () => {
         const {recent} = this.props;
@@ -70,11 +76,10 @@ class Dropdown extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {autocomplete.query ? "Are you looking for..." : "Recent lookups"}
+                        {autocomplete.results.length > 0 ? "Are you looking for..." : "Recent lookups"}
                     </div>
-                    <div>
-                        {autocomplete.query ? this.renderLookup() : this.renderRecent()}
-                    </div>
+                    {autocomplete.results.length <= 0 && <div>{this.renderRecent()}</div> }
+                    {autocomplete.results.length > 0 && <div>{this.renderLookup()}</div> }
                 </div>
             </div>
         )
@@ -83,7 +88,6 @@ class Dropdown extends Component {
 
 
 Dropdown.propTypes = {
-    recentPartners: PropTypes.array.isRequired,
     autocomplete: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -97,6 +101,7 @@ function mapStateToProps(state) {
             query: ""
         }
     }
+
 
     return {
         autocomplete
