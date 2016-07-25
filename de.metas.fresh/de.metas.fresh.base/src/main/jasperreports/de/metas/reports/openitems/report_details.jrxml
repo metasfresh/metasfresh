@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-21T18:09:28 -->
+<!-- 2016-07-22T16:24:30 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -173,9 +173,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="4023a70e-49c5-442f-bf96-b172f4901aba">
-						<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-83" x="259" y="12" width="68" height="12" isRemoveLineWhenBlank="true" uuid="4023a70e-49c5-442f-bf96-b172f4901aba"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,9 +186,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{total_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="55fcb0b0-726d-44c5-ac79-8ef6aee32020">
-						<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="55fcb0b0-726d-44c5-ac79-8ef6aee32020"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -318,9 +314,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="5641fc24-9eca-4f3b-8253-b60b7b8aa483">
-						<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-83" x="259" y="12" width="69" height="12" isRemoveLineWhenBlank="true" uuid="5641fc24-9eca-4f3b-8253-b60b7b8aa483"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,9 +327,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d4173f88-feea-46e5-9445-b17649663e42">
-						<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d4173f88-feea-46e5-9445-b17649663e42"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -626,7 +618,9 @@ DocumentNo]]>
 				<text><![CDATA[Angewiesen]]></text>
 			</staticText>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="456" y="25" width="35" height="12" isRemoveLineWhenBlank="true" uuid="83467322-fead-40a7-b5e1-63766da3c3af"/>
+				<reportElement key="textField-109" x="456" y="25" width="35" height="12" isRemoveLineWhenBlank="true" uuid="83467322-fead-40a7-b5e1-63766da3c3af">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -900,7 +894,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP ) ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33"/>
@@ -988,9 +982,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-83" x="258" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="f9d22082-b675-442d-a247-88fae9b9b180">
-					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="f9d22082-b675-442d-a247-88fae9b9b180"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1003,9 +995,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-79" x="385" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d5ea6955-5ca2-4490-b6ce-c5b614e779a9">
-					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-79" x="386" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="d5ea6955-5ca2-4490-b6ce-c5b614e779a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1018,7 +1008,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="455" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2"/>
+				<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
