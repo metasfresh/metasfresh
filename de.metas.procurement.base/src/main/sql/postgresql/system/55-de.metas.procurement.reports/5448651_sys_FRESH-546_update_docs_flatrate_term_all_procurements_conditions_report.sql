@@ -458,7 +458,7 @@ WHERE ft.type_conditions='Procuremnt' AND ft.isActive='Y'
 	AND ft.PMM_Product_ID IS NOT NULL AND Bill_BPartner_ID IS NOT NULL
 	AND COALESCE(ft.Bill_BPartner_ID = $1, true)
 	AND COALESCE(p.M_Product_ID = $2, true)
-	AND fc.isRfQConditions = 'N'
+	AND NOT EXISTS (SELECT r.C_Flatrate_Conditions_ID FROM C_RfQ r WHERE fc.C_Flatrate_Conditions_ID = r.C_Flatrate_Conditions_ID)
 	
 )ft
 
