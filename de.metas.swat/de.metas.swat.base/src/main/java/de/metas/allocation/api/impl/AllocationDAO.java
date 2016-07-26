@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -45,7 +46,9 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_GL_Journal;
 import org.compiere.model.X_C_Payment;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -233,7 +236,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                 // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                        // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -282,18 +285,24 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final IQuery<I_Fact_Acct> subQueryFilter = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+		final IQuery<I_Fact_Acct> subQueryFilter = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.create();
 
-		final IQueryBuilder<I_C_AllocationLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
+		final ICompositeQueryFilter<I_C_AllocationLine> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_AllocationLine.class).setJoinOr()
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_Amount, Env.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_DiscountAmt, Env.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_WriteOffAmt, Env.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, Env.ZERO);
 
-		.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Operator.GREATER, Env.ZERO);
+		final IQueryBuilder<I_C_AllocationLine> queryBuilder = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Operator.GREATER, Env.ZERO)
+				.filter(nonZeroFilter);
 
-	
 		if (startTime != null)
 		{
 			queryBuilder.addCompareFilter(I_C_AllocationLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
@@ -303,10 +312,10 @@ public class AllocationDAO implements IAllocationDAO
 				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class)
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
+				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
 
 		.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryFilter) // has no accounting
-
-		.create()
+				.create()
 				.list(I_C_AllocationHdr.class);
 
 	}
