@@ -13,6 +13,8 @@ import {
 class NewSalesOrder extends Component {
     constructor(props){
         super(props);
+    }
+    componentDidMount(){
         this.props.dispatch(createWindow());
     }
     render() {

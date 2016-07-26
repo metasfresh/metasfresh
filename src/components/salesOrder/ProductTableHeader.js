@@ -6,38 +6,40 @@ class ProductTableHeader extends Component {
         super(props);
     }
     render() {
-        const {salesOrderWindow} = this.props;
+        const tabProp = this.props.salesOrderTable;
 
         return (
             <tr>
-                <th>No.</th>
-                <th>Product</th>
-                <th>{salesOrderWindow.QtyEntered_TU ? salesOrderWindow.QtyEntered_TU.caption : ""}</th>
-                <th>{salesOrderWindow.M_HU_PI_Item_Product_ID ? salesOrderWindow.M_HU_PI_Item_Product_ID.caption : ""}</th>
-                <th>{salesOrderWindow.QtyEntered ? salesOrderWindow.QtyEntered.caption : ""}</th>
-                <th>{salesOrderWindow.PriceEntered ? salesOrderWindow.PriceEntered.caption : ""}</th>
-                <th>{salesOrderWindow.C_UOM_ID ? salesOrderWindow.C_UOM_ID.caption : ""}</th>
-                <th>Line amount</th>
-                <th>Discount</th>
-                <th>Final amount</th>
+                {tabProp.childDescriptors && [
+                    <th key="Line">{tabProp.childDescriptors.Line.caption}</th>,
+                    <th key="Product">Product</th>,
+                    <th key="QtyEnteredTU">{tabProp.childDescriptors.QtyEnteredTU.caption }</th>,
+                    <th key="M_HU_PI_Item_Product_ID">{tabProp.childDescriptors.M_HU_PI_Item_Product_ID.caption }</th>,
+                    <th key="QtyEntered">{tabProp.childDescriptors.QtyEntered.caption }</th>,
+                    <th key="PriceEntered">{tabProp.childDescriptors.PriceEntered.caption }</th>,
+                    <th key="C_UOM_ID">{tabProp.childDescriptors.C_UOM_ID.caption }</th>,
+                    <th key="LineNetAmt">{tabProp.childDescriptors.LineNetAmt.caption }</th>,
+                    <th key="Discount">{tabProp.childDescriptors.Discount.caption }</th>,
+                    <th key="GrandTotal">{tabProp.childDescriptors.GrandTotal.caption }</th>]
+                }
             </tr>
         )
     }
 }
 
 ProductTableHeader.propTypes = {
-    salesOrderWindow: PropTypes.object.isRequired
+    salesOrderTable: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
-        salesOrderWindow
+        salesOrderTable
     } = salesOrderStateHandler || {
-        salesOrderWindow: {}
+        salesOrderTable: {}
     }
     return {
-        salesOrderWindow
+        salesOrderTable
     }
 }
 

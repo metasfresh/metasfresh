@@ -19,7 +19,9 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        this.handleChange();
+        if(this.inputSearch.value !== this.props.autocomplete.query){
+            this.handleChange();
+        }
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
@@ -35,10 +37,8 @@ class Dropdown extends Component {
     }
     handleClear = (e) => {
         e.preventDefault();
-        this.inputSearchRest.innerHTML = "";
         this.inputSearch.value = "";
-        this.props.dispatch(autocomplete(""));
-        this.props.dispatch(autocompleteSuccess([]));
+        this.handleChange();
     }
     renderRecent = () => {
         const {recent} = this.props;
@@ -52,8 +52,8 @@ class Dropdown extends Component {
         return (
             <div
                 tabIndex="0"
-                ref={(c) => this.dropdown = c}
                 onFocus={()=>this.inputSearch.focus()}
+                ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
                 className="input-dropdown"
             >
@@ -67,9 +67,9 @@ class Dropdown extends Component {
                             ref={(c) => this.inputSearch = c}
                         />
                     </div>
-                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest">
-                    </div>
-                    <div className="input-toggled-icon">
+                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest" />
+
+                    <div className="input-toggled-icon" tabIndex="0">
                         <i onClick={this.handleClear} className="icon-rounded icon-rounded-space">x</i>
                     </div>
                 </div>

@@ -120,7 +120,7 @@ export function autocompleteRequest(query, propertyName) {
           "params": {
             "filter": query,
             "firstRow": 0,
-            "pageLength": 10
+            "pageLength": 5
           }
         })
         .then((response) => {
@@ -142,7 +142,7 @@ export function createWindow(){
         .then((response) => {
             return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
         }).then((response) => {
-            dispatch(newSalesOrderSuccess(response.data.childDescriptors.Auftrag.childDescriptors));
+            dispatch(newSalesOrderSuccess(response.data.childDescriptors));
         });
     }
 }

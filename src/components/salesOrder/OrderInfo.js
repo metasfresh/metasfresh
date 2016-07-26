@@ -15,7 +15,7 @@ class OrderInfo extends Component {
                         <div className="label label-warning pull-xs-right">Open</div>
                     </div>
                     <div className="col-xs-5 col-xs-offset-1">
-                        Billing status
+                        {salesOrderWindow.InvoiceStatus ? salesOrderWindow.InvoiceStatus.caption : ""}
                         <div className="label label-warning pull-xs-right">Open</div>
                     </div>
                 </div>
