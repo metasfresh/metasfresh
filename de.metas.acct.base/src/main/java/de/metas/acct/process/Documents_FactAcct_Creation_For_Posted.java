@@ -1,10 +1,12 @@
 package de.metas.acct.process;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
@@ -35,6 +37,8 @@ import de.metas.acct.api.IDocumentBL;
 
 public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 {
+	final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -52,9 +56,10 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 		 */
 
 		// today, 00:00:00
-		//@SuppressWarnings("deprecation")
+		// @SuppressWarnings("deprecation")
 		// final Date startDate = new Date(116,4,2);
-		final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
+		//final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
+		final Timestamp startTime = TimeUtil.asTimestamp(new Date(114,4,2));
 
 		final List<Object> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactActt(getCtx(), startTime);
 		if (documentsPostedNoFacts.isEmpty())
@@ -62,17 +67,23 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 			// do nothing
 			return "No Allocation Headers to post";
 		}
+		
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
 		final IPostingService postingService = Services.get(IPostingService.class);
 
 		for (final Object document : documentsPostedNoFacts)
 		{
+			System.out.println(getAD_PInstance_ID());
+			loggable.addLog("Document Reposted {0}: ", document);
+
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as this document is posted
 					.setContext(getCtx(), getTrxName())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setDocument(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
+					.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 					.setForce(false) // don't force it
 					.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document

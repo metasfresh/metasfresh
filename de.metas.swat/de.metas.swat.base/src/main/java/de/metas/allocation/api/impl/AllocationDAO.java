@@ -40,12 +40,14 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.util.CacheCtx;
@@ -231,7 +233,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())        // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                 // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -282,30 +284,30 @@ public class AllocationDAO implements IAllocationDAO
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
-		subQueryBuilder
-			
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class));
+		final IQuery<I_Fact_Acct> subQueryFilter = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+				.create();
 
-		final IQueryBuilder<I_C_AllocationHdr> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationHdr.class, ctx, trxName)
-			
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_C_AllocationLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
 
-		queryBuilder
-				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
-				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
-				;
+		.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Operator.GREATER, Env.ZERO);
+
+	
 		if (startTime != null)
 		{
-			queryBuilder.addCompareFilter(I_C_AllocationHdr.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+			queryBuilder.addCompareFilter(I_C_AllocationLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
 		}
-		queryBuilder
-				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
-				;
 
 		return queryBuilder
-				.create()
-				.list();
+				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class)
+				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
+
+		.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryFilter) // has no accounting
+
+		.create()
+				.list(I_C_AllocationHdr.class);
 
 	}
 }

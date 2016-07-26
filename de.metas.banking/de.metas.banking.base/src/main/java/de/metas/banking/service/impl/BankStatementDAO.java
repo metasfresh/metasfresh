@@ -15,15 +15,14 @@ import java.util.Date;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -39,8 +38,8 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 
@@ -120,7 +119,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		return false;
 	}
-	
+
 	@Override
 	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
@@ -132,30 +131,24 @@ public class BankStatementDAO implements IBankStatementDAO
 		subQueryBuilder
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
 
-		final IQueryBuilder<I_C_BankStatement> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatement.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_C_BankStatementLine> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatementLine.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
 
-		queryBuilder
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed);
-
-		
-		//TODO
-		// trx amt from lines shall not be 0 (probably sum)
-		//queryBuilder.filter(nonZeroFilter);
-		
 		if (startTime != null)
 		{
-			queryBuilder.addCompareFilter(I_C_Invoice.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+			queryBuilder.addCompareFilter(I_C_BankStatementLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
 		}
-		queryBuilder
-				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
-				;
 
 		return queryBuilder
+				.andCollect(I_C_BankStatement.COLUMN_C_BankStatement_ID, I_C_BankStatement.class)
+
+		.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
+				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
+				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
 				.create()
-				.list();
+				.list(I_C_BankStatement.class);
 
 	}
 }
