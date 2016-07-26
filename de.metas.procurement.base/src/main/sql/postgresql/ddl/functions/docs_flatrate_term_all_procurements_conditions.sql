@@ -452,7 +452,6 @@ SELECT	C_Flatrate_Term_ID,
 
 FROM C_Flatrate_Term ft
 JOIN PMM_Product p ON p.PMM_Product_ID = ft.PMM_Product_ID
-JOIN C_Flatrate_Conditions fc ON ft.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
 WHERE ft.type_conditions='Procuremnt' AND ft.isActive='Y'
 	AND ft.startdate::date<=now()::date AND ft.enddate::date>=now()::date
 	AND ft.PMM_Product_ID IS NOT NULL AND Bill_BPartner_ID IS NOT NULL
