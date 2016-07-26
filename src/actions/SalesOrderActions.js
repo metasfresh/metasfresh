@@ -100,6 +100,41 @@ export function autocomplete(query) {
         query: query
     }
 }
+export function autocompleteSuccess(results) {
+    return {
+        type: 'AUTOCOMPLETE_SUCCESS',
+        results: results
+    }
+}
+export function autocompleteRequest(query, propertyName) {
+    return (dispatch) => {
+        axios.post(config.API_URL + '/windows/executeCommand/1', {
+          "propertyPath": {
+            "gridPropertyName": null,
+            "rowId": null,
+            "propertyName": {
+              "n": propertyName + "#values"
+            }
+          },
+          "commandId": "find",
+          "params": {
+            "filter": query,
+            "firstRow": 0,
+            "pageLength": 5
+          }
+        })
+        .then((response) => {
+            dispatch(autocompleteSuccess(response.data.value.l));
+        });
+    }
+}
+
+export function newSalesOrderSuccess(response) {
+    return {
+        type: 'NEW_SALES_ORDER_CREATED',
+        response: response
+    }
+}
 
 export function createWindow(){
     return (dispatch) => {
@@ -107,7 +142,7 @@ export function createWindow(){
         .then((response) => {
             return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
         }).then((response) => {
-            console.log(response.data);
+            dispatch(newSalesOrderSuccess(response.data.childDescriptors));
         });
     }
 }

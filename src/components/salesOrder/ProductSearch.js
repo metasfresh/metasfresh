@@ -1,26 +1,25 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import Dropdown from './Dropdown';
 
 class ProductSearch extends Component {
     constructor(props) {
         super(props);
     }
     render() {
+        const {salesOrderWindow,recentProducts} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
-                <div className="panel-title">Product name</div>
-                <div className="input-toggled">
-                    <span className="font-weight-bold">Convenience Salad 250g</span>
-                    <i className="icon-rounded icon-rounded-space pull-xs-right">x</i>
-                    <span className="pull-xs-right">IFCO 510 x 10Stk</span>
-                </div>
+                <div className="panel-title">{salesOrderWindow.M_Product_ID ? salesOrderWindow.M_Product_ID.caption : ""}</div>
+                <Dropdown property="M_Product_ID" recent={recentProducts} />
+
                 <div className="row">
                     <div className="form-group col-sm-4">
                         <label>Packages amount</label>
                         <input className="form-control" type="number"/>
                     </div>
                     <div className="form-group col-sm-4">
-                        <label>Product quantity</label>
+                        <label>{salesOrderWindow.Qty_FastInput_TU ? salesOrderWindow.Qty_FastInput_TU.caption : ""}</label>
                         <div className="input-icon-container input-block">
                             <input className="form-control form-control-meta" type="number"/>
                             <i className="meta-icon-edit input-icon-right"></i>
@@ -39,19 +38,23 @@ class ProductSearch extends Component {
 
 
 ProductSearch.propTypes = {
+    recentProducts: PropTypes.array.isRequired,
+    salesOrderWindow: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler } = state;
+    const {salesOrderStateHandler} = state;
     const {
-
+        salesOrderWindow,
+        recentProducts
     } = salesOrderStateHandler || {
-
+        salesOrderWindow: {},
+        recentProducts: []
     }
-
     return {
-
+        salesOrderWindow,
+        recentProducts
     }
 }
 

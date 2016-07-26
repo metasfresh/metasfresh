@@ -2,15 +2,16 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import DropdownPartnerItem from './DropdownPartnerItem';
-import {autocomplete} from '../../actions/SalesOrderActions';
+import {autocomplete, autocompleteRequest, autocompleteSuccess} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
         super(props);
     }
     handleSelect = (e, select) => {
-        this.inputSearch.value = select.name;
-        this.inputSearchRest.innerHTML = select.address + " VAT " + select.vat;
+        e.preventDefault();
+        this.inputSearch.value = select.n;
+        this.inputSearchRest.innerHTML = select.n;
         this.handleBlur();
     }
     handleBlur = () => {
@@ -18,31 +19,41 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        this.props.dispatch(autocomplete(''));
+        if(this.inputSearch.value !== this.props.autocomplete.query){
+            this.handleChange();
+        }
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
-        e.preventDefault();
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         this.props.dispatch(autocomplete(this.inputSearch.value));
+
+        if(this.inputSearch.value == ""){
+            this.props.dispatch(autocompleteSuccess([]));
+        }else{
+            this.props.dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
+        }
     }
     handleClear = (e) => {
         e.preventDefault();
-        this.inputSearchRest.innerHTML = "";
         this.inputSearch.value = "";
-        this.props.dispatch(autocomplete(""));
+        this.handleChange();
     }
     renderRecent = () => {
-        return this.props.recentPartners.map(partner => <DropdownPartnerItem key={partner.id} partner={partner} onClick={this.handleSelect}/> );
+        const {recent} = this.props;
+        return recent.map(item => <DropdownPartnerItem key={item.id} data={item} onClick={this.handleSelect}/> );
+    }
+    renderLookup = () => {
+        return this.props.autocomplete.results.map(partner => <DropdownPartnerItem key={partner.id} data={partner} onClick={this.handleSelect}/> );
     }
     render() {
         const {autocomplete} = this.props;
         return (
             <div
                 tabIndex="0"
-                ref={(c) => this.dropdown = c}
                 onFocus={()=>this.inputSearch.focus()}
+                ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
                 className="input-dropdown"
             >
@@ -56,20 +67,19 @@ class Dropdown extends Component {
                             ref={(c) => this.inputSearch = c}
                         />
                     </div>
-                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest">
-                    </div>
-                    <div className="input-toggled-icon">
+                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest" />
+
+                    <div className="input-toggled-icon" tabIndex="0">
                         <i onClick={this.handleClear} className="icon-rounded icon-rounded-space">x</i>
                     </div>
                 </div>
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {autocomplete.query ? "Are you looking for..." : "Recent partners"}
+                        {autocomplete.results.length > 0 ? "Are you looking for..." : "Recent lookups"}
                     </div>
-                    <div>
-                        {this.renderRecent()}
-                    </div>
+                    {autocomplete.results.length <= 0 && <div>{this.renderRecent()}</div> }
+                    {autocomplete.results.length > 0 && <div>{this.renderLookup()}</div> }
                 </div>
             </div>
         )
@@ -78,7 +88,6 @@ class Dropdown extends Component {
 
 
 Dropdown.propTypes = {
-    recentPartners: PropTypes.array.isRequired,
     autocomplete: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -86,17 +95,15 @@ Dropdown.propTypes = {
 function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
-        recentPartners,
         autocomplete
     } = salesOrderStateHandler || {
-        recentPartners: [],
         autocomplete: {
             query: ""
         }
     }
 
+
     return {
-        recentPartners,
         autocomplete
     }
 }

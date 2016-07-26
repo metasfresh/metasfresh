@@ -21,25 +21,27 @@ class Purchaser extends Component {
         this.props.dispatch(invoiceChanged(this.invoiceInput.value));
     }
     render() {
-        const {purchaser} = this.props;
+        const {purchaser, salesOrderWindow, recentPartners} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
 
-                <div className="panel-title">Purchaser</div>
-                <Dropdown items={purchaser.recent} />
+                <div className="panel-title">{salesOrderWindow.C_BPartner_ID ? salesOrderWindow.C_BPartner_ID.caption : ""}</div>
+                <Dropdown recent={recentPartners} property="C_BPartner_ID" />
 
-                <div className="panel-title">Invoice partner</div>
-                <Dropdown items={purchaser.recent} />
+                <div className="panel-title">{salesOrderWindow.Bill_BPartner_ID ? salesOrderWindow.Bill_BPartner_ID.caption : ""}</div>
+                <Dropdown recent={recentPartners} property="Bill_BPartner_ID" />
 
                 <div className="panel-title">Unloading partner</div>
-                <Dropdown items={purchaser.recent} />
+                <Dropdown recent={recentPartners} />
             </div>
         )
     }
 }
 
 
-Purchaser.propTypes = {
+Purchaser.propTypes ={
+    recentPartners: PropTypes.array.isRequired,
+    salesOrderWindow: PropTypes.object.isRequired,
     purchaser: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -47,13 +49,18 @@ Purchaser.propTypes = {
 function mapStateToProps(state) {
     const { salesOrderStateHandler } = state;
     const {
-        purchaser
+        recentPartners,
+        purchaser,
+        salesOrderWindow
     } = salesOrderStateHandler || {
-        purchaser: {}
+        recentPartners: [],
+        purchaser: {},
+        salesOrderWindow: {}
     }
-
     return {
-        purchaser
+        recentPartners,
+        purchaser,
+        salesOrderWindow
     }
 }
 

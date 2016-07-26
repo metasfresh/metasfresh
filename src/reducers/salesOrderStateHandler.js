@@ -13,6 +13,8 @@ const dataBenchmark = (obj, count) => {
 }
 
 const initialState = {
+    salesOrderWindow: {},
+    salesOrderTable: {},
     purchaser: {
         recent: [],
         purchaser: '',
@@ -41,27 +43,15 @@ const initialState = {
     isSubheaderShow: false,
     autocomplete: {
         query: "",
-        results: [{
-            name: 'Jazzy Innovations',
-            address: 'Tracka 18, Gliwice, Poland',
-            vat: '541-141-56-23'
-        }]
+        results: []
     },
     recentPartners: [{
         id: 1,
-        name: 'Jazzy Innovations',
-        address: 'Tracka 18, Gliwice, Poland',
-        vat: '541-141-56-23'
-    },{
-        id: 2,
-        name: 'Innovations',
-        address: 'Jazzy 18, Gliwice, Poland',
-        vat: '541-141-56-23'
-    },{
-        id: 3,
-        name: 'Jazzy',
-        address: 'Innovation 18, Gliwice, Poland',
-        vat: '541-141-56-23'
+        n: 'Jazzy Innovations'
+    }],
+    recentProducts: [{
+        id: 1,
+        name: 'Salad'
     }],
     orderList: dataBenchmark({
         id: 0,
@@ -158,6 +148,17 @@ export default function salesOrderStateHandler(state = initialState, action) {
                 autocomplete: Object.assign({}, state.autocomplete, {
                     query: action.query
                 })
+            })
+        case types.AUTOCOMPLETE_SUCCESS:
+            return Object.assign({}, state, {
+                autocomplete: Object.assign({}, state.autocomplete, {
+                    results: action.results
+                })
+            })
+        case types.NEW_SALES_ORDER_CREATED:
+            return Object.assign({}, state, {
+                salesOrderWindow: action.response.Auftrag.childDescriptors,
+                salesOrderTable: action.response.Orderline_includedTab
             })
 
         default:
