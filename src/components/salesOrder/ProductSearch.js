@@ -10,8 +10,10 @@ class ProductSearch extends Component {
         const {salesOrderWindow,recentProducts} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
-                <div className="panel-title">{salesOrderWindow.M_Product_ID ? salesOrderWindow.M_Product_ID.caption : ""}</div>
-                <Dropdown property="M_Product_ID" recent={recentProducts} />
+                {salesOrderWindow.M_Product_ID && [
+                    <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
+                    <Dropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
+                ]}
 
                 <div className="row">
                     <div className="form-group col-sm-4">
@@ -19,11 +21,13 @@ class ProductSearch extends Component {
                         <input className="form-control" type="number"/>
                     </div>
                     <div className="form-group col-sm-4">
-                        <label>{salesOrderWindow.Qty_FastInput_TU ? salesOrderWindow.Qty_FastInput_TU.caption : ""}</label>
-                        <div className="input-icon-container input-block">
-                            <input className="form-control form-control-meta" type="number"/>
-                            <i className="meta-icon-edit input-icon-right"></i>
-                        </div>
+                        {salesOrderWindow.Qty_FastInput_TU && [
+                            <label key="label">{salesOrderWindow.Qty_FastInput_TU.caption}</label>,
+                            <div key="input" className="input-icon-container input-block">
+                                <input className="form-control form-control-meta" type="number"/>
+                                <i className="meta-icon-edit input-icon-right"></i>
+                            </div>
+                        ]}
                     </div>
 
                     <div className="form-group col-sm-2 col-sm-offset-2">

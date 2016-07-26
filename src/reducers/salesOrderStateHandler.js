@@ -51,7 +51,7 @@ const initialState = {
     }],
     recentProducts: [{
         id: 1,
-        name: 'Salad'
+        n: 'Grüne Paloxe_Grüne Paloxe'
     }],
     orderList: dataBenchmark({
         id: 0,
