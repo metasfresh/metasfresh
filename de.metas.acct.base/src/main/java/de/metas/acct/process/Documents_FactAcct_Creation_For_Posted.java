@@ -1,6 +1,5 @@
 package de.metas.acct.process;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -8,6 +7,8 @@ import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
@@ -35,6 +36,12 @@ import de.metas.acct.api.IDocumentBL;
  * #L%
  */
 
+/**
+ * The documents (created one day before) that were marked as posted but have no fact accounts will be reposted by this process
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 {
 	final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
@@ -42,40 +49,27 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		/*
-		 * "GL_Journal"
-		 * "M_Movement"
-		 * "C_Payment"
-		 * "C_BankStatement"
-		 * "M_MatchInv"
-		 * "C_AllocationHdr"
-		 * "C_Invoice"
-		 * "M_Inventory"
-		 * "M_InOut"
-		 * 
-		 */
-
-		// today, 00:00:00
-		// @SuppressWarnings("deprecation")
-		// final Date startDate = new Date(116,4,2);
-		//final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
-		final Timestamp startTime = TimeUtil.asTimestamp(new Date(114,4,2));
+		// this process is posting docuemnts that were created one day before the process runs
+		final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
 
 		final List<Object> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactActt(getCtx(), startTime);
 		if (documentsPostedNoFacts.isEmpty())
 		{
 			// do nothing
-			return "No Allocation Headers to post";
+			return "All documents are posted";
 		}
-		
+
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
 		final IPostingService postingService = Services.get(IPostingService.class);
 
 		for (final Object document : documentsPostedNoFacts)
 		{
-			System.out.println(getAD_PInstance_ID());
-			loggable.addLog("Document Reposted {0}: ", document);
+			final ITableRecordReference tableRecordRef = TableRecordReference.of(document);
+
+			// Note: Do not change this message!
+			// The view de_metas_acct.Reposted_Documents is based on it.
+			loggable.addLog("Document Reposted: AD_Table_ID = {}, Record_ID = {}.", tableRecordRef.getAD_Table_ID(), tableRecordRef.getRecord_ID());
 
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as this document is posted
