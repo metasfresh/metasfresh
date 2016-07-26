@@ -11,13 +11,15 @@ class ProductSearch extends Component {
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
                 <div className="panel-title">{salesOrderWindow.M_Product_ID ? salesOrderWindow.M_Product_ID.caption : ""}</div>
+                <Dropdown property="M_Product_ID" recent={recentProducts} />
+
                 <div className="row">
                     <div className="form-group col-sm-4">
                         <label>Packages amount</label>
                         <input className="form-control" type="number"/>
                     </div>
                     <div className="form-group col-sm-4">
-                        <label>Product quantity</label>
+                        <label>{salesOrderWindow.Qty_FastInput_TU ? salesOrderWindow.Qty_FastInput_TU.caption : ""}</label>
                         <div className="input-icon-container input-block">
                             <input className="form-control form-control-meta" type="number"/>
                             <i className="meta-icon-edit input-icon-right"></i>

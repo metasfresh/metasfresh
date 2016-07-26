@@ -113,12 +113,12 @@ export function autocompleteRequest(query, propertyName) {
             "gridPropertyName": null,
             "rowId": null,
             "propertyName": {
-              "n": "C_BPartner_ID#values"
+              "n": propertyName + "#values"
             }
           },
           "commandId": "find",
           "params": {
-            "filter": "G",
+            "filter": query,
             "firstRow": 0,
             "pageLength": 10
           }

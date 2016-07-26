@@ -190,7 +190,8 @@ body {
     float: left;
 }
 .input-toggled-rest {
-    width: 60%;
+    width: 59%;
+    margin-left: 1%;
     white-space: nowrap;
     overflow: hidden;
     float:left;

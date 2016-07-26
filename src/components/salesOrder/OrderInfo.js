@@ -11,7 +11,7 @@ class OrderInfo extends Component {
             <div className="panel panel-spaced">
                 <div className="row">
                     <div className="col-xs-5">
-                        Shipment status
+                        {salesOrderWindow.DeliveryStatus ? salesOrderWindow.DeliveryStatus.caption : ""}
                         <div className="label label-warning pull-xs-right">Open</div>
                     </div>
                     <div className="col-xs-5 col-xs-offset-1">
@@ -21,7 +21,7 @@ class OrderInfo extends Component {
                 </div>
                 <div className="m-t-2">
                     <div className="form-group row">
-                        <label className="col-sm-3 form-control-label">Order date</label>
+                        <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered ? salesOrderWindow.DateOrdered.caption : ""}</label>
                         <div className="col-sm-9">
                             <div className="input-icon-container input-block">
                                 <input className="form-control form-control-meta" type="text"/>
@@ -59,7 +59,7 @@ class OrderInfo extends Component {
                         </div>
                     </div>
                     <div className="form-group row">
-                        <label className="col-sm-3 form-control-label">Warehouse</label>
+                        <label className="col-sm-3 form-control-label">{salesOrderWindow.M_Warehouse_ID ? salesOrderWindow.M_Warehouse_ID.caption : ""}</label>
                         <div className="col-sm-9">
                             <div className="input-icon-container input-block">
                                 <input className="form-control form-control-meta" type="text"/>
