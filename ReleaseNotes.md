@@ -22,6 +22,7 @@ Here come the actual release notes:
  - #220 Do not load pricelist and pricelist version  on login
  - FRESH-402 Procurement bidding
    * minor jasper fix
+ - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
 
 # metasfresh 4.27.26 (2016-29)
 
