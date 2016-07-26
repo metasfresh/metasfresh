@@ -10,25 +10,31 @@ class OrderInfo extends Component {
         return (
             <div className="panel panel-spaced">
                 <div className="row">
-                    <div className="col-xs-5">
-                        {salesOrderWindow.DeliveryStatus ? salesOrderWindow.DeliveryStatus.caption : ""}
-                        <div className="label label-warning pull-xs-right">Open</div>
-                    </div>
-                    <div className="col-xs-5 col-xs-offset-1">
-                        {salesOrderWindow.InvoiceStatus ? salesOrderWindow.InvoiceStatus.caption : ""}
-                        <div className="label label-warning pull-xs-right">Open</div>
-                    </div>
+                    {(salesOrderWindow.DeliveryStatus && salesOrderWindow.DeliveryStatus.layoutInfo.displayed) &&
+                        <div className="col-xs-5">
+                            {salesOrderWindow.DeliveryStatus.caption}
+                            <div className="label label-warning pull-xs-right">Open</div>
+                        </div>
+                    }
+                    {(salesOrderWindow.InvoiceStatus && salesOrderWindow.InvoiceStatus.layoutInfo.displayed) &&
+                        <div className="col-xs-5 col-xs-offset-1">
+                            {salesOrderWindow.InvoiceStatus.caption}
+                            <div className="label label-warning pull-xs-right">Open</div>
+                        </div>
+                    }
                 </div>
                 <div className="m-t-2">
-                    <div className="form-group row">
-                        <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered ? salesOrderWindow.DateOrdered.caption : ""}</label>
-                        <div className="col-sm-9">
-                            <div className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" type="text"/>
-                                <i className="meta-icon-calendar input-icon-right"></i>
+                    {(salesOrderWindow.DateOrdered && salesOrderWindow.DateOrdered.layoutInfo.displayed) &&
+                        <div className="form-group row">
+                            <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered.caption}</label>
+                            <div className="col-sm-9">
+                                <div className="input-icon-container input-block">
+                                    <input className="form-control form-control-meta" type="text"/>
+                                    <i className="meta-icon-calendar input-icon-right"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Promised date</label>
                         <div className="col-sm-9">
@@ -58,15 +64,17 @@ class OrderInfo extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="form-group row">
-                        <label className="col-sm-3 form-control-label">{salesOrderWindow.M_Warehouse_ID ? salesOrderWindow.M_Warehouse_ID.caption : ""}</label>
-                        <div className="col-sm-9">
-                            <div className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" type="text"/>
-                                <i className="meta-icon-down input-icon-right input-icon-sm"></i>
+                    {(salesOrderWindow.M_Warehouse_ID && salesOrderWindow.M_Warehouse_ID.layoutInfo.displayed) &&
+                        <div className="form-group row">
+                            <label className="col-sm-3 form-control-label">{salesOrderWindow.M_Warehouse_ID.caption}</label>
+                            <div className="col-sm-9">
+                                <div className="input-icon-container input-block">
+                                    <input className="form-control form-control-meta" type="text"/>
+                                    <i className="meta-icon-down input-icon-right input-icon-sm"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                 </div>
                 <div className="m-t-2">
                     <button className="btn btn-sm btn-secondary-outline pull-xs-right">
