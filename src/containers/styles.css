@@ -443,3 +443,49 @@ body {
 .order-list-panel-body{
     font-size: 12px;
 }
+
+.tooltip-extended {
+    position: absolute;
+    display: none;
+    width: 100%;
+    z-index:100;
+}
+.tooltip-extended-show {
+    display: block;
+}
+
+.tooltip-extended-right {
+    left: 100%;
+}
+
+
+.tooltip-arrowed:after,
+.tooltip-arrowed:before {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+.tooltip-arrowed:before {
+    margin-top: -5px;
+    border-color: transparent #c9d5dc transparent transparent;
+    border-width: 9px;
+}
+.tooltip-arrowed:after {
+    margin-top: -4px;
+    border-color: transparent #fff transparent transparent;
+    border-width: 8px;
+}
+.tooltip-primary {
+    border-radius: 3px;
+    background-color: #ffffff;
+    border: solid 1px #c9d5dc;
+    padding: 20px;
+}
+.tooltip-default {
+
+}

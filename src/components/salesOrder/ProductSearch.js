@@ -1,15 +1,17 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Dropdown from './Dropdown';
+import ProductSearchSummary from './ProductSearchSummary';
 
 class ProductSearch extends Component {
     constructor(props) {
         super(props);
     }
     render() {
-        const {salesOrderWindow,recentProducts} = this.props;
+        const {salesOrderWindow, recentProducts} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary">
+                <ProductSearchSummary />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
                     <Dropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
