@@ -20,26 +20,38 @@ Here come the actual release notes:
 ## Fixes
  - #153 PaymentRule = S in Invoice
  - #220 Do not load pricelist and pricelist version  on login
+ - FRESH-402 Procurement bidding
+   * minor jasper fix
 
-# metasfresh 4.27.26 (2016-29, RC)
+# metasfresh 4.27.26 (2016-29)
 
 ## Features
  - #152 Improvements in  counter documents view and window
+   * Added different fields. Renamed fields for better understanding. Added different validation rules.
  - #173 Window Dunning Candidates - new Field DocumentNo
+   * Included the Invoice Document No. in Dunning Candidates window.
  - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
-   * skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
+   * Skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
  - FRESH-402 Procurement bidding
-   * adding jasper file for the procurement documents
+   * Adding jasper file for the procurement documents
  - #181 Customer specific Lieferschein without Price
+   * New Jasper Shipment Document that does not show the prices for each line.
 
 ## Fixes
  - #216 Accounting: Invoice grand total Fact_Acct line was not found
+   * Fixed a Bug in accounting of Allocation Header that appeared in certain circumstances when writing off paid amount completely.
  - #100 EDI wrong handover location in Picking Terminal
+   * Sales Orders created via EDI Import could have the wrong handover Locations in a certain condition. This wrong Location appeared in Picking Terminal. Fixed this.
  - #174 Report Konten-Information empty c_activity_id
+   * Added a new Flag in Report Parameters to show all entries which have a empty c_activity_id.
  - #203 Payment writeoff not possible for Incoming Payment
+   * Fixed a Bug that prohibited the writeoff in incoming Payments.
  - #175 C_Invoice_Update_PaymentRule
+   * Changed Lagacy Code that set the Payment Rule to cheque.
  - #210 product appears twice in invoice print preview
+   * Minor Bug in Jasper Document that printed out the wrong quantity and total for an invoiceline when shipment quantity was 0 and the invoiceline was aggregated with more than 1 shipment.
  - FRESH-529 drop qtyreserved from product info
+   * Dropped the column qtyreserved from product info window.
 
 # metasfresh 4.26.25a (2016-28a)
 
