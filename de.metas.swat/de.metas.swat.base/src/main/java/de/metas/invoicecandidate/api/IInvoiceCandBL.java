@@ -249,16 +249,19 @@ public interface IInvoiceCandBL extends ISingletonService
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);
 
 	/**
-	 * Set the {@link I_C_Invoice_Candidate#COLUMN_Processed_Calc Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>. <br>
-	 * Processed_calc can be overriden by <code>Processed_Override</code>. If it is not overriden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
+	 * Set the {@value I_C_Invoice_Candidate#COLUMN_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
+	 * <code>Processed_Valc</code> can be overridden by <code>Processed_Override</code>.
+	 * If it is not overridden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
 	 * <p>
 	 * The <code>Processed_Calc</code> shall be set to <code>true</code> if
 	 * <ul>
-	 * <li>the candidate's {@link I_C_Invoice_Candidate#COLUMN_QtyOrdered QtyOrdered} has the same amount as its {@link I_C_Invoice_Candidate#COLUMN_QtyInvoiced QtyInvoiced} <b>and</b> </lu>
-	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate
+	 * <li>the candidate's {@link I_C_Invoice_Candidate#COLUMN_QtyOrdered QtyOrdered} has the same amount as its {@link I_C_Invoice_Candidate#COLUMN_QtyInvoiced QtyInvoiced} <b>and</b></li>
+	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate</li>
 	 * </ul>
 	 * The second condition is important because we might e.g. have a <code>C_OrderLine</code> with <code>QtyOrdered=0</code>, either because the order was reactivated, or because the user simply
 	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case don't we want the candidate to be flagged as processed.
+	 * <p>
+	 * Note that if <code>Processed_Override</code> is set, then its value shall be copied to <code>Processed</code>, no matter what (issue <a href="https://github.com/metasfresh/metasfresh/issues/243">#243</a>).
 	 *
 	 * @param candidate
 	 */
@@ -416,7 +419,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
 	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_IsToClear"
-	 * 
+	 *
 	 * @return the value of the SYS_Config if found, false by default
 	 */
 	boolean isCloseIfIsToClear();
@@ -424,14 +427,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Find out if invoice candidates that were partially invoiced are supposed to be closed
 	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_PartiallyInvoiced"
-	 * 
+	 *
 	 * @return the value of the SYS_Config if found, false by default
 	 */
 	boolean isCloseIfPartiallyInvoiced();
 
 	/**
 	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
-	 * 
+	 *
 	 * @param invoice
 	 */
 	void candidates_unProcess(I_C_Invoice invoice);
@@ -440,7 +443,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Close linked invoice candidates if they were partially invoiced
 	 * Note: This behavior is determined by the value of the sys config "C_Invoice_Candidate_Close_PartiallyInvoice".
 	 * The candidates will be closed only if the sys config is set to 'Y'
-	 * 
+	 *
 	 * @param invoice
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
