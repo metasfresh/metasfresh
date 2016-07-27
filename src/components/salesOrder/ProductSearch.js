@@ -3,24 +3,26 @@ import { connect } from 'react-redux';
 import Dropdown from './Dropdown';
 import ProductSearchSummary from './ProductSearchSummary';
 
+import {toggleProductSummary} from '../../actions/SalesOrderActions';
+
 class ProductSearch extends Component {
     constructor(props) {
         super(props);
     }
     handleMouseover = () => {
-        this.props.toggle = true;
+        this.props.dispatch(toggleProductSummary(true));
     }
     handleMouseout = () => {
-        this.props.toggle = false;
+        this.props.dispatch(toggleProductSummary(false));
     }
     render() {
         const {salesOrderWindow, recentProducts} = this.props;
         return (
             <div
                 className="panel panel-bordered panel-spaced panel-primary"
-                onMouseOver={this.handleMouseover}
-                onMouseOut={this.handleMouseout}>
-                <ProductSearchSummary toggle={true} />
+                onMouseEnter={this.handleMouseover}
+                onMouseLeave={this.handleMouseout}>
+                <ProductSearchSummary />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
                     <Dropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
@@ -53,6 +55,7 @@ class ProductSearch extends Component {
 
 
 ProductSearch.propTypes = {
+    isProductOrderSummaryShow: PropTypes.bool.isRequired,
     recentProducts: PropTypes.array.isRequired,
     salesOrderWindow: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
@@ -62,14 +65,17 @@ function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
         salesOrderWindow,
-        recentProducts
+        recentProducts,
+        isProductOrderSummaryShow
     } = salesOrderStateHandler || {
         salesOrderWindow: {},
-        recentProducts: []
+        recentProducts: [],
+        isProductOrderSummaryShow: false
     }
     return {
         salesOrderWindow,
-        recentProducts
+        recentProducts,
+        isProductOrderSummaryShow
     }
 }
 

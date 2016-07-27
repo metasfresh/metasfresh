@@ -447,7 +447,7 @@ body {
 .tooltip-extended {
     position: absolute;
     display: none;
-    width: 100%;
+    width: 480px;
     z-index:100;
 }
 .tooltip-extended-show {
@@ -486,6 +486,46 @@ body {
     border: solid 1px #c9d5dc;
     padding: 20px;
 }
-.tooltip-default {
 
+.sm {
+    font-size: 0.75rem;
+}
+
+.row-bordered-bottom td{
+    border-bottom: 1px solid;
+}
+.row-bordered-bright td {
+    border-color: $brand-light-color;
+}
+.row-bordered-dark td {
+    border-color: $brand-font-color;
+}
+
+.row-bordered-mod td:nth-child(1){
+    border:0;
+}
+
+
+.product-order-summary {
+    width: 100%;
+}
+.product-order-summary td {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}
+.product-order-summary td:nth-child(1) {
+    width: 15%;
+}
+.product-order-summary td:nth-child(2) {
+    width: 50%;
+}
+.product-order-summary td:nth-child(3) {
+    text-align: right;
+}
+.product-order-summary td:last-child {
+    text-align: right;
+}
+.product-order-summary tr:last-child {
+    font-weight: bold;
+    font-size: 1rem;
 }

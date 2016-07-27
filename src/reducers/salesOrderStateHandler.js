@@ -40,7 +40,6 @@ const initialState = {
         value: ''
     },
     selectedProducts: [],
-    isSubheaderShow: false,
     autocomplete: {
         query: "",
         results: []
@@ -60,6 +59,8 @@ const initialState = {
         ordered: "23.12.15",
         status: "WIP"
     }, 10),
+    isSubheaderShow: false,
+    isProductOrderSummaryShow: false,
     isOrderListShow: false
 }
 
@@ -134,6 +135,10 @@ export default function salesOrderStateHandler(state = initialState, action) {
         case types.TOGGLE_ORDER_LIST:
             return Object.assign({}, state, {
                 isOrderListShow: action.value
+            })
+        case types.TOGGLE_PRODUCT_ORDER_SUMMARY:
+            return Object.assign({}, state, {
+                isProductOrderSummaryShow: action.value
             })
         case types.DELETE_SELECTED_PRODUCTS:
             return Object.assign({}, state, {

@@ -94,6 +94,13 @@ export function toggleOrderList(value) {
     }
 }
 
+export function toggleProductSummary(value) {
+    return {
+        type: 'TOGGLE_PRODUCT_ORDER_SUMMARY',
+        value: !!value
+    }
+}
+
 export function autocomplete(query) {
     return {
         type: 'AUTOCOMPLETE',
