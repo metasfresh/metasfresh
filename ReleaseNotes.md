@@ -10,7 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.28.27 (2016-30, upcoming)
+# metasfresh 4.x.x (2016-31, upcoming)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.28.27 (2016-30, RC)
 
 ## Features
  - #201 KPI Accounted Documents
