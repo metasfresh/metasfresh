@@ -1,8 +1,7 @@
-DROP VIEW IF EXISTS de_metas_acct.Reposted_Documents ;
+DROP VIEW IF EXISTS de_metas_acct.RV_Reposted_Documents ;
 
 
-
-CREATE OR REPLACE VIEW de_metas_acct.Reposted_Documents 
+CREATE OR REPLACE VIEW de_metas_acct.RV_Reposted_Documents 
 AS 
 SELECT 	
 
@@ -14,9 +13,9 @@ pinst.Updated,
 pinst.UpdatedBy,
 pinst.IsActive,
 
-
-to_number (regexp_matches(p_msg, '\d+')::text, '99999999999999999') AS table_ID ,
-to_number (regexp_matches(substr(p_msg, position('Record_ID =' IN p_msg) + length('Record_ID =')), '\d+')::text, '99999999999999999' ) AS record_ID 
+pinst.AD_PInstance_ID,
+to_number (regexp_matches(p_msg, '\d+')::text, '99999999999999999') AS AD_Table_ID ,
+to_number (regexp_matches(substr(p_msg, position('Record_ID =' IN p_msg) + length('Record_ID =')), '\d+')::text, '99999999999999999' ) AS Record_ID 
 	
 FROM AD_PInstance_Log pilog
 
