@@ -5,8 +5,9 @@ class ProductSearchSummary extends Component {
         super(props);
     }
     render() {
+        const {toggle} = this.props;
         return (
-            <div className="tooltip-extended tooltip-primary tooltip-arrowed tooltip-extended-right">
+            <div className={"tooltip-extended tooltip-primary tooltip-arrowed tooltip-extended-right " + (toggle ? "tooltip-extended-show":"")}>
                 <p>Product order summary</p>
                 <table>
                     <tr>

@@ -7,11 +7,19 @@ class ProductSearch extends Component {
     constructor(props) {
         super(props);
     }
+    handleMouseover = () => {
+        this.props.toggle = true;
+    }
+    handleMouseout = () => {
+        this.props.toggle = false;
+    }
     render() {
         const {salesOrderWindow, recentProducts} = this.props;
         return (
-            <div className="panel panel-bordered panel-spaced panel-primary">
-                <ProductSearchSummary />
+            <div
+                className="panel panel-bordered panel-spaced panel-primary"
+                onMouseover={this.handleMouseover}>
+                <ProductSearchSummary toggle={true} />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
                     <Dropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
