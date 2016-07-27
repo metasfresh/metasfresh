@@ -153,3 +153,10 @@ export function createWindow(){
         });
     }
 }
+
+export function autocompleteSelect(id){
+    return {
+        type: 'AUTOCOMPLETE_SELECT',
+        id: id
+    }
+}

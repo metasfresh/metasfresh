@@ -42,6 +42,7 @@ const initialState = {
     selectedProducts: [],
     autocomplete: {
         query: "",
+        selected: null,
         results: []
     },
     recentPartners: [{
@@ -158,6 +159,12 @@ export default function salesOrderStateHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 autocomplete: Object.assign({}, state.autocomplete, {
                     results: action.results
+                })
+            })
+        case types.AUTOCOMPLETE_SELECT:
+            return Object.assign({}, state, {
+                autocomplete: Object.assign({}, state.autocomplete, {
+                    selected: action.id
                 })
             })
         case types.NEW_SALES_ORDER_CREATED:

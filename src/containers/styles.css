@@ -368,7 +368,8 @@ body {
     border-bottom: 1px solid $brand-light-color;
     cursor:pointer;
 }
-.input-dropdown-list-option:hover {
+.input-dropdown-list-option:hover,
+.input-dropdown-list-option-key-on {
     background-color: $brand-super-light-color;
 }
 .input-dropdown-list-option p {

@@ -2,14 +2,13 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import DropdownPartnerItem from './DropdownPartnerItem';
-import {autocomplete, autocompleteRequest, autocompleteSuccess} from '../../actions/SalesOrderActions';
+import {autocomplete, autocompleteRequest, autocompleteSelect, autocompleteSuccess} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
         super(props);
     }
-    handleSelect = (e, select) => {
-        e.preventDefault();
+    handleSelect = (select) => {
         this.inputSearch.value = select.n;
         this.inputSearchRest.innerHTML = select.n;
         this.handleBlur();
@@ -40,6 +39,32 @@ class Dropdown extends Component {
         this.inputSearch.value = "";
         this.handleChange();
     }
+    handleKeyDown = (e) => {
+        const {dispatch} = this.props;
+        switch(e.key){
+            case "ArrowDown":
+                if(!!autocomplete.selected){
+                    //next
+                }else{
+                    console.log(autocomplete.results);
+                    dispatch(autocompleteSelect(autocomplete.results[0].id));
+                }
+                break;
+            case "ArrowUp":
+                console.log("Up");
+                break;
+            case "ArrowLeft":
+                console.log("Up");
+                break;
+            case "ArrowRight":
+                console.log("Up");
+                break;
+            case "Enter":
+                this.handleSelect()
+                break;
+        }
+
+    }
     renderRecent = () => {
         const {recent} = this.props;
         return recent.map(item => <DropdownPartnerItem key={item.id} data={item} onClick={this.handleSelect}/> );
@@ -51,6 +76,7 @@ class Dropdown extends Component {
         const {autocomplete} = this.props;
         return (
             <div
+                onKeyDown={this.handleKeyDown}
                 tabIndex="0"
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
@@ -78,8 +104,9 @@ class Dropdown extends Component {
                     <div className="input-dropdown-list-header">
                         {autocomplete.results.length > 0 ? "Are you looking for..." : "Recent lookups"}
                     </div>
-                    {autocomplete.results.length <= 0 && <div>{this.renderRecent()}</div> }
-                    {autocomplete.results.length > 0 && <div>{this.renderLookup()}</div> }
+                    <div ref={(c) => this.items = c}>
+                        {autocomplete.results.length > 0 ? this.renderLookup() : this.renderRecent() }
+                    </div>
                 </div>
             </div>
         )
@@ -98,7 +125,9 @@ function mapStateToProps(state) {
         autocomplete
     } = salesOrderStateHandler || {
         autocomplete: {
-            query: ""
+            query: "",
+            selected: null,
+            results:[]
         }
     }
 
