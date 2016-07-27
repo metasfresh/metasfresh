@@ -53,6 +53,8 @@ public class Banking extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+
+		// Register the Document Reposting Handler
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 		documentBL.registerHandler(new BankStatementDocumentRepostingHandler());
 	}

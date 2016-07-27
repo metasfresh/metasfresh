@@ -21,11 +21,11 @@ import de.metas.acct.spi.IDocumentRepostingHandler;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,16 +34,20 @@ public interface IDocumentBL extends ISingletonService
 {
 
 	/**
+	 * Register the IDocumentRepostingHandler handler so it will be used when the reposting process is called
+	 * 
 	 * @param handler
 	 */
 	void registerHandler(IDocumentRepostingHandler handler);
 
 	/**
+	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts
+	 * Exclude the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
+	 * 
 	 * @param ctx
 	 * @param startTime
 	 * @return
 	 */
 	List<Object> retrievePostedWithoutFactActt(Properties ctx, Timestamp startTime);
-
 
 }

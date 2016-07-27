@@ -64,35 +64,37 @@ public class GLJournalDAO implements IGLJournalDAO
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
-		subQueryBuilder
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class));
-
 		final IQueryBuilder<I_GL_Journal> queryBuilder = queryBL.createQueryBuilder(I_GL_Journal.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder
 				.addEqualsFilter(I_GL_Journal.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_GL_Journal.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed);
+				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
 
+		// Exclude the entries that don't have either Credit or Debit amounts. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_GL_Journal> nonZeroFilter = queryBL.createCompositeQueryFilter(I_GL_Journal.class).setJoinOr()
 				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalCr, Env.ZERO)
 				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalDr, Env.ZERO);
 
 		queryBuilder.filter(nonZeroFilter);
 
+		// Only the documents created after the given start time
 		if (startTime != null)
 		{
 			queryBuilder.addCompareFilter(I_GL_Journal.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
 		}
+
+		// Check if there are fact accounts created for each document
+		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class));
+
 		queryBuilder
-				.addNotInSubQueryFilter(I_GL_Journal.COLUMNNAME_GL_Journal_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
+				.addNotInSubQueryFilter(I_GL_Journal.COLUMNNAME_GL_Journal_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				;
 
 		return queryBuilder
 				.create()
 				.list();
-
 	}
 }

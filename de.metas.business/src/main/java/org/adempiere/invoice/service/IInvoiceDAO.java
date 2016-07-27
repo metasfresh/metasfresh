@@ -136,6 +136,9 @@ public interface IInvoiceDAO extends ISingletonService
 	Iterator<I_C_Invoice> retrieveParentInvoiceForAdjustmentCharge(I_C_Invoice adjustmentCharge);
 
 	/**
+	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
+	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
+	 * 
 	 * @param ctx
 	 * @param startDate
 	 * @return

@@ -21,20 +21,28 @@ import de.metas.acct.spi.IDocumentRepostingHandler;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * Composite Document reposting handler
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class CompositeDocumentRepostingHandler implements IDocumentRepostingHandler
 {
 
+	// list of handlers to be used when the reposting process is called
 	private final CopyOnWriteArrayList<IDocumentRepostingHandler> handlers = new CopyOnWriteArrayList<>();
-	
+
+	// add the handler in the list
 	public void addHandler(final IDocumentRepostingHandler handler)
 	{
 		if (handler == null)
@@ -44,20 +52,19 @@ public class CompositeDocumentRepostingHandler implements IDocumentRepostingHand
 
 		handlers.addIfAbsent(handler);
 	}
-	
-	
+
 	@Override
 	public List<Object> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
 	{
 		final List<Object> documentsPostedWithoutFactAcct = new ArrayList<>();
-		
-		for(final IDocumentRepostingHandler handler : handlers)
+
+		// Retrieve the documents marked as posted but with no fact accounts from all the handlers
+		for (final IDocumentRepostingHandler handler : handlers)
 		{
 			documentsPostedWithoutFactAcct.addAll(handler.retrievePostedWithoutFactAcct(ctx, startTime));
 		}
-		
+
 		return documentsPostedWithoutFactAcct;
 	}
 
-	
 }

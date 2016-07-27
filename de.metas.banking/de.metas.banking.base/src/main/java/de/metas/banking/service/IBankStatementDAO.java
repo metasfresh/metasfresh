@@ -15,15 +15,14 @@ import java.util.Date;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -52,6 +51,10 @@ public interface IBankStatementDAO extends ISingletonService
 	boolean isPaymentOnBankStatement(I_C_Payment payment);
 
 	/**
+	 * Retrieve all the BankStatement documents that are marked as posted but do not actually have fact accounts.
+	 * 
+	 * Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
+	 * 
 	 * @param ctx
 	 * @param startTime
 	 * @return

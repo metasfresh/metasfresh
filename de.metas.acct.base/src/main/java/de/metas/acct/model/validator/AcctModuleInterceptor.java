@@ -75,8 +75,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		// register Reposting Handlers
-
+		//FRESH-539: register Reposting Handlers
 		documentBL.registerHandler(new InvoiceDocumentRepostingHandler());
 		documentBL.registerHandler(new PaymentDocumentRepostingHandler());
 		documentBL.registerHandler(new AllocationHdrDocumentRepostingHandler());

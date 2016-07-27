@@ -236,7 +236,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                        // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                         // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -288,10 +288,7 @@ public class AllocationDAO implements IAllocationDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final IQuery<I_Fact_Acct> subQueryFilter = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
-				.create();
-
+		// Exclude the entries that don't have either Amount, DiscountAmt, WriteOffAmt or OverUnderAmt. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_AllocationLine> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_AllocationLine.class).setJoinOr()
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_Amount, Env.ZERO)
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_DiscountAmt, Env.ZERO)
@@ -303,18 +300,23 @@ public class AllocationDAO implements IAllocationDAO
 				.addCompareFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Operator.GREATER, Env.ZERO)
 				.filter(nonZeroFilter);
 
+		// Only the documents created after the given start time
 		if (startTime != null)
 		{
 			queryBuilder.addCompareFilter(I_C_AllocationLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
 		}
 
+		// Check if there are fact accounts created for each document
+		final IQuery<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+				.create();
+
 		return queryBuilder
 				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class)
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
-
-		.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryFilter) // has no accounting
+				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery) // has no accounting
 				.create()
 				.list(I_C_AllocationHdr.class);
 

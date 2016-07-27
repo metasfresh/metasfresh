@@ -49,10 +49,13 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		// this process is posting docuemnts that were created one day before the process runs
+		// this process is posting documents that were created one day before the process runs
 		final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
 
+		// list all the documents that are marked as posted but have no fact accounts.
+		// this list will not include the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
 		final List<Object> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactActt(getCtx(), startTime);
+
 		if (documentsPostedNoFacts.isEmpty())
 		{
 			// do nothing
@@ -72,12 +75,11 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 			loggable.addLog("Document Reposted: AD_Table_ID = {}, Record_ID = {}.", tableRecordRef.getAD_Table_ID(), tableRecordRef.getRecord_ID());
 
 			postingService.newPostingRequest()
-					// Post it in same context and transaction as this document is posted
+					// Post it in same context and transaction as the process
 					.setContext(getCtx(), getTrxName())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setDocument(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-					.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 					.setForce(false) // don't force it
 					.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document

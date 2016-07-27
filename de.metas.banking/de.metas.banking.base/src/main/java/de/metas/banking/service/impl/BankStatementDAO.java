@@ -127,26 +127,27 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName);
-		subQueryBuilder
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
-
+		// Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
 		final IQueryBuilder<I_C_BankStatementLine> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatementLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
 
+		// Only the documents created after the given start time
 		if (startTime != null)
 		{
 			queryBuilder.addCompareFilter(I_C_BankStatementLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
 		}
 
+		// Check if there are fact accounts created for each document
+		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+
 		return queryBuilder
 				.andCollect(I_C_BankStatement.COLUMN_C_BankStatement_ID, I_C_BankStatement.class)
-
-		.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
-				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
+				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
 
