@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION dlm.remove_table_from_dlm(p_table_name text, p_retain_dlm_column boolean DEFAULT true)
   RETURNS void AS
 $BODY$
-DECLARE _index_view_row indices;
+DECLARE _index_view_row dlm.indices;
 BEGIN
 	EXECUTE 'DROP VIEW IF EXISTS dlm.' || p_table_name;
 	EXECUTE 'DROP INDEX IF EXISTS ' || p_table_name || '_DLM_Level;';
