@@ -18,7 +18,8 @@ class ProductSearch extends Component {
         return (
             <div
                 className="panel panel-bordered panel-spaced panel-primary"
-                onMouseover={this.handleMouseover}>
+                onMouseOver={this.handleMouseover}
+                onMouseOut={this.handleMouseout}>
                 <ProductSearchSummary toggle={true} />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
