@@ -10,7 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.28.27 (2016-30, upcoming)
+# metasfresh 4.x.x (2016-31, upcoming)
+
+## Features
+ - #241 Excel Export for Open Items accounting currency
+
+## Fixes
+
+# metasfresh 4.28.27 (2016-30, RC)
 
 ## Features
  - #201 KPI Accounted Documents
@@ -20,8 +27,11 @@ Here come the actual release notes:
 ## Fixes
  - #153 PaymentRule = S in Invoice
  - #220 Do not load pricelist and pricelist version  on login
+ - FRESH-402 Procurement bidding
+   * minor jasper fix
+ - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
 
-# metasfresh 4.27.26 (2016-29, RC)
+# metasfresh 4.27.26 (2016-29)
 
 ## Features
  - #152 Improvements in  counter documents view and window
@@ -37,12 +47,19 @@ Here come the actual release notes:
 
 ## Fixes
  - #216 Accounting: Invoice grand total Fact_Acct line was not found
+   * Fixed a Bug in accounting of Allocation Header that appeared in certain circumstances when writing off paid amount completely.
  - #100 EDI wrong handover location in Picking Terminal
+   * Sales Orders created via EDI Import could have the wrong handover Locations in a certain condition. This wrong Location appeared in Picking Terminal. Fixed this.
  - #174 Report Konten-Information empty c_activity_id
+   * Added a new Flag in Report Parameters to show all entries which have a empty c_activity_id.
  - #203 Payment writeoff not possible for Incoming Payment
+   * Fixed a Bug that prohibited the writeoff in incoming Payments.
  - #175 C_Invoice_Update_PaymentRule
+   * Changed Lagacy Code that set the Payment Rule to cheque.
  - #210 product appears twice in invoice print preview
+   * Minor Bug in Jasper Document that printed out the wrong quantity and total for an invoiceline when shipment quantity was 0 and the invoiceline was aggregated with more than 1 shipment.
  - FRESH-529 drop qtyreserved from product info
+   * Dropped the column qtyreserved from product info window.
 
 # metasfresh 4.26.25a (2016-28a)
 

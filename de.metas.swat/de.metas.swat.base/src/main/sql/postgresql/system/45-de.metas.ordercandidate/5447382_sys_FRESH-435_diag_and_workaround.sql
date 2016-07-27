@@ -5,6 +5,8 @@ DROP SCHEMA IF EXISTS FRESH_435;
 CREATE SCHEMA FRESH_435;
 COMMENT ON SCHEMA FRESH_435 IS 'Issue #100 FRESH-435: contains SQL workarounds to fix C_Orders, M_ShipmentSchedules and EDI_Desadvs, until the code fix is in place';
 
+SET search_path TO FRESH_435,public;
+
 ---------------
 -- Handover-Location
 ---------------
