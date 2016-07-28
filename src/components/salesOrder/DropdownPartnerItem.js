@@ -12,6 +12,9 @@ class DropdownPartnerItem extends Component {
         const {data, autocomplete, itemIndex} = this.props;
         return (
             <div className={"input-dropdown-list-option " + (autocomplete.selected == itemIndex ? 'input-dropdown-list-option-key-on' : "") } onClick={() => this.props.onClick(data)}>
+                <div className="input-dropdown-item-arrow">
+                    <i className="meta-icon-down"/>
+                </div>
                 <p className="input-dropdown-item-title">{data['n']}</p>
                 {this.renderSubitems([data['n'], data['n']])}
             </div>

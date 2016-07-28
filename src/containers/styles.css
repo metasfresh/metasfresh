@@ -349,7 +349,7 @@ body {
     background-color: #fff;
     z-index:5;
     border: 1px solid $brand-light-color;
-    max-height: 200px;
+    max-height: 357px;
     height: auto;
     overflow-y: auto;
 }
@@ -365,8 +365,9 @@ body {
 }
 .input-dropdown-list-option {
     padding: .25rem .50rem;
-    border-bottom: 1px solid $brand-light-color;
+    border-top: 1px solid $brand-light-color;
     cursor:pointer;
+    position: relative;
 }
 .input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
@@ -382,8 +383,16 @@ body {
 .input-dropdown-item-subtitle {
     font-size: .75rem;
 }
-.input-dropdown-list-option:last-of-type {
-    border-bottom-width: 0;
+.input-dropdown-item-arrow {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right:0;
+    top:0;
+    width:25px;
+    height: 100%;
+    border-left: 1px solid $brand-light-color;
 }
 
 .context-menu {

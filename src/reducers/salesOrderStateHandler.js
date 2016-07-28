@@ -16,7 +16,6 @@ const initialState = {
     salesOrderWindow: {},
     salesOrderTable: {},
     purchaser: {
-        recent: [],
         purchaser: '',
         invoice: '',
         unloading: ''

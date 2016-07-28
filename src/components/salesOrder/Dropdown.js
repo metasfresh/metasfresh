@@ -64,9 +64,12 @@ class Dropdown extends Component {
                 this.navigate(true);
                 break;
             case "ArrowLeft":
-                // fallback for next improvement
+                e.preventDefault();
+
                 break;
             case "ArrowRight":
+                e.preventDefault();
+            
                 // fallback for next improvement
                 break;
             case "Enter":
@@ -162,8 +165,6 @@ function mapStateToProps(state) {
             results:[]
         }
     }
-
-
     return {
         autocomplete
     }
