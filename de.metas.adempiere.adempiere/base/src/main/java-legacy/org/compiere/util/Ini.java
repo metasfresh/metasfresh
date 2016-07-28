@@ -68,10 +68,10 @@ public final class Ini implements Serializable
 
 	/** Apps User ID */
 	public static final String P_UID = "ApplicationUserID";
-	private static final String DEFAULT_UID = "SuperUser";
+	private static final String DEFAULT_UID = "";
 	/** Apps Password */
 	public static final String P_PWD = "ApplicationPassword";
-	private static final String DEFAULT_PWD = "System";
+	private static final String DEFAULT_PWD = "";
 	/** Store Password */
 	public static final String P_STORE_PWD = "StorePassword";
 	private static final boolean DEFAULT_STORE_PWD = true;
