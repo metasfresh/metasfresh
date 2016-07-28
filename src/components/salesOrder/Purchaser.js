@@ -27,12 +27,12 @@ class Purchaser extends Component {
 
                 {salesOrderWindow.C_BPartner_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>,
-                    <Dropdown key="dropdown" recent={recentPartners} property="C_BPartner_ID" />
+                    <Dropdown key="dropdown" recent={recentPartners} properties={["C_BPartner_ID", "C_BPartner_Location_ID"]} />
                 ]}
 
                 {salesOrderWindow.Bill_BPartner_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.Bill_BPartner_ID.caption}</div>,
-                    <Dropdown key="dropdown" recent={recentPartners} property="Bill_BPartner_ID" />
+                    <Dropdown key="dropdown" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
                 ]}
 
                 <div className="panel-title">Unloading partner</div>

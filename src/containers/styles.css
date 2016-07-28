@@ -383,17 +383,6 @@ body {
 .input-dropdown-item-subtitle {
     font-size: .75rem;
 }
-.input-dropdown-item-arrow {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    right:0;
-    top:0;
-    width:25px;
-    height: 100%;
-    border-left: 1px solid $brand-light-color;
-}
 
 .context-menu {
     position:fixed;

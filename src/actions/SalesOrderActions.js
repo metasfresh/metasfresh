@@ -136,6 +136,20 @@ export function autocompleteRequest(query, propertyName) {
     }
 }
 
+export function getPropertyValue(propertyName) {
+    return (dispatch) => {
+        console.log('asd')
+        axios.post(config.API_URL + '/windows/getPropertyValues/1', {
+            "n": [{
+                "n": propertyName
+            }]
+        })
+        .then((response) => {
+            console.log(response.data);
+        });
+    }
+}
+
 export function newSalesOrderSuccess(response) {
     return {
         type: 'NEW_SALES_ORDER_CREATED',

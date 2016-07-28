@@ -6,7 +6,8 @@ import {
     autocomplete,
     autocompleteRequest,
     autocompleteSelect,
-    autocompleteSuccess
+    autocompleteSuccess,
+    getPropertyValue
 } from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
@@ -14,8 +15,16 @@ class Dropdown extends Component {
         super(props);
     }
     handleSelect = (select) => {
+        const {dispatch, properties} = this.props;
         this.inputSearch.value = select.n;
-        this.inputSearchRest.innerHTML = select.n;
+        properties.splice(0,1);
+        for (let i=0; i<properties.length; i++) {
+            //dispatch get value
+            //if value.length 1 then
+            // this.inputSearchRest.innerHTML = select.n;
+            //if value.length more
+            //render list with localisation
+        }
         this.handleBlur();
     }
     handleBlur = () => {
@@ -44,7 +53,7 @@ class Dropdown extends Component {
         if(this.inputSearch.value == ""){
             dispatch(autocompleteSuccess(recent));
         }else{
-            dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
+            dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
         }
     }
     handleClear = (e) => {
@@ -65,16 +74,9 @@ class Dropdown extends Component {
                 break;
             case "ArrowLeft":
                 e.preventDefault();
-
-                break;
-            case "ArrowRight":
-                e.preventDefault();
-            
-                // fallback for next improvement
                 break;
             case "Enter":
                 e.preventDefault();
-
                 if(autocomplete.selected != null){
                     this.handleSelect(autocomplete.results[autocomplete.selected]);
                 }
