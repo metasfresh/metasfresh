@@ -9,10 +9,9 @@ class DropdownPartnerItem extends Component {
         return items.map((item, index) => <p key={index} className="input-dropdown-item-subtitle">{item}</p>);
     }
     render() {
-        const {data, autocomplete} = this.props;
-
+        const {data, autocomplete, itemIndex} = this.props;
         return (
-            <div className={"input-dropdown-list-option " + (autocomplete.selected == data['id'] ? 'input-dropdown-list-option-key-on' : "") } onClick={(e) => this.props.onClick(e,data)}>
+            <div className={"input-dropdown-list-option " + (autocomplete.selected == itemIndex ? 'input-dropdown-list-option-key-on' : "") } onClick={() => this.props.onClick(data)}>
                 <p className="input-dropdown-item-title">{data['n']}</p>
                 {this.renderSubitems([data['n'], data['n']])}
             </div>

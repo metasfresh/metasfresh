@@ -2,7 +2,12 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import DropdownPartnerItem from './DropdownPartnerItem';
-import {autocomplete, autocompleteRequest, autocompleteSelect, autocompleteSuccess} from '../../actions/SalesOrderActions';
+import {
+    autocomplete,
+    autocompleteRequest,
+    autocompleteSelect,
+    autocompleteSuccess
+} from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
@@ -17,21 +22,29 @@ class Dropdown extends Component {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
     handleFocus = (e) => {
+        const {dispatch,recent} = this.props;
         e.preventDefault();
+        dispatch(autocompleteSelect(null));
         if(this.inputSearch.value !== this.props.autocomplete.query){
             this.handleChange();
+        }
+        if(this.inputSearch.value === ""){
+            dispatch(autocompleteSuccess(recent));
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
+        const {dispatch, recent} = this.props;
+
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
-        this.props.dispatch(autocomplete(this.inputSearch.value));
+        dispatch(autocomplete(this.inputSearch.value));
+        dispatch(autocompleteSelect(null));
 
         if(this.inputSearch.value == ""){
-            this.props.dispatch(autocompleteSuccess([]));
+            dispatch(autocompleteSuccess(recent));
         }else{
-            this.props.dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
+            dispatch(autocompleteRequest(this.inputSearch.value, this.props.property));
         }
     }
     handleClear = (e) => {
@@ -40,37 +53,53 @@ class Dropdown extends Component {
         this.handleChange();
     }
     handleKeyDown = (e) => {
-        const {dispatch} = this.props;
+        const {dispatch, autocomplete} = this.props;
         switch(e.key){
             case "ArrowDown":
-                if(!!autocomplete.selected){
-                    //next
-                }else{
-                    console.log(autocomplete.results);
-                    dispatch(autocompleteSelect(autocomplete.results[0].id));
-                }
+                e.preventDefault();
+                this.navigate();
                 break;
             case "ArrowUp":
-                console.log("Up");
+                e.preventDefault();
+                this.navigate(true);
                 break;
             case "ArrowLeft":
-                console.log("Up");
+                // fallback for next improvement
                 break;
             case "ArrowRight":
-                console.log("Up");
+                // fallback for next improvement
                 break;
             case "Enter":
-                this.handleSelect()
+                e.preventDefault();
+
+                if(autocomplete.selected != null){
+                    this.handleSelect(autocomplete.results[autocomplete.selected]);
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                this.handleBlur();
                 break;
         }
-
     }
-    renderRecent = () => {
-        const {recent} = this.props;
-        return recent.map(item => <DropdownPartnerItem key={item.id} data={item} onClick={this.handleSelect}/> );
+    navigate = (reverse) => {
+        const {dispatch, autocomplete} = this.props;
+
+        if(autocomplete.selected != null){
+            const selectTarget = autocomplete.selected + (reverse ? (-1) : (1));
+            if(typeof autocomplete.results[selectTarget] != "undefined"){
+                dispatch(autocompleteSelect(selectTarget));
+            }
+        }else if(typeof autocomplete.results[0] != "undefined"){
+            dispatch(autocompleteSelect(0));
+        }
     }
     renderLookup = () => {
-        return this.props.autocomplete.results.map(partner => <DropdownPartnerItem key={partner.id} data={partner} onClick={this.handleSelect}/> );
+        const {autocomplete} = this.props;
+        return autocomplete.results.map((partner, index) => this.getDropdownComponent(index, partner) );
+    }
+    getDropdownComponent = (index, item) => {
+        return <DropdownPartnerItem key={item.id} itemIndex={index} data={item} onClick={this.handleSelect}/>
     }
     render() {
         const {autocomplete} = this.props;
@@ -102,10 +131,13 @@ class Dropdown extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {autocomplete.results.length > 0 ? "Are you looking for..." : "Recent lookups"}
+                        {autocomplete.results.length > 0 ?
+                            (autocomplete.query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
+                            "There's no matching items."
+                        }
                     </div>
                     <div ref={(c) => this.items = c}>
-                        {autocomplete.results.length > 0 ? this.renderLookup() : this.renderRecent() }
+                        {this.renderLookup()}
                     </div>
                 </div>
             </div>
