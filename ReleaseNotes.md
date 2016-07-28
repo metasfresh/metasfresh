@@ -16,6 +16,7 @@ Here come the actual release notes:
  - #241 Excel Export for Open Items accounting currency
 
 ## Fixes
+ - #248 Admin Login when deleted properties #248
 
 # metasfresh 4.28.27 (2016-30, RC)
 
