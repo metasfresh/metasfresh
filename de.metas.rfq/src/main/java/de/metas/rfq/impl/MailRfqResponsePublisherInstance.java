@@ -61,7 +61,7 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 
 	public static enum RfQReportType
 	{
-		Invitation, Won, Lost,
+		Invitation, InvitationWithoutQtyRequired, Won, Lost,
 	};
 
 	private MailRfqResponsePublisherInstance()
@@ -163,14 +163,21 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 
 	public RfQReportType getRfQReportType(final RfQResponsePublisherRequest request)
 	{
+		final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
 		final PublishingType publishingType = request.getPublishingType();
 		if (publishingType == PublishingType.Invitation)
 		{
-			return RfQReportType.Invitation;
+			if(rfqDAO.hasQtyRequiered(rfqResponse))
+			{
+				return RfQReportType.Invitation;
+			}
+			else
+			{
+				return RfQReportType.InvitationWithoutQtyRequired;
+			}
 		}
 		else if (publishingType == PublishingType.Close)
 		{
-			final I_C_RfQResponse rfqResponse = request.getC_RfQResponse();
 			if (rfqDAO.hasSelectedWinnerLines(rfqResponse))
 			{
 				return RfQReportType.Won;
@@ -194,6 +201,10 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		{
 			return rfqTopic.getRfQ_Invitation_PrintFormat_ID();
 		}
+		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
+		{
+			return rfqTopic.getRfQ_InvitationWithoutQty_PrintFormat_ID();
+		}
 		else if (rfqReportType == RfQReportType.Won)
 		{
 			return rfqTopic.getRfQ_Win_PrintFormat_ID();
@@ -216,6 +227,10 @@ import de.metas.rfq.model.I_C_RfQ_Topic;
 		if (rfqReportType == RfQReportType.Invitation)
 		{
 			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Invitation_MailText());
+		}
+		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
+		{
+			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_InvitationWithoutQty_MailText());
 		}
 		else if (rfqReportType == RfQReportType.Won)
 		{

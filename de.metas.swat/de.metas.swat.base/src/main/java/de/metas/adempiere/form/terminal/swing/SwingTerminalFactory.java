@@ -33,8 +33,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.management.ObjectName;
 import javax.swing.AbstractButton;
@@ -54,6 +52,7 @@ import org.compiere.apps.AppsAction;
 import org.compiere.swing.CButton;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.IClientUI;
@@ -94,6 +93,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.jmx.JMXSwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -526,7 +526,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 		clientUI.info(windowNo, title, message);
 	}
 
-	private String toString(final Exception e)
+	private String toString(final Throwable e)
 	{
 		Check.assumeNotNull(e, "exception not null");
 
@@ -559,7 +559,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 				exceptionStr = e.toString();
 			}
 
-			SwingTerminalFactory.logger.warn(exceptionStr, e);
+			logger.warn(exceptionStr, e);
 			msg.append(exceptionStr);
 		}
 
@@ -567,14 +567,14 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public void showWarning(final IComponent component, final String title, final Exception e)
+	public void showWarning(final IComponent component, final String title, final Throwable e)
 	{
 		final String message = null;
 		showWarning(component, title, message, e);
 	}
 
 	@Override
-	public void showWarning(final IComponent component, final String title, final String message, final Exception e)
+	public void showWarning(final IComponent component, final String title, final String message, final Throwable e)
 	{
 		final StringBuilder msg = new StringBuilder();
 		if (e != null)

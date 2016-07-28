@@ -1,7 +1,6 @@
 package de.metas.procurement.base.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +115,12 @@ public class SyncObjectsFactory
 	/** C_BPartner_ID to {@link I_C_Flatrate_Term}s */
 	private final Multimap<Integer, I_C_Flatrate_Term> _bpartnerId2contract = MultimapBuilder.hashKeys().arrayListValues().build();
 	private boolean _bpartnerId2contract_fullyLoaded = false;
-	
+	private boolean _bpartnerId2contract_fullyLoadedRequired = false;
+
+	private final Multimap<Integer, I_C_RfQResponseLine> _bpartnerId2activeRfqResponseLines = MultimapBuilder.hashKeys().arrayListValues().build();
+	private boolean _bpartnerId2activeRfqResponseLines_fullyLoaded = false;
+	private boolean _bpartnerId2activeRfqResponseLines_fullyLoadedRequired = false;
+
 	private Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder()
 			.build();
 
@@ -135,6 +139,10 @@ public class SyncObjectsFactory
 
 	public List<SyncBPartner> createAllSyncBPartners()
 	{
+		// Optimization:
+		setFlatrateTermsFullyLoadedRequired();
+		setActiveRfqResponsesFullyLoadedRequired();
+
 		final List<SyncBPartner> syncBPartners = new ArrayList<>();
 		for (final int bpartnerId : getAllBPartnerIds())
 		{
@@ -151,7 +159,7 @@ public class SyncObjectsFactory
 		syncContract.setUuid(SyncUUIDs.toUUIDString(term));
 		syncContract.setDateFrom(term.getStartDate());
 		syncContract.setDateTo(term.getEndDate());
-		
+
 		final int rfqResponseLineId = term.getC_RfQResponseLine_ID();
 		if (rfqResponseLineId > 0)
 		{
@@ -205,10 +213,15 @@ public class SyncObjectsFactory
 
 		//
 		// Populate RfQs
-		for (final I_C_RfQResponse rfqResponse : getC_RfQResponses_ForBPartnerId(bpartnerId))
+		for (final I_C_RfQResponseLine rfqResponseLine : getActiveRfqResponseLines_ForBPartnerId(bpartnerId))
 		{
-			final List<SyncRfQ> syncRfQ = createSyncRfQs(rfqResponse);
-			syncBPartner.getRfqs().addAll(syncRfQ);
+			final SyncRfQ syncRfQ = createSyncRfQ(rfqResponseLine);
+			if (syncRfQ == null)
+			{
+				continue;
+			}
+
+			syncBPartner.getRfqs().add(syncRfQ);
 		}
 
 		return syncBPartner;
@@ -287,9 +300,14 @@ public class SyncObjectsFactory
 		return syncUser;
 	}
 
-	private Multimap<Integer, I_C_Flatrate_Term> getC_Flatrate_Terms_IndexedByBPartnerId(final boolean fullyLoadedRequired)
+	private final void setFlatrateTermsFullyLoadedRequired()
 	{
-		if (fullyLoadedRequired && !_bpartnerId2contract_fullyLoaded)
+		this._bpartnerId2contract_fullyLoadedRequired = true;
+	}
+
+	private Multimap<Integer, I_C_Flatrate_Term> getC_Flatrate_Terms_IndexedByBPartnerId()
+	{
+		if (_bpartnerId2contract_fullyLoadedRequired && !_bpartnerId2contract_fullyLoaded)
 		{
 			_bpartnerId2contract.clear(); // clear all first
 
@@ -326,16 +344,16 @@ public class SyncObjectsFactory
 		return bpartner;
 	}
 
-	private Collection<I_C_Flatrate_Term> getC_Flatrate_Terms_ForBPartnerId(final int bpartnerId)
+	private List<I_C_Flatrate_Term> getC_Flatrate_Terms_ForBPartnerId(final int bpartnerId)
 	{
-		final boolean fullyLoadedRequired = false;
-		final Multimap<Integer, I_C_Flatrate_Term> bpartnerId2contract = getC_Flatrate_Terms_IndexedByBPartnerId(fullyLoadedRequired);
+		final Multimap<Integer, I_C_Flatrate_Term> bpartnerId2contract = getC_Flatrate_Terms_IndexedByBPartnerId();
 		if (!bpartnerId2contract.containsKey(bpartnerId))
 		{
 			final List<I_C_Flatrate_Term> contracts = pmmContractsDAO.retrieveRunningContractsOnDateForBPartner(date, bpartnerId);
 			bpartnerId2contract.putAll(bpartnerId, contracts);
 		}
-		return bpartnerId2contract.get(bpartnerId);
+
+		return ImmutableList.copyOf(bpartnerId2contract.get(bpartnerId));
 	}
 
 	public SyncProduct createSyncProduct(final I_PMM_Product pmmProduct)
@@ -356,15 +374,15 @@ public class SyncObjectsFactory
 		}
 		catch (final ExecutionException ex)
 		{
-			throw new RuntimeException("Failed creating "+SyncProduct.class+" for "+pmmProduct, ex.getCause());
+			throw new RuntimeException("Failed creating " + SyncProduct.class + " for " + pmmProduct, ex.getCause());
 		}
-		
+
 	}
 
 	private final SyncProduct createSyncProductNoCache(final I_PMM_Product pmmProduct)
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
-		
+
 		final I_M_Product product = pmmProduct.getM_Product();
 
 		String productName = pmmProduct.getProductName();
@@ -451,24 +469,59 @@ public class SyncObjectsFactory
 		return Services.get(IPMMMessageDAO.class).retrieveMessagesAsString(getCtx());
 	}
 
-	private List<I_C_RfQResponse> getC_RfQResponses_ForBPartnerId(final int bpartnerId)
+	private final void setActiveRfqResponsesFullyLoadedRequired()
 	{
-		// TODO: FRESH-402: consider to optimize it like getC_Flatrate_Terms_ForBPartnerId(...)
-		return pmmRfQDAO.retrieveActiveResponses(getCtx(), bpartnerId);
+		this._bpartnerId2activeRfqResponseLines_fullyLoadedRequired = true;
+	}
+
+	private List<I_C_RfQResponseLine> getActiveRfqResponseLines_ForBPartnerId(final int bpartnerId)
+	{
+		final Multimap<Integer, I_C_RfQResponseLine> bpartnerId2activeRfqResponseLines = getActiveRfqResponseLines_IndexedByBPartnerId();
+		if (!bpartnerId2activeRfqResponseLines.containsKey(bpartnerId))
+		{
+			final List<I_C_RfQResponseLine> rfqResponseLines = pmmRfQDAO.retrieveActiveResponseLines(getCtx(), bpartnerId);
+			bpartnerId2activeRfqResponseLines.putAll(bpartnerId, rfqResponseLines);
+		}
+		return ImmutableList.copyOf(bpartnerId2activeRfqResponseLines.get(bpartnerId));
+	}
+
+	private List<I_C_RfQResponseLine> getActiveRfqResponseLines_ForRfQResponse(final I_C_RfQResponse rfqResponse)
+	{
+		// NOTE: we are not using the cache because usually this method is called only for one RfQ response,
+		// and loading the lines for all RfQResponses (even for same partner) would not be very performant.
+		return pmmRfQDAO.retrieveResponseLines(rfqResponse);
+	}
+
+	private Multimap<Integer, I_C_RfQResponseLine> getActiveRfqResponseLines_IndexedByBPartnerId()
+	{
+		if (_bpartnerId2activeRfqResponseLines_fullyLoadedRequired && !_bpartnerId2activeRfqResponseLines_fullyLoaded)
+		{
+			_bpartnerId2activeRfqResponseLines.clear(); // clear all first
+
+			final List<I_C_RfQResponseLine> rfqResponseLines = pmmRfQDAO.retrieveAllActiveResponseLines(getCtx());
+			for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
+			{
+				final int bpartnerId = rfqResponseLine.getC_BPartner_ID();
+				_bpartnerId2activeRfqResponseLines.put(bpartnerId, rfqResponseLine);
+			}
+
+			_bpartnerId2activeRfqResponseLines_fullyLoaded = true;
+		}
+		return _bpartnerId2activeRfqResponseLines;
 	}
 
 	public List<SyncRfQ> createSyncRfQs(final I_C_RfQResponse rfqResponse)
 	{
 		final List<SyncRfQ> syncRfQs = new ArrayList<>();
 
-		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfQDAO.retrieveResponseLines(rfqResponse))
+		for (final I_C_RfQResponseLine rfqResponseLine : getActiveRfqResponseLines_ForRfQResponse(rfqResponse))
 		{
 			final SyncRfQ syncRfQ = createSyncRfQ(rfqResponseLine);
-			if(syncRfQ == null)
+			if (syncRfQ == null)
 			{
 				continue;
 			}
-			
+
 			syncRfQs.add(syncRfQ);
 		}
 
@@ -477,12 +530,12 @@ public class SyncObjectsFactory
 
 	private final SyncRfQ createSyncRfQ(final I_C_RfQResponseLine rfqResponseLine)
 	{
-		if (pmmRfQBL.isClosed(rfqResponseLine))
+		if (!pmmRfQBL.isDraft(rfqResponseLine))
 		{
 			// shall not happen
 			return null;
 		}
-		
+
 		final SyncRfQ syncRfQ = new SyncRfQ();
 		syncRfQ.setUuid(SyncUUIDs.toUUIDString(rfqResponseLine));
 
@@ -498,33 +551,37 @@ public class SyncObjectsFactory
 
 		syncRfQ.setQtyRequested(rfqResponseLine.getQtyRequiered());
 		syncRfQ.setQtyCUInfo(rfqResponseLine.getC_UOM().getUOMSymbol());
-		
+
 		syncRfQ.setCurrencyCode(rfqResponseLine.getC_Currency().getISO_Code());
 
 		return syncRfQ;
 	}
-	
-	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine)
+
+	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine, final boolean winnerKnown)
 	{
-		if (!pmmRfQBL.isClosed(rfqResponseLine))
+		if(!pmmRfQBL.isCompletedOrClosed(rfqResponseLine))
 		{
-			logger.warn("Skip creating close event for {} because it's not closed", rfqResponseLine);
+			logger.warn("Skip creating close event for {} because it's not completed or closed", rfqResponseLine);
 			return null;
 		}
-		
+
 		final SyncRfQCloseEvent event = new SyncRfQCloseEvent();
 		event.setRfq_uuid(SyncUUIDs.toUUIDString(rfqResponseLine));
-		event.setWinner(rfqResponseLine.isSelectedWinner());
-		
-		if (event.isWinner())
+		event.setWinnerKnown(winnerKnown);
+		if(winnerKnown)
+		{
+			event.setWinner(rfqResponseLine.isSelectedWinner());
+		}
+
+		if (winnerKnown && event.isWinner())
 		{
 			final List<SyncProductSupply> plannedSyncProductSupplies = createPlannedSyncProductSupplies(rfqResponseLine);
 			event.getPlannedSupplies().addAll(plannedSyncProductSupplies);
 		}
-		
+
 		return event;
 	}
-	
+
 	private List<SyncProductSupply> createPlannedSyncProductSupplies(final I_C_RfQResponseLine rfqResponseLine)
 	{
 		final I_C_Flatrate_Term contract = rfqResponseLine.getC_Flatrate_Term();

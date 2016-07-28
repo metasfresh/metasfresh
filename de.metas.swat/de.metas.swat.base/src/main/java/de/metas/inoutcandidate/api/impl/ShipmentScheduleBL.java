@@ -365,7 +365,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// I will let it here nevertheless, so we can keep track of it's way to work
 
 			final org.compiere.model.I_C_BPartner partner = sched.getC_BPartner();
-			
+
 			// FRESH-334 retrieve the bp product for org or for org 0
 			final int orgId = product.getAD_Org_ID();
 
@@ -404,7 +404,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
-				final int bpLocationId = sched.getC_BPartner_Location_ID();
+				final int bpLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
 
 				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, isSOTrx, deliveryDate, bpLocationId);
 
@@ -985,7 +985,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched)
 	{
-		return mkKeyForGrouping(sched, false);
+		final boolean includeBPartner = false;
+		return mkKeyForGrouping(sched, includeBPartner);
 	}
 
 	@Override
@@ -1012,8 +1013,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final int bpLocId;
 		if (includeBPartner)
 		{
-			bpartnerId = Services.get(IShipmentScheduleEffectiveBL.class).getC_BPartner_ID(sched);
-			bpLocId = Services.get(IShipmentScheduleEffectiveBL.class).getC_BP_Location_ID(sched);
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+			bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
+			bpLocId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
 		}
 		else
 		{
@@ -1239,14 +1242,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		listeners.addShipmentScheduleQtyUpdateListener(listener);
 	}
-	
+
 	@Override
 	public void closeShipmentSchedule(I_M_ShipmentSchedule schedule)
 	{
 		final BigDecimal qtyDelivered = schedule.getQtyDelivered();
-		
+
 		schedule.setQtyOrdered_Override(qtyDelivered);
-		
+
 		InterfaceWrapperHelper.save(schedule);
 	}
 }

@@ -1263,7 +1263,9 @@ public class MOrder extends X_C_Order implements DocAction
 		log.debug(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return DocAction.STATUS_Invalid;
+		}
 		MDocType dt = MDocType.get(getCtx(), getC_DocTypeTarget_ID());
 
 		// Std Period open?
@@ -1554,23 +1556,33 @@ public class MOrder extends X_C_Order implements DocAction
 	public boolean reserveStock(MDocType dt, MOrderLine[] lines)
 	{
 		if (dt == null)
+		{
 			dt = MDocType.get(getCtx(), getC_DocType_ID());
+		}
 
 		// Binding
 		boolean binding = !dt.isProposal();
+		
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
 				// Closing Binding Quotation
 				|| (MDocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType())
 						&& DOCACTION_Close.equals(getDocAction())))  // || isDropShip() )
+		{
+				
 			binding = false;
+		}
 		boolean isSOTrx = isSOTrx();
+		
 		log.debug("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
+		
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
 		if (MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())
 				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
+		{
 			header_M_Warehouse_ID = 0;		// don't enforce
+		}
 
 		BigDecimal Volume = Env.ZERO;
 		BigDecimal Weight = Env.ZERO;

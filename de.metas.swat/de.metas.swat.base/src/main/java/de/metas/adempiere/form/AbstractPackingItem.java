@@ -201,7 +201,11 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 */
 	protected int computeGroupingKey(final I_M_ShipmentSchedule sched)
 	{
-		return Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched).hashCode();
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
+		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+		final boolean includeBPartner = true;
+		return shipmentScheduleBL.mkKeyForGrouping(sched, includeBPartner).hashCode();
 	}
 
 	@Override

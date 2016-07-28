@@ -57,7 +57,7 @@ public class NotificationBL implements INotificationBL
 	{
 		// task 09833
 		// Provide more specific information to the user, in case there exists a notification context provider
-		final String specificInfo = ctxProviders.getTextMessageOrNull(referencedRecord);
+		final String specificInfo = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
 		final StringBuilder detailedMsgText = new StringBuilder();
 		detailedMsgText.append(messageText);
 		if (specificInfo != null)
@@ -166,6 +166,12 @@ public class NotificationBL implements INotificationBL
 	public void addCtxProvider(final INotificationCtxProvider ctxProvider)
 	{
 		ctxProviders.addCtxProvider(ctxProvider);
+	}
+	
+	@Override
+	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
+	{
+		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
 	}
 
 }

@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS db_constraints;
+-- DROP VIEW IF EXISTS db_constraints;
 CREATE OR REPLACE VIEW db_constraints AS 
 SELECT
 	co.contype AS constraint_type
@@ -16,7 +16,7 @@ LEFT JOIN pg_attribute a ON a.attrelid = co.conrelid AND ARRAY[a.attnum] <@ co.c
 LEFT JOIN pg_class clf ON clf.oid = co.confrelid
 LEFT JOIN pg_namespace nsf ON nsf.oid = clf.relnamespace
 LEFT JOIN pg_attribute af ON af.attrelid = co.confrelid AND ARRAY[af.attnum] <@ co.confkey
-WHERE (co.contype = ANY (ARRAY['p'::"char", 'f'::"char"])) AND ns.nspname = 'adempiere'::name
+WHERE (co.contype = ANY (ARRAY['p'::"char", 'f'::"char"]))
 ;
 
 

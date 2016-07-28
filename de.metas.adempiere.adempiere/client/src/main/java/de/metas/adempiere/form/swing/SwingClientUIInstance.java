@@ -28,8 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -45,6 +43,7 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.form.AbstractClientUIInstance;
 import de.metas.adempiere.form.IAskDialogBuilder;
+import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.adempiere.form.IClientUIInvoker;
 
 class SwingClientUIInstance extends AbstractClientUIInstance
@@ -260,6 +259,12 @@ class SwingClientUIInstance extends AbstractClientUIInstance
 	public IClientUIInvoker invoke()
 	{
 		return new SwingClientUIInvoker(this);
+	}
+	
+	@Override
+	public IClientUIAsyncInvoker invokeAsync()
+	{
+		return new SwingClientUIAsyncInvoker();
 	}
 
 	@Override

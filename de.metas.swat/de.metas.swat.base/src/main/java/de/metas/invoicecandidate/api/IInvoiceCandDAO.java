@@ -137,13 +137,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 * 
+	 *
 	 * @param icQuery
 	 */
 	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
-	 * Invalidates just the given candidate.
+	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
 	 *
 	 * @param ic
 	 */

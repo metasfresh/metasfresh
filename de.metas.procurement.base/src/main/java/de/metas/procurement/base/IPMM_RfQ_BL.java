@@ -2,6 +2,7 @@ package de.metas.procurement.base;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -33,10 +34,20 @@ public interface IPMM_RfQ_BL extends ISingletonService
 
 	boolean isProcurement(I_C_RfQResponse rfqResponse);
 
+	boolean isDraft(I_C_RfQResponseLine rfqResponseLine);
+
 	boolean isClosed(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine);
+
+	boolean isCompletedOrClosed(I_C_RfQResponse rfqResponse);
+
+	boolean isCompletedOrClosed(de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine);
 
 	void createDraftContractsForWinners(I_C_RfQ rfq);
 
 	void createDraftContractsForSelectedWinners(I_C_RfQResponse rfqResponse);
+
+	void checkCompleteContractsForWinners(I_C_RfQResponse rfqResponse);
+
+	void checkCompleteContractIfWinner(I_C_RfQResponseLine rfqResponseLine);
 
 }

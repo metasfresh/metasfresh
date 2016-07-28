@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
@@ -11,6 +12,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.IPMM_RfQ_BL;
+import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
@@ -60,11 +62,31 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 	{
 		return isProcurement(rfqResponse.getC_RfQ());
 	}
+	
+	@Override
+	public boolean isDraft(I_C_RfQResponseLine rfqResponseLine)
+	{
+		return Services.get(IRfqBL.class).isDraft(rfqResponseLine);
+	}
 
 	@Override
-	public boolean isClosed(final de.metas.rfq.model.I_C_RfQResponseLine rfqResponse)
+	public boolean isClosed(final de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine)
 	{
-		return Services.get(IRfqBL.class).isClosed(rfqResponse);
+		return Services.get(IRfqBL.class).isClosed(rfqResponseLine);
+	}
+
+	@Override
+	public boolean isCompletedOrClosed(final de.metas.rfq.model.I_C_RfQResponse rfqResponse)
+	{
+		final IRfqBL rfqBL = Services.get(IRfqBL.class);
+		return rfqBL.isCompleted(rfqResponse) || rfqBL.isClosed(rfqResponse);
+	}
+
+	@Override
+	public boolean isCompletedOrClosed(final de.metas.rfq.model.I_C_RfQResponseLine rfqResponseLine)
+	{
+		final IRfqBL rfqBL = Services.get(IRfqBL.class);
+		return rfqBL.isCompleted(rfqResponseLine) || rfqBL.isClosed(rfqResponseLine);
 	}
 
 	@Override
@@ -80,9 +102,9 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 	@Override
 	public void createDraftContractsForSelectedWinners(final I_C_RfQResponse rfqResponse)
 	{
-		// Make sure it's closed
-		final IRfqBL rfqBL = Services.get(IRfqBL.class);
-		if (!rfqBL.isClosed(rfqResponse))
+		// Make sure it's completed or closed
+		final IPMM_RfQ_BL pmmRfqBL = Services.get(IPMM_RfQ_BL.class);
+		if (!pmmRfqBL.isCompletedOrClosed(rfqResponse))
 		{
 			throw new RfQDocumentNotClosedException(rfqResponse);
 		}
@@ -210,6 +232,47 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		// Unlink the existing contract
 		rfqResponseLine.setC_Flatrate_Term(null);
 		InterfaceWrapperHelper.save(rfqResponseLine, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	public void checkCompleteContractsForWinners(final I_C_RfQResponse rfqResponse)
+	{
+		final IPMM_RfQ_DAO pmmRfqDAO = Services.get(IPMM_RfQ_DAO.class);
+		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfqDAO.retrieveResponseLines(rfqResponse))
+		{
+			checkCompleteContractIfWinner(rfqResponseLine);
+		}
+	}
+
+	@Override
+	public void checkCompleteContractIfWinner(I_C_RfQResponseLine rfqResponseLine)
+	{
+		if (!rfqResponseLine.isSelectedWinner())
+		{
+			// TODO: make sure the is no contract
+			return;
+		}
+
+		final I_C_Flatrate_Term contract = rfqResponseLine.getC_Flatrate_Term();
+		if (contract == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_Flatrate_Term_ID@: " + rfqResponseLine);
+		}
+
+		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		if (docActionBL.isStatusDraftedOrInProgress(contract))
+		{
+			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+			flatrateBL.complete(contract);
+		}
+		else if (docActionBL.isStatusCompleted(contract))
+		{
+			// already completed => nothing to do
+		}
+		else
+		{
+			throw new AdempiereException("@Invalid@ @DocStatus@: " + contract);
+		}
 	}
 
 }

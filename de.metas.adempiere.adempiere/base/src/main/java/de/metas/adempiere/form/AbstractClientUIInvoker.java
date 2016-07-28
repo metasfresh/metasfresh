@@ -13,15 +13,14 @@ package de.metas.adempiere.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +28,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 public abstract class AbstractClientUIInvoker implements IClientUIInvoker
@@ -41,8 +41,10 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	private boolean invokeLater;
 	private boolean longOperation;
 	private OnFail onFail = OnFail.ShowErrorPopup;
+	private IExceptionHandler exceptionHandler;
 	private Object parentComponent;
 	private int parentWindowNo;
+	//
 	private Runnable runnable = null;
 
 	public AbstractClientUIInvoker(final IClientUIInstance clientUI)
@@ -51,7 +53,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		Check.assumeNotNull(clientUI, "clientUI not null");
 		this.clientUI = clientUI;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -142,6 +144,20 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 			// logger.warn("Got error while running: " + runnable + ". Ignored.", e);
 			return;
 		}
+		else if (OnFail.UseHandler == onFail)
+		{
+			final IExceptionHandler exceptionHandler = getExceptionHandler();
+			if (exceptionHandler == null)
+			{
+				logger.warn("No exception handler was configurated and OnFail=UseHandler. Throwing the exception");
+				// fallback
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+			else
+			{
+				exceptionHandler.handleException(e);
+			}
+		}
 		// Fallback: throw the exception
 		else
 		{
@@ -187,6 +203,19 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	}
 
 	@Override
+	public final IClientUIInvoker setExceptionHandler(IExceptionHandler exceptionHandler)
+	{
+		Check.assumeNotNull(exceptionHandler, "exceptionHandler not null");
+		this.exceptionHandler = exceptionHandler;
+		return this;
+	}
+
+	private final IExceptionHandler getExceptionHandler()
+	{
+		return exceptionHandler;
+	}
+
+	@Override
 	public abstract IClientUIInvoker setParentComponent(final Object parentComponent);
 
 	@Override
@@ -214,7 +243,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		this.runnable = runnable;
 		return this;
 	}
-
+	
 	private final Runnable getRunnable()
 	{
 		return runnable;

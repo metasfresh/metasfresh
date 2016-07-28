@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 
@@ -13,7 +14,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
-import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.rfq.model.X_C_RfQResponseLine;
 
 /*
  * #%L
@@ -40,21 +41,35 @@ import de.metas.rfq.model.X_C_RfQResponse;
 public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 {
 	@Override
-	public List<I_C_RfQResponse> retrieveActiveResponses(final Properties ctx, final int bpartnerId)
+	public List<I_C_RfQResponseLine> retrieveActiveResponseLines(final Properties ctx, final int bpartnerId)
+	{
+		return retrieveActiveResponseLinesQuery(ctx)
+				.addEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.create()
+				.list(I_C_RfQResponseLine.class);
+	}
+
+	@Override
+	public List<I_C_RfQResponseLine> retrieveAllActiveResponseLines(final Properties ctx)
+	{
+		return retrieveActiveResponseLinesQuery(ctx)
+				.create()
+				.list(I_C_RfQResponseLine.class);
+	}
+
+	private IQueryBuilder<I_C_RfQResponseLine> retrieveActiveResponseLinesQuery(final Properties ctx)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_RfQResponse.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_C_RfQResponseLine.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_RfQResponse.COLUMN_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_RfQResponse.COLUMN_DocStatus, X_C_RfQResponse.DOCSTATUS_Drafted)
+				.addInArrayFilter(I_C_RfQResponseLine.COLUMNNAME_DocStatus, X_C_RfQResponseLine.DOCSTATUS_Drafted)
 				.orderBy()
-				.addColumn(I_C_RfQResponse.COLUMNNAME_Name)
-				.addColumn(I_C_RfQResponse.COLUMNNAME_C_RfQResponse_ID)
-				.endOrderBy()
-				//
-				.create()
-				.list(I_C_RfQResponse.class);
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID)
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_Line)
+				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponseLine_ID)
+				.endOrderBy();
 	}
+
 	
 	@Override
 	public List<I_C_RfQResponseLine> retrieveResponseLines(final I_C_RfQResponse rfqResponse)

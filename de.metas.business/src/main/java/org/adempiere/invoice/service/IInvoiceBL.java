@@ -13,11 +13,11 @@ package org.adempiere.invoice.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -164,8 +164,12 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @throws AdempiereException if
 	 *             <ul>
-	 *             <li>the given invoice is <code>null</code> or</li> <li>the given C_Charge_ID doesn't have a valid C_Charge or</li> <li>the given invoice is a credit memo or</li> <li>the given
-	 *             invoice is already fully paid or</li> <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
+	 *             <li>the given invoice is <code>null</code> or</li>
+	 *             <li>the given C_Charge_ID doesn't have a valid C_Charge or</li>
+	 *             <li>the given invoice is a credit memo or</li>
+	 *             <li>the given
+	 *             invoice is already fully paid or</li>
+	 *             <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
 	 *             </ul>
 	 */
 	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, IInvoiceCreditContext creditCtx);
@@ -389,4 +393,11 @@ public interface IInvoiceBL extends ISingletonService
 	 * @return
 	 */
 	boolean isAdjustmentCharge(I_C_DocType docType);
+
+	/**
+	 * Value set in the system configuration "de.metas.invoice.C_Invoice_PaymentRule".
+	 * 
+	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
+	 */
+	String getDefaultPaymentRule();
 }

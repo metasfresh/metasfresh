@@ -101,7 +101,7 @@ public final class AggregateHUEditorPanel extends HUEditorPanel
 		fShipperTransportation.addListener(new UIPropertyChangeListener(fShipperTransportation)
 		{
 			@Override
-			protected void propertyChangeEx(final PropertyChangeEvent evt) throws Exception
+			protected void propertyChangeEx(final PropertyChangeEvent evt)
 			{
 				if (ITerminalField.ACTION_ValueChanged.equals(evt.getPropertyName()))
 				{

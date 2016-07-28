@@ -171,11 +171,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_Override_ID</code></li>
 	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
-	 * 
-	 * Note that in case the DropShip_BPartner is the same as the C_BPartner, this method will return 0
+	 *
+	 * #100 FRESH-435: even if the (effective) DropShip_BPartner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0
 	 *
 	 * @param olCand
-	 * @return 
+	 * @return
 	 */
 	int getDropShip_BPartner_Effective_ID(I_C_OLCand olCand);
 
@@ -187,8 +187,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BP_Location_Override_ID</code></li>
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * </ul>
-	 * 
-	 * Note that in case the DropShip_Location is the same as the C_BPartner_Location, this method will return 0
+	 *
+	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
 	 *
 	 * @param olCand
 	 * @return
@@ -259,15 +259,15 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	/**
 	 * Returns, falling back to the next if not set:
-	 * 
+	 *
 	 * <ul>
 	 * <li><code>HandOver_Partner_Override_ID</code></li>
 	 * <li><code>HandOver_Partner_ID</code></li>
  	 * <li><code>C_BPartner_Override_ID</code></li>
  	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
-	 * 
-	 * Note that in case the HandOver_Partner is the same as the C_BPartner, this method will return 0
+	 *
+	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
 	 *
 	 * @param olCand
 	 * @return
@@ -283,7 +283,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	I_C_BPartner getHandOver_Partner_Effective(I_C_OLCand olCand);
 
 	/**
-	 * 
+	 *
 	 * Returns, falling back to the next if not set:
 	 * <ul>
 	 * <li><code>HandOver_Location_Override_ID</code></li>
@@ -292,8 +292,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * </ul>
 	 *
-	 * Note that in case the HandOver_Location is the same as the C_BPartner_Location, this method will return 0
-	 * 
+	 * #100 FRESH-435: even if the (effective) HandOver_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
+	 *
 	 * @param olCand
 	 * @return
 	 */

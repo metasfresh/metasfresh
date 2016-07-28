@@ -276,6 +276,60 @@ public interface I_C_RfQ_Topic
     public static final String COLUMNNAME_RfQ_Invitation_PrintFormat_ID = "RfQ_Invitation_PrintFormat_ID";
 
 	/**
+	 * Set RfQ without Qty Invitation mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_InvitationWithoutQty_MailText_ID (int RfQ_InvitationWithoutQty_MailText_ID);
+
+	/**
+	 * Get RfQ without Qty Invitation mail text.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_InvitationWithoutQty_MailText_ID();
+
+	public org.compiere.model.I_R_MailText getRfQ_InvitationWithoutQty_MailText();
+
+	public void setRfQ_InvitationWithoutQty_MailText(org.compiere.model.I_R_MailText RfQ_InvitationWithoutQty_MailText);
+
+    /** Column definition for RfQ_InvitationWithoutQty_MailText_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText> COLUMN_RfQ_InvitationWithoutQty_MailText_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_R_MailText>(I_C_RfQ_Topic.class, "RfQ_InvitationWithoutQty_MailText_ID", org.compiere.model.I_R_MailText.class);
+    /** Column name RfQ_InvitationWithoutQty_MailText_ID */
+    public static final String COLUMNNAME_RfQ_InvitationWithoutQty_MailText_ID = "RfQ_InvitationWithoutQty_MailText_ID";
+
+	/**
+	 * Set RfQ without Qty Invitation Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRfQ_InvitationWithoutQty_PrintFormat_ID (int RfQ_InvitationWithoutQty_PrintFormat_ID);
+
+	/**
+	 * Get RfQ without Qty Invitation Druck - Format.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRfQ_InvitationWithoutQty_PrintFormat_ID();
+
+	public org.compiere.model.I_AD_PrintFormat getRfQ_InvitationWithoutQty_PrintFormat();
+
+	public void setRfQ_InvitationWithoutQty_PrintFormat(org.compiere.model.I_AD_PrintFormat RfQ_InvitationWithoutQty_PrintFormat);
+
+    /** Column definition for RfQ_InvitationWithoutQty_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat> COLUMN_RfQ_InvitationWithoutQty_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_C_RfQ_Topic, org.compiere.model.I_AD_PrintFormat>(I_C_RfQ_Topic.class, "RfQ_InvitationWithoutQty_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
+    /** Column name RfQ_InvitationWithoutQty_PrintFormat_ID */
+    public static final String COLUMNNAME_RfQ_InvitationWithoutQty_PrintFormat_ID = "RfQ_InvitationWithoutQty_PrintFormat_ID";
+
+	/**
 	 * Set RfQ lost mail text.
 	 *
 	 * <br>Type: Table

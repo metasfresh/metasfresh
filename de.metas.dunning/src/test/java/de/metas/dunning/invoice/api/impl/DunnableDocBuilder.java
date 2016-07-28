@@ -39,6 +39,7 @@ public class DunnableDocBuilder
 {
 	private String tableName;
 	private int record_id = -1;
+	private String documentNo;
 	private int AD_Client_ID = -1;
 	private int AD_Org_ID = -1;
 	private int C_BPartner_ID = -1;
@@ -65,6 +66,7 @@ public class DunnableDocBuilder
 	public IDunnableDoc create()
 	{
 		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, record_id,
+				documentNo, // FRESH-504: DocumentNo
 				AD_Client_ID, AD_Org_ID,
 				C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
 				C_Currency_ID, totalAmt, openAmt,
@@ -101,6 +103,18 @@ public class DunnableDocBuilder
 		this.record_id = InterfaceWrapperHelper.getId(model);
 		return this;
 	}
+	
+	/**
+	 * FRESH-504: DocuemntNo is also needed
+	 * @param documentNo
+	 * @return
+	 */
+	public DunnableDocBuilder setDocumentNo (String documentNo)
+	{
+		this.documentNo = documentNo;
+		return this;
+	}
+	
 
 	public DunnableDocBuilder setAD_Client_ID(int adClientId)
 	{

@@ -23,7 +23,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Supplier;
@@ -67,11 +66,6 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	private BigDecimal totalPaymentCandidatesAmt = BigDecimal.ZERO;
 	// @formatter:on
-
-	/**
-	 * Field to keep the value of the "Discount" flag
-	 */
-	private boolean isDiscountFlagTrue = false;
 
 	private final IProcessor<Exception> contextWarningsConsumer = new IProcessor<Exception>()
 	{
@@ -180,27 +174,6 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 	 */
 	private void onRowSelectedChanged(final IAllocableDocRow row)
 	{
-		// FRESH-306: Make sure the payment lines' DiscountAmt is up to date.
-		// In case no invoice line is selected, the DIscountAmt values must be 0 and readonly.
-		final int selectedInvoices = getInvoiceRowsSelected().size();
-
-		if (selectedInvoices <= 0)
-		{
-			paymentsTableModel.setAllowWriteOffAmountOfType(InvoiceWriteOffAmountType.Discount, false);
-
-			for (final IPaymentRow paymentRow : getPaymentRowsSelected())
-			{
-				paymentRow.setDiscountAmt(Env.ZERO);
-			}
-		}
-
-		// Otherwise (if there is at least one invoice selected) the DiscountAmt must be consistent with the "Discount" flag:
-		// Read-only and 0 if the flag is not set, editable if the flag is set.
-		else
-		{
-			paymentsTableModel.setAllowWriteOffAmountOfType(InvoiceWriteOffAmountType.Discount, isDiscountFlagTrue);
-		}
-
 		//
 		// Row was just selected:
 		if (row.isSelected())
@@ -291,14 +264,8 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 	 */
 	protected final void onAllowWriteOffFlagChanged(final InvoiceWriteOffAmountType type, final boolean allowed)
 	{
-		// FRESH-360: update the field with the current value of "Discount" flag
-
-		if (InvoiceWriteOffAmountType.Discount == type)
-		{
-			isDiscountFlagTrue = allowed;
-		}
-
 		invoicesTableModel.setAllowWriteOffAmountOfType(type, allowed);
+		paymentsTableModel.setAllowWriteOffAmountOfType(type, allowed);
 
 		final int selectedInvoices = getInvoiceRowsSelected().size();
 
