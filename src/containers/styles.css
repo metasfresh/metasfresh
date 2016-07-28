@@ -518,9 +518,10 @@ body {
     width: 15%;
 }
 .product-order-summary td:nth-child(2) {
-    width: 50%;
+    width: 30%;
 }
 .product-order-summary td:nth-child(3) {
+    width: 30%;
     text-align: right;
 }
 .product-order-summary td:last-child {
