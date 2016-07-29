@@ -69,11 +69,17 @@ ANALYZE VERBOSE C_OrderLine;
 ANALYZE VERBOSE M_ReceiptSchedule_Alloc;
 ANALYZE VERBOSE M_ReceiptSchedule;
 
+
+-- flush OS caches and restart postgres; see http://stackoverflow.com/a/1223421/1012103
+-- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
+
 -- do explain analyze buffer etc..
 -- "Sort  (cost=202367.29..202367.48 rows=79 width=2166) (actual time=207.712..208.143 rows=544 loops=1)"
 -- Note that this wasn't reproducible on later runs. There we got 
--- "Index Scan Backward using c_invoice_candidate_create on c_invoice_candidate                  (cost=15.96..214555.65 rows=73 width=2106)  (actual time=116.984..1747.659 rows=544 loops=1)"
+-- pg-9.1: "Index Scan Backward using c_invoice_candidate_create on c_invoice_candidate  (cost=15.96..214555.65 rows=73  width=2106)  (actual time=116.984..1747.659 rows=544 loops=1)"
+-- pg-9.5: "Index Scan Backward using c_invoice_candidate_create on c_invoice_candidate  (cost=16.28.. 41663.41 rows=106 width=2085)  (actual time=132.856..1535.716 rows=544 loops=1)"
 --- instead.
+
 
 
 -- now enable DLM
@@ -87,8 +93,9 @@ SELECT dlm.add_table_to_dlm('M_ReceiptSchedule');
 -- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
 
 -- do explain analyze buffer etc..again
---"Index Scan Backward using c_invoice_candidate_created on public.c_invoice_candidate_tbl  (cost=15.96..176.88 rows=1 width=1687) (actual time=0.445..268.927 rows=544 loops=1)"
-
+-- pg-9.1: "Index Scan Backward using c_invoice_candidate_created on public.c_invoice_candidate_tbl      (cost=15.96..176.88 rows=1 width=1687) (actual time=0.445..268.927 rows=544 loops=1)"
+-- pg-9.5: "Index Scan Backward using c_invoice_candidate_create_dlm_partial on c_invoice_candidate_tbl  (cost=16.28..172.09 rows=1 width=1682) (actual time=153.611..1564.482 rows=544 loops=1)"
+-- Note: i didn't understand the pg-9.1 result..i might have made a mistake (forgot to flush? maybe actually did have the data updated?). However, the pg-9.5 result seems plausible
 
 -- now update "some" values to generate background data
 UPDATE C_Invoice_Candidate_Tbl SET DLM_Level=1 WHERE processed='Y' AND updated + interval '1 weeks' < now();
@@ -117,6 +124,7 @@ ORDER BY Tbl, DLM_Level NULLS first;
 "M_ReceiptSchedule_Tbl";141663;1
 */
 
+
 -- make sure the statistics are up to date
 ANALYZE VERBOSE C_Invoice_Candidate_Tbl;
 ANALYZE VERBOSE C_Order_Tbl;
@@ -128,4 +136,7 @@ ANALYZE VERBOSE M_ReceiptSchedule_Tbl;
 -- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
 
 -- do explain analyze buffer etc..again
--- "Index Scan Backward using c_invoice_candidate_create_dlm_partial on c_invoice_candidate_tbl  (cost=15.96..176.51 rows=1 width=2106) (actual time=146.663..1735.551 rows=534 loops=1)"
+-- "Index Scan Backward using c_invoice_candidate_create_dlm_partial on c_invoice_candidate_tbl  (cost=15.96..  176.51 rows= 1 width=2106) (actual time=146.663..1735.551 rows=534 loops=1)" <- pg-9.1 with partial indices
+-- "Index Scan Backward using c_invoice_candidate_create_dlm_partial on c_invoice_candidate_tbl  (cost=16.28..  168.21 rows= 1 width=1678) (actual time= 99.858..1607.801 rows=534 loops=1)" <- pg-9.5 with partial indices
+-- "Index Scan Backward using c_invoice_candidate_create             on c_invoice_candidate_tbl  (cost=16.28..10473.15 rows=21 width=2120) (actual time= 78.620..1475.508 rows=534 loops=1)" <- pg-9.5 without partial indices
+-- "Index Scan Backward using c_invoice_candidate_create             on c_invoice_candidate_tbl  (cost=16.28..10473.15 rows=21 width=2120) (actual time=106.524..1715.651 rows=534 loops=1)" <- pg-9.5 without partial indices repeat
