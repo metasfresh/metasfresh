@@ -10,15 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-31, upcoming)
+# metasfresh 4.29.28 (2016-31, upcoming)
 
 ## Features
  - #241 Excel Export for Open Items accounting currency
+ - #240 Consitency check page for Saldobilanz
 
 ## Fixes
  - #248 Admin Login when deleted properties
 
-# metasfresh 4.28.27 (2016-30, RC)
+# metasfresh 4.28.27 (2016-30)
 
 ## Features
  - #201 KPI Accounted Documents
