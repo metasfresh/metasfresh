@@ -22,8 +22,11 @@ Here come the actual release notes:
 
 ## Features
  - #201 KPI Accounted Documents
+   * Created the logic for our new KPI "Accounted Documents" which will be included into our new metasfresh webUI.
  - #212 MRPProductInfo display Conference flag with sys config
+   * Added a configuration possibility to be able to switch the conference flitering functionality on-off in MRP Product Info.
  - #226 show accounting currency in open items report
+   * Implemented a counter check Open Items Reports (customer, vendor) with Accounting Balance. Open Items in foreign currency now show also the sums in accounting currency.
  
 ## Fixes
  - #153 PaymentRule = S in Invoice
