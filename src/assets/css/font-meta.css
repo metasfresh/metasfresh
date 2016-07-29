@@ -116,3 +116,6 @@
 .meta-icon-close:before {
   content: "\71";
 }
+.meta-icon-chevron:before {
+  content: "\73";
+}

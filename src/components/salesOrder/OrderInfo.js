@@ -13,13 +13,13 @@ class OrderInfo extends Component {
                     {(salesOrderWindow.DeliveryStatus && salesOrderWindow.DeliveryStatus.layoutInfo.displayed) &&
                         <div className="col-xs-5">
                             {salesOrderWindow.DeliveryStatus.caption}
-                            <div className="label label-warning pull-xs-right">Open</div>
+                            <div className="tag tag-warning pull-xs-right">Open</div>
                         </div>
                     }
                     {(salesOrderWindow.InvoiceStatus && salesOrderWindow.InvoiceStatus.layoutInfo.displayed) &&
                         <div className="col-xs-5 col-xs-offset-1">
                             {salesOrderWindow.InvoiceStatus.caption}
-                            <div className="label label-warning pull-xs-right">Open</div>
+                            <div className="tag tag-warning pull-xs-right">Open</div>
                         </div>
                     }
                 </div>

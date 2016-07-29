@@ -44,13 +44,19 @@ body {
 }
 
 
-.label-faded {
-    background-color: $brand-light-color;
+.tag {
+    padding: .25rem .6rem;
+    font-size: .65rem;
+    line-height: 1.5;
+    border-radius: .2rem;
 }
-.label {
-    padding: .5em .7em;
-    font-weight: 500;
-    font-size: 70%;
+
+.tag-success {
+    background-color: #89d729;
+}
+
+.tag-warning {
+    background-color: #fd8b0f;
 }
 
 .text-brand {
@@ -80,11 +86,23 @@ body {
     font-size: 18px;
 }
 
+.btn-xs {
+    padding: .25rem .6rem;
+    font-size: .65rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+
+.btn-xs.dropdown-toggle {
+    padding: .25rem;
+}
+
 .btn-meta-default {
     color: $brand-color-primary;
     background-color: $brand-bright-color;
     border-color: $brand-bright-color;
 }
+
 .btn-meta-default:hover {
     background-color: color(#F8FAFB lightness(90%));
     border-color: color(#F8FAFB lightness(90%));
@@ -92,22 +110,32 @@ body {
 
 .btn-meta-success{
     color: #fff;
-    background-color: #8BD53A;
-    border-color: #8BD53A;
+    background-color: #89d729;
+    border-color: #89d729;
 }
 .btn-meta-success:hover{
-    background-color: color(#8BD53A lightness(45%));
-    border-color: color(#8BD53A lightness(45%));
+    background-color: color(#89d729 lightness(45%));
+    border-color: color(#89d729 lightness(45%));
+}
+
+.btn-meta-inv-success{
+    color: #89d729;
+    background-color: #fff;
+    border-color: #fff;
+}
+.btn-meta-inv-success:hover{
+    background-color: #fff;
+    border-color: #fff;
 }
 
 .btn-meta-primary {
     color: #fff;
-    background-color: #7281B4;
-    border-color: #7281B4;
+    background-color: #9aafbd;
+    border-color: #9aafbd;
 }
 .btn-meta-primary:hover{
-    background-color: color(#7281B4 lightness(45%));
-    border-color: color(#7281B4 lightness(45%));
+    background-color: color(#9aafbd lightness(45%));
+    border-color: color(#9aafbd lightness(45%));
 }
 
 .btn-meta-secondary {
@@ -208,8 +236,8 @@ body {
 
 .input-icon-right{
     position: absolute;
-    bottom: 0;
-    right: 5px;
+    bottom: -3px;
+    right: 0;
     font-size:16px;
 }
 
@@ -528,4 +556,14 @@ body {
 .product-order-summary tr:last-child {
     font-weight: bold;
     font-size: 1rem;
+}
+
+
+.meta-dropdown-toggle {
+    color: #89d729;
+}
+
+.meta-dropdown-toggle i {
+    font-size: .5rem;
+    margin: 0 5px;
 }

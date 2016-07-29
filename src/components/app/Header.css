@@ -11,7 +11,19 @@
     top:0;
     left:0;
     width: 100%;
+    height: 55px;
     z-index: 100;
+}
+.header-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.header-logo {
+    height: 31px;
 }
 
 .header-middle {
@@ -20,7 +32,9 @@
 }
 
 .header-breadcrumb {
-    color: $brand-color-primary;
+    color: $brand-font-color-secondary;
+    font-size: 0.75rem;
+    margin-left: 15px;
 }
 
 .header-super-faded {
@@ -28,17 +42,19 @@
     border-bottom-color: #dee6ec;
 }
 
-.header-label {
-    margin-right: 30px;
-    font-weight:normal;
-    font-size: 18px;
-}
-
 .header-input-sm {
     width:80px;
 }
 .header-input-sm input{
-    font-size: 1rem;
+    font-size: 0.9375rem;
+}
+.header-input-sm .input-icon-right {
+    font-size: 14px;
+}
+.header-input-sm .form-control {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
 }
 
 .subheader-container {
@@ -97,4 +113,22 @@
     position: relative;
     top: 1px;
     z-index:300;
+}
+
+.header-left-side {
+    flex: 2 1 200px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.header-right-side {
+    flex: 2 1 200px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.header-right-side .side-panel-toggle {
+    margin-left: 15px;
 }
