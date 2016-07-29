@@ -15,6 +15,7 @@ Here come the actual release notes:
 ## Features
  - #241 Excel Export for Open Items accounting currency
  - #240 Consitency check page for Saldobilanz
+ - #225 Allocation - Accounting 0,00 when Posted
 
 ## Fixes
  - #248 Admin Login when deleted properties
