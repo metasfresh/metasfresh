@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,6 +46,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -70,6 +71,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_AD_Role;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -138,7 +140,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		orderBy
 				.clear()
 
-				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
+		// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
@@ -325,8 +327,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override
@@ -454,7 +456,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.setOption(IQuery.OPTION_IteratorBufferSize, 100) // 50 is the default, but there might be orders with more than 50 lines
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed=true, we can assume there won't be more than a some hundreds of invoice candidates with the same
-																			// headerAggregationKey
+ // headerAggregationKey
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
@@ -719,8 +721,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(adPInstanceId)
-		// Invalidate no matter if Processed or not
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+				// Invalidate no matter if Processed or not
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
 
 		invalidateCandsFor(icQueryBuilder);
@@ -1012,7 +1014,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(invoiceCandidateColumnName, value) // skip those which have our value set
-		;
+				;
 		if (updateOnlyIfNull)
 		{
 			selectionQueryBuilder.addEqualsFilter(invoiceCandidateColumnName, null);
@@ -1042,10 +1044,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateInvoiced(final Timestamp dateInvoiced, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced, // invoiceCandidateColumnName
-				dateInvoiced, // value
-				false, // updateOnlyIfNull
-				ADPinstance_ID, // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,  // invoiceCandidateColumnName
+				dateInvoiced,  // value
+				false,  // updateOnlyIfNull
+				ADPinstance_ID,  // selectionId
 				trxName // trxName
 		);
 	}
@@ -1054,10 +1056,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateAcct(Timestamp dateAcct, int ADPinstance_ID, String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct, // invoiceCandidateColumnName
-				dateAcct, // value
-				false, // updateOnlyIfNull
-				ADPinstance_ID, // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,  // invoiceCandidateColumnName
+				dateAcct,  // value
+				false,  // updateOnlyIfNull
+				ADPinstance_ID,  // selectionId
 				trxName // trxName
 		);
 	}
@@ -1066,10 +1068,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updatePOReference(final String poReference, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_POReference, // invoiceCandidateColumnName
-				poReference, // value
-				false, // updateOnlyIfNull
-				ADPinstance_ID, // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_POReference,  // invoiceCandidateColumnName
+				poReference,  // value
+				false,  // updateOnlyIfNull
+				ADPinstance_ID,  // selectionId
 				trxName // trxName
 		);
 	}
@@ -1141,16 +1143,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		whereClause.append(" AND ").append(I_C_Invoice_Candidate.COLUMNNAME_AD_Client_ID).append("=?");
 		params.add(adClientId);
 
-		final String sql =
-				"SELECT "
-						+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID
-						+ ", " + I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID
-						+ ", SUM(" + amountColumnName + ") as NetAmt"
-						+ " FROM " + I_C_Invoice_Candidate.Table_Name
-						+ " WHERE " + whereClause
-						+ " GROUP BY "
-						+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID + ","
-						+ I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID;
+		final String sql = "SELECT "
+				+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID
+				+ ", " + I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID
+				+ ", SUM(" + amountColumnName + ") as NetAmt"
+				+ " FROM " + I_C_Invoice_Candidate.Table_Name
+				+ " WHERE " + whereClause
+				+ " GROUP BY "
+				+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID + ","
+				+ I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID;
 
 		final Map<Integer, Map<Integer, BigDecimal>> currencyId2conversion2Amt = new HashMap<Integer, Map<Integer, BigDecimal>>();
 
@@ -1201,9 +1202,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
 				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(ctx,
 						amt,
-						currencyId, // CurFrom_ID,
-						targetCurrencyId, // CurTo_ID,
-						dateConv, // ConvDate,
+						currencyId,  // CurFrom_ID,
+						targetCurrencyId,  // CurTo_ID,
+						dateConv,  // ConvDate,
 						conversionTypeId,
 						adClientId, adOrgId);
 				result = result.add(amtConverted);
@@ -1232,11 +1233,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				+ "," + I_C_Invoice_Candidate.COLUMNNAME_AD_Note_ID + "=?"
 				+ " WHERE " + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "=?";
 		final Object[] sqlParams = new Object[] {
-				ic.getSchedulerResult()
-				, ic.isError()
-				, ic.getErrorMsg()
-				, ic.getAD_Note_ID()
-				, ic.getC_Invoice_Candidate_ID()
+				ic.getSchedulerResult(), ic.isError(), ic.getErrorMsg(), ic.getAD_Note_ID(), ic.getC_Invoice_Candidate_ID()
 		};
 
 		final boolean ignoreError = false;
@@ -1285,8 +1282,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
-		// Invalidate no matter if Processed or not
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+				// Invalidate no matter if Processed or not
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
 
 		invalidateCandsFor(icQueryBuilder);
@@ -1319,4 +1316,43 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.list();
 	}
+
+	public IQueryBuilder applyDefaultFilter(final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
+	{
+		Check.assumeNotNull(queryBuilder, "Query builder is null");
+
+		final Properties ctx = queryBuilder.getCtx();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		// shall never happen
+		if (ctx.isEmpty())
+		{
+			return queryBuilder;
+		}
+
+		final int roleID = Env.getAD_Role_ID(ctx);
+
+		// shall not happen
+		if (roleID <= 0)
+		{
+			return queryBuilder;
+		}
+
+		// Only filter invoice candidates of the organizations this role has access to
+
+		final int userID = Env.getAD_User_ID(ctx);
+
+		if (userID <= 0)
+		{
+			return queryBuilder;
+		}
+
+		final I_AD_Role role = InterfaceWrapperHelper.create(ctx, roleID, I_AD_Role.class, trxName);
+		
+		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
+		queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsString());
+		
+		return queryBuilder;
+	}
+
 }
