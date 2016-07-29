@@ -13,15 +13,14 @@ package de.metas.handlingunits.invoicecandidate.facet;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -76,13 +76,16 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 	@Override
 	protected List<IFacet<I_C_Invoice_Candidate>> collectFacets(final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
+		// FRESH-560: Add default filter
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilderWithDefaultFilters = Services.get(IInvoiceCandDAO.class).applyDefaultFilter(icQueryBuilder);
+		
 		// Match only Products which are Packing Materials
-		final IQuery<I_M_HU_PackingMaterial> isPackingMaterialQueryFilter = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, icQueryBuilder.getCtx(), icQueryBuilder.getTrxName())
+		final IQuery<I_M_HU_PackingMaterial> isPackingMaterialQueryFilter = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, queryBuilderWithDefaultFilters.getCtx(), queryBuilderWithDefaultFilters.getTrxName())
 				.create();
 
 		//
 		// Query invoice candidates, aggregate them by packing material products and sum the QtyToInvoice
-		final IQueryAggregateBuilder<I_C_Invoice_Candidate, I_M_Product> aggregateOnQtyToInvoiceInPriceUOM = icQueryBuilder
+		final IQueryAggregateBuilder<I_C_Invoice_Candidate, I_M_Product> aggregateOnQtyToInvoiceInPriceUOM = queryBuilderWithDefaultFilters
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_M_Product_ID, I_M_HU_PackingMaterial.COLUMN_M_Product_ID, isPackingMaterialQueryFilter)
 				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMN_M_Product_ID);
 		aggregateOnQtyToInvoiceInPriceUOM

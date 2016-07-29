@@ -71,7 +71,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Role;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -456,7 +455,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.setOption(IQuery.OPTION_IteratorBufferSize, 100) // 50 is the default, but there might be orders with more than 50 lines
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed=true, we can assume there won't be more than a some hundreds of invoice candidates with the same
- // headerAggregationKey
+				// headerAggregationKey
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
@@ -1044,10 +1043,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateInvoiced(final Timestamp dateInvoiced, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,  // invoiceCandidateColumnName
-				dateInvoiced,  // value
-				false,  // updateOnlyIfNull
-				ADPinstance_ID,  // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,   // invoiceCandidateColumnName
+				dateInvoiced,   // value
+				false,   // updateOnlyIfNull
+				ADPinstance_ID,   // selectionId
 				trxName // trxName
 		);
 	}
@@ -1056,10 +1055,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateAcct(Timestamp dateAcct, int ADPinstance_ID, String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,  // invoiceCandidateColumnName
-				dateAcct,  // value
-				false,  // updateOnlyIfNull
-				ADPinstance_ID,  // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,   // invoiceCandidateColumnName
+				dateAcct,   // value
+				false,   // updateOnlyIfNull
+				ADPinstance_ID,   // selectionId
 				trxName // trxName
 		);
 	}
@@ -1068,10 +1067,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updatePOReference(final String poReference, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_POReference,  // invoiceCandidateColumnName
-				poReference,  // value
-				false,  // updateOnlyIfNull
-				ADPinstance_ID,  // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_POReference,   // invoiceCandidateColumnName
+				poReference,   // value
+				false,   // updateOnlyIfNull
+				ADPinstance_ID,   // selectionId
 				trxName // trxName
 		);
 	}
@@ -1202,9 +1201,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
 				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(ctx,
 						amt,
-						currencyId,  // CurFrom_ID,
-						targetCurrencyId,  // CurTo_ID,
-						dateConv,  // ConvDate,
+						currencyId,   // CurFrom_ID,
+						targetCurrencyId,   // CurTo_ID,
+						dateConv,   // ConvDate,
 						conversionTypeId,
 						adClientId, adOrgId);
 				result = result.add(amtConverted);
@@ -1317,12 +1316,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list();
 	}
 
-	public IQueryBuilder applyDefaultFilter(final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
+	@Override
+	public IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
 	{
 		Check.assumeNotNull(queryBuilder, "Query builder is null");
 
 		final Properties ctx = queryBuilder.getCtx();
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		// shall never happen
 		if (ctx.isEmpty())
@@ -1330,29 +1329,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			return queryBuilder;
 		}
 
-		final int roleID = Env.getAD_Role_ID(ctx);
-
-		// shall not happen
-		if (roleID <= 0)
-		{
-			return queryBuilder;
-		}
-
 		// Only filter invoice candidates of the organizations this role has access to
 
-		final int userID = Env.getAD_User_ID(ctx);
-
-		if (userID <= 0)
-		{
-			return queryBuilder;
-		}
-
-		final I_AD_Role role = InterfaceWrapperHelper.create(ctx, roleID, I_AD_Role.class, trxName);
-		
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
-		queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsString());
 		
-		return queryBuilder;
+		return queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
+
 	}
 
 }

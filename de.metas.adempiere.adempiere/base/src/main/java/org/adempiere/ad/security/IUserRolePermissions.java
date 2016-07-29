@@ -162,6 +162,9 @@ public interface IUserRolePermissions
 	String getOrgWhere(boolean rw);
 	String getOrgWhere(String tableName, boolean rw);
 	String getAD_Org_IDs_AsString();
+	
+	//FRESH-560: Retrieve the org IDs also as a list
+	Set<Integer> getAD_Org_IDs_AsSet();
 
 	Set<OrgResource> getLoginOrgs();
 
