@@ -10,27 +10,34 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-31, upcoming)
+# metasfresh 4.29.28 (2016-31, upcoming)
 
 ## Features
  - #241 Excel Export for Open Items accounting currency
+ - #240 Consitency check page for Saldobilanz
 
 ## Fixes
  - #248 Admin Login when deleted properties
 
-# metasfresh 4.28.27 (2016-30, RC)
+# metasfresh 4.28.27 (2016-30)
 
 ## Features
  - #201 KPI Accounted Documents
+   * Created the logic for our new KPI "Accounted Documents" which will be included into our new metasfresh webUI.
  - #212 MRPProductInfo display Conference flag with sys config
+   * Added a configuration possibility to be able to switch the conference flitering functionality on-off in MRP Product Info.
  - #226 show accounting currency in open items report
+   * Implemented a counter check Open Items Reports (customer, vendor) with Accounting Balance. Open Items in foreign currency now show also the sums in accounting currency.
  
 ## Fixes
  - #153 PaymentRule = S in Invoice
+   * Checked Code for direct setting of PaymentRule cheque got rid of it.
  - #220 Do not load pricelist and pricelist version  on login
+   * Not loading Pricelist and Pricelist Version into context anymore during login.
  - FRESH-402 Procurement bidding
-   * minor jasper fix
+   * Minor jasper fix
  - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
+   * Separated the sums of procurement contracts vs. sums of RfQ biddings.
 
 # metasfresh 4.27.26 (2016-29)
 
