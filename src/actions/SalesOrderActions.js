@@ -8,6 +8,12 @@ export function unloadingChanged(value) {
         value: value
     }
 }
+export function purchaserChanged(purchaser) {
+    return {
+        type: 'PURCHASER_CHANGED',
+        purchaser: purchaser
+    }
+}
 export function invoiceChanged(value) {
     return {
         type: 'INVOICE_CHANGED',

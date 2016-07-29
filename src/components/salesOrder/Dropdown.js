@@ -7,7 +7,8 @@ import {
     autocompleteRequest,
     autocompleteSelect,
     autocompleteSuccess,
-    getPropertyValue
+    getPropertyValue,
+    purchaserChanged
 } from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
@@ -15,17 +16,31 @@ class Dropdown extends Component {
         super(props);
     }
     handleSelect = (select) => {
-        const {dispatch, properties} = this.props;
-        this.inputSearch.value = select.n;
-        properties.splice(0,1);
-        for (let i=0; i<properties.length; i++) {
-            //dispatch get value
-            //if value.length 1 then
-            // this.inputSearchRest.innerHTML = select.n;
-            //if value.length more
-            //render list with localisation
+        const {dispatch, properties, purchaser} = this.props;
+        if(!purchaser.purchaser){
+            //call for more properties
+            select.properties = {
+                property: [{id: '123', n: "asd1"},{id: '1234', n: "asd1"}],
+                property2: [{id: '1231', n: "asd1"}]
+            };
+            dispatch(purchaserChanged(select));
+            this.inputSearch.value = select.n;
         }
-        this.handleBlur();
+        const purPro = purchaser.purchaser.properties;
+        const purProKeys = Object.keys(purPro);
+
+        //iteration over rest of unselected props
+        for(let i=0; i< purProKeys.length; i++){
+            if(purPro[purProKeys[i]].length === 1){
+                this.inputSearchRest.innerHTML = purPro[purProKeys[i]][0].n;
+            }else if(purPro[purProKeys[i]].length > 1){
+                dispatch(autocompleteSuccess(purPro[purProKeys[i]]));
+                break;
+            }else{
+                this.handleBlur();
+            }
+        }
+
     }
     handleBlur = () => {
         this.dropdown.classList.remove("input-dropdown-focused");
@@ -153,22 +168,26 @@ class Dropdown extends Component {
 
 Dropdown.propTypes = {
     autocomplete: PropTypes.object.isRequired,
+    purchaser: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
-        autocomplete
+        autocomplete,
+        purchaser
     } = salesOrderStateHandler || {
         autocomplete: {
             query: "",
             selected: null,
             results:[]
-        }
+        },
+        purchaser: null
     }
     return {
-        autocomplete
+        autocomplete,
+        purchaser
     }
 }
 

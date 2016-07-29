@@ -16,9 +16,9 @@ const initialState = {
     salesOrderWindow: {},
     salesOrderTable: {},
     purchaser: {
-        purchaser: '',
-        invoice: '',
-        unloading: ''
+        purchaser: null,
+        invoice: null,
+        unloading: null
     },
     products: {
         products: dataBenchmark({
@@ -66,6 +66,12 @@ const initialState = {
 
 export default function salesOrderStateHandler(state = initialState, action) {
     switch(action.type){
+        case types.PURCHASER_CHANGED:
+            return update(state, {
+                purchaser: {
+                    purchaser: {$set: action.purchaser}
+                }
+            })
         case types.INVOICE_CHANGED:
             return update(state, {
                 purchaser: {
