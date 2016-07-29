@@ -1,18 +1,20 @@
 package de.metas.acct.process;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
+import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IDocumentBL;
+import de.metas.process.Param;
 
 /*
  * #%L
@@ -44,17 +46,30 @@ import de.metas.acct.api.IDocumentBL;
  */
 public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 {
+	@Param(parameterName = "DateStart")
+	private Date p_Date;
 	final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		// this process is posting documents that were created one day before the process runs
-		final Timestamp startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
+		final Timestamp startTime;
+		
+		p_Date = new Date(116,5,16);
+
+		if (p_Date != null)
+		{
+			startTime = TimeUtil.getDay(p_Date);
+		}
+		else
+		{
+			startTime = TimeUtil.getPrevDay(new Timestamp(System.currentTimeMillis()));
+		}
 
 		// list all the documents that are marked as posted but have no fact accounts.
 		// this list will not include the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
-		final List<Object> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactActt(getCtx(), startTime);
+		final List<DocAction> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactActt(getCtx(), startTime);
 
 		if (documentsPostedNoFacts.isEmpty())
 		{
@@ -66,13 +81,24 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 
 		final IPostingService postingService = Services.get(IPostingService.class);
 
-		for (final Object document : documentsPostedNoFacts)
+		for (final DocAction document : documentsPostedNoFacts)
 		{
-			final ITableRecordReference tableRecordRef = TableRecordReference.of(document);
+			final int tableID = document.get_Table_ID();
+
+			final int recordID = document.get_ID();
+
+			final String documentNo = document.getDocumentNo();
+
+			final POInfo modelPOInfo = POInfo.getPOInfo(getCtx(), tableID);
+			final String tableName = modelPOInfo.getTableName();
 
 			// Note: Do not change this message!
 			// The view de_metas_acct.Reposted_Documents is based on it.
-			loggable.addLog("Document Reposted: AD_Table_ID = {}, Record_ID = {}.", tableRecordRef.getAD_Table_ID(), tableRecordRef.getRecord_ID());
+			loggable.addLog("Document Reposted: AD_Table_ID = {}, Record_ID = {}, TableName = {}, DocumentNo = {}.",
+					tableID,
+					recordID,
+					tableName,
+					documentNo);
 
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as the process

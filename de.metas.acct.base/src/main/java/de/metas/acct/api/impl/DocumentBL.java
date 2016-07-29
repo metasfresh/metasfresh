@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.compiere.process.DocAction;
+
 import de.metas.acct.api.IDocumentBL;
 import de.metas.acct.spi.IDocumentRepostingHandler;
 import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
@@ -41,7 +43,7 @@ public class DocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public List<Object> retrievePostedWithoutFactActt (final Properties ctx, final Timestamp startTime)
+	public List<DocAction> retrievePostedWithoutFactActt (final Properties ctx, final Timestamp startTime)
 	{
 		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
 	}
