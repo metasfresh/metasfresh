@@ -20,20 +20,28 @@ class Dropdown extends Component {
         if(!purchaser.purchaser){
             //call for more properties
             select.properties = {
-                property: [{id: '123', n: "asd1"},{id: '1234', n: "asd1"}],
+                property: [{id: '123', n: "asd1"}, {id: '1234', n: "asd1"}],
                 property2: [{id: '1231', n: "asd1"}]
             };
             dispatch(purchaserChanged(select));
             this.inputSearch.value = select.n;
+        }else {
+            console.log(select);
         }
+
         const purPro = purchaser.purchaser.properties;
+        console.log(purPro);
+
         const purProKeys = Object.keys(purPro);
 
         //iteration over rest of unselected props
         for(let i=0; i< purProKeys.length; i++){
             if(purPro[purProKeys[i]].length === 1){
+                console.log("jeden wynik");
                 this.inputSearchRest.innerHTML = purPro[purProKeys[i]][0].n;
             }else if(purPro[purProKeys[i]].length > 1){
+                console.log("wiele wynik");
+
                 dispatch(autocompleteSuccess(purPro[purProKeys[i]]));
                 break;
             }else{

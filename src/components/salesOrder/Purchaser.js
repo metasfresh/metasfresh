@@ -43,7 +43,7 @@ class Purchaser extends Component {
 }
 
 
-Purchaser.propTypes ={
+Purchaser.propTypes = {
     recentPartners: PropTypes.array.isRequired,
     salesOrderWindow: PropTypes.object.isRequired,
     purchaser: PropTypes.object.isRequired,
