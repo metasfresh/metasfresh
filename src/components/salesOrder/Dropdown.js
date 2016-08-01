@@ -16,7 +16,8 @@ class Dropdown extends Component {
         super(props);
     }
     handleSelect = (select) => {
-        const {dispatch, properties, purchaser} = this.props;
+        const {dispatch, properties, purchaser, autocomplete} = this.props;
+
         if(!purchaser.purchaser){
             //call for more properties
             select.properties = {
@@ -25,24 +26,20 @@ class Dropdown extends Component {
             };
             dispatch(purchaserChanged(select));
             this.inputSearch.value = select.n;
-        }else {
-            console.log(select);
+        }else{
+            //TODO: setItemPropertyToStore
+            purchaser.purchaser.properties[autocomplete.property][0] = select;
         }
 
         const purPro = purchaser.purchaser.properties;
-        console.log(purPro);
-
         const purProKeys = Object.keys(purPro);
 
         //iteration over rest of unselected props
         for(let i=0; i< purProKeys.length; i++){
             if(purPro[purProKeys[i]].length === 1){
-                console.log("jeden wynik");
-                this.inputSearchRest.innerHTML = purPro[purProKeys[i]][0].n;
+                this.inputSearchRest.innerHTML += purPro[purProKeys[i]][0].n;
             }else if(purPro[purProKeys[i]].length > 1){
-                console.log("wiele wynik");
-
-                dispatch(autocompleteSuccess(purPro[purProKeys[i]]));
+                dispatch(autocompleteSuccess(purPro[purProKeys[i]], purProKeys[i]));
                 break;
             }else{
                 this.handleBlur();
@@ -61,7 +58,7 @@ class Dropdown extends Component {
             this.handleChange();
         }
         if(this.inputSearch.value === ""){
-            dispatch(autocompleteSuccess(recent));
+            dispatch(autocompleteSuccess(recent, ""));
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -74,7 +71,7 @@ class Dropdown extends Component {
         dispatch(autocompleteSelect(null));
 
         if(this.inputSearch.value == ""){
-            dispatch(autocompleteSuccess(recent));
+            dispatch(autocompleteSuccess(recent, ""));
         }else{
             dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
         }
@@ -189,7 +186,8 @@ function mapStateToProps(state) {
         autocomplete: {
             query: "",
             selected: null,
-            results:[]
+            results:[],
+            property: ""
         },
         purchaser: null
     }

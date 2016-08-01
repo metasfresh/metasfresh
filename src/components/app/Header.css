@@ -115,18 +115,18 @@
     z-index:300;
 }
 
-.header-left-side {
-    flex: 2 1 200px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
+.header-left-side,
 .header-right-side {
     flex: 2 1 200px;
     display: flex;
     flex-direction: row;
-    align-items: center;
+}
+.header-right-side {
+    align-items: stretch;
     justify-content: flex-end;
+}
+.header-left-side {
+    align-items: stretch;
 }
 
 .header-right-side .side-panel-toggle {

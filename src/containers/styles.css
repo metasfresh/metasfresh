@@ -54,7 +54,7 @@ body {
 }
 
 .tag-success {
-    background-color: #89d729;
+    background-color: $brand-success-color;
 }
 
 .tag-warning {
@@ -561,11 +561,46 @@ body {
 }
 
 
-.meta-dropdown-toggle {
-    color: #89d729;
-}
 
 .meta-dropdown-toggle i {
     font-size: .5rem;
     margin: 0 5px;
+    color: #89d729;
+
+}
+
+
+.dropdown-status-toggler {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid #dee6ec;
+}
+.dropdown-status-toggler:hover,
+.dropdown-status-toggler:focus {
+    background-color: #eef2f7;
+    outline-width: 0;
+}
+.dropdown-status-toggler:focus .dropdown-status-list {
+    display: block;
+}
+.dropdown-status-list {
+    position: absolute;
+    display: none;
+    left: 0;
+    top: calc(100% + 1px);
+    list-style-type:none;
+    padding:0;
+    background-color: inherit;
+    min-width: 100%;
+}
+.dropdown-status-item {
+    padding: 8px 10px;
+}
+.dropdown-status-item:hover{
+    background-color: $brand-success-color;
+    color: #fff;
 }

@@ -60,10 +60,14 @@ class Header extends Component {
                             <img src={logo} className="header-logo"/>
                         </div>
                         <div className="header-right-side">
-
-                            <div className="meta-dropdown-toggle">
+                            <div className="meta-dropdown-toggle dropdown-status-toggler dropdown-status-open" tabIndex="0">
                                 <div className="tag tag-success">Completed</div>
                                 <i className="meta-icon-chevron"/>
+                                <ul className="dropdown-status-list">
+                                    <li className="dropdown-status-item">Complete</li>
+                                    <li className="dropdown-status-item">In progress</li>
+                                    <li className="dropdown-status-item">Void</li>
+                                </ul>
                             </div>
 
                             <div className="btn-square btn-meta-primary side-panel-toggle" onClick={this.handleOrderListToggle}>

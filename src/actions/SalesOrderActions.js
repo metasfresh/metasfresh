@@ -113,10 +113,11 @@ export function autocomplete(query) {
         query: query
     }
 }
-export function autocompleteSuccess(results) {
+export function autocompleteSuccess(results, key) {
     return {
         type: 'AUTOCOMPLETE_SUCCESS',
-        results: results
+        results: results,
+        key: key
     }
 }
 export function autocompleteRequest(query, propertyName) {
@@ -137,7 +138,7 @@ export function autocompleteRequest(query, propertyName) {
           }
         })
         .then((response) => {
-            dispatch(autocompleteSuccess(response.data.value.l));
+            dispatch(autocompleteSuccess(response.data.value.l, ""));
         });
     }
 }
