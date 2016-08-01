@@ -14,6 +14,7 @@ import {
 class Dropdown extends Component {
     constructor(props) {
         super(props);
+        console.log(props)
     }
     handleSelect = (select) => {
         const {dispatch, properties, purchaser, autocomplete} = this.props;
@@ -127,7 +128,7 @@ class Dropdown extends Component {
         return <DropdownPartnerItem key={item.id} itemIndex={index} data={item} onClick={this.handleSelect}/>
     }
     render() {
-        const {autocomplete} = this.props;
+        const {autocomplete, className} = this.props;
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -135,10 +136,10 @@ class Dropdown extends Component {
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
-                className="input-dropdown"
+                className={"input-dropdown"}
             >
-                <div className="input-toggled">
-                    <div className="input-toggled-editable">
+                <div className={"input-auto input-" + className}>
+                    <div className="input-editable">
                         <input
                             type="text"
                             className="input-dropdown-field font-weight-bold"
@@ -147,9 +148,9 @@ class Dropdown extends Component {
                             ref={(c) => this.inputSearch = c}
                         />
                     </div>
-                    <div ref={c => this.inputSearchRest = c} className="input-toggled-rest" />
+                    <div ref={c => this.inputSearchRest = c} className="input-rest" />
 
-                    <div className="input-toggled-icon" tabIndex="0">
+                    <div className="input-icon" tabIndex="0">
                         <i onClick={this.handleClear} className="icon-rounded icon-rounded-space">x</i>
                     </div>
                 </div>

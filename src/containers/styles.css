@@ -197,29 +197,60 @@ body {
     margin-left: 10px;
 }
 
+.input-auto {
+    font-style: italic;
+}
 
-.input-toggled {
+.input-primary,
+.input-secondary {
     display: block;
     width: 100%;
     margin-right:0;
     margin-left:0;
     padding: .25rem .50rem;
-    border: 1px solid $brand-light-color;
-    border-radius: 3px;
     margin-bottom: 1.5rem;
     float:left;
+
 }
 
-.input-toggled-icon {
+.input-secondary {
+    border-bottom: 1px solid $brand-light-color;
+}
+
+.input-primary {
+    border: 1px solid $brand-light-color;
+    border-radius: 3px;
+}
+
+.input-error {
+    border-color: $brand-danger-color;
+}
+
+.input-error,
+.input-error * {
+    color: $brand-font-color-danger;
+}
+
+.input-error.input-primary,
+.input-error.input-primary * {
+    background-color: $brand-danger-light-color;
+}
+
+.input-error.input-secondary,
+.input-error.input-secondary * {
+    border-width: 2px;
+}
+
+.input-icon {
     width:25px;
     float:right;
 }
 
-.input-toggled-editable {
+.input-editable {
     width: 30%;
     float: left;
 }
-.input-toggled-rest {
+.input-rest {
     width: 59%;
     margin-left: 1%;
     white-space: nowrap;
@@ -275,6 +306,7 @@ body {
 
 .form-control-meta:focus {
     border-color: $brand-light-color;
+    background-color: transparent;
 }
 
 .form-control-meta[type="number"]::-webkit-outer-spin-button,
@@ -412,6 +444,11 @@ body {
 }
 .input-dropdown-item-subtitle {
     font-size: .75rem;
+}
+
+
+.input-primary {
+
 }
 
 .context-menu {
