@@ -1,5 +1,6 @@
 package de.metas.procurement.base.impl;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -10,6 +11,7 @@ import org.compiere.util.Env;
 
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.model.I_AD_User;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 
 /*
  * #%L
@@ -49,7 +51,7 @@ public class PMMContractsBL implements IPMMContractsBL
 	@Override
 	public I_AD_User getDefaultContractUserInChargeOrNull(final Properties ctx)
 	{
-		final int userInChangeId = Services.get(IPMMContractsBL.class).getDefaultContractUserInCharge_ID(ctx);
+		final int userInChangeId = getDefaultContractUserInCharge_ID(ctx);
 		if (userInChangeId <= 0)
 		{
 			return null;
@@ -57,6 +59,29 @@ public class PMMContractsBL implements IPMMContractsBL
 		
 		final I_AD_User userInCharge = InterfaceWrapperHelper.create(ctx, userInChangeId, I_AD_User.class, ITrx.TRXNAME_None);
 		return userInCharge;
-		
 	}
+
+	@Override
+	public boolean hasPriceOrQty(final I_C_Flatrate_DataEntry dataEntry)
+	{
+		if(dataEntry == null)
+		{
+			return false;
+		}
+		
+		final BigDecimal price = dataEntry.getFlatrateAmtPerUOM();
+		if (price != null && price.signum() > 0)
+		{
+			return true;
+		}
+		
+		final BigDecimal qty = dataEntry.getQty_Planned();
+		if(qty != null && qty.signum() > 0)
+		{
+			return true;
+		}
+		
+		return false;
+	}
+
 }
