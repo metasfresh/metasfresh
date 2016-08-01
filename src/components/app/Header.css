@@ -126,7 +126,7 @@
     justify-content: flex-end;
 }
 .header-left-side {
-    align-items: stretch;
+    align-items: center;
 }
 
 .header-right-side .side-panel-toggle {

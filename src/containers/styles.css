@@ -579,12 +579,15 @@ body {
     position: relative;
     border-bottom: 1px solid #dee6ec;
 }
+.dropdown-status-toggler .tag {
+    min-width: 80px;
+}
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
     background-color: #eef2f7;
     outline-width: 0;
 }
-.dropdown-status-toggler:focus .dropdown-status-list {
+.dropdown-status-toggler.dropdown-status-open .dropdown-status-list {
     display: block;
 }
 .dropdown-status-list {
@@ -596,6 +599,7 @@ body {
     padding:0;
     background-color: inherit;
     min-width: 100%;
+    width: auto;
 }
 .dropdown-status-item {
     padding: 8px 10px;

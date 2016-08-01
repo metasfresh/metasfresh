@@ -15,6 +15,7 @@ const dataBenchmark = (obj, count) => {
 const initialState = {
     salesOrderWindow: {},
     salesOrderTable: {},
+    orderStatus: 0,
     purchaser: {
         purchaser: null,
         invoice: null,
@@ -178,6 +179,10 @@ export default function salesOrderStateHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 salesOrderWindow: action.response.Auftrag.childDescriptors,
                 salesOrderTable: action.response.Orderline_includedTab
+            })
+        case types.CHANGE_ORDER_STATUS:
+            return Object.assign({}, state, {
+                orderStatus: action.value
             })
 
         default:

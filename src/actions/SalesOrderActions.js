@@ -181,3 +181,10 @@ export function autocompleteSelect(id){
         id: id
     }
 }
+
+export function changeOrderStatus(id){
+    return {
+        type: 'CHANGE_ORDER_STATUS',
+        value: id
+    }
+}

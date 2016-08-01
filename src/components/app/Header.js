@@ -8,7 +8,8 @@ import Subheader from './SubHeader';
 import {
     showSubHeader,
     hideSubHeader,
-    toggleOrderList
+    toggleOrderList,
+    changeOrderStatus
 } from '../../actions/SalesOrderActions';
 
 class Header extends Component {
@@ -31,8 +32,31 @@ class Header extends Component {
     handleBackdropClick = () => {
         this.props.dispatch(hideSubHeader());
     }
+    handleChangeStatus = (status) => {
+        this.props.dispatch(changeOrderStatus(status));
+        this.statusDropdown.blur();
+    }
+    handleDropdownBlur = () => {
+        this.statusDropdown.classList.remove('dropdown-status-open');
+    }
+    handleDropdownFocus = () => {
+        this.statusDropdown.classList.add('dropdown-status-open');
+    }
+    getOrderStatus = (id) => {
+        switch (id) {
+            case 0:
+                return "Complete";
+                break;
+            case 1:
+                return "In progress";
+                break;
+            case 2:
+                return "Void";
+                break;
+        }
+    }
     render() {
-        const {isSubheaderShow, isOrderListShow} = this.props;
+        const {isSubheaderShow, isOrderListShow, orderStatus} = this.props;
 
         return (
             <div>
@@ -60,13 +84,13 @@ class Header extends Component {
                             <img src={logo} className="header-logo"/>
                         </div>
                         <div className="header-right-side">
-                            <div className="meta-dropdown-toggle dropdown-status-toggler dropdown-status-open" tabIndex="0">
-                                <div className="tag tag-success">Completed</div>
+                            <div className="meta-dropdown-toggle dropdown-status-toggler" tabIndex="0" ref={(c) => this.statusDropdown = c} onBlur={this.handleDropdownBlur} onFocus={this.handleDropdownFocus}>
+                                <div className="tag tag-success">{this.getOrderStatus(orderStatus)}</div>
                                 <i className="meta-icon-chevron"/>
                                 <ul className="dropdown-status-list">
-                                    <li className="dropdown-status-item">Complete</li>
-                                    <li className="dropdown-status-item">In progress</li>
-                                    <li className="dropdown-status-item">Void</li>
+                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(0)}>Complete</li>
+                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(1)}>In progress</li>
+                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(2)}>Void</li>
                                 </ul>
                             </div>
 
@@ -86,6 +110,7 @@ class Header extends Component {
 
 Header.propTypes = {
     isSubheaderShow: PropTypes.bool.isRequired,
+    orderStatus: PropTypes.number.isRequired,
     isOrderListShow: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -94,14 +119,17 @@ function mapStateToProps(state) {
     const { salesOrderStateHandler, routing } = state;
     const {
         isSubheaderShow,
-        isOrderListShow
+        isOrderListShow,
+        orderStatus
     } = salesOrderStateHandler || {
         isSubheaderShow: false,
-        isOrderListShow: false
+        isOrderListShow: false,
+        orderStatus: 0
     }
     return {
         isSubheaderShow,
-        isOrderListShow
+        isOrderListShow,
+        orderStatus
     }
 }
 
