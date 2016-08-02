@@ -417,7 +417,7 @@ public class GridWindowVO implements Serializable
 					tabsClone.add(cloneTab);
 				}
 				
-				_tabs = ImmutableList.copyOf(tabsClone);
+				clone._tabs = ImmutableList.copyOf(tabsClone);
 			}
 			
 			clone.updateContext();
