@@ -18,6 +18,7 @@ Here come the actual release notes:
  - #225 Allocation - Accounting 0,00 when Posted
 
 ## Fixes
+ - #176 Bestellkontrolle add Promised Date
  - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
  - #248 Admin Login when deleted properties
 
