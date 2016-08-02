@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.29.28 (2016-31, upcoming)
+# metasfresh 4.29.28 (2016-31, RC)
 
 ## Features
  - #241 Excel Export for Open Items accounting currency
