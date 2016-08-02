@@ -48,7 +48,7 @@ public class CompositeValidationRule implements IValidationRule
 		}
 		if (rule2 == null || rule2 == NullValidationRule.instance)
 		{
-			return NullValidationRule.instance;
+			return rule1 == null ? NullValidationRule.instance : rule1;
 		}
 		
 		final CompositeValidationRule composite = new CompositeValidationRule();
