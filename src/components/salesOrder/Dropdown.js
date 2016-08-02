@@ -150,9 +150,9 @@ class Dropdown extends Component {
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
-                className={"input-dropdown"}
+                className={"input-dropdown-container"}
             >
-                <div className={"input-auto input-" + className}>
+                <div className={"input-dropdown input-auto input-" + className}>
                     <div className="input-editable">
                         <input
                             type="text"

@@ -43,6 +43,10 @@ body {
     }
 }
 
+input {
+    background-color: transparent;
+}
+
 
 .tag {
     padding: .25rem .6rem;
@@ -247,15 +251,13 @@ body {
 }
 
 .input-editable {
-    width: 30%;
-    float: left;
+    flex: 2 1 30%;
 }
 .input-rest {
-    width: 59%;
-    margin-left: 1%;
+    text-align: right;
+    flex: 1 1 50%;
     white-space: nowrap;
     overflow: hidden;
-    float:left;
 }
 
 .input-block {
@@ -294,6 +296,9 @@ body {
     background-color: transparent;
     font-size: 14px;
     padding: .375rem .25rem .1rem;
+}
+.form-control:disabled, .form-control[readonly] {
+    background-color: transparent;
 }
 
 .form-control-meta {
@@ -388,13 +393,20 @@ body {
 }
 
 
-.input-dropdown {
+.input-dropdown-container {
     position:relative;
 }
-.input-dropdown:focus {
+.input-dropdown-container .input-dropdown {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+.input-dropdown-container:focus {
     outline-width: 0;
 }
-.input-dropdown .input-dropdown-list {
+.input-dropdown-container .input-dropdown-list {
     display:none;
 }
 .input-dropdown-focused .input-dropdown-list {
@@ -444,11 +456,6 @@ body {
 }
 .input-dropdown-item-subtitle {
     font-size: .75rem;
-}
-
-
-.input-primary {
-
 }
 
 .context-menu {
