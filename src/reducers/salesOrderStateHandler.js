@@ -17,7 +17,9 @@ const initialState = {
     salesOrderTable: {},
     orderStatus: 0,
     purchaser: {
-        purchaser: null,
+        purchaser: {
+            properties: {}
+        },
         invoice: null,
         unloading: null
     },
@@ -73,6 +75,14 @@ export default function salesOrderStateHandler(state = initialState, action) {
                 purchaser: {
                     purchaser: {$set: action.purchaser}
                 }
+            })
+        case types.PURCHASER_PROP_CHANGED:
+            return Object.assign({}, state, {
+                purchaser: Object.assign({}, state.purchaser, {
+                    purchaser: Object.assign({}, state.purchaser.purchaser, {
+                        properties: action.props
+                    })
+                })
             })
         case types.INVOICE_CHANGED:
             return update(state, {

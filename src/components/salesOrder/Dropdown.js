@@ -8,42 +8,56 @@ import {
     autocompleteSelect,
     autocompleteSuccess,
     getPropertyValue,
-    purchaserChanged
+    purchaserChanged,
+    purchaserPropertyChanged
 } from '../../actions/SalesOrderActions';
 
 class Dropdown extends Component {
     constructor(props) {
         super(props);
-        console.log(props)
     }
     handleSelect = (select) => {
         const {dispatch, properties, purchaser, autocomplete} = this.props;
-
-        if(!purchaser.purchaser){
+        //removing selection
+        dispatch(autocompleteSelect(null));
+        //
+        // Handling selection when main is not set or set.
+        //
+        if(autocomplete.property === ""){
             //call for more properties
+            //mocked properties for testing
+            // - first will generate choice dropdown
+            // - second should be chosen automatically
             select.properties = {
-                property: [{id: '123', n: "asd1"}, {id: '1234', n: "asd1"}],
-                property2: [{id: '1231', n: "asd1"}]
+                property: [{id: '123', n: "opt1prop1"}, {id: '1234', n: "opt2prop2"}],
+                property2: [{id: '1231', n: "opt1prop2"}]
             };
-            dispatch(purchaserChanged(select));
             this.inputSearch.value = select.n;
-        }else{
-            //TODO: setItemPropertyToStore
-            purchaser.purchaser.properties[autocomplete.property][0] = select;
+            purchaser.purchaser = select;
+            dispatch(purchaserChanged(select));
+        } else {
+            purchaser.purchaser.properties[autocomplete.property] = [select];
+            dispatch(purchaserPropertyChanged(purchaser.purchaser.properties));
+            this.handleBlur();
         }
 
+        //
+        // Chcecking properies model if there is some
+        // unselected properties and handling further
+        // selection
+        //
         const purPro = purchaser.purchaser.properties;
         const purProKeys = Object.keys(purPro);
 
         //iteration over rest of unselected props
         for(let i=0; i< purProKeys.length; i++){
             if(purPro[purProKeys[i]].length === 1){
-                this.inputSearchRest.innerHTML += purPro[purProKeys[i]][0].n;
+                // Selecting props that have no choice
+                this.inputSearchRest.innerHTML += " " + purPro[purProKeys[i]][0].n;
             }else if(purPro[purProKeys[i]].length > 1){
+                // Generating list of props choice
                 dispatch(autocompleteSuccess(purPro[purProKeys[i]], purProKeys[i]));
                 break;
-            }else{
-                this.handleBlur();
             }
         }
 
@@ -63,23 +77,23 @@ class Dropdown extends Component {
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
-    handleChange = (e) => {
+    handleChange = () => {
         const {dispatch, recent} = this.props;
-
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
         dispatch(autocompleteSelect(null));
 
-        if(this.inputSearch.value == ""){
-            dispatch(autocompleteSuccess(recent, ""));
-        }else{
+        if(this.inputSearch.value != ""){
             dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
+        }else{
+            dispatch(autocompleteSuccess(recent, ""));
         }
     }
     handleClear = (e) => {
         e.preventDefault();
         this.inputSearch.value = "";
+
         this.handleChange();
     }
     handleKeyDown = (e) => {

@@ -14,6 +14,12 @@ export function purchaserChanged(purchaser) {
         purchaser: purchaser
     }
 }
+export function purchaserPropertyChanged(props) {
+    return {
+        type: 'PURCHASER_PROP_CHANGED',
+        props: props
+    }
+}
 export function invoiceChanged(value) {
     return {
         type: 'INVOICE_CHANGED',
