@@ -268,8 +268,6 @@ public class GridFieldVO implements Serializable
 				//
 				else if (columnName.equalsIgnoreCase("AD_Reference_Value_ID"))
 					vo.AD_Reference_Value_ID = rs.getInt(i);
-				else if (columnName.equalsIgnoreCase("ValidationCode"))
-					vo.ValidationCode = rs.getString(i);
 				else if (columnName.equalsIgnoreCase("AD_Val_Rule_ID"))	// metas: 03271
 					vo.AD_Val_Rule_ID = rs.getInt(i);					// metas: 03271
 				else if (columnName.equalsIgnoreCase("ColumnSQL"))
@@ -381,7 +379,6 @@ public class GridFieldVO implements Serializable
 			vo.IsEncryptedField = "Y".equals(rs.getString("IsEncrypted")); // metas: tsa: US745
 			//
 			vo.AD_Reference_Value_ID = rs.getInt("AD_Reference_Value_ID");
-			// vo.ValidationCode = rs.getString("ValidationCode"); // metas: 03271
 			vo.autocomplete = "Y".equals(rs.getString("IsAutoComplete"));
 			vo.AD_Val_Rule_ID = rs.getInt("AD_Val_Rule_ID"); // metas: 03271
 			vo.ReadOnlyLogic = rs.getString("ReadOnlyLogic");
@@ -615,9 +612,8 @@ public class GridFieldVO implements Serializable
 	/** Included Tab Height - metas-2009_0021_AP1_CR051 */
 	public int IncludedTabHeight = 0; // metas
 
-	/**	Lookup Validation code	*/
-	private String		ValidationCode = "";	 // metas: 03271: changed to private to not be accessible
-	public int			AD_Val_Rule_ID = -1;	 // metas: 03271
+	/**	Validation rule */
+	private int AD_Val_Rule_ID = -1; // metas: 03271
 	/**	Reference Value			*/
 	public int			AD_Reference_Value_ID = 0;
 
@@ -815,7 +811,6 @@ public class GridFieldVO implements Serializable
 		clone.ObscureType = ObscureType;
 		clone.IncludedTabHeight = IncludedTabHeight; // metas-2009_0021_AP1_CR051
 		//	Lookup
-		clone.ValidationCode = ValidationCode;
 		clone.AD_Val_Rule_ID = AD_Val_Rule_ID; // metas: 03271
 		clone.AD_Reference_Value_ID = AD_Reference_Value_ID;
 		clone.lookupInfo = lookupInfo == null ? null : lookupInfo.cloneIt();
