@@ -13,19 +13,17 @@ package de.metas.acct.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.Date;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -43,14 +41,20 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.acct.api.IDocumentBL;
 import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingHandler;
+import de.metas.acct.spi.impl.GLJournalDocumentRepostingHandler;
+import de.metas.acct.spi.impl.InvoiceDocumentRepostingHandler;
+import de.metas.acct.spi.impl.PaymentDocumentRepostingHandler;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
+
 
 /**
  * Accounting module activator
@@ -68,8 +72,16 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
+
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		//FRESH-539: register Reposting Handlers
+		documentBL.registerHandler(new InvoiceDocumentRepostingHandler());
+		documentBL.registerHandler(new PaymentDocumentRepostingHandler());
+		documentBL.registerHandler(new AllocationHdrDocumentRepostingHandler());
+		documentBL.registerHandler(new GLJournalDocumentRepostingHandler());
 	}
-	
+
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -93,16 +105,16 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
 	}
-	
+
 	@Override
 	protected void setupCaching(IModelCacheService cachingService)
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_C_AcctSchema.class);
-		
+
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Period.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PeriodControl.Table_Name);
-		
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(MAccount.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Acct.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Category_Acct.Table_Name);

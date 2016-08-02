@@ -1,15 +1,17 @@
-package de.metas.procurement.base;
+package de.metas.acct.api;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.process.DocAction;
 
-import de.metas.procurement.base.model.I_AD_User;
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.acct.spi.IDocumentRepostingHandler;
 
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.acct.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,28 +31,24 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * #L%
  */
 
-public interface IPMMContractsBL extends ISingletonService
+public interface IDocumentBL extends ISingletonService
 {
-	/**
-	 * Gets default AD_User_ID in charge for a new procurement contract.
-	 * 
-	 * @param ctx
-	 * @return AD_User_ID or <code>-1</code> if there is no default configured
-	 */
-	int getDefaultContractUserInCharge_ID(Properties ctx);
 
 	/**
-	 * Gets default user in charge for a new procurement contract.
+	 * Register the IDocumentRepostingHandler handler so it will be used when the reposting process is called
 	 * 
-	 * @param ctx
-	 * @return user in charge or <code>null</code> if there is no default configured
+	 * @param handler
 	 */
-	I_AD_User getDefaultContractUserInChargeOrNull(Properties ctx);
+	void registerHandler(IDocumentRepostingHandler handler);
 
 	/**
-	 * @param dataEntry
-	 * @return true if given data entry has the price or qty planned set
-	 * @task FRESH-568
+	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts
+	 * Exclude the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
+	 * 
+	 * @param ctx
+	 * @param startTime
+	 * @return
 	 */
-	boolean hasPriceOrQty(I_C_Flatrate_DataEntry dataEntry);
+	List<DocAction> retrievePostedWithoutFactActt(Properties ctx, Timestamp startTime);
+
 }
