@@ -45,12 +45,15 @@ class Header extends Component {
     getOrderStatus = (id) => {
         switch (id) {
             case 0:
-                return "Complete";
+                return "Draft";
                 break;
             case 1:
-                return "In progress";
+                return "Completed";
                 break;
             case 2:
+                return "In progress";
+                break;
+            case 3:
                 return "Void";
                 break;
         }
@@ -85,12 +88,12 @@ class Header extends Component {
                         </div>
                         <div className="header-right-side">
                             <div className="meta-dropdown-toggle dropdown-status-toggler" tabIndex="0" ref={(c) => this.statusDropdown = c} onBlur={this.handleDropdownBlur} onFocus={this.handleDropdownFocus}>
-                                <div className="tag tag-success">{this.getOrderStatus(orderStatus)}</div>
+                                <div className="tag tag-primary">{this.getOrderStatus(orderStatus)}</div>
                                 <i className="meta-icon-chevron"/>
                                 <ul className="dropdown-status-list">
-                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(0)}>Complete</li>
-                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(1)}>In progress</li>
-                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(2)}>Void</li>
+                                    <li className="dropdown-status-item dropdown-status-item-def" onClick={() => this.handleChangeStatus(1)}>Complete</li>
+                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(2)}>In progress</li>
+                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(3)}>Void</li>
                                 </ul>
                             </div>
 

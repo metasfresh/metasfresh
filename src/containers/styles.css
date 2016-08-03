@@ -61,6 +61,10 @@ input {
     background-color: $brand-success-color;
 }
 
+.tag-primary {
+    background-color: $brand-primary-color;
+}
+
 .tag-warning {
     background-color: #fd8b0f;
 }
@@ -607,9 +611,9 @@ input {
 
 
 .meta-dropdown-toggle i {
-    font-size: .5rem;
-    margin: 0 5px;
-    color: #89d729;
+    font-size: .6rem;
+    margin-left: .5rem;
+    color: $brand-primary-color;
 
 }
 
@@ -618,13 +622,13 @@ input {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 1.2rem;
     cursor: pointer;
     position: relative;
     border-bottom: 1px solid #dee6ec;
 }
 .dropdown-status-toggler .tag {
-    min-width: 80px;
+    padding: .3rem 1.5rem;
 }
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
@@ -648,7 +652,11 @@ input {
 .dropdown-status-item {
     padding: 8px 10px;
 }
-.dropdown-status-item:hover{
+
+.dropdown-status-item-def {
     background-color: $brand-success-color;
     color: #fff;
+}
+.dropdown-status-toggler .meta-icon-chevron{
+    margin-top: 1px;
 }
