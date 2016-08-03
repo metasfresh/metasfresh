@@ -406,6 +406,7 @@ input {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    position:relative;
 }
 .input-dropdown-container:focus {
     outline-width: 0;

@@ -12,7 +12,7 @@ import {
     purchaserPropertyChanged
 } from '../../actions/SalesOrderActions';
 
-class Dropdown extends Component {
+class LookupDropdown extends Component {
     constructor(props) {
         super(props);
     }
@@ -186,7 +186,7 @@ class Dropdown extends Component {
 }
 
 
-Dropdown.propTypes = {
+LookupDropdown.propTypes = {
     autocomplete: PropTypes.object.isRequired,
     purchaser: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
@@ -212,6 +212,6 @@ function mapStateToProps(state) {
     }
 }
 
-Dropdown = connect(mapStateToProps)(Dropdown)
+LookupDropdown = connect(mapStateToProps)(LookupDropdown)
 
-export default Dropdown
+export default LookupDropdown

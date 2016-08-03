@@ -1,6 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import Dropdown from './../app/Dropdown';
+
 class OrderInfo extends Component {
     constructor(props) {
         super(props);
@@ -69,42 +71,8 @@ class OrderInfo extends Component {
                             <label className="col-sm-3 form-control-label">{salesOrderWindow.M_Warehouse_ID.caption}</label>
                             <div className="col-sm-9">
 
-                            {
-                            //     <div
-                            //     tabIndex="0"
-                            //     onFocus={()=>this.inputSearch.focus()}
-                            //     ref={(c) => this.dropdown = c}
-                            //     onBlur={this.handleBlur}
-                            //     className={"input-dropdown-container"}
-                            // >
-                            //     <div className={"input-dropdown input-auto input-secondary"}>
-                            //         <div className="input-editable input-dropdown-focused">
-                            //             <input
-                            //                 type="text"
-                            //                 className="input-dropdown-field font-weight-bold"
-                            //                 readOnly="readonly"
-                            //                 onFocus={this.handleFocus}
-                            //                 onChange={this.handleChange}
-                            //                 ref={(c) => this.inputSearch = c}
-                            //             />
-                            //         </div>
-                            //         <div className="input-icon">
-                            //             <i className="meta-icon-down input-icon-right input-icon-sm"/>
-                            //         </div>
-                            //     </div>
-                            //     <div className="input-dropdown-list">
-                            //         <div className={"input-dropdown-list-option"}>
-                            //             <p className="input-dropdown-item-title">asd</p>
-                            //         </div>
-                            //     </div>
-                            // </div>
-                        }
+                                <Dropdown/>
 
-
-                                <div className="input-icon-container input-block">
-                                    <input className="form-control form-control-meta" readOnly="readonly" type="text"/>
-                                    <i className="meta-icon-down input-icon-right input-icon-sm"></i>
-                                </div>
                             </div>
                         </div>
                     }

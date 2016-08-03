@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import Dropdown from './Dropdown';
+import LookupDropdown from './LookupDropdown';
 import ProductSearchSummary from './ProductSearchSummary';
 
 import {toggleProductSummary} from '../../actions/SalesOrderActions';
@@ -25,7 +25,7 @@ class ProductSearch extends Component {
                 <ProductSearchSummary />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
-                    <Dropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
+                    <LookupDropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
                 ]}
 
                 <div className="row">

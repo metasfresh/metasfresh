@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import {unloadingChanged, invoiceChanged} from '../../actions/SalesOrderActions';
 
-import Dropdown from './Dropdown';
+import LookupDropdown from './LookupDropdown';
 
 import '../../assets/css/font-meta.css';
 
@@ -27,16 +27,16 @@ class Purchaser extends Component {
 
                 {salesOrderWindow.C_BPartner_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>,
-                    <Dropdown className="primary" key="dropdown" recent={recentPartners} properties={["C_BPartner_ID", "C_BPartner_Location_ID"]} />
+                    <LookupDropdown className="primary" key="dropdown" recent={recentPartners} properties={["C_BPartner_ID", "C_BPartner_Location_ID"]} />
                 ]}
 
                 {salesOrderWindow.Bill_BPartner_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.Bill_BPartner_ID.caption}</div>,
-                    <Dropdown className="secondary" key="dropdown" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                    <LookupDropdown className="secondary" key="dropdown" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
                 ]}
 
                 <div className="panel-title">Unloading partner</div>
-                <Dropdown className="secondary" recent={recentPartners} />
+                <LookupDropdown className="secondary" recent={recentPartners} />
             </div>
         )
     }
