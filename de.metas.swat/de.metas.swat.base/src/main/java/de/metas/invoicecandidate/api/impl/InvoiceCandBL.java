@@ -56,11 +56,12 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
@@ -193,7 +194,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)              // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)                // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -287,7 +288,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)              // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -408,13 +409,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			final Pair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ic);
+			final IPair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ic);
 
-			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getFirst());
-			ic.setNetAmtInvoiced(qtyAndNetAmtInvoiced.getSecond());
-
-			updateProcessedFlag(ic);
+			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getLeft());
+			ic.setNetAmtInvoiced(qtyAndNetAmtInvoiced.getRight());
 		}
+
+		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
 
 		//
 		// Update aggregation info
@@ -429,7 +430,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * @param ilas
 	 * @return
 	 */
-	/* package */Pair<BigDecimal, BigDecimal> sumupQtyInvoicedAndNetAmtInvoiced(final I_C_Invoice_Candidate ic)
+	/* package */IPair<BigDecimal, BigDecimal> sumupQtyInvoicedAndNetAmtInvoiced(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(ic);
@@ -448,7 +449,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					DocAction.STATUS_Completed,
 					DocAction.STATUS_Closed,
 					DocAction.STATUS_Reversed,
-					DocAction.STATUS_InProgress))               // 06162 InProgress invoices shall also be processed
+					DocAction.STATUS_InProgress))                 // 06162 InProgress invoices shall also be processed
 			{
 				qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
@@ -461,7 +462,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						invoiceLineBL.calculatedQtyInPriceUOM(rawNetAmtInvoiced, invoiceLine, errorIfNotPossible));
 			}
 		}
-		final Pair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = new Pair<BigDecimal, BigDecimal>(qtyInvoiced, netAmtInvoiced);
+		final IPair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
 		return qtyAndNetAmtInvoiced;
 	}
 
@@ -1223,7 +1224,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))              // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override)) // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1297,8 +1298,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final Pair<BigDecimal, BigDecimal> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ilaToReverse.getC_Invoice_Candidate());
-					final BigDecimal qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.getFirst();
+					final IPair<BigDecimal, BigDecimal> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ilaToReverse.getC_Invoice_Candidate());
+					final BigDecimal qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.getLeft();
 
 					// examples:
 					// reversalQtyInvoiced = -5, qtyInvoicedForIc = 3 (because of partial reinvoicable credit memo with qty 2) => overlap=-2 => create Ila with qty -5-(-2)=-3
@@ -1397,7 +1398,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)              // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)                // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1441,48 +1442,53 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{
-		// If invoice candidate has errors, don't update the flag until it's solved
-		if (ic.isError())
+		Boolean processed = null;
+		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_Processed_Override))
 		{
-			return;
+			// #243: if it is set, then always go with the processed-override value; even if the IC has an error
+			processed = X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override());
 		}
 
-		//
-		// services
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-
-		//
-		// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
-		final BigDecimal qtyOrdered = getQtyOrdered(ic);
-		final boolean noOpenQty = qtyOrdered.abs().compareTo(ic.getQtyInvoiced().abs()) <= 0;
-
-		//
-		// we need to know if there are already any invoice lines which have not been reversed
-		final List<I_C_Invoice_Line_Alloc> ilasForIc = invoiceCandDAO.retrieveIlaForIc(ic);
-		int nonReversedIlas = 0;
-		for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
+		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved
+		if (!ic.isError())
 		{
-			if (!docActionBL.isStatusOneOf(ila.getDocStatus(),
-					X_C_Invoice_Line_Alloc.DOCSTATUS_Reversed))
+			// services
+			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+
+			//
+			// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
+			final BigDecimal qtyOrdered = getQtyOrdered(ic);
+			final boolean noOpenQty = qtyOrdered.abs().compareTo(ic.getQtyInvoiced().abs()) <= 0;
+
+			//
+			// we need to know if there are already any invoice lines which have not been reversed
+			final List<I_C_Invoice_Line_Alloc> ilasForIc = invoiceCandDAO.retrieveIlaForIc(ic);
+			int nonReversedIlas = 0;
+			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
-				nonReversedIlas++;
+				if (!docActionBL.isStatusOneOf(ila.getDocStatus(),
+						X_C_Invoice_Line_Alloc.DOCSTATUS_Reversed))
+				{
+					nonReversedIlas++;
+				}
+			}
+
+			// task 08567: add a way to override "processed" by the user
+			final boolean processedCalc = noOpenQty && nonReversedIlas > 0;
+			ic.setProcessed_Calc(processedCalc);
+
+			if (processed == null)
+			{
+				processed = processedCalc; // processed wasn't set via Processed_Override
 			}
 		}
 
-		// task 08567: add a way to override "processed" by the user
-		final boolean processedCalc = noOpenQty && nonReversedIlas > 0;
+		if (processed == null)
+		{
+			return; // we had isError()=true and Processed_Override was not set.
+		}
 
-		ic.setProcessed_Calc(processedCalc);
-		final boolean processed;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_Processed_Override))
-		{
-			processed = processedCalc;
-		}
-		else
-		{
-			processed = X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override());
-		}
 		ic.setProcessed(processed);
 
 		// 08459
@@ -1880,7 +1886,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))              // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
@@ -2049,11 +2055,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
 	{
-		if(! isCloseIfPartiallyInvoiced())
+		if (!isCloseIfPartiallyInvoiced())
 		{
 			return;
 		}
-		
+
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
