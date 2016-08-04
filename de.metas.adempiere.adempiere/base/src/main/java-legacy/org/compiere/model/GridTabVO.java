@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -452,6 +453,18 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int			onlyCurrentDays = 0;
 
 	private List<GridFieldVO> _fields = null;
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("Name", Name)
+				.add("TableName", TableName)
+				.add("TabNo", TabNo)
+				.add("TabLevel", TabLevel)
+				.add("AD_Tab_ID", AD_Tab_ID)
+				.toString();
+	}
 
 	public List<GridFieldVO> getFields()
 	{
