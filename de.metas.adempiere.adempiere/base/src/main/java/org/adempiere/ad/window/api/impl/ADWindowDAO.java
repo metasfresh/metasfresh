@@ -1,5 +1,7 @@
 package org.adempiere.ad.window.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,8 +30,15 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_UI_Column;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.I_AD_UI_ElementGroup;
+import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
 
@@ -60,6 +69,104 @@ public class ADWindowDAO implements IADWindowDAO
 				.firstOnly(I_AD_Window.class);
 
 		return window;
+	}
+
+	@Override
+	public List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_Tab.class, adWindow)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, adWindow.getAD_Window_ID())
+				.orderBy()
+				.addColumn(I_AD_Tab.COLUMN_SeqNo)
+				.endOrderBy()
+				.create()
+				.list(I_AD_Tab.class);
+	}
+
+	@Override
+	public List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(adTab);
+		final int AD_Tab_ID = adTab.getAD_Tab_ID();
+		return retrieveUISections(ctx, AD_Tab_ID);
+	}
+	
+	@Override
+	public List<I_AD_UI_Section> retrieveUISections(final Properties ctx, final int AD_Tab_ID)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_Section.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, AD_Tab_ID)
+				.orderBy()
+				.addColumn(I_AD_UI_Section.COLUMN_SeqNo)
+				.endOrderBy()
+				.create()
+				.list(I_AD_UI_Section.class);
+	}
+
+	@Override
+	public List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_Column.class, uiSection)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_Column.COLUMN_AD_UI_Section_ID, uiSection.getAD_UI_Section_ID())
+				.orderBy()
+				.addColumn(I_AD_UI_Column.COLUMN_AD_UI_Column_ID)
+				.endOrderBy()
+				.create()
+				.list(I_AD_UI_Column.class);
+	}
+
+	@Override
+	public List<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_ElementGroup.class, uiColumn)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMN_AD_UI_Column_ID, uiColumn.getAD_UI_Column_ID())
+				.orderBy()
+				.addColumn(I_AD_UI_ElementGroup.COLUMN_SeqNo)
+				.endOrderBy()
+				.create()
+				.list(I_AD_UI_ElementGroup.class);
+	}
+
+	@Override
+	public List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_Element.class, uiElementGroup)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementGroup_ID, uiElementGroup.getAD_UI_ElementGroup_ID())
+				.orderBy()
+				.addColumn(I_AD_UI_Element.COLUMN_SeqNo)
+				.endOrderBy()
+				.create()
+				.list(I_AD_UI_Element.class);
+	}
+
+	@Override
+	public List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_ElementField.class, uiElement)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_ElementField.COLUMN_AD_UI_Element_ID, uiElement.getAD_UI_Element_ID())
+				.orderBy()
+				.addColumn(I_AD_UI_ElementField.COLUMN_AD_UI_ElementField_ID)
+				.endOrderBy()
+				.create()
+				.list(I_AD_UI_ElementField.class);
 	}
 
 }
