@@ -70,6 +70,19 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 				return springContextValue.trim();
 			}
 		}
+		else
+		{
+			// If there is no Spring context then go an check JVM System Properties.
+			// Usually we will get here when we will run some tools based on metasfresh framework.
+			
+			final Properties systemProperties = System.getProperties();
+			final String systemPropertyValue = systemProperties.getProperty(Name);
+			if(!Check.isEmpty(systemPropertyValue, true))
+			{
+				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, systemPropertyValue });
+				return systemPropertyValue.trim();
+			}
+		}
 
 		return MSysConfig.getValue(Name, defaultValue, AD_Client_ID, AD_Org_ID);
 	}
