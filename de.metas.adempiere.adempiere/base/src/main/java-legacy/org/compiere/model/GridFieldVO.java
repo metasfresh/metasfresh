@@ -1098,6 +1098,11 @@ public class GridFieldVO implements Serializable
 	{
 		return Header;
 	}
+	
+	public String getDescription()
+	{
+		return Description;
+	}
 
 	public int getAD_Reference_Value_ID()
 	{
