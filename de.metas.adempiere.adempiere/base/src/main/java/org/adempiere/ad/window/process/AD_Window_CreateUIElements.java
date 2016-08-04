@@ -70,6 +70,9 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			.put("M_Product_ID", "M_Product_ID")
 			.put("M_HU_PI_Item_Product_ID", "M_Product_ID")
 			//
+			.put("HandOver_Partner_ID", "HandOver_Partner_ID")
+			.put("HandOver_Location_ID", "HandOver_Partner_ID")
+			//
 			.build();
 
 	@Override
