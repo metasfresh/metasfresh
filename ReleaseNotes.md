@@ -18,9 +18,6 @@ Here come the actual release notes:
  - #225 Allocation - Accounting 0,00 when Posted
 
 ## Fixes
- - #255 Invoice candidates action bar is not considering org-assignment
- - #252 Fix the code for ADR Attribute Retrieval
- - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
  - #176 Bestellkontrolle add Promised Date
  - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
  - #248 Admin Login when deleted properties
