@@ -1,11 +1,16 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import Datetime from 'react-datetime';
+
 import Dropdown from './../app/Dropdown';
 
 class OrderInfo extends Component {
     constructor(props) {
         super(props);
+    }
+    handleDropdownChange = (result) => {
+        console.log(result);
     }
     render() {
         const {salesOrderWindow} = this.props;
@@ -31,7 +36,11 @@ class OrderInfo extends Component {
                             <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered.caption}</label>
                             <div className="col-sm-9">
                                 <div className="input-icon-container input-block">
-                                    <input className="form-control form-control-meta" type="text"/>
+                                    <Datetime
+                                        timeFormat={true}
+                                        dateFormat={false}
+                                        locale="de"
+                                    />
                                     <i className="meta-icon-calendar input-icon-right"></i>
                                 </div>
                             </div>
@@ -41,7 +50,11 @@ class OrderInfo extends Component {
                         <label className="col-sm-3 form-control-label">Promised date</label>
                         <div className="col-sm-9">
                             <div className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" type="text"/>
+                                <Datetime
+                                    timeFormat={false}
+                                    dateFormat="D. MMMM YYYY"
+                                    locale="de"
+                                />
                                 <i className="meta-icon-calendar input-icon-right"></i>
                             </div>
                         </div>
@@ -50,7 +63,11 @@ class OrderInfo extends Component {
                         <label className="col-sm-3 form-control-label">Provisioning</label>
                         <div className="col-sm-9">
                             <div className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" type="text"/>
+                                <Datetime
+                                    timeFormat={false}
+                                    dateFormat="D. MMMM YYYY"
+                                    locale="de"
+                                />
                                 <i className="meta-icon-calendar input-icon-right"></i>
                             </div>
                         </div>
@@ -60,10 +77,12 @@ class OrderInfo extends Component {
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Organisation</label>
                         <div className="col-sm-9">
-                            <div className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" readOnly="readonly" type="text"/>
-                                <i className="meta-icon-down input-icon-right input-icon-sm"></i>
-                            </div>
+
+                            <Dropdown
+                                options={['1','2','3']}
+                                onChange={this.handleDropdownChange}
+                            />
+
                         </div>
                     </div>
                     {(salesOrderWindow.M_Warehouse_ID && salesOrderWindow.M_Warehouse_ID.layoutInfo.displayed) &&
@@ -71,7 +90,10 @@ class OrderInfo extends Component {
                             <label className="col-sm-3 form-control-label">{salesOrderWindow.M_Warehouse_ID.caption}</label>
                             <div className="col-sm-9">
 
-                                <Dropdown/>
+                                <Dropdown
+                                    options={['1','2','3']}
+                                    onChange={this.handleDropdownChange}
+                                />
 
                             </div>
                         </div>

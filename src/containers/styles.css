@@ -1,5 +1,6 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
+@import './datetime.css';
 
 /**
  *  IMPORTANT NOTE
@@ -45,6 +46,11 @@ body {
 
 input {
     background-color: transparent;
+}
+
+label {
+    margin-top:.3rem;
+    margin-bottom:.3rem;
 }
 
 
@@ -184,6 +190,9 @@ input {
 .panel-title {
     margin-bottom: .5rem;
 }
+.panel-title:not(:first-of-type){
+    margin-top: 1.5rem;
+}
 
 .icon-rounded {
     display:inline-block;
@@ -216,13 +225,14 @@ input {
     margin-right:0;
     margin-left:0;
     padding: .25rem .50rem;
-    margin-bottom: 1.5rem;
     float:left;
-
 }
 
 .input-secondary {
     border-bottom: 1px solid $brand-light-color;
+}
+.input-secondary + .input-dropdown-list {
+    border-top:0;
 }
 
 .input-primary {
@@ -431,6 +441,8 @@ input {
     max-height: 357px;
     height: auto;
     overflow-y: auto;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 .input-dropdown-field {
     border: 0;

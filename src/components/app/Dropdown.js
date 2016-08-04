@@ -6,8 +6,6 @@ class Dropdown extends Component {
         super(props);
     }
     handleBlur = (e) => {
-        e.preventDefault();
-
         this.dropdown.classList.remove("input-dropdown-focused");
     }
     handleFocus = (e) => {
@@ -16,9 +14,21 @@ class Dropdown extends Component {
     }
     handleChange = (e) => {
         e.preventDefault();
-
+    }
+    handleSelect = (index) => {
+        this.inputSearch.value = this.props.options[index];
+        this.handleBlur();
+    }
+    renderOptions = () => {
+        return this.props.options.map((option, index) => (
+                <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(index)}>
+                    <p className="input-dropdown-item-title">{option}</p>
+                </div>
+            )
+        )
     }
     render() {
+        const {options} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -43,9 +53,7 @@ class Dropdown extends Component {
                     </div>
                 </div>
                 <div className="input-dropdown-list">
-                    <div className={"input-dropdown-list-option"}>
-                        <p className="input-dropdown-item-title">asd</p>
-                    </div>
+                    {this.renderOptions()}
                 </div>
             </div>
         )
