@@ -739,6 +739,11 @@ public class GridTabVO implements Evaluatee, Serializable
 		return Name;
 	}
 	
+	public String getDescription()
+	{
+		return Description;
+	}
+	
 	public int getPrint_Process_ID()
 	{
 		return AD_Process_ID;
