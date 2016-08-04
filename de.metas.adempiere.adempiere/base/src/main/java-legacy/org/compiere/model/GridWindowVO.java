@@ -491,6 +491,50 @@ public class GridWindowVO implements Serializable
 		return _tabs;
 	}
 	
+	public GridTabVO getTab(final int tabNo)
+	{
+		return _tabs.get(tabNo);
+	}
+	
+	/**
+	 * Gets direct children of given tab.
+	 * 
+	 * @param tabNo
+	 * @return list of direct children
+	 */
+	public List<GridTabVO> getChildTabs(final int tabNo)
+	{
+		final GridTabVO masterTab = _tabs.get(tabNo);
+		final int masterTabLevel = masterTab.getTabLevel();
+		final int childTabLevelExpected = masterTabLevel + 1;
+		
+		final int tabsCount = _tabs.size();
+		final List<GridTabVO> childTabs = new ArrayList<>();
+		for (int childTabNo = tabNo + 1; childTabNo < tabsCount; childTabNo++)
+		{
+			final GridTabVO childTab = _tabs.get(childTabNo);
+			final int childTabLevel = childTab.getTabLevel();
+			
+			if(childTabLevel == masterTabLevel)
+			{
+				// we just moved to another master tab. Stop here.
+				break;
+			}
+			else if (childTabLevel == childTabLevelExpected)
+			{
+				// we found a child tab. Collect it.
+				childTabs.add(childTab);
+			}
+			else // childTabLevel > childTabLevelExpected
+			{
+				// we found a child of a child tab. Ignore it.
+				continue;
+			}
+		}
+		
+		return childTabs;
+	}
+	
 	public String getName()
 	{
 		return Name;
