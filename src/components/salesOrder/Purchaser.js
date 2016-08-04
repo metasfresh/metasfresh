@@ -31,12 +31,20 @@ class Purchaser extends Component {
                 ]}
 
                 {salesOrderWindow.Bill_BPartner_ID && [
-                    <div key="title" className="panel-title">{salesOrderWindow.Bill_BPartner_ID.caption}</div>,
-                    <LookupDropdown className="secondary" key="dropdown" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                    <div className="form-group m-t-2 row">
+                        <label key="title" className="col-sm-3 form-control-label">{salesOrderWindow.Bill_BPartner_ID.caption}</label>
+                        <div className="col-sm-9">
+                            <LookupDropdown className="secondary" key="dropdown1" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                        </div>
+                    </div>
                 ]}
 
-                <div className="panel-title">Unloading partner</div>
-                <LookupDropdown className="secondary" recent={recentPartners} />
+                <div className="form-group m-t-1 row">
+                    <label key="title" className="col-sm-3 form-control-label">Unloading</label>
+                    <div className="col-sm-9">
+                        <LookupDropdown className="secondary" key="dropdown2" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                    </div>
+                </div>
             </div>
         )
     }

@@ -49,8 +49,8 @@ input {
 }
 
 label {
-    margin-top:.3rem;
-    margin-bottom:.3rem;
+    margin-top:.5rem;
+    margin-bottom: 0;
 }
 
 
@@ -170,7 +170,7 @@ label {
     margin-top: 2rem;
 }
 .panel-spaced {
-    padding: .75rem 1.25rem;
+    padding: 1rem 1.25rem 1.25rem 1.25rem;
 }
 .panel-spaced-sm {
     padding: .75rem .5rem;
@@ -190,7 +190,7 @@ label {
 .panel-title {
     margin-bottom: .5rem;
 }
-.panel-title:not(:first-of-type){
+.panel-title-spaced{
     margin-top: 1.5rem;
 }
 
@@ -230,6 +230,10 @@ label {
 
 .input-secondary {
     border-bottom: 1px solid $brand-light-color;
+    color: $brand-font-color-secondary;
+}
+.input-secondary input {
+    color: $brand-font-color-secondary;
 }
 .input-secondary + .input-dropdown-list {
     border-top:0;

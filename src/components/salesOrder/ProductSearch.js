@@ -25,10 +25,11 @@ class ProductSearch extends Component {
                 <ProductSearchSummary />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
-                    <LookupDropdown key="dropdown" recent={recentProducts} property="M_Product_ID" />
+                    <LookupDropdown className="primary" key="dropdown" recent={[]} properties={[]} />
+
                 ]}
 
-                <div className="row">
+                <div className="row m-t-1">
                     <div className="form-group col-sm-4">
                         <label>Packages amount</label>
                         <input className="form-control" type="number"/>
@@ -43,9 +44,8 @@ class ProductSearch extends Component {
                         ]}
                     </div>
 
-                    <div className="form-group col-sm-2 col-sm-offset-2">
-                        <label/>
-                        <button className=" btn btn-sm btn-block btn-meta-primary">Add</button>
+                    <div className="form-group col-sm-3 offset-sm-1">
+                        <button className="btn btn-sm btn-block btn-meta-primary m-t-2">Add</button>
                     </div>
                 </div>
             </div>
