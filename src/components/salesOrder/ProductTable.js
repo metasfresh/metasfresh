@@ -97,13 +97,22 @@ class ProductTable extends Component {
         })
     }
     renderTableFooter = () => {
-        const {products} = this.props
+        const {products} = this.props;
         return products.containers.map((container) => <ProductTableItem product={container} key={container.id} />)
     }
     render() {
-        const {products} = this.props
+        const {products} = this.props;
         return (
-            <div className="col-xs-12 m-b-3" onContextMenu={this.handleContextMenu}>
+            <div className="col-xs-12 m-b-3">
+                <div className="row">
+                    <div className="offset-xs-8 col-xs-4">
+                        <div className="form-flex-align">
+                            <input type="text" className="input-primary pull-xs-left" placeholder="Enter filter phrase" />
+                            <button className="btn-icon btn-meta-outline-secondary pull-xs-right"><i className="meta-icon-full-1"/></button>
+                            <button className="btn-icon btn-meta-outline-secondary pull-xs-right"><i className="meta-icon-add-1"/></button>
+                        </div>
+                    </div>
+                </div>
                 <div
                     className="context-menu panel-bordered panel-primary"
                     ref={(c) => this.contextMenu = c}
@@ -118,7 +127,7 @@ class ProductTable extends Component {
                         </div>
                     ) : null }
                 </div>
-                <div className=" panel panel-primary panel-bordered panel-bordered-force">
+                <div className="panel panel-primary panel-bordered panel-bordered-force" onContextMenu={this.handleContextMenu}>
                     <table className="table table-bordered-vertically table-striped">
                         <thead>
                             <ProductTableHeader />

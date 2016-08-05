@@ -152,7 +152,7 @@ class LookupDropdown extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-auto input-" + className}>
+                <div className={"input-dropdown input-auto input-block input-" + className}>
                     <div className="input-editable">
                         <input
                             type="text"

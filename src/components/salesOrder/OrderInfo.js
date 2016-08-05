@@ -15,7 +15,7 @@ class OrderInfo extends Component {
     render() {
         const {salesOrderWindow} = this.props;
         return (
-            <div className="panel panel-spaced">
+            <div className="panel panel-spaced panel-distance">
                 <div className="row">
                     {(salesOrderWindow.DeliveryStatus && salesOrderWindow.DeliveryStatus.layoutInfo.displayed) &&
                         <div className="col-xs-5">
@@ -100,8 +100,8 @@ class OrderInfo extends Component {
                     }
                 </div>
                 <div className="m-t-2">
-                    <button className="btn btn-sm btn-outline-secondary pull-xs-right">
-                        <span className="meta-icon-edit btn-icon-sm"></span>
+                    <button className="btn btn-sm btn-meta-outline-secondary pull-xs-right">
+                        <span className="meta-icon-edit btn-icon-md"></span>
                         Advanced edit
                     </button>
                 </div>

@@ -37,7 +37,7 @@ class Dropdown extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-auto input-secondary"}>
+                <div className={"input-dropdown input-auto input-secondary input-block"}>
                     <div className="input-editable input-dropdown-focused">
                         <input
                             type="text"

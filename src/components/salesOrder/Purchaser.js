@@ -23,7 +23,7 @@ class Purchaser extends Component {
     render() {
         const {purchaser, salesOrderWindow, recentPartners} = this.props;
         return (
-            <div className="panel panel-bordered panel-spaced panel-primary">
+            <div className="panel panel-bordered panel-spaced panel-primary panel-distance">
 
                 {salesOrderWindow.C_BPartner_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>,

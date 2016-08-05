@@ -33,6 +33,7 @@
   font-variant: normal !important;
   text-transform: none !important;
   speak: none;
+  line-height: 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -117,4 +118,10 @@
 }
 .meta-icon-chevron:before {
   content: "\73";
+}
+.meta-icon-add-1:before {
+  content: "\74";
+}
+.meta-icon-full-1:before {
+  content: "\75";
 }

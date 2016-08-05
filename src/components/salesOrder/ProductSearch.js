@@ -19,7 +19,7 @@ class ProductSearch extends Component {
         const {salesOrderWindow, recentProducts} = this.props;
         return (
             <div
-                className="panel panel-bordered panel-spaced panel-primary"
+                className="panel panel-bordered panel-spaced panel-primary panel-distance"
                 onMouseEnter={this.handleMouseover}
                 onMouseLeave={this.handleMouseout}>
                 <ProductSearchSummary />
