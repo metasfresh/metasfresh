@@ -28,7 +28,8 @@ body {
     color: #fff;
 }
 
-*:focus {
+*:focus,
+button:focus {
     outline-color: $brand-font-color;
     outline-width:1px;
     outline-offset:0px;
