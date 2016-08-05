@@ -28,8 +28,11 @@ Here come the actual release notes:
 
 ## Fixes
  - #176 Bestellkontrolle add Promised Date
+   * Added the Date promised onto report Bestellkontrolle.
  - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
+   * Fixed a Bug that did not detect contracted lines in Procurement candidates if the contractline was not defined with given price.
  - #248 Admin Login when deleted properties
+   * Adressed a security issue that allowed to gain admin permissions after deleting the client properties.
 
 # metasfresh 4.28.27 (2016-30)
 
