@@ -10,12 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.29.28 (2016-31, RC)
+# metasfresh 4.30.29 (2016-32, RC)
+
+## Features
+
+## Fixes
+
+# metasfresh 4.29.28 (2016-31)
 
 ## Features
  - #241 Excel Export for Open Items accounting currency
+   * Adjusted the Excel Export of Open Items report ro show the sums in accounting currency.
  - #240 Consitency check page for Saldobilanz
+   * Added a new Page in Salsobilanz report to allow quick consistency check of accountings.
  - #225 Allocation - Accounting 0,00 when Posted
+   * Added a process which double checks the accountings of the day. If a document ist posted and the accounting results are 0,00 then a the document information is logged and the document is reposted.
 
 ## Fixes
  - #176 Bestellkontrolle add Promised Date
