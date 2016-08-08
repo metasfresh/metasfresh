@@ -112,6 +112,7 @@ class LookupDropdown extends Component {
                 break;
             case "ArrowLeft":
                 e.preventDefault();
+                this.handleChange();
                 break;
             case "Enter":
                 e.preventDefault();
