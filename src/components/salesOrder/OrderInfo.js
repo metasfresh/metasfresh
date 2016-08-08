@@ -21,16 +21,21 @@ class OrderInfo extends Component {
             <div className="panel panel-distance m-t-3">
                 <div className="row">
                     {(salesOrderWindow.DeliveryStatus && salesOrderWindow.DeliveryStatus.layoutInfo.displayed) &&
-                        <div className="col-xs-5">
+                        [<div className="col-xs-3">
                             {salesOrderWindow.DeliveryStatus.caption}
-                            <div className="tag tag-warning pull-xs-right">Open</div>
-                        </div>
+                        </div>,
+                        <div className="col-xs-3">
+                            <div className="tag tag-warning">Open</div>
+                        </div>]
+
                     }
                     {(salesOrderWindow.InvoiceStatus && salesOrderWindow.InvoiceStatus.layoutInfo.displayed) &&
-                        <div className="col-xs-5 col-xs-offset-1">
+                        [<div className="col-xs-4 offset-xs-1">
                             {salesOrderWindow.InvoiceStatus.caption}
+                        </div>,
+                        <div className="col-xs-1">
                             <div className="tag tag-warning pull-xs-right">Open</div>
-                        </div>
+                        </div>]
                     }
                 </div>
                 <div className="m-t-2">
