@@ -17,6 +17,12 @@
     border-color: $brand-light-color;
     background-color: transparent;
 }
+
+.rdt > input[value='(none)']{
+    opacity: .7;
+    font-weight: normal;
+}
+
 .rdtPicker {
   display: none;
   position: absolute;

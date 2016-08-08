@@ -48,7 +48,7 @@ class OrderInfo extends Component {
                                         timeFormat={true}
                                         dateFormat={false}
                                         locale="de"
-                                        onFocus={this.handleSetDefaultValue}
+                                        inputProps={{placeholder: "(none)"}}
                                     />
                                     <i className="meta-icon-calendar input-icon-right"></i>
                                 </div>
@@ -63,6 +63,7 @@ class OrderInfo extends Component {
                                     timeFormat={false}
                                     dateFormat="D. MMMM YYYY"
                                     locale="de"
+                                    inputProps={{placeholder: "(none)"}}
                                 />
                                 <i className="meta-icon-calendar input-icon-right"></i>
                             </div>
@@ -74,6 +75,7 @@ class OrderInfo extends Component {
                             <div className="input-icon-container input-block">
                                 <Datetime
                                     timeFormat={false}
+                                    inputProps={{placeholder: "(none)"}}
                                     dateFormat="D. MMMM YYYY"
                                     locale="de"
                                 />
@@ -89,6 +91,7 @@ class OrderInfo extends Component {
 
                             <Dropdown
                                 options={['1','2','3']}
+                                defaultValue="(none)"
                                 onChange={this.handleDropdownChange}
                             />
 
@@ -101,6 +104,7 @@ class OrderInfo extends Component {
 
                                 <Dropdown
                                     options={['1','2','3']}
+                                    defaultValue="(none)"
                                     onChange={this.handleDropdownChange}
                                 />
 
