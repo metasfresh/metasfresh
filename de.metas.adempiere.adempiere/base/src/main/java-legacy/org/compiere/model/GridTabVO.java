@@ -38,6 +38,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -452,7 +453,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	/**	Only Current Days - derived	*/
 	public int			onlyCurrentDays = 0;
 
-	private List<GridFieldVO> _fields = null;
+	private List<GridFieldVO> _fields = null; // lazy
+	private Optional<GridFieldVO> _parentLinkField = null; // lazy
 	
 	@Override
 	public String toString()
@@ -479,6 +481,50 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 		}
 		return _fields;
+	}
+	
+	/** @return {@link GridFieldVO} or <code>null</code> */
+	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
+	{
+		if(adFieldId <= 0)
+		{
+			return null;
+		}
+		
+		for (final GridFieldVO gridFieldVO : getFields())
+		{
+			if (gridFieldVO.getAD_Field_ID() == adFieldId)
+			{
+				return gridFieldVO;
+			}
+		}
+		
+		return null;
+	}
+	
+	public GridFieldVO getParentLinkField()
+	{
+		if (_parentLinkField == null)
+		{
+			GridFieldVO parentLinkField = null;
+			
+			final int parentColumnId = getParent_Column_ID();
+			if (parentColumnId > 0)
+			{
+				for (final GridFieldVO gridFieldVO : getFields())
+				{
+					if (gridFieldVO.getAD_Column_ID() == parentColumnId)
+					{
+						parentLinkField = gridFieldVO;
+						break;
+					}
+				}
+			}
+			
+			_parentLinkField = Optional.fromNullable(parentLinkField);
+		}
+		
+		return _parentLinkField.orNull();
 	}
 
 	/**
@@ -727,6 +773,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	public String getEntityType()
 	{
 		return entityType;
+	}
+	
+	public int getTabNo()
+	{
+		return TabNo;
 	}
 
 	public int getTabLevel()

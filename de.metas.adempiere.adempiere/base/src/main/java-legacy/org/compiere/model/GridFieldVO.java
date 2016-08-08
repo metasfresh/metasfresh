@@ -38,6 +38,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
 
 
@@ -832,16 +834,12 @@ public class GridFieldVO implements Serializable
 		return clone(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly);
 	}
 
-	/**
-	 * 	String Representation
-	 *	@return info
-	 */
 	@Override
 	public String toString()
 	{
-		return new StringBuilder(getClass().getSimpleName()).append("[")
-				.append(AD_Column_ID).append("-").append(ColumnName)
-				.append("]")
+		return MoreObjects.toStringHelper(this)
+				.add("ColumnName", ColumnName)
+				.add("AD_Column_ID", AD_Column_ID)
 				.toString();
 	}
 
@@ -1164,5 +1162,15 @@ public class GridFieldVO implements Serializable
 	public String getDefaultValue()
 	{
 		return DefaultValue;
+	}
+	
+	public boolean isKey()
+	{
+		return IsKey;
+	}
+	
+	public boolean isEncryptedColumn()
+	{
+		return IsEncryptedColumn;
 	}
 }

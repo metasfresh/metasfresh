@@ -59,7 +59,8 @@ public class GridWindowVO implements Serializable
 	 *  @param ctx context
 	 *  @param WindowNo window no for ctx
 	 *  @param AD_Window_ID window id
-	 *  @return MWindowVO
+	 *  @return {@link GridWindowVO}; never returns null
+	 *  @see #create(Properties, int, int, int)
 	 */
 	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID)
 	{
