@@ -434,6 +434,20 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	}
 
 	/**
+	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
+	 * 
+	 * @param key
+	 * @param valueLoader
+	 * @return
+	 * @see #get(Object, Callable).
+	 * @see #get(Object, Supplier)
+	 */
+	public V getOrLoad(final K key, final Callable<V> valueLoader)
+	{
+		return get(key, valueLoader);
+	}
+
+	/**
 	 * Put value
 	 *
 	 * @param key key
