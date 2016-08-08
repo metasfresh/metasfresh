@@ -15,6 +15,7 @@ import {
 class LookupDropdown extends Component {
     constructor(props) {
         super(props);
+        this.state = {isInputEmpty: true}
     }
     handleSelect = (select) => {
         const {dispatch, properties, purchaser, autocomplete} = this.props;
@@ -86,7 +87,9 @@ class LookupDropdown extends Component {
 
         if(this.inputSearch.value != ""){
             dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
+            this.setState({isInputEmpty: false});
         }else{
+            this.setState({isInputEmpty: true});
             dispatch(autocompleteSuccess(recent, ""));
         }
     }
@@ -152,21 +155,27 @@ class LookupDropdown extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-auto input-block input-" + className}>
+                <div className={"input-dropdown input-block input-" + className}>
                     <div className="input-editable">
                         <input
                             type="text"
-                            className="input-dropdown-field font-weight-bold"
+                            className="input-field font-weight-bold"
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
+                            placeholder="(none)"
                         />
                     </div>
                     <div ref={c => this.inputSearchRest = c} className="input-rest" />
 
-                    <div className="input-icon" tabIndex="0">
-                        <i onClick={this.handleClear} className="icon-rounded icon-rounded-space">x</i>
-                    </div>
+                    {this.state.isInputEmpty ?
+                        <div className="input-icon input-icon-lg">
+                            <i className="meta-icon-preview-1" />
+                        </div> :
+                        <div className="input-icon input-icon-lg" tabIndex="0">
+                            <i onClick={this.handleClear} className="meta-icon-close-alt"/>
+                        </div>
+                    }
                 </div>
                 <div className="clearfix" />
                 <div className="input-dropdown-list">

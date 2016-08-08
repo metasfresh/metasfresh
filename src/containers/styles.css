@@ -37,8 +37,10 @@ button:focus {
 }
 
 ::placeholder {
-    font-style: italic;
+    font-weight: normal;
 }
+
+
 
 /*
  *  Extension for bootstrap grid
@@ -51,11 +53,12 @@ button:focus {
 
 input {
     background-color: transparent;
+    color: $brand-font-color;
 }
 
 label {
     margin-top:.5rem;
-    margin-bottom: 0;
+    margin-bottom: .3rem;
 }
 
 
@@ -74,6 +77,11 @@ label {
 
 .tag-primary {
     background-color: $brand-primary-color;
+}
+
+.tag-default {
+    background-color: $brand-dark-color;
+    color: $brand-font-color;
 }
 
 .tag-warning {
@@ -124,6 +132,7 @@ label {
     padding: .25rem;
 }
 
+
 .btn-meta-default {
     color: $brand-color-primary;
     background-color: $brand-bright-color;
@@ -133,6 +142,15 @@ label {
 .btn-meta-default:hover {
     background-color: color(#F8FAFB lightness(90%));
     border-color: color(#F8FAFB lightness(90%));
+}
+
+.btn-meta-default-bright {
+    color: $brand-color-primary;
+    background-color: #fff;
+}
+
+.btn-meta-default-bright:hover {
+    background-color: color(#F8FAFB lightness(90%));
 }
 
 .btn-meta-success{
@@ -201,7 +219,7 @@ label {
     overflow:hidden;
 }
 .panel-primary {
-    border-color: #DEE6EC;
+    border-color: $brand-border-color;
     background-color: #FFF;
 }
 
@@ -212,26 +230,6 @@ label {
     margin-top: 1.5rem;
 }
 
-.icon-rounded {
-    display:inline-block;
-    font-style: normal;
-    font-weight:100;
-    text-align: center;
-    border: 1px solid $brand-light-color;
-    color: $brand-light-color;
-    border-radius: 50%;
-    width:17px;
-    height:17px;
-    line-height: 13px;
-    vertical-align: bottom;
-    font-size: 10px;
-    cursor: pointer;
-}
-
-.icon-rounded-space{
-    margin-left: 10px;
-}
-
 .input-auto {
     font-style: italic;
 }
@@ -240,13 +238,16 @@ label {
 .input-secondary {
     margin-right:0;
     margin-left:0;
-    padding: .25rem .50rem;
+    padding: .3rem .50rem;
     float:left;
 }
 
 .input-secondary {
     border-bottom: 1px solid $brand-light-color;
     color: $brand-font-color-secondary;
+    padding: .1rem .5rem;
+    /* Margin top for depreciation of padding differences */
+    margin-top: .4px;
 }
 .input-secondary input {
     color: $brand-font-color-secondary;
@@ -279,9 +280,13 @@ label {
     border-width: 2px;
 }
 
+.input-secondary .input-icon {
+    bottom: -3px;
+}
 .input-icon {
-    width:25px;
     float:right;
+    bottom: -3px;
+    position: relative;
 }
 
 .input-editable {
@@ -292,6 +297,7 @@ label {
     flex: 1 1 50%;
     white-space: nowrap;
     overflow: hidden;
+    margin-right: 5px;
 }
 
 .input-block {
@@ -306,7 +312,7 @@ label {
 .input-icon-right{
     position: absolute;
     bottom: -3px;
-    right: 0;
+    right: 5px;
     font-size:16px;
 }
 
@@ -314,6 +320,10 @@ label {
     font-size:10px;
     margin-right: 3px;
     margin-bottom: 5px;
+}
+
+.input-icon-lg {
+    font-size: 16px;
 }
 
 .btn-icon-sm {
@@ -342,9 +352,9 @@ label {
 .form-control-meta {
     border-radius:0;
     border-width: 0 0 1px 0;
-    font-style: italic;
     border-color: $brand-light-color;
     padding-right: 1.5rem;
+    font-style: normal;
 }
 
 .form-control-meta:focus {
@@ -377,10 +387,10 @@ label {
 }
 
 .table.table-bordered-horizontally td{
-    border-bottom:1px solid #DEE6EC;
+    border-bottom:1px solid $brand-border-color;
 }
 .table.table-bordered-vertically td{
-    border-right:1px solid #DEE6EC;
+    border-right:1px solid $brand-border-color;
 }
 
 .table-hide-property {
@@ -433,6 +443,7 @@ label {
 
 .input-dropdown-container {
     position:relative;
+    cursor: pointer;
 }
 .input-dropdown-container .input-dropdown {
     display: flex;
@@ -468,10 +479,11 @@ label {
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
 }
-.input-dropdown-field {
+.input-field {
     border: 0;
     width: 100%;
     outline-width:0;
+    cursor: inherit;
 }
 .input-dropdown-list-header {
     background-color: $brand-super-light-color;
@@ -486,7 +498,8 @@ label {
 }
 .input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
-    background-color: $brand-super-light-color;
+    background-color: $brand-color-primary;
+    color: #fff;
 }
 .input-dropdown-list-option p {
     margin:0;
@@ -539,7 +552,7 @@ label {
     height:100%;
     width: 472px;
     background-color: #fff;
-    border-left: 1px solid #dee6ec;
+    border-left: 1px solid $brand-border-color;
     z-index: 50;
     right:0;
 }
@@ -650,7 +663,6 @@ label {
 .meta-dropdown-toggle i {
     font-size: .6rem;
     margin-left: .5rem;
-    color: $brand-primary-color;
 }
 .dropdown-status-toggler {
     display: flex;
@@ -659,7 +671,7 @@ label {
     padding: 0 1.2rem;
     cursor: pointer;
     position: relative;
-    border-bottom: 1px solid #dee6ec;
+    border-bottom: 1px solid $brand-border-color;
 }
 .dropdown-status-toggler .tag {
     padding: .3rem 1.5rem;
@@ -686,11 +698,25 @@ label {
 .dropdown-status-item {
     padding: 8px 10px;
 }
+.dropdown-status-item:hover {
+    background-color: $brand-dark-color;
+}
 
-.dropdown-status-item-def {
+.dropdown-status-item-def-1 {
     background-color: $brand-success-color;
     color: #fff;
 }
+.dropdown-status-item-def-1:hover {
+    background-color: $brand-success-dark-color;
+}
+.dropdown-status-item-def {
+    background-color: $brand-primary-color;
+    color: #fff;
+}
+.dropdown-status-item-def:hover {
+    background-color: $brand-primary-dark-color;
+}
+
 .dropdown-status-toggler .meta-icon-chevron{
     margin-top: 1px;
 }
@@ -707,4 +733,31 @@ label {
 }
 .form-flex-align input {
     flex: 2 1 auto;
+}
+
+.items-row{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.items-col-bottom {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    height: 100%;
+}
+
+.meta-icon-primary {
+    color: $brand-primary-color;
+}
+.meta-icon-success {
+    color: $brand-success-color;
+}
+.meta-icon-default {
+    color: $brand-default-color;
 }

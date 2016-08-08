@@ -12,6 +12,9 @@ class OrderInfo extends Component {
     handleDropdownChange = (result) => {
         console.log(result);
     }
+    handleSetDefaultValue = () => {
+        console.log(this);
+    }
     render() {
         const {salesOrderWindow} = this.props;
         return (
@@ -40,6 +43,7 @@ class OrderInfo extends Component {
                                         timeFormat={true}
                                         dateFormat={false}
                                         locale="de"
+                                        onFocus={this.handleSetDefaultValue}
                                     />
                                     <i className="meta-icon-calendar input-icon-right"></i>
                                 </div>

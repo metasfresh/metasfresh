@@ -41,7 +41,7 @@ class Dropdown extends Component {
                     <div className="input-editable input-dropdown-focused">
                         <input
                             type="text"
-                            className="input-dropdown-field font-weight-bold"
+                            className="input-field font-weight-bold"
                             readOnly="readonly"
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}

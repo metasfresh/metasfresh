@@ -21,7 +21,8 @@ class ProductSearch extends Component {
             <div
                 className="panel panel-bordered panel-spaced panel-primary panel-distance"
                 onMouseEnter={this.handleMouseover}
-                onMouseLeave={this.handleMouseout}>
+                onMouseLeave={this.handleMouseout}
+            >
                 <ProductSearchSummary />
                 {salesOrderWindow.M_Product_ID && [
                     <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
@@ -29,23 +30,24 @@ class ProductSearch extends Component {
 
                 ]}
 
-                <div className="row m-t-1">
+                <div className="row m-t-1 items-row">
                     <div className="form-group col-sm-4">
                         <label>Packages amount</label>
-                        <input className="form-control" type="number"/>
+                        <div className="input-primary">
+                            <input className="input-field" type="text"/>
+                        </div>
                     </div>
                     <div className="form-group col-sm-4">
                         {salesOrderWindow.Qty_FastInput_TU && [
                             <label key="label">{salesOrderWindow.Qty_FastInput_TU.caption}</label>,
-                            <div key="input" className="input-icon-container input-block">
-                                <input className="form-control form-control-meta" type="number"/>
-                                <i className="meta-icon-edit input-icon-right"></i>
+                            <div className="input-secondary">
+                                <input className="input-field" type="text"/>
                             </div>
                         ]}
                     </div>
 
-                    <div className="form-group col-sm-3 offset-sm-1">
-                        <button className="btn btn-sm btn-block btn-meta-primary m-t-2">Add</button>
+                    <div className="form-group col-sm-3 offset-sm-1 items-col-bottom">
+                        <button className="btn btn-sm btn-block btn-meta-primary">Add</button>
                     </div>
                 </div>
             </div>

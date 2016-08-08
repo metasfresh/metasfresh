@@ -15,6 +15,13 @@ import {
 class Header extends Component {
     constructor(props){
         super(props);
+
+        this.status = [
+            "Draft",
+            "Completed",
+            "In progress",
+            "Void"
+        ];
     }
     handleSubheaderOpen = () => {
         const {dispatch, isSubheaderShow} = this.props;
@@ -43,20 +50,41 @@ class Header extends Component {
         this.statusDropdown.classList.add('dropdown-status-open');
     }
     getOrderStatus = (id) => {
-        switch (id) {
-            case 0:
-                return "Draft";
-                break;
-            case 1:
-                return "Completed";
-                break;
-            case 2:
-                return "In progress";
-                break;
-            case 3:
-                return "Void";
-                break;
+        return this.status[id];
+    }
+    getStatusClassName = (id) => {
+        if(id == 0){
+            return "dropdown-status-item-def";
+        }else if (id == 1){
+            return "dropdown-status-item-def-1";
+        }else{
+            return "";
         }
+    }
+    getStatusContext = (id) => {
+        if(id == 0){
+            return "primary"
+        }else if (id == 1){
+            return "success"
+        }else {
+            return "default"
+        }
+    }
+    renderStatusList = () => {
+        return this.status.map((item, index) => {
+            if(index != this.props.orderStatus){
+                return <li
+                    key={index}
+                    className={
+                        "dropdown-status-item " +
+                        this.getStatusClassName(index)
+                    }
+                    onClick={() => this.handleChangeStatus(index)}
+                >
+                    {item}
+                </li>
+            }
+        })
     }
     render() {
         const {isSubheaderShow, isOrderListShow, orderStatus} = this.props;
@@ -70,7 +98,7 @@ class Header extends Component {
                         <div className="header-left-side">
                             <div
                                 onClick={this.handleSubheaderOpen}
-                                className={"btn-square " + (isSubheaderShow ? "btn-meta-default btn-subheader-open" : "btn-meta-primary")}
+                                className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default btn-subheader-open btn-header-open" : "btn-meta-primary")}
                             >
                                 <i className="meta-icon-hamburger" />
                             </div>
@@ -88,16 +116,17 @@ class Header extends Component {
                         </div>
                         <div className="header-right-side">
                             <div className="meta-dropdown-toggle dropdown-status-toggler" tabIndex="0" ref={(c) => this.statusDropdown = c} onBlur={this.handleDropdownBlur} onFocus={this.handleDropdownFocus}>
-                                <div className="tag tag-primary">{this.getOrderStatus(orderStatus)}</div>
-                                <i className="meta-icon-chevron"/>
+                                <div className={"tag tag-" + this.getStatusContext(orderStatus)}>{this.getOrderStatus(orderStatus)}</div>
+                                <i className={"meta-icon-chevron meta-icon-" + this.getStatusContext(orderStatus)}/>
                                 <ul className="dropdown-status-list">
-                                    <li className="dropdown-status-item dropdown-status-item-def" onClick={() => this.handleChangeStatus(1)}>Complete</li>
-                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(2)}>In progress</li>
-                                    <li className="dropdown-status-item" onClick={() => this.handleChangeStatus(3)}>Void</li>
+                                    {this.renderStatusList()}
                                 </ul>
                             </div>
 
-                            <div className="btn-square btn-meta-primary side-panel-toggle" onClick={this.handleOrderListToggle}>
+                            <div
+                                className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
+                                onClick={this.handleOrderListToggle}
+                            >
                                 {isOrderListShow ? <i className="meta-icon-close" />: <i className="meta-icon-list" />}
                             </div>
                         </div>

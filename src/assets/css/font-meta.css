@@ -125,3 +125,6 @@
 .meta-icon-full-1:before {
   content: "\75";
 }
+.meta-icon-close-alt:before {
+  content: "\76";
+}

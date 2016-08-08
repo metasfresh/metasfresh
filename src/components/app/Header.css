@@ -63,7 +63,7 @@
     position: absolute;
     z-index:200;
     background-color: $brand-bright-color;
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,.15);
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,.3);
 }
 
 .subheader-open {
@@ -111,7 +111,6 @@
 
 .btn-subheader-open {
     position: relative;
-    top: 1px;
     z-index:300;
 }
 
@@ -131,4 +130,13 @@
 
 .header-right-side .side-panel-toggle {
     margin-left: 15px;
+}
+
+.btn-header-open {
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+}
+
+.btn-header {
+    border-color: $brand-border-color;
 }
