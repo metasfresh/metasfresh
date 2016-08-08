@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.window.shared.login.LoginAuthRequest;
-import de.metas.ui.web.window.shared.login.LoginAuthResponse;
-import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
+import de.metas.ui.web.window_old.shared.login.LoginAuthRequest;
+import de.metas.ui.web.window_old.shared.login.LoginAuthResponse;
+import de.metas.ui.web.window_old.shared.login.LoginCompleteRequest;
 
 /*
  * #%L

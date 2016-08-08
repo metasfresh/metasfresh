@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.window.shared.ImageResource;
-import de.metas.ui.web.window.shared.ImageResource.ResourceType;
-import de.metas.ui.web.window.shared.menu.MainMenuItem;
-import de.metas.ui.web.window.shared.menu.MainMenuItem.MenuItemType;
+import de.metas.ui.web.window_old.shared.ImageResource;
+import de.metas.ui.web.window_old.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window_old.shared.menu.MainMenuItem;
+import de.metas.ui.web.window_old.shared.menu.MainMenuItem.MenuItemType;
 
 /*
  * #%L

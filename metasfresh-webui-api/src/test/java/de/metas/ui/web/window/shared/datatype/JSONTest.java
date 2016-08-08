@@ -12,20 +12,28 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.json.JsonHelper;
-import de.metas.ui.web.window.PropertyName;
-import de.metas.ui.web.window.shared.ImageResource;
-import de.metas.ui.web.window.shared.ImageResource.ResourceType;
-import de.metas.ui.web.window.shared.JSONObjectValueHolder;
-import de.metas.ui.web.window.shared.command.ViewCommandResult;
-import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorType;
-import de.metas.ui.web.window.shared.descriptor.PropertyDescriptorValueType;
-import de.metas.ui.web.window.shared.descriptor.PropertyLayoutInfo;
-import de.metas.ui.web.window.shared.descriptor.ViewPropertyDescriptor;
-import de.metas.ui.web.window.shared.event.AllPropertiesChangedModelEvent;
-import de.metas.ui.web.window.shared.event.GridRowAddedModelEvent;
-import de.metas.ui.web.window.shared.event.ModelEvent;
-import de.metas.ui.web.window.shared.event.PropertyChangedModelEvent;
-import de.metas.ui.web.window.shared.event.ZoomToWindowEvent;
+import de.metas.ui.web.window_old.PropertyName;
+import de.metas.ui.web.window_old.shared.ImageResource;
+import de.metas.ui.web.window_old.shared.JSONObjectValueHolder;
+import de.metas.ui.web.window_old.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window_old.shared.command.ViewCommandResult;
+import de.metas.ui.web.window_old.shared.datatype.GridRowId;
+import de.metas.ui.web.window_old.shared.datatype.LookupValue;
+import de.metas.ui.web.window_old.shared.datatype.LookupValueList;
+import de.metas.ui.web.window_old.shared.datatype.NullValue;
+import de.metas.ui.web.window_old.shared.datatype.PropertyPath;
+import de.metas.ui.web.window_old.shared.datatype.PropertyPathValue;
+import de.metas.ui.web.window_old.shared.datatype.PropertyPathValuesDTO;
+import de.metas.ui.web.window_old.shared.datatype.PropertyValuesDTO;
+import de.metas.ui.web.window_old.shared.descriptor.PropertyDescriptorType;
+import de.metas.ui.web.window_old.shared.descriptor.PropertyDescriptorValueType;
+import de.metas.ui.web.window_old.shared.descriptor.PropertyLayoutInfo;
+import de.metas.ui.web.window_old.shared.descriptor.ViewPropertyDescriptor;
+import de.metas.ui.web.window_old.shared.event.AllPropertiesChangedModelEvent;
+import de.metas.ui.web.window_old.shared.event.GridRowAddedModelEvent;
+import de.metas.ui.web.window_old.shared.event.ModelEvent;
+import de.metas.ui.web.window_old.shared.event.PropertyChangedModelEvent;
+import de.metas.ui.web.window_old.shared.event.ZoomToWindowEvent;
 
 /*
  * #%L

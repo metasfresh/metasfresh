@@ -33,9 +33,9 @@ import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.shared.login.LoginAuthRequest;
-import de.metas.ui.web.window.shared.login.LoginAuthResponse;
-import de.metas.ui.web.window.shared.login.LoginCompleteRequest;
+import de.metas.ui.web.window_old.shared.login.LoginAuthRequest;
+import de.metas.ui.web.window_old.shared.login.LoginAuthResponse;
+import de.metas.ui.web.window_old.shared.login.LoginCompleteRequest;
 
 /*
  * #%L

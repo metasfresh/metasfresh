@@ -1,8 +1,8 @@
 package de.metas.ui.web.service.impl;
 
 import de.metas.ui.web.service.IImageProvider;
-import de.metas.ui.web.window.shared.ImageResource;
-import de.metas.ui.web.window.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window_old.shared.ImageResource;
+import de.metas.ui.web.window_old.shared.ImageResource.ResourceType;
 
 /*
  * #%L

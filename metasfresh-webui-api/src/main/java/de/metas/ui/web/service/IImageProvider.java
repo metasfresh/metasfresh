@@ -3,7 +3,7 @@ package de.metas.ui.web.service;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.MTreeNode;
 
-import de.metas.ui.web.window.shared.ImageResource;
+import de.metas.ui.web.window_old.shared.ImageResource;
 
 /*
  * #%L

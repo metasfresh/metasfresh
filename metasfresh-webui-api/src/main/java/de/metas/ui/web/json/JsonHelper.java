@@ -6,14 +6,14 @@ import java.sql.Timestamp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.shared.command.LookupDataSourceQueryCommand;
-import de.metas.ui.web.window.shared.datatype.ComposedValue;
-import de.metas.ui.web.window.shared.datatype.GridRowId;
-import de.metas.ui.web.window.shared.datatype.LazyPropertyValuesListDTO;
-import de.metas.ui.web.window.shared.datatype.LookupValue;
-import de.metas.ui.web.window.shared.datatype.LookupValueList;
-import de.metas.ui.web.window.shared.datatype.NullValue;
-import de.metas.ui.web.window.shared.datatype.PropertyValuesListDTO;
+import de.metas.ui.web.window_old.shared.command.LookupDataSourceQueryCommand;
+import de.metas.ui.web.window_old.shared.datatype.ComposedValue;
+import de.metas.ui.web.window_old.shared.datatype.GridRowId;
+import de.metas.ui.web.window_old.shared.datatype.LazyPropertyValuesListDTO;
+import de.metas.ui.web.window_old.shared.datatype.LookupValue;
+import de.metas.ui.web.window_old.shared.datatype.LookupValueList;
+import de.metas.ui.web.window_old.shared.datatype.NullValue;
+import de.metas.ui.web.window_old.shared.datatype.PropertyValuesListDTO;
 
 /*
  * #%L

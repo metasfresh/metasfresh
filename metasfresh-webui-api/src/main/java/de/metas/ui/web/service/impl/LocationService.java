@@ -8,7 +8,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.ui.web.service.ILocationService;
-import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
