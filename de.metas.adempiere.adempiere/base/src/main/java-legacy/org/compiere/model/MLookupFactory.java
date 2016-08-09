@@ -194,7 +194,7 @@ public class MLookupFactory
 			info = getLookup_List(language, AD_Reference_Value_ID);
 		}
 		//	Table or Search with Reference_Value
-		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID != 0)
+		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID > 0)
 		{
 			info = getLookup_Table (ctx, language, WindowNo, AD_Reference_Value_ID);
 		}
