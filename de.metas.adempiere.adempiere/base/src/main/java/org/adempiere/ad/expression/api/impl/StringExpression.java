@@ -1,6 +1,8 @@
 package org.adempiere.ad.expression.api.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -16,7 +18,7 @@ import com.google.common.collect.ImmutableList;
  * @author tsa
  * 
  */
-/* package */class StringExpression implements IStringExpression
+/* package */final class StringExpression implements IStringExpression
 {
 	private final String expressionStr;
 	private final List<Object> expressionChunks;
@@ -31,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 
 		//
 		// Initialize stringParams list
-		final ImmutableList.Builder<String> stringParams = ImmutableList.builder();
+		final Set<String> stringParams = new HashSet<>();
 		for (final Object chunk : expressionChunks)
 		{
 			if (chunk instanceof CtxName)
@@ -41,7 +43,7 @@ import com.google.common.collect.ImmutableList;
 				stringParams.add(parameterName);
 			}
 		}
-		this.stringParams = stringParams.build();
+		this.stringParams = ImmutableList.copyOf(stringParams);
 	}
 
 	@Override
