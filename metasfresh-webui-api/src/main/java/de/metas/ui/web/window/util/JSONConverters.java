@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.compiere.util.Env;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -50,7 +52,15 @@ public final class JSONConverters
 	public static List<Map<String, Object>> documentToJsonObject(final Document document)
 	{
 		final Collection<DocumentField> fields = document.getFields();
-		final List<Map<String, Object>> list = new ArrayList<>(fields.size());
+		final List<Map<String, Object>> list = new ArrayList<>(fields.size() + 1);
+
+		// ID field (special)
+		{
+			final int id = document.getDocumentId();
+			list.add(documentFieldToJsonObject("ID", id));
+		}
+
+		// All other fields
 		for (final DocumentField field : fields)
 		{
 			final Map<String, Object> map = documentFieldToJsonObject(field);
@@ -62,11 +72,10 @@ public final class JSONConverters
 
 	private static Map<String, Object> documentFieldToJsonObject(final DocumentField field)
 	{
-		final Map<String, Object> map = new LinkedHashMap<>();
 		final String name = field.getName();
-
 		final Object valueJSON = field.getValueAsJsonObject();
 
+		final Map<String, Object> map = documentFieldToJsonObject(name, valueJSON);
 		map.put("field", name);
 		map.put("value", valueJSON);
 		map.put("mandatory", field.isMandatory());
@@ -77,6 +86,16 @@ public final class JSONConverters
 			map.put("lookupValuesStale", Boolean.TRUE);
 		}
 
+		return map;
+	}
+
+	private static Map<String, Object> documentFieldToJsonObject(final String fieldName, final Object valueJSON)
+	{
+		final Map<String, Object> map = new LinkedHashMap<>();
+
+		map.put("field", fieldName);
+		map.put("value", valueJSON);
+		
 		return map;
 	}
 
@@ -147,9 +166,20 @@ public final class JSONConverters
 		{
 			return dateFormat.parse(valueStr);
 		}
-		catch (final ParseException e)
+		catch (final ParseException ex1)
 		{
-			throw new IllegalArgumentException("Failed converting '" + valueStr + "' to date", e);
+			// second try
+			// FIXME: this is not optimum. We shall unify how we store Dates (as String)
+			try
+			{
+				return Env.parseTimestamp(valueStr);
+			}
+			catch (final Exception ex2)
+			{
+				final IllegalArgumentException exFinal = new IllegalArgumentException("Failed converting '" + valueStr + "' to date", ex1);
+				exFinal.addSuppressed(ex2);
+				throw exFinal;
+			}
 		}
 	}
 

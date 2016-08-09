@@ -38,9 +38,9 @@ import de.metas.ui.web.window.model.sql.SqlDocumentRepository;
 
 public class DocumentCollection
 {
-	private DocumentDescriptorFactory documentDescriptorFactory = new DocumentDescriptorFactory();
+	private final DocumentDescriptorFactory documentDescriptorFactory = new DocumentDescriptorFactory();
 
-	private DocumentRepository documentsRepository = new SqlDocumentRepository();
+	private final DocumentRepository documentsRepository = new SqlDocumentRepository();
 
 	private final LoadingCache<DocumentKey, Document> documents = CacheBuilder.newBuilder()
 			.build(new CacheLoader<DocumentKey, Document>()
@@ -57,20 +57,40 @@ public class DocumentCollection
 	{
 		return documentDescriptorFactory;
 	}
+	
+	private final DocumentEntityDescriptor getDocumentEntityDescriptor(final int adWindowId)
+	{
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+		return descriptor.getEntityDescriptor();
+	}
 
 	public Document getDocument(final int adWindowId, final DocumentId documentId)
 	{
-		final DocumentKey documentKey = DocumentKey.of(adWindowId, documentId);
-		try
+		if (documentId.isNew())
 		{
-			return documents.get(documentKey);
+			final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
+			final Document document = documentsRepository.createNewDocument(entityDescriptor);
+
+			final DocumentId temporaryDocumentId = DocumentId.of(document.getDocumentId());
+			final DocumentKey temporaryDocumentKey = DocumentKey.of(adWindowId, temporaryDocumentId);
+			documents.put(temporaryDocumentKey, document);
+			
+			return document;
 		}
-		catch (final ExecutionException e)
+		else
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			final DocumentKey documentKey = DocumentKey.of(adWindowId, documentId);
+			try
+			{
+				return documents.get(documentKey);
+			}
+			catch (final ExecutionException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 		}
 	}
-	
+
 	public Document getDocument(final int adWindowId, final String idStr, final String detailId, final String rowId)
 	{
 		final DocumentId documentId = DocumentId.of(idStr);
@@ -85,25 +105,21 @@ public class DocumentCollection
 		throw new UnsupportedOperationException("detailId and rowId are not supported");
 	}
 
-
 	private Document createDocument(final DocumentKey documentKey)
 	{
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(documentKey.getAD_Window_ID());
-		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
+		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getAD_Window_ID());
 
 		if (documentKey.getDocumentId().isNew())
 		{
-			return documentsRepository.createNewDocument(entityDescriptor);
+			throw new IllegalArgumentException("documentId cannot be NEW");
 		}
-		else
+
+		final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
+		final Document document = documentsRepository.retriveDocument(query);
+		if (document == null)
 		{
-			final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
-			final Document document = documentsRepository.retriveDocument(query);
-			if (document == null)
-			{
-				throw new AdempiereException("@NotFound@ " + documentKey);
-			}
-			return document;
+			throw new AdempiereException("@NotFound@ " + documentKey);
 		}
+		return document;
 	}
 }

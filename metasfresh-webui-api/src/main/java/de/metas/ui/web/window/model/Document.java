@@ -53,9 +53,9 @@ public class Document
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final Map<String, DocumentField> fieldsByName;
+	private final DocumentField idField;
 
 	private DocumentEvaluatee _evaluatee; // lazy
-
 
 	public Document(final DocumentEntityDescriptor entityDescriptor, final int windowNo)
 	{
@@ -63,13 +63,21 @@ public class Document
 		this.windowNo = windowNo;
 
 		final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
+		DocumentField idField = null;
 		for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 		{
 			final String name = fieldDescriptor.getName();
 			final DocumentField field = new DocumentField(fieldDescriptor);
 			fieldsBuilder.put(name, field);
+
+			if (fieldDescriptor.isKey())
+			{
+				Check.assumeNull(idField, "Only one ID field shall exist but we found: {}, {}", idField, field); // shall no happen at this level
+				idField = field;
+			}
 		}
 		fieldsByName = fieldsBuilder.build();
+		this.idField = idField;
 
 		for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 		{
@@ -85,12 +93,11 @@ public class Document
 				.add("fields", fieldsByName.values())
 				.toString();
 	}
-	
+
 	public int getWindowNo()
 	{
 		return windowNo;
 	}
-
 
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
@@ -126,6 +133,16 @@ public class Document
 	{
 		final DocumentField documentField = fieldsByName.get(fieldName);
 		return documentField;
+	}
+
+	public int getDocumentId()
+	{
+		if (idField == null)
+		{
+			// TODO handle NO ID field or composed PK
+			return -1;
+		}
+		return idField.getValueAsInt(-1);
 	}
 
 	public Evaluatee2 asEvaluatee()
@@ -169,11 +186,11 @@ public class Document
 			{
 				return false;
 			}
-			else if (variableName.startsWith("#"))              // Env, global var
+			else if (variableName.startsWith("#"))                // Env, global var
 			{
 				return true;
 			}
-			else if (variableName.startsWith("$"))              // Env, global accounting var
+			else if (variableName.startsWith("$"))                // Env, global accounting var
 			{
 				return true;
 			}
@@ -194,11 +211,11 @@ public class Document
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
-			if (variableName.startsWith("#"))              // Env, global var
+			if (variableName.startsWith("#"))                // Env, global var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
-			else if (variableName.startsWith("$"))              // Env, global accounting var
+			else if (variableName.startsWith("$"))                // Env, global accounting var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
@@ -220,6 +237,13 @@ public class Document
 			final Object value = documentField.getValue();
 			if (value == null)
 			{
+				// FIXME: hardcoded default to avoid a lot of warnings
+				final String fieldName = documentField.getName();
+				if(fieldName.endsWith("_ID"))
+				{
+					return "-1";
+				}
+
 				// TODO: find some defaults?
 				return null;
 			}
@@ -261,6 +285,8 @@ public class Document
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
+		
+		// TODO: check if we can save it
 	}
 
 	/**

@@ -105,65 +105,114 @@ public class DocumentField
 		return JSONConverters.valueToJsonObject(value);
 	}
 
+	public int getValueAsInt(final int defaultValue)
+	{
+		final Integer valueInt = convertToValueClass(value, Integer.class);
+		return valueInt == null ? defaultValue : valueInt;
+	}
+
 	private Object convertToValueClass(final Object value)
+	{
+		final Class<?> targetType = descriptor.getValueClass();
+		return convertToValueClass(value, targetType);
+	}
+	
+	private <T> T convertToValueClass(final Object value, final Class<T> targetType)
 	{
 		if (NullValue.isNull(value))
 		{
-			return NullValue.instance;
+			return null;
 		}
 
 		final Class<?> fromType = value.getClass();
-		final Class<?> targetType = descriptor.getValueClass();
 
-		if (fromType.equals(targetType))
+		try
 		{
-			return value;
-		}
-
-		if (String.class == targetType)
-		{
-			return value.toString();
-		}
-		else if (java.util.Date.class == targetType)
-		{
-			if (value instanceof String)
-			{
-				return JSONConverters.dateFromString((String)value);
-			}
-		}
-		else if (Integer.class == targetType)
-		{
-			if (value instanceof String)
-			{
-				return Integer.parseInt((String)value);
-			}
-			else if (value instanceof Number)
-			{
-				return ((Number)value).intValue();
-			}
-		}
-		else if (BigDecimal.class == targetType)
-		{
-			if (String.class == fromType)
-			{
-				return new BigDecimal((String)value);
-			}
-		}
-		else if (Boolean.class == targetType)
-		{
-			return DisplayType.toBoolean(value);
-		}
-		else if (LookupValue.class == targetType)
-		{
-			if (Map.class.isAssignableFrom(fromType))
+			if (fromType.equals(targetType))
 			{
 				@SuppressWarnings("unchecked")
-				final Map<String, String> map = (Map<String, String>)value;
-				return JSONConverters.lookupValueFromJsonMap(map);
+				final T valueConv = (T)value;
+				return valueConv;
+			}
+
+			if (String.class == targetType)
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)value.toString();
+				return valueConv;
+			}
+			else if (java.util.Date.class == targetType)
+			{
+				if (value instanceof String)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONConverters.dateFromString((String)value);
+					return valueConv;
+				}
+			}
+			else if (Integer.class == targetType)
+			{
+				if (value instanceof String)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)Integer.parseInt((String)value);
+					return valueConv;
+				}
+				else if (value instanceof Number)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)((Number)value).intValue();
+					return valueConv;
+				}
+			}
+			else if (BigDecimal.class == targetType)
+			{
+				if (String.class == fromType)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)new BigDecimal((String)value);
+					return valueConv;
+				}
+			}
+			else if (Boolean.class == targetType)
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)DisplayType.toBoolean(value, Boolean.FALSE);
+				return valueConv;
+			}
+			else if (LookupValue.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONConverters.lookupValueFromJsonMap(map);
+					return valueConv;
+				}
+				else if (String.class == fromType)
+				{
+					final String valueStr = (String)value;
+					if (valueStr.isEmpty())
+					{
+						return null;
+					}
+					
+					if(lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						return valueConv;
+					}
+				}
 			}
 		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Cannot convert " + getName() + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
+		}
 
-		throw new AdempiereException("Cannot convert value '" + value + "' from " + fromType + " to " + targetType);
+		throw new AdempiereException("Cannot convert " + getName() + "'s value '" + value + "' (" + fromType + ") to " + targetType);
 	}
 
 	public boolean isMandatory()

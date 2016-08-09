@@ -11,10 +11,9 @@ import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -77,7 +76,7 @@ public class SqlLookupDataSource implements LookupDataSource
 			throw new IllegalArgumentException("Invalid filter: " + filter);
 		}
 
-		final Evaluatee evalCtx = createEvaluationContext(document, filter, firstRow, pageLength);
+		final DataSourceValidationContext evalCtx = createEvaluationContext(document, filter, firstRow, pageLength);
 		final IStringExpression sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
 		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 
@@ -87,6 +86,7 @@ public class SqlLookupDataSource implements LookupDataSource
 		{
 			final List<LookupValue> values = data.fetchAll()
 					.stream()
+					.filter(evalCtx::acceptItem)
 					.map(namePair -> toLookupValue(namePair))
 					.collect(Collectors.toList());
 
@@ -192,23 +192,28 @@ public class SqlLookupDataSource implements LookupDataSource
 		return true;
 	}
 
-	private Evaluatee createEvaluationContext(final Document document, final String filter, final int sqlFetchOffset, final int sqlFetchLimit)
+	private DataSourceValidationContext createEvaluationContext(final Document document, final String filter, final int sqlFetchOffset, final int sqlFetchLimit)
 	{
-		final IValidationRule validationRule = sqlLookupDescriptor.getValidationRule();
-		final IValidationContext validationCtx = new DataSourceValidationContext(document);
-		String sqlValidationRule = validationRule.getPrefilterWhereClause(validationCtx);
-		if (sqlValidationRule == null)
+		final DataSourceValidationContext validationCtx = new DataSourceValidationContext(document);
+
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
+
+		// SQL validation rule
 		{
-			sqlValidationRule = "1=1";
+			final IValidationRule validationRule = sqlLookupDescriptor.getValidationRule();
+			validationCtx.setValidationRule(validationRule);
+
+			String sqlValidationRule = validationRule.getPrefilterWhereClause(validationCtx);
+			if (sqlValidationRule == null)
+			{
+				sqlValidationRule = "1=1";
+			}
+			validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ValidationRuleSql.getName(), sqlValidationRule);
 		}
 
-		final Map<String, Object> map = new HashMap<>();
-		map.put(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
-		map.put(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
-		map.put(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
-		map.put(SqlLookupDescriptor.SQL_PARAM_ValidationRuleSql.getName(), sqlValidationRule);
-
-		return Evaluatees.ofMap(map);
+		return validationCtx;
 	}
 
 	private String convertFilterToSql(final String filter)
@@ -234,6 +239,8 @@ public class SqlLookupDataSource implements LookupDataSource
 	private final class DataSourceValidationContext implements IValidationContext
 	{
 		private final Document document;
+		private final Map<String, Object> name2value = new HashMap<>();
+		private IValidationRule validationRule = NullValidationRule.instance;
 
 		private DataSourceValidationContext(final Document document)
 		{
@@ -263,8 +270,28 @@ public class SqlLookupDataSource implements LookupDataSource
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
+			if (name2value.containsKey(variableName))
+			{
+				final Object valueObj = name2value.get(variableName);
+				return valueObj == null ? null : valueObj.toString();
+			}
+
 			return document.asEvaluatee().get_ValueAsString(variableName);
 		}
 
+		public void putValue(final String variableName, final Object value)
+		{
+			name2value.put(variableName, value);
+		}
+
+		public void setValidationRule(final IValidationRule validationRule)
+		{
+			this.validationRule = validationRule;
+		}
+
+		public boolean acceptItem(final NamePair item)
+		{
+			return validationRule.accept(this, item);
+		}
 	}
 }

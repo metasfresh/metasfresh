@@ -37,37 +37,42 @@ public final class DocumentId
 			return NEW;
 		}
 
-		final int id = Integer.parseInt(idStr);
-		if (id == NEW_ID)
+		final int idInt = Integer.parseInt(idStr);
+		return of(idInt);
+	}
+
+	public static final DocumentId of(final int idInt)
+	{
+		if (idInt == NEW_ID)
 		{
 			return NEW;
 		}
 
-		return new DocumentId(id);
+		return new DocumentId(idInt);
 	}
 
-	private final int id;
+	private final int idInt;
 
-	private DocumentId(final int id)
+	private DocumentId(final int idInt)
 	{
 		super();
-		this.id = id;
+		this.idInt = idInt;
 	}
 
 	@Override
 	public String toString()
 	{
-		if (id == NEW_ID)
+		if (idInt == NEW_ID)
 		{
 			return NEW_ID_STRING;
 		}
-		return String.valueOf(id);
+		return String.valueOf(idInt);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(id);
+		return Objects.hash(idInt);
 	}
 
 	@Override
@@ -84,16 +89,16 @@ public final class DocumentId
 		}
 
 		final DocumentId other = (DocumentId)obj;
-		return id == other.id;
+		return idInt == other.idInt;
 	}
 
 	public int toInt()
 	{
-		return id;
+		return idInt;
 	}
 
 	public boolean isNew()
 	{
-		return id == NEW_ID;
+		return idInt == NEW_ID;
 	}
 }

@@ -60,11 +60,18 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 public class SqlDocumentRepository implements DocumentRepository
 {
 	private static final Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
-	
+
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
+	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
 
 	@Override
 	public List<Document> retriveDocuments(final DocumentRepositoryQuery query)
+	{
+		final int limit = -1;
+		return retriveDocuments(query, limit);
+	}
+
+	public List<Document> retriveDocuments(final DocumentRepositoryQuery query, final int limit)
 	{
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 
@@ -84,6 +91,12 @@ public class SqlDocumentRepository implements DocumentRepository
 			{
 				final Document document = retriveDocument(entityDescriptor, rs);
 				documentsCollector.add(document);
+
+				// Stop if we reached the limit
+				if (limit > 0 && documentsCollector.size() > limit)
+				{
+					break;
+				}
 			}
 		}
 		catch (final SQLException e)
@@ -105,9 +118,8 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public Document retriveDocument(final DocumentRepositoryQuery query)
 	{
-		// TODO: optimize
-
-		final List<Document> documents = retriveDocuments(query);
+		final int limit = 2;
+		final List<Document> documents = retriveDocuments(query, limit);
 		if (documents.isEmpty())
 		{
 			return null;
@@ -115,7 +127,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		else if (documents.size() > 1)
 		{
 			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
-					+ "\nRecords: " + Joiner.on("\n").join(documents));
+					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents));
 		}
 		else
 		{
@@ -134,24 +146,40 @@ public class SqlDocumentRepository implements DocumentRepository
 		for (final DocumentField documentField : document.getFields())
 		{
 			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-			final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
-
-			try
+			
+			if (fieldDescriptor.isKey())
 			{
-				final Object value = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-				final Object valueNotNull = NullValue.makeNotNull(value);
-
-				documentField.setValue(valueNotNull);
-				documentField.setInitialValue(valueNotNull);
+				final int value = generateNextTemporaryId();
+				documentField.setValue(value);
 			}
-			catch (Exception e)
+			else
 			{
-				logger.warn("Failed evaluating default value expression {} for {}", defaultValueExpression, documentField);
+				final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
+				try
+				{
+					String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
+					if(valueStr != null && valueStr.isEmpty())
+					{
+						valueStr = null;
+					}
+	
+					documentField.setValue(valueStr);
+					documentField.setInitialValue(valueStr);
+				}
+				catch (Exception e)
+				{
+					logger.warn("Failed evaluating default value expression {} for {}", defaultValueExpression, documentField, e);
+				}
 			}
 		}
 
 		document.updateAllDependencies();
 		return document;
+	}
+	
+	private int generateNextTemporaryId()
+	{
+		return nextTemporaryId.decrementAndGet();
 	}
 
 	private final String buildSql(final List<Object> sqlParams, final DocumentRepositoryQuery query)
@@ -272,7 +300,6 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		return document;
 	}
-
 
 	/*
 	 * Based on org.compiere.model.GridTable.readData(ResultSet)
