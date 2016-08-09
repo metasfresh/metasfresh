@@ -48,7 +48,7 @@ public class DocumentCollection
 				@Override
 				public Document load(final DocumentKey documentKey)
 				{
-					return createDocument(documentKey);
+					return retrieveDocument(documentKey);
 				}
 
 			});
@@ -57,7 +57,7 @@ public class DocumentCollection
 	{
 		return documentDescriptorFactory;
 	}
-	
+
 	private final DocumentEntityDescriptor getDocumentEntityDescriptor(final int adWindowId)
 	{
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
@@ -69,12 +69,12 @@ public class DocumentCollection
 		if (documentId.isNew())
 		{
 			final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
-			final Document document = documentsRepository.createNewDocument(entityDescriptor);
+			final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
 
 			final DocumentId temporaryDocumentId = DocumentId.of(document.getDocumentId());
 			final DocumentKey temporaryDocumentKey = DocumentKey.of(adWindowId, temporaryDocumentId);
 			documents.put(temporaryDocumentKey, document);
-			
+
 			return document;
 		}
 		else
@@ -91,21 +91,28 @@ public class DocumentCollection
 		}
 	}
 
-	public Document getDocument(final int adWindowId, final String idStr, final String detailId, final String rowId)
+	public Document getDocument(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		final DocumentId documentId = DocumentId.of(idStr);
 		final Document document = getDocument(adWindowId, documentId);
-		if (Check.isEmpty(rowId))
+		if (Check.isEmpty(rowIdStr))
 		{
 			return document;
 		}
 
-		// TODO get the included document
-		Check.assumeNotEmpty(detailId, "detailId is not empty");
-		throw new UnsupportedOperationException("detailId and rowId are not supported");
+		final DocumentId rowId = DocumentId.of(rowIdStr);
+		if (rowId.isNew())
+		{
+			return document.createIncludedDocument(detailId);
+		}
+		else
+		{
+			return document.getIncludedDocument(detailId, rowId);
+		}
 	}
 
-	private Document createDocument(final DocumentKey documentKey)
+	/** Retrieves document from repository */
+	private Document retrieveDocument(final DocumentKey documentKey)
 	{
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getAD_Window_ID());
 

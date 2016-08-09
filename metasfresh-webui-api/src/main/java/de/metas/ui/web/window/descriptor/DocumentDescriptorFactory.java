@@ -159,7 +159,8 @@ public class DocumentDescriptorFactory
 					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO));
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
-					.setId(detailTabVO.getAD_Tab_ID());
+					.setId(detailTabVO.getAD_Tab_ID())
+					.setDetailId(detail.getDetailId());
 
 			//
 			// Fields mapping
@@ -326,7 +327,7 @@ public class DocumentDescriptorFactory
 		final String detailId = extractDetailId(gridTabVO);
 		//
 		final boolean keyColumn = gridFieldVO.isKey();
-		
+
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)

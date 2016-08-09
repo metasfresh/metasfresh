@@ -1,12 +1,16 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -40,19 +44,21 @@ public class DocumentEntityDescriptor
 	}
 
 	private final String id;
+	private final String detailId;
 	private final List<DocumentFieldDescriptor> fields;
-	private final List<DocumentEntityDescriptor> includedEntities;
+	private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
-	
+
 	private final DocumentFieldDependencyMap dependencies;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
 		id = Preconditions.checkNotNull(builder.id, "id is null");
+		detailId = builder.detailId;
 		fields = ImmutableList.copyOf(builder.fields);
-		includedEntities = ImmutableList.copyOf(builder.includedEntities);
+		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
 		dependencies = builder.buildDependencies();
 	}
@@ -64,7 +70,7 @@ public class DocumentEntityDescriptor
 				.omitNullValues()
 				.add("fields", fields)
 				.add("entityDataBinding", dataBinding)
-				.add("includedEntitites", includedEntities.isEmpty() ? null : includedEntities)
+				.add("includedEntitites", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId)
 				.toString();
 	}
 
@@ -91,21 +97,36 @@ public class DocumentEntityDescriptor
 		return Objects.equals(this.id, other.id);
 	}
 
+	public String getDetailId()
+	{
+		return detailId;
+	}
+
 	public List<DocumentFieldDescriptor> getFields()
 	{
 		return fields;
 	}
 
-	public List<DocumentEntityDescriptor> getIncludedEntities()
+	public Collection<DocumentEntityDescriptor> getIncludedEntities()
 	{
-		return includedEntities;
+		return includedEntitiesByDetailId.values();
+	}
+
+	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId)
+	{
+		final DocumentEntityDescriptor includedEntityDescriptor = includedEntitiesByDetailId.get(detailId);
+		if (includedEntityDescriptor == null)
+		{
+			throw new IllegalArgumentException("No included entity found for detailId=" + detailId + " in " + this);
+		}
+		return includedEntityDescriptor;
 	}
 
 	public DocumentEntityDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;
 	}
-	
+
 	public DocumentFieldDependencyMap getDependencies()
 	{
 		return dependencies;
@@ -115,8 +136,9 @@ public class DocumentEntityDescriptor
 	{
 		private String id;
 		private final List<DocumentFieldDescriptor> fields = new ArrayList<>();
-		private final List<DocumentEntityDescriptor> includedEntities = new ArrayList<>();
+		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptor dataBinding;
+		private String detailId;
 
 		private Builder()
 		{
@@ -135,6 +157,12 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setDetailId(final String detailId)
+		{
+			this.detailId = detailId;
+			return this;
+		}
+
 		public Builder addField(final DocumentFieldDescriptor field)
 		{
 			fields.add(field);
@@ -143,7 +171,9 @@ public class DocumentEntityDescriptor
 
 		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
 		{
-			includedEntities.add(includedEntity);
+			final String detailId = includedEntity.getDetailId();
+			Check.assumeNotEmpty(detailId, "detailId is not empty for {}", includedEntity);
+			includedEntitiesByDetailId.put(detailId, includedEntity);
 			return this;
 		}
 

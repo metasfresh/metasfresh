@@ -57,9 +57,16 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
  * #L%
  */
 
+/**
+ * 
+ * IMPORTANT: please make sure this is state-less and thread-safe
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class SqlDocumentRepository implements DocumentRepository
 {
-	private static final Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
+	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
@@ -74,6 +81,7 @@ public class SqlDocumentRepository implements DocumentRepository
 	public List<Document> retriveDocuments(final DocumentRepositoryQuery query, final int limit)
 	{
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		final Document parentDocument = query.getParentDocument();
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSql(sqlParams, query);
@@ -89,7 +97,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Document document = retriveDocument(entityDescriptor, rs);
+				final Document document = retriveDocument(entityDescriptor, parentDocument, rs);
 				documentsCollector.add(document);
 
 				// Stop if we reached the limit
@@ -136,17 +144,17 @@ public class SqlDocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public Document createNewDocument(DocumentEntityDescriptor entityDescriptor)
+	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
 		final int windowNo = nextWindowNo.incrementAndGet();
-		final Document document = new Document(entityDescriptor, windowNo);
+		final Document document = new Document(this, entityDescriptor, windowNo, parentDocument);
 
 		//
 		// Set default values
 		for (final DocumentField documentField : document.getFields())
 		{
 			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-			
+
 			if (fieldDescriptor.isKey())
 			{
 				final int value = generateNextTemporaryId();
@@ -158,11 +166,11 @@ public class SqlDocumentRepository implements DocumentRepository
 				try
 				{
 					String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-					if(valueStr != null && valueStr.isEmpty())
+					if (valueStr != null && valueStr.isEmpty())
 					{
 						valueStr = null;
 					}
-	
+
 					documentField.setValue(valueStr);
 					documentField.setInitialValue(valueStr);
 				}
@@ -176,7 +184,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		document.updateAllDependencies();
 		return document;
 	}
-	
+
 	private int generateNextTemporaryId()
 	{
 		return nextTemporaryId.decrementAndGet();
@@ -256,10 +264,10 @@ public class SqlDocumentRepository implements DocumentRepository
 		return sqlWhereClause.toString();
 	}
 
-	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs) throws SQLException
+	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs) throws SQLException
 	{
 		final int windowNo = nextWindowNo.incrementAndGet();
-		final Document document = new Document(entityDescriptor, windowNo);
+		final Document document = new Document(this, entityDescriptor, windowNo, parentDocument);
 
 		//
 		// Retrieve main record values

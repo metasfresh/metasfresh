@@ -30,6 +30,21 @@ public final class DocumentId
 	public static final String NEW_ID_STRING = "NEW";
 	public static final DocumentId NEW = new DocumentId(NEW_ID);
 
+	public static final DocumentId of(final Object idObj)
+	{
+		if (idObj instanceof String)
+		{
+			return of((String)idObj);
+		}
+		else if (idObj instanceof Number)
+		{
+			return of(((Number)idObj).intValue());
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid ID: " + idObj + " (" + (idObj == null ? "-" : idObj.getClass()) + ")");
+		}
+	}
 	public static final DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))

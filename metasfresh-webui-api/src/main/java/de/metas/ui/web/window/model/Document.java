@@ -12,6 +12,7 @@ import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -50,38 +51,60 @@ public class Document
 {
 	private static final Logger logger = LogManager.getLogger(Document.class);
 
+	public static final Document NULL = null;
+
+	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
+
 	private final Map<String, DocumentField> fieldsByName;
 	private final DocumentField idField;
 
+	private final Document parentDocument;
+	private final Map<String, IncludedDocumentsCollection> includedDocuments;
+
 	private DocumentEvaluatee _evaluatee; // lazy
 
-	public Document(final DocumentEntityDescriptor entityDescriptor, final int windowNo)
+	public Document(final DocumentRepository documentRepository, final DocumentEntityDescriptor entityDescriptor, final int windowNo, final Document parentDocument)
 	{
+		super();
+		this.documentRepository = documentRepository;
 		this.entityDescriptor = entityDescriptor;
 		this.windowNo = windowNo;
+		this.parentDocument = parentDocument;
 
-		final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
-		DocumentField idField = null;
-		for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
+		//
+		// Create document fields
 		{
-			final String name = fieldDescriptor.getName();
-			final DocumentField field = new DocumentField(fieldDescriptor);
-			fieldsBuilder.put(name, field);
-
-			if (fieldDescriptor.isKey())
+			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
+			DocumentField idField = null;
+			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
-				Check.assumeNull(idField, "Only one ID field shall exist but we found: {}, {}", idField, field); // shall no happen at this level
-				idField = field;
-			}
-		}
-		fieldsByName = fieldsBuilder.build();
-		this.idField = idField;
+				final String name = fieldDescriptor.getName();
+				final DocumentField field = new DocumentField(fieldDescriptor);
+				fieldsBuilder.put(name, field);
 
-		for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
+				if (fieldDescriptor.isKey())
+				{
+					Check.assumeNull(idField, "Only one ID field shall exist but we found: {}, {}", idField, field); // shall no happen at this level
+					idField = field;
+				}
+			}
+			fieldsByName = fieldsBuilder.build();
+			this.idField = idField;
+		}
+
+		//
+		// Create included documents containers
 		{
-			// TODO: implement support for includedEntityDescriptor
+			final ImmutableMap.Builder<String, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
+			{
+				final String detailId = includedEntityDescriptor.getDetailId();
+				final IncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
+				includedDocuments.put(detailId, includedDocumentsForDetailId);
+			}
+			this.includedDocuments = includedDocuments.build();
 		}
 	}
 
@@ -99,9 +122,19 @@ public class Document
 		return windowNo;
 	}
 
+	/* package */DocumentRepository getDocumentRepository()
+	{
+		return documentRepository;
+	}
+
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
 		return entityDescriptor;
+	}
+
+	public Document getParentDocument()
+	{
+		return parentDocument;
 	}
 
 	public Collection<DocumentField> getFields()
@@ -145,6 +178,12 @@ public class Document
 		return idField.getValueAsInt(-1);
 	}
 
+	public boolean isNew()
+	{
+		// TODO: handle this state in a more reliable way
+		return getDocumentId() < 0;
+	}
+
 	public Evaluatee2 asEvaluatee()
 	{
 		if (_evaluatee == null)
@@ -158,15 +197,27 @@ public class Document
 	{
 		private final Document _document;
 
-		public DocumentEvaluatee(final Document values)
+		public DocumentEvaluatee(final Document document)
 		{
 			super();
-			_document = values;
+			_document = document;
 		}
 
 		private Properties getCtx()
 		{
 			return Env.getCtx();
+		}
+
+		private Evaluatee2 getParent()
+		{
+			// NOTE: don't cache it because it might change (Document.getParentDocument() is not immutable!)
+			final Document parentDocument = _document.getParentDocument();
+			return parentDocument == null ? Evaluatees.empty() : parentDocument.asEvaluatee();
+		}
+
+		private boolean hasParent()
+		{
+			return _document.getParentDocument() != null;
 		}
 
 		private final DocumentField getDocumentFieldOrNull(final String name)
@@ -186,42 +237,76 @@ public class Document
 			{
 				return false;
 			}
-			else if (variableName.startsWith("#"))                // Env, global var
+
+			//
+			// Environment variable
+			if (variableName.startsWith("#"))                       // Env, global var
 			{
 				return true;
 			}
-			else if (variableName.startsWith("$"))                // Env, global accounting var
+			else if (variableName.startsWith("$"))                       // Env, global accounting var
 			{
 				return true;
 			}
+
+			//
+			// Document field
 			final DocumentField documentField = getDocumentFieldOrNull(variableName);
 			if (documentField != null)
 			{
 				return true;
 			}
 
+			//
+			// Check parent
+			final Evaluatee2 parent = getParent();
+			if (parent.has_Variable(variableName))
+			{
+				return true;
+			}
+
+			//
+			// Not found
 			if (logger.isTraceEnabled())
 			{
 				logger.trace("No document field {} found. Existing properties are: {}", variableName, getAvailableFieldNames());
 			}
-
 			return false;
 		}
 
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
-			if (variableName.startsWith("#"))                // Env, global var
+			//
+			// Environment variable
+			if (variableName.startsWith("#"))                       // Env, global var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
-			else if (variableName.startsWith("$"))                // Env, global accounting var
+			else if (variableName.startsWith("$"))                       // Env, global accounting var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
 
+			//
+			// Document field
 			final DocumentField documentField = getDocumentFieldOrNull(variableName);
-			return convertToString(documentField);
+			if (documentField != null)
+			{
+				final String value = convertToString(documentField);
+				if (value != null)
+				{
+					return value;
+				}
+			}
+
+			//
+			// Check parent
+			{
+				final Evaluatee2 parent = getParent();
+				final String value = parent.get_ValueAsString(variableName);
+				return value;
+			}
 		}
 
 		@Override
@@ -237,9 +322,14 @@ public class Document
 			final Object value = documentField.getValue();
 			if (value == null)
 			{
+				if (hasParent())
+				{
+					return null; // advice the caller to ask the parent
+				}
+
 				// FIXME: hardcoded default to avoid a lot of warnings
 				final String fieldName = documentField.getName();
-				if(fieldName.endsWith("_ID"))
+				if (fieldName.endsWith("_ID"))
 				{
 					return "-1";
 				}
@@ -259,6 +349,11 @@ public class Document
 			{
 				final Object idObj = ((LookupValue)value).getId();
 				return idObj == null ? null : idObj.toString().trim();
+			}
+			else if (value instanceof java.util.Date)
+			{
+				final java.util.Date valueDate = (java.util.Date)value;
+				return Env.toString(valueDate);
 			}
 			else
 			{
@@ -285,7 +380,7 @@ public class Document
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
-		
+
 		// TODO: check if we can save it
 	}
 
@@ -418,5 +513,28 @@ public class Document
 		{
 			eventsCollector.collectLookupValuesStaled(dependentField.getName());
 		}
+	}
+
+	public Document getIncludedDocument(final String detailId, final DocumentId rowId)
+	{
+		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		return includedDocuments.getDocumentById(rowId);
+	}
+
+	private IncludedDocumentsCollection getIncludedDocumentsCollection(final String detailId)
+	{
+		final IncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
+		if (includedDocumentsForDetailId == null)
+		{
+			throw new IllegalArgumentException("detailId '" + detailId + "' not found for " + this);
+		}
+		return includedDocumentsForDetailId;
+	}
+
+	public Document createIncludedDocument(final String detailId)
+	{
+		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		return includedDocuments.createNewDocument();
+
 	}
 }

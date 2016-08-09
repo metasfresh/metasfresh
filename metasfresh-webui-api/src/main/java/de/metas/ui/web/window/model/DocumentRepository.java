@@ -36,7 +36,8 @@ public interface DocumentRepository
 	/**
 	 *
 	 * @param entityDescriptor
+	 * @param parentDocument
 	 * @return newly created document (not saved); never returns null
 	 */
-	Document createNewDocument(DocumentEntityDescriptor entityDescriptor);
+	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
 }
