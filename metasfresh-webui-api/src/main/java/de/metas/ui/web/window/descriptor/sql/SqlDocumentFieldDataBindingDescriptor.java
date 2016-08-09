@@ -1,10 +1,15 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.util.Collection;
+
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.LookupDataSource;
+import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
 
 /*
  * #%L
@@ -150,6 +155,27 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return numericKey;
 	}
+	
+	@Override
+	public LookupDataSource createLookupDataSource()
+	{
+		if(sqlLookupDescriptor == null)
+		{
+			return null;
+		}
+		return SqlLookupDataSource.of(sqlLookupDescriptor);
+	}
+	
+	@Override
+	public Collection<String> getLookupValuesDependsOnFieldNames()
+	{
+		if(sqlLookupDescriptor == null)
+		{
+			return ImmutableSet.of();
+		}
+		return sqlLookupDescriptor.getDependsOnFieldNames();
+	}
+
 
 	public static final class Builder
 	{
@@ -160,6 +186,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
+		private int AD_Val_Rule_ID = -1;
 		private boolean keyColumn = false;
 		public boolean encrypted = false;
 
@@ -201,7 +228,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			if (DisplayType.isAnyLookup(displayType))
 			{
-				return SqlLookupDescriptor.of(sqlColumnName, displayType, AD_Reference_Value_ID);
+				return SqlLookupDescriptor.of(sqlColumnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 			}
 			return null;
 		}
@@ -217,6 +244,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.AD_Reference_Value_ID = AD_Reference_Value_ID;
 			return this;
 		}
+		
+		public Builder setAD_Val_Rule_ID(int AD_Val_Rule_ID)
+		{
+			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
+			return this;
+		}
 
 		public Builder setKeyColumn(boolean keyColumn)
 		{
@@ -229,5 +262,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.encrypted = encrypted;
 			return this;
 		}
+
 	}
 }

@@ -8,6 +8,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -38,7 +39,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentRepository;
 public class DocumentCollection
 {
 	private DocumentDescriptorFactory documentDescriptorFactory = new DocumentDescriptorFactory();
-	
+
 	private DocumentRepository documentsRepository = new SqlDocumentRepository();
 
 	private final LoadingCache<DocumentKey, Document> documents = CacheBuilder.newBuilder()
@@ -69,6 +70,21 @@ public class DocumentCollection
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
+	
+	public Document getDocument(final int adWindowId, final String idStr, final String detailId, final String rowId)
+	{
+		final DocumentId documentId = DocumentId.of(idStr);
+		final Document document = getDocument(adWindowId, documentId);
+		if (Check.isEmpty(rowId))
+		{
+			return document;
+		}
+
+		// TODO get the included document
+		Check.assumeNotEmpty(detailId, "detailId is not empty");
+		throw new UnsupportedOperationException("detailId and rowId are not supported");
+	}
+
 
 	private Document createDocument(final DocumentKey documentKey)
 	{
@@ -82,7 +98,12 @@ public class DocumentCollection
 		else
 		{
 			final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
-			return documentsRepository.retriveDocument(query);
+			final Document document = documentsRepository.retriveDocument(query);
+			if (document == null)
+			{
+				throw new AdempiereException("@NotFound@ " + documentKey);
+			}
+			return document;
 		}
 	}
 }

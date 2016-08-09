@@ -2,9 +2,12 @@ package de.metas.ui.web.window.model;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -16,6 +19,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
+import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
@@ -46,13 +51,16 @@ public class Document
 	private static final Logger logger = LogManager.getLogger(Document.class);
 
 	private final DocumentEntityDescriptor entityDescriptor;
+	private final int windowNo;
 	private final Map<String, DocumentField> fieldsByName;
 
 	private DocumentEvaluatee _evaluatee; // lazy
 
-	public Document(final DocumentEntityDescriptor entityDescriptor)
+
+	public Document(final DocumentEntityDescriptor entityDescriptor, final int windowNo)
 	{
 		this.entityDescriptor = entityDescriptor;
+		this.windowNo = windowNo;
 
 		final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
 		for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
@@ -73,9 +81,16 @@ public class Document
 	public final String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("windowNo", windowNo)
 				.add("fields", fieldsByName.values())
 				.toString();
 	}
+	
+	public int getWindowNo()
+	{
+		return windowNo;
+	}
+
 
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
@@ -92,21 +107,24 @@ public class Document
 		return fieldsByName.keySet();
 	}
 
-	public boolean hasField(final String name)
+	public boolean hasField(final String fieldName)
 	{
-		return fieldsByName.containsKey(name);
+		return fieldsByName.containsKey(fieldName);
 	}
 
-	public DocumentField getField(final String name)
+	/**
+	 * @return field; never returns null
+	 */
+	public DocumentField getField(final String fieldName)
 	{
-		final DocumentField documentField = getFieldOrNull(name);
-		Check.assumeNotNull(documentField, "Parameter documentField is not null for name={} in {}", name, this);
+		final DocumentField documentField = getFieldOrNull(fieldName);
+		Check.assumeNotNull(documentField, "Parameter documentField is not null for name={} in {}", fieldName, this);
 		return documentField;
 	}
 
-	DocumentField getFieldOrNull(final String name)
+	DocumentField getFieldOrNull(final String fieldName)
 	{
-		final DocumentField documentField = fieldsByName.get(name);
+		final DocumentField documentField = fieldsByName.get(fieldName);
 		return documentField;
 	}
 
@@ -151,11 +169,11 @@ public class Document
 			{
 				return false;
 			}
-			else if (variableName.startsWith("#"))    // Env, global var
+			else if (variableName.startsWith("#"))              // Env, global var
 			{
 				return true;
 			}
-			else if (variableName.startsWith("$"))    // Env, global accounting var
+			else if (variableName.startsWith("$"))              // Env, global accounting var
 			{
 				return true;
 			}
@@ -176,11 +194,11 @@ public class Document
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
-			if (variableName.startsWith("#"))    // Env, global var
+			if (variableName.startsWith("#"))              // Env, global var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
-			else if (variableName.startsWith("$"))    // Env, global accounting var
+			else if (variableName.startsWith("$"))              // Env, global accounting var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
@@ -196,6 +214,7 @@ public class Document
 			return null;
 		}
 
+		/** Converts field value to {@link Evaluatee2} friendly string */
 		private String convertToString(final DocumentField documentField)
 		{
 			final Object value = documentField.getValue();
@@ -221,6 +240,157 @@ public class Document
 			{
 				return value.toString();
 			}
+		}
+	}
+
+	public void setValueFromJsonObject(final String fieldName, final Object value, final FieldChangedEventCollector eventsCollector)
+	{
+		final DocumentField field = getField(fieldName);
+		final Object valueOld = field.getValue();
+		field.setValue(value);
+
+		// Check if changed. If not, stop here.
+		final Object valueNew = field.getValue();
+		if (Objects.equals(valueOld, valueNew))
+		{
+			return;
+		}
+
+		// collect changed value
+		eventsCollector.collectValueChanged(fieldName, field.getValueAsJsonObject());
+
+		// Update all dependencies
+		updateFieldsWhichDependsOn(fieldName, eventsCollector);
+	}
+
+	/**
+	 * Updates all dependencies for all fields (i.e.Mandatory, ReadOnly, Displayed properties etc)
+	 */
+	public void updateAllDependencies()
+	{
+		for (final DocumentField documentField : getFields())
+		{
+			updateFieldReadOnly(documentField);
+			updateFieldMandatory(documentField);
+			updateFieldDisplayed(documentField);
+		}
+	}
+
+	private final void updateFieldReadOnly(final DocumentField documentField)
+	{
+		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
+		try
+		{
+			final Boolean readonlyValue = readonlyLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setReadonly(readonlyValue);
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField);
+		}
+	}
+
+	private final void updateFieldMandatory(final DocumentField documentField)
+	{
+		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+		final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
+		try
+		{
+			final Boolean mandatoryValue = mandatoryLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setMandatory(mandatoryValue);
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed evaluating mandatory logic {} for {}", mandatoryLogic, documentField);
+		}
+	}
+
+	private final void updateFieldDisplayed(final DocumentField documentField)
+	{
+		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
+		try
+		{
+			final Boolean displayValue = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setDisplayed(displayValue);
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField);
+		}
+	}
+
+	private final void updateFieldsWhichDependsOn(final String fieldName, final FieldChangedEventCollector eventsCollector)
+	{
+		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
+		dependencies.consumeForChangedFieldName(fieldName, (dependentFieldName, dependencyType) -> {
+			final DocumentField dependentField = getFieldOrNull(dependentFieldName);
+			if (dependentField == null)
+			{
+				logger.warn("Skip setting dependent propery {} because property value is missing", dependentFieldName);
+				return;
+			}
+
+			final FieldChangedEventCollector fieldEventsCollector = FieldChangedEventCollector.newInstance();
+			updateDependentField(dependentField, fieldName, dependencyType, fieldEventsCollector);
+			eventsCollector.collectFrom(fieldEventsCollector);
+
+			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames())
+			{
+				updateFieldsWhichDependsOn(dependentFieldNameLvl2, eventsCollector);
+			}
+
+		});
+
+	}
+
+	private void updateDependentField(
+			final DocumentField dependentField //
+			, final String triggeringFieldName //
+			, final DependencyType dependencyType //
+			, final FieldChangedEventCollector eventsCollector //
+	)
+	{
+		if (DependencyType.ReadonlyLogic == dependencyType)
+		{
+			final boolean valueOld = dependentField.isReadonly();
+			updateFieldReadOnly(dependentField);
+			final boolean value = dependentField.isReadonly();
+
+			if (value != valueOld)
+			{
+				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+			}
+		}
+		if (DependencyType.MandatoryLogic == dependencyType)
+		{
+			final boolean valueOld = dependentField.isMandatory();
+			updateFieldMandatory(dependentField);
+			final boolean value = dependentField.isMandatory();
+
+			if (value != valueOld)
+			{
+				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+			}
+		}
+		if (DependencyType.DisplayLogic == dependencyType)
+		{
+			final boolean valueOld = dependentField.isDisplayed();
+			updateFieldDisplayed(dependentField);
+			final boolean value = dependentField.isDisplayed();
+
+			if (value != valueOld)
+			{
+				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+			}
+		}
+		if (DependencyType.LookupValues == dependencyType)
+		{
+			eventsCollector.collectLookupValuesStaled(dependentField.getName());
 		}
 	}
 }

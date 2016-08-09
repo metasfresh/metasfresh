@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Collection;
+
+import de.metas.ui.web.window.model.LookupDataSource;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,5 +28,7 @@ package de.metas.ui.web.window.descriptor;
 
 public interface DocumentFieldDataBindingDescriptor
 {
+	LookupDataSource createLookupDataSource();
 
+	Collection<String> getLookupValuesDependsOnFieldNames();
 }

@@ -334,6 +334,7 @@ public class DocumentDescriptorFactory
 				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
 				.setDisplayType(gridFieldVO.getDisplayType())
 				.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
+				.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
 				.build();

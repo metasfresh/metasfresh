@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -60,6 +60,8 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 public class SqlDocumentRepository implements DocumentRepository
 {
 	private static final Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
+	
+	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 
 	@Override
 	public List<Document> retriveDocuments(final DocumentRepositoryQuery query)
@@ -124,7 +126,8 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public Document createNewDocument(DocumentEntityDescriptor entityDescriptor)
 	{
-		final Document document = new Document(entityDescriptor);
+		final int windowNo = nextWindowNo.incrementAndGet();
+		final Document document = new Document(entityDescriptor, windowNo);
 
 		//
 		// Set default values
@@ -147,7 +150,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			}
 		}
 
-		updateAfterLoad(document);
+		document.updateAllDependencies();
 		return document;
 	}
 
@@ -227,7 +230,8 @@ public class SqlDocumentRepository implements DocumentRepository
 
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs) throws SQLException
 	{
-		final Document document = new Document(entityDescriptor);
+		final int windowNo = nextWindowNo.incrementAndGet();
+		final Document document = new Document(entityDescriptor, windowNo);
 
 		//
 		// Retrieve main record values
@@ -250,7 +254,7 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// Update Mandatory, ReadOnly, Displayed properties
-		updateAfterLoad(document);
+		document.updateAllDependencies();
 
 		//
 		// TODO Retrieved values from included data sources
@@ -269,60 +273,6 @@ public class SqlDocumentRepository implements DocumentRepository
 		return document;
 	}
 
-	private final void updateAfterLoad(final Document document)
-	{
-		//
-		// Update Mandatory, ReadOnly, Displayed properties
-		for (final DocumentField documentField : document.getFields())
-		{
-			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-			//
-			// Readonly
-			{
-				final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
-				try
-				{
-					final Boolean readonlyValue = readonlyLogic.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-					documentField.setReadonly(readonlyValue);
-				}
-				catch (Exception e)
-				{
-					logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField);
-				}
-			}
-
-			//
-			// Mandatory
-			{
-				final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
-				try
-				{
-					final Boolean mandatoryValue = mandatoryLogic.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-					documentField.setMandatory(mandatoryValue);
-				}
-				catch (Exception e)
-				{
-					logger.warn("Failed evaluating mandatory logic {} for {}", mandatoryLogic, documentField);
-				}
-			}
-
-			//
-			// Displayed
-			{
-				final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
-				try
-				{
-					final Boolean displayValue = displayLogic.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-					documentField.setDisplayed(displayValue);
-				}
-				catch (Exception e)
-				{
-					logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField);
-				}
-			}
-		}
-	}
 
 	/*
 	 * Based on org.compiere.model.GridTable.readData(ResultSet)

@@ -1,6 +1,8 @@
-package de.metas.ui.web.window;
+package de.metas.ui.web.window.model;
 
-import java.io.Serializable;
+import java.util.List;
+
+import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -24,33 +26,15 @@ import java.io.Serializable;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentField implements Serializable
+public interface LookupDataSource
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
+	int FIRST_ROW = 0;
+	int DEFAULT_PageLength = 10;
 	
-	// TODO: WIP
-	
-//	private final String name;
-//	private final String caption;
-	
-	private Object value;
-	
-	private boolean mandatory;
-	private boolean readonly;
-	private boolean displayed;
-	
-	private DocumentField(final Builder builder)
-	{
-		super();
-	}
-	
-	public static final class Builder
-	{
-		private String name;
-		private String caption;
-	}
+	List<LookupValue> findEntities(Document document, String filter, int firstRow, int pageLength);
+
+	List<LookupValue> findEntities(Document document, int pageLength);
+
+	LookupValue findById(Object id);
+
 }

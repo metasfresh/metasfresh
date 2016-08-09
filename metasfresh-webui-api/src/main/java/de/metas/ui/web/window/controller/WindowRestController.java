@@ -1,32 +1,24 @@
 package de.metas.ui.web.window.controller;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TimeZone;
 
 import org.compiere.util.Env;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentId;
+import de.metas.ui.web.window.model.FieldChangedEventCollector;
+import de.metas.ui.web.window.util.JSONConverters;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
-import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 /*
  * #%L
@@ -74,93 +66,96 @@ public class WindowRestController
 	{
 		autologin();
 
-		return documentCollection.getDocumentDescriptorFactory()
+		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
+		return layout;
 	}
 
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
-	public List<Map<String, Object>> data(@RequestParam(name = "type", required = true) final int adWindowId, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr)
+	public List<Map<String, Object>> data(
+			@RequestParam(name = "type", required = true) final int adWindowId //
+			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "rowId", required = false) final String rowId //
+	)
 	{
-		final DocumentId documentId = DocumentId.of(idStr);
-		final Document document = documentCollection.getDocument(adWindowId, documentId);
+		autologin();
 
-		return toJSON(document);
+		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
+		return JSONConverters.documentToJsonObject(document);
 	}
 
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
-	public void commit(@RequestParam(name = "type", required = true) final int adWindowId, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr)
+	public List<Map<String, Object>> commit(
+			@RequestParam(name = "type", required = true) final int adWindowId //
+			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
-		throw new UnsupportedOperationException("not implemented"); // TODO
-	}
+		autologin();
 
-	private static List<Map<String, Object>> toJSON(final Document document)
-	{
-		final Collection<DocumentField> fields = document.getFields();
-		final List<Map<String, Object>> list = new ArrayList<>(fields.size());
-		for (final DocumentField field : fields)
+		if (events == null || events.isEmpty())
 		{
-			final Map<String, Object> map = toJSONValue(field);
-			list.add(map);
+			throw new IllegalArgumentException("No events");
 		}
 
-		return list;
-	}
+		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
+		final FieldChangedEventCollector eventsCollector = FieldChangedEventCollector.newInstance();
 
-	private static Map<String, Object> toJSONValue(final DocumentField field)
-	{
-		final Map<String, Object> map = new LinkedHashMap<>();
-		final String name = field.getName();
-
-		final Object value = field.getValue();
-		final Object valueJSON = toJSONValue(value, field.getDescriptor());
-
-		map.put("field", name);
-		map.put("value", valueJSON);
-		map.put("mandatory", String.valueOf(field.isMandatory()));
-		map.put("readonly", String.valueOf(field.isReadonly()));
-		map.put("displayed", String.valueOf(field.isDisplayed()));
-		return map;
-	}
-
-	private static final Object toJSONValue(final Object value, final DocumentFieldDescriptor documentFieldDescriptor)
-	{
-		if (NullValue.isNull(value))
+		for (final JSONDocumentChangedEvent event : events)
 		{
-			return null;
+			if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
+			{
+				document.setValueFromJsonObject(event.getPath(), event.getValue(), eventsCollector);
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown operation: " + event);
+			}
 		}
-		else if (value instanceof java.util.Date)
-		{
-			final java.util.Date valueDate = (java.util.Date)value;
-			return toJSONValue(valueDate);
-		}
-		else if (value instanceof LookupValue)
-		{
-			final LookupValue lookupValue = (LookupValue)value;
-			return toJSONValue(lookupValue);
-		}
-		else
-		{
-			return value.toString();
-		}
+
+		return JSONConverters.toJsonObject(eventsCollector);
 	}
 
-	private static String toJSONValue(final java.util.Date valueDate)
+	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
+	public List<Map<String, String>> typeahead(
+			@RequestParam(name = "type", required = true) final int adWindowId //
+			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "field", required = true) final String fieldName //
+			, @RequestParam(name = "query", required = true) final String query //
+	)
 	{
-		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-		final String valueStr = dateFormat.format(valueDate);
-		return valueStr;
+		autologin();
+
+		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
+		final List<LookupValue> lookupValues = document
+				.getField(fieldName)
+				.getLookupValuesForQuery(document, query);
+
+		return JSONConverters.lookupValuesToJsonObject(lookupValues);
 	}
 
-	private static final Object toJSONValue(final LookupValue lookupValue)
+	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
+	public List<Map<String, String>> dropdown(
+			@RequestParam(name = "type", required = true) final int adWindowId //
+			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "field", required = true) final String fieldName //
+	)
 	{
-		final Object keyObj = lookupValue.getId();
-		final String key = keyObj == null ? null : keyObj.toString();
+		autologin();
 
-		final String name = lookupValue.getDisplayName();
+		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
+		final List<LookupValue> lookupValues = document
+				.getField(fieldName)
+				.getLookupValues(document);
 
-		final Map<String, String> json = ImmutableMap.of(key, name);
-		return json;
+		return JSONConverters.lookupValuesToJsonObject(lookupValues);
 	}
+
 }

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 
 @SuppressWarnings("serial")
+@Deprecated
 public final class LookupValue implements Serializable
 {
 	@JsonCreator

@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -17,6 +21,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -42,9 +48,9 @@ import org.compiere.util.Language;
 
 public class SqlLookupDescriptor
 {
-	public static final SqlLookupDescriptor of(final String columnName, final int displayType, final int AD_Reference_Value_ID)
+	public static final SqlLookupDescriptor of(final String columnName, final int displayType, final int AD_Reference_Value_ID, final int AD_Val_Rule_ID)
 	{
-		return new SqlLookupDescriptor(columnName, displayType, AD_Reference_Value_ID);
+		return new SqlLookupDescriptor(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 	}
 
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
@@ -56,40 +62,38 @@ public class SqlLookupDescriptor
 	private static final int WINDOWNO_Dummy = 99999;
 
 	private final boolean numericKey;
+	private final Set<String> dependsOnFieldNames;
 
+	private final IValidationRule validationRule;
+	private String sqlTableName;
 	private IStringExpression sqlForFetchingExpression;
 	private IStringExpression sqlForCountingExpression;
 	private IStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private int entityTypeIndex = -1;
 
-	private SqlLookupDescriptor(final String columnName, final int displayType, final int AD_Reference_Value_ID)
+	private SqlLookupDescriptor(final String columnName, final int displayType, final int AD_Reference_Value_ID, final int AD_Val_Rule_ID)
 	{
 		super();
 		final Properties ctx = Env.getCtx(); // FIXME: get rid of "ctx"
 		final int Column_ID = 0;
 		final Language language = Env.getLanguage(ctx); // FIXME: get rid of Language here
 		final boolean IsParent = false;
-		final String ValidationCode = null; // TODO
 
 		if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
 		{
 			numericKey = true;
 			setSqlExpressions_PAttribute(columnName);
+			validationRule = NullValidationRule.instance;
+			dependsOnFieldNames = ImmutableSet.of();
 		}
 		else
 		{
-			final MLookupInfo lookupInfo;
-			if (displayType == DisplayType.List)
-			{
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
-			}
-			else
-			{
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
-			}
-			
+			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+
 			numericKey = lookupInfo.isNumericKey();
 			setSqlExpressions(lookupInfo);
+			validationRule = lookupInfo.getValidationRule();
+			dependsOnFieldNames = ImmutableSet.copyOf(validationRule.getParameters(IValidationContext.NULL));
 		}
 	}
 
@@ -150,7 +154,7 @@ public class SqlLookupDescriptor
 				.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
 				.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
 				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the
-																															 // AD_Ref_List.AD_Reference_ID=....
+				// AD_Ref_List.AD_Reference_ID=....
 				.toString();
 
 		//
@@ -161,15 +165,19 @@ public class SqlLookupDescriptor
 		sqlForCounting = userRolePermissions.addAccessSQL(sqlForCounting, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 
 		//
-		// Set the SQL prototype expressions
-		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-		sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
-		sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
-		sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
-
-		if (lookupInfo.isQueryHasEntityType())
+		// Set the SQLs
 		{
-			this.entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
+			sqlTableName = lookupInfo.getTableName();
+			
+			final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+			sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
+			sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
+			sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+
+			if (lookupInfo.isQueryHasEntityType())
+			{
+				this.entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
+			}
 		}
 	}
 
@@ -239,16 +247,25 @@ public class SqlLookupDescriptor
 		sqlForCounting = userRolePermissions.addAccessSQL(sqlForCounting, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 
 		//
-		// Set the SQL prototype expressions
-		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-		sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
-		sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
-		sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+		// Set the SQLs
+		{
+			sqlTableName = tableName;
+
+			final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+			sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
+			sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
+			sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+		}
 	}
 
 	public boolean isNumericKey()
 	{
 		return numericKey;
+	}
+
+	public String getSqlTableName()
+	{
+		return sqlTableName;
 	}
 
 	public IStringExpression getSqlForFetchingExpression()
@@ -277,4 +294,13 @@ public class SqlLookupDescriptor
 		return entityTypeIndex;
 	}
 
+	public Set<String> getDependsOnFieldNames()
+	{
+		return dependsOnFieldNames;
+	}
+
+	public IValidationRule getValidationRule()
+	{
+		return validationRule;
+	}
 }

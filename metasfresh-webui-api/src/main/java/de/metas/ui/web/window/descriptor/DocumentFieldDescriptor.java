@@ -11,6 +11,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -57,9 +59,9 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final boolean key;
 
 	private final DocumentFieldWidgetType widgetType;
-	
+
 	@JsonIgnore
-	private final Class<?> valueClass; 
+	private final Class<?> valueClass;
 
 	@JsonIgnore
 	private final IStringExpression defaultValueExpression;
@@ -74,6 +76,9 @@ public final class DocumentFieldDescriptor implements Serializable
 	@JsonIgnore
 	private final DocumentFieldDataBindingDescriptor dataBinding;
 
+	@JsonIgnore
+	private final DocumentFieldDependencyMap dependencies;
+
 	private DocumentFieldDescriptor(final Builder builder)
 	{
 		super();
@@ -82,11 +87,11 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		caption = builder.caption;
 		description = builder.description;
-		
+
 		key = builder.key;
 
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
-		
+
 		valueClass = Preconditions.checkNotNull(builder.valueClass, "value class not null");
 
 		defaultValueExpression = builder.defaultValueExpression;
@@ -96,6 +101,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		mandatoryLogic = builder.mandatoryLogic;
 
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding is null");
+
+		dependencies = builder.buildDependencies();
 	}
 
 	@Override
@@ -129,7 +136,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return description;
 	}
-	
+
 	public boolean isKey()
 	{
 		return key;
@@ -139,7 +146,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public Class<?> getValueClass()
 	{
 		return valueClass;
@@ -168,6 +175,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public DocumentFieldDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;
+	}
+	
+	public DocumentFieldDependencyMap getDependencies()
+	{
+		return dependencies;
 	}
 
 	public static final class Builder
@@ -224,7 +236,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			this.description = Strings.emptyToNull(description);
 			return this;
 		}
-		
+
 		public Builder setKey(boolean key)
 		{
 			this.key = key;
@@ -236,7 +248,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			this.widgetType = widgetType;
 			return this;
 		}
-		
+
 		public Builder setValueClass(final Class<?> valueClass)
 		{
 			this.valueClass = valueClass;
@@ -271,6 +283,16 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			this.dataBinding = dataBinding;
 			return this;
+		}
+
+		private DocumentFieldDependencyMap buildDependencies()
+		{
+			return DocumentFieldDependencyMap.builder()
+					.add(name, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
+					.add(name, displayLogic.getParameters(), DependencyType.DisplayLogic)
+					.add(name, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic)
+					.add(name, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
+					.build();
 		}
 
 	}

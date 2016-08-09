@@ -44,6 +44,8 @@ public class DocumentEntityDescriptor
 	private final List<DocumentEntityDescriptor> includedEntities;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
+	
+	private final DocumentFieldDependencyMap dependencies;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -52,6 +54,7 @@ public class DocumentEntityDescriptor
 		fields = ImmutableList.copyOf(builder.fields);
 		includedEntities = ImmutableList.copyOf(builder.includedEntities);
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
+		dependencies = builder.buildDependencies();
 	}
 
 	@Override
@@ -102,6 +105,11 @@ public class DocumentEntityDescriptor
 	{
 		return dataBinding;
 	}
+	
+	public DocumentFieldDependencyMap getDependencies()
+	{
+		return dependencies;
+	}
 
 	public static final class Builder
 	{
@@ -143,6 +151,13 @@ public class DocumentEntityDescriptor
 		{
 			this.dataBinding = dataBinding;
 			return this;
+		}
+
+		public DocumentFieldDependencyMap buildDependencies()
+		{
+			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
+			fields.stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
+			return dependenciesBuilder.build();
 		}
 	}
 }
