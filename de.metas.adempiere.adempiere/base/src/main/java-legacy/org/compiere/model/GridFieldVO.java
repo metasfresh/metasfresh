@@ -1106,6 +1106,11 @@ public class GridFieldVO implements Serializable
 	{
 		return AD_Reference_Value_ID;
 	}
+	
+	public int getAD_Val_Rule_ID()
+	{
+		return AD_Val_Rule_ID;
+	}
 
 	/**
 	 * Get Column Name or SQL .. with/without AS
