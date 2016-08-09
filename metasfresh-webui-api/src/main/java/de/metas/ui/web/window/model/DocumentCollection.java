@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -7,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -95,7 +97,8 @@ public class DocumentCollection
 	{
 		final DocumentId documentId = DocumentId.of(idStr);
 		final Document document = getDocument(adWindowId, documentId);
-		if (Check.isEmpty(rowIdStr))
+
+		if (Check.isEmpty(detailId))
 		{
 			return document;
 		}
@@ -109,6 +112,30 @@ public class DocumentCollection
 		{
 			return document.getIncludedDocument(detailId, rowId);
 		}
+	}
+
+	public List<Document> getDocuments(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	{
+		final DocumentId documentId = DocumentId.of(idStr);
+		final Document document = getDocument(adWindowId, documentId);
+
+		if (Check.isEmpty(detailId))
+		{
+			return ImmutableList.of(document);
+		}
+
+		if (Check.isEmpty(rowIdStr))
+		{
+			return document.getIncludedDocuments(detailId);
+		}
+
+		final DocumentId rowId = DocumentId.of(rowIdStr);
+		if (rowId.isNew())
+		{
+			throw new IllegalArgumentException("Invalid rowId=" + rowId);
+		}
+
+		return ImmutableList.of(document.getIncludedDocument(detailId, rowId));
 	}
 
 	/** Retrieves document from repository */

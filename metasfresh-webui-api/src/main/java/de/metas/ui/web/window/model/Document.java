@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -519,6 +520,12 @@ public class Document
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);
+	}
+	
+	public List<Document> getIncludedDocuments(final String detailId)
+	{
+		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		return includedDocuments.getDocuments();
 	}
 
 	private IncludedDocumentsCollection getIncludedDocumentsCollection(final String detailId)

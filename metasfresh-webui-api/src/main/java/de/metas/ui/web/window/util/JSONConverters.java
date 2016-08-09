@@ -49,25 +49,39 @@ public final class JSONConverters
 {
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
 
-	public static List<Map<String, Object>> documentToJsonObject(final Document document)
+	/**
+	 * @param documents
+	 * @return array of {@link #documentToJsonObject(Document)}
+	 */
+	public static List<List<Map<String, Object>>> documentsToJsonObject(final Collection<Document> documents)
+	{
+		return documents.stream()
+				.map(document -> documentToJsonObject(document))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * 
+	 * @param document
+	 * @return [ { field:field1 }, {...} ]
+	 */
+	private static List<Map<String, Object>> documentToJsonObject(final Document document)
 	{
 		final Collection<DocumentField> fields = document.getFields();
-		final List<Map<String, Object>> list = new ArrayList<>(fields.size() + 1);
+		final List<Map<String, Object>> jsonFields = new ArrayList<>(fields.size() + 1);
 
 		// ID field (special)
 		{
 			final int id = document.getDocumentId();
-			list.add(documentFieldToJsonObject("ID", id));
+			jsonFields.add(documentFieldToJsonObject("ID", id));
 		}
 
 		// All other fields
-		for (final DocumentField field : fields)
-		{
-			final Map<String, Object> map = documentFieldToJsonObject(field);
-			list.add(map);
-		}
+		fields.stream()
+				.map(field -> documentFieldToJsonObject(field))
+				.forEach(jsonFields::add);
 
-		return list;
+		return jsonFields;
 	}
 
 	private static Map<String, Object> documentFieldToJsonObject(final DocumentField field)
@@ -95,20 +109,16 @@ public final class JSONConverters
 
 		map.put("field", fieldName);
 		map.put("value", valueJSON);
-		
+
 		return map;
 	}
 
 	public static List<Map<String, Object>> toJsonObject(final FieldChangedEventCollector eventsCollector)
 	{
-		final List<Map<String, Object>> jsonValues = new ArrayList<>();
-		for (final FieldChangedEvent event : eventsCollector.toEventsList())
-		{
-			final Map<String, Object> jsonValue = toJsonObject(event);
-			jsonValues.add(jsonValue);
-		}
-
-		return jsonValues;
+		return eventsCollector.toEventsList()
+				.stream()
+				.map(event -> toJsonObject(event))
+				.collect(Collectors.toList());
 	}
 
 	private static Map<String, Object> toJsonObject(final FieldChangedEvent event)

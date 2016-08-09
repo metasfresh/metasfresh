@@ -73,24 +73,24 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
-	public List<Map<String, Object>> data(
+	public List<List<Map<String, Object>>> data(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowId //
 	)
 	{
 		autologin();
 
-		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
-		return JSONConverters.documentToJsonObject(document);
+		final List<Document> documents = documentCollection.getDocuments(adWindowId, idStr, detailId, rowId);
+		return JSONConverters.documentsToJsonObject(documents);
 	}
 
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
 	public List<Map<String, Object>> commit(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowId //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
@@ -123,7 +123,7 @@ public class WindowRestController
 	public List<Map<String, String>> typeahead(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowId //
 			, @RequestParam(name = "field", required = true) final String fieldName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -143,7 +143,7 @@ public class WindowRestController
 	public List<Map<String, String>> dropdown(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "detailId", required = false) final String detailId //
+			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowId //
 			, @RequestParam(name = "field", required = true) final String fieldName //
 	)
@@ -157,5 +157,4 @@ public class WindowRestController
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);
 	}
-
 }
