@@ -323,7 +323,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public boolean initTab(final boolean async)
 	{
-		log.debug("#{} - Async={} - Where={}", m_vo.TabNo, async, m_vo.WhereClause);
+		log.debug("#{} - Async={} - Where={}", m_vo.getTabNo(), async, m_vo.getWhereClause());
 		if (isLoadComplete())
 		{
 			return true;
@@ -352,7 +352,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 
 	protected boolean loadTab()
 	{
-		m_extendedWhere = m_vo.WhereClause;
+		m_extendedWhere = m_vo.getWhereClause();
 
 		// Get Field Data
 		if (!loadFields())
@@ -760,7 +760,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		 * Set Where Clause
 		 */
 		// Tab Where Clause
-		final StringBuilder where = new StringBuilder(m_vo.WhereClause);
+		final StringBuilder where = new StringBuilder(m_vo.getWhereClause());
 		boolean where_IsValid = true;
 		if (m_vo.onlyCurrentDays > 0)
 		{
@@ -891,7 +891,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		// metas: begin: select same row after refresh
 		int row_id = m_mTable.isOpen() ? getCurrentRow() : 0;
 		int keyNo = getKeyID(row_id);
-		if (!Check.isEmpty(m_vo.DefaultWhereClause, true))
+		if (!Check.isEmpty(m_vo.getDefaultWhereClause(), true))
 		{
 			if (m_mTable.isOpen())
 			{
@@ -902,7 +902,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			{
 				final int maxRowsActual = getMaxQueryRecordsActual(maxRows);
 				m_mTable.setSelectWhereClause(where.toString(),
-						m_vo.DefaultWhereClause,
+						m_vo.getDefaultWhereClause(),
 						m_vo.onlyCurrentRows && !isDetail(),
 						onlyCurrentDays);
 				m_mTable.open(maxRowsActual, 1);
@@ -926,7 +926,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		else
 		{
 			final int maxRowsActual = getMaxQueryRecordsActual(maxRows);
-			m_mTable.setSelectWhereClause(where.toString(), m_vo.DefaultWhereClause, m_vo.onlyCurrentRows && !isDetail(), onlyCurrentDays);
+			m_mTable.setSelectWhereClause(where.toString(), m_vo.getDefaultWhereClause(), m_vo.onlyCurrentRows && !isDetail(), onlyCurrentDays);
 			m_mTable.open(maxRowsActual);
 		}
 
@@ -2174,7 +2174,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public String getWhereClause()
 	{
-		return m_vo.WhereClause;
+		return m_vo.getWhereClause();
 	}	// getWhereClause
 
 	/**
@@ -3730,7 +3730,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public String getDefaultWhereClause()
 	{
-		return m_vo.DefaultWhereClause;
+		return m_vo.getDefaultWhereClause();
 	} // getDefaultWhereClause
 
 	/**

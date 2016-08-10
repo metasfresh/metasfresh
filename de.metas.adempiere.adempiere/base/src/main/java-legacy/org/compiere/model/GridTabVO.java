@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
@@ -222,18 +223,24 @@ public class GridTabVO implements Evaluatee, Serializable
 			vo.CommitWarning = rs.getString("CommitWarning");
 			if (vo.CommitWarning == null)
 				vo.CommitWarning = "";
-			vo.WhereClause = rs.getString("WhereClause");
-			if (vo.WhereClause == null)
-				vo.WhereClause = "";
-			//jz col=null not good for Derby
-			if (vo.WhereClause.indexOf("=null") > 0)
+
+			// Where clause
 			{
-				logger.warn("Replaced '=null' with 'IS NULL' for " + vo);
-				vo.WhereClause.replaceAll("=null", " IS NULL ");
-			}
-			// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ]
-			if (vo.WhereClause.trim().length() > 0) {
-				vo.WhereClause = "("+vo.WhereClause+")";
+				vo.WhereClause = rs.getString("WhereClause");
+				if (vo.WhereClause == null)
+				{
+					vo.WhereClause = "";
+				}
+				//jz col=null not good for Derby
+				if (vo.WhereClause.indexOf("=null") > 0)
+				{
+					logger.warn("Replaced '=null' with 'IS NULL' for " + vo);
+					vo.WhereClause.replaceAll("=null", " IS NULL ");
+				}
+				// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ]
+				if (vo.WhereClause.trim().length() > 0) {
+					vo.WhereClause = "("+vo.WhereClause+")";
+				}
 			}
 
 			vo.OrderByClause = rs.getString("OrderByClause");
@@ -423,7 +430,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Commot Warning	*/
 	public  String	    CommitWarning;
 	/** Where			*/
-	public  String	    WhereClause;
+	private String WhereClause;
+	private static final IStringExpression DEFAULT_WhereClauseExpression = IStringExpression.NULL;
 	/** Order by		*/
 	public  String      OrderByClause;
 	/** Tab Read Only	*/
@@ -651,7 +659,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	// metas-2009_0021_AP1_CR064
 	public boolean IsQueryOnLoad = true; // metas-2009_0021_AP1_CR064
 	/** Deafault Where */
-	public String DefaultWhereClause;
+	private String DefaultWhereClause;
 	public boolean IsRefreshAllOnActivate = false; // metas-2009_0021_AP1_CR050
 	public int AD_Message_ID = 0; //metas-us092
 	/** Check if the parents of this tab have changed */// 01962
@@ -809,4 +817,19 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		IsReadOnly = isReadOnly;
 	}
-}   //  MTabVO
+	
+	public String getOrderByClause()
+	{
+		return OrderByClause;
+	}
+	
+	public String getWhereClause()
+	{
+		return WhereClause;
+	}
+	
+	public String getDefaultWhereClause()
+	{
+		return DefaultWhereClause;
+	}
+}
