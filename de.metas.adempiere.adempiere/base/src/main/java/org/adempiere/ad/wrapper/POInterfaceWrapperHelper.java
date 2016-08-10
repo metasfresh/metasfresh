@@ -1,6 +1,11 @@
 package org.adempiere.ad.wrapper;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
+import org.compiere.model.PO;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -32,6 +37,8 @@ import org.adempiere.model.POWrapper;
  */
 public class POInterfaceWrapperHelper implements IInterfaceWrapperHelper
 {
+	private static final Logger logger = LogManager.getLogger(POInterfaceWrapperHelper.class);
+
 	@Override
 	public boolean canHandled(final Object model)
 	{
@@ -53,21 +60,44 @@ public class POInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public void refresh(Object model, boolean discardChanges)
+	public void refresh(final Object model, final boolean discardChanges)
 	{
 		POWrapper.refresh(model);
 	}
 
 	@Override
-	public void refresh(Object model, String trxName)
+	public void refresh(final Object model, final String trxName)
 	{
 		POWrapper.refresh(model, trxName);
 	}
 
 	@Override
-	public boolean hasModelColumnName(Object model, String columnName)
+	public boolean hasModelColumnName(final Object model, final String columnName)
 	{
 		return POWrapper.hasModelColumnName(model, columnName);
+	}
+
+	@Override
+	public boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	{
+		final PO po = POWrapper.getPO(model, false);
+		final int idx = po.get_ColumnIndex(columnName);
+		if (idx < 0)
+		{
+			final AdempiereException ex = new AdempiereException("No columnName " + columnName + " found for " + model);
+			if (throwExIfColumnNotFound)
+			{
+				throw ex;
+			}
+			else
+			{
+				logger.warn(ex.getLocalizedMessage(), ex);
+				return false;
+			}
+		}
+
+		po.set_ValueOfColumn(columnName, value);
+		return true;
 	}
 
 }

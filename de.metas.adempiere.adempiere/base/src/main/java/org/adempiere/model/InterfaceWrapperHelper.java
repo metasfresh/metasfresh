@@ -1303,72 +1303,8 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
-
-		if (GridTabWrapper.isHandled(model))
-		{
-			final GridTab gridTab = GridTabWrapper.getGridTab(model);
-			final GridField gridField = gridTab.getField(columnName);
-			if (gridField == null)
-			{
-				final AdempiereException ex = new AdempiereException("No field with ColumnName=" + columnName + " found in " + gridTab + " for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			gridTab.setValue(gridField, value);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			final PO po = POWrapper.getPO(model, false);
-			final int idx = po.get_ColumnIndex(columnName);
-			if (idx < 0)
-			{
-				final AdempiereException ex = new AdempiereException("No columnName " + columnName + " found for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			po.set_ValueOfColumn(columnName, value);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			if (!wrapper.hasColumnName(columnName))
-			{
-				final AdempiereException ex = new AdempiereException("No columnName " + columnName + " found for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			wrapper.setValue(columnName, value);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
-
-		return true;
+		
+		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 
 	/**

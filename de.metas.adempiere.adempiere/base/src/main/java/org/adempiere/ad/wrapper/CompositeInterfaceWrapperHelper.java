@@ -53,14 +53,14 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	 * Always returns <code>true</code>
 	 */
 	@Override
-	public boolean canHandled(Object model)
+	public boolean canHandled(final Object model)
 	{
 		return true;
 	}
 
 	private final IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
 	{
-		for (IInterfaceWrapperHelper helper : helpers)
+		for (final IInterfaceWrapperHelper helper : helpers)
 		{
 			if (helper.canHandled(model))
 			{
@@ -75,7 +75,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public <T> T wrap(Object model, Class<T> modelClass, boolean useOldValues)
+	public <T> T wrap(final Object model, final Class<T> modelClass, final boolean useOldValues)
 	{
 		return getHelperThatCanHandle(model)
 				.wrap(model, modelClass, useOldValues);
@@ -96,10 +96,16 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public boolean hasModelColumnName(Object model, String columnName)
+	public boolean hasModelColumnName(final Object model, final String columnName)
 	{
 		return getHelperThatCanHandle(model)
 				.hasModelColumnName(model, columnName);
 	}
 
+	@Override
+	public boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	{
+		return getHelperThatCanHandle(model)
+				.setValue(model, columnName, value, throwExIfColumnNotFound);
+	}
 }

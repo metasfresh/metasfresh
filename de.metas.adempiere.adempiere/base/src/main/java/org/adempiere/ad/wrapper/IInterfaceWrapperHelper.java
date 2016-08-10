@@ -39,4 +39,7 @@ public interface IInterfaceWrapperHelper
 	void refresh(Object model, String trxName);
 
 	boolean hasModelColumnName(Object model, String columnName);
+	
+	boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound);
+
 }
