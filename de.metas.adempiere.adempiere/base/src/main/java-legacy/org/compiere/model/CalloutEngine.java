@@ -18,15 +18,16 @@ package org.compiere.model;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.slf4j.Logger;
+
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.logging.LogManager;
-
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Callout Engine.
@@ -233,11 +234,13 @@ public class CalloutEngine implements Callout
 			return NO_ERROR;
 		
 		final Object value = field.getValue();
-		if (value == null || !(value instanceof Timestamp))
+		if (value == null || !(value instanceof java.util.Date))
 			return NO_ERROR;
 		
+		final java.util.Date valueDate = (java.util.Date)value;
+		
 		final Object model = field.getModel(Object.class);
-		InterfaceWrapperHelper.setValue(model, "DateAcct", value);
+		InterfaceWrapperHelper.setValue(model, "DateAcct", TimeUtil.asTimestamp(valueDate));
 		
 		return NO_ERROR;
 	}	//	dateAcct
