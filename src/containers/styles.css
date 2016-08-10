@@ -3,15 +3,15 @@
 @import './datetime.css';
 
 /**
- *  IMPORTANT NOTE
- *
- * Layers
- * - 0 - default - all static elements like tables or forms
- * - < 100 - elements that are over static content (order list)
- * - 100 - header
- * - 200 - backdrop
- * - 200 < - elements that are over backdrop (header expanded)
- */
+*  IMPORTANT NOTE
+*
+* Layers
+* - 0 - default - all static elements like tables or forms
+* - < 100 - elements that are over static content (order list)
+* - 100 - header
+* - 200 - backdrop
+* - 200 < - elements that are over backdrop (header expanded)
+*/
 
 * {
     margin:0;
@@ -50,9 +50,9 @@ textarea {
 
 
 /*
- *  Extension for bootstrap grid
- */
- @media (min-width: 1900px){
+*  Extension for bootstrap grid
+*/
+@media (min-width: 1900px){
     .container {
         max-width: 1824px;
     }
@@ -775,4 +775,111 @@ label {
 }
 .meta-icon-default {
     color: $brand-default-color;
+}
+
+.input-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.input-switch input {
+    display:none;
+}
+
+.input-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.input-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .input-slider {
+  background-color: $brand-success-dark-color;
+}
+
+input:focus + .input-slider {
+  box-shadow: 0 0 1px $brand-success-dark-color;
+}
+
+input:checked + .input-slider:before {
+  transform: translateX(22px);
+}
+
+
+
+
+
+.input-checkbox {
+	position: relative;
+	display: inline-block;
+    height: 18px;
+	padding-left: 30px;
+	cursor: pointer;
+}
+
+.input-checkbox input {
+	position: absolute;
+	z-index: -1;
+	opacity: 0;
+}
+
+.input-checkbox-tick {
+	position: absolute;
+	left: 0;
+	width: 18px;
+	height: 18px;
+	background: #ccc;
+    border-radius: 2px;
+}
+
+.input-checkbox input:checked ~ .input-checkbox-tick {
+	background: $brand-success-dark-color;
+}
+
+.input-checkbox input:disabled ~ .input-checkbox-tick {
+	pointer-events: none;
+	background: #ccc;
+}
+
+.input-checkbox-tick:after {
+	position: absolute;
+	display: none;
+	content: '';
+}
+
+.input-checkbox input:checked ~ .input-checkbox-tick:after {
+	display: block;
+}
+
+.input-checkbox .input-checkbox-tick:after {
+	top: 3px;
+	left: 6px;
+	width: 6px;
+	height: 10px;
+	transform: rotate(45deg);
+	border: 2px solid #fff;
+	border-width: 0 2px 2px 0;
+}
+
+.input-checkbox input:disabled ~ .input-checkbox-tick:after {
+	border-color: #fff;
 }

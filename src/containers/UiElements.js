@@ -234,6 +234,27 @@ export default class UiElements extends Component {
                     </div>
                 </div>
 
+                <div className="panel panel-bordered panel-spaced panel-primary panel-distance">
+                    <h4>Switch, YesNo, Label</h4>
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <p className="m-t-1">Switch</p>
+                            <label className="input-switch">
+                                <input type="checkbox" />
+                                <div className="input-slider" />
+                            </label>
+                            <p className="m-t-1">YesNo</p>
+                            <label className="input-checkbox">
+                        		<input type="checkbox" />
+                        		<div className="input-checkbox-tick"/>
+                        	</label>
+                            <p className="m-t-1">Label</p>
+                            <div className="tag tag-warning">Open</div>
+
+                        </div>
+                    </div>
+                </div>
+
 
             </div>
         );
