@@ -43,7 +43,7 @@ class OrderInfo extends Component {
                         <div className="form-group row">
                             <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered.caption}</label>
                             <div className="col-sm-9">
-                                <div className="input-icon-container input-block">
+                                <div className="input-icon-container input-secondary input-block">
                                     <Datetime
                                         timeFormat={true}
                                         dateFormat={false}
@@ -58,7 +58,7 @@ class OrderInfo extends Component {
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Promised date</label>
                         <div className="col-sm-9">
-                            <div className="input-icon-container input-block">
+                            <div className="input-icon-container input-secondary input-block">
                                 <Datetime
                                     timeFormat={false}
                                     dateFormat="D. MMMM YYYY"
@@ -72,7 +72,7 @@ class OrderInfo extends Component {
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Provisioning</label>
                         <div className="col-sm-9">
-                            <div className="input-icon-container input-block">
+                            <div className="input-icon-container input-secondary input-block">
                                 <Datetime
                                     timeFormat={false}
                                     inputProps={{placeholder: "(none)"}}

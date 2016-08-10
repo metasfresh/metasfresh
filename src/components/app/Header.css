@@ -2,7 +2,7 @@
 
 
 .header-sticky-distance{
-    margin-top: 56px;
+    margin-top: 55px;
 }
 
 .header {
@@ -60,7 +60,7 @@
 .subheader-container {
     display: none;
     width: 100%;
-    position: absolute;
+    position: fixed;
     z-index:200;
     background-color: $brand-bright-color;
     box-shadow: 0 7px 15px 0 rgba(0,0,0,.3);

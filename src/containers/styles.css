@@ -252,9 +252,10 @@ label {
 .input-secondary {
     border-bottom: 1px solid $brand-light-color;
     color: $brand-font-color-secondary;
-    padding: .1rem .5rem;
+    padding: .125rem .5rem;
     /* Margin top for depreciation of padding differences */
-    margin-top: .4px;
+    margin-top: .3125rem;
+    margin-bottom: .125rem;
 }
 .input-secondary * {
     color: $brand-font-color-secondary;
@@ -294,13 +295,15 @@ label {
     bottom: -3px;
 }
 .input-icon {
-    float:right;
     bottom: -3px;
     position: relative;
 }
 
 .input-editable {
     flex: 2 1 30%;
+}
+.input-readonly {
+    pointer-events: none;
 }
 .input-rest {
     text-align: right;
@@ -321,7 +324,7 @@ label {
 
 .input-icon-right{
     position: absolute;
-    bottom: -3px;
+    top: 7px;
     right: 5px;
     font-size:16px;
 }

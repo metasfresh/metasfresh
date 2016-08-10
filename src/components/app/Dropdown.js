@@ -14,6 +14,7 @@ class Dropdown extends Component {
     }
     handleChange = (e) => {
         e.preventDefault();
+        this.handleBlur();
     }
     handleSelect = (index) => {
         this.inputSearch.value = this.props.options[index];
@@ -28,7 +29,7 @@ class Dropdown extends Component {
         )
     }
     render() {
-        const {options} = this.props;
+        const {options, rank} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -37,7 +38,7 @@ class Dropdown extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-secondary input-block"}>
+                <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary")}>
                     <div className="input-editable input-dropdown-focused">
                         <input
                             type="text"
@@ -50,7 +51,7 @@ class Dropdown extends Component {
                         />
                     </div>
                     <div className="input-icon">
-                        <i className="meta-icon-down input-icon-right input-icon-sm"/>
+                        <i className="meta-icon-down input-icon-sm"/>
                     </div>
                 </div>
                 <div className="input-dropdown-list">

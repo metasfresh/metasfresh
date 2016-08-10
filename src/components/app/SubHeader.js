@@ -14,7 +14,7 @@ class Subheader extends Component {
     redirect = (where) => {
         const {dispatch} = this.props;
         dispatch(hideSubHeader(where));
-        dispatch(push('sales-order'));
+        dispatch(push(where));
     }
     render() {
         return (
@@ -26,7 +26,7 @@ class Subheader extends Component {
                                 <div className="subheader-item" onClick={()=> this.redirect('sales-order')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
-                                <div className="subheader-item"><i className="meta-icon-preview-1" /> Preview</div>
+                                <div className="subheader-item" onClick={()=> this.redirect('ui')}><i className="meta-icon-preview-1" /> Preview</div>
                                 <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
                                 <div className="subheader-item"><i className="meta-icon-message-1" /> Send message</div>
                                 <div className="subheader-item"><i className="meta-icon-clone-1" /> Clone</div>

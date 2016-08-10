@@ -146,7 +146,7 @@ class LookupDropdown extends Component {
         return <DropdownPartnerItem key={item.id} itemIndex={index} data={item} onClick={this.handleSelect}/>
     }
     render() {
-        const {autocomplete, className} = this.props;
+        const {autocomplete, rank} = this.props;
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -156,7 +156,7 @@ class LookupDropdown extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + className}>
+                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary")}>
                     <div className="input-editable">
                         <input
                             type="text"
