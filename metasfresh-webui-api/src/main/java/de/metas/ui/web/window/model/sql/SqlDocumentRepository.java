@@ -162,6 +162,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			}
 			else
 			{
+				// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type. 
 				final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
 				try
 				{
