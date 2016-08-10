@@ -1178,4 +1178,9 @@ public class GridFieldVO implements Serializable
 	{
 		return IsEncryptedColumn;
 	}
+	
+	public int getSortNo()
+	{
+		return SortNo;
+	}
 }
