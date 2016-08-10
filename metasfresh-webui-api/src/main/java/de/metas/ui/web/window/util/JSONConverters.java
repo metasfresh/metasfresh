@@ -48,7 +48,7 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 public final class JSONConverters
 {
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
-
+	
 	/**
 	 * @param documents
 	 * @return array of {@link #documentToJsonObject(Document)}

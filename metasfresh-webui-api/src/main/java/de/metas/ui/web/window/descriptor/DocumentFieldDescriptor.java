@@ -5,8 +5,6 @@ import java.io.Serializable;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -46,37 +44,26 @@ public final class DocumentFieldDescriptor implements Serializable
 	/** Internal field name (aka ColumnName) */
 	private final String name;
 	/** Detail ID or null if this is a field in main sections */
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String detailId;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
 	/** Is this the key field ? */
-	@JsonIgnore
 	private final boolean key;
 
 	private final DocumentFieldWidgetType widgetType;
 
-	@JsonIgnore
 	private final Class<?> valueClass;
 
-	@JsonIgnore
 	private final IStringExpression defaultValueExpression;
 
-	@JsonIgnore
 	private final ILogicExpression readonlyLogic;
-	@JsonIgnore
 	private final ILogicExpression displayLogic;
-	@JsonIgnore
 	private final ILogicExpression mandatoryLogic;
 
-	@JsonIgnore
 	private final DocumentFieldDataBindingDescriptor dataBinding;
 
-	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
 	private DocumentFieldDescriptor(final Builder builder)

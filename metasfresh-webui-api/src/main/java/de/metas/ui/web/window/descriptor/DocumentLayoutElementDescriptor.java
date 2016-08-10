@@ -7,8 +7,6 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -48,14 +46,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.class);
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
 	private final DocumentFieldWidgetType widgetType;
 
-	@JsonInclude(Include.NON_EMPTY)
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
 	private DocumentLayoutElementDescriptor(final Builder builder)

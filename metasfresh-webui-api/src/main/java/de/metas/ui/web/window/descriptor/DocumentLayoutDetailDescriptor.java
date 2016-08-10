@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -40,12 +39,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	}
 
 	private final String detailId;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<DocumentLayoutElementDescriptor> elements;
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)

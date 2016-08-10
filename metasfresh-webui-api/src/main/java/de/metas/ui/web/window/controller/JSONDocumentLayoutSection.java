@@ -1,11 +1,15 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.controller;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 
 /*
  * #%L
@@ -30,19 +34,28 @@ import com.google.common.collect.ImmutableList;
  */
 
 @SuppressWarnings("serial")
-public final class DocumentLayoutSectionDescriptor implements Serializable
+public final class JSONDocumentLayoutSection implements Serializable
 {
-	public static final Builder builder()
+
+	public static List<JSONDocumentLayoutSection> ofList(final List<DocumentLayoutSectionDescriptor> sections)
 	{
-		return new Builder();
+		return sections.stream()
+				.map(section -> of(section))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final List<DocumentLayoutColumnDescriptor> columns;
+	public static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section)
+	{
+		return new JSONDocumentLayoutSection(section);
+	}
 
-	private DocumentLayoutSectionDescriptor(final Builder builder)
+	@JsonInclude(Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutColumn> columns;
+
+	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section)
 	{
 		super();
-		columns = ImmutableList.copyOf(builder.columns);
+		columns = JSONDocumentLayoutColumn.ofList(section.getColumns());
 	}
 
 	@Override
@@ -53,34 +66,9 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 				.toString();
 	}
 
-	public List<DocumentLayoutColumnDescriptor> getColumns()
+	public List<JSONDocumentLayoutColumn> getColumns()
 	{
 		return columns;
 	}
 
-	public static final class Builder
-	{
-		private final List<DocumentLayoutColumnDescriptor> columns = new ArrayList<>();
-
-		private Builder()
-		{
-			super();
-		}
-
-		public DocumentLayoutSectionDescriptor build()
-		{
-			return new DocumentLayoutSectionDescriptor(this);
-		}
-
-		public Builder addColumnIfNotEmpty(final DocumentLayoutColumnDescriptor column)
-		{
-			if(column.getElementGroups().isEmpty())
-			{
-				return this;
-			}
-			
-			columns.add(column);
-			return this;
-		}
-	}
 }

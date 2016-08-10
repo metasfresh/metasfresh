@@ -65,14 +65,14 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public DocumentLayoutDescriptor layout(@RequestParam(name = "type", required = true) final int adWindowId)
+	public JSONDocumentLayout layout(@RequestParam(name = "type", required = true) final int adWindowId)
 	{
 		autologin();
 
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
-		return layout;
+		return JSONDocumentLayout.of(layout);
 	}
 
 	@RequestMapping(value = "/data", method = RequestMethod.GET)

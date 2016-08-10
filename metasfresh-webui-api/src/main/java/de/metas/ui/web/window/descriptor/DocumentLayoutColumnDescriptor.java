@@ -3,8 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +35,6 @@ public class DocumentLayoutColumnDescriptor
 		return new Builder();
 	}
 
-	@JsonInclude(Include.NON_EMPTY)
 	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)

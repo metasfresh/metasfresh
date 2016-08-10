@@ -73,7 +73,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		final DocumentLayoutElementFieldDescriptor other = (DocumentLayoutElementFieldDescriptor)obj;
 		return Objects.equals(field, other.field);
 	}
-	
+
 	public String getField()
 	{
 		return field;

@@ -1,11 +1,14 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.controller;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 
 /*
  * #%L
@@ -30,23 +33,33 @@ import com.google.common.collect.ImmutableList;
  */
 
 @SuppressWarnings("serial")
-public final class DocumentLayoutElementGroupDescriptor implements Serializable
+public final class JSONDocumentLayoutElementGroup implements Serializable
 {
-	public static final Builder builder()
+
+	public static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups)
 	{
-		return new Builder();
+		return elementGroups.stream()
+				.map(elementGroup -> of(elementGroup))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup)
+	{
+		return new JSONDocumentLayoutElementGroup(elementGroup);
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String type;
-	
-	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private DocumentLayoutElementGroupDescriptor(final Builder builder)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutElement> elements;
+
+	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
 	{
 		super();
-		type = builder.type;
-		elements = ImmutableList.copyOf(builder.elements);
+		type = elementGroup.getType();
+		elements = JSONDocumentLayoutElement.ofList(elementGroup.getElements());
 	}
 
 	@Override
@@ -63,37 +76,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	{
 		return type;
 	}
-	
-	public List<DocumentLayoutElementDescriptor> getElements()
+
+	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
 	}
 
-	public static final class Builder
-	{
-		private String type;
-		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
-
-		private Builder()
-		{
-			super();
-		}
-
-		public DocumentLayoutElementGroupDescriptor build()
-		{
-			return new DocumentLayoutElementGroupDescriptor(this);
-		}
-
-		public Builder setType(final String type)
-		{
-			this.type = type;
-			return this;
-		}
-
-		public Builder addElement(final DocumentLayoutElementDescriptor element)
-		{
-			elements.add(element);
-			return this;
-		}
-	}
 }

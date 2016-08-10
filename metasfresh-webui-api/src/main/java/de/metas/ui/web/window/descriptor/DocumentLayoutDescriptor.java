@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -41,24 +39,19 @@ public final class DocumentLayoutDescriptor implements Serializable
 	}
 
 	/** i.e. AD_Window_ID */
-	private final String type;
-	@JsonInclude(Include.NON_NULL)
+	private final int AD_Window_ID;
 	private final String docNoField;
-	@JsonInclude(Include.NON_NULL)
 	private final String docStatusField;
-	@JsonInclude(Include.NON_NULL)
 	private final String docActionField;
 
-	@JsonInclude(Include.NON_EMPTY)
 	private final List<DocumentLayoutSectionDescriptor> sections;
 
-	@JsonInclude(Include.NON_EMPTY)
 	private final List<DocumentLayoutDetailDescriptor> details;
 
 	private DocumentLayoutDescriptor(final Builder builder)
 	{
 		super();
-		type = String.valueOf(builder.AD_Window_ID);
+		AD_Window_ID = builder.AD_Window_ID;
 		docNoField = builder.docNoField;
 		docStatusField = builder.docStatusField;
 		docActionField = builder.docActionField;
@@ -72,15 +65,15 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("type", type)
+				.add("AD_Window_ID", AD_Window_ID)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("details", details.isEmpty() ? null : details)
 				.toString();
 	}
 
-	public String getType()
+	public int getAD_Window_ID()
 	{
-		return type;
+		return AD_Window_ID;
 	}
 
 	public String getDocNoField()
