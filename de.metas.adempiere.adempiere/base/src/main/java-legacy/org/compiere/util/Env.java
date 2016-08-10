@@ -52,7 +52,6 @@ import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -1603,14 +1602,14 @@ public final class Env
 	 */
 	public static String parseContext(Properties ctx, int WindowNo, String value, boolean onlyWindow, boolean ignoreUnparsable)
 	{
-		final Evaluatee evalCtx = new EvaluateeCtx(ctx, WindowNo, onlyWindow);
+		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
 		final String valueParsed = parseContext(evalCtx, value, ignoreUnparsable);
 		return valueParsed;
 	}
 
 	public static String parseContext(final Properties ctx, final int WindowNo, final IStringExpression expression, final boolean onlyWindow, final boolean ignoreUnparsable)
 	{
-		final Evaluatee evalCtx = new EvaluateeCtx(ctx, WindowNo, onlyWindow);
+		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
 		final String valueParsed = parseContext(evalCtx, expression, ignoreUnparsable);
 		return valueParsed;
 	}

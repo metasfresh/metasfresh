@@ -17,7 +17,9 @@
 package org.compiere.util;
 
 /**
- * Evaluator source
+ * Evaluator source.
+ * 
+ * To create {@link Evaluatee} instances, please use {@link Evaluatees}.
  *
  * @author Jorg Janke
  * @version $Id: Evaluatee.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $

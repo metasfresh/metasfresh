@@ -10,8 +10,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
-import org.compiere.util.CompositeEvaluatee;
 import org.compiere.util.DB;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -130,7 +131,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// Parse context variables
 		{
 			final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql, IStringExpression.class);
-			final CompositeEvaluatee evalCtx = new CompositeEvaluatee(InterfaceWrapperHelper.getEvaluatee(workpackage));
+			final Evaluatee evalCtx = Evaluatees.compose(InterfaceWrapperHelper.getEvaluatee(workpackage));
 
 			sql = sqlExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 		}

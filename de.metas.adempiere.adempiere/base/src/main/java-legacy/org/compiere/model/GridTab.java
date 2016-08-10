@@ -58,7 +58,6 @@ import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
@@ -68,6 +67,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Evaluator;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -2060,7 +2060,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		// of the parsing, we assumed 'true'. If parsing fails, we still assume true, but with the 'WindowNo', there is
 		// at least a chance of suceeding.
 		final Properties ctx = getCtx();
-		final EvaluateeCtx evaluateeCtx = new EvaluateeCtx(ctx, m_vo.WindowNo, false);
+		final Evaluatee evaluateeCtx = Evaluatees.ofCtx(ctx, m_vo.getWindowNo(), false);
 		try
 		{
 			return m_vo.getDisplayLogic().evaluate(evaluateeCtx, false); // ignoreUnparsable

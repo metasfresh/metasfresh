@@ -43,7 +43,6 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -53,6 +52,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
@@ -2093,7 +2093,7 @@ public class GridField
 		else
 		{
 			final boolean onlyWindow = true;
-			evaluationCtx = new EvaluateeCtx(rowCtx, getWindowNo(), onlyWindow);
+			evaluationCtx = Evaluatees.ofCtx(rowCtx, getWindowNo(), onlyWindow);
 		}
 
 		return evaluationCtx;
