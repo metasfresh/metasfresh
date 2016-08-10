@@ -1,6 +1,6 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 
 		//
 		// Initialize stringParams list
-		final Set<String> stringParams = new HashSet<>();
+		final Set<String> stringParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
 		for (final Object chunk : expressionChunks)
 		{
 			if (chunk instanceof CtxName)
