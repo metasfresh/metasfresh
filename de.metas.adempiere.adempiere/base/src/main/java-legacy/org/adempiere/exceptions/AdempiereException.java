@@ -94,6 +94,10 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		{
 			return cause;
 		}
+		if (throwable instanceof com.google.common.util.concurrent.UncheckedExecutionException)
+		{
+			return cause;
+		}
 
 		if (throwable instanceof InvocationTargetException)
 		{
