@@ -119,11 +119,10 @@ export function autocomplete(query) {
         query: query
     }
 }
-export function autocompleteSuccess(results, key) {
+export function autocompleteSuccess(results) {
     return {
         type: 'AUTOCOMPLETE_SUCCESS',
-        results: results,
-        key: key
+        results: results
     }
 }
 export function autocompleteRequest(query, propertyName) {
@@ -178,13 +177,6 @@ export function createWindow(){
         }).then((response) => {
             dispatch(newSalesOrderSuccess(response.data.childDescriptors));
         });
-    }
-}
-
-export function autocompleteSelect(id){
-    return {
-        type: 'AUTOCOMPLETE_SELECT',
-        id: id
     }
 }
 

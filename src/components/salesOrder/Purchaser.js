@@ -2,9 +2,14 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 
-import {unloadingChanged, invoiceChanged} from '../../actions/SalesOrderActions';
+import {
+    unloadingChanged,
+    invoiceChanged,
+    purchaserChanged,
+    purchaserPropertyChanged
+} from '../../actions/SalesOrderActions';
 
-import LookupDropdown from './LookupDropdown';
+import LookupDropdown from '../app/LookupDropdown';
 
 import '../../assets/css/font-meta.css';
 
@@ -20,24 +25,40 @@ class Purchaser extends Component {
         e.preventDefault();
         this.props.dispatch(invoiceChanged(this.invoiceInput.value));
     }
+    handlePurchaserChange = (purchaser) => {
+        this.props.dispatch(purchaserChanged(purchaser));
+    }
+    handlePurchaserPropertyChange = (purchaser) => {
+        this.props.dispatch(purchaserPropertyChanged(purchaser));
+    }
     render() {
         const {purchaser, salesOrderWindow, recentPartners} = this.props;
         return (
             <div className="panel panel-bordered panel-spaced panel-primary panel-distance">
 
-                {salesOrderWindow.C_BPartner_ID && [
-                    <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>,
-                    <LookupDropdown key="dropdown" recent={recentPartners} properties={["C_BPartner_ID", "C_BPartner_Location_ID"]} />
-                ]}
+                {salesOrderWindow.C_BPartner_ID &&
+                    <div>
+                        <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>
+                        <LookupDropdown
+                            key="purchaser-lookup"
+                            recent={recentPartners}
+                            properties={["C_BPartner_ID", "C_BPartner_Location_ID"]}
+                            onObjectChange={this.handlePurchaserChange}
+                            onPropertyChange={this.handlePurchaserPropertyChange}
+                        />
+                    </div>
+                }
 
-                {salesOrderWindow.Bill_BPartner_ID && [
-                    <div className="form-group m-t-2 row">
-                        <label key="title" className="col-sm-3 form-control-label">{salesOrderWindow.Bill_BPartner_ID.caption}</label>
-                        <div className="col-sm-9">
-                            <LookupDropdown rank="secondary" key="dropdown1" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                {salesOrderWindow.Bill_BPartner_ID &&
+                    <div>
+                        <div className="form-group m-t-2 row">
+                            <label key="title" className="col-sm-3 form-control-label">{salesOrderWindow.Bill_BPartner_ID.caption}</label>
+                            <div className="col-sm-9">
+                                <LookupDropdown rank="secondary" key="dropdown1" recent={recentPartners} properties={["Bill_BPartner_ID"]} />
+                            </div>
                         </div>
                     </div>
-                ]}
+                }
 
                 <div className="form-group m-t-1 row">
                     <label key="title" className="col-sm-3 form-control-label">Unloading</label>

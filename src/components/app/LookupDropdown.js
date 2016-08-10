@@ -1,30 +1,38 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import DropdownPartnerItem from './DropdownPartnerItem';
 import {
     autocomplete,
     autocompleteRequest,
-    autocompleteSelect,
     autocompleteSuccess,
     getPropertyValue,
-    purchaserChanged,
-    purchaserPropertyChanged
 } from '../../actions/SalesOrderActions';
 
 class LookupDropdown extends Component {
     constructor(props) {
         super(props);
-        this.state = {isInputEmpty: true}
+        this.state = {
+            isInputEmpty: true,
+            selected: null,
+            model: null,
+            property: ""
+        }
     }
     handleSelect = (select) => {
-        const {dispatch, properties, purchaser, autocomplete} = this.props;
+        const {
+            dispatch,
+            properties,
+            autocomplete,
+            onObjectChange,
+            onPropertyChange
+        } = this.props;
+
         //removing selection
-        dispatch(autocompleteSelect(null));
+        this.setState({selected: null});
         //
         // Handling selection when main is not set or set.
         //
-        if(autocomplete.property === ""){
+        if(this.state.property === ""){
             //call for more properties
             //mocked properties for testing
             // - first will generate choice dropdown
@@ -34,47 +42,72 @@ class LookupDropdown extends Component {
                 property2: [{id: '1231', n: "opt1prop2"}]
             };
             this.inputSearch.value = select.n;
-            purchaser.purchaser = select;
-            dispatch(purchaserChanged(select));
+            this.setState({model: select}, () => {
+                this.generatingPropsSelection();
+            });
+            onObjectChange(select);
         } else {
-            purchaser.purchaser.properties[autocomplete.property] = [select];
-            dispatch(purchaserPropertyChanged(purchaser.purchaser.properties));
+            //
+            // We cannot mutate state here, but we need to update
+            // the properties in model, to update whole model in store
+            //
+            this.setState({
+                model: Object.assign({}, this.state.model, {
+                    properties: Object.keys(this.state.model.properties).reduce((previous, current) => {
+                        if(current == this.state.property){
+                            previous[current] = [select];
+                        }else{
+                            previous[current] = this.state.model.properties[current];
+                        }
+                        return previous;
+                    }, {})
+                })
+            }, () => {
+                this.generatingPropsSelection();
+            });
+            onPropertyChange(this.state.model);
             this.handleBlur();
         }
+    }
 
+    generatingPropsSelection = () => {
+        const {dispatch} = this.props;
         //
-        // Chcecking properies model if there is some
+        // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
         //
-        const purPro = purchaser.purchaser.properties;
-        const purProKeys = Object.keys(purPro);
+        const modelProps = this.state.model.properties;
+        const modelPropsKeys = Object.keys(modelProps);
 
         //iteration over rest of unselected props
-        for(let i=0; i< purProKeys.length; i++){
-            if(purPro[purProKeys[i]].length === 1){
+        for(let i=0; i< modelPropsKeys.length; i++){
+            if(modelProps[modelPropsKeys[i]].length === 1){
                 // Selecting props that have no choice
-                this.inputSearchRest.innerHTML += " " + purPro[purProKeys[i]][0].n;
-            }else if(purPro[purProKeys[i]].length > 1){
+                this.inputSearchRest.innerHTML += " " + modelProps[modelPropsKeys[i]][0].n;
+            }else if(modelProps[modelPropsKeys[i]].length > 1){
                 // Generating list of props choice
-                dispatch(autocompleteSuccess(purPro[purProKeys[i]], purProKeys[i]));
+                dispatch(autocompleteSuccess(modelProps[modelPropsKeys[i]]));
+                this.setState({property: modelPropsKeys[i]});
                 break;
             }
         }
-
     }
+
     handleBlur = () => {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
+
     handleFocus = (e) => {
         const {dispatch,recent} = this.props;
         e.preventDefault();
-        dispatch(autocompleteSelect(null));
+        this.setState({selected: null});
         if(this.inputSearch.value !== this.props.autocomplete.query){
             this.handleChange();
         }
         if(this.inputSearch.value === ""){
-            dispatch(autocompleteSuccess(recent, ""));
+            dispatch(autocompleteSuccess(recent));
+            this.setState({property: ""});
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -83,14 +116,15 @@ class LookupDropdown extends Component {
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
-        dispatch(autocompleteSelect(null));
+        this.setState({selected: null});
 
         if(this.inputSearch.value != ""){
             dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});
-            dispatch(autocompleteSuccess(recent, ""));
+            this.setState({property: ""});
+            dispatch(autocompleteSuccess(recent));
         }
     }
     handleClear = (e) => {
@@ -116,8 +150,8 @@ class LookupDropdown extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(autocomplete.selected != null){
-                    this.handleSelect(autocomplete.results[autocomplete.selected]);
+                if(this.state.selected != null){
+                    this.handleSelect(autocomplete.results[this.state.selected]);
                 }
                 break;
             case "Escape":
@@ -126,24 +160,35 @@ class LookupDropdown extends Component {
                 break;
         }
     }
+
     navigate = (reverse) => {
         const {dispatch, autocomplete} = this.props;
 
-        if(autocomplete.selected != null){
-            const selectTarget = autocomplete.selected + (reverse ? (-1) : (1));
+        if(this.state.selected != null){
+            const selectTarget = this.state.selected + (reverse ? (-1) : (1));
             if(typeof autocomplete.results[selectTarget] != "undefined"){
-                dispatch(autocompleteSelect(selectTarget));
+                this.setState({selected: selectTarget});
             }
         }else if(typeof autocomplete.results[0] != "undefined"){
-            dispatch(autocompleteSelect(0));
+            this.setState({selected: 0})
         }
     }
+
     renderLookup = () => {
         const {autocomplete} = this.props;
-        return autocomplete.results.map((partner, index) => this.getDropdownComponent(index, partner) );
+        return autocomplete.results.map((item, index) => this.getDropdownComponent(index, item) );
     }
+
     getDropdownComponent = (index, item) => {
-        return <DropdownPartnerItem key={item.id} itemIndex={index} data={item} onClick={this.handleSelect}/>
+        return (
+            <div
+                key={item.id}
+                className={"input-dropdown-list-option " + (this.state.selected == index ? 'input-dropdown-list-option-key-on' : "") }
+                onClick={() => this.handleSelect(item)}
+            >
+                <p className="input-dropdown-item-title">{item['n']}</p>
+            </div>
+        )
     }
     render() {
         const {autocomplete, rank} = this.props;
@@ -198,7 +243,6 @@ class LookupDropdown extends Component {
 
 LookupDropdown.propTypes = {
     autocomplete: PropTypes.object.isRequired,
-    purchaser: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
@@ -206,19 +250,14 @@ function mapStateToProps(state) {
     const {salesOrderStateHandler} = state;
     const {
         autocomplete,
-        purchaser
     } = salesOrderStateHandler || {
         autocomplete: {
             query: "",
-            selected: null,
-            results:[],
-            property: ""
-        },
-        purchaser: null
+            results:[]
+        }
     }
     return {
-        autocomplete,
-        purchaser
+        autocomplete
     }
 }
 

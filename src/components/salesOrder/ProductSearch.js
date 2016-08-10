@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import LookupDropdown from './LookupDropdown';
+import LookupDropdown from '../app/LookupDropdown';
 import ProductSearchSummary from './ProductSearchSummary';
 
 import {toggleProductSummary} from '../../actions/SalesOrderActions';
@@ -24,11 +24,12 @@ class ProductSearch extends Component {
                 onMouseLeave={this.handleMouseout}
             >
                 <ProductSearchSummary />
-                {salesOrderWindow.M_Product_ID && [
-                    <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>,
-                    <LookupDropdown className="primary" key="dropdown" recent={[]} properties={[]} />
-
-                ]}
+                {salesOrderWindow.M_Product_ID &&
+                    <div>
+                        <div key="title" className="panel-title">{salesOrderWindow.M_Product_ID.caption}</div>
+                        <LookupDropdown className="primary" key="dropdown" recent={[]} properties={[]} />
+                    </div>
+                }
 
                 <div className="row m-t-1 items-row">
                     <div className="form-group col-sm-4">
@@ -38,12 +39,14 @@ class ProductSearch extends Component {
                         </div>
                     </div>
                     <div className="form-group col-sm-4">
-                        {salesOrderWindow.Qty_FastInput_TU && [
-                            <label key="label">{salesOrderWindow.Qty_FastInput_TU.caption}</label>,
-                            <div className="input-secondary">
-                                <input className="input-field" type="text"/>
+                        {salesOrderWindow.Qty_FastInput_TU &&
+                            <div>
+                                <label key="label">{salesOrderWindow.Qty_FastInput_TU.caption}</label>
+                                <div className="input-secondary">
+                                    <input className="input-field" type="text"/>
+                                </div>
                             </div>
-                        ]}
+                        }
                     </div>
 
                     <div className="form-group col-sm-3 offset-sm-1 items-col-bottom">

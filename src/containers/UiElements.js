@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 import Datetime from 'react-datetime';
 import Dropdown from '../components/app/Dropdown';
-import LookupDropdown from '../components/salesOrder/LookupDropdown';
+import LookupDropdown from '../components/app/LookupDropdown';
 
 export default class UiElements extends Component {
     render() {
