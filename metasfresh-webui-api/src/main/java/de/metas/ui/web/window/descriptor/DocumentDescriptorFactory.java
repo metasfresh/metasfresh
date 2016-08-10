@@ -14,7 +14,6 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -28,11 +27,8 @@ import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
@@ -697,46 +693,5 @@ public class DocumentDescriptorFactory
 		{
 			return existingColumnNames.contains(COLUMNNAME_DocAction) ? COLUMNNAME_DocAction : null;
 		}
-	}
-
-	public static void main(final String[] args) throws Exception
-	{
-		// FIXME: remove it!!!!
-
-		System.setProperty("de.metas.adempiere.debug", "true");
-		Env.getSingleAdempiereInstance().startup(RunMode.SWING_CLIENT);
-
-		final Properties ctx = Env.getCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
-
-		final ObjectMapper jsonObjectMapper = JsonHelper.createObjectMapper();
-		// jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false); // better fail!
-		jsonObjectMapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty
-
-		final DocumentDescriptor document = new DocumentDescriptorFactory().getDocumentDescriptor(143);
-		{
-			final DocumentLayoutDescriptor layout = document.getLayout();
-			System.out.println("=== LAYOUT =====================================");
-			System.out.println(layout);
-
-			//
-			final String jsonStr = jsonObjectMapper.writeValueAsString(layout);
-			System.out.println("JSON: \n" + jsonStr);
-		}
-
-		{
-			final DocumentEntityDescriptor entityDesc = document.getEntityDescriptor();
-			System.out.println("=== Entity descriptor =====================================");
-			System.out.println(entityDesc);
-
-			//
-			// final String jsonStr = jsonObjectMapper.writeValueAsString(entityDesc);
-			// System.out.println("JSON: \n" + jsonStr);
-		}
-
 	}
 }
