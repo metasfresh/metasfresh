@@ -16,19 +16,15 @@ export default class UiElements extends Component {
                     <div className="row">
                         <div className="col-xs-3">
                             <h6>Primary</h6>
-                            <p>
-                                <div className="input-primary">
-                                    <input type="text" className="input-field" />
-                                </div>
-                            </p>
+                            <div className="input-primary">
+                                <input type="text" className="input-field" />
+                            </div>
                         </div>
                         <div className="col-xs-3">
                             <h6>Secondary</h6>
-                            <p>
-                                <div className="input-secondary">
-                                    <input type="text" className="input-field" />
-                                </div>
-                            </p>
+                            <div className="input-secondary">
+                                <input type="text" className="input-field" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -38,19 +34,15 @@ export default class UiElements extends Component {
                     <div className="row">
                         <div className="col-xs-3">
                             <h6>Primary</h6>
-                            <p>
-                                <div className="input-primary input-block">
-                                    <textarea className="input-field" />
-                                </div>
-                            </p>
+                            <div className="input-primary input-block">
+                                <textarea className="input-field" />
+                            </div>
                         </div>
                         <div className="col-xs-3">
                             <h6>Secondary</h6>
-                            <p>
-                                <div className="input-secondary input-block">
-                                    <textarea className="input-field" />
-                                </div>
-                            </p>
+                            <div className="input-secondary input-block">
+                                <textarea className="input-field" />
+                            </div>
                         </div>
                     </div>
                 </div>
