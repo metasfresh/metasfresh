@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -462,6 +463,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int			onlyCurrentDays = 0;
 
 	private List<GridFieldVO> _fields = null; // lazy
+	private Optional<GridFieldVO> _keyField = null; // lazy
 	private Optional<GridFieldVO> _parentLinkField = null; // lazy
 	
 	@Override
@@ -509,6 +511,47 @@ public class GridTabVO implements Evaluatee, Serializable
 		
 		return null;
 	}
+	
+	public GridFieldVO getFieldByColumnName(final String columnName)
+	{
+		Check.assumeNotEmpty(columnName, "columnName is not empty");
+		for (final GridFieldVO gridFieldVO : getFields())
+		{
+			if(Objects.equals(columnName, gridFieldVO.getColumnName()))
+			{
+				return gridFieldVO;
+			}
+		}
+		
+		return null;
+	}
+	
+	public boolean hasField(final String columnName)
+	{
+		return getFieldByColumnName(columnName) != null;
+	}
+	
+	public GridFieldVO getKeyField()
+	{
+		if (_keyField == null)
+		{
+			GridFieldVO keyField = null;
+			
+			for (final GridFieldVO gridFieldVO : getFields())
+			{
+				if (gridFieldVO.isKey())
+				{
+					keyField = gridFieldVO;
+					break;
+				}
+			}
+			
+			_keyField = Optional.fromNullable(keyField);
+		}
+		
+		return _keyField.orNull();
+	}
+
 	
 	public GridFieldVO getParentLinkField()
 	{
