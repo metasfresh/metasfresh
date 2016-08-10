@@ -4,17 +4,20 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.model.sql.SqlDocumentRepository;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 
 /*
  * #%L
@@ -38,11 +41,14 @@ import de.metas.ui.web.window.model.sql.SqlDocumentRepository;
  * #L%
  */
 
+@Component
 public class DocumentCollection
 {
-	private final DocumentDescriptorFactory documentDescriptorFactory = new DocumentDescriptorFactory();
+	@Autowired
+	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	private final DocumentRepository documentsRepository = new SqlDocumentRepository();
+	@Autowired
+	private DocumentRepository documentsRepository;
 
 	private final LoadingCache<DocumentKey, Document> documents = CacheBuilder.newBuilder()
 			.build(new CacheLoader<DocumentKey, Document>()
@@ -54,6 +60,11 @@ public class DocumentCollection
 				}
 
 			});
+
+	/* package */ DocumentCollection()
+	{
+		super();
+	}
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
 	{
@@ -86,7 +97,7 @@ public class DocumentCollection
 			{
 				return documents.get(documentKey);
 			}
-			catch (final ExecutionException e)
+			catch (final UncheckedExecutionException | ExecutionException e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}
@@ -152,8 +163,14 @@ public class DocumentCollection
 		final Document document = documentsRepository.retriveDocument(query);
 		if (document == null)
 		{
-			throw new AdempiereException("@NotFound@ " + documentKey);
+			throw new DocumentNotFoundException(documentKey);
 		}
 		return document;
+	}
+
+	public void cacheReset()
+	{
+		// TODO: invalidate only those which are: 1. NOW new; 2. NOT currently editing
+		documents.invalidateAll();
 	}
 }

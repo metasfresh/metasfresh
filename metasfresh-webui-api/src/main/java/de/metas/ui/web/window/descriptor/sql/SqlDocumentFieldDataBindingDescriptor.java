@@ -39,7 +39,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return new Builder();
 	}
-	
+
 	public static final SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
 	{
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
@@ -59,6 +59,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final String displayColumnSql;
 	private final Boolean numericKey;
 
+	private final int orderByPriority;
+	private final boolean orderByAscending;
+	private final String sqlOrderBy;
+
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
 		super();
@@ -68,7 +72,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlColumnSql = builder.sqlColumnSql;
 		keyColumn = builder.keyColumn;
 		encrypted = builder.encrypted;
-		
+
 		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
 
 		//
@@ -88,6 +92,21 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			numericKey = null;
 		}
 
+		//
+		// ORDER BY
+		{
+			orderByPriority = builder.orderByPriority;
+			orderByAscending = builder.orderByAscending;
+			if (orderByPriority == 0)
+			{
+				sqlOrderBy = null;
+			}
+			else
+			{
+				final String sqlOrderByColumnName = usingDisplayColumn ? displayColumnName : sqlColumnName;
+				sqlOrderBy = sqlOrderByColumnName + (orderByAscending ? " ASC" : " DESC");
+			}
+		}
 	}
 
 	@Override
@@ -119,17 +138,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return sqlColumnSql;
 	}
-	
+
 	public boolean isKeyColumn()
 	{
 		return keyColumn;
 	}
-	
+
 	public boolean isEncrypted()
 	{
 		return encrypted;
 	}
-
 
 	public SqlLookupDescriptor getSqlLookupDescriptor()
 	{
@@ -155,27 +173,53 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return numericKey;
 	}
-	
+
 	@Override
 	public LookupDataSource createLookupDataSource()
 	{
-		if(sqlLookupDescriptor == null)
+		if (sqlLookupDescriptor == null)
 		{
 			return null;
 		}
 		return SqlLookupDataSource.of(sqlLookupDescriptor);
 	}
-	
+
 	@Override
 	public Collection<String> getLookupValuesDependsOnFieldNames()
 	{
-		if(sqlLookupDescriptor == null)
+		if (sqlLookupDescriptor == null)
 		{
 			return ImmutableSet.of();
 		}
 		return sqlLookupDescriptor.getDependsOnFieldNames();
 	}
 
+	/**
+	 * @return true if this field has ORDER BY instructions
+	 * @see #getSqlOrderBy()
+	 */
+	public boolean isOrderBy()
+	{
+		return sqlOrderBy != null;
+	}
+
+	public int getOrderByPriority()
+	{
+		return orderByPriority;
+	}
+
+	public boolean isOrderByAscending()
+	{
+		return orderByAscending;
+	}
+
+	/**
+	 * @return SQL ORDER BY or null if this field does not have ORDER BY instructions
+	 */
+	public String getSqlOrderBy()
+	{
+		return sqlOrderBy;
+	}
 
 	public static final class Builder
 	{
@@ -188,7 +232,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
 		private boolean keyColumn = false;
-		public boolean encrypted = false;
+		private boolean encrypted = false;
+
+		private boolean orderByAscending;
+		private int orderByPriority;
 
 		private Builder()
 		{
@@ -244,7 +291,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.AD_Reference_Value_ID = AD_Reference_Value_ID;
 			return this;
 		}
-		
+
 		public Builder setAD_Val_Rule_ID(int AD_Val_Rule_ID)
 		{
 			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
@@ -256,12 +303,31 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.keyColumn = keyColumn;
 			return this;
 		}
-		
+
 		public Builder setEncrypted(boolean encrypted)
 		{
 			this.encrypted = encrypted;
 			return this;
 		}
 
+		/**
+		 * Sets ORDER BY priority and direction (ascending/descending)
+		 * 
+		 * @param priority priority; if positive then direction will be ascending; if negative then direction will be descending
+		 */
+		public Builder setOrderBy(final int priority)
+		{
+			if (priority >= 0)
+			{
+				this.orderByPriority = priority;
+				this.orderByAscending = true;
+			}
+			else
+			{
+				this.orderByPriority = -priority;
+				this.orderByAscending = false;
+			}
+			return this;
+		}
 	}
 }

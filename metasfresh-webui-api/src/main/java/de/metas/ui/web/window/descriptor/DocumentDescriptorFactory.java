@@ -26,6 +26,7 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -55,6 +56,7 @@ import de.metas.ui.web.window_old.shared.datatype.LookupValue;
  * #L%
  */
 
+@Service
 public class DocumentDescriptorFactory
 {
 	private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
@@ -80,6 +82,11 @@ public class DocumentDescriptorFactory
 	}
 
 	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
+
+	/* package */ DocumentDescriptorFactory()
+	{
+		super();
+	}
 
 	public DocumentDescriptor getDocumentDescriptor(final int AD_Window_ID)
 	{
@@ -122,7 +129,8 @@ public class DocumentDescriptorFactory
 					.setSqlTableName(mainTabVO.getTableName())
 					.setSqlTableAliasAsMaster()
 					.setSqlParentLinkColumnName(null) // no parent link on main tab
-					;
+					.setSqlWhereClause(mainTabVO.getWhereClause())
+					.setSqlOrderBy(mainTabVO.getOrderByClause());
 
 			//
 			// Fields mapping & data binding
@@ -152,7 +160,9 @@ public class DocumentDescriptorFactory
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(detailTabVO.getTableName())
 					.setSqlTableAliasFromDetailId(detail.getDetailId())
-					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO));
+					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO))
+					.setSqlWhereClause(detailTabVO.getWhereClause())
+					.setSqlOrderBy(detailTabVO.getOrderByClause());
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
 					.setId(detailTabVO.getAD_Tab_ID())
@@ -324,6 +334,12 @@ public class DocumentDescriptorFactory
 		//
 		final boolean keyColumn = gridFieldVO.isKey();
 
+		int orderBySortNo = gridFieldVO.getSortNo();
+		if (orderBySortNo == 0 && keyColumn)
+		{
+			orderBySortNo = Integer.MAX_VALUE;
+		}
+
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)
@@ -334,6 +350,7 @@ public class DocumentDescriptorFactory
 				.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
+				.setOrderBy(orderBySortNo)
 				.build();
 
 		return DocumentFieldDescriptor.builder()

@@ -16,13 +16,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.compiere.util.DB;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -64,12 +67,18 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Repository
 public class SqlDocumentRepository implements DocumentRepository
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
+
+	/* package */ SqlDocumentRepository()
+	{
+		super();
+	}
 
 	@Override
 	public List<Document> retriveDocuments(final DocumentRepositoryQuery query)
@@ -80,6 +89,8 @@ public class SqlDocumentRepository implements DocumentRepository
 
 	public List<Document> retriveDocuments(final DocumentRepositoryQuery query, final int limit)
 	{
+		logger.debug("Retrieving records: query={}, limit={}", query, limit);
+
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 		final Document parentDocument = query.getParentDocument();
 
@@ -162,7 +173,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			}
 			else
 			{
-				// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type. 
+				// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
 				final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
 				try
 				{
@@ -197,22 +208,25 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		final StringBuilder sql = new StringBuilder();
 
+		//
 		// SELECT ... FROM ...
 		sql.append(entityBinding.getSqlSelectFrom());
 
-		final String whereClause = buildSqlWhereClause(sqlParams, query);
-		if (!Strings.isNullOrEmpty(whereClause))
+		//
+		// WHERE
+		final String sqlWhereClause = buildSqlWhereClause(sqlParams, query);
+		if (!Strings.isNullOrEmpty(sqlWhereClause))
 		{
-			sql.append("\n WHERE ").append(whereClause);
+			sql.append("\n WHERE ").append(sqlWhereClause);
 		}
 
-		// TODO: implement ORDER BY
 		//
-		// final String orderBy = buildSqlOrderBy(query);
-		// if (!Strings.isNullOrEmpty(orderBy))
-		// {
-		// sql.append("\n ORDER BY ").append(orderBy);
-		// }
+		// ORDER BY
+		final String sqlOrderBy = entityBinding.getSqlOrderBy();
+		if (!Check.isEmpty(sqlOrderBy))
+		{
+			sql.append("\n ORDER BY ").append(sqlOrderBy);
+		}
 
 		// TODO: implement LIMIT
 		//
@@ -232,6 +246,23 @@ public class SqlDocumentRepository implements DocumentRepository
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
 		//
+		// Entity's WHERE clause
+		{
+			final IStringExpression entityWhereClauseExpression = entityBinding.getSqlWhereClause();
+			final Evaluatee evalCtx = query.getEvaluationContext();
+			final String entityWhereClause = entityWhereClauseExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+			if (!Check.isEmpty(entityWhereClause, true))
+			{
+				if (sqlWhereClause.length() > 0)
+				{
+					sqlWhereClause.append("\n AND ");
+				}
+				sqlWhereClause.append(" /* entity where clause */ ");
+				sqlWhereClause.append("(").append(entityWhereClause).append(")");
+			}
+		}
+
+		//
 		// Key column
 		if (query.getRecordId() != null)
 		{
@@ -245,6 +276,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			{
 				sqlWhereClause.append("\n AND ");
 			}
+			sqlWhereClause.append(" /* key */ ");
 			sqlWhereClause.append(sqlKeyColumnName).append("=?");
 			sqlParams.add(query.getRecordId());
 		}
@@ -258,6 +290,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			{
 				sqlWhereClause.append("\n AND ");
 			}
+			sqlWhereClause.append(" /* parent link */ ");
 			sqlWhereClause.append(sqlParentLinkColumnName).append("=?");
 			sqlParams.add(query.getParentLinkId());
 		}

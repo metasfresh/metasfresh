@@ -1,6 +1,9 @@
 package de.metas.ui.web.window.model;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -46,6 +49,8 @@ public final class DocumentRepositoryQuery
 	private final Object recordId;
 	private final Document parentDocument;
 
+	private transient Evaluatee _evaluationContext = null; // lazy
+
 	private DocumentRepositoryQuery(final Builder builder)
 	{
 		super();
@@ -74,7 +79,7 @@ public final class DocumentRepositoryQuery
 	{
 		return recordId;
 	}
-	
+
 	public Document getParentDocument()
 	{
 		return parentDocument;
@@ -83,6 +88,27 @@ public final class DocumentRepositoryQuery
 	public Object getParentLinkId()
 	{
 		return parentDocument == null ? null : parentDocument.getDocumentId();
+	}
+
+	public Evaluatee getEvaluationContext()
+	{
+		if (_evaluationContext == null)
+		{
+			_evaluationContext = createEvaluationContext();
+		}
+		return _evaluationContext;
+	}
+
+	private Evaluatee createEvaluationContext()
+	{
+		if (parentDocument != null)
+		{
+			return parentDocument.asEvaluatee();
+		}
+
+		final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
+		final boolean onlyWindow = false;
+		return Evaluatees.ofCtx(Env.getCtx(), windowNo, onlyWindow);
 	}
 
 	public static final class Builder
@@ -114,5 +140,4 @@ public final class DocumentRepositoryQuery
 			return this;
 		}
 	}
-
 }

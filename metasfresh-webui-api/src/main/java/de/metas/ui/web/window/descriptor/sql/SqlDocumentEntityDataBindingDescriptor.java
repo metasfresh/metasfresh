@@ -3,8 +3,12 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -41,7 +45,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return new Builder();
 	}
-	
+
 	public static final SqlDocumentEntityDataBindingDescriptor cast(final DocumentEntityDataBindingDescriptor descriptor)
 	{
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
@@ -54,9 +58,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlKeyColumnName;
 	private final String sqlParentLinkColumnName;
 
-	private final List<SqlDocumentFieldDataBindingDescriptor> fields;
-
 	private final String sqlSelectFrom;
+	private IStringExpression sqlWhereClause;
+	private final String sqlOrderBy;
+
+	private final List<SqlDocumentFieldDataBindingDescriptor> fields;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -75,6 +81,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		fields = ImmutableList.copyOf(builder.fields);
 
 		sqlSelectFrom = builder.buildSqlSelect();
+		sqlWhereClause = builder.buildSqlWhereClause();
+		sqlOrderBy = builder.buildSqlOrderBy();
 	}
 
 	@Override
@@ -86,6 +94,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.add("sqlTableAlias", sqlTableAlias)
 				.add("sqlKeyColumnName", sqlKeyColumnName)
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
+				.add("sqlOrderBy", sqlOrderBy)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
@@ -110,14 +119,24 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlParentLinkColumnName;
 	}
 
-	public List<SqlDocumentFieldDataBindingDescriptor> getFields()
-	{
-		return fields;
-	}
-
 	public String getSqlSelectFrom()
 	{
 		return sqlSelectFrom;
+	}
+
+	public IStringExpression getSqlWhereClause()
+	{
+		return sqlWhereClause;
+	}
+
+	public String getSqlOrderBy()
+	{
+		return sqlOrderBy;
+	}
+
+	public List<SqlDocumentFieldDataBindingDescriptor> getFields()
+	{
+		return fields;
 	}
 
 	public static final class Builder
@@ -125,9 +144,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String sqlTableName;
 		private String sqlTableAlias;
 		private String sqlParentLinkColumnName;
+		private String sqlOrderBy;
+		private String sqlWhereClause = null;
 
 		private final List<SqlDocumentFieldDataBindingDescriptor> fields = new ArrayList<>();
-		
+
 		private SqlDocumentFieldDataBindingDescriptor keyField;
 
 		private Builder()
@@ -195,6 +216,46 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 		}
 
+		private IStringExpression buildSqlWhereClause()
+		{
+			if (Check.isEmpty(sqlWhereClause, true))
+			{
+				return IStringExpression.NULL;
+			}
+
+			String sqlWhereClausePrepared = sqlWhereClause.trim()
+					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
+					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
+					.replace(sqlTableName + ".", sqlTableAlias + ".") //
+					;
+
+			final IStringExpression sqlWhereClauseExpr = Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
+			return sqlWhereClauseExpr;
+		}
+
+		private String buildSqlOrderBy()
+		{
+			// Explicit ORDER BY
+			if (sqlOrderBy != null)
+			{
+				return sqlOrderBy;
+			}
+
+			//
+			// Build the ORDER BY from fields
+			final String sqlOrderByBuilt = fields.stream()
+					.filter(field -> field.isOrderBy())
+					.sorted((field1, field2) -> field1.getOrderByPriority() - field2.getOrderByPriority())
+					.map(field -> field.getSqlOrderBy())
+					.collect(Collectors.joining(", "));
+			if (!sqlOrderByBuilt.isEmpty())
+			{
+				return sqlOrderByBuilt;
+			}
+
+			return null;
+		}
+
 		public Builder setSqlTableName(final String sqlTableName)
 		{
 			this.sqlTableName = sqlTableName;
@@ -231,18 +292,32 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
+		public Builder setSqlWhereClause(final String sqlWhereClause)
+		{
+			Check.assumeNotNull(sqlWhereClause, "Parameter sqlWhereClause is not null");
+			this.sqlWhereClause = sqlWhereClause;
+			return this;
+		}
+
+		public Builder setSqlOrderBy(final String sqlOrderBy)
+		{
+			this.sqlOrderBy = Check.isEmpty(sqlOrderBy, true) ? null : sqlOrderBy.trim();
+			return this;
+		}
+
 		public Builder addField(final DocumentFieldDataBindingDescriptor field)
 		{
 			final SqlDocumentFieldDataBindingDescriptor sqlField = (SqlDocumentFieldDataBindingDescriptor)field;
 			fields.add(sqlField);
-			
+
 			if (sqlField.isKeyColumn())
 			{
-				Check.assumeNull(this.keyField, "More than one key field is not allowed: {}, {}", this.keyField, field);
-				this.keyField = sqlField;
+				Check.assumeNull(keyField, "More than one key field is not allowed: {}, {}", keyField, field);
+				keyField = sqlField;
 			}
-			
+
 			return this;
 		}
+
 	}
 }

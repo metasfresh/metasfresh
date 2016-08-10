@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,7 +50,8 @@ public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
 
-	private final DocumentCollection documentCollection = new DocumentCollection();
+	@Autowired
+	private DocumentCollection documentCollection;
 
 	private final void autologin()
 	{
@@ -156,5 +159,12 @@ public class WindowRestController
 				.getLookupValues(document);
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);
+	}
+
+	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
+	public void cacheReset()
+	{
+		CacheMgt.get().reset(); // FIXME: debugging - while debugging is useful to reset all caches
+		documentCollection.cacheReset();
 	}
 }
