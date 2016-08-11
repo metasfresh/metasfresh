@@ -3,13 +3,20 @@ package de.metas.ui.web.window.model;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.util.JSONConverters;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 import de.metas.ui.web.window_old.shared.datatype.NullValue;
@@ -39,6 +46,7 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 public class DocumentField
 {
 	private final DocumentFieldDescriptor descriptor;
+	private final Document _document;
 
 	private Object initialValue;
 	private Object value;
@@ -48,11 +56,14 @@ public class DocumentField
 	private boolean displayed = false;
 
 	private final LookupDataSource lookupDataSource;
+	
+	private ICalloutField _calloutField; // lazy
 
-	public DocumentField(final DocumentFieldDescriptor descriptor)
+	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
 		super();
 		this.descriptor = descriptor;
+		_document = document;
 		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
 	}
 
@@ -72,6 +83,11 @@ public class DocumentField
 	public DocumentFieldDescriptor getDescriptor()
 	{
 		return descriptor;
+	}
+
+	private Document getDocument()
+	{
+		return _document;
 	}
 
 	public String getName()
@@ -111,12 +127,18 @@ public class DocumentField
 		return valueInt == null ? defaultValue : valueInt;
 	}
 
+	public Object getOldValue()
+	{
+		// TODO Auto-generated method stub
+		return getValue();
+	}
+
 	private Object convertToValueClass(final Object value)
 	{
 		final Class<?> targetType = descriptor.getValueClass();
 		return convertToValueClass(value, targetType);
 	}
-	
+
 	private <T> T convertToValueClass(final Object value, final Class<T> targetType)
 	{
 		if (NullValue.isNull(value))
@@ -128,7 +150,7 @@ public class DocumentField
 
 		try
 		{
-			if (fromType.equals(targetType))
+			if(targetType.isAssignableFrom(fromType))
 			{
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)value;
@@ -197,8 +219,8 @@ public class DocumentField
 					{
 						return null;
 					}
-					
-					if(lookupDataSource != null)
+
+					if (lookupDataSource != null)
 					{
 						@SuppressWarnings("unchecked")
 						final T valueConv = (T)lookupDataSource.findById(valueStr);
@@ -207,7 +229,7 @@ public class DocumentField
 				}
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Cannot convert " + getName() + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
 		}
@@ -259,5 +281,114 @@ public class DocumentField
 	public List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
 	{
 		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+	}
+
+	public ICalloutField asCalloutField()
+	{
+		if(_calloutField == null)
+		{
+			_calloutField = new AsCalloutField();
+		}
+		return _calloutField;
+	}
+
+	private final class AsCalloutField implements ICalloutField
+	{
+
+		@Override
+		public boolean isTriggerCalloutAllowed()
+		{
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public Properties getCtx()
+		{
+			// TODO Auto-generated method stub
+			return Env.getCtx();
+		}
+
+		@Override
+		public String getTableName()
+		{
+			return SqlDocumentEntityDataBindingDescriptor.getTableName(getDocument());
+		}
+
+		@Override
+		public int getAD_Table_ID()
+		{
+			return SqlDocumentEntityDataBindingDescriptor.getAD_Table_ID(getDocument());
+		}
+
+		@Override
+		public int getAD_Column_ID()
+		{
+			return SqlDocumentFieldDataBindingDescriptor.getAD_Column_ID(DocumentField.this);
+		}
+
+		@Override
+		public String getColumnName()
+		{
+			return getName();
+		}
+
+		@Override
+		public Object getValue()
+		{
+			return DocumentField.this.getValue();
+		}
+
+		@Override
+		public Object getOldValue()
+		{
+			return DocumentField.this.getOldValue();
+		}
+
+		@Override
+		public <T> T getModel(final Class<T> modelClass)
+		{
+			return InterfaceWrapperHelper.create(getDocument(), modelClass);
+		}
+
+		@Override
+		public int getWindowNo()
+		{
+			return getDocument().getWindowNo();
+		}
+
+		@Override
+		public int getTabNo()
+		{
+			return getDocument().getEntityDescriptor().getTabNo();
+		}
+
+		@Override
+		public boolean isRecordCopyingMode()
+		{
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean isRecordCopyingModeIncludingDetails()
+		{
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public ICalloutExecutor getCurrentCalloutExecutor()
+		{
+			return getDocument().getCalloutExecutor();
+		}
+
+		@Override
+		public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
+
 	}
 }

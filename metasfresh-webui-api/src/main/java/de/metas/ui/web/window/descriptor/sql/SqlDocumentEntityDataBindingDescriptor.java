@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.Document;
 
 /*
  * #%L
@@ -51,6 +52,18 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
 	}
 
+	public static String getTableName(final Document document)
+	{
+		final SqlDocumentEntityDataBindingDescriptor dataBinding = cast(document.getEntityDescriptor().getDataBinding());
+		return dataBinding.getSqlTableName();
+	}
+
+	public static int getAD_Table_ID(final Document document)
+	{
+		final SqlDocumentEntityDataBindingDescriptor dataBinding = cast(document.getEntityDescriptor().getDataBinding());
+		return dataBinding.getAD_Table_ID();
+	}
+
 	private static final String TABLEALIAS_Master = "master";
 
 	private final String sqlTableName;
@@ -59,10 +72,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlParentLinkColumnName;
 
 	private final String sqlSelectFrom;
-	private IStringExpression sqlWhereClause;
+	private final IStringExpression sqlWhereClause;
 	private final String sqlOrderBy;
 
 	private final List<SqlDocumentFieldDataBindingDescriptor> fields;
+
+	// legacy
+	private final int AD_Table_ID;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -83,6 +99,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlSelectFrom = builder.buildSqlSelect();
 		sqlWhereClause = builder.buildSqlWhereClause();
 		sqlOrderBy = builder.buildSqlOrderBy();
+
+		// legacy
+		AD_Table_ID = builder.AD_Table_ID;
 	}
 
 	@Override
@@ -107,6 +126,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public String getSqlTableAlias()
 	{
 		return sqlTableAlias;
+	}
+
+	private int getAD_Table_ID()
+	{
+		return AD_Table_ID;
 	}
 
 	public String getSqlKeyColumnName()
@@ -146,6 +170,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String sqlParentLinkColumnName;
 		private String sqlOrderBy;
 		private String sqlWhereClause = null;
+
+		// legacy
+		private Integer AD_Table_ID;
 
 		private final List<SqlDocumentFieldDataBindingDescriptor> fields = new ArrayList<>();
 
@@ -223,7 +250,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				return IStringExpression.NULL;
 			}
 
-			String sqlWhereClausePrepared = sqlWhereClause.trim()
+			final String sqlWhereClausePrepared = sqlWhereClause.trim()
 					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
 					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
 					.replace(sqlTableName + ".", sqlTableAlias + ".") //
@@ -286,10 +313,21 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlTableAlias;
 		}
 
+		public Builder setAD_Table_ID(final int AD_Table_ID)
+		{
+			this.AD_Table_ID = AD_Table_ID;
+			return this;
+		}
+
 		public Builder setSqlParentLinkColumnName(final String sqlParentLinkColumnName)
 		{
 			this.sqlParentLinkColumnName = sqlParentLinkColumnName;
 			return this;
+		}
+
+		public String getSqlParentLinkColumnName()
+		{
+			return sqlParentLinkColumnName;
 		}
 
 		public Builder setSqlWhereClause(final String sqlWhereClause)

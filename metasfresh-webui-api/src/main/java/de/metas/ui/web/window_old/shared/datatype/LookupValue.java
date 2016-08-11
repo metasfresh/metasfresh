@@ -134,6 +134,28 @@ public final class LookupValue implements Serializable
 		return id;
 	}
 
+	public int getIdAsInt()
+	{
+		if (id instanceof Integer)
+		{
+			return (Integer)id;
+		}
+		else if (id instanceof String)
+		{
+			return Integer.parseInt((String)id);
+		}
+		else
+		{
+			throw new IllegalStateException("Cannot convert id "+id+" ("+id.getClass()+") to int");
+		}
+	}
+	
+	public String getIdAsString()
+	{
+		return id.toString();
+	}
+
+
 	public String getDisplayName()
 	{
 		return displayName;

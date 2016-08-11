@@ -51,6 +51,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	/** Is this the key field ? */
 	private final boolean key;
+	private final boolean parentLink;
 
 	private final DocumentFieldWidgetType widgetType;
 
@@ -76,6 +77,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		description = builder.description;
 
 		key = builder.key;
+		parentLink = builder.parentLink;
 
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 
@@ -128,6 +130,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return key;
 	}
+	
+	public boolean isParentLink()
+	{
+		return parentLink;
+	}
 
 	public DocumentFieldWidgetType getWidgetType()
 	{
@@ -178,6 +185,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private String description;
 
 		private boolean key = false;
+		private boolean parentLink = false;
 
 		private DocumentFieldWidgetType widgetType;
 		public Class<?> valueClass;
@@ -227,6 +235,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setKey(boolean key)
 		{
 			this.key = key;
+			return this;
+		}
+		
+		public Builder setParentLink(boolean parentLink)
+		{
+			this.parentLink = parentLink;
 			return this;
 		}
 

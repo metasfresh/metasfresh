@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Check;
@@ -66,6 +68,8 @@ public class Document
 
 	private DocumentEvaluatee _evaluatee; // lazy
 
+	private final ICalloutExecutor calloutExecutor;
+
 	public Document(final DocumentRepository documentRepository, final DocumentEntityDescriptor entityDescriptor, final int windowNo, final Document parentDocument)
 	{
 		super();
@@ -82,7 +86,7 @@ public class Document
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String name = fieldDescriptor.getName();
-				final DocumentField field = new DocumentField(fieldDescriptor);
+				final DocumentField field = new DocumentField(fieldDescriptor, this);
 				fieldsBuilder.put(name, field);
 
 				if (fieldDescriptor.isKey())
@@ -107,6 +111,8 @@ public class Document
 			}
 			this.includedDocuments = includedDocuments.build();
 		}
+
+		calloutExecutor = new CalloutExecutor(Env.getCtx(), windowNo);
 	}
 
 	@Override
@@ -241,11 +247,11 @@ public class Document
 
 			//
 			// Environment variable
-			if (variableName.startsWith("#"))                       // Env, global var
+			if (variableName.startsWith("#"))                        // Env, global var
 			{
 				return true;
 			}
-			else if (variableName.startsWith("$"))                       // Env, global accounting var
+			else if (variableName.startsWith("$"))                        // Env, global accounting var
 			{
 				return true;
 			}
@@ -280,11 +286,11 @@ public class Document
 		{
 			//
 			// Environment variable
-			if (variableName.startsWith("#"))                       // Env, global var
+			if (variableName.startsWith("#"))                        // Env, global var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
-			else if (variableName.startsWith("$"))                       // Env, global accounting var
+			else if (variableName.startsWith("$"))                        // Env, global accounting var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
@@ -381,6 +387,11 @@ public class Document
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
+		
+		// Callouts
+		// TODO: find a way to collect events...
+		calloutExecutor.execute(getField(fieldName).asCalloutField());
+
 
 		// TODO: check if we can save it
 	}
@@ -467,7 +478,6 @@ public class Document
 			}
 
 		});
-
 	}
 
 	private void updateDependentField(
@@ -521,7 +531,7 @@ public class Document
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);
 	}
-	
+
 	public List<Document> getIncludedDocuments(final String detailId)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
@@ -543,5 +553,10 @@ public class Document
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
 
+	}
+
+	/* package */ICalloutExecutor getCalloutExecutor()
+	{
+		return calloutExecutor;
 	}
 }

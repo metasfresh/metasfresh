@@ -40,4 +40,8 @@ public interface DocumentRepository
 	 * @return newly created document (not saved); never returns null
 	 */
 	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
+
+	void refresh(Document document);
+
+	void save(Document document);
 }

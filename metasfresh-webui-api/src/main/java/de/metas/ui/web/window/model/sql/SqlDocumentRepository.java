@@ -467,4 +467,18 @@ public class SqlDocumentRepository implements DocumentRepository
 		return SecureEngine.decrypt(value);
 	}	// decrypt
 
+	@Override
+	public void refresh(Document document)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void save(Document document)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
 }

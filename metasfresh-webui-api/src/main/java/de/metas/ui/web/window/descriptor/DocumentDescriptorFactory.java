@@ -114,7 +114,9 @@ public class DocumentDescriptorFactory
 		final int mainTabNo = MAIN_TabNo; // first tab
 		final GridTabVO mainTabVO = gridWindowVO.getTab(mainTabNo);
 		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
-				.setId(mainTabVO.getAD_Tab_ID());
+				.setId(mainTabVO.getAD_Tab_ID())
+				.setTabNo(mainTabNo) // legacy
+				;
 		{
 			final SpecialFieldsCollector specialFieldsCollector = new SpecialFieldsCollector();
 			layoutBuilder.addSections(createSections(mainTabVO, specialFieldsCollector));
@@ -128,6 +130,7 @@ public class DocumentDescriptorFactory
 			final SqlDocumentEntityDataBindingDescriptor.Builder mainEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(mainTabVO.getTableName())
 					.setSqlTableAliasAsMaster()
+					.setAD_Table_ID(mainTabVO.getAD_Table_ID()) // legacy
 					.setSqlParentLinkColumnName(null) // no parent link on main tab
 					.setSqlWhereClause(mainTabVO.getWhereClause())
 					.setSqlOrderBy(mainTabVO.getOrderByClause());
@@ -160,20 +163,25 @@ public class DocumentDescriptorFactory
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(detailTabVO.getTableName())
 					.setSqlTableAliasFromDetailId(detail.getDetailId())
+					.setAD_Table_ID(detailTabVO.getAD_Table_ID()) // legacy
 					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO))
 					.setSqlWhereClause(detailTabVO.getWhereClause())
 					.setSqlOrderBy(detailTabVO.getOrderByClause());
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
 					.setId(detailTabVO.getAD_Tab_ID())
-					.setDetailId(detail.getDetailId());
+					.setDetailId(detail.getDetailId())
+					.setTabNo(detailTabVO.getTabNo()) // legacy
+					;
 
 			//
 			// Fields mapping
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentFieldDescriptorBuilder(detailTabVO, detailEntityBindingsBuilder.getSqlTableAlias(), gridFieldVO).build())
+					.map(gridFieldVO -> documentFieldDescriptorBuilder(detailTabVO, detailEntityBindingsBuilder.getSqlTableAlias(), gridFieldVO)
+							.setParentLink(gridFieldVO.getColumnName().equals(detailEntityBindingsBuilder.getSqlParentLinkColumnName()))
+							.build())
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -345,6 +353,7 @@ public class DocumentDescriptorFactory
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(gridFieldVO.getColumnName())
 				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
+				.setAD_Column_ID(gridFieldVO.getAD_Column_ID()) // legacy
 				.setDisplayType(gridFieldVO.getDisplayType())
 				.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
 				.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
@@ -390,16 +399,31 @@ public class DocumentDescriptorFactory
 			return null;
 		}
 
-		final GridFieldVO parentLinkField = tabVO.getParentLinkField();
-		if (parentLinkField != null)
+		//
+		// Get configured parent link if any
 		{
-			return parentLinkField.getColumnName();
+			final GridFieldVO parentLinkField = tabVO.getParentLinkField();
+			if (parentLinkField != null)
+			{
+				return parentLinkField.getColumnName();
+			}
 		}
 
-		final String parentTableName = parentTabVO.getTableName();
-		Check.assumeNotEmpty(parentTableName, "parentTableName is not empty"); // shall not happen
-		// FIXME: hardcoded
-		return parentTableName + "_ID";
+		//
+		// Try linking by parent's key field
+		{
+			final GridFieldVO parentKeyField = parentTabVO.getKeyField();
+			if (parentKeyField != null)
+			{
+				final GridFieldVO parentLinkField = tabVO.getFieldByColumnName(parentKeyField.getColumnName());
+				if (parentLinkField != null)
+				{
+					return parentLinkField.getColumnName();
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private DocumentFieldWidgetType extractWidgetType(final GridFieldVO gridFieldVO)

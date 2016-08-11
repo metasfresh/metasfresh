@@ -1,5 +1,6 @@
 package de.metas.ui.web;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 
 import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 /*
  * #%L
@@ -65,6 +67,8 @@ public class WebRestApiApplication
 	public Adempiere adempiere()
 	{
 		Env.setContextProvider(new WebRestApiContextProvider());
+		
+		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 		
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);

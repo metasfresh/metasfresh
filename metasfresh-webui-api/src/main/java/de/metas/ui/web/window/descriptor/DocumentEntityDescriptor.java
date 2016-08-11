@@ -52,6 +52,9 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFieldDependencyMap dependencies;
 
+	// Legacy
+	private final int tabNo;
+
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
@@ -61,6 +64,9 @@ public class DocumentEntityDescriptor
 		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
 		dependencies = builder.buildDependencies();
+
+		// legacy:
+		tabNo = builder.tabNo;
 	}
 
 	@Override
@@ -132,6 +138,12 @@ public class DocumentEntityDescriptor
 		return dependencies;
 	}
 
+	// legacy
+	public int getTabNo()
+	{
+		return tabNo;
+	}
+
 	public static final class Builder
 	{
 		private String id;
@@ -139,6 +151,9 @@ public class DocumentEntityDescriptor
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptor dataBinding;
 		private String detailId;
+
+		// Legacy
+		private Integer tabNo;
 
 		private Builder()
 		{
@@ -188,6 +203,12 @@ public class DocumentEntityDescriptor
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 			fields.stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
+		}
+
+		public Builder setTabNo(int tabNo)
+		{
+			this.tabNo = tabNo;
+			return this;
 		}
 	}
 }

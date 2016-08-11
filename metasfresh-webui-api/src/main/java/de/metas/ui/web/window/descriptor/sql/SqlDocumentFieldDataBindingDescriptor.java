@@ -8,6 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.LookupDataSource;
 import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
 
@@ -45,6 +46,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
+	public static int getAD_Column_ID(final DocumentField documentField)
+	{
+		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
+		return dataBinding.getAD_Column_ID();
+	}
+
 	private final String sqlTableName;
 	private final String sqlTableAlias;
 	private final String sqlColumnName;
@@ -62,6 +69,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final int orderByPriority;
 	private final boolean orderByAscending;
 	private final String sqlOrderBy;
+
+	// legacy
+	private final int AD_Column_ID;
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
@@ -107,6 +117,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				sqlOrderBy = sqlOrderByColumnName + (orderByAscending ? " ASC" : " DESC");
 			}
 		}
+
+		//
+		// Legacy
+		AD_Column_ID = builder.AD_Column_ID;
 	}
 
 	@Override
@@ -137,6 +151,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public String getSqlColumnSql()
 	{
 		return sqlColumnSql;
+	}
+
+	private int getAD_Column_ID()
+	{
+		return AD_Column_ID;
 	}
 
 	public boolean isKeyColumn()
@@ -237,6 +256,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private boolean orderByAscending;
 		private int orderByPriority;
 
+		// legacy
+		private Integer AD_Column_ID;
+
 		private Builder()
 		{
 			super();
@@ -271,6 +293,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
+		public Builder setAD_Column_ID(final int AD_Column_ID)
+		{
+			this.AD_Column_ID = AD_Column_ID;
+			return this;
+		}
+
 		private SqlLookupDescriptor getSqlLookupDescriptor()
 		{
 			if (DisplayType.isAnyLookup(displayType))
@@ -292,19 +320,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setAD_Val_Rule_ID(int AD_Val_Rule_ID)
+		public Builder setAD_Val_Rule_ID(final int AD_Val_Rule_ID)
 		{
 			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 			return this;
 		}
 
-		public Builder setKeyColumn(boolean keyColumn)
+		public Builder setKeyColumn(final boolean keyColumn)
 		{
 			this.keyColumn = keyColumn;
 			return this;
 		}
 
-		public Builder setEncrypted(boolean encrypted)
+		public Builder setEncrypted(final boolean encrypted)
 		{
 			this.encrypted = encrypted;
 			return this;
@@ -312,20 +340,20 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		/**
 		 * Sets ORDER BY priority and direction (ascending/descending)
-		 * 
+		 *
 		 * @param priority priority; if positive then direction will be ascending; if negative then direction will be descending
 		 */
 		public Builder setOrderBy(final int priority)
 		{
 			if (priority >= 0)
 			{
-				this.orderByPriority = priority;
-				this.orderByAscending = true;
+				orderByPriority = priority;
+				orderByAscending = true;
 			}
 			else
 			{
-				this.orderByPriority = -priority;
-				this.orderByAscending = false;
+				orderByPriority = -priority;
+				orderByAscending = false;
 			}
 			return this;
 		}
