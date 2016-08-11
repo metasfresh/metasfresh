@@ -40,6 +40,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -47,6 +48,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.logging.LogManager;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
@@ -54,6 +56,8 @@ import de.metas.storage.IStorageRecord;
 public class HUStorageEngine implements IStorageEngine
 {
 	public static final transient HUStorageEngine instance = new HUStorageEngine();
+	
+	private static final Logger logger = LogManager.getLogger(HUStorageEngine.class);
 
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
 	private static final transient int DEFAULT_QueriesPerChunk = 500;
@@ -86,8 +90,11 @@ public class HUStorageEngine implements IStorageEngine
 	public Set<IStorageRecord> retrieveStorageRecords(final IContextAware context, final Set<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
+		
+		logger.debug("Retrieving storage records for {}", storageQueries);
 
 		final int queriesPerChunk = getQueriesPerChunk();
+		logger.debug("queriesPerChunk: {}", queriesPerChunk);
 
 		IQuery<I_M_HU_Storage> queryAgg = null;
 		int queriesCount = 0;
@@ -137,6 +144,7 @@ public class HUStorageEngine implements IStorageEngine
 			queriesCount = 0;
 		}
 
+		logger.debug("Returning {} storage records", storageRecords.size());
 		return storageRecords;
 	}
 
