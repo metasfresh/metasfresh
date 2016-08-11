@@ -264,18 +264,18 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartnerLocation(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String bPartnerLocation(final ICalloutField calloutField)
 	{
 		// FIXME !!!
 
 		// 05291: In case current record is on dataNew phase with Copy option set
 		// then just don't update the Bill fields but let them copy from original record
-		if (mTab.isDataNewCopy())
+		if (calloutField.isRecordCopyingMode())
 		{
 			return NO_ERROR;
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		if (order == null)
 		{
