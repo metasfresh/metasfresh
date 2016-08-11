@@ -8,14 +8,14 @@ import OrderInfo from '../components/salesOrder/OrderInfo';
 
 import {
     createWindow
-} from '../actions/SalesOrderActions';
+} from '../actions/WindowActions';
 
 class NewSalesOrder extends Component {
     constructor(props){
         super(props);
     }
     componentDidMount(){
-        this.props.dispatch(createWindow());
+        this.props.dispatch(createWindow(143));
     }
     render() {
         return (
@@ -25,7 +25,6 @@ class NewSalesOrder extends Component {
                         <div className="col-xs-6">
                             <Purchaser/>
                             <ProductSearch/>
-
                         </div>
                         <div className="col-xs-6">
                             <OrderInfo/>

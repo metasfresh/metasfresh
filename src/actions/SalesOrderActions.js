@@ -125,40 +125,20 @@ export function autocompleteSuccess(results) {
         results: results
     }
 }
-export function autocompleteRequest(query, propertyName) {
+export function autocompleteRequest(windowType, propertyName, query) {
     return (dispatch) => {
-        axios.post(config.API_URL + '/windows/executeCommand/1', {
-          "propertyPath": {
-            "gridPropertyName": null,
-            "rowId": null,
-            "propertyName": {
-              "n": propertyName + "#values"
-            }
-          },
-          "commandId": "find",
-          "params": {
-            "filter": query,
-            "firstRow": 0,
-            "pageLength": 5
-          }
-        })
-        .then((response) => {
-            dispatch(autocompleteSuccess(response.data.value.l, ""));
-        });
+        axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id=NEW&field='+ propertyName +'&query=' + query)
+            .then((response) => {
+                dispatch(autocompleteSuccess(response.data));
+            });
     }
 }
-
-export function getPropertyValue(propertyName) {
+export function dropdownRequest(windowType, propertyName) {
     return (dispatch) => {
-        console.log('asd')
-        axios.post(config.API_URL + '/windows/getPropertyValues/1', {
-            "n": [{
-                "n": propertyName
-            }]
-        })
-        .then((response) => {
-            console.log(response.data);
-        });
+        axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id=NEW&field='+ propertyName)
+            .then((response) => {
+                return response.data;
+            });
     }
 }
 
@@ -166,17 +146,6 @@ export function newSalesOrderSuccess(response) {
     return {
         type: 'NEW_SALES_ORDER_CREATED',
         response: response
-    }
-}
-
-export function createWindow(){
-    return (dispatch) => {
-        axios.get(config.API_URL + '/windows/openWindow/143')
-        .then((response) => {
-            return axios.get(config.API_URL + '/windows/getViewRootPropertyDescriptor/' + response.data);
-        }).then((response) => {
-            dispatch(newSalesOrderSuccess(response.data.childDescriptors));
-        });
     }
 }
 

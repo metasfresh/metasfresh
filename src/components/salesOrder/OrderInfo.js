@@ -20,32 +20,28 @@ class OrderInfo extends Component {
         return (
             <div className="panel panel-distance m-t-3">
                 <div className="row">
-                    {(salesOrderWindow.DeliveryStatus && salesOrderWindow.DeliveryStatus.layoutInfo.displayed) &&
+
                         <div>
                             <div className="col-xs-3">
-                                {salesOrderWindow.DeliveryStatus.caption}
+
                             </div>
                             <div className="col-xs-3">
                                 <div className="tag tag-warning">Open</div>
                             </div>
                         </div>
-
-                    }
-                    {(salesOrderWindow.InvoiceStatus && salesOrderWindow.InvoiceStatus.layoutInfo.displayed) &&
                         <div>
                             <div className="col-xs-4 offset-xs-1">
-                                {salesOrderWindow.InvoiceStatus.caption}
+
                             </div>
                             <div className="col-xs-1">
                                 <div className="tag tag-warning pull-xs-right">Open</div>
                             </div>
                         </div>
-                    }
                 </div>
                 <div className="m-t-2">
-                    {(salesOrderWindow.DateOrdered && salesOrderWindow.DateOrdered.layoutInfo.displayed) &&
+
                         <div className="form-group row">
-                            <label className="col-sm-3 form-control-label">{salesOrderWindow.DateOrdered.caption}</label>
+                            <label className="col-sm-3 form-control-label"></label>
                             <div className="col-sm-9">
                                 <div className="input-icon-container input-secondary input-block">
                                     <Datetime
@@ -58,7 +54,6 @@ class OrderInfo extends Component {
                                 </div>
                             </div>
                         </div>
-                    }
                     <div className="form-group row">
                         <label className="col-sm-3 form-control-label">Promised date</label>
                         <div className="col-sm-9">
@@ -97,6 +92,7 @@ class OrderInfo extends Component {
                                 options={['1','2','3']}
                                 defaultValue="(none)"
                                 onChange={this.handleDropdownChange}
+                                property="HandOver_Partner_ID"
                             />
 
                         </div>

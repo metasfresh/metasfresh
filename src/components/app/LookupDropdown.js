@@ -38,10 +38,10 @@ class LookupDropdown extends Component {
             // - first will generate choice dropdown
             // - second should be chosen automatically
             select.properties = {
-                property: [{id: '123', n: "opt1prop1"}, {id: '1234', n: "opt2prop2"}],
-                property2: [{id: '1231', n: "opt1prop2"}]
+                property: [{123: "opt1prop1"}, {1234: "opt2prop2"}],
+                property2: [{1231: "opt1prop2"}]
             };
-            this.inputSearch.value = select.n;
+            this.inputSearch.value = select[Object.keys(select)[0]];
             this.setState({model: select}, () => {
                 this.generatingPropsSelection();
             });
@@ -84,7 +84,8 @@ class LookupDropdown extends Component {
         for(let i=0; i< modelPropsKeys.length; i++){
             if(modelProps[modelPropsKeys[i]].length === 1){
                 // Selecting props that have no choice
-                this.inputSearchRest.innerHTML += " " + modelProps[modelPropsKeys[i]][0].n;
+                const noChoiceProp = modelProps[modelPropsKeys[i]][0];
+                this.inputSearchRest.innerHTML += " " + noChoiceProp[Object.keys(noChoiceProp)[0]];
             }else if(modelProps[modelPropsKeys[i]].length > 1){
                 // Generating list of props choice
                 dispatch(autocompleteSuccess(modelProps[modelPropsKeys[i]]));
@@ -119,7 +120,7 @@ class LookupDropdown extends Component {
         this.setState({selected: null});
 
         if(this.inputSearch.value != ""){
-            dispatch(autocompleteRequest(this.inputSearch.value, this.props.properties[0]));
+            dispatch(autocompleteRequest(143, this.props.properties[0], this.inputSearch.value));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});
@@ -180,13 +181,15 @@ class LookupDropdown extends Component {
     }
 
     getDropdownComponent = (index, item) => {
+        const name = item[Object.keys(item)[0]];
+        const key = Object.keys(item)[0];
         return (
             <div
-                key={item.id}
-                className={"input-dropdown-list-option " + (this.state.selected == index ? 'input-dropdown-list-option-key-on' : "") }
+                key={key}
+                className={"input-dropdown-list-option " + (this.state.selected == key ? 'input-dropdown-list-option-key-on' : "") }
                 onClick={() => this.handleSelect(item)}
             >
-                <p className="input-dropdown-item-title">{item['n']}</p>
+                <p className="input-dropdown-item-title">{name}</p>
             </div>
         )
     }

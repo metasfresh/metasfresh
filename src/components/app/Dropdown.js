@@ -1,6 +1,10 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import {
+    dropdownRequest
+} from '../../actions/SalesOrderActions';
+
 class Dropdown extends Component {
     constructor(props) {
         super(props);
@@ -10,6 +14,8 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
+        const {property, dispatch} = this.props;
+        dispatch(dropdownRequest(143, property));
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
@@ -61,5 +67,17 @@ class Dropdown extends Component {
         )
     }
 }
+
+Dropdown.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+function mapStateToProps(state) {
+    const {salesOrderStateHandler} = state;
+    return {
+    }
+}
+
+Dropdown = connect(mapStateToProps)(Dropdown)
 
 export default Dropdown

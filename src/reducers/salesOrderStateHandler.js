@@ -47,8 +47,7 @@ const initialState = {
         results: []
     },
     recentPartners: [{
-        id: 1,
-        n: 'Jazzy Innovations'
+        1: 'Jazzy Innovations'
     }],
     recentProducts: [{
         id: 1,

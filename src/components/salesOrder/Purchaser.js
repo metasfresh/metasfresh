@@ -36,9 +36,9 @@ class Purchaser extends Component {
         return (
             <div className="panel panel-bordered panel-spaced panel-primary panel-distance">
 
-                {salesOrderWindow.C_BPartner_ID &&
+
                     <div>
-                        <div key="title" className="panel-title">{salesOrderWindow.C_BPartner_ID.caption}</div>
+                        <div key="title" className="panel-title">caption</div>
                         <LookupDropdown
                             key="purchaser-lookup"
                             recent={recentPartners}
@@ -47,7 +47,6 @@ class Purchaser extends Component {
                             onPropertyChange={this.handlePurchaserPropertyChange}
                         />
                     </div>
-                }
 
                 {salesOrderWindow.Bill_BPartner_ID &&
                     <div>
