@@ -847,17 +847,20 @@ input:checked + .input-slider:before {
 	left: 0;
 	width: 18px;
 	height: 18px;
-	background: #ccc;
+	background: #fff;
+    border:1px solid $brand-light-color;
     border-radius: 2px;
 }
 
 .input-checkbox input:checked ~ .input-checkbox-tick {
 	background: $brand-success-dark-color;
+    border: 0;
 }
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
 	pointer-events: none;
 	background: #ccc;
+    border: 0;
 }
 
 .input-checkbox-tick:after {

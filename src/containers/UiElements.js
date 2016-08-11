@@ -236,8 +236,14 @@ export default class UiElements extends Component {
                                 <div className="input-slider" />
                             </label>
                             <p className="m-t-1">YesNo</p>
+                            <p><small>Normal</small></p>
                             <label className="input-checkbox">
                         		<input type="checkbox" />
+                        		<div className="input-checkbox-tick"/>
+                        	</label>
+                            <p><small>Disabled</small></p>
+                            <label className="input-checkbox">
+                        		<input type="checkbox" disabled />
                         		<div className="input-checkbox-tick"/>
                         	</label>
                             <p className="m-t-1">Label</p>
