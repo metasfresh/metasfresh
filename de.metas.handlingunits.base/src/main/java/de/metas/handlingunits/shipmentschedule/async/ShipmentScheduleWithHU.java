@@ -26,34 +26,49 @@ package de.metas.handlingunits.shipmentschedule.async;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.Null;
+import org.compiere.util.Util;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 
 /* package */class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 {
+	private final IHUContext huContext;
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final BigDecimal qtyPicked;
 	private final I_M_HU vhu;
 	private final I_M_HU tuHU;
 	private final I_M_HU luHU;
+	private Object _attributesAggregationKey; // lazy
 	private I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc;
 
 	private I_M_InOutLine shipmentLine = null;
 
-	public ShipmentScheduleWithHU(final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
+	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
 	{
 		super();
+		this.huContext = huContext;
 
 		Check.assumeNotNull(shipmentScheduleAlloc, "shipmentScheduleAlloc not null");
 		this.shipmentScheduleAlloc = shipmentScheduleAlloc;
@@ -70,9 +85,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 		luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 	}
 
-	public ShipmentScheduleWithHU(final I_M_ShipmentSchedule shipmentSchedule, final BigDecimal qtyPicked)
+	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule shipmentSchedule, final BigDecimal qtyPicked)
 	{
 		super();
+		this.huContext = huContext;
 
 		shipmentScheduleAlloc = null; // no allocation, will be created on fly when needed
 
@@ -102,6 +118,75 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 	}
 
 	@Override
+	public IHUContext getHUContext()
+	{
+		return huContext;
+	}
+
+	@Override
+	public int getM_Product_ID()
+	{
+		return shipmentSchedule.getM_Product_ID();
+	}
+	
+	@Override
+	public I_M_Product getM_Product()
+	{
+		return shipmentSchedule.getM_Product();
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID()
+	{
+		final int asiId = shipmentSchedule.getM_AttributeSetInstance_ID();
+		return asiId <= 0 ? IAttributeDAO.M_AttributeSetInstance_ID_None : asiId;
+	}
+
+	@Override
+	public Object getAttributesAggregationKey()
+	{
+		if(_attributesAggregationKey == null)
+		{
+			_attributesAggregationKey = createAttributesAggregationKey();
+		}
+		return _attributesAggregationKey;
+	}
+	
+	private Object createAttributesAggregationKey()
+	{
+		final I_M_HU hu = getTopLevelHU();
+		if(hu == null)
+		{
+			return ImmutableMap.of("M_AttributeSetInstance_ID", getM_AttributeSetInstance_ID());
+		}
+		
+		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
+		{
+			// Only consider attributes which are usable in ASI
+			if (!attributeValue.isUseInASI())
+			{
+				continue;
+			}
+
+			final String name = attributeValue.getM_Attribute().getValue();
+			final Object value = attributeValue.getValue();
+			keyBuilder.put(name, value == null ? Null.NULL : value);
+		}
+
+		return keyBuilder.build();
+	}
+
+
+	@Override
+	public int getC_OrderLine_ID()
+	{
+		return shipmentSchedule.getC_OrderLine_ID();
+	}
+
+	@Override
 	public I_M_ShipmentSchedule getM_ShipmentSchedule()
 	{
 		return shipmentSchedule;
@@ -111,6 +196,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 	public BigDecimal getQtyPicked()
 	{
 		return qtyPicked;
+	}
+
+	@Override
+	public I_C_UOM getQtyPickedUOM()
+	{
+		return Services.get(IShipmentScheduleBL.class).getC_UOM(shipmentSchedule);
 	}
 
 	@Override
@@ -138,22 +229,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 	 */
 	private I_M_HU getTopLevelHU()
 	{
-		if (luHU != null)
-		{
-			return luHU;
-		}
-		else if (tuHU != null)
-		{
-			return tuHU;
-		}
-		else if (vhu != null)
-		{
-			return vhu;
-		}
-		else
-		{
-			return null;
-		}
+		return Util.coalesce(luHU, tuHU, vhu);
 	}
 
 	@Override

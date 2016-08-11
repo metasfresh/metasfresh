@@ -40,11 +40,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -103,10 +107,11 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(workpackage, localTrxName);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
+		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_ThreadInherited);
 
 		// 07113: At this point, we only need the shipment drafted
 		final String docActionNone = null;
@@ -117,7 +122,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
-		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, localTrxName);
+		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
 		getLoggable().addLog("Generated " + inoutGenerateResult.toString());
 
 		return Result.SUCCESS;
@@ -208,8 +213,8 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		return hus;
 	}
 
-	// public for testing
-	public Iterator<IShipmentScheduleWithHU> retrieveCandidates(final I_C_Queue_WorkPackage workpackage, final String trxName)
+	@VisibleForTesting
+	public Iterator<IShipmentScheduleWithHU> retrieveCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -250,7 +255,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				// continue;
 				// }
 
-				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(ssQtyPicked);
+				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, ssQtyPicked);
 				candidatesForHU.add(candidate);
 			}
 
