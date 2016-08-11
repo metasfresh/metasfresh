@@ -94,15 +94,6 @@ import de.metas.handlingunits.model.I_M_HU;
 		//
 		// Find available HUs
 		final List<I_M_HU> hus = huSupplier.retrieveHUs(isConsiderAttributes());
-		try
-		{
-			Thread.sleep(2 * 1000);
-		}
-		catch (final InterruptedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		//
 		// Create the root HU key containing the available HUs
