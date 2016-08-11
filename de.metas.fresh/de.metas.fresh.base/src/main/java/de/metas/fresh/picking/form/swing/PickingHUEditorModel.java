@@ -1,5 +1,6 @@
 package de.metas.fresh.picking.form.swing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
@@ -54,6 +55,10 @@ import de.metas.handlingunits.model.I_M_HU;
 		this.huSupplier = huSupplier;
 
 		_huToSelect = huToSelect;
+		
+		final IHUKeyFactory huKeyFactory = getHUKeyFactory();
+		final IHUKey rootHUKey = huKeyFactory.createRootKey();
+		setRootHUKey(rootHUKey);
 	}
 
 	@Override
@@ -96,13 +101,19 @@ import de.metas.handlingunits.model.I_M_HU;
 		final List<I_M_HU> hus = huSupplier.retrieveHUs(isConsiderAttributes());
 
 		//
-		// Create the root HU key containing the available HUs
-		final ITerminalContext terminalContext = getTerminalContext();
-		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
-		final IHUKey rootHUKey = huKeyFactory.createRootKey();
+		// Update the root HU key with available HUs
+		final IHUKeyFactory huKeyFactory = getHUKeyFactory();
 		final List<IHUKey> huKeys = huKeyFactory.createKeys(hus, NullHUDocumentLineFinder.instance); // documentLine = null
+		
+		final IHUKey rootHUKey = getRootHUKey();
+		for (final IHUKey child : new ArrayList<>(rootHUKey.getChildren()))
+		{
+			rootHUKey.removeChild(child);
+		}
 		rootHUKey.addChildren(huKeys);
-		setRootHUKey(rootHUKey);
+		//
+		clearSelectedKeyIds();
+		setCurrentHUKey(rootHUKey);
 
 		//
 		// Auto-select the provided HU if any
@@ -111,7 +122,8 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			setSelected(huToSelect);
 		}
-
+		
+		// FIXME: the breadcrumb is not cleared!!!
 	}
 
 	/**
