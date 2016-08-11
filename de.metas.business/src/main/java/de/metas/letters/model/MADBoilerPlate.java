@@ -813,7 +813,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 			if (email == null)
 			{
-				for (MUser contact : bp.getContacts(false))
+				final MUser contact = getDefaultContactOrFirstWithValidEMail(bp);
+				if (contact != null)
 				{
 					attrs.put(VAR_AD_User_ID, contact.getAD_User_ID());
 					attrs.put(VAR_AD_User, contact);
@@ -821,11 +822,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 					{
 						email = contact.getEMail();
 						attrs.put(VAR_EMail, email);
-						break;
 					}
 				}
 			}
 		}
+		
 		//
 		// Language
 		String AD_Language = Env.getAD_Language(ctx);
@@ -838,6 +839,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		attrs.put(VAR_AD_Language, AD_Language);
+		
 		//
 		//
 		// attrs.put(VAR_Phone, null);
@@ -863,6 +865,39 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		// }
 		//
 		return attrs;
+	}
+	
+	private static MUser getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	{
+		MUser firstContact = null;
+		MUser firstValidContact = null;
+		for (final MUser contact : bpartner.getContacts(false))
+		{
+			if(contact.isDefaultContact())
+			{
+				return contact;
+			}
+			
+			if(firstContact == null)
+			{
+				firstContact = contact;
+			}
+			
+			if (contact.isEMailValid())
+			{
+				if(firstValidContact == null)
+				{
+					firstValidContact = contact;
+				}
+			}
+		}
+		
+		if(firstValidContact != null)
+		{
+			return firstValidContact;
+		}
+		
+		return firstContact;
 	}
 
 	private static int getValueAsInt(Object o, String columnName)
