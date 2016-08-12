@@ -376,6 +376,7 @@ public class DocumentDescriptorFactory
 				.setDefaultValueExpression(extractDefaultValueExpression(gridFieldVO))
 				//
 				.setReadonlyLogic(extractReadonlyLogic(gridFieldVO))
+				.setAlwaysUpdateable(extractAlwaysUpdateable(gridFieldVO))
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(extractDisplayLogic(gridFieldVO))
 				//
@@ -633,6 +634,11 @@ public class DocumentDescriptorFactory
 		{
 			return ILogicExpression.TRUE;
 		}
+		
+		if (gridFieldVO.isVirtualColumn())
+		{
+			return ILogicExpression.TRUE;
+		}
 
 		final String columnName = gridFieldVO.getColumnName();
 		ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
@@ -646,13 +652,22 @@ public class DocumentDescriptorFactory
 		}
 
 		//
-		// Consider field readonly if the row is processed
-		if (!gridFieldVO.isAlwaysUpdateable())
+		// Consider field readonly if the row is processed.
+		// In case we deal with an AlwaysUpdateable field, this logic do not apply.
+		final boolean alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
+		if (!alwaysUpdateable)
 		{
 			logicExpression = LOGICEXPRESSION_Processed.or(logicExpression);
 		}
 
 		return logicExpression;
+	}
+	
+	private boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
+	{
+		if (gridFieldVO.isVirtualColumn() || !gridFieldVO.isUpdateable())
+			return false;
+		return gridFieldVO.isAlwaysUpdateable();
 	}
 
 	private ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO)

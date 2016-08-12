@@ -36,7 +36,6 @@ import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
-import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 /*
  * #%L
@@ -169,7 +168,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (fieldDescriptor.isKey())
 			{
 				final int value = generateNextTemporaryId();
-				documentField.setValue(value);
+				documentField.setInitialValue(value);
 			}
 			else
 			{
@@ -183,7 +182,6 @@ public class SqlDocumentRepository implements DocumentRepository
 						valueStr = null;
 					}
 
-					documentField.setValue(valueStr);
 					documentField.setInitialValue(valueStr);
 				}
 				catch (Exception e)
@@ -194,6 +192,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		}
 
 		document.updateAllDependencies();
+		
 		return document;
 	}
 
@@ -305,40 +304,17 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// Retrieve main record values
-		Object keyColumn_Value = null;
 		for (final DocumentField documentField : document.getFields())
 		{
 			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
 			final Object value = retrieveDocumentFieldValue(fieldDescriptor, rs);
-			final Object valueNotNull = NullValue.makeNotNull(value);
-
-			documentField.setValue(valueNotNull);
-			documentField.setInitialValue(valueNotNull);
-
-			if (fieldDescriptor.isKey())
-			{
-				keyColumn_Value = value;
-			}
+			documentField.setInitialValue(value);
 		}
 
 		//
 		// Update Mandatory, ReadOnly, Displayed properties
 		document.updateAllDependencies();
-
-		//
-		// TODO Retrieved values from included data sources
-		// final ModelDataSourceQuery query = ModelDataSourceQuery.builder()
-		// .setParentLinkId(keyColumn_Value)
-		// .build();
-		// for (final Map.Entry<PropertyName, ModelDataSource> e : includedDataSources.entrySet())
-		// {
-		// final PropertyName propertyName = e.getKey();
-		// final ModelDataSource dataSource = e.getValue();
-		//
-		// final LazyPropertyValuesListDTO dataSourceValue = dataSource.retrieveRecordsSupplier(query);
-		// data.put(propertyName, dataSourceValue);
-		// }
 
 		return document;
 	}

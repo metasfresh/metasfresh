@@ -8,12 +8,13 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -45,19 +46,21 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 public class DocumentField
 {
+	private static final Logger logger = LogManager.getLogger(DocumentField.class);
+
 	private final DocumentFieldDescriptor descriptor;
 	private final Document _document;
+	private final LookupDataSource lookupDataSource;
 
+	private ICalloutField _calloutField; // lazy
+
+	//
+	// State
 	private Object initialValue;
 	private Object value;
-
 	private boolean mandatory = false;
 	private boolean readonly = false;
 	private boolean displayed = false;
-
-	private final LookupDataSource lookupDataSource;
-	
-	private ICalloutField _calloutField; // lazy
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -90,7 +93,7 @@ public class DocumentField
 		return _document;
 	}
 
-	public String getName()
+	public String getFieldName()
 	{
 		return descriptor.getName();
 	}
@@ -100,15 +103,25 @@ public class DocumentField
 		return initialValue;
 	}
 
-	public void setInitialValue(final Object initialValue)
-	{
-		this.initialValue = initialValue;
-	}
-
-	public void setValue(final Object value)
+	/**
+	 * FIXME: make it private or package level
+	 * 
+	 * @param value
+	 */
+	public void setInitialValue(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
+		this.initialValue = valueConv;
 		this.value = valueConv;
+	}
+
+	/* package */void setValue(final Object value)
+	{
+		final Object valueConv = convertToValueClass(value);
+		final Object valueOld = this.value;
+		this.value = valueConv;
+
+		logger.trace("Changed {}'s value: {} -> {}", this, valueOld, value);
 	}
 
 	public Object getValue()
@@ -125,6 +138,12 @@ public class DocumentField
 	{
 		final Integer valueInt = convertToValueClass(value, Integer.class);
 		return valueInt == null ? defaultValue : valueInt;
+	}
+
+	public boolean getValueAsBoolean()
+	{
+		final Boolean valueBoolean = convertToValueClass(value, Boolean.class);
+		return valueBoolean != null && valueBoolean.booleanValue();
 	}
 
 	public Object getOldValue()
@@ -150,7 +169,7 @@ public class DocumentField
 
 		try
 		{
-			if(targetType.isAssignableFrom(fromType))
+			if (targetType.isAssignableFrom(fromType))
 			{
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)value;
@@ -212,6 +231,17 @@ public class DocumentField
 					final T valueConv = (T)JSONConverters.lookupValueFromJsonMap(map);
 					return valueConv;
 				}
+				else if (Integer.class.isAssignableFrom(fromType))
+				{
+					final Integer valueInt = (Integer)value;
+					if (lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueInt);
+						// TODO: what if valueConv was not found?
+						return valueConv;
+					}
+				}
 				else if (String.class == fromType)
 				{
 					final String valueStr = (String)value;
@@ -224,6 +254,7 @@ public class DocumentField
 					{
 						@SuppressWarnings("unchecked")
 						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
 				}
@@ -231,10 +262,10 @@ public class DocumentField
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException("Cannot convert " + getName() + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
+			throw new AdempiereException("Cannot convert " + getFieldName() + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
 		}
 
-		throw new AdempiereException("Cannot convert " + getName() + "'s value '" + value + "' (" + fromType + ") to " + targetType);
+		throw new AdempiereException("Cannot convert " + getFieldName() + "'s value '" + value + "' (" + fromType + ") to " + targetType);
 	}
 
 	public boolean isMandatory()
@@ -242,7 +273,7 @@ public class DocumentField
 		return mandatory;
 	}
 
-	public void setMandatory(final boolean mandatory)
+	/* package */ void setMandatory(final boolean mandatory)
 	{
 		this.mandatory = mandatory;
 	}
@@ -252,7 +283,7 @@ public class DocumentField
 		return readonly;
 	}
 
-	public void setReadonly(final boolean readonly)
+	/* package */void setReadonly(final boolean readonly)
 	{
 		this.readonly = readonly;
 	}
@@ -262,7 +293,7 @@ public class DocumentField
 		return displayed;
 	}
 
-	public void setDisplayed(final boolean displayed)
+	/* package */void setDisplayed(final boolean displayed)
 	{
 		this.displayed = displayed;
 	}
@@ -273,19 +304,19 @@ public class DocumentField
 		return false;
 	}
 
-	public List<LookupValue> getLookupValues(final Document document)
+	/* package */List<LookupValue> getLookupValues(final Document document)
 	{
 		return lookupDataSource.findEntities(document, LookupDataSource.DEFAULT_PageLength);
 	}
 
-	public List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
+	/* package */List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
 	{
 		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
 	}
 
 	public ICalloutField asCalloutField()
 	{
-		if(_calloutField == null)
+		if (_calloutField == null)
 		{
 			_calloutField = new AsCalloutField();
 		}
@@ -294,11 +325,21 @@ public class DocumentField
 
 	private final class AsCalloutField implements ICalloutField
 	{
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.addValue(DocumentField.this)
+					.toString();
+		}
 
 		@Override
 		public boolean isTriggerCalloutAllowed()
 		{
-			// TODO Auto-generated method stub
+			if (!getDescriptor().isAlwaysUpdateable() && getDocument().isProcessed())
+			{
+				return false;
+			}
 			return true;
 		}
 
@@ -330,7 +371,7 @@ public class DocumentField
 		@Override
 		public String getColumnName()
 		{
-			return getName();
+			return getFieldName();
 		}
 
 		@Override
@@ -348,7 +389,7 @@ public class DocumentField
 		@Override
 		public <T> T getModel(final Class<T> modelClass)
 		{
-			return InterfaceWrapperHelper.create(getDocument(), modelClass);
+			return DocumentInterfaceWrapper.create(getDocument(), modelClass);
 		}
 
 		@Override
@@ -387,8 +428,7 @@ public class DocumentField
 		public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
 		{
 			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("fireDataStatusEEvent: AD_Message=" + AD_Message + ", info=" + info + ", isError=" + isError);
 		}
-
 	}
 }

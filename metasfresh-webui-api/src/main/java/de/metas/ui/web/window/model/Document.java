@@ -11,6 +11,7 @@ import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -19,13 +20,16 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
@@ -63,7 +67,7 @@ public class Document
 	private final Map<String, DocumentField> fieldsByName;
 	private final DocumentField idField;
 
-	private final Document parentDocument;
+	private final Document _parentDocument;
 	private final Map<String, IncludedDocumentsCollection> includedDocuments;
 
 	private DocumentEvaluatee _evaluatee; // lazy
@@ -76,7 +80,7 @@ public class Document
 		this.documentRepository = documentRepository;
 		this.entityDescriptor = entityDescriptor;
 		this.windowNo = windowNo;
-		this.parentDocument = parentDocument;
+		_parentDocument = parentDocument;
 
 		//
 		// Create document fields
@@ -139,9 +143,9 @@ public class Document
 		return entityDescriptor;
 	}
 
-	public Document getParentDocument()
+	/* package */ Document getParentDocument()
 	{
-		return parentDocument;
+		return _parentDocument;
 	}
 
 	public Collection<DocumentField> getFields()
@@ -165,7 +169,10 @@ public class Document
 	public DocumentField getField(final String fieldName)
 	{
 		final DocumentField documentField = getFieldOrNull(fieldName);
-		Check.assumeNotNull(documentField, "Parameter documentField is not null for name={} in {}", fieldName, this);
+		if (documentField == null)
+		{
+			throw new DocumentFieldNotFoundException(this, fieldName);
+		}
 		return documentField;
 	}
 
@@ -180,6 +187,7 @@ public class Document
 		if (idField == null)
 		{
 			// TODO handle NO ID field or composed PK
+			logger.warn("No ID field found for {}. Returning -1", this);
 			return -1;
 		}
 		return idField.getValueAsInt(-1);
@@ -247,11 +255,11 @@ public class Document
 
 			//
 			// Environment variable
-			if (variableName.startsWith("#"))                        // Env, global var
+			if (variableName.startsWith("#"))                                                // Env, global var
 			{
 				return true;
 			}
-			else if (variableName.startsWith("$"))                        // Env, global accounting var
+			else if (variableName.startsWith("$"))                                                // Env, global accounting var
 			{
 				return true;
 			}
@@ -286,11 +294,11 @@ public class Document
 		{
 			//
 			// Environment variable
-			if (variableName.startsWith("#"))                        // Env, global var
+			if (variableName.startsWith("#"))                                                // Env, global var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
-			else if (variableName.startsWith("$"))                        // Env, global accounting var
+			else if (variableName.startsWith("$"))                                                // Env, global accounting var
 			{
 				return Env.getContext(getCtx(), variableName);
 			}
@@ -335,7 +343,7 @@ public class Document
 				}
 
 				// FIXME: hardcoded default to avoid a lot of warnings
-				final String fieldName = documentField.getName();
+				final String fieldName = documentField.getFieldName();
 				if (fieldName.endsWith("_ID"))
 				{
 					return "-1";
@@ -369,29 +377,29 @@ public class Document
 		}
 	}
 
-	public void setValueFromJsonObject(final String fieldName, final Object value, final FieldChangedEventCollector eventsCollector)
+	public void setValueFromJsonObject(final String fieldName, final Object value)
 	{
-		final DocumentField field = getField(fieldName);
-		final Object valueOld = field.getValue();
-		field.setValue(value);
+		final DocumentField documentField = getField(fieldName);
+		final Object valueOld = documentField.getValue();
+		documentField.setValue(value);
 
 		// Check if changed. If not, stop here.
-		final Object valueNew = field.getValue();
+		final Object valueNew = documentField.getValue();
 		if (Objects.equals(valueOld, valueNew))
 		{
 			return;
 		}
 
 		// collect changed value
-		eventsCollector.collectValueChanged(fieldName, field.getValueAsJsonObject());
+		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+		eventsCollector.collectValueChanged(fieldName, documentField.getValueAsJsonObject(), () -> "direct set on Document");
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
-		
+
 		// Callouts
 		// TODO: find a way to collect events...
-		calloutExecutor.execute(getField(fieldName).asCalloutField());
-
+		calloutExecutor.execute(documentField.asCalloutField());
 
 		// TODO: check if we can save it
 	}
@@ -416,12 +424,12 @@ public class Document
 		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
 		try
 		{
-			final Boolean readonlyValue = readonlyLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setReadonly(readonlyValue);
+			final boolean readonly = readonlyLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setReadonly(readonly);
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField);
+			logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField, e);
 		}
 	}
 
@@ -432,12 +440,12 @@ public class Document
 		final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
 		try
 		{
-			final Boolean mandatoryValue = mandatoryLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setMandatory(mandatoryValue);
+			final boolean mandatory = mandatoryLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setMandatory(mandatory);
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating mandatory logic {} for {}", mandatoryLogic, documentField);
+			logger.warn("Failed evaluating mandatory logic {} for {}", mandatoryLogic, documentField, e);
 		}
 	}
 
@@ -448,16 +456,16 @@ public class Document
 		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
 		try
 		{
-			final Boolean displayValue = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setDisplayed(displayValue);
+			final boolean displayed = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			documentField.setDisplayed(displayed);
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField);
+			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField, e);
 		}
 	}
 
-	private final void updateFieldsWhichDependsOn(final String fieldName, final FieldChangedEventCollector eventsCollector)
+	private final void updateFieldsWhichDependsOn(final String fieldName, final IDocumentFieldChangedEventCollector eventsCollector)
 	{
 		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
 		dependencies.consumeForChangedFieldName(fieldName, (dependentFieldName, dependencyType) -> {
@@ -468,7 +476,7 @@ public class Document
 				return;
 			}
 
-			final FieldChangedEventCollector fieldEventsCollector = FieldChangedEventCollector.newInstance();
+			final IDocumentFieldChangedEventCollector fieldEventsCollector = FieldChangedEventCollector.newInstance();
 			updateDependentField(dependentField, fieldName, dependencyType, fieldEventsCollector);
 			eventsCollector.collectFrom(fieldEventsCollector);
 
@@ -484,7 +492,7 @@ public class Document
 			final DocumentField dependentField //
 			, final String triggeringFieldName //
 			, final DependencyType dependencyType //
-			, final FieldChangedEventCollector eventsCollector //
+			, final IDocumentFieldChangedEventCollector eventsCollector //
 	)
 	{
 		if (DependencyType.ReadonlyLogic == dependencyType)
@@ -495,10 +503,12 @@ public class Document
 
 			if (value != valueOld)
 			{
-				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
+						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getReadonlyLogic();
+				eventsCollector.collectReadonlyChanged(dependentField.getFieldName(), value, reason);
 			}
 		}
-		if (DependencyType.MandatoryLogic == dependencyType)
+		else if (DependencyType.MandatoryLogic == dependencyType)
 		{
 			final boolean valueOld = dependentField.isMandatory();
 			updateFieldMandatory(dependentField);
@@ -506,10 +516,12 @@ public class Document
 
 			if (value != valueOld)
 			{
-				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
+						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getMandatoryLogic();
+				eventsCollector.collectMandatoryChanged(dependentField.getFieldName(), value, reason);
 			}
 		}
-		if (DependencyType.DisplayLogic == dependencyType)
+		else if (DependencyType.DisplayLogic == dependencyType)
 		{
 			final boolean valueOld = dependentField.isDisplayed();
 			updateFieldDisplayed(dependentField);
@@ -517,13 +529,32 @@ public class Document
 
 			if (value != valueOld)
 			{
-				eventsCollector.collectReadonlyChanged(dependentField.getName(), value);
+				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
+						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getDisplayLogic();
+				eventsCollector.collectDisplayedChanged(dependentField.getFieldName(), value, reason);
 			}
 		}
-		if (DependencyType.LookupValues == dependencyType)
+		else if (DependencyType.LookupValues == dependencyType)
 		{
-			eventsCollector.collectLookupValuesStaled(dependentField.getName());
+			final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType;
+			eventsCollector.collectLookupValuesStaled(dependentField.getFieldName(), reason);
 		}
+		else
+		{
+			new AdempiereException("Unknown dependency type: " + dependencyType)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+		}
+	}
+
+	public List<LookupValue> getFieldLookupValues(final String fieldName)
+	{
+		return getField(fieldName).getLookupValues(this);
+	}
+
+	public List<LookupValue> getFieldLookupValuesForQuery(final String fieldName, final String query)
+	{
+		return getField(fieldName).getLookupValuesForQuery(this, query);
+
 	}
 
 	public Document getIncludedDocument(final String detailId, final DocumentId rowId)
@@ -558,5 +589,22 @@ public class Document
 	/* package */ICalloutExecutor getCalloutExecutor()
 	{
 		return calloutExecutor;
+	}
+
+	public boolean isProcessed()
+	{
+		final DocumentField processedField = getFieldOrNull("Processed");
+		if (processedField != null)
+		{
+			return processedField.getValueAsBoolean();
+		}
+
+		final Document parentDocument = getParentDocument();
+		if (parentDocument != null)
+		{
+			return parentDocument.isProcessed();
+		}
+
+		return false;
 	}
 }

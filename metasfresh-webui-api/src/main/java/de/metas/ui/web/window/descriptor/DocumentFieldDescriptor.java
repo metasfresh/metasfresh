@@ -60,6 +60,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final IStringExpression defaultValueExpression;
 
 	private final ILogicExpression readonlyLogic;
+	private final boolean alwaysUpdateable;
 	private final ILogicExpression displayLogic;
 	private final ILogicExpression mandatoryLogic;
 
@@ -86,6 +87,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		defaultValueExpression = builder.defaultValueExpression;
 
 		readonlyLogic = builder.readonlyLogic;
+		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
 		mandatoryLogic = builder.mandatoryLogic;
 
@@ -155,6 +157,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return readonlyLogic;
 	}
+	
+	public boolean isAlwaysUpdateable()
+	{
+		return alwaysUpdateable;
+	}
 
 	public ILogicExpression getDisplayLogic()
 	{
@@ -193,6 +200,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
+		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
 
@@ -265,6 +273,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
 		{
 			this.readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
+			return this;
+		}
+		
+		public Builder setAlwaysUpdateable(final boolean alwaysUpdateable)
+		{
+			this.alwaysUpdateable = alwaysUpdateable;
 			return this;
 		}
 

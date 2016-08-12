@@ -17,10 +17,12 @@ import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
@@ -49,23 +51,23 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 {
 	private static final Logger log = LogManager.getLogger(DocumentInterfaceWrapper.class);
 
-	public static <T> T create(final Object model, final Class<T> cl)
+	public static <T> T create(final Object model, final Class<T> modelClass)
 	{
 		final Boolean useOldValues = null; // preserve it from "model"
-		return create(model, cl, useOldValues);
+		return create(model, modelClass, useOldValues);
 	}
-	
-	public static <T> T createOld(final Object model, final Class<T> cl)
+
+	public static <T> T createOld(final Object model, final Class<T> modelClass)
 	{
 		final Boolean useOldValues = Boolean.TRUE;
-		return create(model, cl, useOldValues);
+		return create(model, modelClass, useOldValues);
 	}
 
 	/**
 	 * Wraps given model to given model class
 	 *
 	 * @param model
-	 * @param cl
+	 * @param modelClass
 	 * @param useOldValues
 	 *            <ul>
 	 *            <li>true if we shall ALWAYS use old values
@@ -74,12 +76,20 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	 *            </ul>
 	 * @return wrapped model or null
 	 */
-	private static <T> T create(final Object model, final Class<T> cl, final Boolean useOldValues)
+	private static <T> T create(final Object model, final Class<T> modelClass, final Boolean useOldValues)
 	{
 		if (model == null)
 		{
 			return null;
 		}
+		
+		if (modelClass.isInstance(model) && useOldValues == Boolean.FALSE)
+		{
+			@SuppressWarnings("unchecked")
+			final T modelCasted = (T)model;
+			return modelCasted;
+		}
+
 
 		Document document = null;
 		Boolean useOldValuesDefault = null;
@@ -111,19 +121,19 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		// Check if given interface is compatible with document, i.e.
 		// * interface does not define a Table_Name field
 		// * interface has a Table_Name static field, which is equal with document's Table_Name
-		final String interfaceTableName = InterfaceWrapperHelper.getTableNameOrNull(cl);
+		final String interfaceTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (interfaceTableName != null)
 		{
 			final String documentTableName = SqlDocumentEntityDataBindingDescriptor.getTableName(document);
 			if (!interfaceTableName.equals(documentTableName))
 			{
-				throw new AdempiereException("Interface " + cl + " (tableName=" + interfaceTableName + ") is not compatible with " + document + " (tableName=" + documentTableName + ")");
+				throw new AdempiereException("Interface " + modelClass + " (tableName=" + interfaceTableName + ") is not compatible with " + document + " (tableName=" + documentTableName + ")");
 			}
 		}
 
 		@SuppressWarnings("unchecked")
-		final T result = (T)Proxy.newProxyInstance(cl.getClassLoader(),
-				new Class<?>[] { cl },
+		final T result = (T)Proxy.newProxyInstance(modelClass.getClassLoader(),
+				new Class<?>[] { modelClass },
 				new DocumentInterfaceWrapper(document, useOldValuesEffective));
 		return result;
 	}
@@ -268,7 +278,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			{
 				log.warn("Field " + propertyName + " not found for " + document + ". Assuming default value.");
 			}
-			
+
 			//
 			// Return default value
 			Object defaultValue = null;
@@ -339,8 +349,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		{
 			return value;
 		}
-		
-		
+
 		if (boolean.class.equals(returnType))
 		{
 			return DisplayType.toBoolean(value);
@@ -364,18 +373,10 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 				final LookupValue lookupValue = (LookupValue)value;
 				return lookupValue.getIdAsInt();
 			}
-			else
-			{
-				throw new AdempiereException("Invalid field value type returned."
-						+ "\n Field: " + field
-						+ "\n Expected type: " + returnType
-						+ "\n Value: " + value + " (class: " + value.getClass() + ")"
-						+ "\n");
-			}
 		}
 		else if (String.class.equals(returnType))
 		{
-			if(value == null)
+			if (value == null)
 			{
 				return null;
 			}
@@ -388,10 +389,27 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 				return value.toString();
 			}
 		}
+		else if (java.sql.Timestamp.class.equals(returnType))
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			else if (value instanceof java.util.Date)
+			{
+				return TimeUtil.asTimestamp((java.util.Date)value);
+			}
+		}
 		else
 		{
 			return value;
 		}
+
+		throw new AdempiereException("Cannot convert value to type."
+				+ "\n Field: " + field
+				+ "\n Return type: " + returnType
+				+ "\n Value: " + value + " (" + (value == null ? "null" : value.getClass()) + ")"
+				+ "\n");
 
 	}
 
@@ -403,12 +421,11 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		}
 
 		final Object valueFixed = POWrapper.checkZeroIdValue(propertyName, value);
-		FieldChangedEventCollector eventsCollector = FieldChangedEventCollector.newInstance(); // TODO forward to some thread local?
 		try
 		{
-			document.setValueFromJsonObject(propertyName, valueFixed, eventsCollector);
+			document.setValueFromJsonObject(propertyName, valueFixed);
 		}
-		catch (Exception e)
+		catch (DocumentFieldNotFoundException e)
 		{
 			final String errorMsg = e.getLocalizedMessage();
 			final String msg = "Attempt to set field " + propertyName

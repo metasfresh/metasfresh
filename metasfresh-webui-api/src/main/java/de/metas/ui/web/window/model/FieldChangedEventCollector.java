@@ -1,12 +1,13 @@
 package de.metas.ui.web.window.model;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /*
@@ -31,14 +32,14 @@ import com.google.common.collect.ImmutableSet;
  * #L%
  */
 
-public class FieldChangedEventCollector
+public class FieldChangedEventCollector implements IDocumentFieldChangedEventCollector
 {
 	public static final FieldChangedEventCollector newInstance()
 	{
 		return new FieldChangedEventCollector();
 	}
 
-	private final Map<String, FieldChangedEvent> fieldName2event = new LinkedHashMap<>();
+	private final Map<String, DocumentFieldChangedEvent> fieldName2event = new LinkedHashMap<>();
 
 	private FieldChangedEventCollector()
 	{
@@ -53,100 +54,73 @@ public class FieldChangedEventCollector
 				.toString();
 	}
 
+	@Override
 	public Set<String> getFieldNames()
 	{
 		return ImmutableSet.copyOf(fieldName2event.keySet());
 	}
-	
+
+	@Override
 	public boolean isEmpty()
 	{
 		return fieldName2event.isEmpty();
 	}
 
-	private FieldChangedEvent getFieldChangedEvent(final String fieldName)
+	private DocumentFieldChangedEvent getFieldChangedEvent(final String fieldName)
 	{
-		FieldChangedEvent changedEvent = fieldName2event.get(fieldName);
-		if (changedEvent == null)
-		{
-			changedEvent = FieldChangedEvent.of(fieldName);
-			fieldName2event.put(fieldName, changedEvent);
-		}
-		return changedEvent;
-	}
-	
-	public List<FieldChangedEvent> toEventsList()
-	{
-		return new ArrayList<>(fieldName2event.values());
+		return fieldName2event.computeIfAbsent(fieldName, (key) -> DocumentFieldChangedEvent.of(key));
 	}
 
-	public void collectValueChanged(final String fieldName, final Object value)
+	@Override
+	public List<DocumentFieldChangedEvent> toEventsList()
 	{
-		getFieldChangedEvent(fieldName).setValue(value);
+		return ImmutableList.copyOf(fieldName2event.values());
 	}
 
-	public void collectReadonlyChanged(final String fieldName, final boolean value)
+	private final String extractReason(final Supplier<String> reasonSupplier)
 	{
-		getFieldChangedEvent(fieldName).setReadonly(value);
+		// TODO: do this only when debugging/tracing
+		return reasonSupplier == null ? null : reasonSupplier.get();
 	}
 
-	public void collectMandatoryChanged(final String fieldName, final boolean value)
+	@Override
+	public void collectValueChanged(final String fieldName, final Object value, final Supplier<String> reason)
 	{
-		getFieldChangedEvent(fieldName).setMandatory(value);
+		getFieldChangedEvent(fieldName).setValue(value, extractReason(reason));
 	}
 
-	public void collectDisplayedChanged(final String fieldName, final boolean value)
+	@Override
+	public void collectReadonlyChanged(final String fieldName, final boolean value, final Supplier<String> reason)
 	{
-		getFieldChangedEvent(fieldName).setDisplayed(value);
+		getFieldChangedEvent(fieldName).setReadonly(value, extractReason(reason));
 	}
 
-	public void collectLookupValuesStaled(final String fieldName)
+	@Override
+	public void collectMandatoryChanged(final String fieldName, final boolean value, final Supplier<String> reason)
 	{
-		getFieldChangedEvent(fieldName).setLookupValuesStale(true);
+		getFieldChangedEvent(fieldName).setMandatory(value, extractReason(reason));
 	}
 
-	public void collectFrom(final FieldChangedEventCollector fromCollector)
+	@Override
+	public void collectDisplayedChanged(final String fieldName, final boolean value, final Supplier<String> reason)
 	{
-		for (final FieldChangedEvent fromEvent : fromCollector.fieldName2event.values())
+		getFieldChangedEvent(fieldName).setDisplayed(value, extractReason(reason));
+	}
+
+	@Override
+	public void collectLookupValuesStaled(final String fieldName, final Supplier<String> reason)
+	{
+		getFieldChangedEvent(fieldName).setLookupValuesStale(true, extractReason(reason));
+	}
+
+	@Override
+	public void collectFrom(final IDocumentFieldChangedEventCollector fromCollector)
+	{
+		for (final DocumentFieldChangedEvent fromEvent : fromCollector.toEventsList())
 		{
 			final String fieldName = fromEvent.getFieldName();
-			final FieldChangedEvent toEvent = getFieldChangedEvent(fieldName);
-			mergeEvent(toEvent, fromEvent);
+			final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(fieldName);
+			toEvent.mergeFrom(fromEvent);
 		}
 	}
-
-	private void mergeEvent(final FieldChangedEvent toEvent, final FieldChangedEvent fromEvent)
-	{
-		{
-			final Boolean readonly = fromEvent.getReadonly();
-			if (readonly != null)
-			{
-				toEvent.setReadonly(readonly);
-			}
-		}
-		//
-		{
-			final Boolean mandatory = fromEvent.getMandatory();
-			if (mandatory != null)
-			{
-				toEvent.setMandatory(mandatory);
-			}
-		}
-		//
-		{
-			final Boolean displayed = fromEvent.getDisplayed();
-			if (displayed != null)
-			{
-				toEvent.setDisplayed(displayed);
-			}
-		}
-		//
-		{
-			final Boolean lookupValuesStale = fromEvent.getLookupValuesStale();
-			if (lookupValuesStale != null)
-			{
-				toEvent.setLookupValuesStale(lookupValuesStale);
-			}
-		}
-	}
-
 }

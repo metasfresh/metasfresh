@@ -2,6 +2,8 @@ package de.metas.ui.web.window.model;
 
 import java.util.Objects;
 
+import de.metas.printing.esb.base.util.Check;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -45,6 +47,7 @@ public final class DocumentId
 			throw new IllegalArgumentException("Invalid ID: " + idObj + " (" + (idObj == null ? "-" : idObj.getClass()) + ")");
 		}
 	}
+	
 	public static final DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
@@ -55,7 +58,7 @@ public final class DocumentId
 		final int idInt = Integer.parseInt(idStr);
 		return of(idInt);
 	}
-
+	
 	public static final DocumentId of(final int idInt)
 	{
 		if (idInt == NEW_ID)
@@ -64,6 +67,15 @@ public final class DocumentId
 		}
 
 		return new DocumentId(idInt);
+	}
+	
+	public static final DocumentId fromNullable(final String idStr)
+	{
+		if(Check.isEmpty(idStr, true))
+		{
+			return null;
+		}
+		return of(idStr.trim());
 	}
 
 	private final int idInt;

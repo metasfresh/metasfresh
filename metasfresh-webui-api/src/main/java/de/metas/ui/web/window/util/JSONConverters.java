@@ -18,8 +18,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentField;
-import de.metas.ui.web.window.model.FieldChangedEvent;
-import de.metas.ui.web.window.model.FieldChangedEventCollector;
+import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
@@ -48,7 +48,7 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 public final class JSONConverters
 {
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
-	
+
 	/**
 	 * @param documents
 	 * @return array of {@link #documentToJsonObject(Document)}
@@ -86,7 +86,7 @@ public final class JSONConverters
 
 	private static Map<String, Object> documentFieldToJsonObject(final DocumentField field)
 	{
-		final String name = field.getName();
+		final String name = field.getFieldName();
 		final Object valueJSON = field.getValueAsJsonObject();
 
 		final Map<String, Object> map = documentFieldToJsonObject(name, valueJSON);
@@ -113,7 +113,7 @@ public final class JSONConverters
 		return map;
 	}
 
-	public static List<Map<String, Object>> toJsonObject(final FieldChangedEventCollector eventsCollector)
+	public static List<Map<String, Object>> toJsonObject(final IDocumentFieldChangedEventCollector eventsCollector)
 	{
 		return eventsCollector.toEventsList()
 				.stream()
@@ -121,7 +121,7 @@ public final class JSONConverters
 				.collect(Collectors.toList());
 	}
 
-	private static Map<String, Object> toJsonObject(final FieldChangedEvent event)
+	private static Map<String, Object> toJsonObject(final DocumentFieldChangedEvent event)
 	{
 		final Map<String, Object> map = new LinkedHashMap<>();
 
@@ -132,30 +132,55 @@ public final class JSONConverters
 		{
 			final Object valueJSON = event.getValueAsJsonObject();
 			map.put("value", valueJSON);
+			final String reason = event.getValueReason();
+			if (reason != null)
+			{
+				map.put("valueReason", reason);
+			}
 		}
 
 		final Boolean readonly = event.getReadonly();
 		if (readonly != null)
 		{
 			map.put("readonly", readonly);
+			final String reason = event.getReadonlyReason();
+			if (reason != null)
+			{
+				map.put("readonlyReason", reason);
+			}
 		}
 
 		final Boolean mandatory = event.getMandatory();
 		if (mandatory != null)
 		{
 			map.put("mandatory", mandatory);
+			final String reason = event.getMandatoryReason();
+			if (reason != null)
+			{
+				map.put("mandatoryReason", reason);
+			}
 		}
 
 		final Boolean displayed = event.getDisplayed();
 		if (displayed != null)
 		{
 			map.put("displayed", displayed);
+			final String reason = event.getDisplayedReason();
+			if (reason != null)
+			{
+				map.put("displayedReason", reason);
+			}
 		}
 
 		final Boolean lookupValuesStale = event.getLookupValuesStale();
 		if (lookupValuesStale != null)
 		{
 			map.put("lookupValuesStale", lookupValuesStale);
+			final String reason = event.getLookupValuesStaleReason();
+			if (reason != null)
+			{
+				map.put("lookupValuesStaleReason", reason);
+			}
 		}
 
 		return map;

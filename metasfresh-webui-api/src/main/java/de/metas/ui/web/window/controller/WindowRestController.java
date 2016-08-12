@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentId;
-import de.metas.ui.web.window.model.FieldChangedEventCollector;
 import de.metas.ui.web.window.util.JSONConverters;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
@@ -62,6 +64,9 @@ public class WindowRestController
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
+
+		// FIXME: debug logging
+		LogManager.setLoggerLevel(LogManager.getLogger(DocumentField.class), Level.TRACE);
 	}
 
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
@@ -94,32 +99,31 @@ public class WindowRestController
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		autologin();
 
-		if (events == null || events.isEmpty())
+		try (final Execution execution = Execution.startExecution())
 		{
-			throw new IllegalArgumentException("No events");
-		}
-
-		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
-		final FieldChangedEventCollector eventsCollector = FieldChangedEventCollector.newInstance();
-
-		for (final JSONDocumentChangedEvent event : events)
-		{
-			if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
+			final DocumentId documentId = DocumentId.of(idStr);
+			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+			final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
+			
+			for (final JSONDocumentChangedEvent event : events)
 			{
-				document.setValueFromJsonObject(event.getPath(), event.getValue(), eventsCollector);
+				if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
+				{
+					document.setValueFromJsonObject(event.getPath(), event.getValue());
+				}
+				else
+				{
+					throw new IllegalArgumentException("Unknown operation: " + event);
+				}
 			}
-			else
-			{
-				throw new IllegalArgumentException("Unknown operation: " + event);
-			}
-		}
 
-		return JSONConverters.toJsonObject(eventsCollector);
+			return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
+		}
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
@@ -127,17 +131,27 @@ public class WindowRestController
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 			, @RequestParam(name = "field", required = true) final String fieldName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		autologin();
 
-		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
-		final List<LookupValue> lookupValues = document
-				.getField(fieldName)
-				.getLookupValuesForQuery(document, query);
+		final DocumentId documentId = DocumentId.of(idStr);
+		if (documentId.isNew())
+		{
+			throw new IllegalArgumentException("Invalid id: " + documentId);
+		}
+
+		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+		if (rowId != null && rowId.isNew())
+		{
+			throw new IllegalArgumentException("Invalid rowId: " + rowId);
+		}
+
+		final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
+		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);
 	}
@@ -147,16 +161,26 @@ public class WindowRestController
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 			, @RequestParam(name = "field", required = true) final String fieldName //
 	)
 	{
 		autologin();
 
-		final Document document = documentCollection.getDocument(adWindowId, idStr, detailId, rowId);
-		final List<LookupValue> lookupValues = document
-				.getField(fieldName)
-				.getLookupValues(document);
+		final DocumentId documentId = DocumentId.of(idStr);
+		if (documentId.isNew())
+		{
+			throw new IllegalArgumentException("Invalid id: " + documentId);
+		}
+
+		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+		if (rowId != null && rowId.isNew())
+		{
+			throw new IllegalArgumentException("Invalid rowId: " + rowId);
+		}
+
+		final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
+		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);
 	}

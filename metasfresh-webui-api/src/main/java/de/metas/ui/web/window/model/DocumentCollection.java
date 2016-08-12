@@ -77,7 +77,7 @@ public class DocumentCollection
 		return descriptor.getEntityDescriptor();
 	}
 
-	public Document getDocument(final int adWindowId, final DocumentId documentId)
+	private Document getDocument(final int adWindowId, final DocumentId documentId)
 	{
 		if (documentId.isNew())
 		{
@@ -104,9 +104,8 @@ public class DocumentCollection
 		}
 	}
 
-	public Document getDocument(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	public Document getDocument(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId rowId)
 	{
-		final DocumentId documentId = DocumentId.of(idStr);
 		final Document document = getDocument(adWindowId, documentId);
 
 		if (Check.isEmpty(detailId))
@@ -114,8 +113,11 @@ public class DocumentCollection
 			return document;
 		}
 
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		if (rowId.isNew())
+		if (rowId == null)
+		{
+			throw new IllegalArgumentException("Invalid rowId: " + rowId);
+		}
+		else if (rowId.isNew())
 		{
 			return document.createIncludedDocument(detailId);
 		}
@@ -135,18 +137,19 @@ public class DocumentCollection
 			return ImmutableList.of(document);
 		}
 
-		if (Check.isEmpty(rowIdStr))
+		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+		if (rowId == null)
 		{
 			return document.getIncludedDocuments(detailId);
 		}
-
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		if (rowId.isNew())
+		else if (rowId.isNew())
 		{
 			throw new IllegalArgumentException("Invalid rowId=" + rowId);
 		}
-
-		return ImmutableList.of(document.getIncludedDocument(detailId, rowId));
+		else
+		{
+			return ImmutableList.of(document.getIncludedDocument(detailId, rowId));
+		}
 	}
 
 	/** Retrieves document from repository */

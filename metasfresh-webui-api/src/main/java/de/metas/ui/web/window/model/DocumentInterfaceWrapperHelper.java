@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -89,9 +93,27 @@ public class DocumentInterfaceWrapperHelper implements IInterfaceWrapperHelper
 			}
 		}
 
-		final FieldChangedEventCollector eventsCollector = FieldChangedEventCollector.newInstance(); // FIXME use a thread local delegate?
-		document.setValueFromJsonObject(columnName, value, eventsCollector);
+		document.setValueFromJsonObject(columnName, value);
 		return true;
+	}
+
+	@Override
+	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	{
+		return Env.getCtx();
+	}
+
+	@Override
+	public String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	{
+		return ITrx.TRXNAME_None;
+	}
+
+
+	@Override
+	public int getId(final Object model)
+	{
+		return DocumentInterfaceWrapper.getId(model);
 	}
 
 }
