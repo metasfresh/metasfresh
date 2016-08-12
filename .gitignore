@@ -5,3 +5,6 @@ dist
 .idea
 config.js
 /static
+
+.gitlab-ci.yml
+ansible/
