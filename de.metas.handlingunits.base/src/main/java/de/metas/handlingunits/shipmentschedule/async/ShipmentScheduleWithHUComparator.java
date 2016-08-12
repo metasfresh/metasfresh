@@ -171,6 +171,10 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 		// Shipment line aggregation key
 		{
 			final Object attributesAggregationKey = schedWithHU.getAttributesAggregationKey();
+			if (aggregationKey.length() > 0)
+			{
+				aggregationKey.append("#");
+			}
 			aggregationKey.append(attributesAggregationKey);
 		}
 		
