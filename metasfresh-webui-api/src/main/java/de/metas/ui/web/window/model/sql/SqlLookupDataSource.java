@@ -206,7 +206,7 @@ public class SqlLookupDataSource implements LookupDataSource
 			validationCtx.setValidationRule(validationRule);
 
 			String sqlValidationRule = validationRule.getPrefilterWhereClause(validationCtx);
-			if (sqlValidationRule == null)
+			if (Check.isEmpty(sqlValidationRule, true))
 			{
 				sqlValidationRule = "1=1";
 			}
