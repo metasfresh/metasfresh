@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.async;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -37,6 +36,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Null;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -51,9 +51,12 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.logging.LogManager;
 
 /* package */class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
+
 	private final IHUContext huContext;
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final BigDecimal qtyPicked;
@@ -112,6 +115,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 				+ "\n    vhu=" + vhu
 				+ "\n    tuHU=" + tuHU
 				+ "\n    luHU=" + luHU
+				+ "\n    attributesAggregationKey=" + (_attributesAggregationKey == null ? "<NOT BUILT>" : _attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleAlloc
 				+ "\n    shipmentLine=" + shipmentLine
 				+ "\n]";
@@ -128,7 +132,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 	{
 		return shipmentSchedule.getM_Product_ID();
 	}
-	
+
 	@Override
 	public I_M_Product getM_Product()
 	{
@@ -145,21 +149,21 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 	@Override
 	public Object getAttributesAggregationKey()
 	{
-		if(_attributesAggregationKey == null)
+		if (_attributesAggregationKey == null)
 		{
 			_attributesAggregationKey = createAttributesAggregationKey();
 		}
 		return _attributesAggregationKey;
 	}
-	
+
 	private Object createAttributesAggregationKey()
 	{
 		final I_M_HU hu = getTopLevelHU();
-		if(hu == null)
+		if (hu == null)
 		{
 			return ImmutableMap.of("M_AttributeSetInstance_ID", getM_AttributeSetInstance_ID());
 		}
-		
+
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
@@ -178,7 +182,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 
 		return keyBuilder.build();
 	}
-
 
 	@Override
 	public int getC_OrderLine_ID()
@@ -235,6 +238,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 	@Override
 	public void setM_InOutLine(final I_M_InOutLine shipmentLine)
 	{
+		logger.trace("Setting shipmentLine={} to {}", shipmentLine, this);
 		this.shipmentLine = shipmentLine;
 	}
 

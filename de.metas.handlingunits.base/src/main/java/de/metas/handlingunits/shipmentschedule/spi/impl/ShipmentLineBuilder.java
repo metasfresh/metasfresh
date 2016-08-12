@@ -47,6 +47,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
@@ -73,6 +74,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.logging.LogManager;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -84,7 +86,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 {
 	//
 	// Services
-	// private static final transient Logger logger = CLogMgt.getLogger(ShipmentLineBuilder.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.class);
 	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -246,6 +248,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 	private void append(final IShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
+		
+		logger.trace("Adding candidate to {}: {}", this, candidate);
 
 		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
