@@ -12,6 +12,7 @@ import {
 } from './actions/WindowActions';
 
 export const getRoutes = (store) => {
+    console.log(store);
     return (
         <Route path="/">
             <Route component={Main}>

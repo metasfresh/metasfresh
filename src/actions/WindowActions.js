@@ -9,7 +9,9 @@ export function createWindow(windowType){
         }else{
             // TODO : fix for chaining dispatched actions ( occurs double rendering )
 
-            dispatch(initLayout(windowType));
+            dispatch(initLayout(windowType)).then(()=>{
+                console.log('asd')
+            });
             dispatch(initData(windowType));
         }
     }
