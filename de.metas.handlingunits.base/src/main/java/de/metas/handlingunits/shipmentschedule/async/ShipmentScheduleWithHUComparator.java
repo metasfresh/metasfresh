@@ -147,12 +147,16 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 
 		final StringBuilder aggregationKey = new StringBuilder();
 
+		//
+		// Shipment header aggregation key (from M_ShipmentSchedule)
 		final String shipmentScheduleAggregationKey = shipmentScheduleKeyBuilder.buildKey(shipmentSchedule);
 		if (shipmentScheduleAggregationKey != null)
 		{
 			aggregationKey.append(shipmentScheduleAggregationKey);
 		}
 
+		//
+		// Shipment header aggregation key (the HU related part)
 		final String huShipmentScheduleAggregationKey = huShipmentScheduleKeyBuilder.buildKey(schedWithHU);
 		if (huShipmentScheduleAggregationKey != null)
 		{
@@ -162,6 +166,14 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 			}
 			aggregationKey.append(huShipmentScheduleAggregationKey);
 		}
+		
+		//
+		// Shipment line aggregation key
+		{
+			final Object attributesAggregationKey = schedWithHU.getAttributesAggregationKey();
+			aggregationKey.append(attributesAggregationKey);
+		}
+		
 
 		return aggregationKey.toString();
 	}

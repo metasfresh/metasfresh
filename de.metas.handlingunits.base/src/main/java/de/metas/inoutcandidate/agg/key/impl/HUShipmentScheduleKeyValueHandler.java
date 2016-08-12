@@ -59,8 +59,6 @@ public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHa
 
 		final I_M_HU luHU = schedWithHU.getM_LU_HU();
 		values.addAll(getValues(luHU));
-		
-		values.add(schedWithHU.getAttributesAggregationKey());
 
 		return values;
 	}
