@@ -2,6 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Widget from '../components/Widget';
+import Header from '../components/app/Header';
+import OrderList from '../components/app/OrderList';
 
 class Window extends Component {
     constructor(props){
@@ -67,11 +69,15 @@ class Window extends Component {
     render() {
         const {sections, tabs} = this.props.layout;
         return (
-            <div className="container" key="window">
-                {sections && this.renderSections(sections)}
-                <ul className="nav nav-tabs m-t-1 m-b-2">
-                    {tabs && this.renderTabs(tabs)}
-                </ul>
+            <div>
+                <Header />
+                <OrderList />
+                <div className="container header-sticky-distance" key="window">
+                    {sections && this.renderSections(sections)}
+                    <ul className="nav nav-tabs m-t-1 m-b-2">
+                        {tabs && this.renderTabs(tabs)}
+                    </ul>
+                </div>
             </div>
         );
     }

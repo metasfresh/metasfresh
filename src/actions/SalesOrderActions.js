@@ -134,12 +134,7 @@ export function autocompleteRequest(windowType, propertyName, query) {
     }
 }
 export function dropdownRequest(windowType, propertyName) {
-    return (dispatch) => {
-        axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id=NEW&field='+ propertyName)
-            .then((response) => {
-                return response.data;
-            });
-    }
+    return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id=NEW&field='+ propertyName);
 }
 
 export function newSalesOrderSuccess(response) {

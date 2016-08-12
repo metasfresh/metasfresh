@@ -3,7 +3,9 @@ import update from 'react-addons-update';
 
 const initialState = {
     layout: {},
-    data: []
+    data: [{
+        value: 0
+    }]
 }
 
 export default function windowHandler(state = initialState, action) {

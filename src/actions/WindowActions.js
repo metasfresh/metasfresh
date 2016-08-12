@@ -12,7 +12,7 @@ export function createWindow(windowType){
             // to do not re-render widgets on init
             //
             dispatch(initData(windowType)).then((response) => {
-                dispatch(initDataSuccess(response.data));
+                dispatch(initDataSuccess(response.data[0]));
                 dispatch(initLayout(windowType)).then((response) => {
                     dispatch(initLayoutSuccess(response.data))
                 })

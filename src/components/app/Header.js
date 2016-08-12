@@ -87,8 +87,7 @@ class Header extends Component {
         })
     }
     render() {
-        const {isSubheaderShow, isOrderListShow, orderStatus} = this.props;
-
+        const {isSubheaderShow, isOrderListShow, orderStatus, data} = this.props;
         return (
             <div>
             {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
@@ -106,7 +105,7 @@ class Header extends Component {
                             <div className="header-breadcrumb">
                                 <div>Home / Sales orders</div>
                                 <div className="input-icon-container header-input-id header-input-sm">
-                                    <input className="form-control form-control-meta" type="text"/>
+                                    <input value={data[0] && data[0].value} readonly className="form-control form-control-meta" type="text"/>
                                     <i className="meta-icon-edit input-icon-right"></i>
                                 </div>
                             </div>
@@ -144,11 +143,12 @@ Header.propTypes = {
     isSubheaderShow: PropTypes.bool.isRequired,
     orderStatus: PropTypes.number.isRequired,
     isOrderListShow: PropTypes.bool.isRequired,
+    data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler, routing } = state;
+    const { salesOrderStateHandler, windowHandler } = state;
     const {
         isSubheaderShow,
         isOrderListShow,
@@ -158,10 +158,16 @@ function mapStateToProps(state) {
         isOrderListShow: false,
         orderStatus: 0
     }
+    const {
+        data
+    } = windowHandler || {
+        data: []
+    }
     return {
         isSubheaderShow,
         isOrderListShow,
-        orderStatus
+        orderStatus,
+        data
     }
 }
 

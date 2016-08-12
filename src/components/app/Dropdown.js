@@ -8,6 +8,9 @@ import {
 class Dropdown extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            list: []
+        }
     }
     handleBlur = (e) => {
         this.dropdown.classList.remove("input-dropdown-focused");
@@ -15,7 +18,9 @@ class Dropdown extends Component {
     handleFocus = (e) => {
         e.preventDefault();
         const {properties, dispatch} = this.props;
-        dispatch(dropdownRequest(143, properties[0].field));
+        dispatch(dropdownRequest(143, properties[0].field)).then((res) => {
+            this.setState({list: res.data});
+        });
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
@@ -27,7 +32,7 @@ class Dropdown extends Component {
         this.handleBlur();
     }
     renderOptions = () => {
-        return this.props.options.map((option, index) => (
+        return this.state.list.map((option, index) => (
                 <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(index)}>
                     <p className="input-dropdown-item-title">{option}</p>
                 </div>
@@ -35,7 +40,7 @@ class Dropdown extends Component {
         )
     }
     render() {
-        const {options, rank} = this.props;
+        const {list, rank} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -61,6 +66,11 @@ class Dropdown extends Component {
                     </div>
                 </div>
                 <div className="input-dropdown-list">
+                    {(this.state.list.length == 0) && (
+                        <div className="input-dropdown-list-header">
+                            There is no choice available
+                        </div>
+                    )}
                     {this.renderOptions()}
                 </div>
             </div>
