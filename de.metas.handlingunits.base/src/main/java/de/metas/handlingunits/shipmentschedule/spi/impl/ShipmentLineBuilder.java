@@ -176,7 +176,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 		}
 		
 		// Check: HU context
-		if(Objects.equals(huContext, candidate.getHUContext()))
+		if(!Objects.equals(huContext, candidate.getHUContext()))
 		{
 			return false;
 		}
