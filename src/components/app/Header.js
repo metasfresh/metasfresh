@@ -100,7 +100,7 @@ class Header extends Component {
                                 onClick={this.handleSubheaderOpen}
                                 className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default btn-subheader-open btn-header-open" : "btn-meta-primary")}
                             >
-                                <i className="meta-icon-hamburger" />
+                                <i className="meta-icon-more" />
                             </div>
 
                             <div className="header-breadcrumb">

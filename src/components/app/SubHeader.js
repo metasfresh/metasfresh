@@ -28,11 +28,11 @@ class Subheader extends Component {
                                 </div>
                                 <div className="subheader-item" onClick={()=> this.redirect('ui')}><i className="meta-icon-preview-1" /> Preview</div>
                                 <div className="subheader-item" onClick={()=> this.redirect('window/test')}><i className="meta-icon-print" /> Print</div>
-                                <div className="subheader-item"><i className="meta-icon-message-1" /> Send message</div>
-                                <div className="subheader-item"><i className="meta-icon-clone-1" /> Clone</div>
-                                <div className="subheader-item"><i className="meta-icon-delete-1" /> Delete</div>
-                                <div className="subheader-item"><i className="meta-icon-settings-1" /> Settings</div>
-                                <div className="subheader-item"><i className="meta-icon-logout-1" /> Log out</div>
+                                <div className="subheader-item"><i className="meta-icon-message" /> Send message</div>
+                                <div className="subheader-item"><i className="meta-icon-duplicate" /> Clone</div>
+                                <div className="subheader-item"><i className="meta-icon-delete" /> Delete</div>
+                                <div className="subheader-item"><i className="meta-icon-settings" /> Settings</div>
+                                <div className="subheader-item"><i className="meta-icon-logout" /> Log out</div>
                             </div>
                             <div className=" subheader-column">
                                 <div className="subheader-header">Actions</div>

@@ -25,7 +25,7 @@ class OrderList extends Component {
                 <div className="order-list-panel-header">
 
                     <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
-                        <i className="meta-icon-preview-1" />
+                        <i className="meta-icon-preview" />
                     </a>
                     <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
                         <i className="meta-icon-calendar" />
