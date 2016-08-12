@@ -5,6 +5,7 @@ import {
     autocomplete,
     autocompleteRequest,
     autocompleteSuccess,
+    dropdownRequest,
     getPropertyValue,
 } from '../../actions/SalesOrderActions';
 
@@ -41,10 +42,13 @@ class LookupDropdown extends Component {
             select.properties = {};
 
             if(properties.length > 1){
-                select.properties = {
-                    property: [{123: "opt1prop1"}, {1234: "opt2prop2"}],
-                    property2: [{1231: "opt1prop2"}]
-                };
+                properties.shift();
+                properties.map((item) => {
+                    // TODO: here we need to make batch request for all properties at once
+                    dispatch(dropdownRequest(143, item.field)).then((response)=>{
+                        select.properties[item.field] = response.data;
+                    });
+                });
                 this.setState({model: select}, () => {
                     this.generatingPropsSelection();
                 });
