@@ -38,78 +38,78 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.meta-icons-add:before {
+.meta-icon-add:before {
   content: "\61";
 }
-.meta-icons-attachments:before {
+.meta-icon-attachments:before {
   content: "\62";
 }
-.meta-icons-calendar:before {
+.meta-icon-calendar:before {
   content: "\63";
 }
-.meta-icons-chevron:before {
+.meta-icon-chevron:before {
   content: "\64";
 }
-.meta-icons-close:before {
+.meta-icon-close:before {
   content: "\65";
 }
-.meta-icons-close-alt:before {
+.meta-icon-close-alt:before {
   content: "\66";
 }
-.meta-icons-delete:before {
+.meta-icon-delete:before {
   content: "\67";
 }
-.meta-icons-down:before {
+.meta-icon-down:before {
   content: "\68";
 }
-.meta-icons-duplicate:before {
+.meta-icon-duplicate:before {
   content: "\69";
 }
-.meta-icons-edit:before {
+.meta-icon-edit:before {
   content: "\6a";
 }
-.meta-icons-file:before {
+.meta-icon-file:before {
   content: "\6b";
 }
-.meta-icons-fullscreen:before {
+.meta-icon-fullscreen:before {
   content: "\6c";
 }
-.meta-icons-generate:before {
+.meta-icon-generate:before {
   content: "\6d";
 }
-.meta-icons-list:before {
+.meta-icon-list:before {
   content: "\6e";
 }
-.meta-icons-logout:before {
+.meta-icon-logout:before {
   content: "\6f";
 }
-.meta-icons-message:before {
+.meta-icon-message:before {
   content: "\70";
 }
-.meta-icons-more:before {
+.meta-icon-more:before {
   content: "\71";
 }
-.meta-icons-preview:before {
+.meta-icon-preview:before {
   content: "\72";
 }
-.meta-icons-print:before {
+.meta-icon-print:before {
   content: "\73";
 }
-.meta-icons-profile:before {
+.meta-icon-profile:before {
   content: "\74";
 }
-.meta-icons-report:before {
+.meta-icon-report:before {
   content: "\75";
 }
-.meta-icons-report-1:before {
+.meta-icon-report-1:before {
   content: "\76";
 }
-.meta-icons-settings:before {
+.meta-icon-settings:before {
   content: "\77";
 }
-.meta-icons-share:before {
+.meta-icon-share:before {
   content: "\78";
 }
-.meta-icons-trash:before {
+.meta-icon-trash:before {
   content: "\79";
 }
