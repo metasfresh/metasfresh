@@ -9,7 +9,7 @@ class Widget extends Component {
     constructor(props) {
         super(props);
     }
-    renderWidget = (type) => {
+    renderWidget = (type, fields, windowType) => {
         switch(type){
             case "Date":
                 return (
@@ -51,7 +51,8 @@ class Widget extends Component {
                 return (
                     <LookupDropdown
                         recent={[]}
-                        properties={["C_BPartner_ID"]}
+                        properties={fields}
+                        windowType={windowType}
                     />
                 )
             case "List":
@@ -59,7 +60,7 @@ class Widget extends Component {
                     <Dropdown
                         options={['1','2','3']}
                         defaultValue="(none)"
-                        property="HandOver_Partner_ID"
+                        properties={fields}
                     />
                 )
             case "Text":
@@ -132,15 +133,45 @@ class Widget extends Component {
                 )
         }
     }
+    findRowByPropName = (arr, name) => {
+        for(let i = 0; i < arr.length; i++){
+            if(arr[i].field === name){
+                return i;
+            }
+        }
+
+        return -1;
+    }
     render() {
-        const {caption, widgetType, description, field} = this.props;
+        const {caption, widgetType, description, fields, windowType, data} = this.props;
+        const dataId = this.findRowByPropName(data, fields[0].field);
         return (
             <div>
                 <div key="title" className="panel-title">{caption}</div>
-                {this.renderWidget(widgetType)}
+                {this.renderWidget(widgetType, fields, windowType, dataId)}
             </div>
         )
     }
 }
+
+Widget.propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    data: PropTypes.array.isRequired,
+};
+
+function mapStateToProps(state) {
+    const {windowHandler} = state;
+    const {
+        data
+    } = windowHandler || {
+        data: []
+    }
+
+    return {
+        data
+    }
+}
+
+Widget = connect(mapStateToProps)(Widget)
 
 export default Widget

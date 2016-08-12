@@ -33,19 +33,26 @@ class LookupDropdown extends Component {
         // Handling selection when main is not set or set.
         //
         if(this.state.property === ""){
+            this.inputSearch.value = select[Object.keys(select)[0]];
             //call for more properties
             //mocked properties for testing
             // - first will generate choice dropdown
             // - second should be chosen automatically
-            select.properties = {
-                property: [{123: "opt1prop1"}, {1234: "opt2prop2"}],
-                property2: [{1231: "opt1prop2"}]
-            };
-            this.inputSearch.value = select[Object.keys(select)[0]];
-            this.setState({model: select}, () => {
-                this.generatingPropsSelection();
-            });
-            onObjectChange(select);
+            select.properties = {};
+
+            if(properties.length > 1){
+                select.properties = {
+                    property: [{123: "opt1prop1"}, {1234: "opt2prop2"}],
+                    property2: [{1231: "opt1prop2"}]
+                };
+                this.setState({model: select}, () => {
+                    this.generatingPropsSelection();
+                });
+            }else{
+                this.handleBlur();
+            }
+
+            // onObjectChange(select);
         } else {
             //
             // We cannot mutate state here, but we need to update
@@ -65,7 +72,7 @@ class LookupDropdown extends Component {
             }, () => {
                 this.generatingPropsSelection();
             });
-            onPropertyChange(this.state.model);
+            // onPropertyChange(this.state.model);
             this.handleBlur();
         }
     }
@@ -113,14 +120,13 @@ class LookupDropdown extends Component {
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = () => {
-        const {dispatch, recent} = this.props;
+        const {dispatch, recent, windowType, properties} = this.props;
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
         this.setState({selected: null});
-
         if(this.inputSearch.value != ""){
-            dispatch(autocompleteRequest(143, this.props.properties[0], this.inputSearch.value));
+            dispatch(autocompleteRequest(windowType, properties[0].field, this.inputSearch.value));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});

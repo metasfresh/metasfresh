@@ -38,93 +38,78 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.meta-icon-attachments:before {
+.meta-icons-add:before {
   content: "\61";
 }
-.meta-icon-calendar:before {
+.meta-icons-attachments:before {
   content: "\62";
 }
-.meta-icon-delete:before {
+.meta-icons-calendar:before {
   content: "\63";
 }
-.meta-icon-down:before {
+.meta-icons-chevron:before {
   content: "\64";
 }
-.meta-icon-duplicate:before {
+.meta-icons-close:before {
   content: "\65";
 }
-.meta-icon-edit:before {
+.meta-icons-close-alt:before {
   content: "\66";
 }
-.meta-icon-fullscreen:before {
+.meta-icons-delete:before {
   content: "\67";
 }
-.meta-icon-more:before {
+.meta-icons-down:before {
   content: "\68";
 }
-.meta-icon-print:before {
+.meta-icons-duplicate:before {
   content: "\69";
 }
-.meta-icon-profile:before {
+.meta-icons-edit:before {
   content: "\6a";
 }
-.meta-icon-report:before {
+.meta-icons-file:before {
   content: "\6b";
 }
-.meta-icon-share:before {
+.meta-icons-fullscreen:before {
   content: "\6c";
 }
-.meta-icon-trash:before {
+.meta-icons-generate:before {
   content: "\6d";
 }
-.meta-icon-file:before {
+.meta-icons-list:before {
   content: "\6e";
 }
-.meta-icon-hamburger:before {
+.meta-icons-logout:before {
   content: "\6f";
 }
-.meta-icon-list:before {
+.meta-icons-message:before {
   content: "\70";
 }
-.meta-icon-clone-1:before {
-  content: "\72";
-}
-.meta-icon-delete-1:before {
-  content: "\77";
-}
-.meta-icon-generate-1:before {
-  content: "\78";
-}
-.meta-icon-logout-1:before {
-  content: "\7a";
-}
-.meta-icon-message-1:before {
-  content: "\41";
-}
-.meta-icon-preview-1:before {
-  content: "\42";
-}
-.meta-icon-print-1:before {
-  content: "\43";
-}
-.meta-icon-report-1:before {
-  content: "\44";
-}
-.meta-icon-settings-1:before {
-  content: "\45";
-}
-.meta-icon-close:before {
+.meta-icons-more:before {
   content: "\71";
 }
-.meta-icon-chevron:before {
+.meta-icons-preview:before {
+  content: "\72";
+}
+.meta-icons-print:before {
   content: "\73";
 }
-.meta-icon-add-1:before {
+.meta-icons-profile:before {
   content: "\74";
 }
-.meta-icon-full-1:before {
+.meta-icons-report:before {
   content: "\75";
 }
-.meta-icon-close-alt:before {
+.meta-icons-report-1:before {
   content: "\76";
+}
+.meta-icons-settings:before {
+  content: "\77";
+}
+.meta-icons-share:before {
+  content: "\78";
+}
+.meta-icons-trash:before {
+  content: "\79";
 }
