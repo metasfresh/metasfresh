@@ -164,10 +164,13 @@ public final class LogManager
 		{
 			return false;
 		}
-		if (level == null)
-		{
-			return false;
-		}
+		
+		// NOTE: level is OK to be null (i.e. we want to parent's level), as long as it's not the root logger
+		// if (level == null)
+		// {
+		// return false;
+		// }
+		
 		if (!isOwnLogger(logger))
 		{
 			return false;
