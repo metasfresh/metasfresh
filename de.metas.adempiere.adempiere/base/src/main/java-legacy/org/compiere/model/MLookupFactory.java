@@ -179,6 +179,7 @@ public class MLookupFactory
 		final MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID, language, ColumnName, AD_Reference_Value_ID, IsParent, -1);
 		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
+		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 	
@@ -219,6 +220,7 @@ public class MLookupFactory
 		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.getTableName(), AD_Val_Rule_ID));
+		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
 		//	Variables in SQL WHERE
 		// NOTE(metas): there is no point to parse the where clause (even if just partially, for global variables) because it will be parsed anyway on valiadation time 
@@ -586,6 +588,7 @@ public class MLookupFactory
 		//
 		// SQL Where Clause
 		final String sqlWhereClause;
+		final String sqlWhereClauseDynamic;
 		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
 		{
 			final String whereClauseInitial = tableRefInfo.getWhereClause();
@@ -598,7 +601,15 @@ public class MLookupFactory
 			if (Check.isEmpty(whereClauseParsed, true))
 			{
 				sqlWhereClause = null;
-				s_log.error("Could not resolve: " + whereClauseInitial + ". WhereClause Ignored.");
+				sqlWhereClauseDynamic = whereClauseInitial.trim();
+				
+				if(s_log.isDebugEnabled())
+				{
+					final AdempiereException ex = new AdempiereException("Could not resolve: " + whereClauseInitial + ". "
+							+ "\n Considering it as dynamic where clause which will be processed together with validation rules."
+							+ "\n tableRefInfo=" + tableRefInfo);
+					s_log.debug("", ex);
+				}
 			}
 			else
 			{
@@ -607,11 +618,13 @@ public class MLookupFactory
 					s_log.error("getLookup_Table - " + TableName + ": WHERE should be fully qualified: " + whereClauseInitial);
 				}
 				sqlWhereClause = whereClauseParsed;
+				sqlWhereClauseDynamic = null;
 			}
 		}
 		else
 		{
 			sqlWhereClause = null;
+			sqlWhereClauseDynamic = null;
 		}
 		
 		//
@@ -688,6 +701,7 @@ public class MLookupFactory
 		lookupInfo.setSelectSqlPart(sqlSelect.toString());
 		lookupInfo.setFromSqlPart(sqlFrom.toString());
 		lookupInfo.setWhereClauseSqlPart(sqlWhereClause);
+		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());

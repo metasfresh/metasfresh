@@ -22,8 +22,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -82,6 +85,8 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private String selectSqlPart = null;
 	private String fromSqlPart = null;
 	private String whereClauseSqlPart = null;
+	/** SQL WHERE part (without WHERE keyword); this SQL includes context variables references */
+	private String whereClauseDynamicSqlPart = null;
 	private String orderBySqlPart = null;
 	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
 	private boolean securityDisabled = false;
@@ -103,6 +108,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	// /** Validation flag */
 	// public boolean IsValidated = true;
 	private IValidationRule validationRule = NullValidationRule.instance;
+	private IValidationRule _validationRuleEffective = null; // lazy
 
 	/** Context */
 	private Properties ctx = null;
@@ -190,14 +196,30 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	// metas
+	/** @return effective validation rule */
 	public IValidationRule getValidationRule()
 	{
-		return validationRule;
+		if (_validationRuleEffective == null)
+		{
+			final IValidationRule whereClauseDynamicValidationRule;
+			if(!Check.isEmpty(whereClauseDynamicSqlPart, true))
+			{
+				whereClauseDynamicValidationRule = Services.get(IValidationRuleFactory.class).createSQLValidationRule(whereClauseDynamicSqlPart);
+			}
+			else
+			{
+				whereClauseDynamicValidationRule = NullValidationRule.instance;
+			}
+			
+			_validationRuleEffective = CompositeValidationRule.compose(validationRule, whereClauseDynamicValidationRule);
+		}
+		return _validationRuleEffective;
 	}
 
 	/* package */void setValidationRule(IValidationRule validationRule)
 	{
 		this.validationRule = validationRule;
+		this._validationRuleEffective = null; // reset
 	}
 
 	public String getDisplayColumnSQL()
@@ -254,10 +276,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 	{
 		return whereClauseSqlPart;
 	}
-
+	
 	/* package */void setWhereClauseSqlPart(String whereClauseSqlPart)
 	{
 		this.whereClauseSqlPart = whereClauseSqlPart;
+	}
+
+	/* package */void setWhereClauseDynamicSqlPart(String whereClauseDynamicSqlPart)
+	{
+		this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
+		this._validationRuleEffective = null; // reset
 	}
 
 	/** @return SQL ORDER BY part (without ORDER BY keyword) */
