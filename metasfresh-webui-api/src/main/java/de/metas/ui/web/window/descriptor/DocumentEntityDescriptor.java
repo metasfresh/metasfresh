@@ -53,7 +53,9 @@ public class DocumentEntityDescriptor
 	private final DocumentFieldDependencyMap dependencies;
 
 	// Legacy
+	private final int AD_Window_ID;
 	private final int tabNo;
+	private final boolean isSOTrx;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -66,7 +68,9 @@ public class DocumentEntityDescriptor
 		dependencies = builder.buildDependencies();
 
 		// legacy:
+		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		tabNo = builder.tabNo;
+		isSOTrx = builder.isSOTrx;
 	}
 
 	@Override
@@ -100,9 +104,9 @@ public class DocumentEntityDescriptor
 		}
 
 		final DocumentEntityDescriptor other = (DocumentEntityDescriptor)obj;
-		return Objects.equals(this.id, other.id);
+		return Objects.equals(id, other.id);
 	}
-	
+
 	public String getId()
 	{
 		return id;
@@ -144,9 +148,21 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
+	}
+
+	// legacy
 	public int getTabNo()
 	{
 		return tabNo;
+	}
+
+	// legacy
+	public boolean isSOTrx()
+	{
+		return isSOTrx;
 	}
 
 	public static final class Builder
@@ -158,7 +174,9 @@ public class DocumentEntityDescriptor
 		private String detailId;
 
 		// Legacy
+		private Integer AD_Window_ID;
 		private Integer tabNo;
+		private Boolean isSOTrx;
 
 		private Builder()
 		{
@@ -210,9 +228,21 @@ public class DocumentEntityDescriptor
 			return dependenciesBuilder.build();
 		}
 
-		public Builder setTabNo(int tabNo)
+		public Builder setAD_Window_ID(final int AD_Window_ID)
+		{
+			this.AD_Window_ID = AD_Window_ID;
+			return this;
+		}
+
+		public Builder setTabNo(final int tabNo)
 		{
 			this.tabNo = tabNo;
+			return this;
+		}
+		
+		public Builder setIsSOTrx(final boolean isSOTrx)
+		{
+			this.isSOTrx = isSOTrx;
 			return this;
 		}
 	}

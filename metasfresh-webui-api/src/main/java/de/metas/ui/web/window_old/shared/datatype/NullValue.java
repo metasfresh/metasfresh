@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = NullValueJSONSerializer.class)
 @JsonDeserialize(using = NullValueJSONDeserializer.class)
+@Deprecated
 public final class NullValue implements Serializable
 {
 	private static final long serialVersionUID = 1L;

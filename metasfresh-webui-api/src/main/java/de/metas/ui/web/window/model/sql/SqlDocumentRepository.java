@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -24,6 +25,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
@@ -36,6 +38,9 @@ import com.google.common.base.Strings;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -46,7 +51,6 @@ import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
 import de.metas.ui.web.window.util.LastDocumentTracker;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -171,6 +175,15 @@ public class SqlDocumentRepository implements DocumentRepository
 		final Document document = new Document(this, entityDescriptor, windowNo, parentDocument);
 
 		//
+		// Set document's header window default values
+		// NOTE: these dynamic attributes will be considered by Document.asEvaluatee.
+		if(parentDocument == null)
+		{
+			document.setDynAttribute("IsSOTrx", entityDescriptor.isSOTrx()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+			document.setDynAttribute("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
+		}
+
+		//
 		// Set default values
 		// TODO: when initializing fields, first we need to initialize those which don't have dependencies
 		logger.trace("Setting default values for {}", document);
@@ -202,20 +215,28 @@ public class SqlDocumentRepository implements DocumentRepository
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
+		//
+		// Primary Key field
 		if (fieldDescriptor.isKey())
 		{
 			final int value = generateNextTemporaryId();
 			return value;
 		}
-		else if (fieldDescriptor.isParentLink() && parentDocument != null)
+		
+		//
+		// Parent link field
+		if (fieldDescriptor.isParentLink() && parentDocument != null)
 		{
 			final int value = parentDocument.getDocumentId();
 			return value;
 		}
-		else
+		
+		//
+		// Default value expression
+		final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
+		if (!NullStringExpression.isNull(defaultValueExpression))
 		{
 			// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
-			final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
 			String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
 			if (Check.isEmpty(valueStr, false))
 			{
@@ -224,7 +245,33 @@ public class SqlDocumentRepository implements DocumentRepository
 
 			return valueStr;
 		}
+		
+		//
+		// Preference (user) - P|
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		{
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), documentField.getFieldName(), false);
+			if(!Check.isEmpty(valueStr, false))
+			{
+				return valueStr;
+			}
+		}
 
+		//
+		// Preference (System) - # $
+		{
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), documentField.getFieldName(), true);
+			if(!Check.isEmpty(valueStr, false))
+			{
+				return valueStr;
+			}
+		}
+		
+		
+
+		//
+		// Fallback
+		return null;
 	}
 
 	private int generateNextTemporaryId()
@@ -369,12 +416,12 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (fieldDataBinding.isNumericKey())
 			{
 				final int id = rs.getInt(columnName);
-				value = rs.wasNull() ? null : LookupValue.of(id, displayName);
+				value = rs.wasNull() ? null : IntegerLookupValue.of(id, displayName);
 			}
 			else
 			{
 				final String key = rs.getString(columnName);
-				value = rs.wasNull() ? null : LookupValue.of(key, displayName);
+				value = rs.wasNull() ? null : StringLookupValue.of(key, displayName);
 			}
 			decryptRequired = false;
 		}

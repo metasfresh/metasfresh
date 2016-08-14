@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -18,12 +19,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
-import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 /*
  * #%L
@@ -67,7 +69,7 @@ public final class JSONConverters
 	}
 
 	/**
-	 * 
+	 *
 	 * @param document
 	 * @return [ { field:field1 }, {...} ]
 	 */
@@ -265,42 +267,61 @@ public final class JSONConverters
 		}
 
 		return lookupValues.stream()
-				.map(lookupValue -> lookupValueToJsonObject(lookupValue))
-				.collect(Collectors.toList());
+				.map(JSONConverters::lookupValueToJsonObject)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static final Map<String, String> lookupValueToJsonObject(final LookupValue lookupValue)
 	{
-		final Object keyObj = lookupValue.getId();
-		final String key = keyObj == null ? null : keyObj.toString();
-
+		final String key = lookupValue.getIdAsString();
 		final String name = lookupValue.getDisplayName();
-
-		final Map<String, String> json = ImmutableMap.of(key, name);
-		return json;
+		return ImmutableMap.of(key, name);
 	}
 
-	public static final Object lookupValueFromJsonMap(final Map<String, String> map)
+	public static final Object integerLookupValueFromJsonMap(final Map<String, String> map)
 	{
 		final Set<Map.Entry<String, String>> entrySet = map.entrySet();
 		if (entrySet.size() != 1)
 		{
 			throw new IllegalArgumentException("Invalid JSON lookup value: map=" + map);
 		}
-
 		final Map.Entry<String, String> e = entrySet.iterator().next();
-		final String keyStr = e.getKey();
-		// TODO: check if we need to convert the Key to integer. I think we shall replace the LookupValue with something else...
-		final Object key = keyStr;
 
+		String idStr = e.getKey();
+		if (idStr == null)
+		{
+			return null;
+		}
+		idStr = idStr.trim();
+		if (idStr.isEmpty())
+		{
+			return null;
+		}
+
+		final int id = Integer.parseInt(idStr);
 		final String name = e.getValue();
 
-		return LookupValue.of(key, name);
+		return IntegerLookupValue.of(id, name);
+	}
+
+	public static final Object stringLookupValueFromJsonMap(final Map<String, String> map)
+	{
+		final Set<Map.Entry<String, String>> entrySet = map.entrySet();
+		if (entrySet.size() != 1)
+		{
+			throw new IllegalArgumentException("Invalid JSON lookup value: map=" + map);
+		}
+		final Map.Entry<String, String> e = entrySet.iterator().next();
+
+		final String id = e.getKey();
+		final String name = e.getValue();
+
+		return StringLookupValue.of(id, name);
 	}
 
 	public static final Object valueToJsonObject(final Object value)
 	{
-		if (NullValue.isNull(value))
+		if (value == null)
 		{
 			return null;
 		}

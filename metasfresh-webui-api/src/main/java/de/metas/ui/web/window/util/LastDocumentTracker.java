@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentId;
 
@@ -41,7 +44,7 @@ import de.metas.ui.web.window.model.DocumentId;
 @SuppressWarnings("serial")
 public class LastDocumentTracker implements Serializable
 {
-	private final Map<String, Integer> lastDocumentIds = new HashMap<>();
+	private final Map<ArrayKey, DocumentId> lastDocumentIds = new HashMap<>();
 
 	public LastDocumentTracker()
 	{
@@ -56,22 +59,24 @@ public class LastDocumentTracker implements Serializable
 				.toString();
 	}
 
+	private static final ArrayKey mkKey(final int adWindowId, final String detailId)
+	{
+		return Util.mkKey(adWindowId, detailId);
+	}
+
 	public void add(final Document document)
 	{
 		Check.assumeNotNull(document, "Parameter document is not null");
-		final String entityId = document.getEntityDescriptor().getId();
-		final int documentId = document.getDocumentId();
-		lastDocumentIds.put(entityId, documentId);
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		final ArrayKey key = mkKey(entityDescriptor.getAD_Window_ID(), entityDescriptor.getDetailId());
+		final DocumentId documentId = DocumentId.of(document.getDocumentId());
+		lastDocumentIds.put(key, documentId);
 	}
 
-	public DocumentId getLastDocumentId(final String entityId, final DocumentId defaultValue)
+	public DocumentId getLastDocumentId(final int adWindowId, final String detailId, final DocumentId defaultValue)
 	{
-		final Integer lastDocumentId = lastDocumentIds.get(entityId);
-		if (lastDocumentId == null)
-		{
-			return defaultValue;
-		}
-		return DocumentId.of(lastDocumentId);
+		final ArrayKey key = mkKey(adWindowId, detailId);
+		return lastDocumentIds.getOrDefault(key, defaultValue);
 	}
 
 }

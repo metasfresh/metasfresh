@@ -23,6 +23,7 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.MLookupInfo;
 import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -30,10 +31,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -83,7 +85,7 @@ public class DocumentDescriptorFactory
 		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + COLUMNNAME_IsActive + "/Y@=N", ILogicExpression.class);
 		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + COLUMNNAME_Processed + "/N@=Y | @" + COLUMNNAME_Processing + "/N@=Y", ILogicExpression.class);
-		
+
 		DEFAULT_VALUE_EXPRESSION_Yes = expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_Zero = expressionFactory.compile("0", IStringExpression.class);
@@ -123,7 +125,9 @@ public class DocumentDescriptorFactory
 		final GridTabVO mainTabVO = gridWindowVO.getTab(mainTabNo);
 		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
 				.setId(mainTabVO.getAD_Tab_ID())
+				.setAD_Window_ID(AD_Window_ID) // legacy
 				.setTabNo(mainTabNo) // legacy
+				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 				;
 		{
 			final SpecialFieldsCollector specialFieldsCollector = new SpecialFieldsCollector();
@@ -179,7 +183,9 @@ public class DocumentDescriptorFactory
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
 					.setId(detailTabVO.getAD_Tab_ID())
 					.setDetailId(detail.getDetailId())
+					.setAD_Window_ID(AD_Window_ID) // legacy
 					.setTabNo(detailTabVO.getTabNo()) // legacy
+					.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 					;
 
 			//
@@ -548,23 +554,25 @@ public class DocumentDescriptorFactory
 		//
 		if (displayType == DisplayType.List)
 		{
-			return LookupValue.class;
+			return StringLookupValue.class;
 		}
 		else if (displayType == DisplayType.Location)
 		{
-			return LookupValue.class;
+			return IntegerLookupValue.class;
 		}
 		else if (displayType == DisplayType.PAttribute)
 		{
-			return LookupValue.class;
+			return IntegerLookupValue.class;
 		}
 		else if (displayType == DisplayType.Table)
 		{
-			return LookupValue.class;
+			final MLookupInfo lookupInfo = gridFieldVO.getLookupInfo();
+			final boolean numericKey = lookupInfo == null || lookupInfo.isNumericKey();
+			return numericKey ? IntegerLookupValue.class : StringLookupValue.class;
 		}
 		else if (DisplayType.isAnyLookup(displayType))
 		{
-			return LookupValue.class;
+			return IntegerLookupValue.class;
 		}
 		else if (displayType == DisplayType.ID)
 		{
@@ -644,7 +652,7 @@ public class DocumentDescriptorFactory
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		if (gridFieldVO.isVirtualColumn())
 		{
 			return ILogicExpression.TRUE;
@@ -672,7 +680,7 @@ public class DocumentDescriptorFactory
 
 		return logicExpression;
 	}
-	
+
 	private boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
 	{
 		if (gridFieldVO.isVirtualColumn() || !gridFieldVO.isUpdateable())
@@ -719,7 +727,7 @@ public class DocumentDescriptorFactory
 					return DEFAULT_VALUE_EXPRESSION_Zero;
 				}
 			}
-			
+
 			return IStringExpression.NULL;
 		}
 		else if (defaultValueStr.startsWith("@SQL="))

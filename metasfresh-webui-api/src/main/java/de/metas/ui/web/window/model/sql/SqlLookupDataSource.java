@@ -22,11 +22,13 @@ import org.slf4j.Logger;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.LookupDataSource;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -69,7 +71,7 @@ public class SqlLookupDataSource implements LookupDataSource
 		super();
 		this.sqlLookupDescriptor = Preconditions.checkNotNull(sqlLookupDescriptor);
 	}
-	
+
 	@Override
 	public boolean isNumericKey()
 	{
@@ -112,23 +114,6 @@ public class SqlLookupDataSource implements LookupDataSource
 	@Override
 	public LookupValue findById(final Object id)
 	{
-		final Object idNormalized = normalizeId(id);
-		if (idNormalized == null)
-		{
-			return null;
-		}
-		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
-		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, idNormalized);
-		if (displayName == null)
-		{
-			return null;
-		}
-
-		return LookupValue.of(idNormalized, displayName);
-	}
-
-	private final Object normalizeId(final Object id)
-	{
 		if (id == null)
 		{
 			return null;
@@ -139,7 +124,8 @@ public class SqlLookupDataSource implements LookupDataSource
 		{
 			if (id instanceof Number)
 			{
-				return ((Number)id).intValue();
+				final int idInt = ((Number)id).intValue();
+				return findByIntegerId(idInt);
 			}
 
 			final String idStr = id.toString().trim();
@@ -154,12 +140,38 @@ public class SqlLookupDataSource implements LookupDataSource
 				return null;
 			}
 
-			return idInt;
+			return findByIntegerId(idInt);
 		}
+		// string key
 		else
 		{
-			return id.toString();
+			final String idStr = id.toString();
+			return findByStringId(idStr);
 		}
+	}
+
+	private IntegerLookupValue findByIntegerId(final int id)
+	{
+		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
+		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
+		if (displayName == null)
+		{
+			return null;
+		}
+
+		return IntegerLookupValue.of(id, displayName);
+	}
+	
+	private StringLookupValue findByStringId(final String id)
+	{
+		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
+		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
+		if (displayName == null)
+		{
+			return null;
+		}
+
+		return StringLookupValue.of(id, displayName);
 	}
 
 	private static final LookupValue toLookupValue(final NamePair namePair)
@@ -171,12 +183,12 @@ public class SqlLookupDataSource implements LookupDataSource
 		else if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return LookupValue.of(vnp.getValue(), vnp.getName());
+			return StringLookupValue.of(vnp.getValue(), vnp.getName());
 		}
 		else if (namePair instanceof KeyNamePair)
 		{
 			final KeyNamePair knp = (KeyNamePair)namePair;
-			return LookupValue.of(knp.getKey(), knp.getName());
+			return IntegerLookupValue.of(knp.getKey(), knp.getName());
 		}
 		else
 		{
@@ -284,6 +296,7 @@ public class SqlLookupDataSource implements LookupDataSource
 				return valueObj == null ? null : valueObj.toString();
 			}
 
+			// Fallback to document evaluatee
 			return document.asEvaluatee().get_ValueAsString(variableName);
 		}
 

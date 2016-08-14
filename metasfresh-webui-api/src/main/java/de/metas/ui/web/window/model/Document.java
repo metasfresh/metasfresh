@@ -16,10 +16,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee2;
-import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -29,13 +26,12 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
-import de.metas.ui.web.window.util.GlobalContextEvaluatee;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -221,195 +217,13 @@ public class Document
 		return DocumentId.isNew(getDocumentId());
 	}
 
-	public Evaluatee2 asEvaluatee()
+	public DocumentEvaluatee asEvaluatee()
 	{
 		if (_evaluatee == null)
 		{
 			_evaluatee = new DocumentEvaluatee(this);
 		}
 		return _evaluatee;
-	}
-
-	private static final class DocumentEvaluatee implements Evaluatee2
-	{
-		private final Document _document;
-
-		public DocumentEvaluatee(final Document document)
-		{
-			super();
-			_document = document;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(_document)
-					.toString();
-		}
-
-		private Evaluatee2 getParent()
-		{
-			final Document parentDocument = _document.getParentDocument();
-			return parentDocument == null ? Evaluatees.empty() : parentDocument.asEvaluatee();
-		}
-
-		private boolean hasParent()
-		{
-			return _document.getParentDocument() != null;
-		}
-
-		private final DocumentField getDocumentFieldOrNull(final String name)
-		{
-			return _document.getFieldOrNull(name);
-		}
-
-		private final Set<String> getAvailableFieldNames()
-		{
-			return _document.getFieldNames();
-		}
-
-		@Override
-		public boolean has_Variable(final String variableName)
-		{
-			if (variableName == null)
-			{
-				return false;
-			}
-
-			//
-			// Global context variable
-			if (GlobalContextEvaluatee.instance.has_Variable(variableName))
-			{
-				return true;
-			}
-
-			//
-			// Document field
-			final DocumentField documentField = getDocumentFieldOrNull(variableName);
-			if (documentField != null)
-			{
-				return true;
-			}
-
-			//
-			// Document's dynamic attribute
-			if (_document.hasDynAttribute(variableName))
-			{
-				return true;
-			}
-
-			//
-			// Check parent
-			final Evaluatee2 parent = getParent();
-			if (parent.has_Variable(variableName))
-			{
-				return true;
-			}
-
-			//
-			// Not found
-			if (logger.isTraceEnabled())
-			{
-				logger.trace("No document field {} found." //
-						+ "\n Existing properties are: {}" //
-						+ "\n Existing dyn attributes are: {}" //
-						, variableName, getAvailableFieldNames(), _document.getAvailableDynAttributes());
-			}
-			return false;
-		}
-
-		@Override
-		public String get_ValueAsString(final String variableName)
-		{
-			//
-			// Global context variable
-			if (GlobalContextEvaluatee.instance.has_Variable(variableName))
-			{
-				return GlobalContextEvaluatee.instance.get_ValueAsString(variableName);
-			}
-
-			//
-			// Document field
-			final DocumentField documentField = getDocumentFieldOrNull(variableName);
-			if (documentField != null)
-			{
-				final String value = convertToString(documentField.getFieldName(), documentField.getValue());
-				if (value != null)
-				{
-					return value;
-				}
-			}
-
-			//
-			// Document's dynamic attribute
-			if (_document.hasDynAttribute(variableName))
-			{
-				final String value = convertToString(variableName, _document.getDynAttribute(variableName));
-				if (value != null)
-				{
-					return value;
-				}
-			}
-
-			//
-			// Check parent
-			{
-				final Evaluatee2 parent = getParent();
-				final String value = parent.get_ValueAsString(variableName);
-				return value;
-			}
-		}
-
-		@Override
-		public String get_ValueOldAsString(final String variableName)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		/** Converts field value to {@link Evaluatee2} friendly string */
-		private String convertToString(final String name, final Object value)
-		{
-			if (value == null)
-			{
-				if (hasParent())
-				{
-					return null; // advice the caller to ask the parent
-				}
-
-				// FIXME: hardcoded default to avoid a lot of warnings
-				if (name.endsWith("_ID"))
-				{
-					return "-1";
-				}
-
-				// TODO: find some defaults?
-				return null;
-			}
-			else if (value instanceof Boolean)
-			{
-				return DisplayType.toBooleanString((Boolean)value);
-			}
-			else if (value instanceof String)
-			{
-				return value.toString();
-			}
-			else if (value instanceof LookupValue)
-			{
-				final Object idObj = ((LookupValue)value).getId();
-				return idObj == null ? null : idObj.toString().trim();
-			}
-			else if (value instanceof java.util.Date)
-			{
-				final java.util.Date valueDate = (java.util.Date)value;
-				return Env.toString(valueDate);
-			}
-			else
-			{
-				return value.toString();
-			}
-		}
 	}
 
 	public void setValue(final String fieldName, final Object value)
@@ -521,16 +335,19 @@ public class Document
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
+		boolean displayed = false; // default false, i.e. not displayed
 		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
 		try
 		{
-			final boolean displayed = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setDisplayed(displayed);
+			displayed = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
 			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField, e);
+			displayed = false;
 		}
+
+		documentField.setDisplayed(displayed);
 	}
 
 	private final void updateFieldsWhichDependsOn(final String fieldName, final IDocumentFieldChangedEventCollector eventsCollector)
@@ -720,7 +537,7 @@ public class Document
 		return dynAttributes != null && dynAttributes.get(name) != null;
 	}
 
-	private Set<String> getAvailableDynAttributes()
+	Set<String> getAvailableDynAttributes()
 	{
 		final Map<String, Object> dynAttributes = _dynAttributes;
 		if (dynAttributes == null)
@@ -730,13 +547,37 @@ public class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
+	private boolean isValid()
+	{
+		boolean valid = true;
+
+		//
+		// Check document fields
+		for (final DocumentField documentField : getFields())
+		{
+			if (!documentField.isValid())
+			{
+				logger.trace("Considering document invalid because {} is not valid", documentField);
+				valid = false;
+				break;
+			}
+		}
+
+		return valid;
+	}
+
 	public void saveIfPossible()
 	{
-		// TODO: check if possible to save
+		if (!isValid())
+		{
+			logger.debug("Skip saving because document is not valid: {}", this);
+			return;
+		}
 
 		try
 		{
 			getDocumentRepository().save(this);
+			logger.debug("Document saved: {}", this);
 		}
 		catch (final Exception e)
 		{
@@ -796,7 +637,7 @@ public class Document
 			// TODO Auto-generated method stub
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public void dataRefreshRecursively()
 		{

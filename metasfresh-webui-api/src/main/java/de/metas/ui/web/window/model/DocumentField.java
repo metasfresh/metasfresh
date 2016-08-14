@@ -3,25 +3,21 @@ package de.metas.ui.web.window.model;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.util.JSONConverters;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
-import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 /*
  * #%L
@@ -62,6 +58,7 @@ public class DocumentField
 	private boolean _mandatory = false;
 	private boolean _readonly = false;
 	private boolean _displayed = false;
+	private boolean _valid = false;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -69,6 +66,7 @@ public class DocumentField
 		this.descriptor = descriptor;
 		_document = document;
 		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
+		_valid = false;
 	}
 
 	@Override
@@ -89,7 +87,7 @@ public class DocumentField
 		return descriptor;
 	}
 
-	private Document getDocument()
+	Document getDocument()
 	{
 		return _document;
 	}
@@ -103,7 +101,7 @@ public class DocumentField
 	{
 		return descriptor.isKey();
 	}
-	
+
 	public boolean isVirtualField()
 	{
 		return descriptor.isVirtualField();
@@ -113,7 +111,6 @@ public class DocumentField
 	{
 		return descriptor.isCalculated();
 	}
-
 
 	public Object getInitialValue()
 	{
@@ -130,23 +127,31 @@ public class DocumentField
 		final Object valueConv = convertToValueClass(value);
 		_initialValue = valueConv;
 		_value = valueConv;
-
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("Set {}'s initial value: {}", getFieldName(), valueConv);
 		}
+
+		updateValid();
 	}
 
 	/* package */void setValue(final Object value)
 	{
-		final Object valueConv = convertToValueClass(value);
+		final Object valueNew = convertToValueClass(value);
 		final Object valueOld = _value;
-		_value = valueConv;
 
+		if (Objects.equal(valueNew, valueOld))
+		{
+			return;
+		}
+
+		_value = valueNew;
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("Changed {}'s value: {} -> {}", getFieldName(), valueOld, value);
+			logger.trace("Changed {}'s value: {} -> {}", getFieldName(), valueOld, valueNew);
 		}
+
+		updateValid();
 	}
 
 	public Object getValue()
@@ -185,7 +190,7 @@ public class DocumentField
 
 	private <T> T convertToValueClass(final Object value, final Class<T> targetType)
 	{
-		if (NullValue.isNull(value))
+		if (value == null)
 		{
 			return null;
 		}
@@ -246,14 +251,14 @@ public class DocumentField
 				final T valueConv = (T)DisplayType.toBoolean(value, Boolean.FALSE);
 				return valueConv;
 			}
-			else if (LookupValue.class == targetType)
+			else if (IntegerLookupValue.class == targetType)
 			{
 				if (Map.class.isAssignableFrom(fromType))
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONConverters.lookupValueFromJsonMap(map);
+					final T valueConv = (T)JSONConverters.integerLookupValueFromJsonMap(map);
 					return valueConv;
 				}
 				else if (Integer.class.isAssignableFrom(fromType))
@@ -266,6 +271,33 @@ public class DocumentField
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
+				}
+				else if (String.class == fromType)
+				{
+					final String valueStr = (String)value;
+					if (valueStr.isEmpty())
+					{
+						return null;
+					}
+
+					if (lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						// TODO: what if valueConv was not found?
+						return valueConv;
+					}
+				}
+			}
+			else if (StringLookupValue.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONConverters.stringLookupValueFromJsonMap(map);
+					return valueConv;
 				}
 				else if (String.class == fromType)
 				{
@@ -300,7 +332,13 @@ public class DocumentField
 
 	/* package */ void setMandatory(final boolean mandatory)
 	{
+		if(_mandatory == mandatory)
+		{
+			return;
+		}
+		
 		_mandatory = mandatory;
+		updateValid();
 	}
 
 	public boolean isReadonly()
@@ -328,7 +366,7 @@ public class DocumentField
 		// TODO: implement
 		return false;
 	}
-	
+
 	public boolean isLookupWithNumericKey()
 	{
 		return lookupDataSource != null && lookupDataSource.isNumericKey();
@@ -348,155 +386,37 @@ public class DocumentField
 	{
 		if (_calloutField == null)
 		{
-			_calloutField = new AsCalloutField();
+			_calloutField = new DocumentFieldAsCalloutField(this);
 		}
 		return _calloutField;
 	}
 
-	private final class AsCalloutField implements ICalloutField
+	public final void updateValid()
 	{
-		@Override
-		public String toString()
+		final boolean validOld = _valid;
+		final boolean validNew = checkValid();
+		if (validOld == validNew)
 		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(DocumentField.this)
-					.toString();
+			return;
 		}
 
-		@Override
-		public boolean isTriggerCalloutAllowed()
-		{
-			if (!getDescriptor().isAlwaysUpdateable() && getDocument().isProcessed())
-			{
-				return false;
-			}
-			return true;
-		}
+		this._valid = validNew;
+		logger.debug("Changed valid state {}->{} for {}", validOld, validNew, this);
+	}
 
-		@Override
-		public Properties getCtx()
+	private final boolean checkValid()
+	{
+		if (isMandatory() && getValue() == null)
 		{
-			return getDocument().getCtx();
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return SqlDocumentEntityDataBindingDescriptor.getTableName(getDocument());
-		}
-
-		@Override
-		public int getAD_Table_ID()
-		{
-			return SqlDocumentEntityDataBindingDescriptor.getAD_Table_ID(getDocument());
-		}
-
-		@Override
-		public int getAD_Column_ID()
-		{
-			return SqlDocumentFieldDataBindingDescriptor.getAD_Column_ID(DocumentField.this);
-		}
-
-		@Override
-		public String getColumnName()
-		{
-			return getFieldName();
-		}
-
-		@Override
-		public Object getValue()
-		{
-			return DocumentField.this.getValue();
-		}
-
-		@Override
-		public Object getOldValue()
-		{
-			return DocumentField.this.getOldValue();
-		}
-
-		@Override
-		public <T> T getModel(final Class<T> modelClass)
-		{
-			return getCalloutRecord().getModel(modelClass);
-		}
-
-		@Override
-		public int getWindowNo()
-		{
-			return getDocument().getWindowNo();
-		}
-
-		@Override
-		public int getTabNo()
-		{
-			return getDocument().getEntityDescriptor().getTabNo();
-		}
-
-		@Override
-		public boolean isRecordCopyingMode()
-		{
-			// TODO Auto-generated method stub
+			logger.debug("Not valid because mandatory field is not filled: {}", this);
 			return false;
 		}
 
-		@Override
-		public boolean isRecordCopyingModeIncludingDetails()
-		{
-			// TODO Auto-generated method stub
-			return false;
-		}
+		return true;
+	}
 
-		@Override
-		public ICalloutExecutor getCurrentCalloutExecutor()
-		{
-			return getDocument().getCalloutExecutor();
-		}
-
-		@Override
-		public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
-		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("fireDataStatusEEvent: AD_Message=" + AD_Message + ", info=" + info + ", isError=" + isError);
-		}
-
-		@Override
-		public void fireDataStatusEEvent(final ValueNamePair errorLog)
-		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("fireDataStatusEEvent: errorLog=" + errorLog);
-		}
-
-		@Override
-		public void putContext(final String name, final boolean value)
-		{
-			getDocument().setDynAttribute(name, value);
-		}
-
-		@Override
-		public void putContext(final String name, final java.util.Date value)
-		{
-			getDocument().setDynAttribute(name, value);
-		}
-
-		@Override
-		public void putContext(final String name, final int value)
-		{
-			getDocument().setDynAttribute(name, value);
-		}
-
-		@Override
-		public boolean getContextAsBoolean(final String name)
-		{
-			final Object valueObj = getDocument().getDynAttribute(name);
-			return DisplayType.toBoolean(valueObj);
-		}
-
-		@Override
-		public ICalloutRecord getCalloutRecord()
-		{
-			return getDocument().asCalloutRecord();
-		}
-
+	/* package */boolean isValid()
+	{
+		return _valid;
 	}
 }

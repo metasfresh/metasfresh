@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.shared.datatype;
+package de.metas.ui.web.window_old.shared.datatype;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
-import org.compiere.util.Login;
-import org.compiere.util.LoginContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,13 +19,13 @@ import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentId;
 import de.metas.ui.web.window.util.JSONConverters;
 import de.metas.ui.web.window.util.LastDocumentTracker;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -60,29 +60,24 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentCollection documentCollection;
-	
+
 	@Autowired
 	private LastDocumentTracker lastDocumentsTracker; // for debugging
 
 	private final void autologin()
 	{
 		// FIXME: debug logging
-		// LogManager.setLoggerLevel(Document.class, Level.TRACE);
-		// LogManager.setLoggerLevel(DocumentField.class, Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentField.class, Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChangedEventCollector.class, Level.DEBUG); // to have the "reason" in JSON
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, Level.TRACE);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
+		//
 		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
 		//
 		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
 		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
 
-		
-		if(userSession.isLoggedIn())
-		{
-			return;
-		}
-		
 		// FIXME: only for testing
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
@@ -91,9 +86,13 @@ public class WindowRestController
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "en_US");
 		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
-		
-		Login.loadPreferences(new LoginContext(ctx));
-		
+
+		Services.get(IValuePreferenceBL.class)
+				.getAllWindowPreferences(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx), Env.getAD_User_ID(ctx))
+				.stream()
+				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
+				.forEach(userValuePreference -> Env.setPreference(ctx, userValuePreference));
+
 		userSession.setLocale(Env.getLanguage(ctx).getLocale());
 		userSession.setLoggedIn(true);
 	}
@@ -212,8 +211,7 @@ public class WindowRestController
 		if (documentId.isNew())
 		{
 			// FIXME: we use this only for debugging
-			final String entityId = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(adWindowId).getEntityDescriptor().getId();
-			documentId = lastDocumentsTracker.getLastDocumentId(entityId, documentId);
+			documentId = lastDocumentsTracker.getLastDocumentId(adWindowId, detailId, documentId);
 		}
 		if (documentId.isNew())
 		{

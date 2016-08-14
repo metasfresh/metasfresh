@@ -22,9 +22,9 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L
@@ -371,7 +371,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			else if (value instanceof LookupValue)
 			{
 				final LookupValue lookupValue = (LookupValue)value;
-				return field.isLookupWithNumericKey() ? lookupValue.getIdAsInt() : lookupValue.getIdAsString();
+				return lookupValue.getId();
 			}
 		}
 

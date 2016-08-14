@@ -2,7 +2,8 @@ package de.metas.ui.web.window.model;
 
 import java.util.List;
 
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue;
+
 
 /*
  * #%L
