@@ -1,4 +1,4 @@
-package de.metas.ui.web.json;
+package de.metas.ui.web.window_old.util;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

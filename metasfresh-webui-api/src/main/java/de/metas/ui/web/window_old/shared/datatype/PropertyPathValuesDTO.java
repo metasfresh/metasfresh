@@ -13,7 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.json.JsonHelper;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L

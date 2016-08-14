@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window_old.PropertyName;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L

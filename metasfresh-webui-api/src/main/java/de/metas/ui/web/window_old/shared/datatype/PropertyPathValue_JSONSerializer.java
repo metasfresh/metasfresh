@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-import de.metas.ui.web.json.JsonHelper;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L

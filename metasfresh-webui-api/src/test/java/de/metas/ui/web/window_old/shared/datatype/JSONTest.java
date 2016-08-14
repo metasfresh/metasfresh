@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window_old.PropertyName;
 import de.metas.ui.web.window_old.shared.ImageResource;
 import de.metas.ui.web.window_old.shared.JSONObjectValueHolder;
@@ -34,6 +33,7 @@ import de.metas.ui.web.window_old.shared.event.GridRowAddedModelEvent;
 import de.metas.ui.web.window_old.shared.event.ModelEvent;
 import de.metas.ui.web.window_old.shared.event.PropertyChangedModelEvent;
 import de.metas.ui.web.window_old.shared.event.ZoomToWindowEvent;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L

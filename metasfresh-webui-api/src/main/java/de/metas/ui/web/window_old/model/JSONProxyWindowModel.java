@@ -2,7 +2,6 @@ package de.metas.ui.web.window_old.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window_old.PropertyNameSet;
 import de.metas.ui.web.window_old.datasource.SaveResult;
 import de.metas.ui.web.window_old.shared.action.ActionsList;
@@ -13,6 +12,7 @@ import de.metas.ui.web.window_old.shared.datatype.PropertyPathSet;
 import de.metas.ui.web.window_old.shared.datatype.PropertyPathValuesDTO;
 import de.metas.ui.web.window_old.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window_old.shared.descriptor.ViewPropertyDescriptor;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L

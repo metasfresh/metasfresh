@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.metas.ui.web.json.JsonHelper;
 import de.metas.ui.web.window_old.PropertyName;
+import de.metas.ui.web.window_old.util.JsonHelper;
 
 /*
  * #%L
