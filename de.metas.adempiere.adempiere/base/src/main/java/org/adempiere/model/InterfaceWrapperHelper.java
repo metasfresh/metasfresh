@@ -77,8 +77,6 @@ public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
-	public static final String COLUMNNAME_SUFFIX_Override = "_Override";
-
 	private static final CompositeInterfaceWrapperHelper helpers = new CompositeInterfaceWrapperHelper()
 			.addFactory(new POInterfaceWrapperHelper())
 			.addFactory(new GridTabInterfaceWrapperHelper())
@@ -348,7 +346,7 @@ public class InterfaceWrapperHelper
 
 		for (final Object model : models)
 		{
-			InterfaceWrapperHelper.refresh(model);
+			refresh(model);
 		}
 	}
 
@@ -367,7 +365,7 @@ public class InterfaceWrapperHelper
 
 		for (final Object model : models)
 		{
-			InterfaceWrapperHelper.refresh(model, trxName);
+			refresh(model, trxName);
 		}
 	}
 
@@ -422,18 +420,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
 	{
-		if (POWrapper.isHandled(model))
-		{
-			POWrapper.setTrxName(model, trxName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			POJOWrapper.setTrxName(model, trxName);
-		}
-		else if (!ignoreIfNotHandled)
-		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.setTrxName(model, trxName, ignoreIfNotHandled);
 	}
 
 	private static ITrxManager getTrxManager()
@@ -465,7 +452,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void setThreadInheritedTrxNameMarker(final Object model)
 	{
-		InterfaceWrapperHelper.setTrxName(model, ITrx.TRXNAME_ThreadInherited);
+		setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -582,23 +569,9 @@ public class InterfaceWrapperHelper
 		{
 			return (Properties)model; // this *is* already the ctx
 		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return Env.getCtx();
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getCtx(model, useClientOrgFromModel);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getCtx(model, useClientOrgFromModel);
-		}
 		else
 		{
-			final AdempiereException ex = new AdempiereException("Cannot get context from object: " + model + ". Returning global context.");
-			logger.warn(ex.getLocalizedMessage(), ex);
-			return Env.getCtx();
+			return helpers.getCtx(model, useClientOrgFromModel);
 		}
 	}
 
@@ -629,24 +602,10 @@ public class InterfaceWrapperHelper
 		{
 			return ITrx.TRXNAME_None;
 		}
-		else if (GridTabWrapper.isHandled(model))
+		else
 		{
-			return ITrx.TRXNAME_None;
+			return helpers.getTrxName(model, ignoreIfNotHandled);
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getTrxName(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getTrxName(model);
-		}
-		else if (!ignoreIfNotHandled)
-		{
-			final AdempiereException ex = new AdempiereException("Cannot get trxName from object: " + model + ". Returning null.");
-			logger.warn(ex.getLocalizedMessage(), ex);
-		}
-		return ITrx.TRXNAME_None;
 	}
 
 	public static IContextAware getContextAware(final Object model)
@@ -699,37 +658,9 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			final PO po = POWrapper.getPO(model, false);
-			if (po == null)
-			{
-				return -1;
-			}
-
-			final String[] keyColumns = po.get_KeyColumns();
-			if (keyColumns == null || keyColumns.length != 1)
-			{
-				return -1;
-			}
-
-			return po.get_ID();
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getId(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).getId();
-		}
-		else if (model instanceof ITableRecordReference)
-		{
-			return ((ITableRecordReference)model).getRecord_ID();
-		}
 		else
 		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
+			return helpers.getId(model);
 		}
 	}
 
@@ -890,25 +821,13 @@ public class InterfaceWrapperHelper
 		{
 			return null;
 		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getGridTab(model).getTableName();
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getPO(model).get_TableName();
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).getTableName();
-		}
 		else if (model instanceof ITableRecordReference)
 		{
 			return ((ITableRecordReference)model).getTableName();
 		}
 		else
 		{
-			return null;
+			return helpers.getModelTableNameOrNull(model);
 		}
 	}
 
@@ -1097,146 +1016,7 @@ public class InterfaceWrapperHelper
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assumeNotNull(columnName, "columnName is not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = POWrapper.getModelInternalAccessor(model);
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			final PO po = POWrapper.getPO(model, false);
-			final int idxColumnName = po.get_ColumnIndex(columnName);
-			if (idxColumnName < 0)
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No columnName " + columnName + " found for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_Value(idxColumnName);
-			return value;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			final GridTab gridTab = GridTabWrapper.getGridTab(model);
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = GridTabWrapper.getModelInternalAccessor(model);
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			final GridField gridField = gridTab.getField(columnName);
-			if (gridField == null)
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No field with ColumnName=" + columnName + " found in " + gridTab + " for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-
-			@SuppressWarnings("unchecked")
-			final T value = (T)gridField.getValue();
-			return value;
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = wrapper.getModelInternalAccessor();
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			if (!wrapper.hasColumnName(columnName))
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No columnName " + columnName + " found for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-			@SuppressWarnings("unchecked")
-			final T value = (T)wrapper.getValuesMap().get(columnName);
-			return value;
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
-	}
-
-	/**
-	 * Gets columnName's override value or null
-	 *
-	 * @param modelAccessor
-	 * @param columnName
-	 * @return
-	 */
-	private static final <T> T getValueOverrideOrNull(final IModelInternalAccessor modelAccessor, final String columnName)
-	{
-		//
-		// Try ColumnName_Override
-		// e.g. for "C_Tax_ID", the C_Tax_ID_Override" will be checked
-		{
-			final String overrideColumnName = columnName + COLUMNNAME_SUFFIX_Override;
-			if (modelAccessor.hasColumnName(overrideColumnName))
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)modelAccessor.getValue(overrideColumnName, Object.class);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-		}
-
-		//
-		// Try ColumnName_Override_ID
-		// e.g. for "C_Tax_ID", the C_Tax_Override_ID" will be checked
-		if (columnName.endsWith("_ID"))
-		{
-			final String overrideColumnName = columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID";
-			if (modelAccessor.hasColumnName(overrideColumnName))
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)modelAccessor.getValue(overrideColumnName, Object.class);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-		}
-
-		// No override values found => return null
-		return null;
+		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
 	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
@@ -1346,24 +1126,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.setDynAttribute(model, attributeName, value);
 	}
 
 	/**
@@ -1375,25 +1138,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
-		if (POWrapper.isHandled(model))
-		{
-			final T value = POWrapper.getDynAttribute(model, attributeName);
-			return value;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			final T value = GridTabWrapper.getWrapper(model).getDynAttribute(attributeName);
-			return value;
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final T value = POJOWrapper.getDynAttribute(model, attributeName);
-			return value;
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.getDynAttribute(model, attributeName);
 	}
 
 	/**
@@ -1514,23 +1259,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean isNew(final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-		if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.isNew(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isNew(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isNew(model);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isNew(model);
 	}
 
 	/**

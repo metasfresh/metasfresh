@@ -1,9 +1,14 @@
 package org.adempiere.ad.wrapper;
 
+import java.util.Properties;
+
+import org.adempiere.ad.persistence.IModelInternalAccessor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -30,7 +35,7 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class GridTabInterfaceWrapperHelper implements IInterfaceWrapperHelper
+public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 {
 	private static final Logger logger = LogManager.getLogger(GridTabInterfaceWrapperHelper.class);
 
@@ -97,4 +102,84 @@ public class GridTabInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return true;
 	}
 
+	@Override
+	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	{
+		return Env.getCtx();
+	}
+
+	@Override
+	public String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	{
+		return ITrx.TRXNAME_None;
+	}
+
+	@Override
+	public void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
+	{
+		// nothing
+	}
+
+	@Override
+	public int getId(final Object model)
+	{
+		return GridTabWrapper.getId(model);
+	}
+
+	@Override
+	public String getModelTableNameOrNull(final Object model)
+	{
+		return GridTabWrapper.getGridTab(model).getTableName();
+	}
+
+	@Override
+	public boolean isNew(final Object model)
+	{
+		return GridTabWrapper.isNew(model);
+	}
+
+	@Override
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	{
+		final GridTab gridTab = GridTabWrapper.getGridTab(model);
+		if (useOverrideColumnIfAvailable)
+		{
+			final IModelInternalAccessor modelAccessor = GridTabWrapper.getModelInternalAccessor(model);
+			final T value = getValueOverrideOrNull(modelAccessor, columnName);
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		//
+		final GridField gridField = gridTab.getField(columnName);
+		if (gridField == null)
+		{
+			if (throwExIfColumnNotFound)
+			{
+				throw new AdempiereException("No field with ColumnName=" + columnName + " found in " + gridTab + " for " + model);
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		final T value = (T)gridField.getValue();
+		return value;
+	}
+
+	@Override
+	public <T> T getDynAttribute(Object model, String attributeName)
+	{
+		final T value = GridTabWrapper.getWrapper(model).getDynAttribute(attributeName);
+		return value;
+	}
+
+	@Override
+	public Object setDynAttribute(Object model, String attributeName, Object value)
+	{
+		return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
+	}
 }

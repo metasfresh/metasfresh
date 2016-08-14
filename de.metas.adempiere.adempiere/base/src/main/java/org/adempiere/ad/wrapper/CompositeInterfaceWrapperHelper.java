@@ -1,9 +1,17 @@
 package org.adempiere.ad.wrapper;
 
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -35,6 +43,8 @@ import org.adempiere.util.Check;
  */
 public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 {
+	private static final Logger logger = LogManager.getLogger(CompositeInterfaceWrapperHelper.class);
+
 	private final CopyOnWriteArrayList<IInterfaceWrapperHelper> helpers = new CopyOnWriteArrayList<>();
 
 	public CompositeInterfaceWrapperHelper()
@@ -58,7 +68,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return true;
 	}
 
-	private final IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
+	private final IInterfaceWrapperHelper getHelperThatCanHandleOrNull(final Object model)
 	{
 		for (final IInterfaceWrapperHelper helper : helpers)
 		{
@@ -68,10 +78,20 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 			}
 		}
 
-		throw new AdempiereException("No helper can support given model: " + model
-				+ "\n Class: " + (model == null ? null : model.getClass())
-				+ "\n Considered helpers: " + helpers);
+		return null;
+	}
 
+	private final IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
+	{
+		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
+		if (helper == null)
+		{
+			throw new AdempiereException("No helper can support given model: " + model
+					+ "\n Class: " + (model == null ? null : model.getClass())
+					+ "\n Considered helpers: " + helpers);
+		}
+
+		return helper;
 	}
 
 	@Override
@@ -107,5 +127,124 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model)
 				.setValue(model, columnName, value, throwExIfColumnNotFound);
+	}
+
+	@Override
+	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	{
+		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
+		if (helper == null)
+		{
+			final AdempiereException ex = new AdempiereException("Cannot get context from object: " + model + ". Returning global context.");
+			logger.warn(ex.getLocalizedMessage(), ex);
+			return Env.getCtx();
+		}
+
+		return helper.getCtx(model, useClientOrgFromModel);
+	}
+
+	@Override
+	public String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	{
+		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
+		if (helper == null)
+		{
+			if (!ignoreIfNotHandled)
+			{
+				final AdempiereException ex = new AdempiereException("Cannot get trxName from object: " + model + ". Returning null.");
+				logger.warn(ex.getLocalizedMessage(), ex);
+			}
+
+			return ITrx.TRXNAME_None;
+		}
+
+		return helper.getTrxName(model, ignoreIfNotHandled);
+	}
+
+	@Override
+	public void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
+	{
+		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
+		if (helper == null)
+		{
+			if (ignoreIfNotHandled)
+			{
+				return;
+			}
+
+			throw new AdempiereException("Not supported model " + model + " (class:" + (model == null ? null : model.getClass()) + ")");
+		}
+
+		helper.setTrxName(model, trxName, ignoreIfNotHandled);
+	}
+
+	@Override
+	public int getId(final Object model)
+	{
+		return getHelperThatCanHandle(model)
+				.getId(model);
+	}
+
+	@Override
+	public String getModelTableNameOrNull(final Object model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
+		if (helper == null)
+		{
+			return null;
+		}
+		return helper.getModelTableNameOrNull(model);
+	}
+
+	@Override
+	public boolean isNew(final Object model)
+	{
+		Check.assumeNotNull(model, "model not null");
+		return getHelperThatCanHandle(model)
+				.isNew(model);
+	}
+
+	@Override
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	{
+		Check.assumeNotNull(model, "model is not null");
+		Check.assumeNotNull(columnName, "columnName is not null");
+
+		return getHelperThatCanHandle(model)
+				.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+	}
+
+	@Override
+	public <T> T getDynAttribute(final Object model, final String attributeName)
+	{
+		return getHelperThatCanHandle(model)
+				.getDynAttribute(model, attributeName);
+	}
+
+	@Override
+	public Object setDynAttribute(Object model, String attributeName, Object value)
+	{
+		Check.assumeNotNull(model, "model not null");
+
+		if (POWrapper.isHandled(model))
+		{
+			return POWrapper.setDynAttribute(model, attributeName, value);
+		}
+		else if (GridTabWrapper.isHandled(model))
+		{
+			return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
+		}
+		else if (POJOWrapper.isHandled(model))
+		{
+			return POJOWrapper.setDynAttribute(model, attributeName, value);
+		}
+		else
+		{
+			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
+		}
 	}
 }

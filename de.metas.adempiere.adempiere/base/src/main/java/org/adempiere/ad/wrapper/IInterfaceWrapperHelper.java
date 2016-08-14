@@ -1,5 +1,11 @@
 package org.adempiere.ad.wrapper;
 
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.POWrapper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,7 +45,71 @@ public interface IInterfaceWrapperHelper
 	void refresh(Object model, String trxName);
 
 	boolean hasModelColumnName(Object model, String columnName);
-	
+
 	boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound);
 
+	/**
+	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
+	 *
+	 * @param model
+	 * @param useClientOrgFromModel
+	 * @return context
+	 */
+	Properties getCtx(final Object model, final boolean useClientOrgFromModel);
+
+	/**
+	 *
+	 * @param model
+	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without logging a warning.
+	 *
+	 * @return trxName
+	 */
+	String getTrxName(final Object model, final boolean ignoreIfNotHandled);
+
+	/**
+	 *
+	 * @param model
+	 * @param trxName
+	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
+	 *
+	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
+	 */
+	default void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
+	{
+		if (!ignoreIfNotHandled)
+		{
+			throw new AdempiereException("Not supported model " + model + " (class:" + (model == null ? null : model.getClass()) + ")");
+		}
+	}
+
+	int getId(final Object model);
+
+	/**
+	 * Get TableName of wrapped model.
+	 *
+	 * This method returns null when:
+	 * <ul>
+	 * <li>model is null
+	 * <li>model is not supported
+	 * </ul>
+	 *
+	 * @param model
+	 * @return table name or null
+	 */
+	String getModelTableNameOrNull(Object model);
+
+	/**
+	 * @param model
+	 * @return true if model is a new record (not yet saved in database)
+	 */
+	boolean isNew(Object model);
+
+	<T> T getValue(final Object model,
+			final String columnName,
+			final boolean throwExIfColumnNotFound,
+			final boolean useOverrideColumnIfAvailable);
+	
+	<T> T getDynAttribute(final Object model, final String attributeName);
+	
+	Object setDynAttribute(final Object model, final String attributeName, final Object value);
 }

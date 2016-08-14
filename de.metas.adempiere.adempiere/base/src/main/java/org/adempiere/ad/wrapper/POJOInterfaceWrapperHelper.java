@@ -1,5 +1,8 @@
 package org.adempiere.ad.wrapper;
 
+import java.util.Properties;
+
+import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -27,7 +30,7 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class POJOInterfaceWrapperHelper implements IInterfaceWrapperHelper
+public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 {
 	private static final Logger logger = LogManager.getLogger(POJOInterfaceWrapperHelper.class);
 
@@ -91,5 +94,78 @@ public class POJOInterfaceWrapperHelper implements IInterfaceWrapperHelper
 
 		wrapper.setValue(columnName, value);
 		return true;
+	}
+
+	@Override
+	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	{
+		return POJOWrapper.getCtx(model, useClientOrgFromModel);
+	}
+
+	@Override
+	public String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	{
+		return POJOWrapper.getTrxName(model);
+	}
+
+	@Override
+	public int getId(final Object model)
+	{
+		return POJOWrapper.getWrapper(model).getId();
+	}
+
+	@Override
+	public String getModelTableNameOrNull(final Object model)
+	{
+		return POJOWrapper.getWrapper(model).getTableName();
+	}
+
+	@Override
+	public boolean isNew(final Object model)
+	{
+		return POJOWrapper.isNew(model);
+	}
+
+	@Override
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	{
+		final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
+		if (useOverrideColumnIfAvailable)
+		{
+			final IModelInternalAccessor modelAccessor = wrapper.getModelInternalAccessor();
+			final T value = getValueOverrideOrNull(modelAccessor, columnName);
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		//
+		if (!wrapper.hasColumnName(columnName))
+		{
+			if (throwExIfColumnNotFound)
+			{
+				throw new AdempiereException("No columnName " + columnName + " found for " + model);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		@SuppressWarnings("unchecked")
+		final T value = (T)wrapper.getValuesMap().get(columnName);
+		return value;
+	}
+
+	@Override
+	public <T> T getDynAttribute(final Object model, final String attributeName)
+	{
+		final T value = POJOWrapper.getDynAttribute(model, attributeName);
+		return value;
+	}
+
+	@Override
+	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
+	{
+		return POJOWrapper.setDynAttribute(model, attributeName, value);
 	}
 }

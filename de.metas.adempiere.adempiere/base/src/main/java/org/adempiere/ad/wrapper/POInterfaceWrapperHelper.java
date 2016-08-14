@@ -1,5 +1,8 @@
 package org.adempiere.ad.wrapper;
 
+import java.util.Properties;
+
+import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
 import org.compiere.model.PO;
@@ -35,7 +38,7 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class POInterfaceWrapperHelper implements IInterfaceWrapperHelper
+public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 {
 	private static final Logger logger = LogManager.getLogger(POInterfaceWrapperHelper.class);
 
@@ -100,4 +103,95 @@ public class POInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return true;
 	}
 
+	@Override
+	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	{
+		return POWrapper.getCtx(model, useClientOrgFromModel);
+	}
+
+	@Override
+	public String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	{
+		return POWrapper.getTrxName(model);
+	}
+
+	@Override
+	public void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
+	{
+		POWrapper.setTrxName(model, trxName);
+	}
+
+	@Override
+	public int getId(final Object model)
+	{
+		final PO po = POWrapper.getPO(model, false);
+		if (po == null)
+		{
+			return -1;
+		}
+
+		final String[] keyColumns = po.get_KeyColumns();
+		if (keyColumns == null || keyColumns.length != 1)
+		{
+			return -1;
+		}
+
+		return po.get_ID();
+	}
+
+	@Override
+	public String getModelTableNameOrNull(final Object model)
+	{
+		return POWrapper.getPO(model).get_TableName();
+	}
+
+	@Override
+	public boolean isNew(final Object model)
+	{
+		return POWrapper.isNew(model);
+	}
+
+	@Override
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	{
+		if (useOverrideColumnIfAvailable)
+		{
+			final IModelInternalAccessor modelAccessor = POWrapper.getModelInternalAccessor(model);
+			final T value = getValueOverrideOrNull(modelAccessor, columnName);
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		//
+		final PO po = POWrapper.getPO(model, false);
+		final int idxColumnName = po.get_ColumnIndex(columnName);
+		if (idxColumnName < 0)
+		{
+			if (throwExIfColumnNotFound)
+			{
+				throw new AdempiereException("No columnName " + columnName + " found for " + model);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		@SuppressWarnings("unchecked")
+		final T value = (T)po.get_Value(idxColumnName);
+		return value;
+	}
+
+	@Override
+	public <T> T getDynAttribute(final Object model, final String attributeName)
+	{
+		final T value = POWrapper.getDynAttribute(model, attributeName);
+		return value;
+	}
+
+	@Override
+	public Object setDynAttribute(Object model, String attributeName, Object value)
+	{
+		return POWrapper.setDynAttribute(model, attributeName, value);
+	}
 }
