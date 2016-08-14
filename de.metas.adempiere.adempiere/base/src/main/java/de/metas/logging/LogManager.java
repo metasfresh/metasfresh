@@ -188,6 +188,16 @@ public final class LogManager
 		return setLoggerLevel(logger, level);
 	}
 
+	public static final boolean setLoggerLevel(final Class<?> clazz, final Level level)
+	{
+		return setLoggerLevel(getLogger(clazz), level);
+	}
+
+	public static final boolean setLoggerLevel(final String loggerName, final Level level)
+	{
+		return setLoggerLevel(getLogger(loggerName), level);
+	}
+
 	public static String getLoggerLevelName(final Logger logger)
 	{
 		if (logger == null)
@@ -458,6 +468,59 @@ public final class LogManager
 		{
 			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE);
 			MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);
+		}
+	}
+
+	/**
+	 * @param loggerName
+	 * @see #dumpAllLevelsUpToRoot(Logger)
+	 */
+	public static void dumpAllLevelsUpToRoot(final String loggerName)
+	{
+		final Logger logger = getLogger(loggerName);
+		if (logger == null)
+		{
+			return;
+		}
+		dumpAllLevelsUpToRoot(logger);
+	}
+
+	/**
+	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
+	 *
+	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
+	 * 
+	 * @param logger
+	 */
+	public static void dumpAllLevelsUpToRoot(final Logger logger)
+	{
+		System.out.println("\nDumping all log levels starting from " + logger);
+		Logger currentLogger = logger;
+		String currentLoggerName = currentLogger.getName();
+		int currentLoggerIndex = 1;
+		while (currentLogger != null)
+		{
+			final String currentLoggerInfo;
+			if (currentLogger instanceof ch.qos.logback.classic.Logger)
+			{
+				final ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)currentLogger;
+				currentLoggerInfo = "effectiveLevel=" + logbackLogger.getEffectiveLevel() + ", level=" + logbackLogger.getLevel();
+			}
+			else
+			{
+				currentLoggerInfo = "unknown level for logger object " + currentLogger + " (" + currentLogger.getClass() + ")";
+			}
+			System.out.println(currentLoggerIndex + ". " + currentLoggerName + "(" + System.identityHashCode(currentLogger) + "): " + currentLoggerInfo);
+
+			final int idx = currentLoggerName.lastIndexOf(".");
+			if (idx < 0)
+			{
+				break;
+			}
+
+			currentLoggerName = currentLoggerName.substring(0, idx);
+			currentLogger = getLogger(currentLoggerName);
+			currentLoggerIndex++;
 		}
 	}
 
