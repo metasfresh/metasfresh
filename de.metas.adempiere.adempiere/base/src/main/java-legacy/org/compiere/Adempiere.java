@@ -36,8 +36,6 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.service.impl.ValuePreferenceBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
@@ -757,7 +755,6 @@ public class Adempiere
 
 		// metas: begin
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IValuePreferenceBL.class, ValuePreferenceBL.instance);
 		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
 		// metas: end
 

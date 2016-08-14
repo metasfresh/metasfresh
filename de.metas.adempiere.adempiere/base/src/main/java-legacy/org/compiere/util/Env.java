@@ -51,6 +51,7 @@ import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
@@ -1243,7 +1244,7 @@ public final class Env
 		{
 			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
-				retValue = ctx.getProperty(createPreferenceName(0, context));  			// Global Pref
+				retValue = ctx.getProperty(createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
 		}
 		else
 		// System Preferences
@@ -1256,15 +1257,16 @@ public final class Env
 		return (retValue == null ? "" : retValue);
 	}	// getPreference
 
-	public static void setPreference(final Properties ctx, final int AD_Window_ID, final String name, final String value)
+	public static void setPreference(final Properties ctx, final IUserValuePreference userValuePreference)
 	{
-		final String preferenceName = createPreferenceName(AD_Window_ID, name);
-		setContext(ctx, preferenceName, value);
+		final String preferenceName = createPreferenceName(userValuePreference.getAD_Window_ID(), userValuePreference.getName());
+		final String preferenceValue = userValuePreference.getValue();
+		setContext(ctx, preferenceName, preferenceValue);
 	}
 
 	private static final String createPreferenceName(final int AD_Window_ID, final String baseName)
 	{
-		if (AD_Window_ID <= 0)
+		if (AD_Window_ID <= 0 || AD_Window_ID == IUserValuePreference.AD_WINDOW_ID_NONE)
 		{
 			return "P|" + baseName;
 		}

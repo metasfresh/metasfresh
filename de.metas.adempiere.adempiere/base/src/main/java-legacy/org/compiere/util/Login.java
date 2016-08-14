@@ -37,6 +37,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -53,8 +54,6 @@ import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
@@ -722,7 +721,7 @@ public class Login
 		{
 			//
 			// Load preferences
-			loadPreferences(getCtx());
+			loadPreferences();
 
 			//
 			// Default Values
@@ -848,55 +847,18 @@ public class Login
 		}
 	}
 
-	@VisibleForTesting
-	public static void loadPreferences(final LoginContext ctx)
+	private void loadPreferences()
 	{
+		final LoginContext ctx = getCtx();
 		final int AD_Client_ID = ctx.getAD_Client_ID();
 		final int AD_Org_ID = ctx.getAD_Org_ID();
 		final int AD_User_ID = ctx.getAD_User_ID();
 
-		// This reads all relevant window neutral defaults
-		// overwriting superseeded ones. Window specific is read in Mainain
-		final String sql = "SELECT Attribute, Value, AD_Window_ID "
-				+ " FROM AD_Preference "
-				+ " WHERE AD_Client_ID IN (?, ?)"
-				+ " AND AD_Org_ID IN (?, ?)"
-				+ " AND (AD_User_ID IS NULL OR AD_User_ID=? OR AD_User_ID=?)"
-				+ " AND IsActive=? "
-				+ " ORDER BY Attribute, AD_Client_ID, AD_User_ID DESC, AD_Org_ID";
-		final Object[] sqlParams = new Object[] {
-				Env.CTXVALUE_AD_Client_ID_System, AD_Client_ID //
-				, Env.CTXVALUE_AD_Org_ID_System, AD_Org_ID //
-				, Env.CTXVALUE_AD_User_ID_System, AD_User_ID //
-				, true // IsActive
-		};
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final String preferenceName = rs.getString(1);
-				final String preferenceValue = rs.getString(2);
-				final int AD_Window_ID = rs.getInt(3);
-				ctx.setPreference(AD_Window_ID, preferenceName, preferenceValue);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
+		Services.get(IValuePreferenceBL.class)
+				.getAllWindowPreferences(AD_Client_ID, AD_Org_ID, AD_User_ID)
+				.stream()
+				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
+				.forEach(ctx::setPreference);
 	}
 
 	private void loadDefaults() throws SQLException

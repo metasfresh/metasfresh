@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.security.TableAccessLevel;
+import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 
 /*
  * #%L
@@ -112,9 +113,9 @@ public class LoginContext
 		Env.setAutoNew(getCtx(), autoNew);
 	}
 
-	public void setPreference(final int AD_Window_ID, final String name, final String value)
+	public void setPreference(final IUserValuePreference userValuePreference)
 	{
-		Env.setPreference(getCtx(), AD_Window_ID, name, value);
+		Env.setPreference(getCtx(), userValuePreference);
 	}
 
 	public void resetAD_Session_ID()
