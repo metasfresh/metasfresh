@@ -22,7 +22,6 @@ package org.compiere.util;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +41,7 @@ public final class CtxName
 	public static final String NAME_Marker = "@";
 	public static final String SEPARATOR = "/";
 	public static final String MODIFIER_Old = "old";
-	private static final List<String> MODIFIERS = ImmutableList.<String>builder()
+	private static final List<String> MODIFIERS = ImmutableList.<String> builder()
 			.add(MODIFIER_Old)
 			.build();
 
@@ -83,7 +82,7 @@ public final class CtxName
 
 		return new CtxName(name, modifiers, defaultValue);
 	}
-	
+
 	/** Parse a given name, surrounded by {@value #NAME_Marker} */
 	public static CtxName parseWithMarkers(final String contextWithMarkers)
 	{
@@ -91,7 +90,7 @@ public final class CtxName
 		{
 			return null;
 		}
-		
+
 		String contextWithoutMarkers = contextWithMarkers.trim();
 		if (contextWithoutMarkers.startsWith(NAME_Marker))
 		{
@@ -101,7 +100,7 @@ public final class CtxName
 		{
 			contextWithoutMarkers = contextWithoutMarkers.substring(0, contextWithoutMarkers.length() - 1);
 		}
-		
+
 		return parse(contextWithoutMarkers);
 	}
 
@@ -159,9 +158,11 @@ public final class CtxName
 	private final String defaultValue;
 	private transient volatile String cachedToStringWithTagMarkers = null;
 	private transient volatile String cachedToStringWithoutTagMarkers = null;
+	
+	private Integer _hashcode; // lazy
 
 	@VisibleForTesting
-	/* package */CtxName(final String name, final List<String> modifiers, final String defaultValue)
+	/* package */ CtxName(final String name, final List<String> modifiers, final String defaultValue)
 	{
 		super();
 		if (Check.isEmpty(name))
@@ -262,7 +263,7 @@ public final class CtxName
 	{
 		return includeTagMarkers ? toStringWithMarkers() : toStringWithoutMarkers();
 	}
-	
+
 	public String toStringWithMarkers()
 	{
 		if (cachedToStringWithTagMarkers == null)
@@ -273,7 +274,7 @@ public final class CtxName
 		}
 		return cachedToStringWithTagMarkers;
 	}
-	
+
 	public String toStringWithoutMarkers()
 	{
 		if (cachedToStringWithoutTagMarkers == null)
@@ -305,12 +306,16 @@ public final class CtxName
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (defaultValue == null ? 0 : defaultValue.hashCode());
-		result = prime * result + (modifiers == null ? 0 : modifiers.hashCode());
-		result = prime * result + (name == null ? 0 : name.hashCode());
-		return result;
+		if (_hashcode == null)
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (defaultValue == null ? 0 : defaultValue.hashCode());
+			result = prime * result + (modifiers == null ? 0 : modifiers.hashCode());
+			result = prime * result + (name == null ? 0 : name.hashCode());
+			_hashcode = result;
+		}
+		return _hashcode;
 	}
 
 	@Override
