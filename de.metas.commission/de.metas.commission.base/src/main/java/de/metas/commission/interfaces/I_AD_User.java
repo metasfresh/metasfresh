@@ -29,5 +29,5 @@ public interface I_AD_User extends de.metas.adempiere.model.I_AD_User
 
 	boolean isCommission();
 
-	void setIsCommission(String isCommission);
+	void setIsCommission(boolean isCommission);
 }
