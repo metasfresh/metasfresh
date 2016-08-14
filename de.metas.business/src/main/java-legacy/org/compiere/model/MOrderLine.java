@@ -92,22 +92,22 @@ public class MOrderLine extends X_C_OrderLine
 			int M_Product_ID, int M_AttributeSetInstance_ID, int excludeC_OrderLine_ID)
 	{
 		BigDecimal retValue = Env.ZERO;
-		String sql = "SELECT SUM(QtyOrdered-QtyDelivered-QtyReserved) "
+		String sql = "SELECT SUM(ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved) "
 				+ "FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
 				+ "WHERE ol.M_Warehouse_ID=?"	// #1
 				// metas: adding table alias "ol" to M_Product_ID to distinguish it from C_Order's M_Product_ID
 				+ " AND ol.M_Product_ID=?" // #2
 				+ " AND o.IsSOTrx='Y' AND o.DocStatus='DR'"
-				+ " AND QtyOrdered-QtyDelivered-QtyReserved<>0"
+				+ " AND ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved<>0"
 				+ " AND ol.C_OrderLine_ID<>?";
 		if (M_AttributeSetInstance_ID != 0)
-			sql += " AND M_AttributeSetInstance_ID=?";
+			sql += " AND ol.M_AttributeSetInstance_ID=?";
 
 		PreparedStatement pstmt = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, M_Warehouse_ID);
 			pstmt.setInt(2, M_Product_ID);
 			pstmt.setInt(3, excludeC_OrderLine_ID);
