@@ -1039,14 +1039,14 @@ public abstract class PO
 				catch (NumberFormatException e)
 				{
 					log.error(ColumnName
-						+ " - Class invalid: " + value.getClass().toString()
+						+ " - Class invalid(1): " + value.getClass().toString()
 						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 					return false;
 				}
 			else
 			{
 				log.error(ColumnName
-					+ " - Class invalid: " + value.getClass().toString()
+					+ " - Class invalid(2): " + value.getClass().toString()
 					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 				return false;
 			}
@@ -1146,7 +1146,7 @@ public abstract class PO
 				catch (Exception e)
 				{
 					log.warn(get_ColumnName(index)
-							+ " - Class invalid: " + value.getClass().toString()
+							+ " - Class invalid(3): " + value.getClass().toString()
 							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 					m_newValues[index] = null;
 				}
@@ -1154,7 +1154,7 @@ public abstract class PO
 			else
 			{
 				log.warn(get_ColumnName(index)
-					+ " - Class invalid: " + value.getClass().toString()
+					+ " - Class invalid(4): " + value.getClass().toString()
 					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
 				m_newValues[index] = value;     //  correct
 			}
