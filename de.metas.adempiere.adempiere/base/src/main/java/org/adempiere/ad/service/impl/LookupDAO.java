@@ -120,6 +120,8 @@ public class LookupDAO implements ILookupDAO
 
 	/* package */static class TableRefInfo implements ITableRefInfo
 	{
+		@SuppressWarnings("unused")
+		private final String name; // used only for debugging
 		private final String TableName;
 		private final String KeyColumn;
 		private final String DisplayColumn;
@@ -134,7 +136,9 @@ public class LookupDAO implements ILookupDAO
 		private final int overrideZoomWindow;
 		private final boolean autoComplete;
 
-		public TableRefInfo(String tableName,
+		public TableRefInfo(
+				String name,
+				String tableName,
 				String keyColumn, String displayColumn, boolean valueDisplayed, String displayColumnSQL,
 				boolean translated,
 				String whereClause,
@@ -143,6 +147,8 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete)
 		{
 			super();
+			
+			this.name = name; 
 
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			TableName = tableName;
@@ -431,7 +437,9 @@ public class LookupDAO implements ILookupDAO
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
+				+ ", r.Name as ReferenceName" // 14
 				+ " FROM AD_Ref_Table rt"
+				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
 				+ " INNER JOIN AD_Column ck ON (rt.AD_Key=ck.AD_Column_ID)"
 				+ " LEFT OUTER JOIN AD_Column cd ON (rt.AD_Display=cd.AD_Column_ID) "
@@ -460,8 +468,10 @@ public class LookupDAO implements ILookupDAO
 				final String displayColumnSQL = rs.getString(11);
 				final int overrideZoomWindow = rs.getInt(12);
 				final boolean autoComplete = "Y".equals(rs.getString(13));
+				final String referenceName = rs.getString(14);
 
-				tableRefInfo = new TableRefInfo(TableName,
+				tableRefInfo = new TableRefInfo(referenceName,
+						TableName,
 						KeyColumn, DisplayColumn, isValueDisplayed, displayColumnSQL,
 						IsTranslated,
 						WhereClause,
@@ -548,7 +558,9 @@ public class LookupDAO implements ILookupDAO
 			pstmt = null;
 		}
 
-		final ITableRefInfo tableRefInfo = new TableRefInfo(tableName,
+		final ITableRefInfo tableRefInfo = new TableRefInfo(
+				"Direct_" + tableName,
+				tableName,
 				keyColumn,
 				null, // DisplayColumn,
 				false, // isValueDisplayed,
