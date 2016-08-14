@@ -54,6 +54,8 @@ import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
@@ -720,13 +722,13 @@ public class Login
 		{
 			//
 			// Load preferences
-			loadPreferences();
+			loadPreferences(getCtx());
 
 			//
 			// Default Values
 			loadDefaults();
 		}
-		catch (SQLException e)
+		catch (Exception e)
 		{
 			log.error("loadPreferences", e);
 		}
@@ -846,9 +848,9 @@ public class Login
 		}
 	}
 
-	private void loadPreferences() throws SQLException
+	@VisibleForTesting
+	public static void loadPreferences(final LoginContext ctx)
 	{
-		final LoginContext ctx = getCtx();
 		final int AD_Client_ID = ctx.getAD_Client_ID();
 		final int AD_Org_ID = ctx.getAD_Org_ID();
 		final int AD_User_ID = ctx.getAD_User_ID();
@@ -883,6 +885,10 @@ public class Login
 				final int AD_Window_ID = rs.getInt(3);
 				ctx.setPreference(AD_Window_ID, preferenceName, preferenceValue);
 			}
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
