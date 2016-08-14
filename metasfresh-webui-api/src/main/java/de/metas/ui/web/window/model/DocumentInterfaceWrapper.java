@@ -20,6 +20,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -216,6 +217,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			logger.debug("Wrapped object is not a Document [SKIP]");
 		}
 	}
+
+	private static final Supplier<String> REASON_Value_DirectSetFromDocumentWrapper = () -> "direct set from document wrapper";
 
 	private final Document document;
 	private final boolean useOldValues;
@@ -450,11 +453,16 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		{
 			throw new AdempiereException("Setting values in an old object is not allowed");
 		}
-
+		
+		return setValue(document, propertyName, value, failOnColumnNotFound);
+	}
+	
+	/*package*/static final boolean setValue(final Document document, final String propertyName, final Object value, final boolean failOnColumnNotFound)
+	{
 		final Object valueFixed = POWrapper.checkZeroIdValue(propertyName, value);
 		try
 		{
-			document.setValue(propertyName, valueFixed);
+			document.setValue(propertyName, valueFixed, REASON_Value_DirectSetFromDocumentWrapper);
 			return true;
 		}
 		catch (final DocumentFieldNotFoundException e)

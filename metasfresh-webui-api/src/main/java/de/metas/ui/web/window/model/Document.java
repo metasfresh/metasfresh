@@ -7,19 +7,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -56,15 +59,28 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
  * #L%
  */
 
-public class Document
+public final class Document
 {
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
 	private static final Logger logger = LogManager.getLogger(Document.class);
 
 	public static final Document NULL = null;
 
+	private static final Supplier<String> REASON_Value_DirectSetOnDocument = () -> "direct set on Document";
+	private static final Supplier<String> REASON_Value_NewDocument = () -> "new document";
+	private static final Supplier<String> REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
+
+	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
+	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
+
 	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
+	private final ICalloutExecutor calloutExecutor;
 
 	private final Map<String, DocumentField> fieldsByName;
 	private final DocumentField idField;
@@ -73,20 +89,26 @@ public class Document
 	private final Map<String, IncludedDocumentsCollection> includedDocuments;
 
 	private DocumentEvaluatee _evaluatee; // lazy
-
-	private final ICalloutExecutor calloutExecutor;
-
 	private Map<String, Object> _dynAttributes = null; // lazy
+	private DocumentAsCalloutRecord _calloutRecord; // lazy
 
-	private AsCalloutRecord _calloutRecord; // lazy
+	public static enum FieldInitializationMode
+	{
+		NewDocument, Refresh, Load,
+	}
 
-	public Document(final DocumentRepository documentRepository, final DocumentEntityDescriptor entityDescriptor, final int windowNo, final Document parentDocument)
+	public static interface FieldInitialValueSupplier
+	{
+		Object getInitialValue(final Document document, final DocumentFieldDescriptor fieldDescriptor);
+	}
+
+	private Document(final Builder builder)
 	{
 		super();
-		this.documentRepository = documentRepository;
-		this.entityDescriptor = entityDescriptor;
-		this.windowNo = windowNo;
-		_parentDocument = parentDocument;
+		documentRepository = Preconditions.checkNotNull(builder.documentRepository, "documentRepository");
+		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
+		windowNo = nextWindowNo.incrementAndGet();
+		_parentDocument = builder.parentDocument;
 
 		//
 		// Create document fields
@@ -95,9 +117,9 @@ public class Document
 			DocumentField idField = null;
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
-				final String name = fieldDescriptor.getName();
+				final String fieldName = fieldDescriptor.getFieldName();
 				final DocumentField field = new DocumentField(fieldDescriptor, this);
-				fieldsBuilder.put(name, field);
+				fieldsBuilder.put(fieldName, field);
 
 				if (fieldDescriptor.isKey())
 				{
@@ -122,14 +144,162 @@ public class Document
 			this.includedDocuments = includedDocuments.build();
 		}
 
+		//
+		// Initialize callout executor
 		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
 
 		//
-		//
-		setDynAttribute("DirectShip", false); // FIXME: workaround for https://github.com/metasfresh/metasfresh/issues/287 to avoid WARNINGs
+		// Set default dynamic attributes
+		{
+			setDynAttribute("DirectShip", false); // FIXME: workaround for https://github.com/metasfresh/metasfresh/issues/287 to avoid WARNINGs
+			setDynAttribute("HasCharges", false); // FIXME hardcoded because: Failed evaluating display logic @HasCharges@='Y' for C_Order.C_Charge_ID,ChargeAmt
+
+			// Set document's header window default values
+			// NOTE: these dynamic attributes will be considered by Document.asEvaluatee.
+			if (_parentDocument == null)
+			{
+				setDynAttribute("IsSOTrx", entityDescriptor.isSOTrx()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+				setDynAttribute("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
+			}
+		}
 
 		//
+		// Done
 		logger.trace("Created new document instance: {}", this); // keep it last
+	}
+
+	private final void initializeFields(final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
+	{
+		logger.trace("Initializing fields: mode={}", mode);
+
+		for (final DocumentField documentField : getFields())
+		{
+			initializeField(documentField, mode, initialValueSupplier);
+		}
+
+		//
+		if (FieldInitializationMode.NewDocument == mode)
+		{
+			executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
+			updateAllDependencies();
+		}
+		else if (FieldInitializationMode.Load == mode)
+		{
+			updateAllDependencies();
+		}
+		else if (FieldInitializationMode.Refresh == mode)
+		{
+			updateAllDependencies();
+		}
+	}
+
+	private void initializeField(final DocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
+	{
+		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+		final Object initialValue = initialValueSupplier.getInitialValue(this, fieldDescriptor);
+
+		final Object valueOld = documentField.getValue();
+		documentField.setInitialValue(initialValue);
+
+		if (FieldInitializationMode.NewDocument == mode)
+		{
+			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+			eventsCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
+		}
+		else if (FieldInitializationMode.Refresh == mode)
+		{
+			// Check if changed. If not, stop here.
+			// NEEDED for Refresh
+			final Object valueNew = documentField.getValue();
+			if (Objects.equals(valueOld, valueNew))
+			{
+				return;
+			}
+
+			// collect changed value
+			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+			eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
+
+			// Update all dependencies
+			updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
+
+			// Callouts - don't execute them!
+			// calloutExecutor.execute(documentField.asCalloutField());
+		}
+
+	}
+
+	private static final Object createDefaultValue(final Document document, final DocumentFieldDescriptor fieldDescriptor)
+	{
+		//
+		// Primary Key field
+		if (fieldDescriptor.isKey())
+		{
+			final int value = generateNextTemporaryId();
+			return value;
+		}
+
+		//
+		// Parent link field
+		if (fieldDescriptor.isParentLink())
+		{
+			final Document parentDocument = document.getParentDocument();
+			if (parentDocument != null)
+			{
+				final int value = parentDocument.getDocumentId();
+				return value;
+			}
+		}
+
+		//
+		// Default value expression
+		final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
+		if (!NullStringExpression.isNull(defaultValueExpression))
+		{
+			// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
+			String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
+			if (Check.isEmpty(valueStr, false))
+			{
+				valueStr = null;
+			}
+
+			return valueStr;
+		}
+
+		//
+		// Preference (user) - P|
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		{
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), false);
+			if (!Check.isEmpty(valueStr, false))
+			{
+				return valueStr;
+			}
+		}
+
+		//
+		// Preference (System) - # $
+		{
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), true);
+			if (!Check.isEmpty(valueStr, false))
+			{
+				return valueStr;
+			}
+		}
+
+		//
+		// Fallback
+		return null;
+	}
+
+	public void refresh(final FieldInitialValueSupplier fieldValuesSupplier)
+	{
+		initializeFields(FieldInitializationMode.Refresh, fieldValuesSupplier);
+	}
+
+	private static int generateNextTemporaryId()
+	{
+		return nextTemporaryId.decrementAndGet();
 	}
 
 	@Override
@@ -227,7 +397,7 @@ public class Document
 		return _evaluatee;
 	}
 
-	public void setValue(final String fieldName, final Object value)
+	public void setValue(final String fieldName, final Object value, final Supplier<String> reason)
 	{
 		final DocumentField documentField = getField(fieldName);
 		final Object valueOld = documentField.getValue();
@@ -242,37 +412,13 @@ public class Document
 
 		// collect changed value
 		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-		eventsCollector.collectValueChanged(documentField, () -> "direct set on Document");
+		eventsCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
 
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
-	}
-
-	public void setInitialValue(final String fieldName, final Object value)
-	{
-		final DocumentField documentField = getField(fieldName);
-		final Object valueOld = documentField.getValue();
-		documentField.setInitialValue(value);
-
-		// Check if changed. If not, stop here.
-		final Object valueNew = documentField.getValue();
-		if (Objects.equals(valueOld, valueNew))
-		{
-			return;
-		}
-
-		// collect changed value
-		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-		eventsCollector.collectValueChanged(documentField, () -> "direct set on Document");
-
-		// Update all dependencies
-		updateFieldsWhichDependsOn(fieldName, eventsCollector);
-
-		// Callouts - don't execute them!
-		// calloutExecutor.execute(documentField.asCalloutField());
 	}
 
 	public void executeAllCallouts()
@@ -368,6 +514,7 @@ public class Document
 
 			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames())
 			{
+				// TODO: i think we shall trigger only in case of Value changed event
 				updateFieldsWhichDependsOn(dependentFieldNameLvl2, eventsCollector);
 			}
 
@@ -423,6 +570,7 @@ public class Document
 		else if (DependencyType.LookupValues == dependencyType)
 		{
 			final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType;
+			dependentField.setLookupValuesStaled();
 			eventsCollector.collectLookupValuesStaled(dependentField, reason);
 		}
 		else
@@ -595,7 +743,7 @@ public class Document
 			return;
 		}
 
-		if (!hasChanges())
+		if (!isNew() && !hasChanges())
 		{
 			logger.debug("Skip saving because document has NO change: {}", this);
 			return;
@@ -617,67 +765,69 @@ public class Document
 	{
 		if (_calloutRecord == null)
 		{
-			_calloutRecord = new AsCalloutRecord(this);
+			_calloutRecord = new DocumentAsCalloutRecord(this);
 		}
 		return _calloutRecord;
 	}
 
-	private static final class AsCalloutRecord implements ICalloutRecord
+	public static final class Builder
 	{
-		private final Document document;
+		private DocumentRepository documentRepository;
+		private DocumentEntityDescriptor entityDescriptor;
+		private Document parentDocument;
+		private FieldInitializationMode fieldInitializerMode;
+		private FieldInitialValueSupplier fieldInitializer;
 
-		private AsCalloutRecord(final Document document)
+		private Builder()
 		{
 			super();
-			this.document = document;
 		}
 
-		@Override
-		public <T> T getModel(final Class<T> modelClass)
+		public Document build()
 		{
-			return DocumentInterfaceWrapper.wrap(document, modelClass);
+			final Document document = new Document(this);
+
+			//
+			// Initialize the fields
+			if (fieldInitializer != null)
+			{
+				document.initializeFields(fieldInitializerMode, fieldInitializer);
+			}
+
+			return document;
 		}
 
-		@Override
-		public Object getValue(final String columnName)
+		public Builder setDocumentRepository(final DocumentRepository documentRepository)
 		{
-			return InterfaceWrapperHelper.getValueOrNull(document, columnName);
+			this.documentRepository = documentRepository;
+			return this;
 		}
 
-		@Override
-		public String setValue(final String columnName, final Object value)
+		public Builder setEntityDescriptor(final DocumentEntityDescriptor entityDescriptor)
 		{
-			document.setValue(columnName, value);
-			return "";
+			this.entityDescriptor = entityDescriptor;
+			return this;
 		}
 
-		@Override
-		public void dataRefresh()
+		public Builder setParentDocument(final Document parentDocument)
 		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException();
+			this.parentDocument = parentDocument;
+			return this;
 		}
 
-		@Override
-		public void dataRefreshAll()
+		public Builder initializeAsNewDocument()
 		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException();
+			fieldInitializerMode = FieldInitializationMode.NewDocument;
+			fieldInitializer = Document::createDefaultValue;
+			return this;
 		}
 
-		@Override
-		public void dataRefreshRecursively()
+		public Builder initializeAsExistingRecord(final FieldInitialValueSupplier fieldInitializer)
 		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean dataSave(final boolean manualCmd)
-		{
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException();
+			Preconditions.checkNotNull(fieldInitializer, "fieldInitializer");
+			fieldInitializerMode = FieldInitializationMode.Load;
+			this.fieldInitializer = fieldInitializer;
+			return this;
 		}
 	}
-
 }

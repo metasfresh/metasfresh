@@ -82,22 +82,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	public boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
 	{
 		final Document document = DocumentInterfaceWrapper.getDocument(model);
-		if (!document.hasField(columnName))
-		{
-			final AdempiereException ex = new AdempiereException("No field with ColumnName=" + columnName + " found in " + document + " for " + model);
-			if (throwExIfColumnNotFound)
-			{
-				throw ex;
-			}
-			else
-			{
-				logger.warn(ex.getLocalizedMessage(), ex);
-				return false;
-			}
-		}
-
-		document.setValue(columnName, value);
-		return true;
+		return DocumentInterfaceWrapper.setValue(document, columnName, value, throwExIfColumnNotFound);
 	}
 
 	@Override

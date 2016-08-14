@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Supplier;
+
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -54,6 +56,8 @@ import de.metas.ui.web.window.util.LastDocumentTracker;
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
+
+	private static final Supplier<String> REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@Autowired
 	private UserSession userSession;
@@ -150,7 +154,7 @@ public class WindowRestController
 			{
 				if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
 				{
-					document.setValue(event.getPath(), event.getValue());
+					document.setValue(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
 				}
 				else
 				{
@@ -164,10 +168,10 @@ public class WindowRestController
 
 			//
 			// Make sure we collected all changes
-			// TODO: optimization: it would be better if this would happen auto-magically
+			// FIXME: optimization: it would be better if this would happen auto-magically. Also this logic fails when trying to update an existing Document which is not saved yet!
 			if (isNew)
 			{
-				execution.getFieldChangedEventsCollector().collectFrom(document);
+				execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
 			}
 
 			//

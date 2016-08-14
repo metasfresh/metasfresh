@@ -42,7 +42,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	}
 
 	/** Internal field name (aka ColumnName) */
-	private final String name;
+	private final String fieldName;
 	/** Detail ID or null if this is a field in main sections */
 	private final String detailId;
 
@@ -73,7 +73,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private DocumentFieldDescriptor(final Builder builder)
 	{
 		super();
-		name = Preconditions.checkNotNull(builder.name, "name is null");
+		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		detailId = builder.detailId;
 
 		caption = builder.caption;
@@ -105,16 +105,16 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("name", name)
+				.add("name", fieldName)
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
 				.add("fieldDataBinding", dataBinding)
 				.toString();
 	}
 
-	public String getName()
+	public String getFieldName()
 	{
-		return name;
+		return fieldName;
 	}
 
 	public String getDetailId()
@@ -200,7 +200,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public static final class Builder
 	{
-		private String name;
+		private String fieldName;
 		public String detailId;
 
 		private String caption;
@@ -233,9 +233,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			return new DocumentFieldDescriptor(this);
 		}
 
-		public Builder setName(final String name)
+		public Builder setFieldName(final String fieldName)
 		{
-			this.name = name;
+			this.fieldName = fieldName;
 			return this;
 		}
 
@@ -332,10 +332,10 @@ public final class DocumentFieldDescriptor implements Serializable
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			return DocumentFieldDependencyMap.builder()
-					.add(name, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
-					.add(name, displayLogic.getParameters(), DependencyType.DisplayLogic)
-					.add(name, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic)
-					.add(name, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
+					.add(fieldName, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
+					.add(fieldName, displayLogic.getParameters(), DependencyType.DisplayLogic)
+					.add(fieldName, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic)
+					.add(fieldName, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
 					.build();
 		}
 

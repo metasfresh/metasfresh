@@ -32,11 +32,27 @@ public final class DocumentId
 	public static final String NEW_ID_STRING = "NEW";
 	public static final DocumentId NEW = new DocumentId(NEW_ID);
 
-	public static final DocumentId of(final String idStr)
+	private static final char TEMPORARY_ID_PREFIX = 'T';
+
+	public static final DocumentId of(String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
 		{
 			return NEW;
+		}
+
+		if (idStr == null)
+		{
+			throw new NullPointerException("idStr shall not be null");
+		}
+		if (idStr.isEmpty())
+		{
+			throw new NullPointerException("idStr shall not be empty");
+		}
+
+		if (idStr.charAt(0) == TEMPORARY_ID_PREFIX)
+		{
+			idStr = "-" + idStr.substring(1);
 		}
 
 		final int idInt = Integer.parseInt(idStr);
@@ -62,6 +78,22 @@ public final class DocumentId
 		return of(idStr.trim());
 	}
 
+	public static final DocumentId fromObject(final Object idObj)
+	{
+		if (idObj instanceof Integer)
+		{
+			return of((Integer)idObj);
+		}
+		else if (idObj instanceof String)
+		{
+			return of((String)idObj);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + idObj + " (" + (idObj == null ? null : idObj.getClass()) + ") to " + DocumentId.class);
+		}
+	}
+
 	public static final boolean isNew(final int id)
 	{
 		return id == NEW_ID
@@ -80,9 +112,18 @@ public final class DocumentId
 	@Override
 	public String toString()
 	{
+		return toJson();
+	}
+
+	public String toJson()
+	{
 		if (idInt == NEW_ID)
 		{
 			return NEW_ID_STRING;
+		}
+		if (idInt < 0)
+		{
+			return TEMPORARY_ID_PREFIX + String.valueOf(-idInt);
 		}
 		return String.valueOf(idInt);
 	}

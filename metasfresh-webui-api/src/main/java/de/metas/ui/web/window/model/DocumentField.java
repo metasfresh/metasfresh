@@ -73,7 +73,7 @@ public class DocumentField
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("name", descriptor.getName())
+				.add("fieldName", getFieldName())
 				.add("value", _value)
 				.add("initalValue", _initialValue)
 				.add("mandatory", _mandatory)
@@ -94,7 +94,7 @@ public class DocumentField
 
 	public String getFieldName()
 	{
-		return descriptor.getName();
+		return descriptor.getFieldName();
 	}
 
 	public boolean isKey()
@@ -118,11 +118,9 @@ public class DocumentField
 	}
 
 	/**
-	 * FIXME: make it private or package level
-	 *
 	 * @param value
 	 */
-	public void setInitialValue(final Object value)
+	/* package */ void setInitialValue(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
 		_initialValue = valueConv;
@@ -363,8 +361,16 @@ public class DocumentField
 
 	public boolean isLookupValuesStale()
 	{
-		// TODO: implement
-		return false;
+		return lookupDataSource != null && lookupDataSource.isStaled();
+	}
+
+	/* package */ void setLookupValuesStaled()
+	{
+		if (lookupDataSource == null)
+		{
+			return;
+		}
+		lookupDataSource.setStaled();
 	}
 
 	public boolean isLookupWithNumericKey()
@@ -400,7 +406,7 @@ public class DocumentField
 			return;
 		}
 
-		this._valid = validNew;
+		_valid = validNew;
 		logger.debug("Changed valid state {}->{} for {}", validOld, validNew, this);
 	}
 

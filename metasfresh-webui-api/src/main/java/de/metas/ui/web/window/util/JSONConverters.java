@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -80,13 +81,14 @@ public final class JSONConverters
 
 		// ID field (special)
 		{
-			final int id = document.getDocumentId();
-			jsonFields.add(documentFieldToJsonObject(FIELDNAME_ID, id));
+			final String id = DocumentId.of(document.getDocumentId()).toJson();
+			final String reason = null; // N/A
+			jsonFields.add(documentFieldToJsonObject(FIELDNAME_ID, id, reason));
 		}
 
 		// All other fields
 		fields.stream()
-				.map(field -> documentFieldToJsonObject(field))
+				.map(JSONConverters::documentFieldToJsonObject)
 				.forEach(jsonFields::add);
 
 		return jsonFields;
@@ -96,10 +98,9 @@ public final class JSONConverters
 	{
 		final String name = field.getFieldName();
 		final Object valueJSON = field.getValueAsJsonObject();
+		final String valueReason = null; // N/A
 
-		final Map<String, Object> map = documentFieldToJsonObject(name, valueJSON);
-		map.put("field", name);
-		map.put("value", valueJSON);
+		final Map<String, Object> map = documentFieldToJsonObject(name, valueJSON, valueReason);
 		map.put("mandatory", field.isMandatory());
 		map.put("readonly", field.isReadonly());
 		map.put("displayed", field.isDisplayed());
@@ -111,12 +112,16 @@ public final class JSONConverters
 		return map;
 	}
 
-	private static Map<String, Object> documentFieldToJsonObject(final String fieldName, final Object valueJSON)
+	private static Map<String, Object> documentFieldToJsonObject(final String fieldName, final Object valueJSON, final String valueReason)
 	{
 		final Map<String, Object> map = new LinkedHashMap<>();
 
 		map.put("field", fieldName);
 		map.put("value", valueJSON);
+		if (valueReason != null)
+		{
+			map.put("valueReason", valueReason);
+		}
 
 		return map;
 	}
@@ -142,7 +147,9 @@ public final class JSONConverters
 				{
 					eventForIdField = event;
 
-					final Map<String, Object> jsonIdField = documentFieldToJsonObject(FIELDNAME_ID, event.getValueAsJsonObject());
+					final Object value = event.getValueAsJsonObject();
+					final String id = value == null ? null : DocumentId.fromObject(value).toJson();
+					final Map<String, Object> jsonIdField = documentFieldToJsonObject(FIELDNAME_ID, id, event.getValueReason());
 					jsonFields.add(0, jsonIdField);
 				}
 				else
@@ -169,7 +176,7 @@ public final class JSONConverters
 			final String reason = event.getValueReason();
 			if (reason != null)
 			{
-				map.put("valueReason", reason);
+				map.put("value-reason", reason);
 			}
 		}
 
@@ -180,7 +187,7 @@ public final class JSONConverters
 			final String reason = event.getReadonlyReason();
 			if (reason != null)
 			{
-				map.put("readonlyReason", reason);
+				map.put("readonly-reason", reason);
 			}
 		}
 
@@ -191,7 +198,7 @@ public final class JSONConverters
 			final String reason = event.getMandatoryReason();
 			if (reason != null)
 			{
-				map.put("mandatoryReason", reason);
+				map.put("mandatory-reason", reason);
 			}
 		}
 
@@ -202,7 +209,7 @@ public final class JSONConverters
 			final String reason = event.getDisplayedReason();
 			if (reason != null)
 			{
-				map.put("displayedReason", reason);
+				map.put("displayed-reason", reason);
 			}
 		}
 
@@ -213,7 +220,7 @@ public final class JSONConverters
 			final String reason = event.getLookupValuesStaleReason();
 			if (reason != null)
 			{
-				map.put("lookupValuesStaleReason", reason);
+				map.put("lookupValuesStale-reason", reason);
 			}
 		}
 

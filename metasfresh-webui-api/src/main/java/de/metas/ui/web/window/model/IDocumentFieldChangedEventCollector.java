@@ -47,5 +47,5 @@ public interface IDocumentFieldChangedEventCollector
 
 	void collectFrom(IDocumentFieldChangedEventCollector fromCollector);
 
-	void collectFrom(Document document);
+	void collectFrom(Document document, Supplier<String> reason);
 }

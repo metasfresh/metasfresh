@@ -379,7 +379,7 @@ public class DocumentDescriptorFactory
 				.build();
 
 		return DocumentFieldDescriptor.builder()
-				.setName(gridFieldVO.getColumnName())
+				.setFieldName(gridFieldVO.getColumnName())
 				.setDetailId(detailId)
 				//
 				.setCaption(gridFieldVO.getHeader())

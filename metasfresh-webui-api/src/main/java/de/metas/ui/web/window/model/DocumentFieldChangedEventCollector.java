@@ -89,7 +89,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return ImmutableList.copyOf(fieldName2event.values());
 	}
 
-	private final String extractReason(final Supplier<String> reasonSupplier)
+	private static final String extractReason(final Supplier<String> reasonSupplier)
 	{
 		if (reasonSupplier == null)
 		{
@@ -105,10 +105,44 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return reasonSupplier.get();
 	}
 
+	private static final String mergeReasons(final Supplier<String> reason, final String previousReason)
+	{
+		final Object previousValue = null;
+		return mergeReasons(reason, previousReason, previousValue);
+	}
+
+	private static final String mergeReasons(final Supplier<String> reasonSupplier, final String previousReason, final Object previousValue)
+	{
+		// Collect the reason only if debugging is enabled
+		if (!logger.isDebugEnabled())
+		{
+			return null;
+		}
+
+		final String reason = reasonSupplier == null ? null : reasonSupplier.get();
+		if (previousReason == null && previousValue == null)
+		{
+			return reason;
+		}
+
+		final StringBuilder reasonNew = new StringBuilder();
+		reasonNew.append(reason == null ? "unknown reason" : reason);
+
+		if (previousReason != null)
+		{
+			reasonNew.append(" | previous reason: ").append(previousReason);
+		}
+		if (previousValue != null)
+		{
+			reasonNew.append(" | previous value: ").append(previousValue);
+		}
+		return reasonNew.toString();
+	}
+
 	@Override
 	public void collectValueChanged(final DocumentField documentField, final Supplier<String> reason)
 	{
-		getFieldChangedEvent(documentField).setValue(documentField.getValueAsJsonObject(), extractReason(reason));
+		getFieldChangedEvent(documentField).setValue(documentField.getValue(), extractReason(reason));
 	}
 
 	@Override
@@ -146,36 +180,57 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	}
 
 	@Override
-	public void collectFrom(final Document document)
+	public void collectFrom(final Document document, final Supplier<String> reason)
 	{
 		for (final DocumentField documentField : document.getFields())
 		{
-			final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
-			final String reason = "direct push";
+			collectFrom(documentField, reason);
+		}
+	}
 
+	private void collectFrom(final DocumentField documentField, final Supplier<String> reason)
+	{
+		final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
+
+		//
+		// Value
+		if (!toEvent.isValueSet())
+		{
 			final Object value = documentField.getValue();
-			if (!Objects.equals(value, toEvent.getValue()))
+			toEvent.setValue(value, extractReason(reason));
+		}
+		else
+		{
+			final Object value = documentField.getValue();
+			final Object previousValue = toEvent.getValue();
+			if (!Objects.equals(value, previousValue))
 			{
-				toEvent.setValue(value, reason);
+				toEvent.setValue(value, mergeReasons(reason, toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue));
 			}
+		}
 
-			final boolean readonly = documentField.isReadonly();
-			if (!Objects.equals(readonly, toEvent.getReadonly()))
-			{
-				toEvent.setReadonly(readonly, reason);
-			}
+		//
+		// Readonly
+		final boolean readonly = documentField.isReadonly();
+		if (!Objects.equals(readonly, toEvent.getReadonly()))
+		{
+			toEvent.setReadonly(readonly, mergeReasons(reason, toEvent.getReadonlyReason()));
+		}
 
-			final boolean mandatory = documentField.isMandatory();
-			if (!Objects.equals(mandatory, toEvent.getMandatory()))
-			{
-				toEvent.setMandatory(mandatory, reason);
-			}
+		//
+		// Mandatory
+		final boolean mandatory = documentField.isMandatory();
+		if (!Objects.equals(mandatory, toEvent.getMandatory()))
+		{
+			toEvent.setMandatory(mandatory, mergeReasons(reason, toEvent.getMandatoryReason()));
+		}
 
-			final boolean displayed = documentField.isDisplayed();
-			if (!Objects.equals(displayed, toEvent.getDisplayed()))
-			{
-				toEvent.setDisplayed(displayed, reason);
-			}
+		//
+		// Displayed
+		final boolean displayed = documentField.isDisplayed();
+		if (!Objects.equals(displayed, toEvent.getDisplayed()))
+		{
+			toEvent.setDisplayed(displayed, mergeReasons(reason, toEvent.getDisplayedReason()));
 		}
 	}
 }

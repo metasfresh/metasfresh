@@ -315,4 +315,17 @@ public class SqlLookupDataSource implements LookupDataSource
 			return validationRule.accept(this, item);
 		}
 	}
+
+	@Override
+	public void setStaled()
+	{
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean isStaled()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

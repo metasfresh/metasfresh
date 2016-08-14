@@ -39,4 +39,11 @@ public interface LookupDataSource
 	LookupValue findById(Object id);
 
 	boolean isNumericKey();
+
+	/**
+	 * Set this data source as staled.
+	 */
+	void setStaled();
+
+	boolean isStaled();
 }
