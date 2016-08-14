@@ -5030,14 +5030,15 @@ public abstract class PO
 	/**
 	 * Mark this PO as beeing created, updated or deleted by an manual user action (from window).
 	 */
-	protected final void set_ManualUserAction(int windowNo)
+	public final void set_ManualUserAction(final int windowNo)
 	{
-		// Make sure the PO is not in transaction
-		final ITrxManager trxManager = get_TrxManager();
-		if(!trxManager.isNull(get_TrxName()))
-		{
-			throw new AdempiereException("Marking a PO to be manual user action when that PO is in transaction is not allowed - " + this);
-		}
+		// NOTE: we don't need to enforce setting this flag only out-of-trx because it's not valid
+//		// Make sure the PO is not in transaction
+//		final ITrxManager trxManager = get_TrxManager();
+//		if(!trxManager.isNull(get_TrxName()))
+//		{
+//			throw new AdempiereException("Marking a PO to be manual user action when that PO is in transaction is not allowed - " + this);
+//		}
 
 		this.m_isManualUserAction = true;
 		this.m_windowNo = windowNo;
