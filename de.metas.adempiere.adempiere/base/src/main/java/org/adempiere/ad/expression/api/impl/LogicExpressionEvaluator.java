@@ -29,12 +29,12 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpression, Boolean>
 {
@@ -76,7 +76,7 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 
 			final boolean result = evaluateLogicTuple(firstEval, tuple.getOperator(), secondEval);
 
-			if (LogManager.isLevelFinest())
+			if (logger.isTraceEnabled())
 			{
 				logger.trace(expr.getExpressionString() + " => \"" + firstEval + "\" " + tuple.getOperator() + " \"" + secondEval + "\" => " + result);
 			}
@@ -164,7 +164,7 @@ public class LogicExpressionEvaluator implements IExpressionEvaluator<ILogicExpr
 				}
 				else if (onVariableNotFound == OnVariableNotFound.Fail)
 				{
-					throw new ExpressionEvaluationException("Parameter '" + ctxName.getName() + "' not found int context"
+					throw new ExpressionEvaluationException("Parameter '" + ctxName.getName() + "' not found in context"
 							+ "\n Context: " + source
 							+ "\n Evaluator: " + this);
 				}
