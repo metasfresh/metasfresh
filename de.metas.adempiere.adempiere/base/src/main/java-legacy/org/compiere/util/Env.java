@@ -559,7 +559,7 @@ public final class Env
 	 * @param context context key
 	 * @param value context value
 	 */
-	public static void setContext(final Properties ctx, final String context, final Timestamp value)
+	public static void setContext(final Properties ctx, final String context, final Date value)
 	{
 		if (ctx == null || context == null)
 		{
@@ -640,7 +640,7 @@ public final class Env
 	 * @param context context key
 	 * @param value context value
 	 */
-	public static void setContext(final Properties ctx, final int WindowNo, final String context, final Timestamp value)
+	public static void setContext(final Properties ctx, final int WindowNo, final String context, final Date value)
 	{
 		if (ctx == null || context == null)
 		{
@@ -2412,7 +2412,7 @@ public final class Env
 		return parseTimestamp(s);
 	}	// getContextAsDate
 
-	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Timestamp value)
+	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Date value)
 	{
 		if (ctx == null || context == null)
 			return;
