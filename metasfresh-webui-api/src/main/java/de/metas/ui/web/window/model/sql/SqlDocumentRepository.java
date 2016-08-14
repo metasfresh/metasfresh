@@ -305,14 +305,6 @@ public class SqlDocumentRepository implements DocumentRepository
 			sql.append("\n ORDER BY ").append(sqlOrderBy);
 		}
 
-		// TODO: implement LIMIT
-		//
-		// final String limit = buildSqlLimit(query);
-		// if (!Strings.isNullOrEmpty(limit))
-		// {
-		// sql.append("\n LIMIT ").append(limit);
-		// }
-
 		return sql.toString();
 	}
 
@@ -425,13 +417,6 @@ public class SqlDocumentRepository implements DocumentRepository
 			}
 			decryptRequired = false;
 		}
-		// else if (valueType == PropertyDescriptorValueType.Location)
-		// {
-		// // FIXME: implement it efficiently - see https://metasfresh.atlassian.net/browse/FRESH-287 - Precalculate C_Location display address
-		// final int locationId = rs.getInt(columnName);
-		// value = locationService.findLookupValueById(locationId);
-		// encrypted = false;
-		// }
 		else if (java.lang.String.class == valueClass)
 		{
 			value = rs.getString(columnName);
