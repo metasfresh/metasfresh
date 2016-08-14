@@ -29,12 +29,14 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class ValuePreferenceBL implements IValuePreferenceBL
 {
@@ -49,7 +51,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 	public String getContextKey(I_AD_Preference preference)
 	{
 		final String attribute = preference.getAttribute();
-		Util.assume(!Util.isEmpty(attribute), "Attribute not empty for " + preference);
+		Check.assumeNotEmpty(attribute, "attribute is not empty for {}", preference);
 
 		final int adWindowId = preference.getAD_Window_ID();
 
@@ -231,7 +233,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		}
 		else if (value instanceof Boolean)
 		{
-			return ((Boolean)value).booleanValue() ? "Y" : "N";
+			return DisplayType.toBooleanString((Boolean)value);
 		}
 		else
 		{
