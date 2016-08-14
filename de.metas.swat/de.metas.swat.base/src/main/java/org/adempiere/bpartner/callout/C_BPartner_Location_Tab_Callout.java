@@ -1,5 +1,7 @@
 package org.adempiere.bpartner.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,19 +27,17 @@ package org.adempiere.bpartner.callout;
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 
 public class C_BPartner_Location_Tab_Callout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner_Location address = InterfaceWrapperHelper.create(gridTab, I_C_BPartner_Location.class);
+		final I_C_BPartner_Location address = calloutRecord.getModel(I_C_BPartner_Location.class);
 
 		if (!bPartnerPA.existsDefaultAddressInTable(address, null, I_C_BPartner_Location.COLUMNNAME_IsShipToDefault))
 		{

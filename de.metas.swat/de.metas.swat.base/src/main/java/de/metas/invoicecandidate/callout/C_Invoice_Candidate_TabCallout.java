@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -33,12 +35,16 @@ import org.adempiere.facet.sideactions.impl.SideActionFacetsPool;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
+import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 
 public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_TabCallout.class);
+
 	private FacetExecutor<I_C_Invoice_Candidate> gridTabFacetExecutor;
 
 	/**
@@ -47,8 +53,15 @@ public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 	private IC_ApproveForInvoicing_Action action_ApproveForInvoicing = null;
 
 	@Override
-	public void onInit(final GridTab gridTab)
+	public void onInit(final ICalloutRecord calloutRecord)
 	{
+		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
+		if(gridTab == null)
+		{
+			logger.warn("Cannot extract GridTab from {}. Skip initializing {}", calloutRecord, this);
+			return;
+		}
+		
 		final ISideActionsGroupsListModel sideActionsGroupsModel = gridTab.getSideActionsGroupsModel();
 
 		//
@@ -80,13 +93,13 @@ public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 	}
 
 	@Override
-	public void onAfterQuery(final GridTab gridTab)
+	public void onAfterQuery(final ICalloutRecord calloutRecord)
 	{
-		updateFacets(gridTab);
+		updateFacets(calloutRecord);
 	}
 
 	@Override
-	public void onRefreshAll(final GridTab gridTab)
+	public void onRefreshAll(final ICalloutRecord calloutRecord)
 	{
 		// NOTE: we are not updating the facets on refresh all because following case would fail:
 		// Case: user is pressing the "Refresh" toolbar button to refresh THE content of the grid,
@@ -97,10 +110,10 @@ public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 	/**
 	 * Retrieve invoice candidates facets from current grid tab rows and add them to window side panel
 	 *
-	 * @param gridTab
+	 * @param calloutRecord
 	 * @param http://dewiki908/mediawiki/index.php/08602_Rechnungsdispo_UI_%28106621797084%29
 	 */
-	private void updateFacets(final GridTab gridTab)
+	private void updateFacets(final ICalloutRecord calloutRecord)
 	{
 		//
 		// If user asked to approve for invoicing some ICs, the grid will be asked to refresh all,

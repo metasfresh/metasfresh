@@ -27,11 +27,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.junit.Ignore;
 
 @Ignore
@@ -195,6 +197,19 @@ public class PlainCalloutField implements ICalloutField
 	@Override
 	public void fireDataStatusEEvent(String AD_Message, String info, boolean isError)
 	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public void fireDataStatusEEvent(ValueNamePair errorLog)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ICalloutRecord getCalloutRecord()
+	{
+		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 }

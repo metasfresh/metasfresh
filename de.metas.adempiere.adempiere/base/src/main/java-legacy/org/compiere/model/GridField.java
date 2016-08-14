@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -41,7 +42,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
@@ -53,6 +53,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
@@ -2161,14 +2162,11 @@ public class GridField
 	}
 
 	@Override
-	public <T> T getModel(Class<T> modelClass)
+	public <T> T getModel(final Class<T> modelClass)
 	{
-		final GridTab gridTab = getGridTab();
-		Check.assumeNotNull(gridTab, "gridTab not null");
-
-		final T model = InterfaceWrapperHelper.create(gridTab, modelClass);
+		final ICalloutRecord calloutRecord = getCalloutRecord();
+		final T model = calloutRecord.getModel(modelClass);
 		Check.assumeNotNull(model, "model not null");
-
 		return model;
 	}
 
@@ -2237,5 +2235,26 @@ public class GridField
 		}
 		
 		gridTab.fireDataStatusEEvent(AD_Message, info, isError);
+	}
+	
+	@Override
+	public void fireDataStatusEEvent(final ValueNamePair errorLog)
+	{
+		final GridTab gridTab = getGridTab();
+		if(gridTab == null)
+		{
+			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: errorLog={}, info={}, isError={}", this, errorLog);
+			return;
+		}
+		
+		gridTab.fireDataStatusEEvent(errorLog);
+	}
+
+	@Override
+	public ICalloutRecord getCalloutRecord()
+	{
+		final GridTab gridTab = getGridTab();
+		Check.assumeNotNull(gridTab, "gridTab not null");
+		return gridTab;
 	}
 }

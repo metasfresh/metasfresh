@@ -22,7 +22,6 @@ package de.metas.adempiere.callout;
  * #L%
  */
 
-
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
 
@@ -31,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,12 +50,13 @@ import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -79,7 +80,6 @@ public class OrderFastInput extends CalloutEngine
 
 	static final Logger logger = LogManager.getLogger(OrderFastInput.class);
 
-
 	public static void addOrderFastInputHandler(final IOrderFastInputHandler handler)
 	{
 		handlers.addHandler(handler);
@@ -91,7 +91,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			return "";
 		}
-		
+
 		final Properties ctx = calloutField.getCtx();
 		final int WindowNo = calloutField.getWindowNo();
 		if (!Env.isSOTrx(ctx, WindowNo))
@@ -101,18 +101,18 @@ public class OrderFastInput extends CalloutEngine
 
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		final Object value = calloutField.getValue();
-		//if (value != null || mField.getValue() != null)
+		// if (value != null || mField.getValue() != null)
 		if (value != null)
 		{
-			final GridTab mTab = getGridTab(calloutField);
-			if (setShipperId(calloutField, true) && !Check.isEmpty(order.getReceivedVia()) && mTab.dataSave(false))
+			final ICalloutRecord calloutRecord = calloutField.getCalloutRecord();
+			if (setShipperId(calloutField, true) && !Check.isEmpty(order.getReceivedVia()) && calloutRecord.dataSave(false))
 			{
 				// final GridField productField =
 				// mTab.getField(CustomColNames.C_Order_M_PRODUCT_ID);
 				//
 				// productField.isEditable(true);
 				// mTab.dataRefreshAll();
-				mTab.dataRefresh();
+				calloutRecord.dataRefresh();
 				// mTab.fireStateChangeEvent
 			}
 		}
@@ -201,8 +201,13 @@ public class OrderFastInput extends CalloutEngine
 			return NullInfoWindowGridRowBuilders.instance;
 		}
 
-		final InfoWindowGridRowBuilders singletonBuilder = new InfoWindowGridRowBuilders();
 		final GridTab gridTab = getGridTab(calloutField);
+		if(gridTab == null)
+		{
+			return NullInfoWindowGridRowBuilders.instance;
+		}
+		
+		final InfoWindowGridRowBuilders singletonBuilder = new InfoWindowGridRowBuilders();
 		final IGridTabRowBuilder builder = handlers.createLineBuilderFromHeader(gridTab);
 		builder.setSource(order);
 		singletonBuilder.addGridTabRowBuilder(productId, builder);
@@ -240,7 +245,7 @@ public class OrderFastInput extends CalloutEngine
 
 			addOrderLine(calloutField.getCtx(), order, builder);
 		}
-		getGridTab(calloutField).dataRefreshRecursively();
+		calloutField.getCalloutRecord().dataRefreshRecursively();
 
 		// make sure that the freight amount is up to date
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -298,7 +303,7 @@ public class OrderFastInput extends CalloutEngine
 		// should use priceEntered or a computed price.
 		ol.setPriceEntered(BigDecimal.ZERO);
 		orderLineBL.setPricesIfNotIgnored(ctx, ol,
-				true, // usePriceUOM = true
+				true,  // usePriceUOM = true
 				ITrx.TRXNAME_None);
 
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
@@ -370,6 +375,11 @@ public class OrderFastInput extends CalloutEngine
 
 		final Integer bPartnerId = order.getC_BPartner_ID();
 		final GridTab mTab = getGridTab(calloutField);
+		if (mTab == null)
+		{
+			return;
+		}
+		
 		if (bPartnerId <= 0 && mTab.getField(COLUMNNAME_C_BPartner_ID).isDisplayed(true))
 		{
 			mTab.getField(COLUMNNAME_C_BPartner_ID).requestFocus();
@@ -397,13 +407,18 @@ public class OrderFastInput extends CalloutEngine
 
 	public static void clearFields(final ICalloutField calloutField, final boolean save)
 	{
-		final GridTab gridTab = getGridTab(calloutField);
-		clearFields(gridTab, save);
+		clearFields(calloutField.getCalloutRecord(), save);
 	}
 
 	@Deprecated
-	public static void clearFields(final GridTab gridTab, final boolean save)
+	public static void clearFields(final ICalloutRecord calloutRecord, final boolean save)
 	{
+		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
+		if(gridTab == null)
+		{
+			return;
+		}
+		
 		handlers.clearFields(gridTab);
 		if (save)
 		{
@@ -414,12 +429,7 @@ public class OrderFastInput extends CalloutEngine
 	@Deprecated
 	private final static GridTab getGridTab(final ICalloutField calloutField)
 	{
-		if (calloutField instanceof GridField)
-		{
-			final GridField gridField = (GridField)calloutField;
-			return gridField.getGridTab();
-		}
-		
-		return null;
+		final ICalloutRecord calloutRecord = calloutField.getCalloutRecord();
+		return GridTab.fromCalloutRecordOrNull(calloutRecord);
 	}
 }

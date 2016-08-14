@@ -25,13 +25,14 @@ package org.adempiere.ad.ui.spi.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.GridTab;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class CompositeTabCallout implements ITabCallout
 {
@@ -73,7 +74,7 @@ public class CompositeTabCallout implements ITabCallout
 	}
 
 	@Override
-	public void onInit(final GridTab gridTab)
+	public void onInit(final ICalloutRecord calloutRecord)
 	{
 		markAsInitialized();
 
@@ -81,7 +82,7 @@ public class CompositeTabCallout implements ITabCallout
 		{
 			try
 			{
-				tabCallout.onInit(gridTab);
+				tabCallout.onInit(calloutRecord);
 				tabCallouts.add(tabCallout);
 			}
 			catch (Exception e)
@@ -92,65 +93,65 @@ public class CompositeTabCallout implements ITabCallout
 	}
 
 	@Override
-	public void onIgnore(final GridTab gridTab)
+	public void onIgnore(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onIgnore(gridTab);
+			tabCallout.onIgnore(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onNew(gridTab);
+			tabCallout.onNew(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onSave(final GridTab gridTab)
+	public void onSave(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onSave(gridTab);
+			tabCallout.onSave(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onDelete(final GridTab gridTab)
+	public void onDelete(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onDelete(gridTab);
+			tabCallout.onDelete(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onRefresh(final GridTab gridTab)
+	public void onRefresh(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onRefresh(gridTab);
+			tabCallout.onRefresh(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onRefreshAll(final GridTab gridTab)
+	public void onRefreshAll(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onRefreshAll(gridTab);
+			tabCallout.onRefreshAll(calloutRecord);
 		}
 	}
 
 	@Override
-	public void onAfterQuery(final GridTab gridTab)
+	public void onAfterQuery(final ICalloutRecord calloutRecord)
 	{
 		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			tabCallout.onAfterQuery(gridTab);
+			tabCallout.onAfterQuery(calloutRecord);
 		}
 	}
 

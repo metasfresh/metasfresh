@@ -1,12 +1,10 @@
-package de.metas.shipping.callout;
-
-import org.adempiere.ad.callout.api.ICalloutRecord;
+package org.adempiere.ad.callout.api;
 
 /*
  * #%L
- * de.metas.fresh.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,21 +22,33 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
  * #L%
  */
 
-
-import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
-
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-
-public class M_Shipper_Transportation_Tab_Callout extends TabCalloutAdapter
+/**
+ * Callout record. This is the underlying record for which a field callout or tab callout is invoked.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface ICalloutRecord
 {
-	@Override
-	public void onNew(final ICalloutRecord calloutRecord)
-	{
-		final I_M_ShipperTransportation shipperTransportation = calloutRecord.getModel(I_M_ShipperTransportation.class);
+	<T> T getModel(Class<T> modelClass);
 
-		Services.get(IShipperTransportationBL.class).setC_DocType(shipperTransportation);
-	}
+	Object getValue(String columnName);
+
+	/**
+	 * Set New Value & call Callout
+	 *
+	 * @param columnName database column name
+	 * @param value value
+	 * @return error message or ""
+	 */
+	String setValue(String columnName, final Object value);
+
+	boolean dataSave(boolean manualCmd);
+
+	void dataRefresh();
+
+	void dataRefreshAll();
+
+	void dataRefreshRecursively();
 
 }

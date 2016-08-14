@@ -35,6 +35,7 @@ import java.util.Properties;
 import javax.swing.event.EventListenerList;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -122,13 +123,24 @@ import de.metas.logging.MetasfreshLastError;
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
  * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
-public class GridTab implements DataStatusListener, Evaluatee, Serializable
+public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord
 {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 7198494041906579986L;
+	
+	public static final GridTab fromCalloutRecordOrNull(final ICalloutRecord calloutRecord)
+	{
+		if(calloutRecord instanceof GridTab)
+		{
+			return (GridTab)calloutRecord;
+		}
+		
+		log.warn("Cannot extract GridTab from {}. Returning null", calloutRecord);
+		return null;
+	}
 
 	// services
 	private final transient IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);
@@ -2750,6 +2762,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		}
 		return gridTable.getKeyID(m_currentRow);
 	}   // getRecord_ID
+	
+	@Override
+	public <T> T getModel(final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.create(this, modelClass);
+	}
 
 	/**
 	 * Get Key ID of row

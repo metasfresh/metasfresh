@@ -24,6 +24,10 @@ package org.adempiere.ad.callout.api;
 
 import java.util.Properties;
 
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
+
 /**
  * Callout aware field
  * 
@@ -34,6 +38,8 @@ public interface ICalloutField
 {
 
 	boolean isTriggerCalloutAllowed();
+	
+	ICalloutRecord getCalloutRecord();
 
 	Properties getCtx();
 
@@ -75,4 +81,47 @@ public interface ICalloutField
 	 * @param isError if not true, it is a Warning
 	 */
 	void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError);
+	
+	/**
+	 * Create and fire Data Status Error Event (from Error Log)
+	 *
+	 * @param errorLog log
+	 */
+	@Deprecated
+	void fireDataStatusEEvent(final ValueNamePair errorLog);
+
+	default void putContext(final String name, final String value)
+	{
+		Env.setContext(getCtx(), name, value);
+	}
+
+	default void putContext(final String name, final boolean value)
+	{
+		Env.setContext(getCtx(), name, value);
+	}
+
+	default void putContext(final String name, final java.util.Date value)
+	{
+		Env.setContext(getCtx(), name, value);
+	}
+	
+	default void putContext(final String name, final int value)
+	{
+		Env.setContext(getCtx(), name, value);
+	}
+	
+	default int getGlobalContextAsInt(final String name)
+	{
+		return Env.getContextAsInt(getCtx(), name);
+	}
+	
+	default int getTabInfoContextAsInt(final String name)
+	{
+		return Env.getContextAsInt(getCtx(), getWindowNo(), Env.TAB_INFO, name);
+	}
+	
+	default boolean getContextAsBoolean(final String name)
+	{
+		return DisplayType.toBoolean(Env.getContext(getCtx(), getWindowNo(), name));
+	}
 }
