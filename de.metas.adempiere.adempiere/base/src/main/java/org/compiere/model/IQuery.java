@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -85,6 +86,17 @@ public interface IQuery<T>
 	<ET extends T> List<ET> list() throws DBException;
 
 	/**
+	 * Streams the result of this query.
+	 * 
+	 * @return stream
+	 * @throws DBException
+	 */
+	default Stream<T> stream() throws DBException
+	{
+		return list().stream();
+	}
+
+	/**
 	 * Return a list of all po that match the query criteria.
 	 * 
 	 * @param clazz all resulting POs will be converted to this interface
@@ -92,6 +104,18 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
+
+	/**
+	 * Streams the result of this query.
+	 * 
+	 * @param clazz
+	 * @return stream
+	 * @throws DBException
+	 */
+	default <ET extends T> Stream<ET> stream(final Class<ET> clazz) throws DBException
+	{
+		return list(clazz).stream();
+	}
 
 	/**
 	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's ID.
