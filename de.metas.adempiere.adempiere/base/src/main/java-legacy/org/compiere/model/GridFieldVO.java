@@ -1159,6 +1159,11 @@ public class GridFieldVO implements Serializable
 		return IsReadOnly;
 	}
 	
+	public boolean isUpdateable()
+	{
+		return IsUpdateable;
+	}
+	
 	public boolean isAlwaysUpdateable()
 	{
 		return IsAlwaysUpdateable;
