@@ -1,12 +1,14 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -14,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -175,5 +178,89 @@ public class DocumentCollection
 	{
 		// TODO: invalidate only those which are: 1. NOW new; 2. NOT currently editing
 		documents.invalidateAll();
+	}
+
+	public void saveIfPossible(final Document document)
+	{
+		final int documentIdOld = document.getDocumentId();
+		document.saveIfPossible();
+		final int documentIdNew = document.getDocumentId();
+
+		// If document's ID changed, we need to re-index it
+		if (documentIdOld != documentIdNew)
+		{
+			final int adWindowId = document.getEntityDescriptor().getAD_Window_ID();
+			final DocumentKey documentKeyNew = DocumentKey.of(adWindowId, DocumentId.of(documentIdNew));
+			documents.put(documentKeyNew, document);
+
+			final DocumentKey documentKeyOld = DocumentKey.of(adWindowId, DocumentId.of(documentIdOld));
+			documents.invalidate(documentKeyOld);
+		}
+	}
+
+	private static final class DocumentKey
+	{
+		public static final DocumentKey of(final int adWindowId, final DocumentId documentId)
+		{
+			return new DocumentKey(adWindowId, documentId);
+		}
+
+		private final int AD_Window_ID;
+		private final DocumentId documentId;
+
+		private Integer _hashcode = null;
+
+		private DocumentKey(final int adWindowId, final DocumentId documentId)
+		{
+			super();
+			AD_Window_ID = adWindowId;
+			this.documentId = documentId;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("AD_Window_ID", AD_Window_ID)
+					.add("documentId", documentId)
+					.toString();
+		}
+
+		@Override
+		public int hashCode()
+		{
+			if (_hashcode == null)
+			{
+				_hashcode = Objects.hash(AD_Window_ID, documentId);
+			}
+			return _hashcode;
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			if (!(obj instanceof DocumentKey))
+			{
+				return false;
+			}
+
+			final DocumentKey other = (DocumentKey)obj;
+			return AD_Window_ID == other.AD_Window_ID
+					&& Objects.equals(documentId, other.documentId);
+		}
+
+		public int getAD_Window_ID()
+		{
+			return AD_Window_ID;
+		}
+
+		public DocumentId getDocumentId()
+		{
+			return documentId;
+		}
 	}
 }

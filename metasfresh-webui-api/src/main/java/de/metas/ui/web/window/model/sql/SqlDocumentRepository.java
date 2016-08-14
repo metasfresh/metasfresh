@@ -41,6 +41,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -627,10 +628,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
 			return;
 		}
-		else if ("Created".equals(columnName)
-				|| "CreatedBy".equals(columnName)
-				|| "Updated".equals(columnName)
-				|| "UpdatedBy".equals(columnName))
+		else if(DocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
 			return;

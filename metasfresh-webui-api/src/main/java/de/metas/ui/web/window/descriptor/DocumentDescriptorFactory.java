@@ -71,6 +71,8 @@ public class DocumentDescriptorFactory
 	private static final String COLUMNNAME_Processing = "Processing";
 	/** Column names where we shall use {@link DocumentFieldWidgetType#Switch} instead of {@link DocumentFieldWidgetType#YesNo} */
 	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(COLUMNNAME_IsActive); // FIXME: hardcoded
+	
+	public static final Set<String> COLUMNNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
@@ -319,7 +321,7 @@ public class DocumentDescriptorFactory
 		return uiSections;
 	}
 
-	private DocumentLayoutDetailDescriptor createDetail(final GridTabVO tab)
+	private static DocumentLayoutDetailDescriptor createDetail(final GridTabVO tab)
 	{
 		final DocumentLayoutDetailDescriptor.Builder elementGroupBuilder = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(extractDetailId(tab))
@@ -399,7 +401,7 @@ public class DocumentDescriptorFactory
 				.setDataBinding(dataBinding);
 	}
 
-	private String extractDetailId(final GridTabVO gridTabVO)
+	private static String extractDetailId(final GridTabVO gridTabVO)
 	{
 		final int tabNo = gridTabVO.getTabNo();
 		if (tabNo == MAIN_TabNo)
@@ -409,7 +411,7 @@ public class DocumentDescriptorFactory
 		return String.valueOf(tabNo);
 	}
 
-	private String extractParentLinkColumnName(final GridTabVO parentTabVO, final GridTabVO tabVO)
+	private static String extractParentLinkColumnName(final GridTabVO parentTabVO, final GridTabVO tabVO)
 	{
 		if (parentTabVO == null)
 		{
@@ -443,7 +445,7 @@ public class DocumentDescriptorFactory
 		return null;
 	}
 
-	private DocumentFieldWidgetType extractWidgetType(final GridFieldVO gridFieldVO)
+	private static DocumentFieldWidgetType extractWidgetType(final GridFieldVO gridFieldVO)
 	{
 		final int displayType = gridFieldVO.getDisplayType();
 
@@ -546,7 +548,7 @@ public class DocumentDescriptorFactory
 		}
 	}
 
-	private Class<?> extractValueClass(final GridFieldVO gridFieldVO)
+	private static Class<?> extractValueClass(final GridFieldVO gridFieldVO)
 	{
 		final int displayType = gridFieldVO.getDisplayType();
 
@@ -646,7 +648,7 @@ public class DocumentDescriptorFactory
 		}
 	}
 
-	private ILogicExpression extractReadonlyLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractReadonlyLogic(final GridFieldVO gridFieldVO)
 	{
 		if (gridFieldVO.isReadOnly())
 		{
@@ -657,8 +659,20 @@ public class DocumentDescriptorFactory
 		{
 			return ILogicExpression.TRUE;
 		}
-
+		
+		if (gridFieldVO.isKey())
+		{
+			return ILogicExpression.TRUE;
+		}
+		
 		final String columnName = gridFieldVO.getColumnName();
+		if (COLUMNNAMES_CreatedUpdated.contains(columnName))
+		{
+			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
+			return ILogicExpression.TRUE;
+		}
+
+
 		ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
 
 		//
@@ -681,15 +695,27 @@ public class DocumentDescriptorFactory
 		return logicExpression;
 	}
 
-	private boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
+	private static boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
 	{
 		if (gridFieldVO.isVirtualColumn() || !gridFieldVO.isUpdateable())
 			return false;
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 
-	private ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO)
 	{
+		final String columnName = gridFieldVO.getColumnName();
+		if (COLUMNNAMES_CreatedUpdated.contains(columnName))
+		{
+			// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
+			return ILogicExpression.FALSE;
+		}
+		
+		if (gridFieldVO.isVirtualColumn())
+		{
+			return ILogicExpression.FALSE;
+		}
+
 		if (gridFieldVO.isMandatory())
 		{
 			return ILogicExpression.TRUE;
@@ -697,7 +723,7 @@ public class DocumentDescriptorFactory
 		return gridFieldVO.getMandatoryLogic();
 	}
 
-	private ILogicExpression extractDisplayLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractDisplayLogic(final GridFieldVO gridFieldVO)
 	{
 		return gridFieldVO.getDisplayLogic();
 	}
@@ -721,7 +747,7 @@ public class DocumentDescriptorFactory
 			}
 			else if (DisplayType.isNumeric(displayType))
 			{
-				if (gridFieldVO.isMandatory() && !gridFieldVO.isUpdateable())
+				if (gridFieldVO.isMandatory())
 				{
 					// e.g. C_OrderLine.QtyReserved
 					return DEFAULT_VALUE_EXPRESSION_Zero;

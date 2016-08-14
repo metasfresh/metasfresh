@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
@@ -566,11 +567,37 @@ public class Document
 		return valid;
 	}
 
+	private boolean hasChanges()
+	{
+		boolean changes = false;
+
+		//
+		// Check document fields
+		for (final DocumentField documentField : getFields())
+		{
+			if (!documentField.hasChanges())
+			{
+				logger.trace("Considering document has changes because {} is changed", documentField);
+				changes = true;
+				break;
+			}
+		}
+
+		return changes;
+
+	}
+
 	public void saveIfPossible()
 	{
 		if (!isValid())
 		{
 			logger.debug("Skip saving because document is not valid: {}", this);
+			return;
+		}
+
+		if (!hasChanges())
+		{
+			logger.debug("Skip saving because document has NO change: {}", this);
 			return;
 		}
 

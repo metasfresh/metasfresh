@@ -19,11 +19,11 @@ import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentId;
 import de.metas.ui.web.window.util.JSONConverters;
 import de.metas.ui.web.window.util.LastDocumentTracker;
 
@@ -137,11 +137,15 @@ public class WindowRestController
 
 		try (final Execution execution = Execution.startExecution())
 		{
+			//
+			// Fetch the document
 			final DocumentId documentId = DocumentId.of(idStr);
 			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
 			final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
 			final boolean isNew = document.isNew();
 
+			//
+			// Apply changes
 			for (final JSONDocumentChangedEvent event : events)
 			{
 				if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
@@ -154,14 +158,20 @@ public class WindowRestController
 				}
 			}
 
-			document.saveIfPossible();
+			//
+			// Try saving it
+			documentCollection.saveIfPossible(document);
 
-			// Make sure we collected everything!
+			//
+			// Make sure we collected all changes
+			// TODO: optimization: it would be better if this would happen auto-magically
 			if (isNew)
 			{
 				execution.getFieldChangedEventsCollector().collectFrom(document);
 			}
 
+			//
+			// Return the changes
 			return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
 		}
 	}

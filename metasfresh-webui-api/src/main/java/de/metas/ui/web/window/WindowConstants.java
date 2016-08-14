@@ -41,7 +41,7 @@ public final class WindowConstants
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
-
+	
 	private WindowConstants()
 	{
 	}

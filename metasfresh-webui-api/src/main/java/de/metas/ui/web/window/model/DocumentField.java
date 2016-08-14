@@ -332,11 +332,11 @@ public class DocumentField
 
 	/* package */ void setMandatory(final boolean mandatory)
 	{
-		if(_mandatory == mandatory)
+		if (_mandatory == mandatory)
 		{
 			return;
 		}
-		
+
 		_mandatory = mandatory;
 		updateValid();
 	}
@@ -418,5 +418,10 @@ public class DocumentField
 	/* package */boolean isValid()
 	{
 		return _valid;
+	}
+
+	public boolean hasChanges()
+	{
+		return Objects.equal(_value, _initialValue);
 	}
 }

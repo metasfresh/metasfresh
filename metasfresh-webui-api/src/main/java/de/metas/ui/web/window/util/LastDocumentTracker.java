@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentId;
 
 /*
  * #%L
