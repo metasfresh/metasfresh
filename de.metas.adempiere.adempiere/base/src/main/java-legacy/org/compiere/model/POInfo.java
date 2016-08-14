@@ -810,6 +810,23 @@ public final class POInfo implements Serializable
 			return null;
 		return m_columns[index].ColumnClass;
 	}   // getColumnClass
+	
+	/**
+	 * Get Column Class
+	 * 
+	 * @param columnName
+	 * @return Class
+	 */
+	public Class<?> getColumnClass(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			return null;
+		}
+		return getColumnClass(columnIndex);
+	}
+
 
 	/**
 	 * Get Column Display Type
