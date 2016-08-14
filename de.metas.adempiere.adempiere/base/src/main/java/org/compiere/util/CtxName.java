@@ -202,6 +202,19 @@ public final class CtxName
 	 */
 	public boolean isExplicitGlobal()
 	{
+		return isExplicitGlobal(name);
+	}
+	
+	/**
+	 * @name context name
+	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
+	 */
+	public static boolean isExplicitGlobal(final String name)
+	{
+		if(name == null)
+		{
+			return false;
+		}
 		return name.startsWith("#") || name.startsWith("$");
 	}
 
