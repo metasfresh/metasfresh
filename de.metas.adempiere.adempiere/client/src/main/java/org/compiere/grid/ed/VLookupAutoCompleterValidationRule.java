@@ -57,12 +57,6 @@ import org.compiere.util.NamePair;
 	}
 
 	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		return !immutable;
-	}
-
-	@Override
 	public String getPrefilterWhereClause(IValidationContext evalCtx)
 	{
 		return whereClause;

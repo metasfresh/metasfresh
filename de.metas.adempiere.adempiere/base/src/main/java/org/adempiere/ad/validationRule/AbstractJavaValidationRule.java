@@ -26,9 +26,10 @@ package org.adempiere.ad.validationRule;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -40,12 +41,6 @@ import org.compiere.util.NamePair;
 public abstract class AbstractJavaValidationRule implements IValidationRule
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
-
-	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		return true;
-	}
 
 	/**
 	 * A Java Validation rule shall never provide a pre-filter where clause.

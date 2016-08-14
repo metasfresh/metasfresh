@@ -57,12 +57,6 @@ public final class NullValidationRule implements IValidationRule
 	}
 
 	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		return false;
-	}
-
-	@Override
 	public String getPrefilterWhereClause(IValidationContext evalCtx)
 	{
 		return null;

@@ -87,17 +87,8 @@ import de.metas.autocomplete.model.I_AD_Table;
 		final MTable table = MTable.get(ctx, tableName);
 
 		this.autocompleterValidationRule = createAutoCompleterValidationRule(table, lookupInfo);
-
-		//
-		// Init Complete validationRule
-		{
-			final CompositeValidationRule validationRule = new CompositeValidationRule();
-			validationRule.addValidationRule(lookupInfo.getValidationRule());
-			validationRule.addValidationRule(autocompleterValidationRule);
-			this.validationRule = validationRule;
-
-			// validationCtx = lookup.getValidationContext();
-		}
+		this.validationRule = CompositeValidationRule.compose(lookupInfo.getValidationRule(), autocompleterValidationRule);
+		// validationCtx = lookup.getValidationContext();
 
 		//
 		// Set Popup Mininum Chars:

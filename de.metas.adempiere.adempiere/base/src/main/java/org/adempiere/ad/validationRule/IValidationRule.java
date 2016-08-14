@@ -48,8 +48,6 @@ public interface IValidationRule
 	 */
 	boolean isImmutable();
 
-	boolean isValidationRequired(IValidationContext evalCtx);
-
 	/**
 	 * Returns a SQL where clause which is already parsed based on given context
 	 * 
