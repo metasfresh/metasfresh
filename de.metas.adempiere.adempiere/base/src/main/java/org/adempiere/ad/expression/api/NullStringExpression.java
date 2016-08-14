@@ -39,6 +39,11 @@ import org.compiere.util.Evaluatee;
 public final class NullStringExpression implements IStringExpression
 {
 	public static final NullStringExpression instance = new NullStringExpression();
+	
+	public static final boolean isNull(final IStringExpression expression)
+	{
+		return expression == null || expression == NullStringExpression.instance;
+	}
 
 	private NullStringExpression()
 	{
