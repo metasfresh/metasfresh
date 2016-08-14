@@ -21,12 +21,12 @@ import de.metas.ui.web.base.session.UserPreference;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,41 +38,41 @@ import de.metas.ui.web.base.session.UserPreference;
 @SuppressWarnings("serial")
 public class UserSession implements Serializable
 {
-	private UserPreference userPreference;
+	private final UserPreference userPreference;
 	private boolean loggedIn = false;
 	private Locale locale = Locale.getDefault();
 
 	public UserSession()
 	{
 		super();
-		this.userPreference = new UserPreference();
+		userPreference = new UserPreference();
 	}
 
 	public Properties getCtx()
 	{
 		return Env.getCtx();
 	}
-	
+
 	public UserPreference getUserPreference()
 	{
 		return userPreference;
 	}
-	
+
 	public boolean isLoggedIn()
 	{
 		return loggedIn;
 	}
-	
+
 	public void setLoggedIn(final boolean loggedIn)
 	{
 		this.loggedIn = loggedIn;
 	}
-	
-	public void setLocale(Locale locale)
+
+	public void setLocale(final Locale locale)
 	{
 		this.locale = locale;
 	}
-	
+
 	public Locale getLocale()
 	{
 		return locale;

@@ -52,6 +52,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return dataBinding.getAD_Column_ID();
 	}
 
+	public static String getSqlColumnName(final DocumentField documentField)
+	{
+		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
+		return dataBinding.getSqlColumnName();
+	}
+
 	private final String sqlTableName;
 	private final String sqlTableAlias;
 	private final String sqlColumnName;
@@ -303,7 +309,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			if (DisplayType.isAnyLookup(displayType))
 			{
-				return SqlLookupDescriptor.of(sqlColumnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
+				return SqlLookupDescriptor.builder()
+						.setColumnName(sqlColumnName)
+						.setDisplayType(displayType)
+						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
+						.build();
 			}
 			return null;
 		}

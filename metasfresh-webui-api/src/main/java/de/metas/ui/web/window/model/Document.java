@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -8,10 +9,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -22,6 +25,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
@@ -30,6 +34,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
+import de.metas.ui.web.window.util.GlobalContextEvaluatee;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
@@ -74,6 +79,10 @@ public class Document
 
 	private final ICalloutExecutor calloutExecutor;
 
+	private Map<String, Object> _dynAttributes = null; // lazy
+
+	private AsCalloutRecord _calloutRecord; // lazy
+
 	public Document(final DocumentRepository documentRepository, final DocumentEntityDescriptor entityDescriptor, final int windowNo, final Document parentDocument)
 	{
 		super();
@@ -116,16 +125,29 @@ public class Document
 			this.includedDocuments = includedDocuments.build();
 		}
 
-		calloutExecutor = new CalloutExecutor(Env.getCtx(), windowNo);
+		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+
+		//
+		//
+		setDynAttribute("DirectShip", false); // FIXME: workaround for https://github.com/metasfresh/metasfresh/issues/287 to avoid WARNINGs
+
+		//
+		logger.trace("Created new document instance: {}", this); // keep it last
 	}
 
 	@Override
 	public final String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("id", getDocumentId())
 				.add("windowNo", windowNo)
-				.add("fields", fieldsByName.values())
+				// .add("fields", fieldsByName.values()) // skip because it's too long
 				.toString();
+	}
+
+	public Properties getCtx()
+	{
+		return Env.getCtx(); // FIXME use document level context
 	}
 
 	public int getWindowNo()
@@ -143,7 +165,7 @@ public class Document
 		return entityDescriptor;
 	}
 
-	/* package */ Document getParentDocument()
+	public Document getParentDocument()
 	{
 		return _parentDocument;
 	}
@@ -187,16 +209,16 @@ public class Document
 		if (idField == null)
 		{
 			// TODO handle NO ID field or composed PK
-			logger.warn("No ID field found for {}. Returning -1", this);
-			return -1;
+			logger.warn("No ID field found for {}. Returning {}", this, DocumentId.NEW_ID);
+			return DocumentId.NEW_ID;
 		}
-		return idField.getValueAsInt(-1);
+		return idField.getValueAsInt(DocumentId.NEW_ID);
 	}
 
 	public boolean isNew()
 	{
 		// TODO: handle this state in a more reliable way
-		return getDocumentId() < 0;
+		return DocumentId.isNew(getDocumentId());
 	}
 
 	public Evaluatee2 asEvaluatee()
@@ -218,14 +240,16 @@ public class Document
 			_document = document;
 		}
 
-		private Properties getCtx()
+		@Override
+		public String toString()
 		{
-			return Env.getCtx();
+			return MoreObjects.toStringHelper(this)
+					.addValue(_document)
+					.toString();
 		}
 
 		private Evaluatee2 getParent()
 		{
-			// NOTE: don't cache it because it might change (Document.getParentDocument() is not immutable!)
 			final Document parentDocument = _document.getParentDocument();
 			return parentDocument == null ? Evaluatees.empty() : parentDocument.asEvaluatee();
 		}
@@ -254,12 +278,8 @@ public class Document
 			}
 
 			//
-			// Environment variable
-			if (variableName.startsWith("#"))                                                // Env, global var
-			{
-				return true;
-			}
-			else if (variableName.startsWith("$"))                                                // Env, global accounting var
+			// Global context variable
+			if (GlobalContextEvaluatee.instance.has_Variable(variableName))
 			{
 				return true;
 			}
@@ -268,6 +288,13 @@ public class Document
 			// Document field
 			final DocumentField documentField = getDocumentFieldOrNull(variableName);
 			if (documentField != null)
+			{
+				return true;
+			}
+
+			//
+			// Document's dynamic attribute
+			if (_document.hasDynAttribute(variableName))
 			{
 				return true;
 			}
@@ -284,7 +311,10 @@ public class Document
 			// Not found
 			if (logger.isTraceEnabled())
 			{
-				logger.trace("No document field {} found. Existing properties are: {}", variableName, getAvailableFieldNames());
+				logger.trace("No document field {} found." //
+						+ "\n Existing properties are: {}" //
+						+ "\n Existing dyn attributes are: {}" //
+						, variableName, getAvailableFieldNames(), _document.getAvailableDynAttributes());
 			}
 			return false;
 		}
@@ -293,14 +323,10 @@ public class Document
 		public String get_ValueAsString(final String variableName)
 		{
 			//
-			// Environment variable
-			if (variableName.startsWith("#"))                                                // Env, global var
+			// Global context variable
+			if (GlobalContextEvaluatee.instance.has_Variable(variableName))
 			{
-				return Env.getContext(getCtx(), variableName);
-			}
-			else if (variableName.startsWith("$"))                                                // Env, global accounting var
-			{
-				return Env.getContext(getCtx(), variableName);
+				return GlobalContextEvaluatee.instance.get_ValueAsString(variableName);
 			}
 
 			//
@@ -308,7 +334,18 @@ public class Document
 			final DocumentField documentField = getDocumentFieldOrNull(variableName);
 			if (documentField != null)
 			{
-				final String value = convertToString(documentField);
+				final String value = convertToString(documentField.getFieldName(), documentField.getValue());
+				if (value != null)
+				{
+					return value;
+				}
+			}
+
+			//
+			// Document's dynamic attribute
+			if (_document.hasDynAttribute(variableName))
+			{
+				final String value = convertToString(variableName, _document.getDynAttribute(variableName));
 				if (value != null)
 				{
 					return value;
@@ -332,9 +369,8 @@ public class Document
 		}
 
 		/** Converts field value to {@link Evaluatee2} friendly string */
-		private String convertToString(final DocumentField documentField)
+		private String convertToString(final String name, final Object value)
 		{
-			final Object value = documentField.getValue();
 			if (value == null)
 			{
 				if (hasParent())
@@ -343,8 +379,7 @@ public class Document
 				}
 
 				// FIXME: hardcoded default to avoid a lot of warnings
-				final String fieldName = documentField.getFieldName();
-				if (fieldName.endsWith("_ID"))
+				if (name.endsWith("_ID"))
 				{
 					return "-1";
 				}
@@ -377,7 +412,7 @@ public class Document
 		}
 	}
 
-	public void setValueFromJsonObject(final String fieldName, final Object value)
+	public void setValue(final String fieldName, final Object value)
 	{
 		final DocumentField documentField = getField(fieldName);
 		final Object valueOld = documentField.getValue();
@@ -392,16 +427,47 @@ public class Document
 
 		// collect changed value
 		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-		eventsCollector.collectValueChanged(fieldName, documentField.getValueAsJsonObject(), () -> "direct set on Document");
+		eventsCollector.collectValueChanged(documentField, () -> "direct set on Document");
 
 		// Update all dependencies
 		updateFieldsWhichDependsOn(fieldName, eventsCollector);
 
 		// Callouts
-		// TODO: find a way to collect events...
 		calloutExecutor.execute(documentField.asCalloutField());
+	}
 
-		// TODO: check if we can save it
+	public void setInitialValue(final String fieldName, final Object value)
+	{
+		final DocumentField documentField = getField(fieldName);
+		final Object valueOld = documentField.getValue();
+		documentField.setInitialValue(value);
+
+		// Check if changed. If not, stop here.
+		final Object valueNew = documentField.getValue();
+		if (Objects.equals(valueOld, valueNew))
+		{
+			return;
+		}
+
+		// collect changed value
+		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+		eventsCollector.collectValueChanged(documentField, () -> "direct set on Document");
+
+		// Update all dependencies
+		updateFieldsWhichDependsOn(fieldName, eventsCollector);
+
+		// Callouts - don't execute them!
+		// calloutExecutor.execute(documentField.asCalloutField());
+	}
+
+	public void executeAllCallouts()
+	{
+		logger.trace("Executing all callouts for {}", this);
+
+		for (final DocumentField documentField : getFields())
+		{
+			calloutExecutor.execute(documentField.asCalloutField());
+		}
 	}
 
 	/**
@@ -409,6 +475,8 @@ public class Document
 	 */
 	public void updateAllDependencies()
 	{
+		logger.trace("Updating all dependencies for {}", this);
+
 		for (final DocumentField documentField : getFields())
 		{
 			updateFieldReadOnly(documentField);
@@ -476,7 +544,7 @@ public class Document
 				return;
 			}
 
-			final IDocumentFieldChangedEventCollector fieldEventsCollector = FieldChangedEventCollector.newInstance();
+			final IDocumentFieldChangedEventCollector fieldEventsCollector = DocumentFieldChangedEventCollector.newInstance();
 			updateDependentField(dependentField, fieldName, dependencyType, fieldEventsCollector);
 			eventsCollector.collectFrom(fieldEventsCollector);
 
@@ -503,9 +571,9 @@ public class Document
 
 			if (value != valueOld)
 			{
-				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
-						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getReadonlyLogic();
-				eventsCollector.collectReadonlyChanged(dependentField.getFieldName(), value, reason);
+				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType + ", ReadOnlyLogic="
+						+ dependentField.getDescriptor().getReadonlyLogic();
+				eventsCollector.collectReadonlyChanged(dependentField, reason);
 			}
 		}
 		else if (DependencyType.MandatoryLogic == dependencyType)
@@ -518,7 +586,7 @@ public class Document
 			{
 				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
 						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getMandatoryLogic();
-				eventsCollector.collectMandatoryChanged(dependentField.getFieldName(), value, reason);
+				eventsCollector.collectMandatoryChanged(dependentField, reason);
 			}
 		}
 		else if (DependencyType.DisplayLogic == dependencyType)
@@ -531,13 +599,13 @@ public class Document
 			{
 				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
 						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getDisplayLogic();
-				eventsCollector.collectDisplayedChanged(dependentField.getFieldName(), value, reason);
+				eventsCollector.collectDisplayedChanged(dependentField, reason);
 			}
 		}
 		else if (DependencyType.LookupValues == dependencyType)
 		{
 			final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType;
-			eventsCollector.collectLookupValuesStaled(dependentField.getFieldName(), reason);
+			eventsCollector.collectLookupValuesStaled(dependentField, reason);
 		}
 		else
 		{
@@ -607,4 +675,141 @@ public class Document
 
 		return false;
 	}
+
+	/**
+	 * Set Dynamic Attribute.
+	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this this instance is not destroyed.
+	 *
+	 * @param name
+	 * @param value
+	 */
+	public final Object setDynAttribute(final String name, final Object value)
+	{
+		Check.assumeNotEmpty(name, "name not empty");
+		if (_dynAttributes == null)
+		{
+			_dynAttributes = new HashMap<>();
+		}
+		final Object valueOld = _dynAttributes.put(name, value);
+
+		logger.trace("Changed document dyn attribute {}'s value: {} -> {}", name, valueOld, value);
+		return valueOld;
+	}
+
+	/**
+	 * Get Dynamic Attribute
+	 *
+	 * @param name
+	 * @return attribute value or null if not found
+	 */
+	public final <T> T getDynAttribute(final String name)
+	{
+		if (_dynAttributes == null)
+		{
+			return null;
+		}
+		final Object valueObj = _dynAttributes.get(name);
+		@SuppressWarnings("unchecked")
+		final T value = (T)valueObj;
+		return value;
+	}
+
+	public final boolean hasDynAttribute(final String name)
+	{
+		final Map<String, Object> dynAttributes = _dynAttributes;
+		return dynAttributes != null && dynAttributes.get(name) != null;
+	}
+
+	private Set<String> getAvailableDynAttributes()
+	{
+		final Map<String, Object> dynAttributes = _dynAttributes;
+		if (dynAttributes == null)
+		{
+			return ImmutableSet.of();
+		}
+		return ImmutableSet.copyOf(dynAttributes.keySet());
+	}
+
+	public void saveIfPossible()
+	{
+		// TODO: check if possible to save
+
+		try
+		{
+			getDocumentRepository().save(this);
+		}
+		catch (final Exception e)
+		{
+			// NOTE: usually if we do the right checkings we shall not get to this
+			logger.warn("Failed saving document, but IGNORED: {}", this, e);
+		}
+	}
+
+	public ICalloutRecord asCalloutRecord()
+	{
+		if (_calloutRecord == null)
+		{
+			_calloutRecord = new AsCalloutRecord(this);
+		}
+		return _calloutRecord;
+	}
+
+	private static final class AsCalloutRecord implements ICalloutRecord
+	{
+		private final Document document;
+
+		private AsCalloutRecord(final Document document)
+		{
+			super();
+			this.document = document;
+		}
+
+		@Override
+		public <T> T getModel(final Class<T> modelClass)
+		{
+			return DocumentInterfaceWrapper.wrap(document, modelClass);
+		}
+
+		@Override
+		public Object getValue(final String columnName)
+		{
+			return InterfaceWrapperHelper.getValueOrNull(document, columnName);
+		}
+
+		@Override
+		public String setValue(final String columnName, final Object value)
+		{
+			document.setValue(columnName, value);
+			return "";
+		}
+
+		@Override
+		public void dataRefresh()
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void dataRefreshAll()
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void dataRefreshRecursively()
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean dataSave(final boolean manualCmd)
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
+	}
+
 }

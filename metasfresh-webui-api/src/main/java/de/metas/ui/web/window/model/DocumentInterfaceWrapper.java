@@ -4,11 +4,10 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,6 +18,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -47,20 +48,20 @@ import de.metas.ui.web.window_old.shared.datatype.LookupValue;
  * #L%
  */
 
-public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWrapper
+public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWrapper, IModelInternalAccessor
 {
-	private static final Logger log = LogManager.getLogger(DocumentInterfaceWrapper.class);
+	private static final transient Logger logger = LogManager.getLogger(DocumentInterfaceWrapper.class);
 
-	public static <T> T create(final Object model, final Class<T> modelClass)
+	public static <T> T wrap(final Object model, final Class<T> modelClass)
 	{
 		final Boolean useOldValues = null; // preserve it from "model"
-		return create(model, modelClass, useOldValues);
+		return wrap(model, modelClass, useOldValues);
 	}
 
-	public static <T> T createOld(final Object model, final Class<T> modelClass)
+	public static <T> T wrapUsingOldValues(final Object model, final Class<T> modelClass)
 	{
 		final Boolean useOldValues = Boolean.TRUE;
-		return create(model, modelClass, useOldValues);
+		return wrap(model, modelClass, useOldValues);
 	}
 
 	/**
@@ -76,20 +77,19 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	 *            </ul>
 	 * @return wrapped model or null
 	 */
-	private static <T> T create(final Object model, final Class<T> modelClass, final Boolean useOldValues)
+	private static <T> T wrap(final Object model, final Class<T> modelClass, final Boolean useOldValues)
 	{
 		if (model == null)
 		{
 			return null;
 		}
-		
-		if (modelClass.isInstance(model) && useOldValues == Boolean.FALSE)
+
+		if (modelClass.isInstance(model) && (useOldValues == null || useOldValues == Boolean.FALSE))
 		{
 			@SuppressWarnings("unchecked")
 			final T modelCasted = (T)model;
 			return modelCasted;
 		}
-
 
 		Document document = null;
 		Boolean useOldValuesDefault = null;
@@ -139,11 +139,12 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	}
 
 	/**
+	 * Unwrap given object and return the underlying {@link Document}.
 	 *
 	 * @param model
-	 * @return Document or null if model is not a {@link Document} or is not wrapping a {@link Document}
+	 * @return {@link Document} or null if model is not a {@link Document} or is not wrapping a {@link Document}
 	 */
-	public static Document getDocument(final Object model)
+	/* package */ static Document getDocument(final Object model)
 	{
 		if (model == null)
 		{
@@ -168,7 +169,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	 * @param model
 	 * @return {@link DocumentInterfaceWrapper} or null if no {@link DocumentInterfaceWrapper} can be extracted from given model
 	 */
-	public static DocumentInterfaceWrapper getWrapper(final Object model)
+	/* package */static DocumentInterfaceWrapper getWrapper(final Object model)
 	{
 		if (model == null)
 		{
@@ -212,13 +213,12 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		}
 		else
 		{
-			log.debug("Wrapped object is not a Document [SKIP]");
+			logger.debug("Wrapped object is not a Document [SKIP]");
 		}
 	}
 
 	private final Document document;
 	private final boolean useOldValues;
-	private final Map<Integer, Map<String, Object>> recordId2dynAttributes = new HashMap<>();
 
 	private final boolean failOnColumnNotFound = false;
 
@@ -229,6 +229,16 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		Check.assumeNotNull(document, "document not null");
 		this.document = document;
 		this.useOldValues = useOldValues;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("document", document)
+				.add("useOldValues", useOldValues ? Boolean.TRUE : null)
+				.toString();
 	}
 
 	@Override
@@ -276,7 +286,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			}
 			else
 			{
-				log.warn("Field " + propertyName + " not found for " + document + ". Assuming default value.");
+				logger.warn("Field " + propertyName + " not found for " + document + ". Assuming default value.");
 			}
 
 			//
@@ -322,10 +332,17 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		}
 	}
 
+	@Override
 	public final Object getValue(final String columnName, final Class<?> returnType)
 	{
 		final DocumentField field = getDocument().getField(columnName);
 		return getValue(field, returnType);
+	}
+
+	@Override
+	public Object getValue(final String columnName, final int columnIndex, final Class<?> returnType)
+	{
+		return getValue(columnName, returnType);
 	}
 
 	private Object getValue(final DocumentField field, final Class<?> returnType)
@@ -345,6 +362,19 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	private static final Object convertValueToType(final Object value, final DocumentField field, final Class<?> returnType)
 	{
+		if (Object.class.equals(returnType))
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			else if (value instanceof LookupValue)
+			{
+				final LookupValue lookupValue = (LookupValue)value;
+				return field.isLookupWithNumericKey() ? lookupValue.getIdAsInt() : lookupValue.getIdAsString();
+			}
+		}
+
 		if (value != null && returnType.isAssignableFrom(value.getClass()))
 		{
 			return value;
@@ -413,7 +443,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	}
 
-	public final void setValue(final String propertyName, final Object value)
+	@Override
+	public final boolean setValue(final String propertyName, final Object value)
 	{
 		if (useOldValues)
 		{
@@ -423,9 +454,10 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		final Object valueFixed = POWrapper.checkZeroIdValue(propertyName, value);
 		try
 		{
-			document.setValueFromJsonObject(propertyName, valueFixed);
+			document.setValue(propertyName, valueFixed);
+			return true;
 		}
-		catch (DocumentFieldNotFoundException e)
+		catch (final DocumentFieldNotFoundException e)
 		{
 			final String errorMsg = e.getLocalizedMessage();
 			final String msg = "Attempt to set field " + propertyName
@@ -438,7 +470,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			}
 			else
 			{
-				log.error(msg, e);
+				logger.error(msg, e);
+				return false;
 			}
 		}
 	}
@@ -450,7 +483,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	private final Properties getCtx()
 	{
-		return Env.getCtx();
+		return document.getCtx();
 	}
 
 	private final String getTrxName()
@@ -465,13 +498,14 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	 * @param method
 	 * @return
 	 */
-	private final Object getReferencedObject(final String propertyName, final Method method)
+	@Override
+	public final Object getReferencedObject(final String propertyName, final Method method)
 	{
 		final String idPropertyName = propertyName + "_ID";
 		final DocumentField idField = document.getFieldOrNull(idPropertyName);
 		if (idField == null)
 		{
-			log.warn("Field " + idPropertyName + " not found for " + document + ". Assuming null value.");
+			logger.warn("Field " + idPropertyName + " not found for " + document + ". Assuming null value.");
 			return null;
 		}
 
@@ -522,7 +556,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return null;
 		}
 
-		return create(parentDocument, modelClass);
+		return wrap(parentDocument, modelClass);
 	}
 
 	private boolean isModelInterface(final Class<?> cl)
@@ -587,10 +621,10 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		return gridField != null;
 	}
 
+	@Override
 	public final boolean hasColumnName(final String columnName)
 	{
-		final DocumentField gridField = getDocument().getFieldOrNull(columnName);
-		return gridField != null;
+		return getDocument().hasField(columnName);
 	}
 
 	public static int getId(final Object model)
@@ -605,63 +639,12 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	public <T> T getDynAttribute(final String attributeName)
 	{
-		if (recordId2dynAttributes == null)
-		{
-			return null;
-		}
-
-		final int recordId = getDocument().getDocumentId();
-		final Map<String, Object> dynAttributes = recordId2dynAttributes.get(recordId);
-
-		// Cleanup old entries to avoid weird cases
-		// e.g. dynattributes shall be destroyed when user is switching to another record
-		removeOldDynAttributesEntries(recordId);
-
-		if (dynAttributes == null)
-		{
-			return null;
-		}
-
-		@SuppressWarnings("unchecked")
-		final T value = (T)dynAttributes.get(attributeName);
-
-		return value;
+		return getDocument().getDynAttribute(attributeName);
 	}
 
 	public Object setDynAttribute(final String attributeName, final Object value)
 	{
-		Check.assumeNotEmpty(attributeName, "attributeName not empty");
-
-		final int recordId = getDocument().getDocumentId();
-		Map<String, Object> dynAttributes = recordId2dynAttributes.get(recordId);
-		if (dynAttributes == null)
-		{
-			dynAttributes = new HashMap<>();
-			recordId2dynAttributes.put(recordId, dynAttributes);
-		}
-
-		final Object valueOld = dynAttributes.put(attributeName, value);
-
-		// Cleanup old entries because in most of the cases we won't use them
-		removeOldDynAttributesEntries(recordId);
-
-		//
-		// return the old value
-		return valueOld;
-	}
-
-	private void removeOldDynAttributesEntries(final int recordIdToKeep)
-	{
-		for (final Iterator<Integer> recordIds = recordId2dynAttributes.keySet().iterator(); recordIds.hasNext();)
-		{
-			final Integer dynAttribute_recordId = recordIds.next();
-			if (dynAttribute_recordId != null && dynAttribute_recordId == recordIdToKeep)
-			{
-				continue;
-			}
-
-			recordIds.remove();
-		}
+		return getDocument().setDynAttribute(attributeName, value);
 	}
 
 	public final boolean isOldValues()
@@ -675,4 +658,63 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		return wrapper == null ? false : wrapper.isOldValues();
 	}
 
+	@Override
+	public Set<String> getColumnNames()
+	{
+		return document.getFieldNames();
+	}
+
+	@Override
+	public int getColumnIndex(final String columnName)
+	{
+		throw new UnsupportedOperationException("DocumentInterfaceWrapper has no supported for column indexes");
+	}
+
+	@Override
+	public boolean isVirtualColumn(final String columnName)
+	{
+		final DocumentField field = document.getFieldOrNull(columnName);
+		return field != null && field.isVirtualField();
+	}
+
+	@Override
+	public boolean isKeyColumnName(final String columnName)
+	{
+		final DocumentField field = document.getFieldOrNull(columnName);
+		return field != null && field.isKey();
+	}
+
+	@Override
+	public boolean isCalculated(final String columnName)
+	{
+		final DocumentField field = document.getFieldOrNull(columnName);
+		return field != null && field.isCalculated();
+	}
+
+	@Override
+	public boolean setValueNoCheck(final String columnName, final Object value)
+	{
+		return setValue(columnName, value);
+	}
+
+	@Override
+	public void setValueFromPO(final String idColumnName, final Class<?> parameterType, final Object value)
+	{
+		// TODO: implement
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean invokeEquals(final Object[] methodArgs)
+	{
+		// TODO: implement
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Object invokeParent(final Method method, final Object[] methodArgs) throws Exception
+	{
+		// TODO: implement
+		throw new UnsupportedOperationException();
+	}
 }

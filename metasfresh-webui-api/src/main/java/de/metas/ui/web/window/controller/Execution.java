@@ -4,7 +4,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.model.FieldChangedEventCollector;
+import de.metas.ui.web.window.model.DocumentFieldChangedEventCollector;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
 
 /*
@@ -36,7 +36,7 @@ public class Execution implements IAutoCloseable
 		final Execution execution = currentExecutionHolder.get();
 		if (execution == null)
 		{
-			throw new IllegalStateException("No current execution found for " + Thread.currentThread().getName());
+			throw new IllegalStateException("No current execution found for thread: " + Thread.currentThread().getName());
 		}
 		return execution;
 	}
@@ -46,7 +46,7 @@ public class Execution implements IAutoCloseable
 		final Execution executionOld = currentExecutionHolder.get();
 		if (executionOld != null)
 		{
-			throw new IllegalStateException("Cannot start execution on " + Thread.currentThread().getName() + " because there is another execution currently running: " + executionOld);
+			throw new IllegalStateException("Cannot start execution on thread '" + Thread.currentThread().getName() + "' because there is another execution currently running: " + executionOld);
 		}
 
 		final Execution execution = new Execution();
@@ -110,7 +110,7 @@ public class Execution implements IAutoCloseable
 			{
 				if (fieldChangedEventsCollector == null)
 				{
-					fieldChangedEventsCollector = FieldChangedEventCollector.newInstance();
+					fieldChangedEventsCollector = DocumentFieldChangedEventCollector.newInstance();
 				}
 			}
 		}

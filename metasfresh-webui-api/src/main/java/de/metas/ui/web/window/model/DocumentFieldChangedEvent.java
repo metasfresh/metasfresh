@@ -36,12 +36,13 @@ import de.metas.ui.web.window.util.JSONConverters;
  */
 public final class DocumentFieldChangedEvent
 {
-	/* package */static final DocumentFieldChangedEvent of(final String fieldName)
+	/* package */static final DocumentFieldChangedEvent of(final String fieldName, final boolean key)
 	{
-		return new DocumentFieldChangedEvent(fieldName);
+		return new DocumentFieldChangedEvent(fieldName, key);
 	}
 
 	private final String fieldName;
+	private boolean key;
 	//
 	private boolean valueSet;
 	private Object value;
@@ -59,10 +60,11 @@ public final class DocumentFieldChangedEvent
 	private Boolean lookupValuesStale;
 	private String lookupValuesStaleReason;
 
-	private DocumentFieldChangedEvent(final String fieldName)
+	private DocumentFieldChangedEvent(final String fieldName, final boolean key)
 	{
 		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
+		this.key = key;
 	}
 
 	@Override
@@ -70,7 +72,8 @@ public final class DocumentFieldChangedEvent
 	{
 		final ToStringHelper toStringBuilder = MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("fieldName", fieldName);
+				.add("fieldName", fieldName)
+				.add("key", key ? Boolean.TRUE : null);
 
 		if (valueSet)
 		{
@@ -105,6 +108,11 @@ public final class DocumentFieldChangedEvent
 	{
 		return fieldName;
 	}
+	
+	public boolean isKey()
+	{
+		return key;
+	}
 
 	/* package */void setValue(final Object value, final String reason)
 	{
@@ -116,6 +124,11 @@ public final class DocumentFieldChangedEvent
 	public boolean isValueSet()
 	{
 		return valueSet;
+	}
+	
+	public Object getValue()
+	{
+		return value;
 	}
 
 	public Object getValueAsJsonObject()

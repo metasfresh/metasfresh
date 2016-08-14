@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
@@ -73,12 +74,19 @@ public class DocumentDescriptorFactory
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
 	/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
 	private static final ILogicExpression LOGICEXPRESSION_Processed;
+	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Yes;
+	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_No;
+	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Zero;
 
 	static
 	{
 		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + COLUMNNAME_IsActive + "/Y@=N", ILogicExpression.class);
 		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + COLUMNNAME_Processed + "/N@=Y | @" + COLUMNNAME_Processing + "/N@=Y", ILogicExpression.class);
+		
+		DEFAULT_VALUE_EXPRESSION_Yes = expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class);
+		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
+		DEFAULT_VALUE_EXPRESSION_Zero = expressionFactory.compile("0", IStringExpression.class);
 	}
 
 	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
@@ -372,6 +380,8 @@ public class DocumentDescriptorFactory
 				.setKey(keyColumn)
 				.setWidgetType(extractWidgetType(gridFieldVO))
 				.setValueClass(extractValueClass(gridFieldVO))
+				.setVirtualField(gridFieldVO.isVirtualColumn())
+				.setCalculated(gridFieldVO.isCalculated())
 				//
 				.setDefaultValueExpression(extractDefaultValueExpression(gridFieldVO))
 				//
@@ -689,12 +699,34 @@ public class DocumentDescriptorFactory
 		final String defaultValueStr = gridFieldVO.getDefaultValue();
 		if (defaultValueStr == null || defaultValueStr.isEmpty())
 		{
+			final int displayType = gridFieldVO.getDisplayType();
+			if (displayType == DisplayType.YesNo)
+			{
+				if (COLUMNNAME_IsActive.equals(gridFieldVO.getColumnName()))
+				{
+					return DEFAULT_VALUE_EXPRESSION_Yes;
+				}
+				else
+				{
+					return DEFAULT_VALUE_EXPRESSION_No;
+				}
+			}
+			else if (DisplayType.isNumeric(displayType))
+			{
+				if (gridFieldVO.isMandatory() && !gridFieldVO.isUpdateable())
+				{
+					// e.g. C_OrderLine.QtyReserved
+					return DEFAULT_VALUE_EXPRESSION_Zero;
+				}
+			}
+			
 			return IStringExpression.NULL;
 		}
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
-			// TODO: implement
-			return IStringExpression.NULL;
+			final String sqlTemplate = defaultValueStr.substring(5).trim();
+			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
+			return SqlDefaultValueExpression.of(sqlTemplateStringExpression);
 		}
 		else
 		{

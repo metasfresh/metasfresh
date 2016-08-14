@@ -28,7 +28,7 @@ import de.metas.printing.esb.base.util.Check;
 
 public final class DocumentId
 {
-	private static final int NEW_ID = -1;
+	public static final int NEW_ID = -1;
 	public static final String NEW_ID_STRING = "NEW";
 	public static final DocumentId NEW = new DocumentId(NEW_ID);
 
@@ -47,7 +47,7 @@ public final class DocumentId
 			throw new IllegalArgumentException("Invalid ID: " + idObj + " (" + (idObj == null ? "-" : idObj.getClass()) + ")");
 		}
 	}
-	
+
 	public static final DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
@@ -58,7 +58,7 @@ public final class DocumentId
 		final int idInt = Integer.parseInt(idStr);
 		return of(idInt);
 	}
-	
+
 	public static final DocumentId of(final int idInt)
 	{
 		if (idInt == NEW_ID)
@@ -68,14 +68,21 @@ public final class DocumentId
 
 		return new DocumentId(idInt);
 	}
-	
+
 	public static final DocumentId fromNullable(final String idStr)
 	{
-		if(Check.isEmpty(idStr, true))
+		if (Check.isEmpty(idStr, true))
 		{
 			return null;
 		}
 		return of(idStr.trim());
+	}
+
+	public static final boolean isNew(final int id)
+	{
+		return id == NEW_ID
+				|| id < 0 // temporary id
+				;
 	}
 
 	private final int idInt;

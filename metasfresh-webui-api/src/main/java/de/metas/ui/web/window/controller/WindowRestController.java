@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+import org.compiere.util.Login;
+import org.compiere.util.LoginContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,12 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentId;
 import de.metas.ui.web.window.util.JSONConverters;
+import de.metas.ui.web.window.util.LastDocumentTracker;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
@@ -53,20 +56,46 @@ public class WindowRestController
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
 
 	@Autowired
+	private UserSession userSession;
+
+	@Autowired
 	private DocumentCollection documentCollection;
+	
+	@Autowired
+	private LastDocumentTracker lastDocumentsTracker; // for debugging
 
 	private final void autologin()
 	{
+		// FIXME: debug logging
+		// LogManager.setLoggerLevel(Document.class, Level.TRACE);
+		// LogManager.setLoggerLevel(DocumentField.class, Level.TRACE);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChangedEventCollector.class, Level.DEBUG); // to have the "reason" in JSON
+		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, Level.TRACE);
+		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
+		//
+		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
+		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
+
+		
+		if(userSession.isLoggedIn())
+		{
+			return;
+		}
+		
 		// FIXME: only for testing
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
-
-		// FIXME: debug logging
-		LogManager.setLoggerLevel(LogManager.getLogger(DocumentField.class), Level.TRACE);
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, "en_US");
+		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
+		
+		Login.loadPreferences(new LoginContext(ctx));
+		
+		userSession.setLocale(Env.getLanguage(ctx).getLocale());
+		userSession.setLoggedIn(true);
 	}
 
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
@@ -90,8 +119,11 @@ public class WindowRestController
 	{
 		autologin();
 
-		final List<Document> documents = documentCollection.getDocuments(adWindowId, idStr, detailId, rowId);
-		return JSONConverters.documentsToJsonObject(documents);
+		try (Execution execution = Execution.startExecution())
+		{
+			final List<Document> documents = documentCollection.getDocuments(adWindowId, idStr, detailId, rowId);
+			return JSONConverters.documentsToJsonObject(documents);
+		}
 	}
 
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
@@ -109,17 +141,26 @@ public class WindowRestController
 			final DocumentId documentId = DocumentId.of(idStr);
 			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
 			final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
-			
+			final boolean isNew = document.isNew();
+
 			for (final JSONDocumentChangedEvent event : events)
 			{
 				if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
 				{
-					document.setValueFromJsonObject(event.getPath(), event.getValue());
+					document.setValue(event.getPath(), event.getValue());
 				}
 				else
 				{
 					throw new IllegalArgumentException("Unknown operation: " + event);
 				}
+			}
+
+			document.saveIfPossible();
+
+			// Make sure we collected everything!
+			if (isNew)
+			{
+				execution.getFieldChangedEventsCollector().collectFrom(document);
 			}
 
 			return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
@@ -167,7 +208,13 @@ public class WindowRestController
 	{
 		autologin();
 
-		final DocumentId documentId = DocumentId.of(idStr);
+		DocumentId documentId = DocumentId.of(idStr);
+		if (documentId.isNew())
+		{
+			// FIXME: we use this only for debugging
+			final String entityId = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(adWindowId).getEntityDescriptor().getId();
+			documentId = lastDocumentsTracker.getLastDocumentId(entityId, documentId);
+		}
 		if (documentId.isNew())
 		{
 			throw new IllegalArgumentException("Invalid id: " + documentId);

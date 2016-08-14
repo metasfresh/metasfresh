@@ -35,15 +35,17 @@ public interface IDocumentFieldChangedEventCollector
 
 	List<DocumentFieldChangedEvent> toEventsList();
 
-	void collectValueChanged(String fieldName, Object value, Supplier<String> reason);
+	void collectValueChanged(DocumentField documentField, Supplier<String> reason);
 
-	void collectReadonlyChanged(String fieldName, boolean value, Supplier<String> reason);
+	void collectReadonlyChanged(DocumentField documentField, Supplier<String> reason);
 
-	void collectMandatoryChanged(String fieldName, boolean value, Supplier<String> reason);
+	void collectMandatoryChanged(DocumentField documentField, Supplier<String> reason);
 
-	void collectDisplayedChanged(String fieldName, boolean value, Supplier<String> reason);
+	void collectDisplayedChanged(DocumentField documentField, Supplier<String> reason);
 
-	void collectLookupValuesStaled(String fieldName, Supplier<String> reason);
+	void collectLookupValuesStaled(DocumentField documentField, Supplier<String> reason);
 
 	void collectFrom(IDocumentFieldChangedEventCollector fromCollector);
+
+	void collectFrom(Document document);
 }

@@ -7,9 +7,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -56,11 +57,11 @@ public class DocumentField
 
 	//
 	// State
-	private Object initialValue;
-	private Object value;
-	private boolean mandatory = false;
-	private boolean readonly = false;
-	private boolean displayed = false;
+	private Object _initialValue;
+	private Object _value;
+	private boolean _mandatory = false;
+	private boolean _readonly = false;
+	private boolean _displayed = false;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -75,11 +76,11 @@ public class DocumentField
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("name", descriptor.getName())
-				.add("value", value)
-				.add("initalValue", initialValue)
-				.add("mandatory", mandatory)
-				.add("readonly", readonly)
-				.add("displayed", displayed)
+				.add("value", _value)
+				.add("initalValue", _initialValue)
+				.add("mandatory", _mandatory)
+				.add("readonly", _readonly)
+				.add("displayed", _displayed)
 				.toString();
 	}
 
@@ -98,57 +99,81 @@ public class DocumentField
 		return descriptor.getName();
 	}
 
+	public boolean isKey()
+	{
+		return descriptor.isKey();
+	}
+	
+	public boolean isVirtualField()
+	{
+		return descriptor.isVirtualField();
+	}
+
+	public boolean isCalculated()
+	{
+		return descriptor.isCalculated();
+	}
+
+
 	public Object getInitialValue()
 	{
-		return initialValue;
+		return _initialValue;
 	}
 
 	/**
 	 * FIXME: make it private or package level
-	 * 
+	 *
 	 * @param value
 	 */
 	public void setInitialValue(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
-		this.initialValue = valueConv;
-		this.value = valueConv;
+		_initialValue = valueConv;
+		_value = valueConv;
+
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Set {}'s initial value: {}", getFieldName(), valueConv);
+		}
 	}
 
 	/* package */void setValue(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
-		final Object valueOld = this.value;
-		this.value = valueConv;
+		final Object valueOld = _value;
+		_value = valueConv;
 
-		logger.trace("Changed {}'s value: {} -> {}", this, valueOld, value);
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Changed {}'s value: {} -> {}", getFieldName(), valueOld, value);
+		}
 	}
 
 	public Object getValue()
 	{
-		return value;
+		return _value;
 	}
 
 	public Object getValueAsJsonObject()
 	{
-		return JSONConverters.valueToJsonObject(value);
+		return JSONConverters.valueToJsonObject(_value);
 	}
 
 	public int getValueAsInt(final int defaultValue)
 	{
-		final Integer valueInt = convertToValueClass(value, Integer.class);
+		final Integer valueInt = convertToValueClass(_value, Integer.class);
 		return valueInt == null ? defaultValue : valueInt;
 	}
 
 	public boolean getValueAsBoolean()
 	{
-		final Boolean valueBoolean = convertToValueClass(value, Boolean.class);
+		final Boolean valueBoolean = convertToValueClass(_value, Boolean.class);
 		return valueBoolean != null && valueBoolean.booleanValue();
 	}
 
 	public Object getOldValue()
 	{
-		// TODO Auto-generated method stub
+		// TODO to implement. "getOldValue" is mainly needed for ICalloutField and DocumentInterfaceWrapper
 		return getValue();
 	}
 
@@ -270,38 +295,43 @@ public class DocumentField
 
 	public boolean isMandatory()
 	{
-		return mandatory;
+		return _mandatory;
 	}
 
 	/* package */ void setMandatory(final boolean mandatory)
 	{
-		this.mandatory = mandatory;
+		_mandatory = mandatory;
 	}
 
 	public boolean isReadonly()
 	{
-		return readonly;
+		return _readonly;
 	}
 
 	/* package */void setReadonly(final boolean readonly)
 	{
-		this.readonly = readonly;
+		_readonly = readonly;
 	}
 
 	public boolean isDisplayed()
 	{
-		return displayed;
+		return _displayed;
 	}
 
 	/* package */void setDisplayed(final boolean displayed)
 	{
-		this.displayed = displayed;
+		_displayed = displayed;
 	}
 
 	public boolean isLookupValuesStale()
 	{
 		// TODO: implement
 		return false;
+	}
+	
+	public boolean isLookupWithNumericKey()
+	{
+		return lookupDataSource != null && lookupDataSource.isNumericKey();
 	}
 
 	/* package */List<LookupValue> getLookupValues(final Document document)
@@ -346,8 +376,7 @@ public class DocumentField
 		@Override
 		public Properties getCtx()
 		{
-			// TODO Auto-generated method stub
-			return Env.getCtx();
+			return getDocument().getCtx();
 		}
 
 		@Override
@@ -389,7 +418,7 @@ public class DocumentField
 		@Override
 		public <T> T getModel(final Class<T> modelClass)
 		{
-			return DocumentInterfaceWrapper.create(getDocument(), modelClass);
+			return getCalloutRecord().getModel(modelClass);
 		}
 
 		@Override
@@ -430,5 +459,44 @@ public class DocumentField
 			// TODO Auto-generated method stub
 			throw new UnsupportedOperationException("fireDataStatusEEvent: AD_Message=" + AD_Message + ", info=" + info + ", isError=" + isError);
 		}
+
+		@Override
+		public void fireDataStatusEEvent(final ValueNamePair errorLog)
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("fireDataStatusEEvent: errorLog=" + errorLog);
+		}
+
+		@Override
+		public void putContext(final String name, final boolean value)
+		{
+			getDocument().setDynAttribute(name, value);
+		}
+
+		@Override
+		public void putContext(final String name, final java.util.Date value)
+		{
+			getDocument().setDynAttribute(name, value);
+		}
+
+		@Override
+		public void putContext(final String name, final int value)
+		{
+			getDocument().setDynAttribute(name, value);
+		}
+
+		@Override
+		public boolean getContextAsBoolean(final String name)
+		{
+			final Object valueObj = getDocument().getDynAttribute(name);
+			return DisplayType.toBoolean(valueObj);
+		}
+
+		@Override
+		public ICalloutRecord getCalloutRecord()
+		{
+			return getDocument().asCalloutRecord();
+		}
+
 	}
 }

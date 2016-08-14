@@ -12,10 +12,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
@@ -47,7 +49,11 @@ import de.metas.ui.web.window_old.shared.datatype.NullValue;
 
 public final class JSONConverters
 {
+	private static final Logger logger = LogManager.getLogger(JSONConverters.class);
+
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
+
+	private static final String FIELDNAME_ID = "ID";
 
 	/**
 	 * @param documents
@@ -73,7 +79,7 @@ public final class JSONConverters
 		// ID field (special)
 		{
 			final int id = document.getDocumentId();
-			jsonFields.add(documentFieldToJsonObject("ID", id));
+			jsonFields.add(documentFieldToJsonObject(FIELDNAME_ID, id));
 		}
 
 		// All other fields
@@ -115,10 +121,36 @@ public final class JSONConverters
 
 	public static List<Map<String, Object>> toJsonObject(final IDocumentFieldChangedEventCollector eventsCollector)
 	{
-		return eventsCollector.toEventsList()
-				.stream()
-				.map(event -> toJsonObject(event))
-				.collect(Collectors.toList());
+		final List<DocumentFieldChangedEvent> events = eventsCollector.toEventsList();
+		if (events.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<Map<String, Object>> jsonFields = new ArrayList<>(events.size() + 1);
+		DocumentFieldChangedEvent eventForIdField = null;
+		for (final DocumentFieldChangedEvent event : events)
+		{
+			final Map<String, Object> jsonField = toJsonObject(event);
+			jsonFields.add(jsonField);
+
+			if (event.isKey() && event.isValueSet())
+			{
+				if (eventForIdField == null)
+				{
+					eventForIdField = event;
+
+					final Map<String, Object> jsonIdField = documentFieldToJsonObject(FIELDNAME_ID, event.getValueAsJsonObject());
+					jsonFields.add(0, jsonIdField);
+				}
+				else
+				{
+					logger.warn("More then one ID changed event found: {}, {}", eventForIdField, event);
+				}
+			}
+		}
+
+		return jsonFields;
 	}
 
 	private static Map<String, Object> toJsonObject(final DocumentFieldChangedEvent event)
@@ -186,25 +218,32 @@ public final class JSONConverters
 		return map;
 	}
 
-	public static Object dateToJsonObject(final java.util.Date valueDate)
+	private static final DateFormat getDateFormat()
 	{
 		// TODO: optimize dateToJsonObject; maybe use joda time or java8 API
-		final DateFormat dateFormat = new SimpleDateFormat(DATE_PATTEN);
+		// TODO: user current session Locale
+		return new SimpleDateFormat(DATE_PATTEN);
+	}
+
+	public static Object dateToJsonObject(final java.util.Date valueDate)
+	{
+		final DateFormat dateFormat = getDateFormat();
 		final String valueStr = dateFormat.format(valueDate);
 		return valueStr;
 	}
 
 	public static java.util.Date dateFromString(final String valueStr)
 	{
-		final DateFormat dateFormat = new SimpleDateFormat(DATE_PATTEN);
 		try
 		{
+			final DateFormat dateFormat = getDateFormat();
 			return dateFormat.parse(valueStr);
 		}
 		catch (final ParseException ex1)
 		{
 			// second try
 			// FIXME: this is not optimum. We shall unify how we store Dates (as String)
+			logger.warn("Using Env.parseTimestamp to convert '{}' to Date", valueStr);
 			try
 			{
 				return Env.parseTimestamp(valueStr);

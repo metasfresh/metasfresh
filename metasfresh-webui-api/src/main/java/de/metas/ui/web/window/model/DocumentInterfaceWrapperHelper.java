@@ -2,13 +2,16 @@ package de.metas.ui.web.window.model;
 
 import java.util.Properties;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 
 /*
  * #%L
@@ -32,7 +35,7 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class DocumentInterfaceWrapperHelper implements IInterfaceWrapperHelper
+public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 {
 	private static final Logger logger = LogManager.getLogger(DocumentInterfaceWrapperHelper.class);
 
@@ -47,12 +50,12 @@ public class DocumentInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		if (useOldValues)
 		{
-			return DocumentInterfaceWrapper.createOld(model, modelClass);
+			return DocumentInterfaceWrapper.wrapUsingOldValues(model, modelClass);
 		}
 		else
 		{
 			// preserve "old values" flag
-			return DocumentInterfaceWrapper.create(model, modelClass);
+			return DocumentInterfaceWrapper.wrap(model, modelClass);
 		}
 
 	}
@@ -93,14 +96,27 @@ public class DocumentInterfaceWrapperHelper implements IInterfaceWrapperHelper
 			}
 		}
 
-		document.setValueFromJsonObject(columnName, value);
+		document.setValue(columnName, value);
 		return true;
 	}
 
 	@Override
 	public Properties getCtx(final Object model, final boolean useClientOrgFromModel)
 	{
-		return Env.getCtx();
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		if (document != null)
+		{
+			return document.getCtx();
+		}
+
+		// Notify developer that (s)he is using wrong models
+		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			final AdempiereException e = new AdempiereException("Cannot get context from model " + model + " because is not supported. Returning global context.");
+			logger.warn(e.getLocalizedMessage(), e);
+		}
+
+		return Env.getCtx(); // fallback to global context
 	}
 
 	@Override
@@ -109,11 +125,68 @@ public class DocumentInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return ITrx.TRXNAME_None;
 	}
 
-
 	@Override
 	public int getId(final Object model)
 	{
 		return DocumentInterfaceWrapper.getId(model);
 	}
 
+	@Override
+	public String getModelTableNameOrNull(final Object model)
+	{
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		return SqlDocumentEntityDataBindingDescriptor.getTableName(document);
+	}
+
+	@Override
+	public boolean isNew(final Object model)
+	{
+		return DocumentInterfaceWrapper.isNew(model);
+	}
+
+	@Override
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	{
+		//
+		// Get <columnName>_Override's value, if any
+		final DocumentInterfaceWrapper wrapper = DocumentInterfaceWrapper.getWrapper(model);
+		if (useOverrideColumnIfAvailable)
+		{
+			final T value = getValueOverrideOrNull(wrapper, columnName);
+			if (value != null)
+			{
+				return value;
+			}
+		}
+
+		//
+		// Get columnName's value
+		if (!wrapper.hasColumnName(columnName))
+		{
+			if (throwExIfColumnNotFound)
+			{
+				throw new AdempiereException("No field with ColumnName=" + columnName + " found in " + wrapper + " for " + model);
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		final T value = (T)wrapper.getValue(columnName, Object.class);
+		return value;
+	}
+
+	@Override
+	public <T> T getDynAttribute(final Object model, final String attributeName)
+	{
+		return DocumentInterfaceWrapper.getDocument(model).getDynAttribute(attributeName);
+	}
+
+	@Override
+	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
+	{
+		return DocumentInterfaceWrapper.getDocument(model).setDynAttribute(attributeName, value);
+	}
 }

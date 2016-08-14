@@ -19,6 +19,8 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -65,7 +67,13 @@ public class SqlLookupDataSource implements LookupDataSource
 	private SqlLookupDataSource(final SqlLookupDescriptor sqlLookupDescriptor)
 	{
 		super();
-		this.sqlLookupDescriptor = sqlLookupDescriptor;
+		this.sqlLookupDescriptor = Preconditions.checkNotNull(sqlLookupDescriptor);
+	}
+	
+	@Override
+	public boolean isNumericKey()
+	{
+		return sqlLookupDescriptor.isNumericKey();
 	}
 
 	@Override

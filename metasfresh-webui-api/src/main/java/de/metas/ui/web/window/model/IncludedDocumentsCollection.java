@@ -5,8 +5,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -33,6 +38,8 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public class IncludedDocumentsCollection
 {
+	private static final Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
+
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final Document parentDocument;
 
@@ -43,8 +50,8 @@ public class IncludedDocumentsCollection
 	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		super();
-		this.parentDocument = parentDocument;
-		this.entityDescriptor = entityDescriptor;
+		this.parentDocument = Preconditions.checkNotNull(parentDocument);
+		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
 
 		stale = true;
 		fullyLoaded = false;
@@ -76,6 +83,13 @@ public class IncludedDocumentsCollection
 		{
 			return document;
 		}
+		else
+		{
+			if (logger.isTraceEnabled())
+			{
+				logger.trace("No document with id '{}' was found in local documents. \nAvailable IDs are: {}", id, documents.keySet());
+			}
+		}
 
 		//
 		// Load from underlying repository
@@ -101,25 +115,33 @@ public class IncludedDocumentsCollection
 
 	public synchronized Document createNewDocument()
 	{
+		if (parentDocument.isProcessed())
+		{
+			throw new AdempiereException("Cannot create included document because parent is processed: " + parentDocument);
+		}
+
 		final Document document = getDocumentsRepository().createNewDocument(entityDescriptor, parentDocument);
-		
+
 		final DocumentId documentId = DocumentId.of(document.getDocumentId());
 		documents.put(documentId, document);
-		
+
 		return document;
 	}
-	
+
 	private final void clearDocumentsExceptNewOnes()
 	{
+		logger.trace("Removing all documents, except the new ones from {}", this);
+
 		for (final Iterator<Document> it = documents.values().iterator(); it.hasNext();)
 		{
 			final Document document = it.next();
 			if (document.isNew())
 			{
 				it.remove();
+				logger.trace("Removed document: {}", document);
 			}
 		}
-		
+
 		fullyLoaded = false;
 		stale = true;
 	}
@@ -136,7 +158,7 @@ public class IncludedDocumentsCollection
 		{
 			return null;
 		}
-		
+
 		final Document documentOld = documents.put(DocumentId.of(document.getDocumentId()), document);
 		stale = false;
 		if (documentOld == null)
@@ -156,12 +178,12 @@ public class IncludedDocumentsCollection
 		final List<Document> documentsNew = getDocumentsRepository().retriveDocuments(query);
 
 		clearDocumentsExceptNewOnes();
-		
+
 		for (final Document document : documentsNew)
 		{
 			documents.put(DocumentId.of(document.getDocumentId()), document);
 		}
-		
+
 		stale = false;
 		fullyLoaded = true;
 	}

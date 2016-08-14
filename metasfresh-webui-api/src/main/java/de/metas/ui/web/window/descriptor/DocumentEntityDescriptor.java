@@ -102,6 +102,11 @@ public class DocumentEntityDescriptor
 		final DocumentEntityDescriptor other = (DocumentEntityDescriptor)obj;
 		return Objects.equals(this.id, other.id);
 	}
+	
+	public String getId()
+	{
+		return id;
+	}
 
 	public String getDetailId()
 	{

@@ -8,17 +8,26 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
@@ -26,6 +35,7 @@ import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -34,6 +44,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
+import de.metas.ui.web.window.util.LastDocumentTracker;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
@@ -60,9 +71,9 @@ import de.metas.ui.web.window_old.shared.datatype.LookupValue;
  */
 
 /**
- * 
+ *
  * IMPORTANT: please make sure this is state-less and thread-safe
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -73,6 +84,9 @@ public class SqlDocumentRepository implements DocumentRepository
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
+	
+	@Autowired
+	private LastDocumentTracker lastDocumentsTracker;
 
 	/* package */ SqlDocumentRepository()
 	{
@@ -97,7 +111,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		final String sql = buildSql(sqlParams, query);
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final List<Document> documentsCollector = new ArrayList<>();
+		final List<Document> documentsCollector = new ArrayList<>(limit + 1);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -117,7 +131,7 @@ public class SqlDocumentRepository implements DocumentRepository
 				}
 			}
 		}
-		catch (final SQLException e)
+		catch (final Exception e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -126,10 +140,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			DB.close(rs, pstmt);
 		}
 
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Retrieved {} records.", documentsCollector.size());
-		}
+		logger.debug("Retrieved {} records.", documentsCollector.size());
 		return documentsCollector;
 	}
 
@@ -161,39 +172,59 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// Set default values
+		// TODO: when initializing fields, first we need to initialize those which don't have dependencies
+		logger.trace("Setting default values for {}", document);
 		for (final DocumentField documentField : document.getFields())
 		{
-			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-			if (fieldDescriptor.isKey())
+			try
 			{
-				final int value = generateNextTemporaryId();
-				documentField.setInitialValue(value);
+				final Object initialValue = createDefaultValue(documentField, document, parentDocument);
+				documentField.setInitialValue(initialValue);
+				Execution.getCurrentFieldChangedEventsCollector().collectValueChanged(documentField, () -> "new document");
 			}
-			else
+			catch (final Exception e)
 			{
-				// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
-				final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
-				try
-				{
-					String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-					if (valueStr != null && valueStr.isEmpty())
-					{
-						valueStr = null;
-					}
-
-					documentField.setInitialValue(valueStr);
-				}
-				catch (Exception e)
-				{
-					logger.warn("Failed evaluating default value expression {} for {}", defaultValueExpression, documentField, e);
-				}
+				logger.warn("Failed creating initial default value for {}", documentField, e);
+				continue;
 			}
+
 		}
 
+		document.executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
 		document.updateAllDependencies();
 		
+		lastDocumentsTracker.add(document);
+
 		return document;
+	}
+
+	private final Object createDefaultValue(final DocumentField documentField, final Document document, final Document parentDocument)
+	{
+		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+		if (fieldDescriptor.isKey())
+		{
+			final int value = generateNextTemporaryId();
+			return value;
+		}
+		else if (fieldDescriptor.isParentLink() && parentDocument != null)
+		{
+			final int value = parentDocument.getDocumentId();
+			return value;
+		}
+		else
+		{
+			// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
+			final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
+			String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
+			if (Check.isEmpty(valueStr, false))
+			{
+				valueStr = null;
+			}
+
+			return valueStr;
+		}
+
 	}
 
 	private int generateNextTemporaryId()
@@ -301,9 +332,9 @@ public class SqlDocumentRepository implements DocumentRepository
 	{
 		final int windowNo = nextWindowNo.incrementAndGet();
 		final Document document = new Document(this, entityDescriptor, windowNo, parentDocument);
-
+		
 		//
-		// Retrieve main record values
+		// Load document fields
 		for (final DocumentField documentField : document.getFields())
 		{
 			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
@@ -315,12 +346,12 @@ public class SqlDocumentRepository implements DocumentRepository
 		//
 		// Update Mandatory, ReadOnly, Displayed properties
 		document.updateAllDependencies();
-
+		
 		return document;
 	}
 
 	/*
-	 * Based on org.compiere.model.GridTable.readData(ResultSet)
+	 * Based on org.compiere.model.GridTable.readData(ResultSet).
 	 */
 	private Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final ResultSet rs) throws SQLException
 	{
@@ -429,7 +460,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		// Decrypt if needed
 		final Object valueDecrypted = decryptRequired ? decrypt(value) : value;
 
-		logger.trace("Retrived value for {}: {} ({})", fieldDataBinding, valueDecrypted, valueDecrypted == null ? "null" : valueDecrypted.getClass());
+		logger.trace("Retrived value for {}: {} ({})", fieldDataBinding, valueDecrypted, valueDecrypted == null ? "no class" : valueDecrypted.getClass());
 
 		return valueDecrypted;
 	}
@@ -444,17 +475,209 @@ public class SqlDocumentRepository implements DocumentRepository
 	}	// decrypt
 
 	@Override
-	public void refresh(Document document)
+	public void refresh(final Document document)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		refresh(document, document.getDocumentId());
+	}
+
+	private void refresh(final Document document, final int documentId)
+	{
+		logger.debug("Refreshing: {}, using ID={}", document, documentId);
+
+		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(document.getEntityDescriptor())
+				.setRecordId(documentId)
+				.setParentDocument(document.getParentDocument())
+				.build();
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = buildSql(sqlParams, query);
+		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				//
+				// Load document fields
+				for (final DocumentField documentField : document.getFields())
+				{
+					final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+					final Object value = retrieveDocumentFieldValue(fieldDescriptor, rs);
+					document.setInitialValue(documentField.getFieldName(), value);
+				}
+
+				//
+				// Update Mandatory, ReadOnly, Displayed properties
+				document.updateAllDependencies();
+			}
+			else
+			{
+				throw new AdempiereException("No data found while trying to reload the document: " + document);
+			}
+
+			if (rs.next())
+			{
+				throw new AdempiereException("More than one record found while trying to reload document: " + document);
+			}
+		}
+		catch (final Exception e)
+		{
+			throw new DBException(e, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	@Override
-	public void save(Document document)
+	public void save(final Document document)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, (trxName) -> saveRecord0(document));
+	}
+
+	private void saveRecord0(final Document document)
+	{
+		//
+		// Load the PO / Create new PO instance
+		final PO po;
+		if (document.isNew())
+		{
+			// new
+			final String sqlTableName = InterfaceWrapperHelper.getModelTableName(document);
+			po = TableModelLoader.instance.newPO(document.getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
+		}
+		else
+		{
+			final String sqlTableName = InterfaceWrapperHelper.getModelTableName(document);
+			final boolean checkCache = false;
+			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
+		}
+		Check.assumeNotNull(po, "po is not null");
+		po.set_ManualUserAction(document.getWindowNo());
+
+		//
+		// Set values to PO
+		for (final DocumentField documentField : document.getFields())
+		{
+			setPOValue(po, documentField);
+		}
+
+		//
+		// Actual save
+		InterfaceWrapperHelper.save(po);
+
+		//
+		// Reload the document
+		final int idNew = InterfaceWrapperHelper.getId(po);
+		refresh(document, idNew);
+	}
+
+	private void setPOValue(final PO po, final DocumentField documentField)
+	{
+		final POInfo poInfo = po.getPOInfo();
+		final String columnName = SqlDocumentFieldDataBindingDescriptor.getSqlColumnName(documentField);
+
+		if (poInfo.isVirtualColumn(columnName))
+		{
+			logger.trace("Skip setting PO's virtual column: {} -- PO={}", columnName, po);
+			return;
+		}
+		else if (poInfo.isKey(columnName))
+		{
+			logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
+			return;
+		}
+		else if ("Created".equals(columnName)
+				|| "CreatedBy".equals(columnName)
+				|| "Updated".equals(columnName)
+				|| "UpdatedBy".equals(columnName))
+		{
+			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
+			return;
+		}
+
+		final Object valueOld = po.get_Value(columnName);
+		final Object valueConv = convertValueToPO(documentField.getValue(), columnName, po);
+		if (Objects.equals(valueConv, valueOld))
+		{
+			logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
+			return;
+		}
+
+		final boolean valueSet = po.set_ValueOfColumnReturningBoolean(columnName, valueConv);
+		if (!valueSet)
+		{
+			logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
+			return;
+		}
+
+		logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
+	}
+
+	private static Object convertValueToPO(final Object value, final String columnName, final PO po)
+	{
+		final Class<?> valueClass = value == null ? null : value.getClass();
+		final Class<?> targetClass = po.getPOInfo().getColumnClass(columnName);
+
+		if (valueClass != null && targetClass.isAssignableFrom(valueClass))
+		{
+			return value;
+		}
+		if (int.class.equals(targetClass) || Integer.class.equals(targetClass))
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			else if (LookupValue.class.isAssignableFrom(valueClass))
+			{
+				return ((LookupValue)value).getIdAsInt();
+			}
+			else if (Number.class.isAssignableFrom(valueClass))
+			{
+				return ((Number)value).intValue();
+			}
+			else if (String.class.equals(valueClass))
+			{
+				return Integer.parseInt((String)value);
+			}
+		}
+		else if (String.class.equals(targetClass))
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			else if (LookupValue.class.isAssignableFrom(valueClass))
+			{
+				return ((LookupValue)value).getIdAsString();
+			}
+		}
+		else if (Timestamp.class.equals(targetClass))
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			else if (java.util.Date.class.isAssignableFrom(valueClass))
+			{
+				return new Timestamp(((java.util.Date)value).getTime());
+			}
+		}
+
+		// Better return the original value and let the PO fail.
+		return value;
+		// throw new AdempiereException("Cannot convert value '" + value + "' from " + valueClass + " to " + targetClass
+		// + "\n ColumnName: " + columnName
+		// + "\n PO: " + po);
 	}
 
 }

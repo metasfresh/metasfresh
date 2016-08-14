@@ -52,6 +52,8 @@ public final class DocumentFieldDescriptor implements Serializable
 	/** Is this the key field ? */
 	private final boolean key;
 	private final boolean parentLink;
+	private final boolean virtualField;
+	private final boolean calculated;
 
 	private final DocumentFieldWidgetType widgetType;
 
@@ -79,6 +81,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		key = builder.key;
 		parentLink = builder.parentLink;
+		virtualField = builder.virtualField;
+		calculated = builder.calculated;
 
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 
@@ -137,6 +141,17 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return parentLink;
 	}
+	
+	public boolean isVirtualField()
+	{
+		return virtualField;
+	}
+	
+	public boolean isCalculated()
+	{
+		return calculated;
+	}
+
 
 	public DocumentFieldWidgetType getWidgetType()
 	{
@@ -193,6 +208,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private boolean key = false;
 		private boolean parentLink = false;
+		private boolean virtualField;
+		private boolean calculated;
 
 		private DocumentFieldWidgetType widgetType;
 		public Class<?> valueClass;
@@ -249,6 +266,18 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setParentLink(boolean parentLink)
 		{
 			this.parentLink = parentLink;
+			return this;
+		}
+		
+		public Builder setVirtualField(boolean virtualField)
+		{
+			this.virtualField = virtualField;
+			return this;
+		}
+		
+		public Builder setCalculated(boolean calculated)
+		{
+			this.calculated = calculated;
 			return this;
 		}
 
@@ -311,5 +340,4 @@ public final class DocumentFieldDescriptor implements Serializable
 		}
 
 	}
-
 }

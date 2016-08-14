@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Properties;
+
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -106,9 +108,10 @@ public final class DocumentRepositoryQuery
 			return parentDocument.asEvaluatee();
 		}
 
+		final Properties ctx = Env.getCtx();
 		final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
 		final boolean onlyWindow = false;
-		return Evaluatees.ofCtx(Env.getCtx(), windowNo, onlyWindow);
+		return Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
 	}
 
 	public static final class Builder
