@@ -72,7 +72,7 @@ public class WindowRestController
 		// FIXME: debug logging
 		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentField.class, Level.TRACE);
+		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChangedEventCollector.class, Level.DEBUG); // to have the "reason" in JSON
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
 		//

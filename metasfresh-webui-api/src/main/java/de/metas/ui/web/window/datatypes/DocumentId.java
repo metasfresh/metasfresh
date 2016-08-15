@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -33,6 +34,8 @@ public final class DocumentId
 	public static final DocumentId NEW = new DocumentId(NEW_ID);
 
 	private static final char TEMPORARY_ID_PREFIX = 'T';
+	
+	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
 
 	public static final DocumentId of(String idStr)
 	{
@@ -99,6 +102,11 @@ public final class DocumentId
 		return id == NEW_ID
 				|| id < 0 // temporary id
 				;
+	}
+	
+	public static final int generateTemporaryId()
+	{
+		return nextTemporaryId.decrementAndGet();
 	}
 
 	private final int idInt;

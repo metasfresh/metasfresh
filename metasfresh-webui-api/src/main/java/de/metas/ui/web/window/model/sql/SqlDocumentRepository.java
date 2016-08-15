@@ -262,7 +262,7 @@ public class SqlDocumentRepository implements DocumentRepository
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.initializeAsExistingRecord((document, fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
+				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
 				.build();
 	}
 
@@ -416,7 +416,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (rs.next())
 			{
 				final ResultSet rsFinal = rs;
-				document.refresh((document2, fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rsFinal));
+				document.refresh((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rsFinal));
 			}
 			else
 			{

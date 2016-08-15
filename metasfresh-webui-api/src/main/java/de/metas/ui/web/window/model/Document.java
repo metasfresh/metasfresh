@@ -76,7 +76,6 @@ public final class Document
 	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
-	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
 
 	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
@@ -100,7 +99,7 @@ public final class Document
 
 	public static interface FieldInitialValueSupplier
 	{
-		Object getInitialValue(final Document document, final DocumentFieldDescriptor fieldDescriptor);
+		Object getInitialValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
 	private Document(final Builder builder)
@@ -211,7 +210,7 @@ public final class Document
 		//
 		// Get the initialization value
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-		final Object initialValue = initialValueSupplier.getInitialValue(this, fieldDescriptor);
+		final Object initialValue = initialValueSupplier.getInitialValue(fieldDescriptor);
 
 		//
 		// Update field's initial value
@@ -255,13 +254,15 @@ public final class Document
 
 	}
 
-	private static final Object createDefaultValue(final Document document, final DocumentFieldDescriptor fieldDescriptor)
+	private final Object createFieldDefaultValue(final DocumentFieldDescriptor fieldDescriptor)
 	{
+		final Document document = this;
+		
 		//
 		// Primary Key field
 		if (fieldDescriptor.isKey())
 		{
-			final int value = generateNextTemporaryId();
+			final int value = DocumentId.generateTemporaryId();
 			return value;
 		}
 
@@ -323,11 +324,6 @@ public final class Document
 		initializeFields(FieldInitializationMode.Refresh, fieldValuesSupplier);
 	}
 
-	private static int generateNextTemporaryId()
-	{
-		return nextTemporaryId.decrementAndGet();
-	}
-
 	@Override
 	public final String toString()
 	{
@@ -367,11 +363,11 @@ public final class Document
 	{
 		return fieldsByName.values();
 	}
-	
+
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		final Collection<DocumentField> documentFields = fieldsByName.values();
-		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
+		return ImmutableList.<IDocumentFieldView> copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -407,7 +403,7 @@ public final class Document
 		final DocumentField documentField = fieldsByName.get(fieldName);
 		return documentField;
 	}
-	
+
 	IDocumentFieldView getFieldViewOrNull(final String fieldName)
 	{
 		return getFieldOrNull(fieldName);
@@ -462,7 +458,7 @@ public final class Document
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
 	}
-	
+
 	public Object getValue(final String fieldName)
 	{
 		return getField(fieldName).getValue();
@@ -858,6 +854,10 @@ public final class Document
 
 			//
 			// Initialize the fields
+			if(fieldInitializerMode == FieldInitializationMode.NewDocument)
+			{
+				fieldInitializer = document::createFieldDefaultValue;
+			}
 			if (fieldInitializer != null)
 			{
 				document.initializeFields(fieldInitializerMode, fieldInitializer);
@@ -887,7 +887,7 @@ public final class Document
 		public Builder initializeAsNewDocument()
 		{
 			fieldInitializerMode = FieldInitializationMode.NewDocument;
-			fieldInitializer = Document::createDefaultValue;
+			// NOTE: fieldInitializer will be set by build() method because it's a method of document
 			return this;
 		}
 

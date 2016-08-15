@@ -41,7 +41,7 @@ import de.metas.ui.web.window.util.JSONConverters;
  * #L%
  */
 
-public class DocumentField implements IDocumentFieldView
+/*package*/class DocumentField implements IDocumentFieldView
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -88,7 +88,7 @@ public class DocumentField implements IDocumentFieldView
 		return descriptor;
 	}
 
-	Document getDocument()
+	/* package */Document getDocument()
 	{
 		return _document;
 	}
