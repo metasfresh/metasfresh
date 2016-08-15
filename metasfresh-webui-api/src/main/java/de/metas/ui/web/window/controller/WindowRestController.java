@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.service.IValuePreferenceBL;
@@ -27,7 +26,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
-import de.metas.ui.web.window.util.JSONConverters;;
+import de.metas.ui.web.window.util.JSONConverters;
+import de.metas.ui.web.window.util.JSONDocumentField;
+import de.metas.ui.web.window.util.JSONLookupValue;;
 
 /*
  * #%L
@@ -113,7 +114,7 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
-	public List<List<Map<String, Object>>> data(
+	public List<List<JSONDocumentField>> data(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -139,7 +140,7 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
-	public List<Map<String, Object>> commit(
+	public List<JSONDocumentField> commit(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -160,7 +161,7 @@ public class WindowRestController
 		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events));
 	}
 
-	private List<Map<String, Object>> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
+	private List<JSONDocumentField> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
 	{
 		//
 		// Fetch the document
@@ -204,7 +205,7 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
-	public List<Map<String, String>> typeahead(
+	public List<JSONLookupValue> typeahead(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -229,7 +230,7 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
-	public List<Map<String, String>> dropdown(
+	public List<JSONLookupValue> dropdown(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //

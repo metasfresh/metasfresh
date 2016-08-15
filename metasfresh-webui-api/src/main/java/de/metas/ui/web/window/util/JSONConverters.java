@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +15,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -56,13 +54,11 @@ public final class JSONConverters
 
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
 
-	private static final String FIELDNAME_ID = "ID";
-
-	/**
+/**
 	 * @param documents
 	 * @return array of {@link #documentToJsonObject(Document)}
 	 */
-	public static List<List<Map<String, Object>>> documentsToJsonObject(final Collection<Document> documents)
+	public static List<List<JSONDocumentField>> documentsToJsonObject(final Collection<Document> documents)
 	{
 		return documents.stream()
 				.map(document -> documentToJsonObject(document))
@@ -72,18 +68,18 @@ public final class JSONConverters
 	/**
 	 *
 	 * @param document
-	 * @return [ { field:field1 }, {...} ]
+	 * @return [ { field:someFieldName }, {...} ]
 	 */
-	private static List<Map<String, Object>> documentToJsonObject(final Document document)
+	private static List<JSONDocumentField> documentToJsonObject(final Document document)
 	{
 		final Collection<IDocumentFieldView> fields = document.getFieldViews();
-		final List<Map<String, Object>> jsonFields = new ArrayList<>(fields.size() + 1);
+		final List<JSONDocumentField> jsonFields = new ArrayList<>(fields.size() + 1);
 
 		// ID field (special)
 		{
 			final String id = DocumentId.of(document.getDocumentId()).toJson();
 			final String reason = null; // N/A
-			jsonFields.add(documentFieldToJsonObject(FIELDNAME_ID, id, reason));
+			jsonFields.add(JSONDocumentField.ofId(id, reason));
 		}
 
 		// All other fields
@@ -94,39 +90,26 @@ public final class JSONConverters
 		return jsonFields;
 	}
 
-	private static Map<String, Object> documentFieldToJsonObject(final IDocumentFieldView field)
+	private static JSONDocumentField documentFieldToJsonObject(final IDocumentFieldView field)
 	{
 		final String name = field.getFieldName();
 		final Object valueJSON = field.getValueAsJsonObject();
-		final String valueReason = null; // N/A
+		final String reason = null; // N/A
 
-		final Map<String, Object> map = documentFieldToJsonObject(name, valueJSON, valueReason);
-		map.put("mandatory", field.isMandatory());
-		map.put("readonly", field.isReadonly());
-		map.put("displayed", field.isDisplayed());
+		final JSONDocumentField jsonField = JSONDocumentField.ofName(name)
+				.setValue(valueJSON, reason)
+				.setReadonly(field.isReadonly(), reason)
+				.setMandatory(field.isMandatory(), reason)
+				.setDisplayed(field.isDisplayed(), reason);
 		if (field.isLookupValuesStale())
 		{
-			map.put("lookupValuesStale", Boolean.TRUE);
+			jsonField.setLookupValuesStale(true, reason);
 		}
 
-		return map;
+		return jsonField;
 	}
 
-	private static Map<String, Object> documentFieldToJsonObject(final String fieldName, final Object valueJSON, final String valueReason)
-	{
-		final Map<String, Object> map = new LinkedHashMap<>();
-
-		map.put("field", fieldName);
-		map.put("value", valueJSON);
-		if (valueReason != null)
-		{
-			map.put("valueReason", valueReason);
-		}
-
-		return map;
-	}
-
-	public static List<Map<String, Object>> toJsonObject(final IDocumentFieldChangedEventCollector eventsCollector)
+	public static List<JSONDocumentField> toJsonObject(final IDocumentFieldChangedEventCollector eventsCollector)
 	{
 		final List<DocumentFieldChangedEvent> events = eventsCollector.toEventsList();
 		if (events.isEmpty())
@@ -134,11 +117,11 @@ public final class JSONConverters
 			return ImmutableList.of();
 		}
 
-		final List<Map<String, Object>> jsonFields = new ArrayList<>(events.size() + 1);
+		final List<JSONDocumentField> jsonFields = new ArrayList<>(events.size() + 1);
 		DocumentFieldChangedEvent eventForIdField = null;
 		for (final DocumentFieldChangedEvent event : events)
 		{
-			final Map<String, Object> jsonField = toJsonObject(event);
+			final JSONDocumentField jsonField = toJsonObject(event);
 			jsonFields.add(jsonField);
 
 			if (event.isKey() && event.isValueSet())
@@ -149,7 +132,7 @@ public final class JSONConverters
 
 					final Object value = event.getValueAsJsonObject();
 					final String id = value == null ? null : DocumentId.fromObject(value).toJson();
-					final Map<String, Object> jsonIdField = documentFieldToJsonObject(FIELDNAME_ID, id, event.getValueReason());
+					final JSONDocumentField jsonIdField = JSONDocumentField.ofId(id, event.getValueReason());
 					jsonFields.add(0, jsonIdField);
 				}
 				else
@@ -162,69 +145,40 @@ public final class JSONConverters
 		return jsonFields;
 	}
 
-	private static Map<String, Object> toJsonObject(final DocumentFieldChangedEvent event)
+	private static JSONDocumentField toJsonObject(final DocumentFieldChangedEvent event)
 	{
-		final Map<String, Object> map = new LinkedHashMap<>();
-
-		final String name = event.getFieldName();
-		map.put("field", name);
+		final JSONDocumentField jsonField = JSONDocumentField.ofName(event.getFieldName());
 
 		if (event.isValueSet())
 		{
-			final Object valueJSON = event.getValueAsJsonObject();
-			map.put("value", valueJSON);
-			final String reason = event.getValueReason();
-			if (reason != null)
-			{
-				map.put("value-reason", reason);
-			}
+			jsonField.setValue(event.getValueAsJsonObject(), event.getValueReason());
 		}
 
 		final Boolean readonly = event.getReadonly();
 		if (readonly != null)
 		{
-			map.put("readonly", readonly);
-			final String reason = event.getReadonlyReason();
-			if (reason != null)
-			{
-				map.put("readonly-reason", reason);
-			}
+			jsonField.setReadonly(readonly, event.getValueReason());
 		}
 
 		final Boolean mandatory = event.getMandatory();
 		if (mandatory != null)
 		{
-			map.put("mandatory", mandatory);
-			final String reason = event.getMandatoryReason();
-			if (reason != null)
-			{
-				map.put("mandatory-reason", reason);
-			}
+			jsonField.setMandatory(mandatory, event.getMandatoryReason());
 		}
 
 		final Boolean displayed = event.getDisplayed();
 		if (displayed != null)
 		{
-			map.put("displayed", displayed);
-			final String reason = event.getDisplayedReason();
-			if (reason != null)
-			{
-				map.put("displayed-reason", reason);
-			}
+			jsonField.setDisplayed(displayed, event.getDisplayedReason());
 		}
 
 		final Boolean lookupValuesStale = event.getLookupValuesStale();
 		if (lookupValuesStale != null)
 		{
-			map.put("lookupValuesStale", lookupValuesStale);
-			final String reason = event.getLookupValuesStaleReason();
-			if (reason != null)
-			{
-				map.put("lookupValuesStale-reason", reason);
-			}
+			jsonField.setLookupValuesStale(lookupValuesStale, event.getLookupValuesStaleReason());
 		}
 
-		return map;
+		return jsonField;
 	}
 
 	private static final DateFormat getDateFormat()
@@ -266,7 +220,7 @@ public final class JSONConverters
 		}
 	}
 
-	public static final List<Map<String, String>> lookupValuesToJsonObject(final List<LookupValue> lookupValues)
+	public static final List<JSONLookupValue> lookupValuesToJsonObject(final List<LookupValue> lookupValues)
 	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
@@ -278,11 +232,9 @@ public final class JSONConverters
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final Map<String, String> lookupValueToJsonObject(final LookupValue lookupValue)
+	public static final JSONLookupValue lookupValueToJsonObject(final LookupValue lookupValue)
 	{
-		final String key = lookupValue.getIdAsString();
-		final String name = lookupValue.getDisplayName();
-		return ImmutableMap.of(key, name);
+		return JSONLookupValue.of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
 	}
 
 	public static final Object integerLookupValueFromJsonMap(final Map<String, String> map)
