@@ -52,6 +52,7 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 
 		//
 		// Toggle: consider HU attributes when querying for available HUs (FRESH-578 #275)
+		if(getHUEditorModel().isShowConsiderAttributesCheckbox())
 		{
 			final ITerminalCheckboxField considerAttributesToggle = factory.createTerminalCheckbox(ACTION_ConsiderAttributesToggle);
 			considerAttributesToggle.setTextAndTranslate(ACTION_ConsiderAttributesToggle);

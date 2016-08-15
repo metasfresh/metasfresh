@@ -3,13 +3,17 @@ package de.metas.fresh.picking.form.swing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 
 /*
@@ -42,9 +46,12 @@ import de.metas.handlingunits.model.I_M_HU;
  */
 /* package */class PickingHUEditorModel extends HUEditorModel
 {
+	private static final String SYSCONFIG_AllowPickingDifferentAttributes = "de.metas.fresh.picking.form.swing.PickingHUEditorModel.AllowPickingDifferentAttributes";
+	
 	private IHUSupplier huSupplier;
 	private I_M_HU _huToSelect;
 
+	private final boolean showConsiderAttributesCheckbox;
 	private Boolean _considerAttributes = null;
 
 	public PickingHUEditorModel(final ITerminalContext terminalContext, final I_M_HU huToSelect, final IHUSupplier huSupplier)
@@ -59,6 +66,29 @@ import de.metas.handlingunits.model.I_M_HU;
 		final IHUKeyFactory huKeyFactory = getHUKeyFactory();
 		final IHUKey rootHUKey = huKeyFactory.createRootKey();
 		setRootHUKey(rootHUKey);
+		
+		//
+		// Check if user is allowed to pick without considering the attributes.
+		// Then query for the matching HUs.
+		final boolean allowPickingDifferentAttributes = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowPickingDifferentAttributes, true, Env.getAD_Client_ID(terminalContext.getCtx()), Env.getAD_Org_ID(terminalContext.getCtx()));
+		if(allowPickingDifferentAttributes)
+		{
+			this.showConsiderAttributesCheckbox = true;
+			setConsiderAttributes(true); // query
+		}
+		else
+		{
+			this.showConsiderAttributesCheckbox = false;
+			setConsiderAttributes(true); // query
+			
+			// If there were no HUs found and user cannot play with "consider attributes" checkbox,
+			// then there is no need to go forward because there is nothing that user can do.
+			if(!getRootHUKey().hasChildren())
+			{
+				dispose();
+				throw new HUException("@NotFound@ @M_HU@");
+			}
+		}
 	}
 
 	@Override
@@ -73,6 +103,11 @@ import de.metas.handlingunits.model.I_M_HU;
 	{
 		return _huToSelect;
 	}
+	
+	public boolean isShowConsiderAttributesCheckbox()
+	{
+		return showConsiderAttributesCheckbox;
+	}
 
 	/**
 	 * Sets if we shall consider the attributes while searching for matching HUs.
@@ -82,7 +117,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	 * @param considerAttributes
 	 * @task FRESH-578 #275
 	 */
-	public void setConsiderAttributes(final boolean considerAttributes)
+	/* package */void setConsiderAttributes(final boolean considerAttributes)
 	{
 		_considerAttributes = considerAttributes;
 		refreshHUKeys();
@@ -122,8 +157,6 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			setSelected(huToSelect);
 		}
-		
-		// FIXME: the breadcrumb is not cleared!!!
 	}
 
 	/**
