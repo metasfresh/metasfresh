@@ -48,6 +48,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -104,7 +105,10 @@ public final class Env
 	public static void setContextProvider(final ContextProvider provider)
 	{
 		Check.assumeNotNull(provider, "provider not null");
+		
+		final ContextProvider providerOld = contextProvider;
 		contextProvider = provider;
+		s_log.info("Changed context provider: {} -> {}", providerOld, contextProvider);
 
 		// metas: 03362: Configure context's language only if we have a database connection
 		if (DB.isConnected())
@@ -139,6 +143,8 @@ public final class Env
 	 */
 	public static void exitEnv(final int status)
 	{
+		s_log.info("Exiting environment with status={}", status);
+		
 		// hengsin, avoid unncessary query of session when exit without log in
 		if (DB.isConnected())
 		{
@@ -149,7 +155,6 @@ public final class Env
 		}
 		//
 		reset(true);	// final cache reset
-		s_log.info("");
 		//
 		LogManager.shutdown();
 		//
@@ -182,7 +187,7 @@ public final class Env
 	 */
 	public static void reset(final boolean finalCall)
 	{
-		s_log.info("finalCall=" + finalCall);
+		s_log.info("Reseting environment (finalCall={})", finalCall);
 		if (Ini.isClient())
 		{
 			closeWindows();
@@ -472,21 +477,14 @@ public final class Env
 		final String nullValue = getNullPropertyValue(key);
 		ctx.setProperty(key, nullValue);
 
-		if (s_log.isTraceEnabled())
-		{
-			s_log.trace("Unset " + key + "==" + nullValue);
-		}
-
+		s_log.trace("Unset {}=={}", key, nullValue);
 	}
 
 	private static final void setProperty(final Properties ctx, final String key, final String value)
 	{
-		if (s_log.isTraceEnabled())
-		{
-			s_log.trace("Set " + key + "==" + value);
-		}
-
 		ctx.setProperty(key, value);
+		
+		s_log.trace("Set {}=={}", key, value);
 	}
 
 	private static final void removeContextForPrefix(final Properties ctx, final String keyPrefix)
@@ -902,7 +900,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -927,7 +925,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -953,7 +951,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -979,7 +977,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -1084,7 +1082,9 @@ public final class Env
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if SO (default)
+	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
+	@Deprecated
 	public static boolean isSOTrx(Properties ctx, int WindowNo)
 	{
 		final Boolean soTrx = getSOTrxOrNull(ctx, WindowNo);
@@ -1097,7 +1097,9 @@ public final class Env
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if {@link CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link CTXNAME_IsSOTrx} is not set.
+	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
+	@Deprecated
 	public static Boolean getSOTrxOrNull(final Properties ctx, final int WindowNo)
 	{
 		final String s = getContext(ctx, WindowNo, CTXNAME_IsSOTrx, true);
@@ -1141,7 +1143,7 @@ public final class Env
 		if (timestamp == null)
 		{
 			// metas: tsa: added a dummy exception to be able to track it quickly
-			s_log.error("No value for '" + context + "' or value '" + timestampStr + "' could not be parsed", new Exception());
+			s_log.error("No value for '{}' or value '{}' could not be parsed", context, timestampStr, new Exception());
 			return SystemTime.asTimestamp();
 		}
 
@@ -1454,7 +1456,7 @@ public final class Env
 		}
 		catch (SQLException e)
 		{
-			s_log.error("", e);
+			s_log.error("Failed loading available languages", new DBException(e, sql));
 		}
 		finally
 		{
@@ -1466,7 +1468,7 @@ public final class Env
 		// No Language - set to System
 		if (AD_Languages.size() == 0)
 		{
-			s_log.warn("NO System Language - Set to Base " + Language.getBaseAD_Language());
+			s_log.warn("NO System Language - Set to Base Language: {}", Language.getBaseAD_Language());
 			language.setAD_Language(Language.getBaseAD_Language());
 			return;
 		}
@@ -1479,7 +1481,7 @@ public final class Env
 			String langCompare = language.getAD_Language().substring(0, 2);
 			if (lang.equals(langCompare))
 			{
-				s_log.debug("Found similar Language " + AD_Language);
+				s_log.debug("Found similar Language {}", AD_Language);
 				language.setAD_Language(AD_Language);
 				return;
 			}
@@ -1488,8 +1490,7 @@ public final class Env
 		// We found same language
 		// if (!"0".equals(Msg.getMsg(AD_Language, "0")))
 
-		s_log.warn("Not System Language=" + language
-				+ " - Set to Base Language " + Language.getBaseAD_Language());
+		s_log.warn("Not System Language={} - Set to Base Language: {}", language, Language.getBaseAD_Language());
 		language.setAD_Language(Language.getBaseAD_Language());
 	}   // verifyLanguage
 
@@ -1674,7 +1675,7 @@ public final class Env
 			int j = inStr.indexOf('@');						// next @
 			if (j < 0)
 			{
-				s_log.error("No second tag: " + inStr);
+				s_log.error("No second tag: {}", inStr);
 				return "";						// no second tag
 			}
 
@@ -1951,7 +1952,7 @@ public final class Env
 	 */
 	public static void startBrowser(String url)
 	{
-		s_log.info(url);
+		s_log.info("Starting browser using url={}", url);
 		Services.get(IClientUI.class).showURL(url);
 	}   // startBrowser
 
@@ -1997,16 +1998,17 @@ public final class Env
 		for (int i = 0; i < s_hiddenWindows.size(); i++)
 		{
 			CFrame hidden = s_hiddenWindows.get(i);
-			s_log.info(i + ": " + hidden);
+			s_log.info("Checking hidden window {}: {}", i, hidden);
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
 		}
-		if (window.getAD_Window_ID() != 0)         	// workbench
+		
+		if (window.getAD_Window_ID() > 0)         	// workbench
 		{
 			if (s_hiddenWindows.add(window))
 			{
 				window.setVisible(false);
-				s_log.info(window.toString());
+				s_log.info("Added to hidden windows list: {}", window);
 				// window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_ICONIFIED));
 				if (s_hiddenWindows.size() > 10)
 				{
@@ -2041,7 +2043,7 @@ public final class Env
 			if (hidden.getAD_Window_ID() == AD_Window_ID)
 			{
 				s_hiddenWindows.remove(i); // NOTE: we can safely remove here because we are also returning (no future iterations)
-				s_log.info(hidden.toString());
+				s_log.info("Showing window: {}", hidden);
 				hidden.setVisible(true);
 				// De-iconify window - teo_sarca [ 1707221 ]
 				int state = hidden.getExtendedState();
@@ -2075,18 +2077,18 @@ public final class Env
 	 *
 	 * @param sec seconds
 	 */
-	public static void sleep(int sec)
+	public static void sleep(final int sec)
 	{
-		s_log.info("Start - Seconds=" + sec);
+		s_log.debug("Sleeping for {} seconds", sec);
 		try
 		{
 			Thread.sleep(sec * 1000);
 		}
 		catch (Exception e)
 		{
-			s_log.warn("", e);
+			s_log.warn("Failed sleeping for {} seconds", sec, e);
 		}
-		s_log.info("End");
+		s_log.debug("Sleeping done");
 	}	// sleep
 
 	/**
@@ -2391,7 +2393,7 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.error("No value for: " + context);
+			s_log.error("No value for: {}", context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
@@ -2408,7 +2410,7 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.error("No value for: " + context);
+			s_log.error("No value for: {}", context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
@@ -2440,7 +2442,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return CTXVALUE_NoValueInt;
 	}
