@@ -22,7 +22,6 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -89,7 +88,18 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 	public void assertExecutedUsingTrxName(final String expectedLastTrxName)
 	{
 		assertExecuted();
-		Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, this.lastTrxName);
+
+		if (expectedLastTrxName == null)
+		{
+			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
+		}
+		else
+		{
+			Assert.assertEquals("Runnable was executed using expected trxName: " + this, ITrx.TRXNAME_ThreadInherited, getLastTrxName());
+
+			final String lastTrxNameEffective = getLastTrxNameEffective();
+			Assert.assertEquals("Runnable was executed using expected EFFECTIVE trxName: " + this, expectedLastTrxName, lastTrxNameEffective);
+		}
 	}
 
 	/**
@@ -115,6 +125,11 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 	public String getLastTrxName()
 	{
 		return lastTrxName;
+	}
+
+	public String getLastTrxNameEffective()
+	{
+		return lastTrx != null ? lastTrx.getTrxName() : ITrx.TRXNAME_None;
 	}
 
 	public ITrx getLastTrx()

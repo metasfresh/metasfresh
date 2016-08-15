@@ -144,9 +144,9 @@ public class TrxManagerTest
 
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
-		final String localTrxName = runnable.getLastTrxName();
-		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxName);
-		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxName, trx);
+		final String localTrxNameEffective = runnable.getLastTrxNameEffective();
+		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxNameEffective);
+		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxNameEffective, trx);
 
 		Assert.assertEquals("Commit was called for " + trx, true, trx.isCommitCalled());
 		Assert.assertEquals("Close was called for " + trx, true, trx.isCloseCalled());
@@ -170,11 +170,11 @@ public class TrxManagerTest
 
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
-		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertTrue("Created trx '" + localTrxName + "' shall start with '" + trxName + "'", localTrxName.startsWith(trxName));
+		final String localTrxNameEffective = runnable.getLastTrxNameEffective();
+		Assert.assertTrue("Created trx '" + localTrxNameEffective + "' shall start with '" + trxName + "'", localTrxNameEffective.startsWith(trxName));
 
-		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxName);
-		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxName, trx);
+		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxNameEffective);
+		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxNameEffective, trx);
 
 		Assert.assertEquals("Commit was called for " + trx, true, trx.isCommitCalled());
 		Assert.assertEquals("Close was called for " + trx, true, trx.isCloseCalled());
@@ -199,7 +199,7 @@ public class TrxManagerTest
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
 		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertEquals("Invalid trxName used", trxName, localTrxName);
+		Assert.assertEquals("Invalid trxName used", ITrx.TRXNAME_ThreadInherited, localTrxName);
 
 		final MockedTrx trx = (MockedTrx)trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		Assert.assertNotNull("Transaction was created but not removed for trxName=" + localTrxName, trx);
@@ -235,11 +235,9 @@ public class TrxManagerTest
 		Assert.assertTrue("Inner Runnable was executed", runnableInner.isExecuted());
 
 		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertFalse("Runnable trxName shall not be null: " + localTrxName,
-				trxManager.isNull(localTrxName));
+		Assert.assertFalse("Runnable trxName shall not be null: " + localTrxName, trxManager.isNull(localTrxName));
 
-		Assert.assertEquals("Inner runnable's trxName shall be the same as runnable's trxName",
-				localTrxName, runnableInner.getLastTrxName());
+		Assert.assertEquals("Inner runnable's trxName shall be the same as runnable's trxName", localTrxName, runnableInner.getLastTrxName());
 
 		Assert.assertNull("Transaction shall be removed: trxName=" + localTrxName,
 				trxManager.get(localTrxName, OnTrxMissingPolicy.ReturnTrxNone));

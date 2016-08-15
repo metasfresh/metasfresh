@@ -30,9 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
 import org.adempiere.ad.trx.exceptions.OnTrxMissingPolicyNotSupportedException;
 import org.adempiere.ad.trx.exceptions.TrxException;
@@ -65,8 +65,11 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.logging.LogManager;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -403,21 +406,42 @@ public abstract class AbstractTrxManager implements ITrxManager
 		return createTrxName(prefix);
 	}	// createTrxName
 
+	@Override
+	public <T> T call(final Callable<T> callable)
+	{
+		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
+		return call(trxCallable);
+	}
+
 	/**
 	 * Runs the given trx runnable in an internal transaction (the transaction name will start with <code>"TrxRun"</code>).
 	 */
 	@Override
 	public void run(final TrxRunnable r)
 	{
-		run(ITrx.TRXNAME_None, r);
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
+		call(callable);
+	}
+	
+	@Override
+	public <T> T call(final TrxCallable<T> callable)
+	{
+		return call(ITrx.TRXNAME_None, callable);
 	}
 
 	// metas: backward compatibility
 	@Override
 	public void run(final String trxName, final TrxRunnable r)
 	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
+		call(trxName, callable);
+	}
+	
+	@Override
+	public <T> T call(final String trxName, final TrxCallable<T> callable)
+	{
 		final boolean manageTrx = false;
-		run(trxName, manageTrx, r);
+		return call(trxName, manageTrx, callable);
 	}
 
 	/**
@@ -431,6 +455,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 	// metas: added manageTrx parameter
 	@Override
 	public void run(final String trxName, final boolean manageTrx, final TrxRunnable runnable)
+	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(trxName, manageTrx, callable);
+	}
+	
+	@Override
+	public <T> T call(final String trxName, final boolean manageTrx, final TrxCallable<T> callable)
 	{
 		final TrxPropagation trxMode;
 		final OnRunnableSuccess onRunnableSuccess;
@@ -473,11 +504,18 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 
 		final ITrxRunConfig trxRunConfig = new TrxRunConfig(trxMode, onRunnableSuccess, onRunnableFail);
-		run(trxNameToUse, trxRunConfig, runnable);
+		return call(trxNameToUse, trxRunConfig, callable);
 	}
 
 	@Override
 	public void run(final String trxName, final ITrxRunConfig cfg, final TrxRunnable runnable)
+	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(trxName, cfg, callable);
+	}
+
+	@Override
+	public <T> T call(final String trxName, final ITrxRunConfig cfg, final TrxCallable<T> callable)
 	{
 		//
 		// Determine which trxName we shall use based on trx run configuration
@@ -565,9 +603,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			restoreThreadLocalTrxName = true;
 			threadLocalTrx.set(trxNameToUse);
 
-			final TrxRunnable2 runnable2 = TrxRunnable2Wrapper.wrapIfNeeded(runnable);
-			run0(runnable2, cfg, trxNameToUse);
-
+			return call0(callable, cfg, trxNameToUse);
 		}
 		finally
 		{
@@ -583,9 +619,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final void run0(final TrxRunnable2 runnable, final ITrxRunConfig cfg, final String trxName)
+	private final <T> T call0(final TrxCallable<T> callable, final ITrxRunConfig cfg, final String trxName)
 	{
-		Check.assumeNotNull(runnable, IllegalTrxRunStateException.class, "Param 'runnable' is not null");
+		Check.assumeNotNull(callable, IllegalTrxRunStateException.class, "Param 'callable' is not null");
 		Check.assumeNotNull(cfg, IllegalTrxRunStateException.class, "Param 'cfg' is not null");
 
 		// Validate trxName
@@ -642,6 +678,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final OnRunnableFail onRunnableFail = cfg.getOnRunnableFail();
 		ITrxSavepoint savepoint = null;
 		Throwable exceptionToThrow = null; // set in "catch" block; used in finally block to add more suppressed exceptions if needed.
+		T callableResult = null;
 		try
 		{
 			// Create the transaction savepoint if needed
@@ -653,7 +690,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 
 			// Actually execute the runnable
-			runnable.run(trxName);
+			//runnable.run(trxName);
+			callableResult = callable.call();
 
 			// Commit the transaction if we were asked to do it
 			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
@@ -665,6 +703,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 				// "org.postgresql.util.PSQLException: ERROR: RELEASE SAVEPOINT can only be used in transaction blocks; State=25P01; ErrorCode=0"
 				savepoint = null;
 			}
+			
+			return callableResult;
 		}
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
 		catch (final Throwable runException)
@@ -675,7 +715,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			boolean rollback = true;
 			try
 			{
-				rollback = runnable.doCatch(runException);
+				rollback = callable.doCatch(runException);
 				exceptionToThrow = null;
 			}
 			catch (final Throwable doCatchException)
@@ -732,6 +772,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				throw AdempiereException.wrapIfNeeded(exceptionToThrow);
 			}
 
+			return callableResult;
 		}
 		finally
 		{
@@ -753,7 +794,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// Call custom finally handler (if any):
 			try
 			{
-				runnable.doFinally();
+				callable.doFinally();
 			}
 			catch (final Throwable doFinallyException)
 			{
