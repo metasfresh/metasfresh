@@ -441,12 +441,8 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public void save(final Document document)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, (trxName) -> saveRecord0(document));
-	}
-
-	private void saveRecord0(final Document document)
-	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		
 		//
 		// Load the PO / Create new PO instance
 		final PO po;

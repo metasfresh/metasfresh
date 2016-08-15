@@ -1,9 +1,18 @@
 package de.metas.ui.web.window.controller;
 
+import java.util.concurrent.Callable;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.model.DocumentFieldChangedEventCollector;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
 
@@ -41,7 +50,7 @@ public class Execution implements IAutoCloseable
 		return execution;
 	}
 
-	public static Execution startExecution()
+	private static Execution startExecution()
 	{
 		final Execution executionOld = currentExecutionHolder.get();
 		if (executionOld != null)
@@ -54,10 +63,48 @@ public class Execution implements IAutoCloseable
 		return execution;
 	}
 
+	/**
+	 * Calls the given caller running in:
+	 * <ul>
+	 * <li>in a new execution; assumes no other executions are currently running on this thread
+	 * <li>in transaction
+	 * </ul>
+	 * 
+	 * @param name
+	 * @param callable
+	 * @return callable's return value
+	 */
+	public static <T> T callInNewExecution(final String name, final Callable<T> callable)
+	{
+		Preconditions.checkNotNull(callable, "callable");
+
+		// TODO: implement a mechanism to restore documents to the state they were before running this commit, in case something fails
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		boolean error = false;
+		try (final Execution execution = startExecution())
+		{
+			return trxManager.call(callable);
+		}
+		catch (Exception e)
+		{
+			error = true;
+			throw Throwables.propagate(e);
+		}
+		finally
+		{
+			logger.debug("Executed {}({}) in {} - OK={}", name, callable, stopwatch, !error);
+		}
+	}
+
 	public static IDocumentFieldChangedEventCollector getCurrentFieldChangedEventsCollector()
 	{
 		return getCurrent().getFieldChangedEventsCollector();
 	}
+
+	private static final Logger logger = LogManager.getLogger(Execution.class);
 
 	private static final ThreadLocal<Execution> currentExecutionHolder = new ThreadLocal<>();
 

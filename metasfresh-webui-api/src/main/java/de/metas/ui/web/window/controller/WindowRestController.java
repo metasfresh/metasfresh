@@ -73,6 +73,7 @@ public class WindowRestController
 		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
 		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
+		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChangedEventCollector.class, Level.DEBUG); // to have the "reason" in JSON
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
 		//
@@ -131,11 +132,10 @@ public class WindowRestController
 				.allowNewRowId()
 				.build();
 
-		try (Execution execution = Execution.startExecution())
-		{
+		return Execution.callInNewExecution("window.data", () -> {
 			final List<Document> documents = documentCollection.getDocuments(documentPath);
 			return JSONConverters.documentsToJsonObject(documents);
-		}
+		});
 	}
 
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
@@ -157,49 +157,50 @@ public class WindowRestController
 				.allowNewRowId()
 				.build();
 
-		try (final Execution execution = Execution.startExecution())
+		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events));
+	}
+
+	private List<Map<String, Object>> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
+	{
+		//
+		// Fetch the document
+		final Document document = documentCollection.getDocument(documentPath);
+
+		//
+		// Apply changes
+		for (final JSONDocumentChangedEvent event : events)
 		{
-			// TODO: create and manage database transaction, to ensure consistency
-			// TODO: implement a mechanism to restore documents to the state they were before running this commit, in case something fails
-			
-			//
-			// Fetch the document
-			final Document document = documentCollection.getDocument(documentPath);
-
-			//
-			// Apply changes
-			for (final JSONDocumentChangedEvent event : events)
+			if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
 			{
-				if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
-				{
-					document.setValue(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
-				}
-				else
-				{
-					throw new IllegalArgumentException("Unknown operation: " + event);
-				}
+				document.setValue(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
 			}
-
-			//
-			// Try saving it
-			documentCollection.saveIfPossible(document);
-			
-			//
-			// Make sure all events were collected for the case when we just created the new document
-			// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
-			if (documentPath.isNewDocument())
+			else
 			{
-				final boolean somethingCollected = execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
-				if(somethingCollected)
-				{
-					logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
-				}
+				throw new IllegalArgumentException("Unknown operation: " + event);
 			}
-
-			//
-			// Return the changes
-			return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
 		}
+
+		//
+		// Try saving it
+		documentCollection.saveIfPossible(document);
+
+		final Execution execution = Execution.getCurrent();
+
+		//
+		// Make sure all events were collected for the case when we just created the new document
+		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
+		if (documentPath.isNewDocument())
+		{
+			final boolean somethingCollected = execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
+			if (somethingCollected)
+			{
+				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
+			}
+		}
+
+		//
+		// Return the changes
+		return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
