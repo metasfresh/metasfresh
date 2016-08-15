@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,17 +14,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window_old.PropertyName;
 import de.metas.ui.web.window_old.shared.ImageResource;
-import de.metas.ui.web.window_old.shared.JSONObjectValueHolder;
 import de.metas.ui.web.window_old.shared.ImageResource.ResourceType;
+import de.metas.ui.web.window_old.shared.JSONObjectValueHolder;
 import de.metas.ui.web.window_old.shared.command.ViewCommandResult;
-import de.metas.ui.web.window_old.shared.datatype.GridRowId;
-import de.metas.ui.web.window_old.shared.datatype.LookupValue;
-import de.metas.ui.web.window_old.shared.datatype.LookupValueList;
-import de.metas.ui.web.window_old.shared.datatype.NullValue;
-import de.metas.ui.web.window_old.shared.datatype.PropertyPath;
-import de.metas.ui.web.window_old.shared.datatype.PropertyPathValue;
-import de.metas.ui.web.window_old.shared.datatype.PropertyPathValuesDTO;
-import de.metas.ui.web.window_old.shared.datatype.PropertyValuesDTO;
 import de.metas.ui.web.window_old.shared.descriptor.PropertyDescriptorType;
 import de.metas.ui.web.window_old.shared.descriptor.PropertyDescriptorValueType;
 import de.metas.ui.web.window_old.shared.descriptor.PropertyLayoutInfo;
@@ -63,6 +56,7 @@ import de.metas.ui.web.window_old.util.JsonHelper;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Ignore("Does not apply anymore")
 public class JSONTest
 {
 	private ObjectMapper jsonObjectMapper;
