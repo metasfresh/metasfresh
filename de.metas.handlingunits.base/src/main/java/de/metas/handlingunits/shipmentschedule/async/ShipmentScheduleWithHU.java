@@ -152,12 +152,15 @@ import de.metas.logging.LogManager;
 		if (_attributesAggregationKey == null)
 		{
 			_attributesAggregationKey = createAttributesAggregationKey();
+			logger.trace("AttributesAggregationKey created: {}", _attributesAggregationKey);
 		}
 		return _attributesAggregationKey;
 	}
 
 	private Object createAttributesAggregationKey()
 	{
+		logger.trace("Creating AttributesAggregationKey");
+		
 		final I_M_HU hu = getTopLevelHU();
 		if (hu == null)
 		{
@@ -172,6 +175,9 @@ import de.metas.logging.LogManager;
 			// Only consider attributes which are usable in ASI
 			if (!attributeValue.isUseInASI())
 			{
+				logger.trace("Skip attribute because UseInASI=false: {}", attributeValue);
+				continue;
+			}
 			
 			// Only consider attributes which were defined in the template (i.e. No PI),
 			// because only those attributes will be considered in ASI, so only those attributes will land there.
@@ -185,6 +191,7 @@ import de.metas.logging.LogManager;
 			final String name = attributeValue.getM_Attribute().getValue();
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, value == null ? Null.NULL : value);
+			logger.trace("Considered attribute {}={}", name, value);
 		}
 
 		return keyBuilder.build();
