@@ -134,11 +134,6 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 		}
 	}
 
-	/**
-	 * This method is public because we want to see from outside which hostname the customizer works with.
-	 *
-	 * @return
-	 */
 	private final String getHostNameWithDot()
 	{
 		if (Check.isEmpty(_hostNameWithDot, true))
