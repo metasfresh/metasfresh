@@ -172,6 +172,13 @@ import de.metas.logging.LogManager;
 			// Only consider attributes which are usable in ASI
 			if (!attributeValue.isUseInASI())
 			{
+			
+			// Only consider attributes which were defined in the template (i.e. No PI),
+			// because only those attributes will be considered in ASI, so only those attributes will land there.
+			// e.g. SSCC18 which has UseInASI=true but it's not defined in template but in some LUs.
+			if(!attributeValue.isDefinedByTemplate())
+			{
+				logger.trace("Skip attribute because it's not defined by template: {}", attributeValue);
 				continue;
 			}
 

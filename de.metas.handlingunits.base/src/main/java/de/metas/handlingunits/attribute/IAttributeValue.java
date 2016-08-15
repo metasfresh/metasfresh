@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -114,9 +113,9 @@ public interface IAttributeValue
 	String getValueAsString();
 
 	String getValueInitialAsString();
-	
+
 	Date getValueAsDate();
-	
+
 	Date getValueInitialAsDate();
 
 	/**
@@ -193,7 +192,7 @@ public interface IAttributeValue
 	 * @return true if attribute is readonly for user
 	 */
 	boolean isReadonlyUI();
-	
+
 	/**
 	 * @return true if attribute is displayed to user
 	 */
@@ -208,6 +207,17 @@ public interface IAttributeValue
 	 * @return true if new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer
 	 */
 	boolean isUseInASI();
+
+	/**
+	 * 
+	 * @return
+	 * 		<ul>
+	 *         <li>true if this attribute was defined by the standard template
+	 *         <li>false if this attribute is a customization on a particular element (e.g.HU, ASI etc)
+	 *         </ul>
+	 * @task FRESH-578 #275
+	 */
+	boolean isDefinedByTemplate();
 
 	/**
 	 * Get the "null" attribute value, in case it was set.

@@ -34,6 +34,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeStrategyFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 
 public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
@@ -93,6 +94,12 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	public boolean isUseInASI()
 	{
 		return huPIAttribute.isUseInASI();
+	}
+	
+	@Override
+	public boolean isDefinedByTemplate()
+	{
+		return huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.NO_HU_PI_Version_ID;
 	}
 
 	public I_M_HU_PI_Attribute getM_HU_PI_Attribute()

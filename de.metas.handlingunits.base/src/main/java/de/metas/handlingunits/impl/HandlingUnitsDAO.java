@@ -84,6 +84,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	// NOTE: it's public only for testing purposes
 	public static final int NO_HU_PI_ID = 100;
+	public static final int NO_HU_PI_Version_ID = 100;
 	public static final int NO_HU_PI_Item_ID = 540004;
 	public static final int VIRTUAL_HU_PI_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
