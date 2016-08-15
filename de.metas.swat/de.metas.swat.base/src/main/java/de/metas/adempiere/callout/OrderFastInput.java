@@ -41,7 +41,6 @@ import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -89,57 +88,45 @@ public class OrderFastInput extends CalloutEngine
 	{
 		if (isCalloutActive())
 		{
-			return "";
-		}
-
-		final Properties ctx = calloutField.getCtx();
-		final int WindowNo = calloutField.getWindowNo();
-		if (!Env.isSOTrx(ctx, WindowNo))
-		{
-			return "";
+			return NO_ERROR;
 		}
 
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		final Object value = calloutField.getValue();
-		// if (value != null || mField.getValue() != null)
-		if (value != null)
+		if (!order.isSOTrx())
+		{
+			return NO_ERROR;
+		}
+
+		if (order.getC_BPartner_ID() > 0)
 		{
 			final ICalloutRecord calloutRecord = calloutField.getCalloutRecord();
-			if (setShipperId(calloutField, true) && !Check.isEmpty(order.getReceivedVia()) && calloutRecord.dataSave(false))
+			if (setShipperId(order, true) && !Check.isEmpty(order.getReceivedVia()) && calloutRecord.dataSave(false))
 			{
-				// final GridField productField =
-				// mTab.getField(CustomColNames.C_Order_M_PRODUCT_ID);
-				//
-				// productField.isEditable(true);
-				// mTab.dataRefreshAll();
 				calloutRecord.dataRefresh();
-				// mTab.fireStateChangeEvent
 			}
 		}
 		selectFocus(calloutField);
-		return "";
+		return NO_ERROR;
 	}
 
-	public String mShipperId(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String mShipperId(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
 		{
-			return "";
+			return NO_ERROR;
 		}
-		if (!Env.isSOTrx(ctx, WindowNo))
+		
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		if (!order.isSOTrx())
 		{
-			return "";
+			return NO_ERROR;
 		}
 		// nothing to do right now...
-		return "";
+		return NO_ERROR;
 	}
 
-	private boolean setShipperId(final ICalloutField calloutField, final boolean force)
+	private boolean setShipperId(final I_C_Order order, final boolean force)
 	{
-		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-
 		if (!force && order.getM_Shipper_ID() > 0)
 		{
 			return true;
@@ -148,10 +135,10 @@ public class OrderFastInput extends CalloutEngine
 		if (order.getC_BPartner_ID() > 0)
 		{
 			// try to set the shipperId using BPartner
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), null);
+			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), ITrx.TRXNAME_None);
 			if (shipper != null)
 			{
-				order.setM_Shipper_ID(shipper.getM_Shipper_ID());
+				order.setM_Shipper(shipper);
 				return true;
 			}
 		}
@@ -162,7 +149,7 @@ public class OrderFastInput extends CalloutEngine
 	{
 		if (isCalloutActive())
 		{
-			return "";
+			return NO_ERROR;
 		}
 
 		final String msg = evalProductQtyInput(calloutField);
