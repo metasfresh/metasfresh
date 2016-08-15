@@ -115,7 +115,7 @@ public interface ModelValidator
 	public static final int TIMING_AFTER_REVERSECORRECT = DOCTIMING_Offset + 13;
 	/** Called after document is reverse-accrual */
 	public static final int TIMING_AFTER_REVERSEACCRUAL = DOCTIMING_Offset + 14;
-	
+
 	/** Called after document is un-posted */
 	public static final int TIMING_AFTER_UNPOST = DOCTIMING_Offset + 16;
 
