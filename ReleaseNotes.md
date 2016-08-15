@@ -10,7 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.30.29 (2016-32, RC)
+# metasfresh 4.31.29 (2016-33)
+
+## Features
+ - #288 Problem with individual client log settings
+   * outputting the individual log settings on user login to ease support
+
+## Fixes
+
+
+# metasfresh 4.30.29 (2016-32)
 
 ## Features
 
