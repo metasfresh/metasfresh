@@ -658,6 +658,10 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
+		else if (model instanceof ITableRecordReference)
+		{
+			return ((ITableRecordReference)model).getRecord_ID();
+		}
 		else
 		{
 			return helpers.getId(model);

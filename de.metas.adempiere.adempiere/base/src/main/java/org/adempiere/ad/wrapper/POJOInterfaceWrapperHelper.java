@@ -109,6 +109,12 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	}
 
 	@Override
+	public void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
+	{
+		POJOWrapper.setTrxName(model, trxName);
+	}
+
+	@Override
 	public int getId(final Object model)
 	{
 		return POJOWrapper.getWrapper(model).getId();
