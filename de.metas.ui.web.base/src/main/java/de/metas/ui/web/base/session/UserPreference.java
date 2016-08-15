@@ -29,6 +29,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
+import com.google.common.base.MoreObjects;
+
 /**
  *
  * @author hengsin
@@ -41,7 +43,7 @@ public final class UserPreference implements Serializable
 	/** Language */
 	public static final String P_LANGUAGE = "Language";
 	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
-	
+
 	/** Role */
 	public static final String P_ROLE = "Role";
 	private static final String DEFAULT_ROLE = "";
@@ -104,8 +106,18 @@ public final class UserPreference implements Serializable
 			DEFAULT_MENU_COLLAPSED };
 
 	/** Container for Properties */
-	private Properties props = new Properties();
+	private Properties props;
 	private int m_AD_User_ID = -1;
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_User_ID", m_AD_User_ID)
+				.add("properties", props)
+				.toString();
+	}
 
 	/**
 	 * save user preference
@@ -136,7 +148,7 @@ public final class UserPreference implements Serializable
 		}
 	}
 
-	private final Properties createDAOCtx()
+	private static final Properties createDAOCtx()
 	{
 		final Properties ctx = Env.deriveCtx(Env.getCtx());
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System);
@@ -144,7 +156,7 @@ public final class UserPreference implements Serializable
 		return ctx;
 	}
 
-	private final Map<String, I_AD_Preference> retrievePreferencesMap(final Properties ctx, final int adUserId)
+	private static final Map<String, I_AD_Preference> retrievePreferencesMap(final Properties ctx, final int adUserId)
 	{
 		final List<I_AD_Preference> preferencesList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, ctx, ITrx.TRXNAME_ThreadInherited)
@@ -185,7 +197,7 @@ public final class UserPreference implements Serializable
 	 *
 	 * @param adUserId
 	 */
-	public void loadPreference(final int adUserId)
+	private void loadPreference(final int adUserId)
 	{
 		if (adUserId < 0)
 		{
@@ -213,7 +225,7 @@ public final class UserPreference implements Serializable
 		m_AD_User_ID = adUserId;
 		this.props = props;
 	}
-	
+
 	public void loadPreference(final Properties ctx)
 	{
 		final int adUserId = Env.getAD_User_ID(ctx);
@@ -277,11 +289,17 @@ public final class UserPreference implements Serializable
 			return "";
 		}
 
-		final String value = props.getProperty(key, "");
-		if(Check.isEmpty(value))
+		if(props == null)
 		{
 			return "";
 		}
+		
+		final String value = props.getProperty(key, "");
+		if (Check.isEmpty(value))
+		{
+			return "";
+		}
+		
 		return value;
 	}
 
@@ -296,7 +314,7 @@ public final class UserPreference implements Serializable
 		final String value = getProperty(key);
 		return DisplayType.toBoolean(value, false);
 	}
-	
+
 	public void updateContext(final Properties ctx)
 	{
 		Env.setContext(ctx, "#ShowTrl", true);
