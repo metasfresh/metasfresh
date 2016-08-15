@@ -44,7 +44,7 @@ public class DocumentFieldDependencyMap
 	
 	public enum DependencyType
 	{
-		Value, ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues,
+		ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues,
 	};
 
 	private final Map<DependencyType, Multimap<String, String>> type2name2dependencies;

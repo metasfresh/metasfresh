@@ -3,8 +3,6 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Supplier;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -35,17 +33,26 @@ public interface IDocumentFieldChangedEventCollector
 
 	List<DocumentFieldChangedEvent> toEventsList();
 
-	void collectValueChanged(DocumentField documentField, Supplier<String> reason);
+	void collectValueChanged(DocumentField documentField, ReasonSupplier reason);
 
-	void collectReadonlyChanged(DocumentField documentField, Supplier<String> reason);
+	void collectReadonlyChanged(DocumentField documentField, ReasonSupplier reason);
 
-	void collectMandatoryChanged(DocumentField documentField, Supplier<String> reason);
+	void collectMandatoryChanged(DocumentField documentField, ReasonSupplier reason);
 
-	void collectDisplayedChanged(DocumentField documentField, Supplier<String> reason);
+	void collectDisplayedChanged(DocumentField documentField, ReasonSupplier reason);
 
-	void collectLookupValuesStaled(DocumentField documentField, Supplier<String> reason);
+	void collectLookupValuesStaled(DocumentField documentField, ReasonSupplier reason);
 
 	void collectFrom(IDocumentFieldChangedEventCollector fromCollector);
 
-	void collectFrom(Document document, Supplier<String> reason);
+	void collectFrom(Document document, ReasonSupplier reason);
+
+	@FunctionalInterface
+	interface ReasonSupplier
+	{
+		/**
+		 * @return actual reason string
+		 */
+		String get();
+	}
 }

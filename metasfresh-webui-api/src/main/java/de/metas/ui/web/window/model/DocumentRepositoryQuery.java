@@ -41,14 +41,14 @@ public final class DocumentRepositoryQuery
 		return new Builder(entityDescriptor);
 	}
 
-	public static final DocumentRepositoryQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final Object recordId)
+	public static final DocumentRepositoryQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final int recordId)
 	{
 		Check.assumeNotNull(recordId, "Parameter recordId is not null");
 		return builder(entityDescriptor).setRecordId(recordId).build();
 	}
 
 	private final DocumentEntityDescriptor entityDescriptor;
-	private final Object recordId;
+	private final int recordId;
 	private final Document parentDocument;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
@@ -77,9 +77,14 @@ public final class DocumentRepositoryQuery
 		return entityDescriptor;
 	}
 
-	public Object getRecordId()
+	public int getRecordId()
 	{
 		return recordId;
+	}
+	
+	public boolean isRecordIdSet()
+	{
+		return recordId >= 0;
 	}
 
 	public Document getParentDocument()
@@ -118,7 +123,7 @@ public final class DocumentRepositoryQuery
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
-		private Object recordId;
+		private int recordId = -1;
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -131,7 +136,7 @@ public final class DocumentRepositoryQuery
 			return new DocumentRepositoryQuery(this);
 		}
 
-		public Builder setRecordId(final Object recordId)
+		public Builder setRecordId(final int recordId)
 		{
 			this.recordId = recordId;
 			return this;

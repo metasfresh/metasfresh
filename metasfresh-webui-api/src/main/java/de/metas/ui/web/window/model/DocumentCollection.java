@@ -15,8 +15,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -107,51 +107,41 @@ public class DocumentCollection
 		}
 	}
 
-	public Document getDocument(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId rowId)
+	public Document getDocument(final DocumentPath documentPath)
 	{
-		final Document document = getDocument(adWindowId, documentId);
+		final Document document = getDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
 
-		if (Check.isEmpty(detailId))
+		if (!documentPath.isIncludedDocument())
 		{
 			return document;
 		}
 
-		if (rowId == null)
+		if (documentPath.isNewIncludedDocument())
 		{
-			throw new IllegalArgumentException("Invalid rowId: " + rowId);
-		}
-		else if (rowId.isNew())
-		{
-			return document.createIncludedDocument(detailId);
+			return document.createIncludedDocument(documentPath.getDetailId());
 		}
 		else
 		{
-			return document.getIncludedDocument(detailId, rowId);
+			return document.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
 		}
 	}
 
-	public List<Document> getDocuments(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	public List<Document> getDocuments(final DocumentPath documentPath)
 	{
-		final DocumentId documentId = DocumentId.of(idStr);
-		final Document document = getDocument(adWindowId, documentId);
+		final Document document = getDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
 
-		if (Check.isEmpty(detailId))
+		if (!documentPath.isIncludedDocument())
 		{
 			return ImmutableList.of(document);
 		}
 
-		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
-		if (rowId == null)
+		if (documentPath.isAnyIncludedDocument())
 		{
-			return document.getIncludedDocuments(detailId);
-		}
-		else if (rowId.isNew())
-		{
-			throw new IllegalArgumentException("Invalid rowId=" + rowId);
+			return document.getIncludedDocuments(documentPath.getDetailId());
 		}
 		else
 		{
-			return ImmutableList.of(document.getIncludedDocument(detailId, rowId));
+			return ImmutableList.of(document.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId()));
 		}
 	}
 

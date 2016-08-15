@@ -149,8 +149,13 @@ public class IncludedDocumentsCollection
 
 	private final Document loadById(final DocumentId id)
 	{
+		if (id == null || id.isNew())
+		{
+			throw new IllegalArgumentException("Invalid id: " + id);
+		}
+		
 		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(entityDescriptor)
-				.setRecordId(id)
+				.setRecordId(id.toInt())
 				.setParentDocument(parentDocument)
 				.build();
 

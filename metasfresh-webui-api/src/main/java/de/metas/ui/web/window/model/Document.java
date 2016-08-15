@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -36,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -70,9 +70,9 @@ public final class Document
 
 	public static final Document NULL = null;
 
-	private static final Supplier<String> REASON_Value_DirectSetOnDocument = () -> "direct set on Document";
-	private static final Supplier<String> REASON_Value_NewDocument = () -> "new document";
-	private static final Supplier<String> REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
+	private static final ReasonSupplier REASON_Value_DirectSetOnDocument = () -> "direct set on Document";
+	private static final ReasonSupplier REASON_Value_NewDocument = () -> "new document";
+	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
@@ -181,50 +181,68 @@ public final class Document
 		if (FieldInitializationMode.NewDocument == mode)
 		{
 			executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
-			updateAllDependencies();
+			final boolean collectEventsEventIfNoChange = true;
+			updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
 		}
 		else if (FieldInitializationMode.Load == mode)
 		{
-			updateAllDependencies();
+			final boolean collectEventsEventIfNoChange = false; // not relevant
+			updateAllFieldsFlags(NullDocumentFieldChangedEventCollector.instance, collectEventsEventIfNoChange);
 		}
 		else if (FieldInitializationMode.Refresh == mode)
 		{
-			updateAllDependencies();
+			final boolean collectEventsEventIfNoChange = false;
+			updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
 		}
 	}
 
+	/**
+	 * Set field's initial value
+	 *
+	 * @param documentField
+	 * @param mode initialization mode
+	 * @param initialValueSupplier initial value supplier
+	 */
 	private void initializeField(final DocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
 	{
+		//
+		// Get the initialization value
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 		final Object initialValue = initialValueSupplier.getInitialValue(this, fieldDescriptor);
 
+		//
+		// Update field's initial value
 		final Object valueOld = documentField.getValue();
 		documentField.setInitialValue(initialValue);
 
+		//
+		// After field was initialized, based on "mode", trigger events, update other fields etc
 		if (FieldInitializationMode.NewDocument == mode)
 		{
+			// Collect the change event, even if there was no change because we just set the initial value
 			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
 			eventsCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
 		}
+		else if (FieldInitializationMode.Load == mode)
+		{
+			// nothing to do on load
+		}
 		else if (FieldInitializationMode.Refresh == mode)
 		{
-			// Check if changed. If not, stop here.
-			// NEEDED for Refresh
+			// Collect change event and update dependencies only if the field's value changed
 			final Object valueNew = documentField.getValue();
-			if (Objects.equals(valueOld, valueNew))
+			if (!Objects.equals(valueOld, valueNew))
 			{
-				return;
+				// collect changed value
+				final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+				eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
+
+				// Update all dependencies
+				updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
+
+				// Callouts - don't execute them!
+				// calloutExecutor.execute(documentField.asCalloutField());
 			}
-
-			// collect changed value
-			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-			eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
-
-			// Update all dependencies
-			updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
-
-			// Callouts - don't execute them!
-			// calloutExecutor.execute(documentField.asCalloutField());
 		}
 
 	}
@@ -397,7 +415,7 @@ public final class Document
 		return _evaluatee;
 	}
 
-	public void setValue(final String fieldName, final Object value, final Supplier<String> reason)
+	public void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final DocumentField documentField = getField(fieldName);
 		final Object valueOld = documentField.getValue();
@@ -432,17 +450,22 @@ public final class Document
 	}
 
 	/**
-	 * Updates all dependencies for all fields (i.e.Mandatory, ReadOnly, Displayed properties etc)
+	 * Updates field status flags for all fields (i.e.Mandatory, ReadOnly, Displayed etc)
+	 *
+	 * @param eventsCollector events collector (where to collect the change events)
+	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
-	public void updateAllDependencies()
+	private void updateAllFieldsFlags(final IDocumentFieldChangedEventCollector eventsCollector, final boolean collectEventsEventIfNoChange)
 	{
 		logger.trace("Updating all dependencies for {}", this);
 
+		final String triggeringFieldName = null; // N/A
 		for (final DocumentField documentField : getFields())
 		{
-			updateFieldReadOnly(documentField);
-			updateFieldMandatory(documentField);
-			updateFieldDisplayed(documentField);
+			for (final DependencyType triggeringDependencyType : DependencyType.values())
+			{
+				updateFieldFlag(documentField, triggeringFieldName, triggeringDependencyType, eventsCollector, collectEventsEventIfNoChange);
+			}
 		}
 	}
 
@@ -497,19 +520,21 @@ public final class Document
 		documentField.setDisplayed(displayed);
 	}
 
-	private final void updateFieldsWhichDependsOn(final String fieldName, final IDocumentFieldChangedEventCollector eventsCollector)
+	private final void updateFieldsWhichDependsOn(final String triggeringFieldName, final IDocumentFieldChangedEventCollector eventsCollector)
 	{
 		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
-		dependencies.consumeForChangedFieldName(fieldName, (dependentFieldName, dependencyType) -> {
+		dependencies.consumeForChangedFieldName(triggeringFieldName, (dependentFieldName, dependencyType) -> {
 			final DocumentField dependentField = getFieldOrNull(dependentFieldName);
 			if (dependentField == null)
 			{
+				// shall not happen
 				logger.warn("Skip setting dependent propery {} because property value is missing", dependentFieldName);
 				return;
 			}
 
 			final IDocumentFieldChangedEventCollector fieldEventsCollector = DocumentFieldChangedEventCollector.newInstance();
-			updateDependentField(dependentField, fieldName, dependencyType, fieldEventsCollector);
+			final boolean collectEventsEventIfNoChange = false;
+			updateFieldFlag(dependentField, triggeringFieldName, dependencyType, fieldEventsCollector, collectEventsEventIfNoChange);
 			eventsCollector.collectFrom(fieldEventsCollector);
 
 			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames())
@@ -521,61 +546,76 @@ public final class Document
 		});
 	}
 
-	private void updateDependentField(
-			final DocumentField dependentField //
+	/**
+	 * Updates field's status flag (readonly, mandatory, displayed, lookupValuesStaled etc).
+	 *
+	 * @param documentField
+	 * @param triggeringFieldName optional field name which triggered this update
+	 * @param triggeringDependencyType
+	 * @param eventsCollector events collector (where to collect the change events)
+	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
+	 */
+	private void updateFieldFlag(
+			final DocumentField documentField //
 			, final String triggeringFieldName //
-			, final DependencyType dependencyType //
+			, final DependencyType triggeringDependencyType //
 			, final IDocumentFieldChangedEventCollector eventsCollector //
-	)
+			, final boolean collectEventsEventIfNoChange)
 	{
-		if (DependencyType.ReadonlyLogic == dependencyType)
+		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
 		{
-			final boolean valueOld = dependentField.isReadonly();
-			updateFieldReadOnly(dependentField);
-			final boolean value = dependentField.isReadonly();
+			final boolean valueOld = documentField.isReadonly();
+			updateFieldReadOnly(documentField);
+			final boolean value = documentField.isReadonly();
 
-			if (value != valueOld)
+			if (collectEventsEventIfNoChange || value != valueOld)
 			{
-				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType + ", ReadOnlyLogic="
-						+ dependentField.getDescriptor().getReadonlyLogic();
-				eventsCollector.collectReadonlyChanged(dependentField, reason);
+				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
+						+ ", DependencyType=" + triggeringDependencyType
+						+ ", ReadOnlyLogic=" + documentField.getDescriptor().getReadonlyLogic();
+				eventsCollector.collectReadonlyChanged(documentField, reason);
 			}
 		}
-		else if (DependencyType.MandatoryLogic == dependencyType)
+		else if (DependencyType.MandatoryLogic == triggeringDependencyType)
 		{
-			final boolean valueOld = dependentField.isMandatory();
-			updateFieldMandatory(dependentField);
-			final boolean value = dependentField.isMandatory();
+			final boolean valueOld = documentField.isMandatory();
+			updateFieldMandatory(documentField);
+			final boolean value = documentField.isMandatory();
 
-			if (value != valueOld)
+			if (collectEventsEventIfNoChange || value != valueOld)
 			{
-				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
-						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getMandatoryLogic();
-				eventsCollector.collectMandatoryChanged(dependentField, reason);
+				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
+						+ ", DependencyType=" + triggeringDependencyType
+						+ ", MandatoryLogic=" + documentField.getDescriptor().getMandatoryLogic();
+				eventsCollector.collectMandatoryChanged(documentField, reason);
 			}
 		}
-		else if (DependencyType.DisplayLogic == dependencyType)
+		else if (DependencyType.DisplayLogic == triggeringDependencyType)
 		{
-			final boolean valueOld = dependentField.isDisplayed();
-			updateFieldDisplayed(dependentField);
-			final boolean value = dependentField.isDisplayed();
+			final boolean valueOld = documentField.isDisplayed();
+			updateFieldDisplayed(documentField);
+			final boolean value = documentField.isDisplayed();
 
-			if (value != valueOld)
+			if (collectEventsEventIfNoChange || value != valueOld)
 			{
-				final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType
-						+ ", ReadOnlyLogic=" + dependentField.getDescriptor().getDisplayLogic();
-				eventsCollector.collectDisplayedChanged(dependentField, reason);
+				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
+						+ ", DependencyType=" + triggeringDependencyType
+						+ ", DisplayLogic=" + documentField.getDescriptor().getDisplayLogic();
+				eventsCollector.collectDisplayedChanged(documentField, reason);
 			}
 		}
-		else if (DependencyType.LookupValues == dependencyType)
+		else if (DependencyType.LookupValues == triggeringDependencyType)
 		{
-			final Supplier<String> reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + dependencyType;
-			dependentField.setLookupValuesStaled();
-			eventsCollector.collectLookupValuesStaled(dependentField, reason);
+			// FIXME: case: updating an existing document (e.g. set POReference).
+			// This method will be called when document is saved and then refresh (=> FieldInitializationMode=Refresh, triggeringFieldName=null).
+			// As a consequence we will collect an "LookupValuesStaled" event for each field !!!
+			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
+			documentField.setLookupValuesStaled();
+			eventsCollector.collectLookupValuesStaled(documentField, reason);
 		}
 		else
 		{
-			new AdempiereException("Unknown dependency type: " + dependencyType)
+			new AdempiereException("Unknown dependency type: " + triggeringDependencyType)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}

@@ -3,7 +3,7 @@ package de.metas.ui.web.window.model;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import com.google.common.base.Supplier;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -29,7 +29,7 @@ import com.google.common.base.Supplier;
 
 /*package*/final class DocumentAsCalloutRecord implements ICalloutRecord
 {
-	private static final Supplier<String> REASON_Value_DirectSetOnCalloutRecord = () -> "direct set on callout record";
+	private static final ReasonSupplier REASON_Value_DirectSetOnCalloutRecord = () -> "direct set on callout record";
 
 	private final Document document;
 

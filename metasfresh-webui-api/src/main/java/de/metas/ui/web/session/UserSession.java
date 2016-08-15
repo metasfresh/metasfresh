@@ -1,14 +1,22 @@
 package de.metas.ui.web.session;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
+import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 
 /*
@@ -38,16 +46,62 @@ import de.metas.ui.web.base.session.UserPreference;
 @SuppressWarnings("serial")
 public class UserSession implements Serializable
 {
-	private final UserPreference userPreference;
-	private boolean loggedIn = false;
-	private Locale locale = Locale.getDefault();
+	private static final transient Logger logger = LogManager.getLogger(UserSession.class);
+
+	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
+	private String sessionId = null;
+	private UserPreference userPreference;
+	private boolean loggedIn;
+	private Locale locale;
 
 	public UserSession()
 	{
 		super();
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		sessionId = requestAttributes.getSessionId();
+
 		userPreference = new UserPreference();
+		loggedIn = false;
+		locale = Locale.getDefault();
+
+		logger.trace("User session created: {}", this);
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("sessionId", sessionId)
+				.add("loggedIn", loggedIn)
+				.add("locale", locale)
+				.add("userPreferences", userPreference)
+				.toString();
+	}
+
+	private void writeObject(final java.io.ObjectOutputStream out) throws IOException
+	{
+		out.defaultWriteObject();
+
+		logger.trace("User session serialized: {}", this);
+	}
+
+	private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		in.defaultReadObject();
+
+		logger.trace("User session deserialized: {}", this);
+	}
+
+	public String getSessionId()
+	{
+		return sessionId;
+	}
+
+	/**
+	 * @return session's context
+	 * @see de.metas.ui.web.session.WebRestApiContextProvider
+	 */
 	public Properties getCtx()
 	{
 		return Env.getCtx();
@@ -65,12 +119,23 @@ public class UserSession implements Serializable
 
 	public void setLoggedIn(final boolean loggedIn)
 	{
-		this.loggedIn = loggedIn;
+		if (loggedIn)
+		{
+			this.loggedIn = true;
+			userPreference.loadPreference(getCtx());
+			logger.trace("User session logged in: {}", this);
+		}
+		else
+		{
+			this.loggedIn = false;
+			userPreference = new UserPreference();
+			logger.trace("User session logged out: {}", this);
+		}
 	}
 
 	public void setLocale(final Locale locale)
 	{
-		this.locale = locale;
+		this.locale = Preconditions.checkNotNull(locale, "locale cannot be null");
 	}
 
 	public Locale getLocale()

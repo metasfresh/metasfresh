@@ -9,7 +9,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -89,7 +88,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return ImmutableList.copyOf(fieldName2event.values());
 	}
 
-	private static final String extractReason(final Supplier<String> reasonSupplier)
+	private static final String extractReason(final ReasonSupplier reasonSupplier)
 	{
 		if (reasonSupplier == null)
 		{
@@ -105,13 +104,13 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return reasonSupplier.get();
 	}
 
-	private static final String mergeReasons(final Supplier<String> reason, final String previousReason)
+	private static final String mergeReasons(final ReasonSupplier reason, final String previousReason)
 	{
 		final Object previousValue = null;
 		return mergeReasons(reason, previousReason, previousValue);
 	}
 
-	private static final String mergeReasons(final Supplier<String> reasonSupplier, final String previousReason, final Object previousValue)
+	private static final String mergeReasons(final ReasonSupplier reasonSupplier, final String previousReason, final Object previousValue)
 	{
 		// Collect the reason only if debugging is enabled
 		if (!logger.isDebugEnabled())
@@ -140,31 +139,31 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	}
 
 	@Override
-	public void collectValueChanged(final DocumentField documentField, final Supplier<String> reason)
+	public void collectValueChanged(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setValue(documentField.getValue(), extractReason(reason));
 	}
 
 	@Override
-	public void collectReadonlyChanged(final DocumentField documentField, final Supplier<String> reason)
+	public void collectReadonlyChanged(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setReadonly(documentField.isReadonly(), extractReason(reason));
 	}
 
 	@Override
-	public void collectMandatoryChanged(final DocumentField documentField, final Supplier<String> reason)
+	public void collectMandatoryChanged(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setMandatory(documentField.isMandatory(), extractReason(reason));
 	}
 
 	@Override
-	public void collectDisplayedChanged(final DocumentField documentField, final Supplier<String> reason)
+	public void collectDisplayedChanged(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setDisplayed(documentField.isDisplayed(), extractReason(reason));
 	}
 
 	@Override
-	public void collectLookupValuesStaled(final DocumentField documentField, final Supplier<String> reason)
+	public void collectLookupValuesStaled(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setLookupValuesStale(true, extractReason(reason));
 	}
@@ -180,7 +179,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	}
 
 	@Override
-	public void collectFrom(final Document document, final Supplier<String> reason)
+	public void collectFrom(final Document document, final ReasonSupplier reason)
 	{
 		for (final DocumentField documentField : document.getFields())
 		{
@@ -188,7 +187,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		}
 	}
 
-	private void collectFrom(final DocumentField documentField, final Supplier<String> reason)
+	private void collectFrom(final DocumentField documentField, final ReasonSupplier reason)
 	{
 		final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
 

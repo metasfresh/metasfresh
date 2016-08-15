@@ -15,19 +15,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Supplier;
-
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.util.JSONConverters;
-import de.metas.ui.web.window.util.LastDocumentTracker;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import de.metas.ui.web.window.util.JSONConverters;;
 
 /*
  * #%L
@@ -57,16 +56,13 @@ public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
 
-	private static final Supplier<String> REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
+	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@Autowired
 	private UserSession userSession;
 
 	@Autowired
 	private DocumentCollection documentCollection;
-
-	@Autowired
-	private LastDocumentTracker lastDocumentsTracker; // for debugging
 
 	private final void autologin()
 	{
@@ -117,14 +113,24 @@ public class WindowRestController
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowId //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 	)
 	{
 		autologin();
 
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.allowNewDocumentId()
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.allowNullRowId()
+				.allowNewRowId()
+				.build();
+
 		try (Execution execution = Execution.startExecution())
 		{
-			final List<Document> documents = documentCollection.getDocuments(adWindowId, idStr, detailId, rowId);
+			final List<Document> documents = documentCollection.getDocuments(documentPath);
 			return JSONConverters.documentsToJsonObject(documents);
 		}
 	}
@@ -139,14 +145,20 @@ public class WindowRestController
 	{
 		autologin();
 
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.allowNewDocumentId()
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.allowNewRowId()
+				.build();
+
 		try (final Execution execution = Execution.startExecution())
 		{
 			//
 			// Fetch the document
-			final DocumentId documentId = DocumentId.of(idStr);
-			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
-			final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
-			final boolean isNew = document.isNew();
+			final Document document = documentCollection.getDocument(documentPath);
 
 			//
 			// Apply changes
@@ -167,14 +179,6 @@ public class WindowRestController
 			documentCollection.saveIfPossible(document);
 
 			//
-			// Make sure we collected all changes
-			// FIXME: optimization: it would be better if this would happen auto-magically. Also this logic fails when trying to update an existing Document which is not saved yet!
-			if (isNew)
-			{
-				execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
-			}
-
-			//
 			// Return the changes
 			return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
 		}
@@ -192,19 +196,14 @@ public class WindowRestController
 	{
 		autologin();
 
-		final DocumentId documentId = DocumentId.of(idStr);
-		if (documentId.isNew())
-		{
-			throw new IllegalArgumentException("Invalid id: " + documentId);
-		}
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
 
-		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
-		if (rowId != null && rowId.isNew())
-		{
-			throw new IllegalArgumentException("Invalid rowId: " + rowId);
-		}
-
-		final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
+		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);
@@ -221,24 +220,14 @@ public class WindowRestController
 	{
 		autologin();
 
-		DocumentId documentId = DocumentId.of(idStr);
-		if (documentId.isNew())
-		{
-			// FIXME: we use this only for debugging
-			documentId = lastDocumentsTracker.getLastDocumentId(adWindowId, detailId, documentId);
-		}
-		if (documentId.isNew())
-		{
-			throw new IllegalArgumentException("Invalid id: " + documentId);
-		}
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
 
-		final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
-		if (rowId != null && rowId.isNew())
-		{
-			throw new IllegalArgumentException("Invalid rowId: " + rowId);
-		}
-
-		final Document document = documentCollection.getDocument(adWindowId, documentId, detailId, rowId);
+		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
 
 		return JSONConverters.lookupValuesToJsonObject(lookupValues);

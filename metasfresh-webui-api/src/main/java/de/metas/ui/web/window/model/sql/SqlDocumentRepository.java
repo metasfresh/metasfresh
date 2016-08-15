@@ -26,7 +26,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
@@ -46,7 +45,6 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
-import de.metas.ui.web.window.util.LastDocumentTracker;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 
 /*
@@ -82,9 +80,6 @@ import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 public class SqlDocumentRepository implements DocumentRepository
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
-
-	@Autowired
-	private LastDocumentTracker lastDocumentsTracker;
 
 	/* package */ SqlDocumentRepository()
 	{
@@ -165,16 +160,12 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
-		final Document document = Document.builder()
+		return Document.builder()
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.initializeAsNewDocument()
 				.build();
-
-		lastDocumentsTracker.add(document);
-
-		return document;
 	}
 
 	private final String buildSql(final List<Object> sqlParams, final DocumentRepositoryQuery query)
@@ -231,7 +222,7 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// Key column
-		if (query.getRecordId() != null)
+		if (query.isRecordIdSet())
 		{
 			final String sqlKeyColumnName = entityBinding.getSqlKeyColumnName();
 			if (sqlKeyColumnName == null)

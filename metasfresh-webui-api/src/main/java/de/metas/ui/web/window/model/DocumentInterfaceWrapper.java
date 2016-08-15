@@ -20,12 +20,12 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -218,7 +218,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		}
 	}
 
-	private static final Supplier<String> REASON_Value_DirectSetFromDocumentWrapper = () -> "direct set from document wrapper";
+	private static final ReasonSupplier REASON_Value_DirectSetFromDocumentWrapper = () -> "direct set from document wrapper";
 
 	private final Document document;
 	private final boolean useOldValues;
